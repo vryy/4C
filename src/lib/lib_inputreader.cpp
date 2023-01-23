@@ -13,7 +13,6 @@
 #include "lib_inputreader.H"
 #include "lib_linedefinition.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 #include "io_control.H"
@@ -22,7 +21,7 @@
 
 #include "lib_utils_reader.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <sstream>
 #include <utility>
 
@@ -424,8 +423,8 @@ namespace DRT
                   dx[1] = coords[1] - coordm[1];
                   dx[2] = coords[2] - coordm[2];
 
-                  double calpha = cos(-box_specifications[rotaxis + rotoffset] * PI / 180);
-                  double salpha = sin(-box_specifications[rotaxis + rotoffset] * PI / 180);
+                  double calpha = cos(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
+                  double salpha = sin(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
 
                   coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
                   coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];
@@ -481,7 +480,7 @@ namespace DRT
       // io to shell
       const int myrank = comm_->MyPID();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       // only the knotvector section of this discretisation
       // type is of interest
@@ -864,9 +863,9 @@ namespace DRT
       {
         if (!MyOutputFlag())
         {
-          IO::cout << " in...." << time.ElapsedTime() << " secs\n";
+          IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
-          time.ResetStartTime();
+          time.reset();
           fflush(stdout);
         }
       }

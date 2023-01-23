@@ -20,7 +20,7 @@ its parameters and conditions.
 #include "pre_exodus.H"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 #include "Teuchos_TimeMonitor.hpp"
 #include "lib_globalproblem.H"
 #include "lib_resulttest.H"
@@ -351,7 +351,7 @@ int main(int argc, char** argv)
         timer->start();
         ValidateMeshElementJacobians(mymesh);
         timer->stop();
-        std::cout << "        in...." << timer->totalElapsedTime() << " secs" << std::endl;
+        std::cout << "        in...." << timer->totalElapsedTime(true) << " secs" << std::endl;
         timer->reset();
       }
 
@@ -367,7 +367,8 @@ int main(int argc, char** argv)
           timer->start();
           CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh, condefs);
           timer->stop();
-          std::cout << "               in...." << timer->totalElapsedTime() << " secs" << std::endl;
+          std::cout << "               in...." << timer->totalElapsedTime(true) << " secs"
+                    << std::endl;
           timer->reset();
         }
       }
@@ -379,7 +380,7 @@ int main(int argc, char** argv)
         timer->start();
         EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs, elecenterlineinfo);
         timer->stop();
-        std::cout << "                         in...." << timer->totalElapsedTime() << " secs"
+        std::cout << "                         in...." << timer->totalElapsedTime(true) << " secs"
                   << std::endl;
         timer->reset();
       }

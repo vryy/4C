@@ -9,7 +9,6 @@
 #include <vector>
 #include "mat_fluidporo.H"
 #include "lib_globalproblem.H"
-#include "lib_standardtypes_cpp.H"
 #include "mat_par_bundle.H"
 
 namespace MAT::FLUIDPORO
@@ -34,7 +33,7 @@ namespace MAT::FLUIDPORO
     const double square_length = std::inner_product(
         direction_vector.begin(), direction_vector.end(), direction_vector.begin(), 0.0);
 
-    if (square_length > EPS8)
+    if (square_length > 1e-8)
     {
       for (unsigned int i = 0; i < dim; ++i)
       {

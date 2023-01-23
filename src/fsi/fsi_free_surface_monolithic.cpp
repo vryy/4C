@@ -30,12 +30,12 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
-#include <Epetra_Time.h>
+
 
 #include "inpar_validparameters.H"
 #include "lib_colors.H"
 
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
@@ -234,7 +234,7 @@ void FSI::MonolithicMainFS::Timeloop(
 
     if (Comm().MyPID() == 0)
     {
-      (*log) << Step() << "\t" << Time() << " " << timer.totalElapsedTime() << " "
+      (*log) << Step() << "\t" << Time() << " " << timer.totalElapsedTime(true) << " "
              << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << " "
              << nlParams.sublist("Output").get("2-Norm of Residual", 0.) << " "
              << lsParams.sublist("Output").get("Total Number of Linear Iterations", 0);
@@ -270,9 +270,9 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Utils()->out() << "\nEvaluate elements\n";
 
   {
-    Epetra_Time ta(Comm());
+    Teuchos::Time ta("ale", true);
     AleField()->Evaluate(ax);
-    Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
+    Utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -280,9 +280,9 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
-    Epetra_Time tf(Comm());
+    Teuchos::Time tf("fluid", true);
     FluidField()->Evaluate(fx);
-    Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
+    Utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
   Utils()->out() << "\n";

@@ -46,8 +46,6 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
-#include <Epetra_Time.h>
-
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -82,7 +80,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       strategy_equilibration_(Teuchos::null),
       strategy_manifold_meshtying_(Teuchos::null),
       strategy_meshtying_(Teuchos::null),
-      timer_(Teuchos::rcp(new Epetra_Time(comm)))
+      timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
 }
 
@@ -882,10 +880,10 @@ void SSI::SSIMono::NewtonLoop()
     IncrementIterationCount();
 
     // reset timer
-    timer_->ResetStartTime();
+    timer_->reset();
 
     // store time before evaluating elements and assembling global system of equations
-    double time = timer_->WallTime();
+    double time = timer_->wallTime();
 
     // set solution from last Newton step to all fields
     DistributeSolutionAllFields();
@@ -904,7 +902,7 @@ void SSI::SSIMono::NewtonLoop()
 
     // determine time needed for evaluating elements and assembling global system of
     // equations, and take maximum over all processors via communication
-    double mydtele = timer_->WallTime() - time;
+    double mydtele = timer_->wallTime() - time;
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
@@ -918,13 +916,13 @@ void SSI::SSIMono::NewtonLoop()
     ssi_vectors_->ClearIncrement();
 
     // store time before solving global system of equations
-    time = timer_->WallTime();
+    time = timer_->wallTime();
 
     SolveLinearSystem();
 
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
-    double mydtsolve = timer_->WallTime() - time;
+    double mydtsolve = timer_->wallTime() - time;
     Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if
@@ -954,14 +952,14 @@ void SSI::SSIMono::Timeloop()
     PrepareTimeStep();
 
     // store time before calling nonlinear solver
-    const double time = timer_->WallTime();
+    const double time = timer_->wallTime();
 
     // evaluate time step
     NewtonLoop();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
-    double mydtnonlinsolve(timer_->WallTime() - time), dtnonlinsolve(0.);
+    double mydtnonlinsolve(timer_->wallTime() - time), dtnonlinsolve(0.);
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if

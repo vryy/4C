@@ -12,7 +12,7 @@
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "opti_topopt_dyn.H"
 #include "opti_topopt_algorithm.H"

@@ -152,7 +152,7 @@ void STR::TimIntExpl::PrintStepText(FILE* ofile)
       " | dt %-14.8E"
       " | numiter %3d"
       " | wct %-14.8E\n",
-      step_, stepmax_, (*time_)[0], (*dt_)[0], 0, timer_->ElapsedTime());
+      step_, stepmax_, (*time_)[0], (*dt_)[0], 0, timer_->totalElapsedTime(true));
   fprintf(ofile,
       "                      "
       " ( ts %-14.8E"

@@ -88,8 +88,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
 
   // stabilization variables
   std::vector<double> tau(my::numscal_, 0.);
-  std::vector<LINALG::Matrix<my::nen_, 1>> tauderpot(
-      my::numscal_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> tauderpot(my::numscal_, LINALG::Matrix<nen_, 1>(true));
 
   if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {
@@ -106,7 +105,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -168,9 +167,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
     const double alphaf              //!< time factor for ENC
 )
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       // linearization of the transference number in the conduction term (transport equation)
       //
@@ -195,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
     const double conint              //!< concentration at GP
 )
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)

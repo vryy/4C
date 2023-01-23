@@ -21,6 +21,7 @@ baci_add_library(io ${SOURCES})
 
 set(LIBS_IO
     # cmake-format: sortable
+    config
     lib
     pss_full
     )

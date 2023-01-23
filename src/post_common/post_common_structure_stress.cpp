@@ -9,12 +9,14 @@
 
 
 
+#include <Epetra_SerialDenseVector.h>
 #include "post_common_writer_base.H"
 #include "post_common.H"
 #include <string>
 #include "post_common_single_field_writers.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "pss_full_cpp.h"
+#include "fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -110,20 +112,16 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Teuchos::ParameterList p;
-    p.set("action", "postprocess_stress");
-    p.set("stresstype", "ndxyz");
-    p.set("gpstressmap", data);
-    Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap, 6, true);
-    Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(tmp);
-    p.set("poststress", nodal_stress);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (nodal_stress == Teuchos::null)
-    {
-      dserror("vector containing element center stresses/strains not available");
-    }
+    Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
+
+    dis->Evaluate(
+        [&](DRT::Element& ele) {
+          DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+              ele, *data->at(ele.Id()), nodal_stress);
+        });
 
     filter_.GetWriter().WriteNodalResultStep(
-        *files[0], nodal_stress, resultfilepos, groupname, name[0], 6);
+        *files[0], Teuchos::rcpFromRef(nodal_stress), resultfilepos, groupname, name[0], 6);
   }
 
   StructureFilter& filter_;
@@ -148,20 +146,17 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
-    Teuchos::ParameterList p;
-    p.set("action", "postprocess_stress");
-    p.set("stresstype", "cxyz");
-    p.set("gpstressmap", data);
-    Teuchos::RCP<Epetra_MultiVector> elestress =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), 6));
-    p.set("poststress", elestress);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (elestress == Teuchos::null)
-    {
-      dserror("vector containing element center stresses/strains not available");
-    }
+
+    Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
+
+    dis->Evaluate(
+        [&](DRT::Element& ele) {
+          DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+              ele, *data->at(ele.Id()), elestress);
+        });
+
     filter_.GetWriter().WriteElementResultStep(
-        *files[0], elestress, resultfilepos, groupname, name[0], 6, 0);
+        *files[0], Teuchos::rcpFromRef(elestress), resultfilepos, groupname, name[0], 6, 0);
   }
 
   StructureFilter& filter_;
@@ -186,22 +181,23 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
-    Teuchos::ParameterList p;
-    p.set("action", "postprocess_stress");
-    p.set("stresstype", "rotation");
-    // this is not really stress at gp! we are misusing "postprocess_stress" here
-    // we rather store the rotation tensor R at the element center
-    p.set("gpstressmap", data);
-    Teuchos::RCP<Epetra_MultiVector> elestress =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), 9));
-    p.set("poststress", elestress);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (elestress == Teuchos::null)
-    {
-      dserror("vector containing element center stresses/strains not available");
-    }
+
+    Epetra_MultiVector elerotation(*(dis->ElementRowMap()), 9);
+    dis->Evaluate(
+        [&](DRT::Element& ele)
+        {
+          const Epetra_SerialDenseMatrix& elecenterrot = *data->at(ele.Id());
+
+          const Epetra_BlockMap& elemap = elerotation.Map();
+          int lid = elemap.LID(ele.Id());
+          if (lid != -1)
+            for (int i = 0; i < elecenterrot.M(); ++i)
+              for (int j = 0; j < elecenterrot.N(); ++j)
+                (*(elerotation(i * elecenterrot.M() + j)))[lid] = elecenterrot(i, j);
+        });
+
     filter_.GetWriter().WriteElementResultStep(
-        *files[0], elestress, resultfilepos, groupname, name[0], 9, 0);
+        *files[0], Teuchos::rcpFromRef(elerotation), resultfilepos, groupname, name[0], 9, 0);
   }
 
   StructureFilter& filter_;
@@ -393,18 +389,14 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
-    Teuchos::ParameterList p;
-    p.set("action", "postprocess_stress");
-    p.set("stresstype", "ndxyz");
-    p.set("gpstressmap", data);
-    Teuchos::RCP<Epetra_MultiVector> nodal_stress =
-        Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 6, true));
-    p.set("poststress", nodal_stress);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (nodal_stress == Teuchos::null)
-    {
-      dserror("vector containing nodal stresses/strains not available");
-    }
+    Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
+
+    dis->Evaluate(
+        [&](DRT::Element& ele) {
+          DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+              ele, *data->at(ele.Id()), nodal_stress);
+        });
+
 
     // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
     std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
@@ -425,15 +417,15 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         Epetra_SerialDenseMatrix eigenvec(3, 3);
         Epetra_SerialDenseVector eigenval(3);
 
-        eigenvec(0, 0) = (*((*nodal_stress)(0)))[i];
-        eigenvec(0, 1) = (*((*nodal_stress)(3)))[i];
-        eigenvec(0, 2) = (*((*nodal_stress)(5)))[i];
+        eigenvec(0, 0) = (*(nodal_stress(0)))[i];
+        eigenvec(0, 1) = (*(nodal_stress(3)))[i];
+        eigenvec(0, 2) = (*(nodal_stress(5)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*((*nodal_stress)(1)))[i];
-        eigenvec(1, 2) = (*((*nodal_stress)(4)))[i];
+        eigenvec(1, 1) = (*(nodal_stress(1)))[i];
+        eigenvec(1, 2) = (*(nodal_stress(4)))[i];
         eigenvec(2, 0) = eigenvec(0, 2);
         eigenvec(2, 1) = eigenvec(1, 2);
-        eigenvec(2, 2) = (*((*nodal_stress)(2)))[i];
+        eigenvec(2, 2) = (*(nodal_stress(2)))[i];
 
         LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -452,10 +444,10 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         Epetra_SerialDenseMatrix eigenvec(2, 2);
         Epetra_SerialDenseVector eigenval(2);
 
-        eigenvec(0, 0) = (*((*nodal_stress)(0)))[i];
-        eigenvec(0, 1) = (*((*nodal_stress)(3)))[i];
+        eigenvec(0, 0) = (*(nodal_stress(0)))[i];
+        eigenvec(0, 1) = (*(nodal_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*((*nodal_stress)(1)))[i];
+        eigenvec(1, 1) = (*(nodal_stress(1)))[i];
 
         LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -510,18 +502,15 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
 
-    Teuchos::ParameterList p;
-    p.set("action", "postprocess_stress");
-    p.set("stresstype", "cxyz");
-    p.set("gpstressmap", data);
-    Teuchos::RCP<Epetra_MultiVector> elestress =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), 6));
-    p.set("poststress", elestress);
-    dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (elestress == Teuchos::null)
-    {
-      dserror("vector containing element center stresses/strains not available");
-    }
+    Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
+
+    dis->Evaluate(
+        [&](DRT::Element& ele)
+        {
+          DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+              ele, *data->at(ele.Id()), element_stress);
+        });
+
 
     std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
@@ -541,15 +530,15 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         Epetra_SerialDenseMatrix eigenvec(3, 3);
         Epetra_SerialDenseVector eigenval(3);
 
-        eigenvec(0, 0) = (*((*elestress)(0)))[i];
-        eigenvec(0, 1) = (*((*elestress)(3)))[i];
-        eigenvec(0, 2) = (*((*elestress)(5)))[i];
+        eigenvec(0, 0) = (*(element_stress(0)))[i];
+        eigenvec(0, 1) = (*(element_stress(3)))[i];
+        eigenvec(0, 2) = (*(element_stress(5)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*((*elestress)(1)))[i];
-        eigenvec(1, 2) = (*((*elestress)(4)))[i];
+        eigenvec(1, 1) = (*(element_stress(1)))[i];
+        eigenvec(1, 2) = (*(element_stress(4)))[i];
         eigenvec(2, 0) = eigenvec(0, 2);
         eigenvec(2, 1) = eigenvec(1, 2);
-        eigenvec(2, 2) = (*((*elestress)(2)))[i];
+        eigenvec(2, 2) = (*(element_stress(2)))[i];
 
         LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -568,10 +557,10 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         Epetra_SerialDenseMatrix eigenvec(2, 2);
         Epetra_SerialDenseVector eigenval(2);
 
-        eigenvec(0, 0) = (*((*elestress)(0)))[i];
-        eigenvec(0, 1) = (*((*elestress)(3)))[i];
+        eigenvec(0, 0) = (*(element_stress(0)))[i];
+        eigenvec(0, 1) = (*(element_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*((*elestress)(1)))[i];
+        eigenvec(1, 1) = (*(element_stress(1)))[i];
 
         LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 

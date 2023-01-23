@@ -389,7 +389,6 @@ ScalarT DRT::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
 {
   // source: https://en.wikipedia.org/wiki/Trigonometric_interpolation
   ScalarT value = 0.0;
-  const double PI = 3.14159265358979323846;
 
   // number of interpolation nodes
   auto N = (const double)times_.size();
@@ -411,11 +410,11 @@ ScalarT DRT::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
       const int mod = (int)N % 2;
       if (mod == 1)  // odd
       {
-        tau = sin(N * PI * xt / 2) / (N * sin(PI * xt / 2));
+        tau = sin(N * M_PI * xt / 2) / (N * sin(M_PI * xt / 2));
       }
       else  // even
       {
-        tau = sin(N * PI * xt / 2) / (N * tan(PI * xt / 2));
+        tau = sin(N * M_PI * xt / 2) / (N * tan(M_PI * xt / 2));
       }
     }
 

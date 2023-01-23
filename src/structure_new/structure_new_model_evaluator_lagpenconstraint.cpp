@@ -15,7 +15,6 @@
 #include "structure_new_utils.H"
 
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include "linalg_sparseoperator.H"

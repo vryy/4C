@@ -28,7 +28,7 @@
 #include "io.H"
 #include "io_control.H"
 
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_parallel.H"
@@ -38,7 +38,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <utility>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_SerialComm.h>
 
 #include "binstrategy.H"
@@ -1020,7 +1020,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (meanVelocity >= EPS12)
+  if (meanVelocity >= 1e-12)
   {
     const double dt = InterfaceParams().get<double>("TIMESTEP");
     cutoff = cutoff + 2 * dt * meanVelocity;
@@ -1068,7 +1068,7 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
-  Epetra_Time time(*comm);
+  Teuchos::Time time("", true);
 
   // vector containing all proc ids
   std::vector<int> allproc(numproc);
@@ -1120,8 +1120,8 @@ void MORTAR::MortarInterface::Redistribute()
     ss_slave << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
+    std::tie(srownodes, scolnodes) =
+        REBALANCE::RebalanceNodeMaps(idiscret_, sroweles, sproc, imbalance_tol);
   }
 
   //**********************************************************************
@@ -1179,8 +1179,8 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   if (not HasMaSharingRefInterface())
   {
     // call parallel redistribution
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
+    std::tie(rownodes, colnodes) =
+        REBALANCE::RebalanceNodeMaps(idiscret_, roweles, parts, imbalance);
   }
   else
   {

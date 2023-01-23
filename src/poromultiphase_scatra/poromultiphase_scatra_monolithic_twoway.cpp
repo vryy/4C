@@ -80,7 +80,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
       maxres_(0.0),
       vectornormfres_(INPAR::POROMULTIPHASESCATRA::norm_undefined),
       vectornorminc_(INPAR::POROMULTIPHASESCATRA::norm_undefined),
-      timernewton_(comm),
+      timernewton_("", true),
       dtsolve_(0.0),
       dtele_(0.0),
       fdcheck_(INPAR::POROMULTIPHASESCATRA::FDCheck::fdcheck_none)
@@ -381,9 +381,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate");
 
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   // displacement, fluid variable and scatra variable incremental vector
@@ -420,7 +420,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
   SetupRHS();
 
   // *********** time measurement ***********
-  double mydtele = timernewton_.WallTime() - dtcpu;
+  double mydtele = timernewton_.wallTime() - dtcpu;
   Comm().MaxAll(&mydtele, &dtele_, 1);
   // *********** time measurement ***********
 }
@@ -768,9 +768,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Extract3DFieldV
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
 {
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   if (solveradapttol_ and (itnum_ > 1))
@@ -792,7 +792,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   equilibration_->UnequilibrateIncrement(iterinc_);
 
   // *********** time measurement ***********
-  double mydtsolve = timernewton_.WallTime() - dtcpu;
+  double mydtsolve = timernewton_.wallTime() - dtcpu;
   Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
   // *********** time measurement ***********
 }

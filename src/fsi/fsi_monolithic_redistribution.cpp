@@ -22,7 +22,7 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_condition_utils.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -48,7 +48,7 @@
 void FSI::BlockMonolithic::RedistributeMonolithicGraph(
     const FSI_COUPLING coupling, const Epetra_Comm& comm)
 {
-  Epetra_Time timer(comm);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeMonolithicGraph");
 
   const int myrank = comm.MyPID();
 
@@ -289,8 +289,6 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   // setup has do be done again
   SetNotSetup();
 
-  if (myrank == 0) printf("Redistribution of domain in %f seconds.\n", timer.ElapsedTime());
-
   // just to be safe
   comm.Barrier();
 
@@ -302,9 +300,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
     const FSI_COUPLING coupling, const double inputWeight1, const double inputWeight2,
     const Epetra_Comm& comm, int unbalance)
 {
-  Epetra_Time timer(comm);
-
-  const int myrank = comm.MyPID();
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeDomainDecomposition");
 
   interfaceprocs_.clear();
 
@@ -574,8 +570,6 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   // setup has do be done again
   SetNotSetup();
 
-  if (myrank == 0) printf("Redistribution of domain in %f seconds.\n", timer.ElapsedTime());
-
   comm.Barrier();
 
   return;
@@ -842,7 +836,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
-  return DRT::UTILS::REBALANCING::RebalanceGraph(*initgraph_manip, paramlist);
+  return REBALANCE::RebalanceGraph(*initgraph_manip, paramlist);
 }
 
 

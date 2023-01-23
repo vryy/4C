@@ -7,10 +7,11 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#include "headers_standardtypes.h"
 #include "fortran_definitions.h"
 #include "s8_shell8.h"
 #include "lib_dserror.H"
+
+#include "math.h"
 /*----------------------------------------------------------------------*
  | compressible ogden-material                            m.gee 6/03    |
  | no split in volumetric and deviatoric strains                        |
@@ -121,13 +122,13 @@ void s8_mat_ogden_coupled(
   /*---------------- test orthogonality and unit length of eigenvectors N */
   /*N0 * N1 = 0*/
   scal = N[0][0] * N[1][0] + N[0][1] * N[1][1] + N[0][2] * N[1][2];
-  dsassert(fabs(scal) < EPS10, "eigenvectors N0,N1 not orthogonal");
+  dsassert(fabs(scal) < 1e-10, "eigenvectors N0,N1 not orthogonal");
   /*N0 * N2 = 0*/
   scal = N[0][0] * N[2][0] + N[0][1] * N[2][1] + N[0][2] * N[2][2];
-  dsassert(fabs(scal) < EPS10, "eigenvectors N0,N2 not orthogonal");
+  dsassert(fabs(scal) < 1e-10, "eigenvectors N0,N2 not orthogonal");
   /*N1 * N2 = 0*/
   scal = N[1][0] * N[2][0] + N[1][1] * N[2][1] + N[1][2] * N[2][2];
-  dsassert(fabs(scal) < EPS10, "eigenvectors N1,N2 not orthogonal");
+  dsassert(fabs(scal) < 1e-10, "eigenvectors N1,N2 not orthogonal");
   /*--------------------------- test proper orientation of eigenvectors N */
   /*N2 = N0 x N1*/
   Ncross[0] = N[0][1] * N[1][2] - N[0][2] * N[1][1];
@@ -135,7 +136,7 @@ void s8_mat_ogden_coupled(
   Ncross[2] = N[0][0] * N[1][1] - N[0][1] * N[1][0];
   /*N2 * Ncross = 1.0*/
   scal = Ncross[0] * N[2][0] + Ncross[1] * N[2][1] + Ncross[2] * N[2][2];
-  dsassert(fabs((scal - 1.0)) < EPS10, "eigenvectors do not form proper othogonal system");
+  dsassert(fabs((scal - 1.0)) < 1e-10, "eigenvectors do not form proper othogonal system");
   /*--------------------------- calculate the 2.PK stresses in eigenbases */
   PK2[0] = PK2[1] = PK2[2] = (lame1 / beta) * (1.0 - Jpowmbeta);
   for (p = 0; p < 3; p++)
@@ -168,17 +169,17 @@ void s8_mat_ogden_coupled(
   C0022 /= (lam2[0] * lam2[2]);
   C1122 /= (lam2[1] * lam2[2]);
   /*================== components C_abab */
-  if (fabs(lam2[0] - lam2[1]) > EPS12)
+  if (fabs(lam2[0] - lam2[1]) > 1e-12)
     C0101 = (PK2[0] - PK2[1]) / (lam2[0] - lam2[1]);
   else
     C0101 = 0.5 * (C0000 - C0011);
 
-  if (fabs(lam2[0] - lam2[2]) > EPS12)
+  if (fabs(lam2[0] - lam2[2]) > 1e-12)
     C0202 = (PK2[0] - PK2[2]) / (lam2[0] - lam2[2]);
   else
     C0202 = 0.5 * (C0000 - C0022);
 
-  if (fabs(lam2[1] - lam2[2]) > EPS12)
+  if (fabs(lam2[1] - lam2[2]) > 1e-12)
     C1212 = (PK2[1] - PK2[2]) / (lam2[1] - lam2[2]);
   else
     C1212 = 0.5 * (C1111 - C1122);

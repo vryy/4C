@@ -11,9 +11,8 @@
 
 
 #include "lib_gridgenerator.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_elementdefinition.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 #include "lib_discret.H"
@@ -213,16 +212,15 @@ namespace DRT
       // redistribute the elements
       if (inputData.autopartition_)
       {
-        nodeRowMap = Teuchos::null;
-        nodeColMap = Teuchos::null;
-        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(Teuchos::rcp(&dis, false), elementRowMap,
-            nodeRowMap, nodeColMap, Teuchos::rcp(&comm, false), !outputFlag, comm.NumProc());
+        std::tie(nodeRowMap, nodeColMap) =
+            REBALANCE::RebalanceNodeMaps(Teuchos::rcp(&dis, false), elementRowMap, comm.NumProc());
       }
       else  // do not destroy our manual partitioning
       {
         Teuchos::RCP<const Epetra_CrsGraph> graph =
-            DRT::UTILS::REBALANCING::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap,
-                nodeRowMap, Teuchos::rcpFromRef(comm), !outputFlag);
+            REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+        nodeRowMap = Teuchos::rcp(new Epetra_Map(
+            -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
         nodeColMap = Teuchos::rcp(new Epetra_Map(
             -1, graph->ColMap().NumMyElements(), graph->ColMap().MyGlobalElements(), 0, comm));
       }
@@ -292,8 +290,8 @@ namespace DRT
             dx[1] = coords[1] - coordm[1];
             dx[2] = coords[2] - coordm[2];
 
-            double calpha = cos(inputData.rotation_angle_[rotaxis] * PI / 180);
-            double salpha = sin(inputData.rotation_angle_[rotaxis] * PI / 180);
+            double calpha = cos(inputData.rotation_angle_[rotaxis] * M_PI / 180);
+            double salpha = sin(inputData.rotation_angle_[rotaxis] * M_PI / 180);
 
             coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
             coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];

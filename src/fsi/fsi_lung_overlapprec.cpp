@@ -14,7 +14,7 @@
 #include "adapter_fld_fluid.H"
 #include "lib_globalproblem.H"
 #include "linalg_multiply.H"
-#include "linalg_precond.H"
+#include "solver_linalg_precond.H"
 #include "solver_linalg_solver.H"
 
 // /*----------------------------------------------------------------------*

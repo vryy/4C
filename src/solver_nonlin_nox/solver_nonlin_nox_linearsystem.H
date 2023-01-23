@@ -15,9 +15,8 @@
 
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include "solver_nonlin_nox_enum_lists.H"
-
 // Forward declaration
 class Epetra_Vector;
 class Epetra_RowMatrix;
@@ -378,8 +377,8 @@ namespace NOX
 
       double conditionNumberEstimate_;
 
-      //! Epetra_Time object
-      Epetra_Time timer_;
+      //! Teuchos::Time object
+      Teuchos::Time timer_;
 
       //! Total time spent in createPreconditioner (sec.).
       double timeCreatePreconditioner_;

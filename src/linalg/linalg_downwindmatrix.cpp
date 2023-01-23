@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "linalg_downwindmatrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 
 #include "ml_utils.h"
 
@@ -30,7 +30,7 @@ LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const i
  *----------------------------------------------------------------------*/
 void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 {
-  Epetra_Time time(A.Comm());
+  Teuchos::Time time("", true);
   if (!A.Filled()) dserror("Input matrix has to be FillComplete");
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
@@ -253,7 +253,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 
 
   if (!A.Comm().MyPID() && outlevel_)
-    std::cout << "                Downwinding Setup time " << time.ElapsedTime() << " s\n"
+    std::cout << "                Downwinding Setup time " << time.totalElapsedTime(true) << " s\n"
               << "                nv " << nv_ << " np " << np_ << " bs " << bs_ << " tau " << tau_
               << std::endl;
 

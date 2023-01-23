@@ -676,7 +676,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // calculate mean concentrations
   const double domint = (*scalars)[NumScal()];
-  if (std::abs(domint) < EPS15) dserror("Domain has zero volume!");
+  if (std::abs(domint) < 1e-15) dserror("Domain has zero volume!");
   for (int k = 0; k < NumScal(); ++k) c0_[k] = (*scalars)[k] / domint;
 
   // initialization of the densification coefficient vector
@@ -1836,7 +1836,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
 
           double initialval = 0.0;
-          if (x > -EPS10) initialval = 1.0;
+          if (x > -1e-10) initialval = 1.0;
 
           int err = 0;
           err += phin_->ReplaceMyValues(1, &initialval, &doflid);
@@ -1894,9 +1894,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
 
-          if (x2 < loc12 - EPS10)
+          if (x2 < loc12 - 1e-10)
             initialval = (1.0 - (1.0 / beta1)) * exp((x2 - trans1) / delta1);
-          else if (x2 > loc23 + EPS10)
+          else if (x2 > loc23 + 1e-10)
             initialval = 1.0 - (exp((1.0 - beta3) * (x2 - trans3) / delta3) / beta3);
           else
             initialval = fac2 * (x2 - trans2) + abs2;
@@ -2617,7 +2617,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     {
       printf("+-------------------------------+-------------+\n");
       {
-        if (scalnorm_L2 > EPS10)
+        if (scalnorm_L2 > 1e-10)
           printf("|  relative increment (L2 norm) | %10.3E  |", incnorm_L2 / scalnorm_L2);
         else  // prevent division by an almost zero value
           printf("|  absolute increment (L2 norm) | %10.3E  |\n", incnorm_L2);

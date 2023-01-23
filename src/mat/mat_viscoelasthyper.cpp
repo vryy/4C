@@ -16,7 +16,6 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 /*----------------------------------------------------------------------*/
 #include "mat_viscoelasthyper.H"
-#include "lib_standardtypes_cpp.H"
 #include "matelast_summand.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "lib_linedefinition.H"

@@ -22,9 +22,8 @@
 #include "lib_dofset_pbc.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "comm_utils.H"
-#include "lib_standardtypes_cpp.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -364,7 +363,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
                   // check for angle of rotation (has to be zero for master plane)
                   const double angle = mastercond->GetDouble("Angle of rotation");
-                  if (abs(angle) > EPS13) dserror("Angle is not zero for master plane: %f", angle);
+                  if (abs(angle) > 1e-13) dserror("Angle is not zero for master plane: %f", angle);
                 }
               }
               else if (*mymasterslavetoggle == "Slave")
@@ -398,13 +397,13 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
                   // check for angle of rotation of slave plane and store it
                   const double angle = slavecond->GetDouble("Angle of rotation");
-                  if (abs(angle) > EPS13)
+                  if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
                       dserror("Rotation of slave plane only implemented for xz and yz planes");
                     else
                     {
-                      rotangles[pbcid] = angle * PI / 180.0;  // convert from DEG to RAD!
+                      rotangles[pbcid] = angle * M_PI / 180.0;  // convert from DEG to RAD!
                       if (pbcid > 0)
                       {
                         if (rotangles[pbcid] != rotangles[pbcid - 1])
@@ -1585,8 +1584,8 @@ void PeriodicBoundaryConditions::BalanceLoad()
 
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
-      auto newnodegraph = DRT::UTILS::REBALANCING::RebalanceGraph(
-          *const_nodegraph, paramlist, node_weights, edge_weights);
+      auto newnodegraph =
+          REBALANCE::RebalanceGraph(*const_nodegraph, paramlist, node_weights, edge_weights);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

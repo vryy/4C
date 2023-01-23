@@ -27,7 +27,9 @@ namespace DRT
 
      private:
       typedef ScaTraEleCalc<distype, probdim> my;
-      typedef ScaTraEleInternalVariableManager<my::nsd_, my::nen_> varmanager;
+      using my::nen_;
+      using my::nsd_;
+      using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      public:
       virtual ~ScaTraEleCalcChemo() {}
@@ -40,8 +42,8 @@ namespace DRT
       //! calculation of chemotactic element matrix
       virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
-          const double scatrares, const LINALG::Matrix<my::nen_, 1>& sgconv,
-          const LINALG::Matrix<my::nen_, 1>& diff);
+          const double scatrares, const LINALG::Matrix<nen_, 1>& sgconv,
+          const LINALG::Matrix<nen_, 1>& diff);
 
       //! calculation of chemotactic RHS
       virtual void CalcRHSChemo(Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,

@@ -269,6 +269,12 @@ namespace DRT
      */
     namespace UTILS
     {
+      /*!
+       * @brief Implementation details of util functions
+       */
+      namespace DETAIL
+      {
+      }
     }  // namespace UTILS
 
     /*! \brief
@@ -335,13 +341,7 @@ namespace DRT
     {
     }  // namespace BEAM
 
-    /*! \brief Rebalancing, repartitioning, and redistribution
-     *
-     */
-    namespace REBALANCING
-    {
-    }  // namespace REBALANCING
-  }    // namespace UTILS
+  }  // namespace UTILS
 }  // namespace DRT
 
 /*! \brief Elasto-hydrodynamic lubrication (lubrication-structure interaction)
@@ -1826,6 +1826,13 @@ namespace STR
   namespace PREDICT
   {
   }  // namespace PREDICT
+
+  /*! \brief Methods related to partitioning and rebalancing
+   *
+   */
+  namespace REBALANCE
+  {
+  }  // namespace REBALANCE
 
   /*! \brief
    *

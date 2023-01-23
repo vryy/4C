@@ -20,7 +20,7 @@
 #include <iostream>
 #include "io_pstream.H"  // has to go before io.H
 #include "io.H"
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "mat_par_bundle.H"
 #include "mat_par_parameter.H"
@@ -253,8 +253,8 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   if (!conds.size()) dserror("There is no orthopressure nor FSI condition in this discretization");
 
   // measure time as there is a brute force search in here
-  Epetra_Time timer(dis->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   // start building the distance function
   std::set<int> allnodes;
@@ -395,7 +395,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   if (filled && !dis->Filled()) dis->FillComplete();
 
   if (!dis->Comm().MyPID())
-    IO::cout << "Normalized ILT thickness computed in " << timer.ElapsedTime() << " sec"
+    IO::cout << "Normalized ILT thickness computed in " << timer.totalElapsedTime(true) << " sec"
              << IO::endl;
 
 

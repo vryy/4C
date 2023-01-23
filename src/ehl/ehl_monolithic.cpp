@@ -98,7 +98,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       iternorm_(DRT::INPUT::IntegralValue<INPAR::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(structparams),
-      timernewton_(comm)
+      timernewton_("EHL_Monolithic_newton", true)
 {
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_) printerrfile_ = true;
@@ -401,7 +401,7 @@ void EHL::Monolithic::NewtonFull()
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // reset timer
-    timernewton_.ResetStartTime();
+    timernewton_.reset();
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
@@ -430,13 +430,13 @@ void EHL::Monolithic::NewtonFull()
       ApplyDBC();
     }
     // *********** time measurement ***********
-    double dtcpu = timernewton_.WallTime();
+    double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
     // *********** time measurement ***********
-    dtsolve_ = timernewton_.WallTime() - dtcpu;
+    dtsolve_ = timernewton_.wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // vector of displacement and pressure increments
@@ -1420,7 +1420,8 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << dtsolve_;
-  oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
+  oss << std::setw(12) << std::setprecision(2) << std::scientific
+      << timernewton_.totalElapsedTime(true);
 
   // finish oss
   oss << std::ends;

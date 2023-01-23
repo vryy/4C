@@ -951,7 +951,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
     double z = (*zcomp)[i];
     double norm = sqrt(x * x + y * y + z * z);
     // form the unit normal vector
-    if (norm > EPS15)
+    if (norm > 1e-15)
     {
       normal->ReplaceMyValue(i, 0, x / norm);
       normal->ReplaceMyValue(i, 1, y / norm);

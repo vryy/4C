@@ -23,7 +23,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <ml_common.h>
@@ -1248,11 +1248,11 @@ namespace STR
 
     //! @name Time measurement
     //@{
-    Teuchos::RCP<Epetra_Time> timer_;  //!< timer for solution technique
-    double dtsolve_;                   //!< linear solver time
-    double dtele_;                     //!< element evaluation time
-    double dtcmt_;                     //!< contact / meshtying evaluation time
-    double inttime_global_;            //!< global integration time for contact evaluation
+    Teuchos::RCP<Teuchos::Time> timer_;  //!< timer for solution technique
+    double dtsolve_;                     //!< linear solver time
+    double dtele_;                       //!< element evaluation time
+    double dtcmt_;                       //!< contact / meshtying evaluation time
+    double inttime_global_;              //!< global integration time for contact evaluation
     //@}
 
     //! @name Patient specific stuff

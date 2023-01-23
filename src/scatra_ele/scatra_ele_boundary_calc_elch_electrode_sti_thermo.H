@@ -28,6 +28,8 @@ namespace DRT
       using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
       using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       //! singleton access method
@@ -68,23 +70,23 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
-          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives,
+          LINALG::Matrix<nsd_ + 1, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
           double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
@@ -125,7 +127,7 @@ namespace DRT
       double GetFRT() const override;
 
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-      LINALG::Matrix<my::nen_, 1> etempnp_;
+      LINALG::Matrix<nen_, 1> etempnp_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
   }     // namespace ELEMENTS
 }  // namespace DRT

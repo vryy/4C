@@ -20,10 +20,8 @@
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_ele.H"
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 #include "lib_globalproblem.H"
 #include "lib_utils_createdis.H"
-#include <Epetra_Time.h>
 #include "lib_dofset_predefineddofnumber.H"
 
 

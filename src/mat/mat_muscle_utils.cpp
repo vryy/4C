@@ -11,7 +11,8 @@
 
 #include "mat_muscle_utils.H"
 #include "lib_dserror.H"
-#include "lib_standardtypes_cpp.H"
+
+#include <cmath>
 
 void MAT::UTILS::MUSCLE::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)

@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "lib_globalproblem.H"
 #include "io_control.H"
@@ -153,7 +153,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
     return;
   }
 
-  Epetra_Time timer(discret.Comm());
+  Teuchos::Time timer("", true);
 
   // get the processor ID from the communicator
   const int myrank = discret.Comm().MyPID();
@@ -495,7 +495,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   if (assemblevecd) auxdbcmapextractor->InsertCondVector(dbcvectord, systemvectors[1]);
   if (assemblevecdd) auxdbcmapextractor->InsertCondVector(dbcvectordd, systemvectors[2]);
 
-  if (myrank == 0) std::cout << timer.ElapsedTime() << " seconds \n\n";
+  if (myrank == 0) std::cout << timer.totalElapsedTime(true) << " seconds \n\n";
 
   return;
 }

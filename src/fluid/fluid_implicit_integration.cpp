@@ -2791,7 +2791,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 
           // Obtain angles phi and theta for spherical coordinate system representation
           double phi = atan2(currPos[1], currPos[0]);
-          if (phi < 0) phi = phi + 2 * PI;
+          if (phi < 0) phi = phi + 2 * M_PI;
           const double theta = acos(currPos[2] / lengthCurrPos);
 
           // Precalculate some sin and cos
@@ -4330,9 +4330,9 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
                         R_squared;
 
       // compute value of progress variable
-      if (xy[1] < loc12 - EPS10)
+      if (xy[1] < loc12 - 1e-10)
         pv = (1.0 - (1.0 / beta1)) * exp((xy[1] - trans1) / delta1);
-      else if (xy[1] > loc23 + EPS10)
+      else if (xy[1] > loc23 + 1e-10)
         pv = 1.0 - (exp((1.0 - beta3) * (xy[1] - trans3) / delta3) / beta3);
       else
         pv = fac2 * (xy[1] - trans2) + abs2;

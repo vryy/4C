@@ -11,7 +11,6 @@ computations
 #include "matelast_aniso_structuraltensor_strategy.H"
 
 #include "mat_par_material.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_linedefinition.H"
 
 #include "structure_new_elements_paramsinterface.H"
@@ -132,7 +131,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
     dserror("Fiber angle not in [-90,90]! Given angle = %d", params_->angle_);
   // convert
-  const double angle = (params_->gamma_ * PI) / 180.;
+  const double angle = (params_->gamma_ * M_PI) / 180.;
 
   LINALG::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)

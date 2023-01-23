@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_Vector.h>
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

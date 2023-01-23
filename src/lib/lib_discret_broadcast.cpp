@@ -10,13 +10,13 @@
 /*---------------------------------------------------------------------*/
 
 #include <Epetra_FECrsGraph.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_globalproblem_enums.H"
 #include "lib_exporter.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 
 #include "nurbs_discret.H"
 #include "comm_utils.H"
@@ -304,10 +304,8 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> roweles =
         Teuchos::rcp(new Epetra_Map(-1, (int)myrowelements.size(), &myrowelements[0], -1, *icomm));
     Teuchos::RCP<Epetra_Map> coleles;
-    Teuchos::RCP<Epetra_Map> rownodes;
-    Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        commondis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
+    const auto& [rownodes, colnodes] =
+        REBALANCE::RebalanceNodeMaps(commondis, roweles, lcomm->NumProc());
     commondis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     commondis->ExportRowNodes(*rownodes);
     commondis->ExportRowElements(*roweles);
@@ -448,10 +446,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(
         -1, targetrowele.NumMyElements(), targetrowele.MyGlobalElements(), -1, *lcomm));
     Teuchos::RCP<Epetra_Map> coleles;
-    Teuchos::RCP<Epetra_Map> rownodes;
-    Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        dis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
+    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(dis, roweles, lcomm->NumProc());
     dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     dis->ExportRowNodes(*rownodes);
     dis->ExportRowElements(*roweles);

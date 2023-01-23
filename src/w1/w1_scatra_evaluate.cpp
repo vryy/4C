@@ -104,10 +104,7 @@ int DRT::ELEMENTS::Wall1_Scatra::Evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    if (action == "none")
-      dserror("No action supplied");
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
+    if (action == "none") dserror("No action supplied");
   }
 
   // what should the element do

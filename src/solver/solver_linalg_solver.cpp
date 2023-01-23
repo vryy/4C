@@ -9,7 +9,7 @@
 
 #undef WRITEOUTSTATISTICS
 #ifdef WRITEOUTSTATISTICS
-#include "Teuchos_Time.hpp"
+#include <Teuchos_Time.hpp>
 #endif
 
 #include <Teuchos_ParameterList.hpp>

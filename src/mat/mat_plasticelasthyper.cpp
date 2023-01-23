@@ -17,7 +17,6 @@ rY_13 0.7
 /*----------------------------------------------------------------------*/
 
 #include "mat_plasticelasthyper.H"
-#include "lib_standardtypes_cpp.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "lib_globalproblem.H"
 #include "mat_par_bundle.H"

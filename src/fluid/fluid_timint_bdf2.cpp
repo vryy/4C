@@ -137,7 +137,7 @@ void FLD::TimIntBDF2::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vect
 
   */
 
-  if (dta_ * dtp_ < EPS15) dserror("Zero time step size!!!!!");
+  if (dta_ * dtp_ < 1e-15) dserror("Zero time step size!!!!!");
   const double sum = dta_ + dtp_;
 
   accnp->Update((2.0 * dta_ + dtp_) / (dta_ * sum), *velnp, -sum / (dta_ * dtp_), *veln, 0.0);

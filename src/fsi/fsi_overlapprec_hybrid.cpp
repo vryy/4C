@@ -66,7 +66,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
 /*----------------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 {
-  Epetra_Time timer(FullRowMap().Comm());
+  Teuchos::Time timer("FSI SetupPreconditioner", true);
 
   FILE outfile;  // ToDo (mayr) Specify output file
   Teuchos::ParameterList ifpacklist;
@@ -208,8 +208,8 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   comm.Barrier();
   if (comm.MyPID() == 0)
-    std::cout << "Copied matrix in " << timer.ElapsedTime() << " seconds." << std::endl;
-  timer.ResetStartTime();
+    std::cout << "Copied matrix in " << timer.totalElapsedTime(true) << " seconds." << std::endl;
+  timer.reset();
 
   /****************************************************************************/
 
@@ -225,15 +225,15 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   comm.Barrier();
   if (comm.MyPID() == 0)
-    std::cout << "Built ILU in " << timer.ElapsedTime() << " seconds" << std::endl;
-  timer.ResetStartTime();
+    std::cout << "Built ILU in " << timer.totalElapsedTime(true) << " seconds" << std::endl;
+  timer.reset();
 
   // setup 'multiplicative' part of hybrid preconditioner
   amgprec_->SetupPreconditioner();
 
   comm.Barrier();
-  if (comm.MyPID() == 0) printf("AMG prec in %f seconds.\n", timer.ElapsedTime());
-  timer.ResetStartTime();
+  if (comm.MyPID() == 0) printf("AMG prec in %f seconds.\n", timer.totalElapsedTime(true));
+  timer.reset();
 
   //  /*
   //   * Test if we build the right prec

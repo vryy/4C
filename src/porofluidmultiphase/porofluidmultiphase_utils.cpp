@@ -331,11 +331,9 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
     std::cout << "Starting with OctTree search for coupling ... " << std::endl;
-  Epetra_Time timersearch(contdis->Comm());
-  // reset timer
-  timersearch.ResetStartTime();
+  Teuchos::Time timersearch("OctTree_search", true);
   // *********** time measurement ***********
-  double dtcpu = timersearch.WallTime();
+  double dtcpu = timersearch.wallTime();
   // *********** time measurement ***********
 
   // nodal positions of artery-discretization (fully overlapping)
@@ -382,7 +380,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     // estimated total time of the search is then 20 times this time)
     if (iart == static_cast<int>(0.05 * artEleGIDs.size()))
     {
-      double mydtsearch = timersearch.WallTime() - dtcpu;
+      double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;
       contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
       if (contdis->Comm().MyPID() == 0)
@@ -391,7 +389,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   }
 
   // *********** time measurement ***********
-  double mydtsearch = timersearch.WallTime() - dtcpu;
+  double mydtsearch = timersearch.wallTime() - dtcpu;
   double maxdtsearch = 0.0;
   contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
   // *********** time measurement ***********

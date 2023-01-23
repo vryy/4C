@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 #include "Epetra_MpiComm.h"
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 #include "Teuchos_RCP.hpp"
 
 #ifndef INVANA_CAL_H

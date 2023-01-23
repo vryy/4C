@@ -24,7 +24,7 @@
 
 // required for utility function CloneDiscretization()
 #include "lib_globalproblem.H"
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 namespace DRT
 {
@@ -826,7 +826,7 @@ namespace DRT
     {
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis->Comm();
-      Epetra_Time time(comm);
+      Teuchos::Time time("", true);
 
       // create target discretization using a given clone strategy
       {
@@ -842,7 +842,7 @@ namespace DRT
       {
         IO::cout << "Created discretization " << targetdis->Name()
                  << " as a clone of discretization " << sourcedis->Name() << " in...."
-                 << time.ElapsedTime() << " secs\n\n";
+                 << time.totalElapsedTime(true) << " secs\n\n";
       }
       return;
     };  // CloneDiscretization
@@ -863,7 +863,7 @@ namespace DRT
 
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis_ptr->Comm();
-      Epetra_Time time(comm);
+      Teuchos::Time time("", true);
 
       // create target discretization using a given clone strategy
       {
@@ -882,7 +882,7 @@ namespace DRT
                  << " as a clone from the condition(s) with ID(s)=";
         for (unsigned int i = 0; i < conds.size(); ++i) IO::cout << " " << conds[i]->Id();
         IO::cout << " of the discretization " << sourcedis_ptr->Name() << " in...."
-                 << time.ElapsedTime() << " secs\n\n";
+                 << time.totalElapsedTime(true) << " secs\n\n";
       }
       return;
     };  // CloneDiscretizationFromCondition
@@ -897,7 +897,7 @@ namespace DRT
     {
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis.Comm();
-      Epetra_Time time(comm);
+      Teuchos::Time time("", true);
 
       // create target discretization using a given clone strategy
       {
@@ -915,7 +915,7 @@ namespace DRT
         IO::cout << "Created discretization " << targetdis.Name()
                  << " as a clone from the condition \"" << condname.c_str()
                  << "\" of the discretization " << sourcedis.Name() << " in...."
-                 << time.ElapsedTime() << " secs\n\n";
+                 << time.totalElapsedTime(true) << " secs\n\n";
       }
       return;
     };  // CloneDiscretizationFromCondition
@@ -929,4 +929,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef UTILS_CREATEDIS_H
+#endif  // #ifndef DRT_UTILS_CREATEDIS_H

@@ -75,8 +75,8 @@ void FS3I::BiofilmFSI::Init()
   Teuchos::RCP<DRT::Discretization> structaledis = problem->GetDis("structale");
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
 
-  // access the communicator for time measurement
-  Epetra_Time time(comm_);
+  // time measurement
+  Teuchos::Time time("biofilm_fsi_Init", true);
 
   if (structaledis->NumGlobalNodes() == 0)
   {
@@ -89,7 +89,7 @@ void FS3I::BiofilmFSI::Init()
   {
     std::cout << "Created discretization " << (structaledis->Name())
               << " as a clone of discretization " << (structdis->Name()) << " in...."
-              << time.ElapsedTime() << " secs\n\n";
+              << time.totalElapsedTime(true) << " secs\n\n";
   }
 
   // ask base algorithm for the ale time integrator

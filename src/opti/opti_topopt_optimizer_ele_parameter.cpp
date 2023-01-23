@@ -11,7 +11,6 @@
 
 #include "opti_topopt_optimizer_ele_parameter.H"
 #include "lib_dserror.H"
-#include "lib_standardtypes_cpp.H"
 
 
 
@@ -80,7 +79,7 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter(Teuchos::Parame
 
   // check whether there is zero or negative (physical) viscosity
   // (expect for permeable fluid)
-  if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
+  if (visc_ < 1e-15) dserror("zero or negative (physical) diffusivity");
 
   // set flag, time integration scheme
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");

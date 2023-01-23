@@ -34,6 +34,9 @@ namespace DRT
       typedef ScaTraEleCalc<distype, probdim> my;
       typedef ScaTraEleCalcAniso<distype, probdim> aniso;
       typedef ScaTraEleCalcAdvReac<distype, probdim> advreac;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       virtual ~ScaTraEleCalcCardiacMonodomain() {}

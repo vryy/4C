@@ -870,7 +870,7 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
     Teuchos::RCP<LINALG::SparseOperator> damp)
 {
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // action for elements
@@ -915,7 +915,7 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
   }
 
   // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
+  dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // that's it
@@ -1055,7 +1055,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(Teuchos::RCP<LINALG::Spars
   if (HaveContactMeshtying())
   {
     // *********** time measurement ***********
-    double dtcpu = timer_->WallTime();
+    double dtcpu = timer_->wallTime();
     // *********** time measurement ***********
 
     // contact / meshtying modifications need -fres
@@ -1089,7 +1089,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(Teuchos::RCP<LINALG::Spars
     fresm->Scale(-1.0);
 
     // *********** time measurement ***********
-    dtcmt_ = timer_->WallTime() - dtcpu;
+    dtcmt_ = timer_->wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // visualization of current Newton step
@@ -1110,7 +1110,7 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<LINALG::SparseOper
   if (HaveBeamContact())
   {
     // *********** time measurement ***********
-    double dtcpu = timer_->WallTime();
+    double dtcpu = timer_->wallTime();
     // *********** time measurement ***********
 
     // contact / meshtying modifications need -fres
@@ -1132,7 +1132,7 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<LINALG::SparseOper
     fresm->Scale(-1.0);
 
     // *********** time measurement ***********
-    dtcmt_ = timer_->WallTime() - dtcpu;
+    dtcmt_ = timer_->wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // visualization of current Newton step
@@ -1524,7 +1524,7 @@ int STR::TimIntImpl::NewtonFull()
   iter_ = 1;
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
-  timer_->ResetStartTime();
+  timer_->reset();
 
   int element_error = 0;
   int linsolve_error = 0;
@@ -1548,7 +1548,7 @@ int STR::TimIntImpl::NewtonFull()
         stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // *********** time measurement ***********
-    double dtcpu = timer_->WallTime();
+    double dtcpu = timer_->wallTime();
     // *********** time measurement ***********
 
     // solve for disi_
@@ -1585,7 +1585,7 @@ int STR::TimIntImpl::NewtonFull()
     if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
-    dtsolve_ = timer_->WallTime() - dtcpu;
+    dtsolve_ = timer_->wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // update end-point displacements etc
@@ -1896,7 +1896,7 @@ int STR::TimIntImpl::NewtonLS()
   iter_ = 1;
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
-  timer_->ResetStartTime();
+  timer_->reset();
 
   // Merit function at current stage and for ls step
   std::vector<double> merit_fct(2);
@@ -2126,7 +2126,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   ***                     Solver Call                         ***
   ***************************************************************/
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // solve for disi_
@@ -2155,7 +2155,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   RecoverSTCSolution();
 
   // *********** time measurement ***********
-  dtsolve_ = timer_->WallTime() - dtcpu;
+  dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // update end-point displacements etc
@@ -2509,7 +2509,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     normfres_ = CalcRefNormForce();
     // normdisi_ was already set in predictor; this is strictly >0
     normcon_ = conman_->GetErrorNorm();
-    timer_->ResetStartTime();
+    timer_->reset();
 
     // equilibrium iteration loop
     while (((not Converged() and (not linsolve_error) and (not element_error)) and
@@ -2534,7 +2534,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       lagrincr->PutScalar(0.0);
 
       // *********** time measurement ***********
-      double dtcpu = timer_->WallTime();
+      double dtcpu = timer_->wallTime();
       // *********** time measurement ***********
 
       // Use STC preconditioning on system matrix
@@ -2565,7 +2565,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       RecoverSTCSolution();
 
       // *********** time measurement ***********
-      dtsolve_ = timer_->WallTime() - dtcpu;
+      dtsolve_ = timer_->wallTime() - dtcpu;
       // *********** time measurement ***********
 
       // transform back to global co-ordinate system
@@ -2669,7 +2669,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // normdisi_ was already set in predictor; this is strictly >0
     normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
     normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
-    timer_->ResetStartTime();
+    timer_->reset();
 
     double nc;
     double ncstr;
@@ -2711,7 +2711,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
           stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
       // *********** time measurement ***********
-      double dtcpu = timer_->WallTime();
+      double dtcpu = timer_->wallTime();
       // *********** time measurement ***********
 
       // Use STC preconditioning on system matrix
@@ -2735,7 +2735,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
 
       // *********** time measurement ***********
-      dtsolve_ = timer_->WallTime() - dtcpu;
+      dtsolve_ = timer_->wallTime() - dtcpu;
       // *********** time measurement ***********
 
       // transform back to global co-ordinate system
@@ -3319,7 +3319,7 @@ int STR::TimIntImpl::PTC()
   iter_ = 1;
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
-  timer_->ResetStartTime();
+  timer_->reset();
 
   double ptcdt = ptcdt_;
   double nc;
@@ -3355,7 +3355,7 @@ int STR::TimIntImpl::PTC()
         stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // *********** time measurement ***********
-    double dtcpu = timer_->WallTime();
+    double dtcpu = timer_->wallTime();
     // *********** time measurement ***********
 
     // STC preconditioning
@@ -3390,7 +3390,7 @@ int STR::TimIntImpl::PTC()
     if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
-    dtsolve_ = timer_->WallTime() - dtcpu;
+    dtsolve_ = timer_->wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // update end-point displacements etc
@@ -4103,7 +4103,7 @@ void STR::TimIntImpl::PrintStepText(FILE* ofile)
   oss << " | dt " << std::setw(9) << std::setprecision(3) << std::scientific << (*dt_)[0];
   oss << " | numiter " << std::setw(1) << iter_;
   oss << " | wct " << std::setw(8) << std::setprecision(2) << std::scientific
-      << timer_->ElapsedTime();
+      << timer_->totalElapsedTime(true);
   oss << "\n--------------------------------------------------------------------------------\n";
 
   // print to ofile (could be done differently...)

@@ -385,7 +385,6 @@ namespace DRT
         calc_struct_nlnstiffmass,
         calc_struct_nlnstifflmass,
         calc_struct_stress,
-        postprocess_stress,
         calc_struct_eleload,
         calc_struct_fsiload,
         calc_struct_update_istep,

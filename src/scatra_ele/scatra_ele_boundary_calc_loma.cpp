@@ -159,16 +159,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::
 
   // calculate normal diffusive and velocity flux at each node of the
   // present boundary element
-  for (int i = 0; i < my::nen_; ++i)
+  for (int i = 0; i < nen_; ++i)
   {
     for (int j = 0; j < nenparent; ++j)
     {
       mynormdiffflux[i] = 0.0;
       mynormvel[i] = 0.0;
-      for (int l = 0; l < my::nsd_ + 1; l++)
+      for (int l = 0; l < nsd_ + 1; l++)
       {
         mynormdiffflux[i] += eflux(l, j) * my::normal_(l);
-        mynormvel[i] += myconvel[i * (my::nsd_ + 1) + l] * my::normal_(l);
+        mynormvel[i] += myconvel[i * (nsd_ + 1) + l] * my::normal_(l);
       }
     }
   }
@@ -205,8 +205,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(const DRT:
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material,
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp, const int k)
+    Teuchos::RCP<const MAT::Material> material, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
+    const int k)
 {
   // initialization
   double density(0.);
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegr
   double normvelint = params.get<double>("normal velocity integral");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -346,7 +346,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegr
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
     // compute integral of normal flux
-    for (int node = 0; node < my::nen_; ++node)
+    for (int node = 0; node < nen_; ++node)
     {
       normdifffluxint += my::funct_(node) * enormdiffflux[node] * fac;
       normvelint += my::funct_(node) * enormvel[node] * fac;

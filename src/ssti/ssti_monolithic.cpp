@@ -50,7 +50,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       dtevaluate_(0.0),
       dtnewton_(0.0),
       dtsolve_(0.0),
-      timer_(Teuchos::rcp(new Epetra_Time(comm))),
+      timer_(Teuchos::rcp(new Teuchos::Time("SSTI_Monolithic", true))),
       equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
           Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
@@ -73,7 +73,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
  *--------------------------------------------------------------------------*/
 void SSTI::SSTIMono::AssembleMatAndRHS()
 {
-  double starttime = timer_->WallTime();
+  double starttime = timer_->wallTime();
 
   ssti_matrices_->SystemMatrix()->Zero();
 
@@ -121,7 +121,7 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
   strategy_assemble_->AssembleRHS(
       residual_, ScaTraField()->Residual(), StructureField()->RHS(), ThermoField()->Residual());
 
-  double mydt = timer_->WallTime() - starttime;
+  double mydt = timer_->wallTime() - starttime;
   Comm().MaxAll(&mydt, &dtassemble_, 1);
 }
 
@@ -392,7 +392,7 @@ void SSTI::SSTIMono::SetupSystem()
  *--------------------------------------------------------------------------*/
 void SSTI::SSTIMono::NewtonLoop()
 {
-  double starttime = timer_->WallTime();
+  double starttime = timer_->wallTime();
 
   // initialize counter for Newton-Raphson iteration
   ResetIter();
@@ -417,7 +417,7 @@ void SSTI::SSTIMono::NewtonLoop()
     UpdateIterStates();
   }
 
-  double mydt = timer_->WallTime() - starttime;
+  double mydt = timer_->wallTime() - starttime;
   Comm().MaxAll(&mydt, &dtnewton_, 1);
 }
 
@@ -518,7 +518,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::EvaluateSubproblems()
 {
-  double starttime = timer_->WallTime();
+  double starttime = timer_->wallTime();
 
   // clear all matrices from previous Newton iteration
   ssti_matrices_->ClearMatrices();
@@ -561,7 +561,7 @@ void SSTI::SSTIMono::EvaluateSubproblems()
         ssti_matrices_->ScaTraThermoInterface());
   }
 
-  double mydt = timer_->WallTime() - starttime;
+  double mydt = timer_->wallTime() - starttime;
   Comm().MaxAll(&mydt, &dtevaluate_, 1);
 }
 
@@ -569,7 +569,7 @@ void SSTI::SSTIMono::EvaluateSubproblems()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::LinearSolve()
 {
-  double starttime = timer_->WallTime();
+  double starttime = timer_->wallTime();
 
   increment_->PutScalar(0.0);
 
@@ -584,7 +584,7 @@ void SSTI::SSTIMono::LinearSolve()
 
   strategy_equilibration_->UnequilibrateIncrement(increment_);
 
-  double mydt = timer_->WallTime() - starttime;
+  double mydt = timer_->wallTime() - starttime;
   Comm().MaxAll(&mydt, &dtsolve_, 1);
 }
 
@@ -609,7 +609,7 @@ void SSTI::SSTIMono::PrepareNewtonStep()
   IncrementIter();
 
   // reset timer
-  timer_->ResetStartTime();
+  timer_->reset();
 
   ssti_matrices_->SystemMatrix()->Zero();
 }

@@ -13,7 +13,7 @@
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <EpetraExt_RowMatrixOut.h>
 
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -491,8 +491,8 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
 
-  Epetra_Time timer(A_->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   // Create the hierarchy
   BuildHierarchy();
@@ -500,7 +500,7 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   // Create the V-cycle
   P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
-  double elaptime = timer.ElapsedTime();
+  double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
       A_->Comm().MyPID() == 0)
     std::cout << "       Calling LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes "
@@ -538,8 +538,8 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
 
-  Epetra_Time timer(A_->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   // Create the hierarchy
   BuildHierarchy();
@@ -647,7 +647,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
   V_->SetPosSmoothers(SvecPos);
 
 
-  double elaptime = timer.ElapsedTime();
+  double elaptime = timer.totalElapsedTime(true);
   if (A_->Comm().MyPID() == 0)
     std::cout << "       Calling LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;

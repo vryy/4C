@@ -17,7 +17,6 @@
 #include "io_control.H"
 #include "io_pstream.H"
 #include "scatra_ele_action.H"
-#include "lib_standardtypes_cpp.H"  // for EPS13 and so on
 #include "linalg_utils_sparse_algebra_create.H"
 #include "solver_linalg_solver.H"
 #include <list>

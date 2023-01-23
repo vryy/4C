@@ -15,7 +15,7 @@
 
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
-#include "compile_settings.h"
+#include "config_compile_settings.H"
 #include "inpar_validparameters.H"
 #include "inpar_validcontactconstitutivelaw.H"
 #include "inpar_validconditions.H"
@@ -27,8 +27,8 @@
 #include "lib_parobjectregister.H"
 #include "lib_utils_createdis.H"
 
-#include <revision.H>
-#include <trilinos_version.H>
+#include "config_revision.H"
+#include "config_trilinos_version.H"
 #include <unistd.h>
 
 #include <Kokkos_Core.hpp>

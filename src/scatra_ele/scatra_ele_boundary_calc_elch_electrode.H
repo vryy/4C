@@ -37,6 +37,10 @@ namespace DRT
       using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
+     protected:
+      using my::nen_;
+      using my::nsd_;
+
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(
@@ -80,19 +84,19 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
@@ -133,19 +137,19 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephidtnp,
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephidtnp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphidtnp,
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
@@ -191,11 +195,11 @@ namespace DRT
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <DRT::Element::DiscretizationType distype_master>
-      static void CalculateRHSandGlobalSystem(const LINALG::Matrix<my::nen_, 1>& funct_slave,
+      static void CalculateRHSandGlobalSystem(const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
@@ -233,8 +237,7 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystemCapacitiveFlux(
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,
-          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<nen_, 1>& funct_slave, const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,

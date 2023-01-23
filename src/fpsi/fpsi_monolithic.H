@@ -35,6 +35,9 @@
 // INPAR includes
 #include "inpar_fpsi.H"
 
+// Teuchos utils
+#include <Teuchos_Time.hpp>
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -403,7 +406,7 @@ namespace FPSI
     bool printerrfile_;  ///>print infos to error file #errfile_
     FILE* errfile_;      ///> error file handle
     //! timer for solution technique
-    Epetra_Time timer_;
+    Teuchos::Time timer_;
 
     bool isfirsttimestep_;
 

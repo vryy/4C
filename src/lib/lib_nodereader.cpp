@@ -18,7 +18,7 @@
 #include "fiber_node.H"
 #include "io_pstream.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <istream>
 #include <string>
 
@@ -125,7 +125,7 @@ namespace DRT
           ereader_[i]->Partition();
         }
 
-        Epetra_Time time(*comm_);
+        Teuchos::Time time("", true);
 
         if (!myrank && !reader_.MyOutputFlag())
           IO::cout << "Read, create and partition nodes\n" << IO::flush;
@@ -171,7 +171,7 @@ namespace DRT
         int filecount = 0;
         for (int block = 0; block < nblock; ++block)
         {
-          double t1 = time.ElapsedTime();
+          double t1 = time.totalElapsedTime(true);
           if (0 == myrank)
           {
             if (!reader_.MyOutputFlag()) printf("block %d ", block);
@@ -426,7 +426,7 @@ namespace DRT
             }  // for (filecount; file; ++filecount)
           }    // if (0==myrank)
 
-          double t2 = time.ElapsedTime();
+          double t2 = time.totalElapsedTime(true);
           if (!myrank && !reader_.MyOutputFlag()) printf("reading %10.5e secs", t2 - t1);
 
           // export block of nodes to other processors as reflected in rownodes,
@@ -437,7 +437,7 @@ namespace DRT
             // this does the same job but slower
             // ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
           }
-          double t3 = time.ElapsedTime();
+          double t3 = time.totalElapsedTime(true);
           if (!myrank && !reader_.MyOutputFlag())
           {
             printf(" / distrib %10.5e secs\n", t3 - t2);
@@ -453,8 +453,8 @@ namespace DRT
         }
 
         if (!myrank && !reader_.MyOutputFlag())
-          printf(
-              "in............................................. %10.5e secs\n", time.ElapsedTime());
+          printf("in............................................. %10.5e secs\n",
+              time.totalElapsedTime(true));
 
         for (unsigned i = 0; i < ereader_.size(); ++i)
         {

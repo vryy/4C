@@ -16,7 +16,7 @@
 #include "lib_utils.H"
 #include "lib_utils_parallel.H"
 #include "lib_condition_utils.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_dofset_fixed_size.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
@@ -465,8 +465,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      dis, elerowmap, noderowmap, nodecolmap, comm, false, comm->NumProc());
+  std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(dis, elerowmap, comm->NumProc());
 
   Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
   Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;

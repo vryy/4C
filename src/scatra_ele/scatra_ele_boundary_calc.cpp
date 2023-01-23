@@ -14,8 +14,7 @@
 
 #include "fem_general_utils_boundary_integration.H"
 
-#include "lib_globalproblem.H"      // for curves and functions
-#include "lib_standardtypes_cpp.H"  // for EPS12 and so on
+#include "lib_globalproblem.H"  // for curves and functions
 
 #include "mat_fourieriso.H"
 #include "mat_list.H"
@@ -952,7 +951,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
   // length of normal to this element
   const double length = normal.Norm2();
   // outward-pointing normal of length 1.0
-  if (length > EPS10)
+  if (length > 1e-10)
     normal.Scale(1 / length);
   else
     dserror("Zero length for element normal");

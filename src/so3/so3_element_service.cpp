@@ -33,10 +33,10 @@ void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_d
 
 template <class T>
 void DRT::ELEMENTS::AssembleAveragedElementValues(
-    Epetra_MultiVector& global_data, const T& gp_data, const DRT::ELEMENTS::So_base* ele)
+    Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele)
 {
   const Epetra_BlockMap& elemap = global_data.Map();
-  int lid = elemap.LID(ele->Id());
+  int lid = elemap.LID(ele.Id());
   if (lid != -1)
   {
     for (decltype(gp_data.N()) i = 0; i < gp_data.N(); ++i)
@@ -119,9 +119,11 @@ template void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(
     Epetra_MultiVector&, const LINALG::SerialDenseMatrix&, const DRT::ELEMENTS::So_base*, bool);
 
 template void DRT::ELEMENTS::AssembleAveragedElementValues(Epetra_MultiVector&,
-    const LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>&, const DRT::ELEMENTS::So_base*);
+    const LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>&, const DRT::Element&);
 template void DRT::ELEMENTS::AssembleAveragedElementValues(
-    Epetra_MultiVector&, const LINALG::SerialDenseMatrix&, const DRT::ELEMENTS::So_base*);
+    Epetra_MultiVector&, const LINALG::SerialDenseMatrix&, const DRT::Element&);
+template void DRT::ELEMENTS::AssembleAveragedElementValues(
+    Epetra_MultiVector&, const Epetra_SerialDenseMatrix&, const DRT::Element&);
 
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
     const LINALG::Matrix<3, 1>&, const std::vector<double>&);

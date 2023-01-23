@@ -21,6 +21,8 @@ namespace DRT
     class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       //! singleton access method
@@ -51,7 +53,7 @@ namespace DRT
 
       //! get density at integration point
       double GetDensity(Teuchos::RCP<const MAT::Material> material,
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp, const int k);
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp, const int k);
 
       //! integral of normal diffusive flux and velocity over boundary surface
       void NormDiffFluxAndVelIntegral(const DRT::Element* ele, Teuchos::ParameterList& params,

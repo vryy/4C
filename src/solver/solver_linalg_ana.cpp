@@ -6,7 +6,7 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#include "linalg_ana.H"
+#include "solver_linalg_ana.H"
 
 /*----------------------------------------------------------------------*
   implicit operator product Operator*Operator

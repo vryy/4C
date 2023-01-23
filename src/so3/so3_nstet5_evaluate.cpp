@@ -165,8 +165,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     act = NStet5::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
     act = NStet5::calc_struct_stress;
-  else if (action == "postprocess_stress")
-    act = NStet5::postprocess_stress;
   else if (action == "calc_struct_eleload")
     act = NStet5::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
@@ -313,54 +311,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
       }  // if (discretization.Comm().MyPID()==Owner())
-    }
-    break;
-
-    //==================================================================================
-    // postprocess stresses/strains at gauss points
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-
-      const int gid = Id();
-      LINALG::Matrix<1, 6> gpstress(((*gpstressmap)[gid])->A(), true);
-
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        for (int i = 0; i < NumNode(); ++i)
-        {
-          const int gid = Nodes()[i]->Id();
-          if (poststress->Map().MyGID(gid))
-          {
-            const int lid = poststress->Map().LID(gid);
-            const int numadjele = Nodes()[i]->NumElement();
-            for (int j = 0; j < 6; ++j) (*((*poststress)(j)))[lid] += gpstress(0, j) / numadjele;
-          }
-        }
-      }
-      else if (stresstype == "cxyz")
-      {
-        const Epetra_BlockMap elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < 6; ++i) (*((*poststress)(i)))[lid] = gpstress(0, i);
-        }
-      }
-      else
-        dserror("unknown type of stress/strain output on element level");
     }
     break;
 

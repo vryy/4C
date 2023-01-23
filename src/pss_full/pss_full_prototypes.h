@@ -10,6 +10,8 @@
 #ifndef PSS_PROTOTYPES_H
 #define PSS_PROTOTYPES_H
 
+#include "stdio.h"
+
 
 /*----------------------------------------------------------------------*
  |  pss_full_am.c                                             m.gee 11/01    |

@@ -65,7 +65,7 @@ void FLD::TimIntLoma::Init()
   }
 
   // potential check here -> currently not executed
-  // if (gasconstant_ < EPS15) dserror("received zero or negative gas constant");
+  // if (gasconstant_ < 1e-15) dserror("received zero or negative gas constant");
 
   // set some Loma-specific parameters
   SetElementCustomParameter();

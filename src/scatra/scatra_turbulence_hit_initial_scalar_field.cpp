@@ -23,7 +23,6 @@ transport
 #include "lib_exporter.H"
 #include "lib_globalproblem.H"
 #include "lib_utils.H"
-#include "lib_standardtypes_cpp.H"
 
 namespace SCATRA
 {
@@ -282,7 +281,7 @@ namespace SCATRA
 
               // remark on the literature:
               // Collis 2002: sqrt(energy/(2*PI*k))
-              const double fac = sqrt(energy / (2 * PI * k * k));
+              const double fac = sqrt(energy / (2 * M_PI * k * k));
               // Rogallo 1981: sqrt(energy/(4*PI*k*k))
               // the missing factor 1/2 of Collis version compared to Rogallo version
               // is related to the definition of E from phi
@@ -290,7 +289,7 @@ namespace SCATRA
 
               // real part, imaginary part
               std::complex<double> alpha(
-                  fac * cos(2 * PI * random_theta), fac * sin(2 * PI * random_theta));
+                  fac * cos(2 * M_PI * random_theta), fac * sin(2 * M_PI * random_theta));
               (*phi_hat)[pos] = alpha;
             }
             else

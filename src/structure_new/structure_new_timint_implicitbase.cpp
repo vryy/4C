@@ -21,7 +21,7 @@
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Abstract_Group.H>
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ void STR::TIMINT::ImplicitBase::PrintStep()
   const double& timen = DataGlobalState().GetTimeN();
   const double& dt = (*DataGlobalState().GetDeltaTime())[0];
   const int newtoniter = DataGlobalState().GetNlnIterationNumber(stepn);
-  double wct = DataGlobalState().GetTimer()->ElapsedTime();
+  double wct = DataGlobalState().GetTimer()->totalElapsedTime(true);
 
   // open outstd::stringstream
   std::ostringstream oss;

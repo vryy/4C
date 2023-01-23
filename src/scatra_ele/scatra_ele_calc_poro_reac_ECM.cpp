@@ -142,15 +142,15 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
     Teuchos::RCP<MAT::StructPoroReactionECM>& structmat, const int gp)
 {
   // gauss point displacements
-  LINALG::Matrix<my::nsd_, 1> dispint(false);
+  LINALG::Matrix<nsd_, 1> dispint(false);
   dispint.Multiply(my::edispnp_, my::funct_);
 
   // transposed jacobian "dX/ds"
-  LINALG::Matrix<my::nsd_, my::nsd_> xjm0;
+  LINALG::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(my::deriv_, poro::xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  LINALG::Matrix<my::nsd_, my::nsd_> xji0(true);
+  LINALG::Matrix<nsd_, nsd_> xji0(true);
   xji0.Invert(xjm0);
 
   // inverse of transposed jacobian "ds/dX"
@@ -164,12 +164,12 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
   /// first derivatives of shape functions w.r.t. material coordinates
-  LINALG::Matrix<my::nsd_, my::nen_> N_XYZ;
+  LINALG::Matrix<nsd_, nen_> N_XYZ;
   N_XYZ.Multiply(xji0, my::deriv_);
 
   // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
   // N_XYZ_^T
-  static LINALG::Matrix<my::nsd_, my::nsd_> defgrd(false);
+  static LINALG::Matrix<nsd_, nsd_> defgrd(false);
   defgrd.MultiplyNT(my::xyze_, N_XYZ);
 
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -178,11 +178,11 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
   // if (kinemtype_ == INPAR::STR::kinem_nonlinearTotLag)
   {
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<my::nsd_, my::nsd_> cauchygreen;
+    LINALG::Matrix<nsd_, nsd_> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    if (my::nsd_ == 3)
+    if (nsd_ == 3)
     {
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -191,7 +191,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
       glstrain(4) = cauchygreen(1, 2);
       glstrain(5) = cauchygreen(2, 0);
     }
-    else if (my::nsd_ == 2)
+    else if (nsd_ == 2)
     {
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);

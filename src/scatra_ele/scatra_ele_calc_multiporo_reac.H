@@ -53,6 +53,8 @@ namespace DRT
       typedef ScaTraEleCalcPoroReac<distype> pororeac;
       typedef ScaTraEleCalcPoro<distype> poro;
       typedef ScaTraEleCalcAdvReac<distype> advreac;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       virtual ~ScaTraEleCalcMultiPoroReac() {}
@@ -145,10 +147,10 @@ namespace DRT
       virtual double ComputePorePressure();
 
       //! get internal variable manager for multiporo formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> VarManager()
       {
-        return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerMultiPoro<my::nsd_, my::nen_>>(my::scatravarmanager_);
+        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(
+            my::scatravarmanager_);
       };
 
       //! calculation of convective element matrix in convective form
@@ -158,14 +160,14 @@ namespace DRT
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const LINALG::Matrix<my::nen_, 1>& sgconv  //!< subgrid-scale convective operator
+          const LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
       );
 
       //! adaption of convective term for rhs
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
       virtual void RecomputeConvPhiForRhs(const int k,  //!< index of current scalar
-          const LINALG::Matrix<my::nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const LINALG::Matrix<nsd_, 1>& sgvelint,      //!< subgrid-scale velocity at Gauss point
           const double densnp,                          //!< density at time_(n+1)
           const double densn,                           //!< density at time_(n)
           const double vdiv                             //!< velocity divergence
@@ -194,8 +196,8 @@ namespace DRT
       //! gradient have to be included
       virtual void CalcConvODMesh(Epetra_SerialDenseMatrix& emat, const int k,
           const int ndofpernodemesh, const double fac, const double rhsfac, const double densnp,
-          const double J, const LINALG::Matrix<my::nsd_, 1>& gradphi,
-          const LINALG::Matrix<my::nsd_, 1>& convelint);
+          const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
+          const LINALG::Matrix<nsd_, 1>& convelint);
 
       //! calculation of linearized mass (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity is included
@@ -210,7 +212,7 @@ namespace DRT
           const double phinp,   //!< scalar at time_(n+1)
           const double hist,    //!< history of time integartion
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+          const LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -224,7 +226,7 @@ namespace DRT
           const double fac,                //!< domain-integration factor
           const double rhsint,             //!< rhs at Gauss point
           const double J,                  //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+          const LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh,        //!< derivative of det(dx/ds) w.r.t. mesh displacement
           const double densnp  //!< density
       );
@@ -238,9 +240,9 @@ namespace DRT
           const double fac,           //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const LINALG::Matrix<my::nsd_, 1>& convelint,  //!< convective velocity
-          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -253,7 +255,7 @@ namespace DRT
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+          const LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -265,7 +267,7 @@ namespace DRT
                                        //!< variable
           const double timefacfac,     //!< domain-integration factor times time-integration factor
           const double densnp,         //!< density at time_(n+1)
-          const LINALG::Matrix<my::nsd_, 1>& gradphi  //!< scalar gradient
+          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
       );
 
       //! calculation of convective element matrix in convective form -- additional conservative
@@ -327,7 +329,7 @@ namespace DRT
           const int k,                     //!< index of current scalar
           const int ndofpernodemesh,       //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<my::nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       //! fill coupling vector and add variables to reaction in order to compute reaction values and
@@ -348,20 +350,20 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double taufac,                        //!< domain-integration factor times tau
-          const double densnp,                        //!< density at time_(n+1)
-          const LINALG::Matrix<my::nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<my::nen_, 1>& diff     //!< laplace term
+          const double taufac,                    //!< domain-integration factor times tau
+          const double densnp,                    //!< density at time_(n+1)
+          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       //! "shapederivatives" pressure gradient
       virtual void ApplyShapeDerivsPressureGrad(Epetra_SerialDenseMatrix& emat, const int k,
-          const double vrhs, const LINALG::Matrix<my::nsd_, 1>& gradphi,
-          const LINALG::Matrix<my::nsd_, 1> refgradpres);
+          const double vrhs, const LINALG::Matrix<nsd_, 1>& gradphi,
+          const LINALG::Matrix<nsd_, 1> refgradpres);
 
      protected:
       //! nodal flux values at t_(n+1)
-      std::vector<LINALG::Matrix<my::nsd_, my::nen_>> efluxnp_;
+      std::vector<LINALG::Matrix<nsd_, nen_>> efluxnp_;
 
       //! a vector containing all quantities, the equation is coupled with
       //! (i.e. pressures, saturations and porosity)

@@ -20,6 +20,8 @@ namespace DRT
     class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       /// Singleton access method

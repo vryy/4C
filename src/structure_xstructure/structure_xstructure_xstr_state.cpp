@@ -348,7 +348,7 @@ bool XSTR::XStructureState::Destroy()
     }
   }
 
-  // destroy Epetra_timer
+  // destroy Teuchos_timer
   XFEM::DestroyRCPObject(GetMutableTimer(), true);
 
   XFEM::DestroyRCPObject(GetMutableMultiDis(), true);

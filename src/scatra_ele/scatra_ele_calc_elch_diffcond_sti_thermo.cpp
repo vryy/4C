@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
                               //!< time integration factor
     const double rhstaufac,  //!< domain integration factor times stabilization parameter times time
                              //!< integration factor for right-hand side vector
-    LINALG::Matrix<my::nen_, 1>&
+    LINALG::Matrix<nen_, 1>&
         tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
     double& rhsint  //!< body force value
 )
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
   {
     // extract variables and parameters
     const double& concentration = VarManager()->Phinp(0);
-    const LINALG::Matrix<my::nsd_, 1>& gradtemp = VarManager()->GradTemp();
+    const LINALG::Matrix<nsd_, 1>& gradtemp = VarManager()->GradTemp();
     const double& kappa = mydiffcond::DiffManager()->GetCond();
     const double& kappaderiv = mydiffcond::DiffManager()->GetConcDerivCond(0);
     const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 
     // matrix and vector contributions arising from additional, thermodynamic term in expression for
     // current density
-    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       // recurring indices
       const int rowconc(vi * 2);
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
       double laplawfrhs_temp(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_temp, gradtemp, vi);
 
-      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         // recurring index
         const int colconc(ui * 2);
@@ -217,8 +217,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -242,7 +241,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     {
       // extract variables and parameters
       const double& concentration = VarManager()->Phinp(0);
-      const LINALG::Matrix<my::nsd_, 1>& gradconc = VarManager()->GradPhi(0);
+      const LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradPhi(0);
       const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
       const double& invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
       const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
@@ -252,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 
       // matrix contributions arising from additional, thermodynamic term in expression for current
       // density
-      for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+      for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
       {
         // recurring indices
         const int rowconc(vi * 2);
@@ -262,7 +261,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
         double laplawfrhs_conc = 0.0;
         my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
 
-        for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+        for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
         {
           // gradient of test function times gradient of shape function
           double laplawf(0.);
@@ -332,7 +331,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
   // replace internal variable manager for isothermal diffusion-conduction formulation by internal
   // variable manager for thermodynamic diffusion-conduction formulation
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_, my::nen_>(
+      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>(
           my::numscal_, myelch::elchparams_, mydiffcond::diffcondparams_));
 }
 

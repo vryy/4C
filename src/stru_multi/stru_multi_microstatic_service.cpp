@@ -272,7 +272,7 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
 /*----------------------------------------------------------------------*
  |  print to screen and/or error file                           lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
+void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
 {
   bool relres = (normtypefres_ == INPAR::STR::convnorm_rel);
 
@@ -315,7 +315,7 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
   }
   else
   {
-    double timepernlnsolve = timer.ElapsedTime();
+    double timepernlnsolve = timer.totalElapsedTime(true);
 
     if (relres)
     {

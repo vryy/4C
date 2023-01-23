@@ -17,7 +17,6 @@
 #include "lib_globalproblem.H"
 #include "lib_exporter.H"
 #include "lib_dserror.H"
-#include "lib_standardtypes_cpp.H"
 #include "lib_utils.H"
 #include "mat_beam_elasthyper.H"
 #include "linalg_utils_sparse_algebra_math.H"
@@ -78,8 +77,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstifflmass;  // with lumped mass matrix
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "calc_struct_eleload")
       act = ELEMENTS::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
@@ -514,11 +511,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     // write stress and strain output
     case ELEMENTS::struct_calc_stress:
-    {
-      break;
-    }
-    // post process stress and strain
-    case ELEMENTS::struct_postprocess_stress:
     {
       break;
     }

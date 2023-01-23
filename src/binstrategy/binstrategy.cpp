@@ -18,7 +18,7 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_utils_parallel.H"
-#include "rebalance_utils.H"
+#include "rebalance.H"
 #include "lib_dofset_independent.H"
 #include "comm_utils.H"
 
@@ -805,8 +805,8 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
   sublist.set("RCB_OUTPUT_LEVEL", "0");
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
-  std::tie(bincenters, binweights) = DRT::UTILS::REBALANCING::RebalanceCoordinates(
-      *bincenters.getConst(), *binweights.getConst(), params);
+  std::tie(bincenters, binweights) =
+      REBALANCE::RebalanceCoordinates(*bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
@@ -1390,7 +1390,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
     sublist.set("LB_APPROACH", "PARTITION");
 
   Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph =
-      DRT::UTILS::REBALANCING::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
+      REBALANCE::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
