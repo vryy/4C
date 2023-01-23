@@ -342,7 +342,6 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     Teuchos::RCP<Epetra_Map> bndcolnodes;
 
     Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp(new Epetra_Map(*bnd_discret_->ElementRowMap()));
-    Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
     DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(

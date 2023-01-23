@@ -8,8 +8,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Epetra_Time.h>
-
 #include "fsi_constr_overlapprec.H"
 #include "fsi_debugwriter.H"
 #include "lib_globalproblem.H"

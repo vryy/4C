@@ -10,7 +10,6 @@
 /*----------------------------------------------------------------------*/
 #include "sti_monolithic.H"
 #include "sti_monolithic_evaluate_OffDiag.H"
-#include <Epetra_Time.h>
 
 #include "adapter_coupling.H"
 #include "linalg_matrixtransform.H"
@@ -1481,14 +1480,14 @@ void STI::Monolithic::Solve()
     ++iter_;
 
     // store time before evaluating elements and assembling global system of equations
-    double time = timer_->WallTime();
+    double time = timer_->wallTime();
 
     // assemble global system of equations
     AssembleMatAndRHS();
 
     // determine time needed for evaluating elements and assembling global system of equations,
     // and take maximum over all processors via communication
-    double mydtele = timer_->WallTime() - time;
+    double mydtele = timer_->wallTime() - time;
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
@@ -1505,7 +1504,7 @@ void STI::Monolithic::Solve()
     increment_->PutScalar(0.);
 
     // store time before solving global system of equations
-    time = timer_->WallTime();
+    time = timer_->wallTime();
 
     // equilibrate global system of equations if necessary
     equilibration_->EquilibrateSystem(systemmatrix_, residual_, blockmaps_);
@@ -1518,7 +1517,7 @@ void STI::Monolithic::Solve()
 
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
-    double mydtsolve = timer_->WallTime() - time;
+    double mydtsolve = timer_->wallTime() - time;
     Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if applicable

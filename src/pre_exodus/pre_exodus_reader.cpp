@@ -14,7 +14,7 @@ is handed to a c++ object mesh.
 
 #include "pre_exodus_reader.H"
 #include "Epetra_SerialComm.h"
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 #include "Teuchos_TimeMonitor.hpp"
 #include "fem_general_utils_local_connectivity_matrices.H"
 #include "pre_exodus_soshextrusion.H"  //for gmsh plot
@@ -511,7 +511,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   fflush(stdout);
 
   Epetra_SerialComm Comm;
-  Epetra_Time time(Comm);
+  Teuchos::Time time("", true);
   Teuchos::RCP<Teuchos::Time> timetot;
   timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   Teuchos::RCP<Teuchos::Time> time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
@@ -666,7 +666,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
   fflush(stdout);
 
   Epetra_SerialComm Comm;
-  Epetra_Time time(Comm);
+  Teuchos::Time time("", true);
   Teuchos::RCP<Teuchos::Time> timetot;
   timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   Teuchos::RCP<Teuchos::Time> time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");

@@ -18,7 +18,7 @@
 #include "lib_utils_factory.H"
 #include "lib_utils_parallel.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 
 namespace DRT
@@ -75,7 +75,7 @@ namespace DRT
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       // - read global ids of elements of this discretization
       //   (this is one fully redundant vector for elements)
@@ -173,7 +173,7 @@ namespace DRT
             Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, *comm_));
         if (comm_->MyPID() == 0 && reader_.MyOutputFlag() == 0)
         {
-          std::cout << time.ElapsedTime() << " secs\n";
+          std::cout << time.totalElapsedTime(true) << " secs\n";
           fflush(stdout);
         }
         return;
@@ -243,12 +243,12 @@ namespace DRT
         printf("numele %d nblock %d bsize %d\n", numele, nblock, bsize);
         fflush(stdout);
       }
-      Epetra_Time timer(*comm_);
+      Teuchos::Time timer("", true);
 
       // note that the last block is special....
       for (int block = 0; block < nblock; ++block)
       {
-        double t1 = timer.ElapsedTime();
+        double t1 = timer.totalElapsedTime(true);
         std::vector<int> gidlist;
         if (!endofsection && 0 == myrank)
         {
@@ -337,7 +337,7 @@ namespace DRT
           }  // for (;getline(file, line); ++filecount)
         }    // if (0==myrank)
 
-        double t2 = timer.ElapsedTime();
+        double t2 = timer.totalElapsedTime(true);
         if (!myrank) printf("ele block %d reading %10.5e secs / ", block, t2 - t1);
 
         // export junk of elements to other processors as reflected in the linear
@@ -345,7 +345,7 @@ namespace DRT
         dis_->ProcZeroDistributeElementsToAll(*roweles_, gidlist);
         // this also works but is slower
         // dis_->ExportRowElements(*roweles_);
-        double t3 = timer.ElapsedTime();
+        double t3 = timer.totalElapsedTime(true);
         if (!myrank)
         {
           printf("distrib time %10.5e secs\n", t3 - t2);
@@ -395,8 +395,9 @@ namespace DRT
 
       if (!myrank && reader_.MyOutputFlag() == 0)
       {
-        printf("............................................... %10.5e secs\n", time.ElapsedTime());
-        // cout << time.ElapsedTime() << " secs\n";
+        printf("............................................... %10.5e secs\n",
+            time.totalElapsedTime(true));
+        // cout << time.totalElapsedTime(true) << " secs\n";
         fflush(stdout);
       }
 
@@ -410,7 +411,7 @@ namespace DRT
     {
       const int myrank = comm_->MyPID();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       if (!myrank && !reader_.MyOutputFlag())
       {
@@ -424,7 +425,7 @@ namespace DRT
 
       if (!myrank && !reader_.MyOutputFlag())
       {
-        std::cout << time.ElapsedTime() << " secs" << std::endl;
+        std::cout << time.totalElapsedTime(true) << " secs" << std::endl;
       }
 
       DRT::UTILS::PrintParallelDistribution(*dis_);

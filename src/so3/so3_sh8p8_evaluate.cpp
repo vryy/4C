@@ -22,7 +22,7 @@
 #include "linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "io_gmsh.H"
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 #include "Teuchos_TimeMonitor.hpp"
 #include "mat_service.H"
 #include "mat_stvenantkirchhoff.H"

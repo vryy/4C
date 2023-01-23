@@ -17,7 +17,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "inpar_structure.H"
 #include "linalg_fixedsizematrix.H"
@@ -216,7 +216,7 @@ namespace STRUMULTI
 
     Note that this is currently disabled for the sake of clearness
     */
-    void PrintNewton(bool print_unconv, Epetra_Time timer);
+    void PrintNewton(bool print_unconv, Teuchos::Time timer);
 
     /*!
     \brief Output of predictor details

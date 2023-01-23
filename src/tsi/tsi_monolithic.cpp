@@ -97,7 +97,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(sdynparams),
-      timernewton_(comm),
+      timernewton_("", true),
       dtsolve_(0.),
       ptcdt_(tsidynmono_.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_),
@@ -521,16 +521,16 @@ void TSI::Monolithic::NewtonFull()
     ls_step_length_ = 1.;
 
     // reset timer
-    timernewton_.ResetStartTime();
+    timernewton_.reset();
 
     // *********** time measurement ***********
-    double dtcpu = timernewton_.WallTime();
+    double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
     // *********** time measurement ***********
-    dtsolve_ = timernewton_.WallTime() - dtcpu;
+    dtsolve_ = timernewton_.wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // recover LM in the case of contact
@@ -565,14 +565,14 @@ void TSI::Monolithic::NewtonFull()
     if (contact_strategy_lagrange_ != Teuchos::null)
     {
       // *********** time measurement ***********
-      double dtcpu = timernewton_.WallTime();
+      double dtcpu = timernewton_.wallTime();
       // *********** time measurement ***********
 
       contact_strategy_lagrange_->Evaluate(
           SystemMatrix(), rhs_, coupST_, StructureField()->Dispnp(), ThermoField()->Tempnp());
 
       // *********** time measurement ***********
-      dtcmt_ = timernewton_.WallTime() - dtcpu;
+      dtcmt_ = timernewton_.wallTime() - dtcpu;
       // *********** time measurement ***********
     }
     ApplyDBC();
@@ -777,7 +777,7 @@ void TSI::Monolithic::PTC()
     ++iter_;
 
     // reset timer
-    timernewton_.ResetStartTime();
+    timernewton_.reset();
 
     // ---------- modify diagonal blocks of systemmatrix according to PTC
 
@@ -807,13 +807,13 @@ void TSI::Monolithic::PTC()
     }
 
     // *********** time measurement ***********
-    double dtcpu = timernewton_.WallTime();
+    double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
     // *********** time measurement ***********
-    dtsolve_ = timernewton_.WallTime() - dtcpu;
+    dtsolve_ = timernewton_.wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // reset solver tolerance
@@ -976,7 +976,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   /// structural field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  Epetra_Time timerstructure(Comm());
+  Teuchos::Time timerstructure("", true);
 
 #ifndef MonTSIwithoutTHR
   // apply current temperature to structure
@@ -1012,7 +1012,8 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  std::cout << "  structure time for calling Evaluate: " << timerstructure.totalElapsedTime(true)
+            << "\n";
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1024,7 +1025,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
   // thermo Evaluate
   // (builds tangent, residual and applies DBC and recent coupling values)
-  Epetra_Time timerthermo(Comm());
+  Teuchos::Time timerthermo("", true);
 
   // apply current displacements and velocities to the thermo field
   if (strmethodname_ == INPAR::STR::dyna_statics)
@@ -1053,7 +1054,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   ThermoField()->Discretization()->ClearState(true);
 #ifdef TSI_DEBUG
 #ifndef TFSI
-  std::cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+  std::cout << "  thermo time for calling Evaluate: " << timerthermo.totalElapsedTime(true) << "\n";
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
@@ -1860,7 +1861,8 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << dtsolve_;
-  oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
+  oss << std::setw(12) << std::setprecision(2) << std::scientific
+      << timernewton_.totalElapsedTime(true);
 
   // add contact information
   if (contact_strategy_lagrange_ != Teuchos::null)

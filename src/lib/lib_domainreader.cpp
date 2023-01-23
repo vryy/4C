@@ -20,7 +20,7 @@
 #include "lib_parobject.H"
 #include "io_pstream.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <algorithm>
 
 namespace DRT
@@ -49,7 +49,7 @@ namespace DRT
     {
       const int myrank = comm_->MyPID();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       if (!reader_.MyOutputFlag() && myrank == 0)
         IO::cout << "Entering domain generation mode for " << name_
@@ -63,8 +63,8 @@ namespace DRT
 
       if (!myrank && reader_.MyOutputFlag() == 0)
         IO::cout << "............................................... " << std::setw(10)
-                 << std::setprecision(5) << std::scientific << time.ElapsedTime() << " secs"
-                 << IO::endl;
+                 << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
+                 << " secs" << IO::endl;
 
       return;
     }
@@ -215,7 +215,7 @@ namespace DRT
     {
       const int myrank = comm_->MyPID();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       if (!myrank && !reader_.MyOutputFlag())
         IO::cout << "Complete discretization " << std::left << std::setw(16) << name_ << " in...."
@@ -224,7 +224,8 @@ namespace DRT
       int err = dis_->FillComplete(false, false, false);
       if (err) dserror("dis_->FillComplete() returned %d", err);
 
-      if (!myrank && !reader_.MyOutputFlag()) IO::cout << time.ElapsedTime() << " secs" << IO::endl;
+      if (!myrank && !reader_.MyOutputFlag())
+        IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;
 
       DRT::UTILS::PrintParallelDistribution(*dis_);
     }

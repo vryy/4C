@@ -25,7 +25,6 @@
 #include "lib_colors.H"
 
 #include <string>
-#include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*/

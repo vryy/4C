@@ -86,7 +86,7 @@ void THR::TimIntExpl::PrintStepText(FILE* ofile)
       " | numiter %3d\n",
       //     " | wct %-14.8E\n",
       step_, stepmax_, (*time_)[0], (*dt_)[0], 0
-      //       timer_->ElapsedTime()
+      //       timer_->totalElapsedTime(true)
   );
 
   // print a beautiful line made exactly of 80 dashes

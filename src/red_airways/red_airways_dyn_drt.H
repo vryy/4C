@@ -14,7 +14,7 @@
 #ifndef RED_AIRWAYS_H
 #define RED_AIRWAYS_H
 
-#include "Epetra_Time.h"
+#include <Teuchos_Time.hpp>
 #include "Teuchos_RCP.hpp"
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"

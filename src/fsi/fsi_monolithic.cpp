@@ -661,7 +661,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   if (Comm().MyPID() == 0)
   {
     (*log_) << std::right << std::setw(9) << Step() << std::right << std::setw(16) << Time()
-            << std::right << std::setw(16) << timer.totalElapsedTime() << std::right
+            << std::right << std::setw(16) << timer.totalElapsedTime(true) << std::right
             << std::setw(16) << nlParams.sublist("Output").get<int>("Nonlinear Iterations")
             << std::right << std::setw(16)
             << nlParams.sublist("Output").get<double>("2-Norm of Residual") << std::right
@@ -847,17 +847,17 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\nEvaluate elements\n";
 
   {
-    Epetra_Time ts(Comm());
+    Teuchos::Time ts("structure", true);
     StructureField()->Evaluate(sx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "structure: " << ts.ElapsedTime() << " sec\n";
+      Utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
-    Epetra_Time ta(Comm());
+    Teuchos::Time ta("ale", true);
     AleField()->Evaluate(ax);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
+      Utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -865,10 +865,10 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
-    Epetra_Time tf(Comm());
+    Teuchos::Time tf("fluid", true);
     FluidField()->Evaluate(fx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
+      Utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
   if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\n";

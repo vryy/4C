@@ -17,7 +17,7 @@
 #include <Epetra_Map.h>
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace DRT

@@ -942,8 +942,8 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(
 void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition)
 {
-  auto timer = Teuchos::rcp(new Epetra_Time(comm_));
-  const double t0 = timer->WallTime();
+  auto timer = Teuchos::rcp(new Teuchos::Time("MeshtypingHandlers", true));
+  const double t0 = timer->wallTime();
 
   if (do_print_)
   {
@@ -1047,7 +1047,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
         coupling_adapter, coupling_map_extractor, slave_slave_transformation)));
   }
 
-  const double total_time = timer->WallTime() - t0;
+  const double total_time = timer->wallTime() - t0;
   if (do_print_)
   {
     std::cout << "|--------------------------------|" << std::endl;

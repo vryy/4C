@@ -22,7 +22,7 @@
 
 #include "lib_utils_reader.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <sstream>
 #include <utility>
 
@@ -481,7 +481,7 @@ namespace DRT
       // io to shell
       const int myrank = comm_->MyPID();
 
-      Epetra_Time time(*comm_);
+      Teuchos::Time time("", true);
 
       // only the knotvector section of this discretisation
       // type is of interest
@@ -864,9 +864,9 @@ namespace DRT
       {
         if (!MyOutputFlag())
         {
-          IO::cout << " in...." << time.ElapsedTime() << " secs\n";
+          IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
-          time.ResetStartTime();
+          time.reset();
           fflush(stdout);
         }
       }

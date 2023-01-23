@@ -18,7 +18,6 @@
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_ele.H"
 
-#include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

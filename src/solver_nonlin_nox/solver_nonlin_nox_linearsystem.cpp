@@ -58,7 +58,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precMatrixSource_(SeparateMatrix),
       scaling_(scalingObject),
       conditionNumberEstimate_(0.0),
-      timer_(cloneVector.getEpetraVector().Comm()),
+      timer_("", true),
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
@@ -93,7 +93,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precMatrixSource_(SeparateMatrix),
       scaling_(Teuchos::null),
       conditionNumberEstimate_(0.0),
-      timer_(cloneVector.getEpetraVector().Comm()),
+      timer_("", true),
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
@@ -126,7 +126,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precMatrixSource_(SeparateMatrix),
       scaling_(scalingObject),
       conditionNumberEstimate_(0.0),
-      timer_(cloneVector.getEpetraVector().Comm()),
+      timer_("", true),
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
@@ -158,7 +158,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precMatrixSource_(SeparateMatrix),
       scaling_(Teuchos::null),
       conditionNumberEstimate_(0.0),
-      timer_(cloneVector.getEpetraVector().Comm()),
+      timer_("", true),
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
@@ -284,7 +284,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 
   prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput, Jacobian(), *this);
 
-  double startTime = timer_.WallTime();
+  double startTime = timer_.wallTime();
 
   // calculate the residual norm
   resNorm2_ = nonConstInput.norm(NOX::Abstract::Vector::TwoNorm);
@@ -338,7 +338,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 
   CompleteSolutionAfterSolve(linProblem, result.getEpetraVector());
 
-  double endTime = timer_.WallTime();
+  double endTime = timer_.wallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
   prePostOperatorPtr_->runPostApplyJacobianInverse(result, nonConstInput, Jacobian(), *this);

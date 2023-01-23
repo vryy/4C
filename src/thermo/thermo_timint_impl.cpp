@@ -47,7 +47,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       normtempi_(0.0),
       tempi_(Teuchos::null),
       tempinc_(Teuchos::null),
-      timer_(actdis->Comm()),
+      timer_("", true),
       fres_(Teuchos::null),
       freact_(Teuchos::null)
 {
@@ -472,7 +472,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
   iter_ = 1;
   normfres_ = CalcRefNormForce();
   // normtempi_ was already set in predictor; this is strictly >0
-  timer_.ResetStartTime();
+  timer_.reset();
 
   // Do mortar condensation
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
@@ -945,7 +945,7 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   }
 
   // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.totalElapsedTime(true);
 
   // finish oss
   oss << std::ends;

@@ -101,7 +101,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   PreSolve();
 
   // time this step
-  timer_->ResetStartTime();
+  timer_->reset();
 
   const double dt = (*dt_)[0];     // \f$\Delta t_{n}\f$
   const double dthalf = dt / 2.0;  // \f$\Delta t_{n+1/2}\f$
@@ -115,7 +115,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   disn_->Update(dt, *veln_, 1.0);
 
   // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
+  double dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // apply Dirichlet BCs
@@ -129,7 +129,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // TIMING
-  // double dtcpu = timer_->WallTime();
+  // double dtcpu = timer_->wallTime();
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -144,7 +144,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
+  dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
@@ -154,7 +154,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcpu = timer_->WallTime();
+  dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // contact or meshtying forces
@@ -171,7 +171,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcmt_ = timer_->WallTime() - dtcpu;
+  dtcmt_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // determine time derivative of linear momentum vector,
@@ -189,7 +189,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   }
 
   // *********** time measurement ***********
-  dtcpu = timer_->WallTime();
+  dtcpu = timer_->wallTime();
   // *********** time measurement ***********
 
   // obtain new accelerations \f$A_{n+1}\f$
@@ -227,7 +227,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // *********** time measurement ***********
-  dtsolve_ = timer_->WallTime() - dtcpu;
+  dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
   // update of end-velocities \f$V_{n+1}\f$

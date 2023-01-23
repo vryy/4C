@@ -21,7 +21,7 @@
 
 #include "solver_linalg_solver.H"
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "beaminteraction_periodic_boundingbox.H"
 
@@ -129,7 +129,7 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     timemax_ = sdynparams.get<double>("MAXTIME");
     stepmax_ = sdynparams.get<int>("NUMSTEP");
 
-    timer_ = Teuchos::rcp(new Epetra_Time(discret->Comm()));
+    timer_ = Teuchos::rcp(new Teuchos::Time("", true));
 
     dyntype_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 

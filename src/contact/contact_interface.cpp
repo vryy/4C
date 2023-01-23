@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------*/
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "contact_interface.H"
@@ -715,7 +715,7 @@ void CONTACT::CoInterface::Redistribute()
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
-  Epetra_Time time(*comm);
+  Teuchos::Time time("", true);
   std::set<int>::const_iterator iter;
 
   // vector containing all proc ids

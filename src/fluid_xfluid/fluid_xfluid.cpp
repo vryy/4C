@@ -65,7 +65,7 @@ interface
 #include "mat_par_bundle.H"
 
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -4220,12 +4220,8 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::XTimint_ReconstructGhostValues::ApplyDirichlettoSystem");
 
-    Epetra_Time tf(discret_->Comm());
-
     LINALG::ApplyDirichlettoSystem(
         sysmat_gp, incvel_gp, residual_gp, zeros_gp, *(ghost_penaly_dbcmaps->CondMap()));
-
-    // IO::cout << "fluid time : ApplyDirichlettoSystem " << tf.ElapsedTime() << IO::endl;
   }
 
   //-------solve for residual displacements to correct incremental displacements

@@ -37,6 +37,7 @@
 #include "AztecOO.h"
 
 #include <typeinfo>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*/
@@ -79,7 +80,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   isPrecConstructed = isprec;
   solvePrecOpPtr = prec;
 
-  double startTime = timer.WallTime();
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLinearSystem::applyJacobianInverse");
 
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
@@ -198,9 +199,6 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
-
-  double endTime = timer.WallTime();
-  timeApplyJacbianInverse += (endTime - startTime);
 
   if (aztecStatus != 0) return false;
 
