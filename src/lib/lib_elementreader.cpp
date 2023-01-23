@@ -77,7 +77,7 @@ namespace DRT::INPUT
     {
       if (numele == 0)
       {
-        // This is it. Build an empty reader and leave.
+        // If the element section is empty, we create an empty reader and return
         coleles_ = roweles_ = colnodes_ = rownodes_ =
             Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
 
