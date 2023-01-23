@@ -306,7 +306,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> coleles;
     const auto& [rownodes, colnodes] =
         REBALANCE::RebalanceNodeMaps(commondis, roweles, lcomm->NumProc());
-    commondis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
+    std::tie(roweles, coleles) = commondis->BuildElementRowColumn(*rownodes, *colnodes);
     commondis->ExportRowNodes(*rownodes);
     commondis->ExportRowElements(*roweles);
     commondis->ExportColumnNodes(*colnodes);
@@ -447,7 +447,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
         -1, targetrowele.NumMyElements(), targetrowele.MyGlobalElements(), -1, *lcomm));
     Teuchos::RCP<Epetra_Map> coleles;
     const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(dis, roweles, lcomm->NumProc());
-    dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
+    std::tie(roweles, coleles) = dis->BuildElementRowColumn(*rownodes, *colnodes);
     dis->ExportRowNodes(*rownodes);
     dis->ExportRowElements(*roweles);
     dis->ExportColumnNodes(*colnodes);

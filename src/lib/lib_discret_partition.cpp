@@ -19,7 +19,6 @@
 #include "linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*
- |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
@@ -52,12 +51,9 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
 
   // maps and pointers are no longer correct and need rebuilding
   Reset(killdofs, killcond);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
@@ -67,14 +63,11 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->Owner() != myrank)
-    {
       node_.erase(curr++);
-    }
     else
-    {
       ++curr;
-    }
   }
+
   // build rowmap of nodes noderowmap_ if it does not exist
   if (noderowmap_ == Teuchos::null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
@@ -95,13 +88,9 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
 
   // maps and pointers are no longer correct and need rebuilding
   Reset(killdofs, killcond);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  Export elements (public)                                 mwgee 02/11|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ProcZeroDistributeElementsToAll(
     Epetra_Map& target, std::vector<int>& gidlist)
@@ -111,7 +100,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   // proc 0 looks for elements that are to be send to other procs
   int size = (int)gidlist.size();
   std::vector<int> pidlist(size);  // gids on proc 0
-  int err = target.RemoteIDList(size, &gidlist[0], &pidlist[0], NULL);
+  int err = target.RemoteIDList(size, &gidlist[0], &pidlist[0], nullptr);
   if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
@@ -140,7 +129,6 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       swap(sendmap[fool->first], fool->second());
   }
 
-
   // tell everybody who is to receive something
   std::vector<int> receivers;
 
@@ -160,7 +148,6 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
         break;
       }
 
-
   // proc 0 sends out messages
   int tag = 0;
   DRT::Exporter exporter(Comm());
@@ -176,7 +163,6 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     if (tag != size) dserror("Number of messages is mixed up");
     // do not delete sendmap until Wait has returned!
   }
-
 
   // all other procs listen to message and put element into dis
   if (foundme != -1)
@@ -205,17 +191,13 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
 
   // wait for all communication to finish
   if (!myrank)
-  {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
-  }
 
   Comm().Barrier();  // I feel better this way ;-)
   Reset();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Export elements (public)                                 mwgee 03/11|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 {
@@ -229,7 +211,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   if (myrank) size = 0;
   std::vector<int> pidlist(size, -1);
   {
-    int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), &pidlist[0], NULL);
+    int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), &pidlist[0], nullptr);
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
   }
 
@@ -323,17 +305,13 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 
   // wait for all communication to finish
   if (!myrank)
-  {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
-  }
 
   Comm().Barrier();  // feel better this way ;-)
   Reset();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
@@ -346,13 +324,9 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
-    {
       element_.erase(curr++);
-    }
     else
-    {
       ++curr;
-    }
   }
 
   // build map of elements elerowmap_ if it does not exist
@@ -369,12 +343,9 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
 
   // maps and pointers are no longer correct and need rebuilding
   Reset(killdofs, killcond);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportColumnElements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
@@ -385,13 +356,9 @@ void DRT::Discretization::ExportColumnElements(
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
-    {
       element_.erase(curr++);
-    }
     else
-    {
       ++curr;
-    }
   }
 
   // build map of elements elerowmap_ if it does not exist
@@ -413,12 +380,9 @@ void DRT::Discretization::ExportColumnElements(
 
   // maps and pointers are no longer correct and need rebuilding
   Reset(killdofs, killcond);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  build nodal graph from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
@@ -457,6 +421,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   if (err) dserror("graph->FillComplete() returned err=%d", err);
   err = graph->OptimizeStorage();
   if (err) dserror("graph->OptimizeStorage() returned err=%d", err);
+
   return graph;
 }
 
@@ -483,11 +448,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::BuildNodeCoordinates(
 }
 
 /*----------------------------------------------------------------------*
- |  build element map from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildElementRowColumn(const Epetra_Map& noderowmap,
-    const Epetra_Map& nodecolmap, Teuchos::RCP<Epetra_Map>& elerowmap,
-    Teuchos::RCP<Epetra_Map>& elecolmap) const
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
+DRT::Discretization::BuildElementRowColumn(
+    const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
@@ -501,7 +465,7 @@ void DRT::Discretization::BuildElementRowColumn(const Epetra_Map& noderowmap,
   // find all owners for the overlapping node map
   const int ncnode = nodecolmap.NumMyElements();
   std::vector<int> cnodeowner(ncnode);
-  int err = noderowmap.RemoteIDList(ncnode, nodecolmap.MyGlobalElements(), &cnodeowner[0], NULL);
+  int err = noderowmap.RemoteIDList(ncnode, nodecolmap.MyGlobalElements(), &cnodeowner[0], nullptr);
   if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
 
   // build connectivity of elements
@@ -639,29 +603,28 @@ void DRT::Discretization::BuildElementRowColumn(const Epetra_Map& noderowmap,
   // allreduced nummyele must match the total no. of elements in this
   // discretization, otherwise we lost some
   // build the rowmap of elements
-  elerowmap = Teuchos::rcp(new Epetra_Map(-1, nummyele, &myele[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> elerowmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummyele, &myele[0], 0, Comm()));
   if (!elerowmap->UniqueGIDs()) dserror("Element row map is not unique");
 
   // build elecolmap
   std::vector<int> elecol(nummyele + nummyghostele);
   for (int i = 0; i < nummyele; ++i) elecol[i] = myele[i];
   for (int i = 0; i < nummyghostele; ++i) elecol[nummyele + i] = myghostele[i];
-  elecolmap = Teuchos::rcp(new Epetra_Map(-1, nummyghostele + nummyele, &elecol[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> elecolmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummyghostele + nummyele, &elecol[0], 0, Comm()));
 
-  return;
+  return {elerowmap, elecolmap};
 }
 
 /*----------------------------------------------------------------------*
- |  redistribute discretization (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool killdofs,
     bool killcond)
 {
   // build the overlapping and non-overlapping element maps
-  Teuchos::RCP<Epetra_Map> elerowmap;
-  Teuchos::RCP<Epetra_Map> elecolmap;
-  BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
+  const auto& [elerowmap, elecolmap] = BuildElementRowColumn(noderowmap, nodecolmap);
 
   // export nodes and elements to the new maps
   ExportRowNodes(noderowmap, killdofs, killcond);
@@ -673,12 +636,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (err) dserror("FillComplete() returned err=%d", err);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  redistribute discretization (public)                     rauch 10/17|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
     const Epetra_Map& elerowmap, const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
@@ -694,12 +654,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (err) dserror("FillComplete() returned err=%d", err);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  ghost elements according to element column map (public)  rauch 10/13|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
     bool initelements, bool doboundaryconditions, bool checkghosting)
@@ -769,10 +726,8 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
 
     // and build slave master pairs
     for (std::map<int, std::set<int>>::iterator curr = pbcmap.begin(); curr != pbcmap.end(); ++curr)
-    {
       for (std::set<int>::const_iterator it = curr->second.begin(); it != curr->second.end(); ++it)
         inversenodecoupling[*it] = curr->first;
-    }
   }
 
   // get the node ids of the elements that have to be ghosted and create a proper node column map
@@ -841,10 +796,10 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
   if (err) dserror("FillComplete() threw error code %d", err);
-
-  return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::Discretization::SetupGhosting(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {

@@ -1184,10 +1184,10 @@ namespace DRT
 
     \param noderowmap (in): unique nodal row map of some distribution
     \param nodecolmap (in): overlapping nodal column map
-    \param elerowmap (out): unique element row map
-    \param elecolmap (out): overlapping element column map
     \param ExtendedGhosting (in): allow for ghosting of elements on processors, which don't own any
     of the elements' nodes (default: false) // rauch 09/13
+
+    @return unique element row map and overlapping element column map
 
     \note The provided noderowmap and nodecolmap do not need to match the
     distribution of nodes in this discretization class. Also, the output
@@ -1198,8 +1198,8 @@ namespace DRT
     only builds maps!
 
     */
-    virtual void BuildElementRowColumn(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-        Teuchos::RCP<Epetra_Map>& elerowmap, Teuchos::RCP<Epetra_Map>& elecolmap) const;
+    virtual std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> BuildElementRowColumn(
+        const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const;
 
     /*!
     \brief Export the nodes to a different parallel layout

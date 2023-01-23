@@ -1156,9 +1156,7 @@ void MORTAR::MortarInterface::Redistribute()
 
     // build reasonable element maps from the already valid and final node maps
     // (note that nothing is actually redistributed in here)
-    Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
-    Discret().BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
+    auto const& [roweles, coleles] = Discret().BuildElementRowColumn(*rownodes, *colnodes);
 
     // export nodes and elements to the row map
     Discret().ExportRowNodes(*rownodes);
