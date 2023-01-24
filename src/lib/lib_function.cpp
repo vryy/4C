@@ -209,6 +209,32 @@ namespace
     return (expr.size() == 1) ? 0 : component;
   }
 
+  //! throw an error if a constant given in the input file is a primary variables
+  template <typename T>
+  void AssertValidInput(const std::map<std::string, T>& variable_values,
+      const std::vector<std::pair<std::string, double>>& constants_from_input)
+  {
+    const bool all_constants_from_input_valid =
+        std::all_of(constants_from_input.begin(), constants_from_input.end(),
+            [&](const auto& var_name) { return variable_values.count(var_name.first) == 0; });
+
+    if (!all_constants_from_input_valid)
+    {
+      const auto join_keys = [](const auto& map)
+      {
+        return std::accumulate(map.begin(), map.end(), std::string(),
+            [](const std::string& acc, const auto& v)
+            { return acc.empty() ? v.first : acc + ", " + v.first; });
+      };
+
+      dserror(
+          "It is not allowed to set primary variables of your problem as constants in the "
+          "VariableExprFunction.\n\n"
+          "Variables passed to Evaluate: %s \n"
+          "Constants from Input: %s",
+          join_keys(variable_values).c_str(), join_keys(constants_from_input).c_str());
+    }
+  }
 }  // namespace
 
 
@@ -588,7 +614,7 @@ double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    CheckValidInput<double>(variable_values);
+    AssertValidInput<double>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
@@ -623,7 +649,7 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivat
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    CheckValidInput<Sacado::Fad::DFad<double>>(variable_values);
+    AssertValidInput<Sacado::Fad::DFad<double>>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
@@ -633,35 +659,6 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivat
       variable_values, component, expr_, constant_values);
 }
 
-template <int dim>
-template <typename T>
-void DRT::UTILS::VariableExprFunction<dim>::CheckValidInput(
-    const std::map<std::string, T>& variable_values) const
-{
-  const bool all_constants_from_input_valid =
-      std::all_of(constants_from_input_.begin(), constants_from_input_.end(),
-          [&](const auto& var_name) { return variable_values.count(var_name.first) == 0; });
-
-  if (!all_constants_from_input_valid)
-  {
-    std::string variable_names =
-        std::accumulate(variable_values.begin(), variable_values.end(), std::string(),
-            [](const std::string& acc, const auto& v)
-            { return acc.empty() ? v.first : acc + ", " + v.first; });
-
-    std::string constant_names =
-        std::accumulate(constants_from_input_.begin(), constants_from_input_.end(), std::string(),
-            [](const std::string& acc, const auto& v)
-            { return acc.empty() ? v.first : acc + ", " + v.first; });
-
-    dserror(
-        "It is not allowed to set primary variables of your problem as constants in the "
-        "VariableExprFunction.\n\n"
-        "Variables passed to Evaluate: %s \n"
-        "Constants from Input: %s",
-        variable_names.c_str(), constant_names.c_str());
-  }
-}
 
 // explicit instantiations
 
