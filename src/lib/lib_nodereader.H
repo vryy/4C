@@ -29,7 +29,7 @@ namespace DRT
     {
      public:
       /*!
-      \brief Construct element reader for a given field that reads a given section
+      \brief Construct node reader for a given field that reads a given section
 
       Create empty discretization and append it to given field.
 
@@ -38,12 +38,12 @@ namespace DRT
       */
       NodeReader(const DatFileReader& reader, std::string sectionname);
 
-      void Read(std::vector<Teuchos::RCP<ElementReader>>& element_readers, int& max_node_id);
+      void Read(const std::vector<ElementReader>& element_readers, int& max_node_id);
 
       void ThrowIfNotEnoughNodes(int max_node_id) const;
 
       std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
-          std::vector<Teuchos::RCP<ElementReader>>& element_readers, int global_node_id);
+          const std::vector<ElementReader>& element_readers, int global_node_id);
 
      private:
       /// the main dat file reader

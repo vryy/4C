@@ -119,10 +119,10 @@ namespace DRT
         the same as it was used to construct the map --- we may have a
         smaller blocksize here).
       - read elements of this discretization and distribute according
-        to a linear map. While reading, remember node gids an assemble
-        them into a second fully redundant vector (mapping vertex id->gid).
+        to a linear map. While reading, remember node gids and assemble
+        them into a second fully redundant vector (mapping node id->gid).
         In addition, we keep them in a fully redundant set (required by
-        node reader). Construct reverse lookup from gids to vertex ids.
+        node reader). Construct reverse lookup from gids to node ids.
         Again, this is a global, fully redundant map!
       - define preliminary linear distributed nodal row map
       - determine adjacency array (i.e. the infos for the node graph)
@@ -133,20 +133,20 @@ namespace DRT
         Results are distributed to other procs using two global vectors!
       - build final nodal row map, export graph to the new map
       */
-      virtual void Read();
+      virtual void ReadAndDistribute();
 
       /*!
       \brief Tell whether the given node belongs to us
 
       \note This is based on the redundant nodes_ set and only available on processor 0.
       */
-      bool HasNode(int nodeid) { return nodes_.find(nodeid) != nodes_.end(); }
+      bool HasNode(const int nodeid) const { return nodes_.find(nodeid) != nodes_.end(); }
 
      private:
-      /// read file and get element ids
-      std::pair<int, std::vector<int>> GetElementSizeAndIDs();
+      /// Get the overall number of elements and their corresponding global IDs
+      std::pair<int, std::vector<int>> GetElementSizeAndIDs() const;
 
-      // read file and get elements and distribute
+      /// Read the file and get element information, distribute them to each processor
       void GetAndDistributeElements(const int nblock, const int bsize);
 
       /// discretization name

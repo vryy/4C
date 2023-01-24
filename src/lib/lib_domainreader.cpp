@@ -44,7 +44,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DomainReader::CreatePartitionedMesh(int nodeGIdOfFirstNewNode)
+    void DomainReader::CreatePartitionedMesh(int nodeGIdOfFirstNewNode) const
     {
       const int myrank = comm_->MyPID();
 
@@ -70,7 +70,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    DRT::GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData()
+    DRT::GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData() const
     {
       DRT::GRIDGENERATOR::RectangularCuboidInputs inputData;
       // all reading is done on proc 0
@@ -210,7 +210,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DomainReader::Complete()
+    void DomainReader::Complete() const
     {
       const int myrank = comm_->MyPID();
 

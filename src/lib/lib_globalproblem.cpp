@@ -966,8 +966,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   const ShapeFunctionType distype = SpatialApproximationType();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  DRT::INPUT::MeshReader meshreader(reader);
-  meshreader.AddNodeReader(Teuchos::rcp(new DRT::INPUT::NodeReader(reader, "--NODE COORDS")));
+  DRT::INPUT::MeshReader meshreader(reader.Comm());
+  meshreader.SetNodeReader(DRT::INPUT::NodeReader(reader, "--NODE COORDS"));
 
   switch (GetProblemType())
   {
@@ -1010,19 +1010,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       if (xfluiddis != Teuchos::null)
       {
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS")));
+            DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+            DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1062,13 +1061,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra2", structscatradis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS")));
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS")));
+          DRT::INPUT::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -1108,9 +1106,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -1151,8 +1148,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
         AddDis("xfluid", xfluiddis);
 
-        meshreader.AddElementReader(Teuchos::rcp(
-            new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID")));
+        meshreader.AddElementReader(
+            DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID"));
       }
       else
       {
@@ -1168,8 +1165,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
       AddDis("ale", aledis);
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
     }
     case ProblemType::fpsi_xfem:
@@ -1191,14 +1187,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1223,8 +1218,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       AddDis("ale", aledis);
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1280,8 +1274,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       AddDis("lubrication", lubricationdis);
 
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS")));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -1318,10 +1312,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
 
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -1345,7 +1338,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       // add element reader to node reader
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -1396,14 +1389,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       if (xfluiddis != Teuchos::null)
       {
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS")));
+            DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+            DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1462,8 +1454,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       AddDis("thermo", thermdis);
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS"));
 
       break;
     }
@@ -1511,9 +1502,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("boundingbox", pboxdis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS"));
 
       break;
     }
@@ -1531,10 +1522,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
 
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -1560,14 +1550,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
           nullptr);
       // meshreader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
 
@@ -1601,12 +1591,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra", scatradis);
       AddDis("ale", aledis);
 
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1638,9 +1626,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+          DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -1654,8 +1642,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       AddDis("red_airway", airwaydis);
 
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
 
       break;
     }
@@ -1673,9 +1661,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -1692,8 +1679,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
       AddDis("opti", optidis);
 
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
       break;
     }
@@ -1726,9 +1712,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("porofluid", porofluiddis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (DRT::INPUT::IntegralValue<bool>(PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
@@ -1736,7 +1722,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
         AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+            DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
 
       break;
@@ -1773,11 +1759,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       if (DRT::INPUT::IntegralValue<bool>(PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING"))
       {
@@ -1785,13 +1771,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
         AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+            DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         artscatradis = Teuchos::rcp(new DRT::Discretization("artery_scatra", reader.Comm()));
         artscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(artscatradis)));
         AddDis("artery_scatra", artscatradis);
-        meshreader.AddElementReader(Teuchos::rcp(
-            new DRT::INPUT::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS")));
+        meshreader.AddElementReader(
+            DRT::INPUT::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -1820,7 +1806,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("porofluid", porofluiddis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (DRT::INPUT::IntegralValue<bool>(PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
@@ -1828,7 +1814,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
         AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+            DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
       break;
     }
@@ -1851,10 +1837,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
       AddDis("ale", aledis);
 
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -1872,7 +1857,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
           nullptr);
@@ -1893,9 +1878,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
       break;
     }
@@ -1919,10 +1903,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("ale", aledis);
 
 
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       // fluid scatra field
       fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm()));
@@ -1955,11 +1938,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+          DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
     case ProblemType::ehl:
@@ -1976,9 +1959,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("lubrication", lubricationdis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -2007,9 +1990,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       }
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       if (GetProblemType() == ProblemType::ssti)
       {
@@ -2017,7 +2000,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
         AddDis("thermo", thermdis);
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS")));
+            DRT::INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -2034,7 +2017,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("structure", structdis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -2049,7 +2032,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+          DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
     case ProblemType::np_support:
@@ -2071,8 +2054,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       elemagelementtypes.insert("ELECTROMAGNETIC");
       elemagelementtypes.insert("ELECTROMAGNETICDIFF");
 
-      meshreader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(
-          elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes)));
+      meshreader.AddElementReader(DRT::INPUT::ElementReader(
+          elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
 
       break;
     }
@@ -2090,9 +2073,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("red_airway", airwaydis);
 
       meshreader.AddElementReader(
-          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      meshreader.AddElementReader(Teuchos::rcp(
-          new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+          DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
     }
     break;
     case ProblemType::tutorial:
@@ -2120,14 +2103,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
         AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+            DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
         // create discretization writer - in constructor set into and owned by corresponding discret
         airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
         AddDis("red_airway", airwaydis);
-        meshreader.AddElementReader(Teuchos::rcp(
-            new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+        meshreader.AddElementReader(
+            DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
       }
     }
     break;
@@ -2417,18 +2400,17 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         micro_problem->ReadMaterials(micro_reader);
 
-        DRT::INPUT::MeshReader micromeshreader(micro_reader);
-        micromeshreader.AddNodeReader(
-            Teuchos::rcp(new DRT::INPUT::NodeReader(micro_reader, "--NODE COORDS")));
+        DRT::INPUT::MeshReader micromeshreader(micro_reader.Comm());
+        micromeshreader.SetNodeReader(DRT::INPUT::NodeReader(micro_reader, "--NODE COORDS"));
 
         if (micro_dis_name == "structure")
         {
-          micromeshreader.AddElementReader(Teuchos::rcp(
-              new DRT::INPUT::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+          micromeshreader.AddElementReader(
+              DRT::INPUT::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
         }
         else
-          micromeshreader.AddElementReader(Teuchos::rcp(
-              new DRT::INPUT::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS")));
+          micromeshreader.AddElementReader(
+              DRT::INPUT::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS"));
 
         micromeshreader.ReadAndPartition();
 
@@ -2541,11 +2523,10 @@ void DRT::Problem::ReadMicrofieldsNPsupport()
 
     micro_problem->ReadMaterials(micro_reader);
 
-    DRT::INPUT::MeshReader micromeshreader(micro_reader);
-    micromeshreader.AddNodeReader(
-        Teuchos::rcp(new DRT::INPUT::NodeReader(micro_reader, "--NODE COORDS")));
-    micromeshreader.AddElementReader(Teuchos::rcp(
-        new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+    DRT::INPUT::MeshReader micromeshreader(micro_reader.Comm());
+    micromeshreader.SetNodeReader(DRT::INPUT::NodeReader(micro_reader, "--NODE COORDS"));
+    micromeshreader.AddElementReader(
+        DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
     micromeshreader.ReadAndPartition();
 
     // read conditions of microscale

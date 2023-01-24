@@ -30,7 +30,7 @@ namespace DRT::INPUT
   {
    public:
     /// construct a mesh reader
-    MeshReader(const DatFileReader& reader);
+    MeshReader(const Teuchos::RCP<Epetra_Comm> comm);
 
     /// add an element reader for each discretization
     /*!
@@ -39,7 +39,7 @@ namespace DRT::INPUT
 
       \param er (i) a reader of one discretization that uses (a fraction of) our nodes
      */
-    void AddElementReader(Teuchos::RCP<ElementReader> er) { element_readers_.push_back(er); }
+    void AddElementReader(const ElementReader& er) { element_readers_.emplace_back(er); }
 
     /// add an node reader
     /*!
@@ -47,7 +47,7 @@ namespace DRT::INPUT
 
     \param nr a node reader of the overall problem
     */
-    void AddNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader_ = nr; }
+    void SetNodeReader(NodeReader nr) { node_reader_ = &nr; }
 
     /*!
      * \brief Adds the selected reader to this meshreader
@@ -55,9 +55,10 @@ namespace DRT::INPUT
      * \param dis            [in] This discretization will be passed on
      * \param reader         [in] This reader will be passed on
      * \param sectionname    [in] This will be passed on element/domain readers only (not used for
-     * file reader) \param elementtypes   [in] This set of types will be passed on \param
-     * geometrysource [in] selects which reader will be created \param geofilepath    [in] path to
-     * the file for the file reader (not used for the others)
+     *                            file reader)
+     * \param elementtypes   [in] This set of types will be passed on
+     * \param geometrysource [in] selects which reader will be created
+     * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
     void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
         const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
@@ -73,8 +74,9 @@ namespace DRT::INPUT
      * \param dis            [in] This discretization will be passed on
      * \param reader         [in] This reader will be passed on
      * \param sectionname    [in] This will be passed on element/domain readers only (not used for
-     * file reader) \param geometrysource [in] selects which reader will be created \param
-     * geofilepath    [in] path to the file for the file reader (not used for the others)
+     *                            file reader)
+     * \param geometrysource [in] selects which reader will be created
+     * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
     void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
         const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
@@ -113,7 +115,8 @@ namespace DRT::INPUT
     /*!
     \brief Create inline mesh
 
-    Ask the DomainReader to process input data and create a mesh at runtime.
+    Ask the DomainReader to process input data and create a box shaped mesh at runtime without
+    having to read or process nodes and elements from the input file.
 
     \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
     nodes)
@@ -124,13 +127,13 @@ namespace DRT::INPUT
     Teuchos::RCP<Epetra_Comm> comm_;
 
     /// my element readers
-    std::vector<Teuchos::RCP<ElementReader>> element_readers_;
+    std::vector<ElementReader> element_readers_;
 
     /// my domain readers
-    std::vector<Teuchos::RCP<DomainReader>> domain_readers_;
+    std::vector<DomainReader> domain_readers_;
 
     /// my node reader
-    Teuchos::RCP<NodeReader> node_reader_;
+    NodeReader* node_reader_;
   };
 }  // namespace DRT::INPUT
 
