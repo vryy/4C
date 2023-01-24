@@ -121,6 +121,8 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
       rownodemaps[i] = colnodemaps[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
   }
 
+  std::cout << "Hello from inside >;D" << std::endl;
+
   // read nodes based on the element information
   node_reader_->Read(element_readers_, max_node_id);
 

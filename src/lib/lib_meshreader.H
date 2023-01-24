@@ -47,7 +47,7 @@ namespace DRT::INPUT
 
     \param nr a node reader of the overall problem
     */
-    void SetNodeReader(NodeReader nr) { node_reader_ = &nr; }
+    void SetNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader_ = nr; }
 
     /*!
      * \brief Adds the selected reader to this meshreader
@@ -133,7 +133,7 @@ namespace DRT::INPUT
     std::vector<DomainReader> domain_readers_;
 
     /// my node reader
-    NodeReader* node_reader_;
+    Teuchos::RCP<NodeReader> node_reader_;
   };
 }  // namespace DRT::INPUT
 
