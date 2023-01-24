@@ -37,7 +37,7 @@ namespace DRT::UTILS
    * This class does circumvent using automatic differentiation and may be used in
    * performance-sensitive applications (e.g. operations on Gauss-point level).
    * In particular, evaluating the derivative is faster for this function compared to
-   * a VariableExprFunction representing the same polynomial.
+   * a SymbolicFunctionOfAnything representing the same polynomial.
    */
   class FastPolynomialFunction : public FunctionOfScalar
   {

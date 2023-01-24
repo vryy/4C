@@ -182,7 +182,8 @@ namespace
 
   /// evaluate an expression and assemble to the result vector
   std::vector<double> EvaluateAndAssembleExpressionToResultVector(
-      const std::map<std::string, Sacado::Fad::DFad<double>>& variables, const int index,
+      const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
+      const std::size_t component,
       std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>> expr,
       const std::map<std::string, double>& constant_values)
   {
@@ -190,7 +191,7 @@ namespace
     auto numvariables = static_cast<int>(variables.size());
 
     // evaluate the expression
-    Sacado::Fad::DFad<double> fdfad = expr[index]->FirstDerivative(variables, constant_values);
+    Sacado::Fad::DFad<double> fdfad = expr[component]->FirstDerivative(variables, constant_values);
 
     // resulting vector
     std::vector<double> res(numvariables);
@@ -201,17 +202,45 @@ namespace
     return res;
   }
 
-  /// modifies the index to zero in case the expression is of size one
-  std::size_t FindModifiedIndex(const std::size_t index,
+  /// modifies the component to zero in case the expression is of size one
+  std::size_t FindModifiedComponent(const std::size_t component,
       const std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>>& expr)
   {
-    return (expr.size() == 1) ? 0 : index;
+    return (expr.size() == 1) ? 0 : component;
   }
 
+  //! throw an error if a constant given in the input file is a primary variables
+  template <typename T>
+  void AssertValidInput(const std::map<std::string, T>& variable_values,
+      const std::vector<std::pair<std::string, double>>& constants_from_input)
+  {
+    const bool all_constants_from_input_valid =
+        std::all_of(constants_from_input.begin(), constants_from_input.end(),
+            [&](const auto& var_name) { return variable_values.count(var_name.first) == 0; });
+
+    if (!all_constants_from_input_valid)
+    {
+      const auto join_keys = [](const auto& map)
+      {
+        return std::accumulate(map.begin(), map.end(), std::string(),
+            [](const std::string& acc, const auto& v)
+            { return acc.empty() ? v.first : acc + ", " + v.first; });
+      };
+
+      dserror(
+          "It is not allowed to set primary variables of your problem as constants in the "
+          "VariableExprFunction.\n\n"
+          "Variables passed to Evaluate: %s \n"
+          "Constants from Input: %s",
+          join_keys(variable_values).c_str(), join_keys(constants_from_input).c_str());
+    }
+  }
 }  // namespace
 
+
+
 template <int dim>
-Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction(
+Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFunctionOfAnything(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
@@ -229,7 +258,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprF
       function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
-    return Teuchos::rcp(new DRT::UTILS::VariableExprFunction<dim>(component, constants));
+    return Teuchos::rcp(new DRT::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
   }
   else
   {
@@ -416,10 +445,10 @@ template <int dim>
 double DRT::UTILS::ExprFunction<dim>::Evaluate(
     const double* x, const double t, const std::size_t component)
 {
-  std::size_t component_mod = FindModifiedIndex(component, expr_);
+  std::size_t component_mod = FindModifiedComponent(component, expr_);
 
   if (component_mod < 0 || component_mod >= expr_.size())
-    dserror("There are %d expressions but tried to access index %d", expr_.size(), component);
+    dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
 
   // create map for variables
   std::map<std::string, double> variable_values;
@@ -446,7 +475,7 @@ template <int dim>
 std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateSpatialDerivative(
     const double* x, const double t, const std::size_t component)
 {
-  std::size_t component_mod = FindModifiedIndex(component, expr_);
+  std::size_t component_mod = FindModifiedComponent(component, expr_);
 
   if (component_mod < 0 || component_mod >= expr_.size())
     dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
@@ -460,7 +489,7 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateSpatialDerivative(
   // The expression evaluates to an FAD object for up to second derivatives
   SecondDerivativeType fdfad = expr_[component_mod]->SecondDerivative(variable_values, {});
 
-  // Here we return the first spatial derivatives given by FAD index 0, 1 and 2
+  // Here we return the first spatial derivatives given by FAD component 0, 1 and 2
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
 }
 
@@ -471,7 +500,7 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
   // result vector
   std::vector<double> res(deg + 1);
 
-  std::size_t component_mod = FindModifiedIndex(component, expr_);
+  std::size_t component_mod = FindModifiedComponent(component, expr_);
 
   // variables
   std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
@@ -553,7 +582,7 @@ std::vector<double> DRT::UTILS::ExprFunction<dim>::EvaluateTimeDerivative(
 
 
 template <int dim>
-DRT::UTILS::VariableExprFunction<dim>::VariableExprFunction(
+DRT::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
     const std::string& component, std::vector<std::pair<std::string, double>> constants)
     : constants_from_input_(std::move(constants))
 {
@@ -565,72 +594,11 @@ DRT::UTILS::VariableExprFunction<dim>::VariableExprFunction(
 }
 
 
-template <int dim>
-double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
-    const double* x, const double t, const std::size_t component)
-{
-  std::vector<std::pair<std::string, double>> variables;
-  variables.reserve(dim_);
-
-  // set spatial variables
-  if (dim_ < 0 or dim_ > 3) dserror("Problem dimension has to be 1, 2, or 3.");
-  if (dim_ > 0) variables.emplace_back("x", x[0]);
-  if (dim_ > 1) variables.emplace_back("y", x[1]);
-  if (dim_ > 2) variables.emplace_back("z", x[2]);
-
-  // set temporal variable
-  variables.emplace_back("t", t);
-
-  return Evaluate(component, variables);
-}
 
 template <int dim>
-double DRT::UTILS::VariableExprFunction<dim>::Evaluate(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  // create map for variables
-  std::map<std::string, double> variable_values;
-
-  // convert vector of pairs to map variables_values
-  std::copy(
-      variables.begin(), variables.end(), std::inserter(variable_values, variable_values.begin()));
-
-  if (constants_from_input_.size() != 0)
-  {
-    // check if constants_from_input are valid
-    CheckValidInput<double>(variable_values);
-
-    // add constants from input
-    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
-        std::inserter(variable_values, variable_values.end()));
-  }
-
-  // evaluate the function and return the result
-  return expr_[index]->Value(variable_values);
-}
-
-
-template <int dim>
-std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateSpatialDerivative(
-    const double* x, const double t, const std::size_t component)
-{
-  // arguments are: x, y, z, and t
-  const int number_of_arguments = 4;
-  std::vector<std::pair<std::string, double>> variables(number_of_arguments);
-
-  variables[0] = std::pair<std::string, double>("x", x[0]);
-  variables[1] = std::pair<std::string, double>("y", x[1]);
-  variables[2] = std::pair<std::string, double>("z", x[2]);
-  variables[3] = std::pair<std::string, double>("t", t);
-
-  return EvaluateDerivative(component, variables);
-}
-
-
-template <int dim>
-double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
+double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component)
 {
   // create map for variables
   std::map<std::string, double> variable_values;
@@ -646,7 +614,7 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    CheckValidInput<double>(variable_values);
+    AssertValidInput<double>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
@@ -654,42 +622,14 @@ double DRT::UTILS::VariableExprFunction<dim>::Evaluate(const int index,
   }
 
   // evaluate the function and return the result
-  return expr_[index]->Value(variable_values);
+  return expr_[component]->Value(variable_values);
 }
 
-template <int dim>
-std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(
-    const int index, const std::vector<std::pair<std::string, double>>& variables)
-{
-  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
-
-  std::map<std::string, Sacado::Fad::DFad<double>> variable_values;
-
-  std::map<std::string, double> constant_values;
-
-  // convert vector of pairs to map variables_values
-  std::copy(variables_FAD.begin(), variables_FAD.end(),
-      std::inserter(variable_values, variable_values.begin()));
-
-
-  if (constants_from_input_.size() != 0)
-  {
-    // check if constants_from_input are valid
-    CheckValidInput<Sacado::Fad::DFad<double>>(variable_values);
-
-    // add constants from input
-    std::copy(constants_from_input_.begin(), constants_from_input_.end(),
-        std::inserter(constant_values, constant_values.begin()));
-  }
-
-  return EvaluateAndAssembleExpressionToResultVector(
-      variable_values, index, expr_, constant_values);
-}
 
 template <int dim>
-std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(int index,
+std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component)
 {
   auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
 
@@ -709,45 +649,16 @@ std::vector<double> DRT::UTILS::VariableExprFunction<dim>::EvaluateDerivative(in
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    CheckValidInput<Sacado::Fad::DFad<double>>(variable_values);
+    AssertValidInput<Sacado::Fad::DFad<double>>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
         std::inserter(constant_values, constant_values.end()));
   }
   return EvaluateAndAssembleExpressionToResultVector(
-      variable_values, index, expr_, constant_values);
+      variable_values, component, expr_, constant_values);
 }
 
-template <int dim>
-template <typename T>
-void DRT::UTILS::VariableExprFunction<dim>::CheckValidInput(
-    const std::map<std::string, T>& variable_values) const
-{
-  const bool all_constants_from_input_valid =
-      std::all_of(constants_from_input_.begin(), constants_from_input_.end(),
-          [&](const auto& var_name) { return variable_values.count(var_name.first) == 0; });
-
-  if (!all_constants_from_input_valid)
-  {
-    std::string variable_names =
-        std::accumulate(variable_values.begin(), variable_values.end(), std::string(),
-            [](const std::string& acc, const auto& v)
-            { return acc.empty() ? v.first : acc + ", " + v.first; });
-
-    std::string constant_names =
-        std::accumulate(constants_from_input_.begin(), constants_from_input_.end(), std::string(),
-            [](const std::string& acc, const auto& v)
-            { return acc.empty() ? v.first : acc + ", " + v.first; });
-
-    dserror(
-        "It is not allowed to set primary variables of your problem as constants in the "
-        "VariableExprFunction.\n\n"
-        "Variables passed to Evaluate: %s \n"
-        "Constants from Input: %s",
-        variable_names.c_str(), constant_names.c_str());
-  }
-}
 
 // explicit instantiations
 
@@ -755,9 +666,9 @@ template class DRT::UTILS::ExprFunction<1>;
 template class DRT::UTILS::ExprFunction<2>;
 template class DRT::UTILS::ExprFunction<3>;
 
-template class DRT::UTILS::VariableExprFunction<1>;
-template class DRT::UTILS::VariableExprFunction<2>;
-template class DRT::UTILS::VariableExprFunction<3>;
+template class DRT::UTILS::SymbolicFunctionOfAnything<1>;
+template class DRT::UTILS::SymbolicFunctionOfAnything<2>;
+template class DRT::UTILS::SymbolicFunctionOfAnything<3>;
 
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<1>(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
@@ -766,9 +677,12 @@ template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExpr
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateExprFunction<3>(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<1>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
+DRT::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<2>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
+DRT::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateVariableExprFunction<3>(
+template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
+DRT::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);

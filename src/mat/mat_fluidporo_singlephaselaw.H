@@ -16,9 +16,8 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <int dim>
-    class VariableExprFunction;
-  }
+    class FunctionOfAnything;
+  }  // namespace UTILS
 }  // namespace DRT
 
 namespace MAT
@@ -275,10 +274,6 @@ namespace MAT
       virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation);
 
      private:
-      //! helper method for function access
-      template <int dim>
-      inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
-
       //! templated internal Initialize implementation
       template <int dim>
       void InitializeInternal();

@@ -27,8 +27,7 @@ namespace DRT
   namespace UTILS
   {
     // forward declaration
-    template <int>
-    class VariableExprFunction;
+    class FunctionOfAnything;
   }  // namespace UTILS
   namespace ELEMENTS
   {
@@ -2052,7 +2051,7 @@ namespace DRT
         );
 
         //! cast to VarExp-function
-        inline DRT::UTILS::VariableExprFunction<nsd>& Function(int functnum) const;
+        inline DRT::UTILS::FunctionOfAnything& Function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
