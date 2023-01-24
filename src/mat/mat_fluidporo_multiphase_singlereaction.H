@@ -2,9 +2,9 @@
 /*! \file
  \brief a fluid material for porous multiphase flow defining one reaction (mass sources and sinks)
 
-   \level 3
+\level 3
 
- *----------------------------------------------------------------------*/
+    *----------------------------------------------------------------------*/
 
 #ifndef SRC_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_H_
 #define SRC_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_H_
@@ -19,9 +19,8 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <int dim>
-    class VariableExprFunction;
-  }
+    class FunctionOfAnything;
+  }  // namespace UTILS
 }  // namespace DRT
 
 namespace MAT
@@ -107,10 +106,6 @@ namespace MAT
       /// returns the enum of the current coupling type
       MAT::PAR::FluidPoroSingleReaction::porofluid_reaction_coupling SetCouplingType(
           Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// return variable expression function holding the reaction equation
-      template <int dim>
-      inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
 
       //! templated internal Initialize implementation
       template <int dim>

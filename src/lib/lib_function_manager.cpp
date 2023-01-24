@@ -68,7 +68,7 @@ namespace
       // List all known TryCreate functions in a vector, so they can be called with a unified
       // syntax below. Also, erase their exact return type, since we can only store std::any.
       std::vector<TypeErasedFunctionCreator> try_create_function_vector{
-          WrapFunction(DRT::UTILS::TryCreateVariableExprFunction<dim>),
+          WrapFunction(DRT::UTILS::TryCreateSymbolicFunctionOfAnything<dim>),
           WrapFunction(POROMULTIPHASESCATRA::TryCreatePoroFunction<dim>),
           WrapFunction(STR::TryCreateStructureFunction), WrapFunction(FLD::TryCreateFluidFunction),
           WrapFunction(DRT::UTILS::TryCreateCombustFunction),

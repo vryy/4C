@@ -15,6 +15,7 @@
 #include "mat_fluidporo_multiphase.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
+#include "lib_get_functionofanything.H"
 #include "mat_cnst_1d_art.H"
 #include "headers_FAD_utils.H"
 #include "porofluidmultiphase_ele_parameter.H"
@@ -200,8 +201,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   funct_vec_.resize(2);
   funct_vec_[0].resize(numdof_art_);
   funct_vec_[1].resize(numdof_cont_);
-  FillFunctionVector(&funct_vec_[0], funct_vec[0], scale_vec_[0]);
-  FillFunctionVector(&funct_vec_[1], funct_vec[1], scale_vec_[1]);
+  FillFunctionVector(funct_vec_[0], funct_vec[0], scale_vec_[0]);
+  FillFunctionVector(funct_vec_[1], funct_vec[1], scale_vec_[1]);
 
   // get the actually coupled dofs
   coupleddofs_cont_ = coupleddofs_cont;
@@ -431,7 +432,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
-    artdiam_funct_ = Function(diam_funct_num - 1);
+    artdiam_funct_ = &DRT::UTILS::GetFunctionOfAnything(diam_funct_num - 1);
     if (coupltype_ == type_porofluid)
     {
       // cont derivatives + 1 artery pressure derivative
@@ -484,8 +485,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // initialize the functions
   for (int i = 0; i < 2; i++)
     for (unsigned int idof = 0; idof < funct_vec_[i].size(); idof++)
-      if (funct_vec_[i][idof] != 0) InitializeFunction(funct_vec_[i][idof]);
-  if (diam_funct_active_) InitializeFunction(artdiam_funct_);
+      if (funct_vec_[i][idof] != 0) InitializeFunction(*funct_vec_[i][idof]);
+  if (diam_funct_active_) InitializeFunction(*artdiam_funct_);
 
   // set time fac for right hand side evaluation of coupling
   SetTimeFacRhs(arterydens, contscatramat, timefacrhs_art, timefacrhs_cont);
@@ -1898,7 +1899,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       std::vector<double> contderivs(numdof_cont_, 0.0);
       double functval = 0.0;
       // evaluate and assemble
-      EvaluateFunctionAndDeriv(funct_vec_[0][i_art], artpressAtGP, artscalarnpAtGP,
+      EvaluateFunctionAndDeriv(*funct_vec_[0][i_art], artpressAtGP, artscalarnpAtGP,
           contscalarnpAtGP, functval, artderivs, contderivs);
       AssembleFunctionCouplingIntoForceStiffArt(i_art, w_gp, N1, N2, jacobi, scale_vec_[0][i_art],
           functval, artderivs, contderivs, forcevec1, stiffmat11, stiffmat12);
@@ -1914,7 +1915,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       std::vector<double> contderivs(numdof_cont_, 0.0);
       double functval = 0.0;
       // evaluate and assemble
-      EvaluateFunctionAndDeriv(funct_vec_[1][i_cont], artpressAtGP, artscalarnpAtGP,
+      EvaluateFunctionAndDeriv(*funct_vec_[1][i_cont], artpressAtGP, artscalarnpAtGP,
           contscalarnpAtGP, functval, artderivs, contderivs);
       AssembleFunctionCouplingIntoForceStiffCont(cont_dofs_to_assemble_functions_into_[i_cont],
           w_gp, N1, N2, jacobi, scale_vec_[1][i_cont], timefacrhs_cont_dens_[i_cont], functval,
@@ -1946,13 +1947,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   SetFluidValuesAsVariables(variables, artpressnpAtGP);
 
   // evaluate the diameter at GP by evaluating the function
-  arterydiamAtGP_ = artdiam_funct_->Evaluate(0, variables, constants);
+  arterydiamAtGP_ = artdiam_funct_->Evaluate(variables, constants, 0);
 
   // derivatives and linearizations are so far only calculated for coupltype porofluid
   if (coupltype_ == type_porofluid)
   {
     // function derivatives
-    std::vector<double> curderivs(artdiam_funct_->EvaluateDerivative(0, variables, constants));
+    std::vector<double> curderivs(artdiam_funct_->EvaluateDerivative(variables, constants, 0));
     // derivatives w.r.t. primary variables
     std::fill(diamderivs_.begin(), diamderivs_.end(), 0.0);
 
@@ -2348,7 +2349,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::EvaluateFunctionAndDeriv(DRT::UTILS::VariableExprFunction<dim>* funct,
+    dim>::EvaluateFunctionAndDeriv(DRT::UTILS::FunctionOfAnything& funct,
     const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
     const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
     std::vector<double>& contderivs)
@@ -2381,9 +2382,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       variables.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
 
       // evaluate the reaction term
-      functval = funct->Evaluate(0, variables, constants);
+      functval = funct.Evaluate(variables, constants, 0);
       // evaluate derivatives
-      std::vector<double> curderivs(funct->EvaluateDerivative(0, variables, constants));
+      std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
 
       EvaluateFluidDerivs(artderivs, contderivs, curderivs);
 
@@ -2405,9 +2406,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       SetFluidValuesAsConstants(constants, artpressnpAtGP);
 
       // evaluate the reaction term
-      functval = funct->Evaluate(0, variables, constants);
+      functval = funct.Evaluate(variables, constants, 0);
       // evaluate derivatives
-      std::vector<double> curderivs(funct->EvaluateDerivative(0, variables, constants));
+      std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
 
       EvaluateScalarDerivs(artderivs, contderivs, curderivs);
 
@@ -3584,18 +3585,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::FillFunctionVector(std::vector<DRT::UTILS::VariableExprFunction<dim>*>* my_funct_vec,
+    dim>::FillFunctionVector(std::vector<DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
     const std::vector<int>& funct_vec, const std::vector<int>& scale_vec)
 {
   for (unsigned int i = 0; i < funct_vec.size(); i++)
   {
     if (funct_vec[i] >= 0 && abs(scale_vec[i]) > 0)
     {
-      my_funct_vec->at(i) = Function(funct_vec[i]);
+      my_funct_vec.at(i) = &DRT::UTILS::GetFunctionOfAnything(funct_vec[i]);
       funct_coupl_active_ = true;
     }
     else
-      my_funct_vec->at(i) = 0;
+      my_funct_vec.at(i) = 0;
   }
 }
 
@@ -3604,10 +3605,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::InitializeFunction(DRT::UTILS::VariableExprFunction<dim>* funct)
+    dim>::InitializeFunction(const DRT::UTILS::FunctionOfAnything& funct)
 {
   // safety check
-  if (funct->NumberComponents() != 1) dserror("expected only one component for coupling function!");
+  if (funct.NumberComponents() != 1) dserror("expected only one component for coupling function!");
 }
 
 /*----------------------------------------------------------------------*
@@ -3717,30 +3718,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
-    int dim>
-DRT::UTILS::VariableExprFunction<dim>* POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-    distypeArt, distypeCont, dim>::Function(int functnum) const
-{
-  try
-  {
-    DRT::UTILS::VariableExprFunction<dim>* funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>*>(
-            &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-    return funct;
-  }
-  catch (std::bad_cast* exp)
-  {
-    dserror(
-        "Cast to VarExp Function failed! For coupling functions only 'VARFUNCTION' functions are "
-        "allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>*>(
-        &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-  }
-}
 
 // explicit template instantiations
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,

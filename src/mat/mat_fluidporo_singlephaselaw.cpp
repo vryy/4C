@@ -13,6 +13,7 @@
 #include "mat_par_bundle.H"
 
 #include "lib_globalproblem.H"
+#include "lib_get_functionofanything.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -320,9 +321,9 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 template <int dim>
 void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
 {
-  if (Function<dim>(functionID_saturation_ - 1).NumberComponents() != 1)
+  if (DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).NumberComponents() != 1)
     dserror("expected only one component for the saturation evaluation");
-  if (Function<dim>(functionID_pressure_ - 1).NumberComponents() != 1)
+  if (DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).NumberComponents() != 1)
     dserror("expected only one component for the pressure evaluation");
 
 
@@ -335,31 +336,6 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
   S_.emplace_back("S", 0.0);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <int dim>
-inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroPhaseLawByFunction::Function(
-    int functnum) const
-{
-  try
-  {
-    DRT::UTILS::VariableExprFunction<dim>& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-
-    return funct;
-  }
-  catch (std::bad_cast& exp)
-  {
-    dserror(
-        "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
-        "allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-  }
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -396,7 +372,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  return Function<dim>(functionID_saturation_ - 1).Evaluate(0, dp_);
+  return DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).Evaluate(dp_, {}, 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -435,7 +411,8 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  std::vector<double> deriv = Function<dim>(functionID_saturation_ - 1).EvaluateDerivative(0, dp_);
+  std::vector<double> deriv =
+      DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).EvaluateDerivative(dp_, {}, 0);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -485,7 +462,8 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  std::vector<double> deriv = Function<dim>(functionID_pressure_ - 1).EvaluateDerivative(0, S_);
+  std::vector<double> deriv =
+      DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).EvaluateDerivative(S_, {}, 0);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -516,5 +494,5 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  return Function<dim>(functionID_pressure_ - 1).Evaluate(0, S_);
+  return DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).Evaluate(S_, {}, 0);
 }

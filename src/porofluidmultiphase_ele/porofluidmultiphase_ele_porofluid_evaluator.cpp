@@ -14,11 +14,7 @@
 
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "mat_fluidporo_multiphase.H"
-#include "mat_fluidporo_singlephase.H"
-
-// necessary for function
-#include "lib_globalproblem.H"
+#include "lib_get_functionofanything.H"
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
@@ -2902,34 +2898,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
   for (unsigned int i = 0; i < domainint_funct_.size(); i++)
   {
     // NOLINTNEXTLINE (bugprone-narrowing-conversions)
-    myvec[i] += Function(domainint_funct_[i] - 1).Evaluate(0, variables, constants) * fac;
+    myvec[i] += Function(domainint_funct_[i] - 1).Evaluate(variables, constants, 0) * fac;
   }
 }
 
 /*----------------------------------------------------------------------*
- | cast to VarExp-function                                              |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline DRT::UTILS::VariableExprFunction<nsd>&
+inline DRT::UTILS::FunctionOfAnything&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
-  try
-  {
-    auto& funct = dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-    if (funct.NumberComponents() != 1)
-      dserror("only one component allowed for domain integral functions");
-    return funct;
-  }
-  catch (std::bad_cast& exp)
-  {
-    dserror(
-        "Cast to VarExp Function failed! For domain integrals only 'VARFUNCTION' functions are "
-        "allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<nsd>&>(
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-  }
+  auto& funct = DRT::UTILS::GetFunctionOfAnything(functnum);
+  if (funct.NumberComponents() != 1)
+    dserror("only one component allowed for domain integral functions");
+  return funct;
 };
 
 /*----------------------------------------------------------------------*

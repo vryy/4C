@@ -336,8 +336,8 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
     // TODO:(thon) the following is nicer but works only for VARFUNCTION Function :(
     //    try
     //    {
-    //      DRT::UTILS::VariableExprFunction& funct =
-    //      dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID()-1));
+    //      DRT::UTILS::FunctionOfAnything& funct =
+    //      dynamic_cast<DRT::UTILS::FunctionOfAnything&>(DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfAnything>(DisFunctReacCoeffID()-1));
     //      reaccoeff *= (funct.Evaluate(0,constants));
     //    }
     //    catch(std::bad_cast & exp)

@@ -9,6 +9,7 @@
 #include "mat_scatra_reaction_coupling.H"
 
 #include "lib_globalproblem.H"
+#include "lib_get_functionofanything.H"
 
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16
@@ -598,7 +599,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //
       const int functID = round(couprole[ii]);
       if (functID != 0)
       {
-        if (Function<dim>(functID - 1).NumberComponents() != 1)
+        if (DRT::UTILS::GetFunctionOfAnything(functID - 1).NumberComponents() != 1)
           dserror("expected only one component for the reaction evaluation");
 
         for (int k = 0; k < numscal; k++)
@@ -681,8 +682,8 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
   variables_for_parser_evaluation.emplace_back("z", 0.0);
 
   // evaluate reaction term
-  double bftfac =
-      Function<dim>(round(couprole[k]) - 1).Evaluate(0, variables_for_parser_evaluation, constants);
+  double bftfac = DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
+                      .Evaluate(variables_for_parser_evaluation, constants, 0);
 
   return scale_reac * bftfac;
 }
@@ -751,8 +752,8 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
 
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Function<dim>(round(couprole[k]) - 1)
-          .EvaluateDerivative(0, variables_, constants_for_parser_evaluation);
+      DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
+          .EvaluateDerivative(variables_, constants_for_parser_evaluation, 0);
 
   // add it to derivs
   for (int toderive = 0; toderive < numscal; toderive++)
@@ -805,8 +806,8 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesIn
 )
 {
   // evaluate the derivatives of the reaction term
-  std::vector<double> myderivs =
-      Function<dim>(round(couprole[k]) - 1).EvaluateDerivative(0, variables, constants);
+  std::vector<double> myderivs = DRT::UTILS::GetFunctionOfAnything(round(couprole[k]) - 1)
+                                     .EvaluateDerivative(variables, constants, 0);
 
   if (myderivs.size() != derivs.size())
   {
@@ -872,31 +873,4 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
     variables_[ii].second = phinp[ii];
   }
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <int dim>
-inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::REACTIONCOUPLING::ByFunction::Function(
-    int functnum) const
-{
-  // try to cast to variable expression function for phi evaluation
-  // try-catch because of cast of references
-  try
-  {
-    DRT::UTILS::VariableExprFunction<dim>& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-
-    return funct;
-  }
-  catch (std::bad_cast& exp)
-  {
-    dserror(
-        "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
-        "allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-  }
 }

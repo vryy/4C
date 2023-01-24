@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "lib_globalproblem.H"
+#include "lib_get_functionofanything.H"
 #include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*
@@ -58,7 +59,7 @@ template <int dim>
 void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
   // safety check
-  if (Function<dim>(functID_ - 1).NumberComponents() != 1)
+  if (DRT::UTILS::GetFunctionOfAnything(functID_ - 1).NumberComponents() != 1)
     dserror("expected only one component for single phase reaction!");
 
   for (int k = 0; k < numscal_; k++)
@@ -190,10 +191,10 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<dou
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = Function<dim>(functID_ - 1).Evaluate(0, variables, constants);
+  double curval = DRT::UTILS::GetFunctionOfAnything(functID_ - 1).Evaluate(variables, constants, 0);
   // evaluate derivatives
   std::vector<double> curderivs(
-      Function<dim>(functID_ - 1).EvaluateDerivative(0, variables, constants));
+      DRT::UTILS::GetFunctionOfAnything(functID_ - 1).EvaluateDerivative(variables, constants, 0));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
@@ -315,30 +316,6 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <int dim>
-inline DRT::UTILS::VariableExprFunction<dim>& MAT::PAR::FluidPoroSingleReaction::Function(
-    int functnum) const
-{
-  try
-  {
-    DRT::UTILS::VariableExprFunction<dim>& funct =
-        dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-    return funct;
-  }
-  catch (std::bad_cast& exp)
-  {
-    dserror(
-        "Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are "
-        "allowed!\n"
-        "Check your input file!");
-    return dynamic_cast<DRT::UTILS::VariableExprFunction<dim>&>(
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum));
-  }
 }
 
 /*----------------------------------------------------------------------*

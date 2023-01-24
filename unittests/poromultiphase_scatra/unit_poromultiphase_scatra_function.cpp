@@ -38,62 +38,62 @@ namespace
   TEST_F(LungOxygenExchangeLawTest, TestEvaluateAndEvaluateDerivativeZeroOxygenatedBlood)
   {
     // input arguments
-    const int index = 0;
+    const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {{"phi1", 0.19}, {"phi2", 0.0}};
     const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
 
     // test Evaluate
     EXPECT_NEAR(
-        LungOxygenExchangeLaw_->Evaluate(index, variables, constants), 2.166549252e-11, 1e-14);
+        LungOxygenExchangeLaw_->Evaluate(variables, constants, component), 2.166549252e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[0],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
         1.14028908e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[1],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
         -3.33897984e-08, 1e-14);
   }
 
   TEST_F(LungOxygenExchangeLawTest, TestEvaluateAndEvaluateDerivativeHalfOxygenatedBlood)
   {
     // input arguments
-    const int index = 0;
+    const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {
         {"phi1", 0.19}, {"phi2", 1.5e-4}};
     const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
 
     // test Evaluate
-    EXPECT_NEAR(
-        LungOxygenExchangeLaw_->Evaluate(index, variables, constants), 1.639622325407e-11, 1e-14);
+    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+        1.639622325407e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[0],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
         1.14028908e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[1],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
         -2.058724672649e-08, 1e-14);
   }
 
   TEST_F(LungOxygenExchangeLawTest, TestEvaluateAndEvaluateDerivativeNearlyFullyOxygenatedBlood)
   {
     // input arguments
-    const int index = 0;
+    const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {
         {"phi1", 0.19}, {"phi2", 3.0e-4}};
     const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
 
     // test Evaluate
     EXPECT_NEAR(
-        LungOxygenExchangeLaw_->Evaluate(index, variables, constants), 1.10777752e-11, 1e-14);
+        LungOxygenExchangeLaw_->Evaluate(variables, constants, component), 1.10777752e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[0],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
         1.14028908e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(index, variables, constants)[1],
+    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
         -8.295063236e-08, 1e-14);
   }
 

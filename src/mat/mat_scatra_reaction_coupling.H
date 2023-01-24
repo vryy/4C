@@ -18,9 +18,8 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <int dim>
-    class VariableExprFunction;
-  }
+    class FunctionOfAnything;
+  }  // namespace UTILS
 }  // namespace DRT
 
 namespace MAT
@@ -636,9 +635,6 @@ namespace MAT
             int numscal                            //!< number of scalars
         );
 
-        /// helper method for accessing variable expression function
-        template <int dim>
-        inline DRT::UTILS::VariableExprFunction<dim>& Function(int functnum) const;
 
         //! templated internal AddAdditionalVariables implementation
         template <int dim>
