@@ -121,8 +121,6 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
       rownodemaps[i] = colnodemaps[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
   }
 
-  std::cout << "Hello from inside >;D" << std::endl;
-
   // read nodes based on the element information
   node_reader_->Read(element_readers_, max_node_id);
 
@@ -130,7 +128,7 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
   for (size_t i = 0; i < element_readers_.size(); i++)
   {
     element_readers_[i].GetDis()->Redistribute(
-        *rownodemaps[i], *colnodemaps[i], false, false, false, false, false);
+        *rownodemaps[i], *colnodemaps[i], false, false, false);
 
     REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i].GetDis());
   }
