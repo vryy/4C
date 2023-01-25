@@ -3,12 +3,12 @@
  \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
         problems
         Contains hard-coded derivatives and evaluation routines for the most commonly
-        used reaction functions to speed up calculation as opposed to the VariableExprFunctions,
-        which use FAD
+        used reaction functions to speed up calculation as opposed to the
+        SymbolicFunctionOfAnything, which use FAD
 
-   \level 3
+\level 3
 
- *----------------------------------------------------------------------*/
+    *----------------------------------------------------------------------*/
 
 #include "lib_function.H"
 #include "Sacado.hpp"
@@ -20,102 +20,28 @@
 namespace POROMULTIPHASESCATRA
 {
   /*!
-   * @brief abstract class derived from VariableExprFunction since reaction functions are cast to
-   * VariableExprFunction in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
+   * @brief abstract class derived from FunctionOfAnything since reaction functions are cast to
+   * FunctionOfAnything in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
    */
   template <int dim>
-  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::VariableExprFunction<dim>
+  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::FunctionOfAnything
   {
    public:
     PoroMultiPhaseScaTraFunction();
 
 
-    /*!
-     * \brief evaluate function at given time and position
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated For scalar functions, index is always set to 0
-     * \param t (i) The point in time in which the function will be evaluated
-     * \param x (i) The point in 3-dimensional space in which the function will be evaluated
-     */
-    double Evaluate(const int index, const double* x, const double t)
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement Evaluate(index,x,t)");
-      return 0.0;
-    }
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override = 0;
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables)
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement Evaluate(index,variables)");
-      return 0.0;
-    }
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    virtual double Evaluate(const int index,
-        const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) = 0;
-
-    /*!
-     * \brief evaluate derivatives function at given position in space
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated For scalar functions, index is always set to 0
-     * \param x (i) The point in 3-dimensional space in which the function will be evaluated
-     * \param t (i) Absolute time in which the function will be evaluated
-     */
-    std::vector<double> EvaluateSpatialDerivative(const int index, const double* x, const double t)
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement EvaluateSpatialDerivative");
-      std::vector<double> emptyvector;
-      return emptyvector;
-    }
-
-    /*!
-     * \brief at given position in space for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     */
     std::vector<double> EvaluateDerivative(
-        const int index, const std::vector<std::pair<std::string, double>>& variables)
-    {
-      dserror("PoroMultiPhaseScaTraFunction does not implement EvaluateDerivative(variables)");
-      std::vector<double> emptyvector;
-      return emptyvector;
-    }
-
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    virtual std::vector<double> EvaluateDerivative(int index,
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) = 0;
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override = 0;
+
+    //! only one component possible for PoroMultiPhaseScatraFunction so far
+    [[nodiscard]] std::size_t NumberComponents() const override { return 1; }
 
     /*!
      * \brief check for correct order of input parameters variables and constants this check is
@@ -126,11 +52,6 @@ namespace POROMULTIPHASESCATRA
      */
     virtual void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) = 0;
-
-
-    /// return the number of components --> Reaction functions always have to have only one
-    /// component
-    std::size_t NumberComponents() override { return 1; }
 
    protected:
     /// function parameters for the specific POROMULTIPHASESCATRA_FUNCTION (have to be read in from
@@ -145,12 +66,12 @@ namespace POROMULTIPHASESCATRA
 
   /// try to create poro-specific functions from a given line definition
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreatePoroFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
       const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
   //! create poro-specific functions from a given line definition
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreatePoroFunction(
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> CreatePoroFunction(
       const std::string& type, const std::vector<std::pair<std::string, double>>& params);
 
   /*!
@@ -176,42 +97,17 @@ namespace POROMULTIPHASESCATRA
      */
     TumorGrowthLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -239,42 +135,17 @@ namespace POROMULTIPHASESCATRA
      */
     NecrosisLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -302,40 +173,18 @@ namespace POROMULTIPHASESCATRA
      */
     OxygenConsumptionLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -364,42 +213,18 @@ namespace POROMULTIPHASESCATRA
      */
     TumorGrowthLawHeavisideOxy(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -427,42 +252,18 @@ namespace POROMULTIPHASESCATRA
      */
     TumorGrowthLawHeavisideNecro(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -486,42 +287,17 @@ namespace POROMULTIPHASESCATRA
      */
     OxygenTransvascularExchangeLawCont(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
   /*!
@@ -545,42 +321,18 @@ namespace POROMULTIPHASESCATRA
      */
     OxygenTransvascularExchangeLawDisc(std::vector<std::pair<std::string, double>> funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
-     * \brief at given position in space for a given set of variables and constants
-     *
-     * \param index (i) For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param variables (i) A vector containing a pair (variablename, value) for
-     * each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t componnet) override;
+
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param variables (i) A vector containing a pair (variablename, value) for each variable
-     * \param constants (i) A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
 
    private:
     int pos_oxy_art_;
@@ -610,43 +362,18 @@ namespace POROMULTIPHASESCATRA
      */
     LungOxygenExchangeLaw(const std::vector<std::pair<std::string, double>>& funct_params);
 
-    /*!
-     * \brief evaluate function for a given set of variables
-     *
-     * \param[in] index For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param[in] variables A vector containing a pair (variablename, value) for
-     * each variable
-     * \param[in] constants A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
-     * \brief evaluate derivative at given position in space for a given set of variables and
-     * constants
-     *
-     * \param[in] index For vector-valued functions, index defines the function-component which
-     * should be evaluated
-     * \param[in] variables A vector containing a pair (variablename, value) for
-     * each variable
-     * \param[in] constants A vector containing a pair (variablename, value) for each
-     * constant
-     */
-    std::vector<double> EvaluateDerivative(int index,
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
 
-    /*!
-     * \brief check for correct order of input parameters variables and constants this check is
-     * performed only once
-     *
-     * \param[in] variables A vector containing a pair (variablename, value) for each variable
-     * \param[in] constants A vector containing a pair (variablename, value) for each constant
-     */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants);
+        const std::vector<std::pair<std::string, double>>& constants) override;
   };
 
 }  // namespace POROMULTIPHASESCATRA

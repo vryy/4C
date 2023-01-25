@@ -42,7 +42,7 @@ namespace DRT
     /*----------------------------------------------------------------------*/
     class DomainReader
     {
-      friend class NodeReader;
+      friend class MeshReader;
 
      public:
       /// construct element reader for a given field that reads a given section
@@ -76,16 +76,16 @@ namespace DRT
        * \param nodeoffset [in] Node GID of first newly created node.
        * \note Node GIDs may not overlap
        */
-      void Partition(int nodeGIdOfFirstNewNode);
+      void CreatePartitionedMesh(int nodeGIdOfFirstNewNode) const;
 
       /*! \brief read input parameters from input file
          \return class holding all input parameters for rectangular cuboid domain
        */
-      DRT::GRIDGENERATOR::RectangularCuboidInputs ReadRectangularCuboidInputData();
+      DRT::GRIDGENERATOR::RectangularCuboidInputs ReadRectangularCuboidInputData() const;
 
       /// finalize reading. FillComplete(false,false,false), that is, do not
       /// initialize elements. This is done later after reading boundary conditions.
-      void Complete();
+      void Complete() const;
 
       /// discretization name
       std::string name_;

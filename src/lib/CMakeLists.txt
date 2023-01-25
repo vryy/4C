@@ -95,6 +95,7 @@ set(OBJS_IO_LIB
     lib_inputreader.cpp
     lib_linedefinition.cpp
     lib_materialdefinition.cpp
+    lib_meshreader.cpp
     lib_nodereader.cpp
     lib_particlereader.cpp
     )

@@ -13,7 +13,6 @@
 #include "io_control.H"
 #include "io.H"
 #include "lib_inputreader.H"
-#include "lib_nodereader.H"
 #include "mat_par_bundle.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "inpar_parameterlist_utils.H"
