@@ -109,13 +109,17 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
     const double imbalance_tol =
         DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
 
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set("imbalance tol", std::to_string(imbalance_tol));
+
     // We want to be able to read empty fields. If we have such a beast
     // just skip the partitioning and do a proper initialization
     if (numnodes)
     {
-      std::tie(rownodemaps[i], colnodemaps[i]) = REBALANCE::RebalanceNodeMaps(
-          element_readers_[i].GetDis(), element_readers_[i].GetRowElements(),
-          element_readers_[i].GetDis()->Comm().NumProc(), imbalance_tol);
+      Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
+          REBALANCE::BuildGraph(element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
+      std::tie(rownodemaps[i], colnodemaps[i]) =
+          REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
     }
     else
       rownodemaps[i] = colnodemaps[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));

@@ -28,31 +28,6 @@ namespace DRT
 
 namespace REBALANCE
 {
-  //! @name Rebalancing of nodal maps
-  //! @{
-
-  /*!
-  \brief Compute rebalanced node maps for a given discretization
-
-  Starting from a given discretization, a new node row and column map is computed, such that
-  they both are better balanced across a given number partitions.
-
-  \note This just computes the new node row/column maps, but does not perform any redistribution
-  of data among ranks.
-
-  @param[in] discretization Discretization whose graph shall be redistributed
-  @param[in] elementRowMap Element row map of the discretization prior to the rebalancing
-  @param[in] numPartitions Desired number of partitions
-  @param[in] imbalanceTol Max. relative imbalance of subdomain size
-  @param[in] method Algorithm used for rebalancing
-
-  @return Node row map and node column map after rebalancing
-  */
-  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> RebalanceNodeMaps(
-      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> elementRowMap,
-      const int numPartitions, const double imbalanceTol = 1.1,
-      INPAR::REBALANCE::RebalanceType method = INPAR::REBALANCE::RebalanceType::hypergraph);
-
   /*!
   \brief Compute rebalanced node maps for a given discretization considering weights to model
   costs
@@ -63,19 +38,18 @@ namespace REBALANCE
   \note This just computes the new node row/column maps, but does not perform any redistribution
   of data among ranks.
 
-  \pre Input discretization has to be FillComplete().
-
-  @param[in] dis Discretization whose node maps are to be rebalanced
+  @param[in] initialGraph Initial graph used for rebalancing
+  @param[in] rebalanceParams Parameter list with rebalancing options
+  @param[in] initialNodeWeights Initial weights of the graph nodes
+  @param[in] initialEdgeWeights Initial weights of the graph edges
 
   @return Node row map and node column map after rebalancing with weights
   */
   std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> RebalanceNodeMaps(
-      Teuchos::RCP<DRT::Discretization> dis);
-
-  //! @}
-
-  //! @name Perform actual rebalancing via Isorropia/Zoltan
-  //! @{
+      Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
+      const Teuchos::ParameterList& rebalanceParams,
+      const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
+      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null);
 
   /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
@@ -115,8 +89,6 @@ namespace REBALANCE
   RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
       const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights);
 
-  //! @}
-
   /*!
   \brief Create node and edge weights based on element connectivity
 
@@ -130,7 +102,7 @@ namespace REBALANCE
   /*!
   \brief Build node graph of a given  discretization
 
-  \pre Discretization does not have to be FillComplete().
+  \pre Discretization does NOT have to be FillComplete().
 
   @param[in] dis Discretization whose node graph will be build
   @param[in] roweles Element row map of this discretization

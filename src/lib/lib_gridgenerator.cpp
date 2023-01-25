@@ -212,8 +212,13 @@ namespace DRT
       // redistribute the elements
       if (inputData.autopartition_)
       {
-        std::tie(nodeRowMap, nodeColMap) =
-            REBALANCE::RebalanceNodeMaps(Teuchos::rcp(&dis, false), elementRowMap, comm.NumProc());
+        Teuchos::RCP<const Epetra_CrsGraph> nodeGraph =
+            REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+
+        Teuchos::ParameterList rebalanceParams;
+        rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
+
+        std::tie(nodeRowMap, nodeColMap) = REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams);
       }
       else  // do not destroy our manual partitioning
       {

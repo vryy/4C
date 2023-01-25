@@ -2195,7 +2195,11 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   if (macro_dis_name == "structure")
   {
     // do weighted repartitioning to obtain new row/column maps
-    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(macro_dis);
+    const Teuchos::ParameterList rebalanceParams;
+    Teuchos::RCP<const Epetra_CrsGraph> nodeGraph = macro_dis->BuildNodeGraph();
+    const auto& [nodeWeights, edgeWeights] = REBALANCE::BuildWeights(*macro_dis);
+    const auto& [rownodes, colnodes] =
+        REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
 
     // rebuild the discretization with new maps
     macro_dis->Redistribute(*rownodes, *colnodes, true, true, true);
