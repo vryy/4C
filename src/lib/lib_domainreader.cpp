@@ -9,7 +9,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "lib_domainreader.H"
 #include "lib_gridgenerator.H"
 #include "lib_elementdefinition.H"
@@ -18,6 +17,7 @@
 #include "lib_discret.H"
 #include "lib_parobject.H"
 #include "io_pstream.H"
+#include "rebalance_utils.H"
 
 #include <Teuchos_Time.hpp>
 #include <algorithm>
@@ -44,7 +44,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DomainReader::Partition(int nodeGIdOfFirstNewNode)
+    void DomainReader::CreatePartitionedMesh(int nodeGIdOfFirstNewNode) const
     {
       const int myrank = comm_->MyPID();
 
@@ -70,7 +70,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    DRT::GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData()
+    DRT::GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData() const
     {
       DRT::GRIDGENERATOR::RectangularCuboidInputs inputData;
       // all reading is done on proc 0
@@ -210,7 +210,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DomainReader::Complete()
+    void DomainReader::Complete() const
     {
       const int myrank = comm_->MyPID();
 
@@ -226,7 +226,7 @@ namespace DRT
       if (!myrank && !reader_.MyOutputFlag())
         IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;
 
-      DRT::UTILS::PrintParallelDistribution(*dis_);
+      REBALANCE::UTILS::PrintParallelDistribution(*dis_);
     }
 
   }  // namespace INPUT

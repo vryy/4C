@@ -56,7 +56,7 @@ namespace DRT
       There is one more details to be considered: we do not want to
       read all elements and nodes on each processor. So we skip reading
       these sections here. Elements and nodes are read in parallel by the
-      ElementReader and NodeReader, respectively.
+      ElementReader and MeshReader, respectively.
 
       The point of having this reader is to allow for special problem
       types that need to read more than one dat file. (Scary!) This can be
@@ -90,7 +90,7 @@ namespace DRT
       /*!
         The big sections (nodes and elements) are excluded from general
         read so that we can read them in parallel. This is done using the
-        NodeReader and the ElementReader.
+        MeshReader and the ElementReader.
        */
       std::ifstream::pos_type ExcludedSectionPosition(const std::string& section) const;
 

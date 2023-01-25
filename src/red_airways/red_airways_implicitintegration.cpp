@@ -23,6 +23,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_linalg_solver.H"
+#include "rebalance_utils.H"
 #include "lib_dserror.H"
 #include "lib_function.H"
 #include "io_control.H"
@@ -126,7 +127,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->FillComplete();
-    DRT::UTILS::PrintParallelDistribution(*discret_);
+    REBALANCE::UTILS::PrintParallelDistribution(*discret_);
 
     // Neighbouring acinus
     airway_acinus_dep_ = LINALG::CreateVector(*discret_->ElementColMap(), true);

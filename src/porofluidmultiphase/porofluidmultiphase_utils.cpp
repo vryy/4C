@@ -18,6 +18,7 @@
 
 #include "adapter_porofluidmultiphase.H"
 #include "lib_utils_parallel.H"
+#include "rebalance_utils.H"
 
 #include "linalg_utils_densematrix_communication.H"
 
@@ -270,7 +271,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // fill and inform user
   artdis->FillComplete();
-  DRT::UTILS::PrintParallelDistribution(*artdis);
+  REBALANCE::UTILS::PrintParallelDistribution(*artdis);
 
   // user output
   if (contdis->Comm().MyPID() == 0)
