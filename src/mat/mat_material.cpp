@@ -37,6 +37,7 @@
 #include "mat_scatra_mat_multiscale.H"
 #include "mat_scatra_mat_aniso.H"
 #include "mat_muscle_weickenmeier.H"
+#include "mat_muscle_giantesio.H"
 #include "mat_myocard.H"
 #include "mat_mixfrac.H"
 #include "mat_sutherland.H"
@@ -376,6 +377,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_muscle_giantesio:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::Muscle_Giantesio(curmat));
+      auto* params = static_cast<MAT::PAR::Muscle_Giantesio*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_muscle_weickenmeier:

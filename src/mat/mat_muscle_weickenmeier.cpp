@@ -13,10 +13,8 @@
 #include "lib_linedefinition.H"
 #include "lib_voigt_notation.H"
 #include "matelast_aniso_structuraltensor_strategy.H"
-#include "mat_elasthyper_service.H"
 #include "mat_service.H"
 #include "mat_par_bundle.H"
-#include "mat_mixture.H"
 #include "mat_muscle_utils.H"
 
 
@@ -214,17 +212,13 @@ void MAT::Muscle_Weickenmeier::Update(LINALG::Matrix<3, 3> const& defgrd, int co
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
   LINALG::Matrix<3, 3> C(false);
-  C.MultiplyTN(1.0, defgrd, defgrd);
+  C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
   const LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
 
-  // product C^T*M
-  LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(C, M);
-
   // save the current fibre stretch in lambdaMOld_
-  lambdaMOld_ = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
 void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
@@ -264,14 +258,6 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   L.Scale(1.0 - omega0);  // omegap*M
   for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
-  // product C*M
-  LINALG::Matrix<3, 3> CM(false);
-  CM.MultiplyNN(C, M);
-
-  // product C^T*M
-  LINALG::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
-
   // product invC*L
   LINALG::Matrix<3, 3> invCL(false);
   invCL.MultiplyNN(invC, L);
@@ -284,7 +270,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+  double lambdaM = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double Pa = 0.0;
@@ -302,7 +288,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // derivative are zero
   if (Pa != 0.0)
   {
-    EvaluateActivationLevel(params, lambdaM, Pa, derivPa, omegaa, derivOmegaa);
+    EvaluateActivationLevel(lambdaM, Pa, derivPa, omegaa, derivOmegaa);
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
   LINALG::Matrix<6, 1> domegaadCv(Mv);
@@ -375,6 +361,14 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   if (abs(timestep + 1.0) < 1e-14)
     dserror("No time step size given for muscle Weickenmeier material!");
 
+  // approximate first time derivative of lambdaM through BW Euler
+  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt
+  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep;
+
+  // approximate second time derivative of lambdaM through BW Euler
+  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
+  double dDotLambdaMdLambdaM = 1 / timestep;
+
   // get active microstructural parameters from params_
   const double Na = params_->Na_;
   const int muTypesNum = params_->muTypesNum_;
@@ -406,7 +400,7 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 
   // compute force-velocity dependency fv
   double fv = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-      lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
+      dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
   Pa = Poptft * fxi * fv;
@@ -420,15 +414,15 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
     dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
         lambdaM, lambdaMin, lambdaOpt);
     dFvdLambdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-        lambdaM, lambdaMOld_, timestep, dotLambdaMMin, de, dc, ke, kc);
+        dotLambdaM, dDotLambdaMdLambdaM, dotLambdaMMin, de, dc, ke, kc);
   }
 
   // compute derivative of active nominal stress Pa w.r.t. lambdaM
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(Teuchos::ParameterList& params,
-    const double lambdaM, double Pa, double derivPa, double& omegaa, double& derivOmegaa)
+void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(const double lambdaM, const double Pa,
+    const double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters
   const double alpha = params_->alpha_;

@@ -13,6 +13,7 @@
 #define MUSCLE_UTILS_H
 
 #include <vector>
+#include "linalg_fixedsizematrix.H"
 
 namespace MAT
 {
@@ -20,6 +21,96 @@ namespace MAT
   {
     namespace MUSCLE
     {
+      /*!
+       * @brief Structure holding the values of a function f(x) and its derivative dfdx(x) at x
+       */
+      struct ValuesFunctAndFunctDeriv
+      {
+        double val_funct;
+        double val_deriv_funct;
+      };
+
+      /*!
+       * @brief Structure holding the values of a function f(x) and its first derivative dfdx(x) and
+       * second derivative ddfddx(x) at x
+       */
+      struct ValuesFunctAndFunctDerivs
+      {
+        double val_funct;
+        double val_deriv_funct;
+        double val_deriv_deriv_funct;
+      };
+
+      /*!
+       * @brief Find a zero of a function using the Newton-Raphson method.
+       *
+       * Find a zero of the scalar-valued function func given a nearby scalar starting point x_init.
+       * The input function needs to be defined as a function that accepts the argument x and that
+       * returns a ValuesFunctAndFunctDeriv holding f(x) and dfdx(x)
+       *
+       * @param[in]     func Scalar function f(x) whose zero should be found
+       * @param[in]     x_init Starting point of x
+       * @param[in]     tol Tolerance for zero value f(x)
+       * @param[in]     maxiter Maximal number of iterations
+       * @return        x Point x where f(x) is zero
+       */
+      double NewtonScalar(const std::function<ValuesFunctAndFunctDeriv(double)> &func,
+          const double x_init, const double tol, const int maxiter);
+
+      /*!
+       * @brief Find a zero of a continuous function using the bisection method
+       *
+       * Find a zero of the scalar-valued continuous function func defined on an interval [a, b]
+       * given the starting endpoints of the interval a_init and b_init. Note that f(a) and f(b)
+       * need to have opposite signs.
+       *
+       * The input function needs to be defined as a function that accepts the argument x and that
+       * returns a ValuesFunctAndFunctDeriv holding f(x) and dfdx(x)
+       *
+       * @param[in]     func Scalar function f(x) whose zero should be found
+       * @param[in]     a_init Starting point of a for the interval [a,b]
+       * @param[in]     b_init Starting point of b for the interval [a,b]
+       * @param[in]     tol Tolerance for the zero value f(c)
+       * @param[in]     maxiter Maximal number of iterations
+       * @return        c Midpoint c where f(c) is zero
+       */
+      double Bisection(const std::function<ValuesFunctAndFunctDeriv(double)> &func,
+          const double a_init, const double b_init, const double tol, const int maxiter);
+
+      /*!
+       * @brief Evaluate a function f(x) and the first and second derivatives w.r.t. x using central
+       * differences
+       *
+       * @param[in]     func Scalar function f(x) to be evaluated
+       * @param[in]     x Point x where f(x) and derivatives should be evaluated
+       * @param[in]     delta_x Step size x_{i+1}-x_i
+       */
+      ValuesFunctAndFunctDerivs EvaluateFunctionAndDerivativesCentralDifferences(
+          const std::function<double(double)> &func, const double x, const double delta_x);
+
+      /*!
+       * @brief Evaluate the first derivative of f(x) w.r.t. x using central differences
+       *
+       * @param[in]     f_i_minus_1 Solution f(x_{i-1})
+       * @param[in]     f_i_plus_1 Solution f(x_{i+1})
+       * @param[in]     delta_x Step size x_{i+1}-x_i
+       * @param[out]    dfdx First derivative of f at x_i
+       */
+      double FirstDerivativeCentralDifferences(
+          const double f_i_minus_1, const double f_i_plus_1, const double delta_x);
+
+      /*!
+       * @brief Evaluate the second derivative of f(x) w.r.t. x using central differences
+       *
+       * @param[in]     f_i_minus_1 Solution f(x_{i-1})
+       * @param[in]     f_i Solution f(x_{i})
+       * @param[in]     f_i_plus_1 Solution f(x_{i+1})
+       * @param[in]     delta_x Step size x_{i+1}-x_i
+       * @param[out]    ddfddx Second derivative of f at x_i
+       */
+      double SecondDerivativeCentralDifferences(const double f_i_minus_1, const double f_i,
+          const double f_i_plus_1, const double delta_x);
+
       /*!
        * @brief Evaluate Lambert W function with Halley's method
        *
@@ -68,6 +159,22 @@ namespace MAT
           const double lambdaM, const double lambdaMin, const double lambdaOpt);
 
       /*!
+       * @brief Evaluate the integral of the force-stretch dependency according to Giantesio et al.
+       *        w.r.t. the fiber stretch
+       *
+       * Reference: G. Giantesio, A. Musesti, 'Strain-dependent internal parameters in hyperelastic
+       * biological materials', International Journal of Non-Linear Mechanics, vol. 95, pp. 162-167,
+       * 2017, doi:10.1016/j.ijnonlinmec.2017.06.012.
+       *
+       * @param[in]     lambdaM Fiber stretch
+       * @param[in]     lambdaMin Minimal fiber stretch
+       * @param[in]     lambdaOpt Optimal fiber stretch
+       * @param[out]    intFxi Integral of the force-stretch function w.r.t. the fiber stretch
+       */
+      double EvaluateIntegralForceStretchDependencyEhret(
+          const double lambdaM, const double lambdaMin, const double lambdaOpt);
+
+      /*!
        * @brief Evaluate the force-velocity dependency in the style of Boel et al.
        *
        * Force-velocity dependecy according to Boel et al. with some slight modifications. Boel et.
@@ -80,19 +187,17 @@ namespace MAT
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
        * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
        *
-       * @param[in]     lambdaM Fiber stretch at current timestep n
-       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
-       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaM Contraction velocity / stretch rate
        * @param[in]     dotLambdaMMin Minimal stretch rate
        * @param[in]     de Amplitude of the eccentric velocity dependency function
        * @param[in]     dc Amplitude of the concentric velocity dependency function
        * @param[in]     ke Curvature of the eccentric velocity dependency function
        * @param[in]     kc Curvature of the concentric velocity dependency function
-       * @param[out]    fxi Force-velocity function result between zero and one
+       * @param[out]    fv Force-velocity function result between zero and one
        */
-      double EvaluateForceVelocityDependencyBoel(const double lambdaM, const double lambdaMOld,
-          const double timestepsize, const double dotLambdaMMin, const double de, const double dc,
-          const double ke, const double kc);
+      double EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
+          const double dotLambdaMMin, const double de, const double dc, const double ke,
+          const double kc);
 
       /*!
        * @brief Evaluate the derivative of the force-velocity dependency in the style of Boel et al.
@@ -108,9 +213,9 @@ namespace MAT
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
        * vol. 11, no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
        *
-       * @param[in]     lambdaM Fiber stretch at current timestep n
-       * @param[in]     lambdaMOld Fiber stretch at timestep n-1
-       * @param[in]     timestepsize Time step size (i.e. t_n - t_{n-1})
+       * @param[in]     dotLambdaM Contraction velocity / stretch rate
+       * @param[in]     dDotLambdaMdLambdaM Derivative of contraction velocity w.r.t. the fiber
+       *                                    stretch
        * @param[in]     dotLambdaMMin Minimal stretch rate
        * @param[in]     de Amplitude of the eccentric velocity dependency function
        * @param[in]     dc Amplitude of the concentric velocity dependency function
@@ -119,9 +224,9 @@ namespace MAT
        * @param[out]    dFvdLamdaM Derivative of the force-velocity function w.r.t. the fiber
        *                           stretch
        */
-      double EvaluateDerivativeForceVelocityDependencyBoel(const double lambdaM,
-          const double lambdaMOld, const double timestepsize, const double dotLambdaMMin,
-          const double de, const double dc, const double ke, const double kc);
+      double EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
+          const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de,
+          const double dc, const double ke, const double kc);
 
       /*!
        * @brief Evaluate the time-dependent optimal active stress by summation single twitches
@@ -234,6 +339,37 @@ namespace MAT
        */
       double EvaluateTimeDependentActiveStressTanh(const double sigma_max, const double alpha,
           const double beta, const double t_act_start, const double t_current);
+
+      /*!
+       *  @brief Returns the fiber stretch in the current configuration
+       *
+       *  @param[in] C Cauchy-Green strain tensor
+       *  @param[in] M Structural tensor of fiber directions
+       *  @param[out] lambdaM Fiber stretch
+       */
+      double FiberStretch(const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+
+      /*!
+       *  @brief Returns the derivative of the fiber stretch w.r.t. the Cauchy-Green strain
+       *
+       *  @param[in] lambdaM Fiber stretch
+       *  @param[in] C Cauchy-Green strain tensor
+       *  @param[in] M Structural tensor of fiber directions
+       *  @param[out] dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
+       */
+      LINALG::Matrix<3, 3> DFiberStretch_DC(
+          const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+
+      /*!
+       *  @brief Returns the contraction velocity computed by a Backward Euler approximation
+       *
+       *  @param[in] lambdaM Fiber stretch at time t_n
+       *  @param[in] lambdaMOld Fiber stretch at time t_{n-1}
+       *  @param[in] timeStepSize Timestep size t_n - t_{n-1}
+       *  @return dotLambdaM Contraction velocity, i.e. time derivative of the fiber stretch
+       */
+      double ContractionVelocityBWEuler(
+          const double lambdaM, const double lambdaMOld, const double timeStepSize);
     }  // namespace MUSCLE
   }    // namespace UTILS
 }  // namespace MAT

@@ -11,8 +11,108 @@
 
 #include "mat_muscle_utils.H"
 #include "lib_dserror.H"
-
+#include "linalg_fixedsizematrix.H"
 #include <cmath>
+#include <functional>
+
+
+double MAT::UTILS::MUSCLE::NewtonScalar(const std::function<ValuesFunctAndFunctDeriv(double)> &func,
+    const double x_init, const double tol, const int maxiter)
+{
+  int numiter = 0;
+  double x = x_init;
+  ValuesFunctAndFunctDeriv funct_and_funct_deriv = func(x);
+
+  // find x s.t. f(x) = 0
+  while ((abs(funct_and_funct_deriv.val_funct) > tol) && (numiter <= maxiter))
+  {
+    numiter++;
+
+    // x_{n+1} = x_{n} - func(x_{n}) / derivFunc(x_{n})
+    x = x - funct_and_funct_deriv.val_funct / funct_and_funct_deriv.val_deriv_funct;
+
+    // f(x_{n+1})
+    funct_and_funct_deriv = func(x);
+  }
+
+  if (numiter >= maxiter and abs(funct_and_funct_deriv.val_funct) > tol)
+    dserror(
+        "Maximal number of iterations reached for Newton solver (%d iterations). Error is "
+        "still at %14.14f",
+        numiter, abs(funct_and_funct_deriv.val_funct));
+
+  return x;
+}
+
+double MAT::UTILS::MUSCLE::Bisection(const std::function<ValuesFunctAndFunctDeriv(double)> &funct,
+    const double a_init, const double b_init, const double tol, const int maxiter)
+{
+  double a = a_init;
+  double b = b_init;
+  double c;
+  int numiter = 0;
+
+  while (numiter <= maxiter)
+  {
+    numiter++;
+    c = (a + b) / 2;
+
+    auto f_c = funct(c).val_funct;
+    auto f_a = funct(a).val_funct;
+
+    if (abs(f_c) < tol)
+    {
+      return c;
+    }
+    // sgn(f(a)) == sgn(f(c))
+    else if (f_c * f_a > 0)
+    {
+      a = c;
+    }
+    else
+    {
+      b = c;
+    }
+  }
+
+  dserror(
+      "Maximal number of iterations reached for Bisection method (%d iterations). Error is "
+      "still at %14.14f",
+      numiter, (b - a) / 2);
+
+  return c;
+}
+
+MAT::UTILS::MUSCLE::ValuesFunctAndFunctDerivs
+MAT::UTILS::MUSCLE::EvaluateFunctionAndDerivativesCentralDifferences(
+    const std::function<double(double)> &func, const double x, const double delta_x)
+{
+  ValuesFunctAndFunctDerivs f_df_ddf;
+
+  f_df_ddf.val_funct = func(x);
+
+  double f_i_minus_1 = func(x - delta_x);
+  double f_i_plus_1 = func(x + delta_x);
+  f_df_ddf.val_deriv_funct = FirstDerivativeCentralDifferences(f_i_minus_1, f_i_plus_1, delta_x);
+  f_df_ddf.val_deriv_deriv_funct =
+      SecondDerivativeCentralDifferences(f_i_minus_1, f_df_ddf.val_funct, f_i_plus_1, delta_x);
+
+  return f_df_ddf;
+}
+
+double MAT::UTILS::MUSCLE::FirstDerivativeCentralDifferences(
+    const double f_i_minus_1, const double f_i_plus_1, const double delta_x)
+{
+  double dfdx = (f_i_plus_1 - f_i_minus_1) / (2 * delta_x);
+  return dfdx;
+}
+
+double MAT::UTILS::MUSCLE::SecondDerivativeCentralDifferences(
+    const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x)
+{
+  double ddfddx = (f_i_plus_1 - 2 * f_i + f_i_minus_1) / (delta_x * delta_x);
+  return ddfddx;
+}
 
 void MAT::UTILS::MUSCLE::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)
@@ -71,13 +171,24 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
   return dFxidLamdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double lambdaM,
-    const double lambdaMOld, const double timestepsize, const double dotLambdaMMin, const double de,
-    const double dc, const double ke, const double kc)
+double MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+    const double lambdaM, const double lambdaMin, const double lambdaOpt)
 {
-  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld) / timestepsize;
+  double intFxi = 0.0;
+  double explambda = std::exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
+                              (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
 
+  if (lambdaM > lambdaMin)
+  {
+    intFxi = (lambdaMin - lambdaOpt) * (explambda - std::exp(0.5));
+  }
+
+  return intFxi;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
+    const double dotLambdaMMin, const double de, const double dc, const double ke, const double kc)
+{
   // helper variable
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;
 
@@ -95,16 +206,10 @@ double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double lamb
   return fv;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const double lambdaM,
-    const double lambdaMOld, const double timestepsize, const double dotLambdaMMin, const double de,
-    const double dc, const double ke, const double kc)
+double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
+    const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de, const double dc,
+    const double ke, const double kc)
 {
-  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld) / timestepsize;
-
-  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
-  double dDotLambdaMdLambdaM = 1 / timestepsize;
-
   // helper variable
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;
 
@@ -242,7 +347,6 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker
   return dFxidLamdaM;
 }
 
-
 double MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
     const double lambdaOpt, const double lambdaStar, const double P1, const double P2)
 {
@@ -314,4 +418,35 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
   double sigma_max_ft = sigma_max * ft;
 
   return sigma_max_ft;
+}
+
+double MAT::UTILS::MUSCLE::FiberStretch(
+    const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+{
+  // product C^T*M
+  LINALG::Matrix<3, 3> transpCM(false);
+  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
+
+  // stretch in fibre direction lambdaM
+  // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
+  double lambdaM = std::sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+
+  return lambdaM;
+}
+
+LINALG::Matrix<3, 3> MAT::UTILS::MUSCLE::DFiberStretch_DC(
+    const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+{
+  // derivative of lambdaM w.r.t. C
+  LINALG::Matrix<3, 3> dlambdaMdC(M);
+  dlambdaMdC.Scale(0.5 / lambdaM);
+
+  return dlambdaMdC;
+}
+
+double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
+    const double lambdaM, const double lambdaMOld, const double timeStepSize)
+{
+  double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;
+  return dotLambdaM;
 }

@@ -824,6 +824,55 @@ void MAT::MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
 }
 
 template <int dim>
+void MAT::MultiplyMatrixFourTensorBySecondIndex(LINALG::FourTensor<dim>& fourTensorResult,
+    const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
+    const bool clearResultTensor)
+{
+  if (clearResultTensor) ClearFourTensor(fourTensorResult);
+  for (int i = 0; i < dim; ++i)
+  {
+    for (int j = 0; j < dim; ++j)
+    {
+      for (int k = 0; k < dim; ++k)
+      {
+        for (int l = 0; l < dim; ++l)
+        {
+          for (int m = 0; m < dim; ++m)
+          {
+            // C^ijkl = B_m^j * A^imkl
+            fourTensorResult(i, j, k, l) += matrix(m, j) * fourTensor(i, m, k, l);
+          }
+        }
+      }
+    }
+  }
+}
+
+template <int dim>
+void MAT::MultiplyFourTensorFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
+    const LINALG::FourTensor<dim>& fourTensor1, const LINALG::FourTensor<dim>& fourTensor2,
+    const bool clearResultTensor)
+{
+  if (clearResultTensor) ClearFourTensor(fourTensorResult);
+  for (int i = 0; i < dim; ++i)
+  {
+    for (int j = 0; j < dim; ++j)
+    {
+      for (int k = 0; k < dim; ++k)
+      {
+        for (int l = 0; l < dim; ++l)
+        {
+          // C^ijkl = A^ij_ab * B^abkl
+          for (int a = 0; a < dim; ++a)
+            for (int b = 0; b < dim; ++b)
+              fourTensorResult(i, j, k, l) += fourTensor1(i, j, a, b) * fourTensor2(a, b, k, l);
+        }
+      }
+    }
+  }
+}
+
+template <int dim>
 LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
     const LINALG::Matrix<dim, dim>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt)
 {
@@ -1088,6 +1137,35 @@ void MAT::TransposeFourTensor12(
   }
 }
 
+void MAT::AddDyadicProductMatrixMatrix(LINALG::FourTensor<3>& fourTensorResult,
+    const LINALG::Matrix<3, 3>& matrixA, const LINALG::Matrix<3, 3>& matrixB)
+{
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = 0; j < 3; ++j)
+      for (unsigned k = 0; k < 3; ++k)
+        for (unsigned l = 0; l < 3; ++l)
+          fourTensorResult(i, j, k, l) += matrixA(i, j) * matrixB(k, l);
+}
+
+void MAT::AddContractionMatrixFourTensor(LINALG::Matrix<3, 3>& matrixResult,
+    const LINALG::Matrix<3, 3>& matrix, const LINALG::FourTensor<3>& fourTensor)
+{
+  for (unsigned k = 0; k < 3; ++k)
+    for (unsigned l = 0; l < 3; ++l)
+      for (unsigned i = 0; i < 3; ++i)
+        for (unsigned j = 0; j < 3; ++j)
+          matrixResult(k, l) += matrix(i, j) * fourTensor(i, j, k, l);
+}
+double MAT::ContractMatrixMatrix(
+    const LINALG::Matrix<3, 3>& matrixA, const LINALG::Matrix<3, 3>& matrixB)
+{
+  double scalarContraction = 0.0;
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = 0; j < 3; ++j) scalarContraction += matrixA(i, j) * matrixB(i, j);
+
+  return scalarContraction;
+}
+
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::Matrix<6, 9, double>&,
     LINALG::Matrix<3, 3, double> const&, LINALG::Matrix<3, 3, double> const&, double const);
@@ -1133,6 +1211,14 @@ template void MAT::MultiplyFourTensorMatrix<3>(LINALG::FourTensor<3>& fourTensor
 
 template void MAT::MultiplyMatrixFourTensor<3>(LINALG::FourTensor<3>& fourTensorResult,
     const LINALG::Matrix<3, 3>& matrix, const LINALG::FourTensor<3>& fourTensor,
+    const bool clearResultTensor);
+
+template void MAT::MultiplyMatrixFourTensorBySecondIndex<3>(LINALG::FourTensor<3>& fourTensorResult,
+    const LINALG::Matrix<3, 3>& matrix, const LINALG::FourTensor<3>& fourTensor,
+    const bool clearResultTensor);
+
+template void MAT::MultiplyFourTensorFourTensor<3>(LINALG::FourTensor<3>& fourTensorResult,
+    const LINALG::FourTensor<3>& fourTensor1, const LINALG::FourTensor<3>& fourTensor2,
     const bool clearResultTensor);
 
 template LINALG::Matrix<6, 6> MAT::PullBackFourTensor<3>(
