@@ -16,6 +16,7 @@
 #include "beam3_base.H"
 #include "rigidsphere.H"
 #include "so3_base.H"
+#include "rebalance_utils.H"
 
 #include "lib_utils_parallel.H"
 #include "lib_exporter.H"
