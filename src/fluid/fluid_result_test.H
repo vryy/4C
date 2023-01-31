@@ -49,12 +49,6 @@ namespace FLD
     */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    /// our version of element value tests
-    /*!
-    Possible flag is "fluidfraction". With the obvious meaning.
-    */
-    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
-
    private:
     /// pointer to fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis_;
@@ -68,8 +62,6 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> myerror_;
     /// pointer to div u evaluation
     Teuchos::RCP<double> mydivu_;
-    /// pointer to density scaling values
-    Teuchos::RCP<Epetra_Vector> mydensity_scaling_;
   };
 
 }  // namespace FLD

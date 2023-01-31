@@ -300,9 +300,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ELCH CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL/DIFFCOND", *list);
   reader.ReadGidSection("--BIOFILM CONTROL", *list);
-  reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
-  reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
-  reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/SPH", *list);
@@ -1663,23 +1660,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       meshreader.AddElementReader(
           DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
-
-      break;
-    }
-    case ProblemType::fluid_topopt:
-    {
-      // create empty discretizations
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-      optidis = Teuchos::rcp(new DRT::Discretization("opti", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      optidis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(optidis)));
-
-      AddDis("fluid", fluiddis);
-      AddDis("opti", optidis);
-
-      meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
       break;
     }

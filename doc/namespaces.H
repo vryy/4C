@@ -1026,15 +1026,6 @@ namespace INPAR
   {
   }  // namespace THR
 
-  /*! \brief Input parameters for topology optimization
-   *
-   * The enumerations of input parameters required within the topology optimization
-   * are listed here
-   */
-  namespace TOPOPT
-  {
-  }  // namespace TOPOPT
-
   /*! \brief Input parameters for thermo-structure interaction
    *
    */
@@ -1580,13 +1571,6 @@ namespace NTS
 {
 }  // namespace NTS
 
-/*! \brief
- *
- */
-namespace OPTI
-{
-}  // namespace OPTI
-
 /*! \brief Algorithm to control particle simulations
  *
  */
@@ -1887,19 +1871,6 @@ namespace THR
 namespace TIMINT
 {
 }  // namespace TIMINT
-
-/*! \brief Algorithms for topology optimization
- *
- */
-namespace TOPOPT
-{
-  /*! \brief
-   *
-   */
-  namespace ADJOINT
-  {
-  }  // namespace ADJOINT
-}  // namespace TOPOPT
 
 /*! \brief Thermo-structure interaction
  *

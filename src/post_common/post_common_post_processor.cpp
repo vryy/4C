@@ -843,32 +843,6 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       break;
     }
-    case ProblemType::fluid_topopt:
-    {
-      std::string basename = problem.outname();
-
-      for (int i = 0; i < problem.num_discr(); i++)
-      {
-        std::string disname = problem.get_discretization(i)->discretization()->Name();
-
-        if (disname.compare("fluid") == 0)  // 0=true
-        {
-          PostField* fluidfield = problem.get_discretization(i);
-          FluidFilter fluidwriter(fluidfield, basename);
-          fluidwriter.WriteFiles();
-        }
-        else if (disname.compare("opti") == 0)  // 0=true
-        {
-          PostField* optifield = problem.get_discretization(i);
-          ScaTraFilter optiwriter(optifield, basename);
-          optiwriter.WriteFiles();
-        }
-        else
-          dserror("unknown discretization for postprocessing of topopt problem!");
-      }
-
-      break;
-    }
     case ProblemType::elemag:
     {
       PostField* field = problem.get_discretization(0);

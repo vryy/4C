@@ -268,7 +268,6 @@ set(BACI_LIBRARIES
     mortar
     nlnsolver_nox
     nurbs_discret
-    opti
     pss_full
     rebalance
     solver

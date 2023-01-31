@@ -1280,10 +1280,6 @@ namespace FLD
     std::vector<double> flowvolumen_;
     std::vector<double> flowvolumenm_;
 
-    //! @name optimization data
-    /// density in topology optimization
-    Teuchos::RCP<Epetra_Vector> density_scaling_;
-
     //@}
 
     /// only necessary for AVM3: scale-separation matrix

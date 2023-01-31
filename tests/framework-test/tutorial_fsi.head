@@ -173,7 +173,6 @@ NUMSTEP                         1
 //                              Loma
 //                              Boussinesq
 //                              Poro
-//                              Topology_optimization
 PHYSICAL_TYPE                   Incompressible
 //
 // Predictor for first guess in nonlinear iteration
@@ -694,7 +693,6 @@ MIN_ELEPROC                     0
 //                              Fluid_Structure_Interaction
 //                              Fluid_Structure_Interaction_Lung
 //                              Fluid_Structure_Interaction_XFEM
-//                              Fluid_Top_Opt
 //                              Fluid_XFEM2
 //                              Gas_Fluid_Structure_Interaction
 //                              Low_Mach_Number_Flow

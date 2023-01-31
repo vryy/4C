@@ -57,7 +57,6 @@ set(OBJS_INPAR
     inpar_sti.cpp
     inpar_structure.cpp
     inpar_thermo.cpp
-    inpar_topopt.cpp
     inpar_tsi.cpp
     inpar_twophase.cpp
     inpar_validconditions.cpp

@@ -208,8 +208,6 @@ mortar/                    @baci/team_contact
 
 nurbs_discret/             @baci/team_discretization
 
-opti/                      @baci/team_fluid
-
 particle_algorithm/        @baci/team_particle
 
 particle_engine/           @baci/team_particle

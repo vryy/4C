@@ -467,10 +467,6 @@ namespace DRT
     {
       return getParameterList()->sublist("SSTI CONTROL");
     }
-    const Teuchos::ParameterList& OptimizationControlParams() const
-    {
-      return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL");
-    }
     const Teuchos::ParameterList& SearchtreeParams() const
     {
       return getParameterList()->sublist("SEARCH TREE");

@@ -24,7 +24,6 @@
 #include "inpar_fsi.H"
 #include "inpar_xfem.H"
 #include "inpar_poroelast.H"
-#include "inpar_topopt.H"
 #include "lib_periodicbc.H"
 #include "fluid_implicit_integration.H"
 #include "fluid_timint_loma_genalpha.H"
@@ -34,10 +33,6 @@
 #include "fluid_timint_poro_ost.H"
 #include "fluid_timint_poro_stat.H"
 #include "fluid_timint_ac_ost.H"
-#include "fluid_timint_topopt_genalpha.H"
-#include "fluid_timint_topopt_bdf2.H"
-#include "fluid_timint_topopt_ost.H"
-#include "fluid_timint_topopt_stat.H"
 #include "fluid_timint_red_genalpha.H"
 #include "fluid_timint_red_bdf2.H"
 #include "fluid_timint_red_ost.H"
@@ -428,12 +423,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("SURFACE TENSION") = prbdyn.sublist("SURFACE TENSION");
   }
 
-
-  if (probtype == ProblemType::fluid_topopt)
-    fluidtimeparams->set<int>(
-        "opti testcase", DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(
-                             prbdyn.sublist("TOPOLOGY OPTIMIZER"), "TESTCASE"));
-
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
@@ -786,25 +775,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                  timeint == INPAR::FLUID::timeint_npgenalpha)
           fluid_ = Teuchos::rcp(
               new FLD::TimIntTwoPhaseGenAlpha(actdis, solver, fluidtimeparams, output, isale));
-        else
-          dserror("Unknown time integration for this fluid problem type\n");
-      }
-      break;
-      case ProblemType::fluid_topopt:
-      {
-        if (timeint == INPAR::FLUID::timeint_stationary)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTopOptStat(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == INPAR::FLUID::timeint_one_step_theta)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTopOptOst(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == INPAR::FLUID::timeint_bdf2)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTopOptBDF2(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == INPAR::FLUID::timeint_afgenalpha or
-                 timeint == INPAR::FLUID::timeint_npgenalpha)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTopOptGenAlpha(actdis, solver, fluidtimeparams, output, isale));
         else
           dserror("Unknown time integration for this fluid problem type\n");
       }

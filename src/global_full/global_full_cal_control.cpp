@@ -23,7 +23,6 @@
 #include "levelset_dyn.H"
 #include "loma_dyn.H"
 #include "lubrication_dyn.H"
-#include "opti_topopt_dyn.H"
 #include "particle_algorithm_sim.H"
 #include "pasi_dyn.H"
 #include "poroelast_dyn.H"
@@ -129,10 +128,6 @@ void ntacal()
 
     case ProblemType::elch:
       elch_dyn(restart);
-      break;
-
-    case ProblemType::fluid_topopt:
-      fluid_topopt_dyn();
       break;
 
     case ProblemType::art_net:

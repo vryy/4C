@@ -2217,7 +2217,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetCo
     case INPAR::FLUID::loma:
     case INPAR::FLUID::tempdepwater:
     case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
     {
       convvelint_.Update(velintaf_);
       break;

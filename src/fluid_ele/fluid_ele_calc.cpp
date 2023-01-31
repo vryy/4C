@@ -20,8 +20,6 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "inpar_topopt.H"
-
 #include "lib_condition_utils.H"
 #include "lib_function.H"
 #include "lib_globalproblem.H"
@@ -442,33 +440,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   }    // fldpara_->GetIncludeSurfaceTension()
 
   eporo_.Clear();
-  if ((params.getEntryPtr("topopt_density") != NULL) and  // parameter exists and ...
-      (params.get<Teuchos::RCP<const Epetra_Vector>>("topopt_density") !=
-          Teuchos::null))  // ... according vector is filled
-  {
-    // read nodal values from global vector
-    Teuchos::RCP<const Epetra_Vector> topopt_density =
-        params.get<Teuchos::RCP<const Epetra_Vector>>("topopt_density");
-
-    if (params.get<INPAR::TOPOPT::DensityField>("dens_type") == INPAR::TOPOPT::dens_node_based)
-    {
-      for (int nn = 0; nn < nen_; ++nn)
-      {
-        int lid = (ele->Nodes()[nn])->LID();
-        eporo_(nn, 0) = (*topopt_density)[lid];
-      }
-    }
-    else if (params.get<INPAR::TOPOPT::DensityField>("dens_type") == INPAR::TOPOPT::dens_ele_based)
-    {
-      int lid = ele->LID();
-      for (int nn = 0; nn < nen_; ++nn)  // set all values equal to hack a constant element porosity
-                                         // on element level -> inefficient, but not relevant
-        eporo_(nn, 0) = (*topopt_density)[lid];
-    }
-    else
-      dserror("not implemented type of density function");
-  }
-
 
   // ---------------------------------------------------------------------
   // get initial node coordinates for element
@@ -920,10 +891,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf, fsevelaf, vol);
     }
-
-    // get reaction coefficient due to porosity for topology optimization
-    // !do this only at gauss point since this is nonlinear!
-    if (fldpara_->ReactionTopopt()) GetPorosityAtGP(eporo);
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType() == INPAR::FLUID::stabtype_residualbased)
@@ -1841,7 +1808,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelint(const bo
     case INPAR::FLUID::loma:
     case INPAR::FLUID::tempdepwater:
     case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
     {
       convvelint_.Update(velint_);
       break;

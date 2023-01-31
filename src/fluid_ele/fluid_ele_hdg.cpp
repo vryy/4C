@@ -319,9 +319,6 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:
     case FLD::set_loma_parameter:
-    case FLD::set_topopt_parameter:
-    case FLD::set_general_adjoint_parameter:
-    case FLD::set_adjoint_time_parameter:
       break;
 
     default:
