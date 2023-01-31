@@ -132,7 +132,7 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
   // last thing to do here is to distribute the maps
   for (size_t i = 0; i < element_readers_.size(); i++)
   {
-    element_readers_[i].GetDis()->Redistribute(*rowmaps_[i], *colmaps_[i], false, false, false);
+    element_readers_[i].GetDis()->Redistribute(*rowmaps_[i], *colmaps_[i], false, false, false, false, false);
   }
 }
 
