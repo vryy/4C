@@ -25,7 +25,6 @@
 
 // supported data containers
 #include "structure_new_timint_basedatasdyn.H"
-#include "structure_timada.H"
 #include "structure_xstructure_state.H"
 
 
@@ -34,61 +33,6 @@
 STR::TIMINT::Factory::Factory()
 {
   // empty
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimAda> STR::TIMINT::Factory::BuildAdaptiveWrapper(
-    const Teuchos::ParameterList& ioflags,       //!< input-output-flags
-    const Teuchos::ParameterList& sdyn,          //!< structural dynamic flags
-    const Teuchos::ParameterList& xparams,       //!< extra flags
-    const Teuchos::ParameterList& taflags,       //!< adaptive input flags
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy  //!< marching time integrator
-) const
-{
-  Teuchos::RCP<STR::TimAda> adaintegrator = Teuchos::null;
-
-  /*
-  // auxiliary time integrator
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(taflags,"KIND"))
-  {
-
-  case INPAR::STR::timada_kind_none :
-    // No adaptivity in time
-    adaintegrator = Teuchos::null;
-    break;
-
-  case INPAR::STR::timada_kind_zienxie :
-    // Zienkiewicz-Xie error indicator for generalised-alpha
-    adaintegrator = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, taflags, timeintegrator));
-    break;
-
-  case INPAR::STR::timada_kind_ab2 :
-    // Adams-Bashforth 2nd order
-    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(
-        ioflags, sdyn, xparams, taflags, timeintegrator));
-    break;
-
-  case INPAR::STR::timada_kind_expleuler :
-    // Adams-Bashforth 2nd order
-    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntExplEuler>(
-        ioflags, sdyn, xparams, taflags, timeintegrator));
-    break;
-
-  case INPAR::STR::timada_kind_centraldiff :
-    // Adams-Bashforth 2nd order
-    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntCentrDiff>(
-        ioflags, sdyn, xparams, taflags, timeintegrator));
-    break;
-
-  default :
-    dserror("Auxiliary adaptive time integrator is not available.");
-    break;
-
-  }
-  */
-  // return the auxiliary integrator
-  return adaintegrator;
 }
 
 /*----------------------------------------------------------------------------*
@@ -210,20 +154,6 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildStrategy(const Teuchos::Parame
 {
   Factory factory;
   return factory.BuildStrategy(sdyn);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimAda> STR::TIMINT::BuildAdaptiveWrapper(
-    const Teuchos::ParameterList& ioflags,       //!< input-output-flags
-    const Teuchos::ParameterList& sdyn,          //!< structural dynamic flags
-    const Teuchos::ParameterList& xparams,       //!< extra flags
-    const Teuchos::ParameterList& taflags,       //!< adaptive input flags
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy  //!< marching time integrator
-)
-{
-  Factory factory;
-  return factory.BuildAdaptiveWrapper(ioflags, sdyn, xparams, taflags, ti_strategy);
 }
 
 /*----------------------------------------------------------------------------*

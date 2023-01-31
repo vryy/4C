@@ -17,14 +17,12 @@
 #include "linalg_utils_densematrix_eigen.H"
 #include "lib_tensor_transformation.H"
 #include "lib_function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
 
 #include "mat_material.H"
 #include "mat_membrane_elasthyper.H"
 #include "mat_membrane_active_strain.H"
-#include "mat_growthremodel_elasthyper.H"
-
-#include "fluid_ele_action.H"
-#include "immersed_problem_immersed_base.H"
 
 #include "mat_membrane_material_interfaces.H"
 #include "membrane_service.H"

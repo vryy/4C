@@ -42,6 +42,7 @@
 #include "adapter_fld_fluid_fsi.H"
 #include "adapter_ale_fsi.H"
 #include "adapter_coupling_volmortar.H"
+#include "adapter_structure_scatra_ele.H"
 // SCATRA
 #include "scatra_algorithm.H"
 #include "scatra_timint_implicit.H"
@@ -214,15 +215,17 @@ void FS3I::PartFS3I::Init()
           "STRUCTSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
     // is the set ImplType for the STRUCTURE Elements reasonable in case they are not cloned?
-    SSI::ScatraStructureCloneStrategy clonestrategy;
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+      if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
+          INPAR::SCATRA::impltype_undefined)
+      {
         dserror(
             "Be aware that the ImplType defined for the STRUCTURE Elements will be ignored and the "
             "ImplType from the TRANSPORT2 ELMENTS section will be utilized. Use TYPE 'Undefined' "
             "if "
             "cloning the scatra discretization from structure discretization is not intended!");
+      }
     }
 
     volume_coupling_objects_.push_back(CreateVolMortarObject(structdis, structscatradis));

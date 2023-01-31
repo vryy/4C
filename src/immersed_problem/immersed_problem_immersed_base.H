@@ -28,9 +28,6 @@
 
 #include "inpar_fluid.H"
 
-// experimental pre cmbe
-#include "scatra_ele_action.H"
-
 
 namespace DRT
 {

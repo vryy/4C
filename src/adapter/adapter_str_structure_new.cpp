@@ -862,43 +862,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
     const Teuchos::ParameterList& xparams, const Teuchos::ParameterList& taflags,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
-  // get the problem instance and the problem type
-  DRT::Problem* problem = DRT::Problem::Instance();
-  ProblemType probtype = problem->GetProblemType();
-
-  // create auxiliary time integrator, can be seen as a wrapper for ti_strategy
-  Teuchos::RCP<STR::TimAda> wrapper_adaptive =
-      STR::TIMINT::BuildAdaptiveWrapper(ioflags, sdyn, xparams, taflags, ti_strategy);
-
-  if (wrapper_adaptive.is_null()) return;
-
-  switch (probtype)
-  {
-    case ProblemType::structure:  // pure structural time adaptivity
-    {
-      str_wrapper_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, ti_strategy));
-      break;
-    }
-    case ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
-    case ProblemType::fsi_redmodels:
-    {
-      if ((actdis_->Comm()).MyPID() == 0)
-        IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
-
-      Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
-          Teuchos::rcp(new StructureFSITimIntAda(
-              wrapper_adaptive, Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
-      str_wrapper_ = fsiwrapperwithadaptivity;
-      break;
-    }
-    default:
-    {
-      dserror(
-          "Adaptive time integration for the structure not implemented for desired problem type.");
-      break;
-    }
-  }
-
   return;
 }
 

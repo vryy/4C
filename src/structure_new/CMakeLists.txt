@@ -14,7 +14,6 @@ set(OBJS_STRUCTURE_NEW
     structure_new_impl_statics.cpp
     structure_new_integrator.cpp
     structure_new_model_evaluator.cpp
-    structure_new_model_evaluator_cardiovascular0d.cpp
     structure_new_model_evaluator_contact.cpp
     structure_new_model_evaluator_contactdata.cpp
     structure_new_model_evaluator_data.cpp
