@@ -20,6 +20,7 @@
 #include "io.H"
 #include "io_pstream.H"
 #include "linalg_sparseoperator.H"
+#include "linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
@@ -105,6 +106,15 @@ void STR::IMPLICIT::Statics::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   CheckInitSetup();
+
+  // create empty dynamic forces
+  auto finertialn = CORE::LINALG::CreateVector(*GlobalState().DofRowMapView(), true);
+  auto fviscon = CORE::LINALG::CreateVector(*GlobalState().DofRowMapView(), true);
+
+  // write dynamic forces, so that it can be used later on for restart dynamics analysis
+  iowriter.WriteVector("finert", finertialn);
+  iowriter.WriteVector("fvisco", fviscon);
+
   ModelEval().WriteRestart(iowriter, forced_writerestart);
 }
 
