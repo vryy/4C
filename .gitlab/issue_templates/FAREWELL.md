@@ -33,13 +33,14 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Change ownership of source and input files to another developer or a team.
 
 
-## Checklist for the BACI group owners
+## Checklist for the BACI team
 <!---
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
 - [ ] Review open issues assigned to the leaving team member and re-assign or unassign.
 - [ ] Remove leaving team member from the GitLab group baci_developers.
 - [ ] Remove leaving team member from all GitLab groups team_*.
+- [ ] Remove the email address of the leaving team member from the [Pipeline status emails](https://gitlab.lrz.de/baci/baci/-/settings/integrations/pipelines_email/edit)
 - [ ] If applicable, remove the leaving team member from the GitLab group baci_maintainers.
 - [ ] If applicable, remove the leaving team member from the list of maintainers in #336.
 - [ ] If applicable, transfer GitLab parent user role to another developer.

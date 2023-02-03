@@ -50,12 +50,13 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Get familiar with our [BACI teams concept](https://gitlab.lrz.de/baci/baci/-/wikis/the-baci-community#baci-teams) and browse through the [list of BACI teams](https://gitlab.lrz.de/baci)
 - [ ] Request access to at least two BACI **core teams** and to any other teams that fit your research topics/interests
 
-## Checklist for the BACI group owners
+## Checklist for the BACI team
 <!---
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
 - [ ] Add new team member to the GitLab group baci_developers
 - [ ] Assign and @mention an experienced "Baci buddy" to help with git, the first issue, first commit, ...
+- [ ] Add the email address of the new team member to the [Pipeline status emails](https://gitlab.lrz.de/baci/baci/-/settings/integrations/pipelines_email/edit)
 
 
 ## Interested Parties
