@@ -69,7 +69,7 @@ namespace ELEMAG
       );
 
       /// returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy();
+      std::map<std::string, std::string> ConditionsToCopy() const;
 
       /// check for correct material
       void CheckMaterialType(const int matid);

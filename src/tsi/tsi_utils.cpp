@@ -38,38 +38,14 @@
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::ConditionsToCopy()
+    const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  // special Thermo conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ThermoDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoVolumeNeumann", "VolumeNeumann"));
-
-  // special Thermo convective heat transfer conditions (Newton's law of heat
-  // transfer)
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoConvections", "ThermoConvections"));
-
-  // conditions for periodic boundary conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LinePeriodic", "LinePeriodic"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SurfacePeriodic", "SurfacePeriodic"));
-
-  /// initial field
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ThermoInitfield", "Initfield"));
-
-  /// mortar coupling
-  conditions_to_copy.insert(std::pair<std::string, std::string>("MortarMulti", "MortarMulti"));
-
-  return conditions_to_copy;
-}  // ConditionsToCopy()
+  return {{"ThermoDirichlet", "Dirichlet"}, {"ThermoPointNeumann", "PointNeumann"},
+      {"ThermoLineNeumann", "LineNeumann"}, {"ThermoSurfaceNeumann", "SurfaceNeumann"},
+      {"ThermoVolumeNeumann", "VolumeNeumann"}, {"ThermoConvections", "ThermoConvections"},
+      {"LinePeriodic", "LinePeriodic"}, {"SurfacePeriodic", "SurfacePeriodic"},
+      {"ThermoInitfield", "Initfield"}, {"MortarMulti", "MortarMulti"}};
+}
 
 
 /*----------------------------------------------------------------------*

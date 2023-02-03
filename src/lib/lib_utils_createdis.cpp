@@ -106,17 +106,16 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
     const std::map<std::string, std::string>& conditions_to_copy) const
 {
   // copy selected conditions to the new discretization (and rename them if desired)
-  for (std::map<std::string, std::string>::const_iterator conditername = conditions_to_copy.begin();
-       conditername != conditions_to_copy.end(); ++conditername)
+  for (const auto& condition_pair : conditions_to_copy)
   {
     std::vector<DRT::Condition*> conds;
-    sourcedis.GetCondition((*conditername).first, conds);
-    for (unsigned i = 0; i < conds.size(); ++i)
+    sourcedis.GetCondition(condition_pair.first, conds);
+    for (const auto& cond : conds)
     {
       // We use the same nodal ids and therefore we can just copy the conditions.
       // The string-map gives the new condition names
       // (e.g. renaming from TransportDirichlet to Dirichlet)
-      targetdis.SetCondition((*conditername).second, Teuchos::rcp(new DRT::Condition(*conds[i])));
+      targetdis.SetCondition(condition_pair.second, Teuchos::rcp(new DRT::Condition(*cond)));
     }
     conds.clear();
   }

@@ -51,7 +51,7 @@ namespace STI
 
     //! return map with original names of conditions to be cloned as key values, and final names of
     //! cloned conditions as mapped values
-    virtual std::map<std::string, std::string> ConditionsToCopy();
+    virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
     //! decide whether element should be cloned or not, and if so, determine type of cloned element
     bool DetermineEleType(DRT::Element* actele,  //! current element on source discretization

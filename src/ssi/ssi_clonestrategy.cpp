@@ -24,70 +24,30 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportNeumannInflow", "TransportNeumannInflow"));
-  // for moving boundary problems
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
-  // for coupled scalar transport fields
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraCoupling", "ScaTraCoupling"));
-  // boundary flux evaluation condition for scalar transport
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
-  // initial field conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  // copy s2i mesh tying condition from its ssi equivalent
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSIInterfaceMeshtying", "S2IMeshtying"));
-  // scatra-scatra interface kinetics conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("S2IKinetics", "S2IKinetics"));
-  // copy partitioning of the scatra field
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScatraPartitioning", "ScatraPartitioning"));
-  // electrode state of charge conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ElectrodeSOC", "ElectrodeSOC"));
-  // cell voltage conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("CellVoltage", "CellVoltage"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("CellVoltagePoint", "CellVoltagePoint"));
-  // calculate total and mean scalar
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TotalAndMeanScalar", "TotalAndMeanScalar"));
-  // cell cycling conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("CCCVCycling", "CCCVCycling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("CCCVHalfCycle", "CCCVHalfCycle"));
-  // convective heat transfer conditions (Newton's law of heat transfer)
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "TransportThermoConvections", "TransportThermoConvections"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "SSIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSISurfaceManifold", "SSISurfaceManifold"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "SSISurfaceManifoldKinetics", "SSISurfaceManifoldKinetics"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
+      {"TransportVolumeNeumann", "VolumeNeumann"},
+      {"TransportNeumannInflow", "TransportNeumannInflow"}, {"FSICoupling", "FSICoupling"},
+      {"ScaTraCoupling", "ScaTraCoupling"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
+      {"Initfield", "Initfield"}, {"SSIInterfaceMeshtying", "S2IMeshtying"},
+      {"S2IKinetics", "S2IKinetics"}, {"ScatraPartitioning", "ScatraPartitioning"},
+      {"ElectrodeSOC", "ElectrodeSOC"}, {"CellVoltage", "CellVoltage"},
+      {"CellVoltagePoint", "CellVoltagePoint"}, {"TotalAndMeanScalar", "TotalAndMeanScalar"},
+      {"CCCVCycling", "CCCVCycling"}, {"CCCVHalfCycle", "CCCVHalfCycle"},
+      {"TransportThermoConvections", "TransportThermoConvections"},
+      {"SSIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"},
+      {"SSISurfaceManifold", "SSISurfaceManifold"},
+      {"SSISurfaceManifoldKinetics", "SSISurfaceManifoldKinetics"}};
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::ConditionsToCopy()
+    const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-  return conditions_to_copy;
+  return {};
 }
 
 

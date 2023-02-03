@@ -214,15 +214,14 @@ namespace DRT
         targetnodecolmap_ = CreateMap(colnodeset_, *targetdis);
 
         // copy selected conditions to the new discretization
-        for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
-             conditername != conditions_to_copy.end(); ++conditername)
+        for (const auto& cond_name : conditions_to_copy)
         {
           std::vector<DRT::Condition*> conds;
-          sourcedis.GetCondition(*conditername, conds);
-          for (unsigned i = 0; i < conds.size(); ++i)
+          sourcedis.GetCondition(cond_name, conds);
+          for (const auto& cond : conds)
           {
             // We use the same nodal ids and therefore we can just copy the conditions.
-            targetdis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
+            targetdis->SetCondition(cond_name, Teuchos::rcp(new DRT::Condition(*cond)));
           }
         }
 
@@ -383,7 +382,7 @@ namespace DRT
         targetelecolmap_ = CreateMap(coleleset_, *targetdis);
 
         // copy desired conditions from source to target discretization
-        std::map<std::string, std::string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
+        const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
         CopyConditions(*sourcedis, *targetdis, conditions_to_copy);
 
         // call Redistribute, FillComplete etc.
@@ -474,12 +473,11 @@ namespace DRT
         targetelecolmap_ = CreateMap(coleleset_, targetdis);
 
         // copy desired conditions from source to target discretization
-        std::map<std::string, std::string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
+        const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
         CopyConditions(sourcedis, targetdis, conditions_to_copy);
 
         // call Redistribute, FillComplete etc.
         Finalize(sourcedis, targetdis);
-        return;
       };  // CreateMatchingDiscretizationFromCondition with material
 
       /// get element type std::strings and global id's and nodes from source discretization
