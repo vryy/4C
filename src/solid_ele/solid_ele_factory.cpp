@@ -36,6 +36,9 @@ std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface> DRT::ELEMENTS::SolidFactor
     case DRT::Element::pyramid5:
       return ProvideImpl<DRT::Element::pyramid5>(ele);
       break;
+    case DRT::Element::wedge6:
+      return ProvideImpl<DRT::Element::wedge6>(ele);
+      break;
     case DRT::Element::tet4:
       return ProvideImpl<DRT::Element::tet4>(ele);
       break;

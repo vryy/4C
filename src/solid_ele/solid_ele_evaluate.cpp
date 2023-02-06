@@ -10,6 +10,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 */
 
 #include "elements_paramsinterface.H"
+#include "solid_ele_neumann_evaluator.H"
 #include "str_elements_paramsinterface.H"
 #include "dserror.H"
 #include "solid_ele.H"
@@ -187,6 +188,17 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
-  dserror("not implemented");
-  return 1;
+  SetParamsInterfacePtr(params);
+
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return ParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
+
+  DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
+  return 0;
 }

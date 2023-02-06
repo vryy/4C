@@ -250,90 +250,72 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   const Strains<distype> strains_centroid =
       EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping_centroid);
 
-  // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
-
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
-
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
-
-    double integration_factor =
-        jacobian_mapping.determinant_ * stiffness_matrix_integration_.Weight(gp);
-
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-    LINALG::Matrix<numstr_, numdofperelement_> Bop =
-        EvaluateStrainGradient(jacobian_mapping, strains);
-
-    // factor (detF0/detF)^1/3
-    const double fbar_factor =
-        EvaluateFbarFactor(strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
-
-    const LINALG::Matrix<numdofperelement_, 1> Hop = EvaluateFbarHOperator(
-        jacobian_mapping, jacobian_mapping_centroid, strains, strains_centroid);
-
-    // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
-    const Strains<distype> strains_bar =
-        EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
-
-    // stress stress_bar evaluated using strains_bar
-    const Stress<distype> stress_bar =
-        EvaluateMaterialStress(solid_material, strains_bar, params, gp, ele.Id());
-
-    // evaluate internal force vector using only the deviatoric component
-    if (force.has_value())
-      AddInternalForceVector(Bop, stress_bar, integration_factor / fbar_factor, *force);
-
-    if (stiff.has_value())
-    {
-      // evaluate elastic stiffness matrix using only the deviatoric component Fbar
-      AddElasticStiffnessMatrix(Bop, stress_bar, integration_factor * fbar_factor, *stiff);
-
-      // evaluate geometric stiffness matrix using only the deviatoric component Fbar
-      AddGeometricStiffnessMatrix(
-          jacobian_mapping.n_xyz_, stress_bar, integration_factor / fbar_factor, *stiff);
-
-      // additional stiffness matrix needed for fbar method
-      AddFbarStiffnessMatrix(
-          Bop, Hop, fbar_factor, integration_factor, strains, stress_bar, *stiff);
-    }
-
-    if (mass.has_value())
-    {
-      if (equal_integration_mass_stiffness)
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
-      }
-      else
-      {
-        mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
-      }
-    }
-  }
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+
+        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+            EvaluateStrainGradient(jacobian_mapping, strains);
+
+        // factor (detF0/detF)^1/3
+        const double fbar_factor = EvaluateFbarFactor(
+            strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
+
+        const LINALG::Matrix<numdofperelement_, 1> Hop = EvaluateFbarHOperator(
+            jacobian_mapping, jacobian_mapping_centroid, strains, strains_centroid);
+
+        // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
+        const Strains<distype> strains_bar =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
+
+        // stress stress_bar evaluated using strains_bar
+        const Stress<distype> stress_bar =
+            EvaluateMaterialStress(solid_material, strains_bar, params, gp, ele.Id());
+
+        // evaluate internal force vector using only the deviatoric component
+        if (force.has_value())
+          AddInternalForceVector(Bop, stress_bar, integration_factor / fbar_factor, *force);
+
+        if (stiff.has_value())
+        {
+          // evaluate elastic stiffness matrix using only the deviatoric component Fbar
+          AddElasticStiffnessMatrix(Bop, stress_bar, integration_factor * fbar_factor, *stiff);
+
+          // evaluate geometric stiffness matrix using only the deviatoric component Fbar
+          AddGeometricStiffnessMatrix(
+              jacobian_mapping.n_xyz_, stress_bar, integration_factor / fbar_factor, *stiff);
+
+          // additional stiffness matrix needed for fbar method
+          AddFbarStiffnessMatrix(
+              Bop, Hop, fbar_factor, integration_factor, strains, stress_bar, *stiff);
+        }
+
+        if (mass.has_value())
+        {
+          if (equal_integration_mass_stiffness)
+          {
+            AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
+          }
+          else
+          {
+            mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
+          }
+        }
+      });
 
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
-    for (int gp = 0; gp < mass_matrix_integration_.NumPoints(); ++gp)
-    {
-      const LINALG::Matrix<nsd_, 1> xi =
-          EvaluateParameterCoordinate<distype>(mass_matrix_integration_, gp);
-
-      const ShapeFunctionsAndDerivatives<distype> shape_functions =
-          EvaluateShapeFunctionsAndDerivs<distype>(xi);
-
-      const double integration_factor =
-          EvaluateJacobianDeterminant(shape_functions, nodal_coordinates) *
-          mass_matrix_integration_.Weight(gp);
-
-      AddMassMatrix(shape_functions, integration_factor, mean_density, *mass);
-    }
+    IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
+        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+            const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+            const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+        { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
   }
 }
 
@@ -360,29 +342,24 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
   auto strains_centroid = EvaluateStrainsCentroid<distype>(nodal_coordinates);
 
   // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
+        // factor (detF0/detF)^1/3
+        const double fbar_factor = EvaluateFbarFactor(
+            strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
+        // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
+        const Strains<distype> strains_bar =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
 
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-    // factor (detF0/detF)^1/3
-    const double fbar_factor =
-        EvaluateFbarFactor(strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
-
-    // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
-    const Strains<distype> strains_bar =
-        EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
-
-    solid_material.Update(strains_bar.defgrd_, gp, params, ele.Id());
-  }  // gp loop
+        solid_material.Update(strains_bar.defgrd_, gp, params, ele.Id());
+      });
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -447,34 +424,29 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
   auto strains_centroid = EvaluateStrainsCentroid<distype>(nodal_coordinates);
 
   // Loop over all Gauss points
-  for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-  {
-    const LINALG::Matrix<nsd_, 1> xi =
-        EvaluateParameterCoordinate<distype>(stiffness_matrix_integration_, gp);
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
 
-    const ShapeFunctionsAndDerivatives<distype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi);
+        // factor (detF0/detF)^1/3
+        const double fbar_factor = EvaluateFbarFactor(
+            strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
 
-    const JacobianMapping<distype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, nodal_coordinates);
-
-    const Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-    // factor (detF0/detF)^1/3
-    const double fbar_factor =
-        EvaluateFbarFactor(strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
-
-    // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
-    const Strains<distype> strains_bar =
-        EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
+        // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
+        const Strains<distype> strains_bar =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
 
 
-    const Stress<distype> stress_bar =
-        EvaluateMaterialStress(solid_material, strains_bar, params, gp, ele.Id());
+        const Stress<distype> stress_bar =
+            EvaluateMaterialStress(solid_material, strains_bar, params, gp, ele.Id());
 
-    AssembleStrainTypeToMatrixRow(strains_bar, strainIO.type, strain_data, gp);
-    AssembleStressTypeToMatrixRow(strains_bar, stress_bar, stressIO.type, stress_data, gp);
-  }  // gp loop
+        AssembleStrainTypeToMatrixRow(strains_bar, strainIO.type, strain_data, gp);
+        AssembleStressTypeToMatrixRow(strains_bar, stress_bar, stressIO.type, stress_data, gp);
+      });
 
   Serialize(stress_data, serialized_stress_data);
   Serialize(strain_data, serialized_strain_data);

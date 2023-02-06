@@ -344,6 +344,11 @@ template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::pyrami
     const std::vector<LINALG::Matrix<
         DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement, 1>>&,
     FIBER::NodalFiberHolder&);
+template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::wedge6>(
+    const DRT::Node* const*,
+    const std::vector<LINALG::Matrix<
+        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement, 1>>&,
+    FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::nurbs9>(
     const DRT::Node* const*,
     const std::vector<LINALG::Matrix<
@@ -361,6 +366,8 @@ template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex20>(
 template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex27>(
     const DRT::Node* const* nodes);
 template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::pyramid5>(
+    const DRT::Node* const* nodes);
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::wedge6>(
     const DRT::Node* const* nodes);
 
 template void DRT::FIBER::UTILS::SetupCardiacFibers<3>(

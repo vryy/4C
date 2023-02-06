@@ -3,6 +3,7 @@ set(OBJS_ELE_SOLID
     solid_ele_calc_fbar.cpp
     solid_ele_evaluate.cpp
     solid_ele_factory.cpp
+    solid_ele_neumann_evaluator.cpp
     solid_ele.cpp
     solid_utils.cpp
     )
