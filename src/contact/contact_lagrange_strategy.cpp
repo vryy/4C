@@ -1626,8 +1626,9 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();

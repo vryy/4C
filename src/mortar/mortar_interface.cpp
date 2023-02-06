@@ -996,8 +996,8 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
   double globmax[3];
 
   // do the necessary communication
-  Comm().MinAll(&locmin[0], &globmin[0], 3);
-  Comm().MaxAll(&locmax[0], &globmax[0], 3);
+  Comm().MinAll(locmin, globmin, 3);
+  Comm().MaxAll(locmax, globmax, 3);
 
   // compute cutoff radius:
   double global_slave_max_edge_size = -1.0;
@@ -2904,7 +2904,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
         // get pointer to slave node
         auto* mrtrnode = dynamic_cast<MortarNode*>(node[j]);
 
-        double auxpos[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> auxpos = {0.0, 0.0, 0.0};
         double scalar = 0.0;
         for (int k = 0; k < dim_; k++)
           scalar += (mrtrnode->X()[k] + mrtrnode->uold()[k] - mrtrnode->xspatial()[k]) *

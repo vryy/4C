@@ -260,7 +260,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
   // Beam rot GIDs.
   this->Element1()->LocationVector(*discret, lm, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   for (unsigned int i = 0; i < n_dof_rot_; i++)
     gid_pair(i + beam::n_dof_ + solid::n_dof_) = lm[rot_dof_indices[i]];
 

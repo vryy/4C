@@ -196,7 +196,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     }
 
     // acceleration of wall contact point j
-    double acc_j[3] = {0.0};
+    double acc_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetAccCol() != Teuchos::null)
     {
@@ -230,8 +230,8 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     double sumk_Wjk = 0.0;
     double sumk_press_k_Wjk = 0.0;
     double sumk_dens_k_Wjk = 0.0;
-    double sumk_r_jk_Wjk[3] = {0.0};
-    double sumk_vel_k_Wjk[3] = {0.0};
+    double sumk_r_jk_Wjk[3] = {0.0, 0.0, 0.0};
+    double sumk_vel_k_Wjk[3] = {0.0, 0.0, 0.0};
 
     // iterate over neighboring particles
     for (const auto& neighboringparticle : neighboringparticles)

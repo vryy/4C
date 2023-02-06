@@ -2517,7 +2517,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
   {
     case DRT::Element::hex8:
     {
-      const int hex8_map[NUMGPT_SOH8] = {6, 7, 5, 4, 2, 3, 1, 0};
+      const std::array<int, NUMGPT_SOH8> hex8_map = {6, 7, 5, 4, 2, 3, 1, 0};
       return hex8_map[myGp];
     }
     default:

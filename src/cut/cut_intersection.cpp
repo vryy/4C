@@ -435,7 +435,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
     numNodesSide>::FindLocalCoordinateOfEdgeEndPoint(double& pos,
     const LINALG::Matrix<probdim, 1>& xyz, const double& tolerance) const
 {
-  const double r_endpoints[2] = {-1.0, 1.0};
+  const std::array<double, 2> r_endpoints = {-1.0, 1.0};
   LINALG::Matrix<probdim, 1> dist;
   LINALG::Matrix<numNodesEdge, 1> lineFunct;
 
@@ -460,7 +460,7 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
     dimedge, dimside, numNodesEdge, numNodesSide>::HandleParallelIntersection(PointSet& cuts,
     int skip_id, bool output)
 {
-  Node* id_to_node[2] = {GetEdge().BeginNode(), GetEdge().EndNode()};
+  std::array<Node*, 2> id_to_node = {GetEdge().BeginNode(), GetEdge().EndNode()};
   int id_start = 0, id_end = 2;
   int count_inside = 0;  // number of points inside the surface
 
@@ -534,9 +534,9 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
         std::vector<KERNEL::PointOnSurfaceLoc> tri_location_kernel(2);
         std::vector<std::vector<int>> tri_touched_edges(2);
 
-        bool extended_tri_tolerance_loc_triangle_split[2] = {false, false};
-        bool on_side[2] = {false, false};
-        bool within_side[2] = {false, false};
+        std::array<bool, 2> extended_tri_tolerance_loc_triangle_split = {false, false};
+        std::array<bool, 2> on_side = {false, false};
+        std::array<bool, 2> within_side = {false, false};
 
         unsigned tri = 0;
         // try to calculate by splitting quad4 intro 2 triangles
@@ -1010,7 +1010,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
       std::vector<LINALG::Matrix<3, 1>> final_points;
       std::vector<LINALG::Matrix<dimedge, 1>> edge_coords;
       LINALG::Matrix<dimside + dimedge, 1> i_xsi;
-      bool close_to_shared_edge[2] = {false, false};
+      std::array<bool, 2> close_to_shared_edge = {false, false};
       i_xsi = xsi_;
       IntersectionStatus tri_status[2];
       // compute intersection for each of the triangles

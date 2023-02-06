@@ -168,7 +168,7 @@ bool CONTACT::LineToSurfaceCoupling3d::CheckOrientation()
   // -------------------------------------------
   // CHECK LINE TO SURFACE ORIENTATION!
   // calculate line ele vector
-  double lvec[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> lvec = {0.0, 0.0, 0.0};
   CoNode* ns1 = dynamic_cast<CoNode*>(LineElement()()->Nodes()[0]);
   CoNode* ns2 = dynamic_cast<CoNode*>(LineElement()()->Nodes()[1]);
   lvec[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
@@ -452,8 +452,8 @@ bool CONTACT::LineToSurfaceCoupling3d::CheckLineOnLine(MORTAR::Vertex& edgeVerte
 
   // check if point of edge is on line
   bool lineOnLine = false;
-  double line[3] = {0.0, 0.0, 0.0};
-  double edgeLine[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> line = {0.0, 0.0, 0.0};
+  std::array<double, 3> edgeLine = {0.0, 0.0, 0.0};
 
   for (int k = 0; k < 3; ++k)
   {
@@ -503,7 +503,7 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
 
   if (!lineOnLine) dserror("vertices not along a line, but already checked!");
 
-  double line[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> line = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k) line[k] = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
 
   // LINE ON LINE!!! go on with real line to line clipping
@@ -516,8 +516,8 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
   double prod2 = 0.0;
   double prod3 = 0.0;
   // check of both master vertices are out of line in 0 direction
-  double lineEdge0Vert0[3] = {0.0, 0.0, 0.0};
-  double lineEdge1Vert0[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> lineEdge0Vert0 = {0.0, 0.0, 0.0};
+  std::array<double, 3> lineEdge1Vert0 = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
   {
     lineEdge0Vert0[k] = edgeVertex0.Coord()[k] - lineVertex0.Coord()[k];
@@ -541,8 +541,8 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
 
 
   // check of both master vertices are out of line in 1 direction
-  double lineEdge0Vert1[3] = {0.0, 0.0, 0.0};
-  double lineEdge1Vert1[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> lineEdge0Vert1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> lineEdge1Vert1 = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
   {
     lineEdge0Vert1[k] = edgeVertex0.Coord()[k] - lineVertex1.Coord()[k];
@@ -570,10 +570,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
   bool e1isV0 = true;
   bool e1isV1 = true;
 
-  double test0[3] = {0.0, 0.0, 0.0};
-  double test1[3] = {0.0, 0.0, 0.0};
-  double test2[3] = {0.0, 0.0, 0.0};
-  double test3[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> test0 = {0.0, 0.0, 0.0};
+  std::array<double, 3> test1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> test2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> test3 = {0.0, 0.0, 0.0};
 
   for (int k = 0; k < 3; ++k)
   {
@@ -919,7 +919,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
   std::reverse(SlaveVertices().begin(), SlaveVertices().end());
 
   // create line from slave vertices
-  double slaveLine[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> slaveLine = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
     slaveLine[k] = SlaveVertices()[1].Coord()[k] - SlaveVertices()[0].Coord()[k];
 
@@ -931,13 +931,13 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
   for (int j = 0; j < (int)MasterVertices().size(); ++j)
   {
     // we need one edge first
-    double edge[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> edge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
       edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
 
     // outward edge normals of polygon and slave line
-    double np[3] = {0.0, 0.0, 0.0};
-    double nl[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> np = {0.0, 0.0, 0.0};
+    std::array<double, 3> nl = {0.0, 0.0, 0.0};
     np[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
     np[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
     np[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
@@ -1025,13 +1025,13 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
     for (int j = 0; j < (int)MasterVertices().size(); ++j)
     {
       // we need two edges first
-      double edge[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
         edge[k] = (MasterVertices()[j].Next())->Coord()[k] - MasterVertices()[j].Coord()[k];
 
       // outward edge normals of polygon and slave line
-      double np[3] = {0.0, 0.0, 0.0};
-      double nl[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> np = {0.0, 0.0, 0.0};
+      std::array<double, 3> nl = {0.0, 0.0, 0.0};
       np[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
       np[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
       np[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
@@ -1155,8 +1155,8 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
         for (int j = 0; j < (int)MasterVertices().size(); ++j)
         {
           // we need diff vector and edge2 first
-          double diff[3] = {0.0, 0.0, 0.0};
-          double edge[3] = {0.0, 0.0, 0.0};
+          std::array<double, 3> diff = {0.0, 0.0, 0.0};
+          std::array<double, 3> edge = {0.0, 0.0, 0.0};
           for (int k = 0; k < 3; ++k)
           {
             diff[k] = SlaveVertices()[i].Coord()[k] - MasterVertices()[j].Coord()[k];
@@ -1164,7 +1164,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
           }
 
           // compute distance from point on poly1 to edge
-          double n[3] = {0.0, 0.0, 0.0};
+          std::array<double, 3> n = {0.0, 0.0, 0.0};
           n[0] = edge[1] * AuxnSurf()[2] - edge[2] * AuxnSurf()[1];
           n[1] = edge[2] * AuxnSurf()[0] - edge[0] * AuxnSurf()[2];
           n[2] = edge[0] * AuxnSurf()[1] - edge[1] * AuxnSurf()[0];
@@ -1205,7 +1205,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
         if (i == j) continue;
 
         // distance vector
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
           diff[k] = TempInterSections()[i].Coord()[k] - TempInterSections()[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
@@ -1244,7 +1244,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
       for (int j = 0; j < (int)SlaveVertices().size(); ++j)
       {
         // distance vector
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
           diff[k] = TempInterSections()[i].Coord()[k] - SlaveVertices()[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
@@ -1270,7 +1270,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
         for (int j = 0; j < (int)MasterVertices().size(); ++j)
         {
           // distance vector
-          double diff[3] = {0.0, 0.0, 0.0};
+          std::array<double, 3> diff = {0.0, 0.0, 0.0};
           for (int k = 0; k < 3; ++k)
             diff[k] = TempInterSections()[i].Coord()[k] - MasterVertices()[j].Coord()[k];
           double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
@@ -1465,7 +1465,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   // compute factor Z
-  double crossZ[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
   crossZ[0] = (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
               (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossZ[1] = (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -1475,7 +1475,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   double Zfac = crossZ[0] * Auxn()[0] + crossZ[1] * Auxn()[1] + crossZ[2] * Auxn()[2];
 
   // compute factor N
-  double crossN[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossN = {0.0, 0.0, 0.0};
   crossN[0] = (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
               (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossN[1] = (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -1485,13 +1485,13 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   double Nfac = crossN[0] * Auxn()[0] + crossN[1] * Auxn()[1] + crossN[2] * Auxn()[2];
 
   // slave edge vector
-  double sedge[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sedge = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k) sedge[k] = sv2->Coord()[k] - sv1->Coord()[k];
 
   // prepare linearization derivZ
-  double crossdZ1[3] = {0.0, 0.0, 0.0};
-  double crossdZ2[3] = {0.0, 0.0, 0.0};
-  double crossdZ3[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ3 = {0.0, 0.0, 0.0};
   crossdZ1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
                 (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
   crossdZ1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
@@ -1512,9 +1512,9 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
                 (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
 
   // prepare linearization derivN
-  double crossdN1[3] = {0.0, 0.0, 0.0};
-  double crossdN2[3] = {0.0, 0.0, 0.0};
-  double crossdN3[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN3 = {0.0, 0.0, 0.0};
   crossdN1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
                 (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
   crossdN1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
@@ -1665,7 +1665,7 @@ bool CONTACT::LineToSurfaceCoupling3d::CheckLength()
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // compute distance vector
-  double v[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> v = {0.0, 0.0, 0.0};
   for (int i = 0; i < 3; ++i) v[i] = InterSections()[0].Coord()[i] - InterSections()[1].Coord()[i];
 
   // compute length
@@ -1783,7 +1783,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   }
 
   // create tangent of line element
-  double tangent[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> tangent = {0.0, 0.0, 0.0};
   DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[0]);
   if (!node) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[0]);
   CoNode* mycnode = dynamic_cast<CoNode*>(node);
@@ -1813,7 +1813,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   tanplane(2, 1) = -(tangent[2] * tangent[1]);
   tanplane(2, 2) = 1 - (tangent[2] * tangent[2]);
 
-  double finalauxn[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> finalauxn = {0.0, 0.0, 0.0};
   finalauxn[0] =
       tanplane(0, 0) * Auxn()[0] + tanplane(0, 1) * Auxn()[1] + tanplane(0, 2) * Auxn()[2];
   finalauxn[1] =
@@ -2339,18 +2339,18 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
 
   // 2. calc intersection
   // create empty points
-  double sxi[1] = {0.0};
-  double mxi[1] = {0.0};
+  double sxi = 0.0;
+  double mxi = 0.0;
 
   // create empty lin vectors
   GEN::pairedvector<int, double> dsxi(
       100 + 3 * LineMasterElement()->NumNode() + 3 * LineSlaveElement()->NumNode());
   GEN::pairedvector<int, double> dmxi(
       100 + 3 * LineMasterElement()->NumNode() + 3 * LineSlaveElement()->NumNode());
-  LineIntersection(sxi, mxi, dsxi, dmxi);
+  LineIntersection(&sxi, &mxi, dsxi, dmxi);
 
   // 3. check solution
-  bool valid = CheckIntersection(sxi, mxi);
+  bool valid = CheckIntersection(&sxi, &mxi);
   if (!valid) return;
 
   // 4. check if intersection was already done!
@@ -2361,7 +2361,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
   }
 
   // 5. evaluate terms
-  EvaluateTerms(sxi, mxi, dsxi, dmxi);
+  EvaluateTerms(&sxi, &mxi, dsxi, dmxi);
 
   return;
 }
@@ -2417,18 +2417,18 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   //**********************************************************************
   // geometric quantities
   //**********************************************************************
-  double gpn[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gpn = {0.0, 0.0, 0.0};
   GEN::pairedvector<int, double> dgapgp(
       (ncol * ndof) + 10 * linsize);  // gap lin. without lm and jac.
-  double gap[1] = {0.0};
+  std::array<double, 1> gap = {0.0};
   std::vector<GEN::pairedvector<int, double>> dnmap_unit(
       3, 10 * linsize);  // deriv of x,y and z comp. of gpn (unit)
 
   //**********************************************************************
   // evaluate at GP and lin char. quantities
   //**********************************************************************
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < nrow; ++i)
   {
@@ -2684,9 +2684,9 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   {
     // tangent:
     // first jump:
-    double jump[3] = {0.0, 0.0, 0.0};
-    double sgpxold[3] = {0.0, 0.0, 0.0};
-    double mgpxold[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> jump = {0.0, 0.0, 0.0};
+    std::array<double, 3> sgpxold = {0.0, 0.0, 0.0};
+    std::array<double, 3> mgpxold = {0.0, 0.0, 0.0};
 
     int oldID = -1;
 
@@ -2986,10 +2986,10 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     dserror("tangents zero length");
 
   // calc angle between tangents
-  double ts1[3] = {0.0, 0.0, 0.0};
-  double ts2[3] = {0.0, 0.0, 0.0};
-  double tm1[3] = {0.0, 0.0, 0.0};
-  double tm2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> ts1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> ts2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> tm1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> tm2 = {0.0, 0.0, 0.0};
 
   ts1[0] = ns1->MoData().EdgeTangent()[0];
   ts1[1] = ns1->MoData().EdgeTangent()[1];
@@ -3076,11 +3076,11 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   double conv = 0.0;
 
   // start in the element center
-  double xiS[1] = {0.0};  // xi_slave
-  double xiM[1] = {0.0};  // xi_master
+  double xiS = 0.0;  // xi_slave
+  double xiM = 0.0;  // xi_master
 
   // function f (vector-valued)
-  double f[2] = {0.0, 0.0};
+  std::array<double, 2> f = {0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1])
   LINALG::Matrix<2, 2> df;
@@ -3094,27 +3094,27 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     // slave values
     LINALG::SerialDenseVector sval(nnodes);
     LINALG::SerialDenseMatrix sderiv(nnodes, 1);
-    LineSlaveElement()->EvaluateShape(xiS, sval, sderiv, nnodes);
+    LineSlaveElement()->EvaluateShape(&xiS, sval, sderiv, nnodes);
 
     // master values
     LINALG::SerialDenseVector mval(nnodes);
     LINALG::SerialDenseMatrix mderiv(nnodes, 1);
-    LineMasterElement()->EvaluateShape(xiM, mval, mderiv, nnodes);
+    LineMasterElement()->EvaluateShape(&xiM, mval, mderiv, nnodes);
 
-    double xs[3] = {0.0, 0.0, 0.0};
-    double xm[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xs = {0.0, 0.0, 0.0};
+    std::array<double, 3> xm = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < 3; ++i)
       xs[i] += sval[0] * ns1->xspatial()[i] + sval[1] * ns2->xspatial()[i];
     for (int i = 0; i < 3; ++i)
       xm[i] += mval[0] * nm1->xspatial()[i] + mval[1] * nm2->xspatial()[i];
 
-    double xdiff[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xdiff = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; ++i) xdiff[i] = xs[i] - xm[i];
 
     // calculate tangents:
-    double vs[3] = {0.0, 0.0, 0.0};
-    double vm[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> vs = {0.0, 0.0, 0.0};
+    std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < 3; ++i) vs[i] += sval[0] * ts1[i] + sval[1] * ts2[i];
     for (int i = 0; i < 3; ++i) vm[i] += mval[0] * tm1[i] + mval[1] * tm2[i];
@@ -3130,15 +3130,15 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     //   F GRADIENT CALCULATION                   //
     //**********************************************
 
-    double xsderiv[3] = {0.0, 0.0, 0.0};
-    double xmderiv[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xsderiv = {0.0, 0.0, 0.0};
+    std::array<double, 3> xmderiv = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; ++i)
       xsderiv[i] += sderiv(0, 0) * ns1->xspatial()[i] + sderiv(1, 0) * ns2->xspatial()[i];
     for (int i = 0; i < 3; ++i)
       xmderiv[i] += mderiv(0, 0) * nm1->xspatial()[i] + mderiv(1, 0) * nm2->xspatial()[i];
 
-    double vsderiv[3] = {0.0, 0.0, 0.0};
-    double vmderiv[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> vsderiv = {0.0, 0.0, 0.0};
+    std::array<double, 3> vmderiv = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; ++i) vsderiv[i] += sderiv(0, 0) * ts1[i] + sderiv(1, 0) * ts2[i];
     for (int i = 0; i < 3; ++i) vmderiv[i] += mderiv(0, 0) * tm1[i] + mderiv(1, 0) * tm2[i];
 
@@ -3165,8 +3165,8 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     }
 
     // update eta and alpha
-    xiS[0] += -df(0, 0) * f[0] - df(0, 1) * f[1];
-    xiM[0] += -df(1, 0) * f[0] - df(1, 1) * f[1];
+    xiS += -df(0, 0) * f[0] - df(0, 1) * f[1];
+    xiM += -df(1, 0) * f[0] - df(1, 1) * f[1];
   }
 
   // Newton iteration unconverged
@@ -3178,25 +3178,25 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   // slave values
   LINALG::SerialDenseVector sval(nnodes);
   LINALG::SerialDenseMatrix sderiv(nnodes, 1);
-  LineSlaveElement()->EvaluateShape(xiS, sval, sderiv, nnodes);
+  LineSlaveElement()->EvaluateShape(&xiS, sval, sderiv, nnodes);
 
   // master values
   LINALG::SerialDenseVector mval(nnodes);
   LINALG::SerialDenseMatrix mderiv(nnodes, 1);
-  LineMasterElement()->EvaluateShape(xiM, mval, mderiv, nnodes);
+  LineMasterElement()->EvaluateShape(&xiM, mval, mderiv, nnodes);
 
-  double xs[3] = {0.0, 0.0, 0.0};
-  double xm[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> xs = {0.0, 0.0, 0.0};
+  std::array<double, 3> xm = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < 3; ++i) xs[i] += sval[0] * ns1->xspatial()[i] + sval[1] * ns2->xspatial()[i];
   for (int i = 0; i < 3; ++i) xm[i] += mval[0] * nm1->xspatial()[i] + mval[1] * nm2->xspatial()[i];
 
-  double xdiff[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> xdiff = {0.0, 0.0, 0.0};
   for (int i = 0; i < 3; ++i) xdiff[i] = xs[i] - xm[i];
 
   // calculate tangents:
-  double vs[3] = {0.0, 0.0, 0.0};
-  double vm[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> vs = {0.0, 0.0, 0.0};
+  std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < 3; ++i) vs[i] += sval[0] * ts1[i] + sval[1] * ts2[i];
   for (int i = 0; i < 3; ++i) vm[i] += mval[0] * tm1[i] + mval[1] * tm2[i];
@@ -3278,8 +3278,8 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   for (_CI p = f0.begin(); p != f0.end(); ++p) dmxi[p->first] -= (p->second) * df(1, 0);
   for (_CI p = f1.begin(); p != f1.end(); ++p) dmxi[p->first] -= (p->second) * df(1, 1);
 
-  sxi[0] = xiS[0];
-  mxi[0] = xiM[0];
+  sxi[0] = xiS;
+  mxi[0] = xiM;
 
   return;
 }
@@ -3306,8 +3306,8 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
   const double mminedge = LineMasterElement()->MinEdgeSize();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
-  double vs[3] = {0.0, 0.0, 0.0};
-  double vm[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> vs = {0.0, 0.0, 0.0};
+  std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
   // calculate slave vector
   CoNode* ns1 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[0]);
@@ -3352,8 +3352,8 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   typedef GEN::pairedvector<int, double>::const_iterator CI;
 
   // slave edge vector and master vector edge
-  double vs[3] = {0.0, 0.0, 0.0};
-  double vm[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> vs = {0.0, 0.0, 0.0};
+  std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
   // calculate slave vector
   CoNode* ns1 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[0]);

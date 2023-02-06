@@ -636,7 +636,7 @@ LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
     DRT::Node* node = ele.Nodes()[k];
 
     // get current node position
-    double pos[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> pos = {0.0, 0.0, 0.0};
     for (int j = 0; j < dim_; ++j) pos[j] = node->X()[j];
 
     // calculate slabs

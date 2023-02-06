@@ -898,9 +898,9 @@ void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> s
     }
 
     // old and new nodal position and problem dimension
-    double Xold[3] = {0.0, 0.0, 0.0};
-    double Xnew[3] = {0.0, 0.0, 0.0};
-    double Xnewglobal[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xold = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xnew = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xnewglobal = {0.0, 0.0, 0.0};
 
     //******************************************************************
     // compute new nodal position

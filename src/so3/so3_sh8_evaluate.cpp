@@ -1236,9 +1236,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
     // (r,s,t) gp-locations of sampling points A,B,C,D,E,F,G,H
     // numsp = 8 here set explicitly to allow direct initializing
     //                A,   B,   C,   D,   E,   F,   G,   H
-    double r[8] = {0.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0, -1.0};
-    double s[8] = {-1.0, 0.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0};
-    double t[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::array<double, 8> r = {0.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0, -1.0};
+    std::array<double, 8> s = {-1.0, 0.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0};
+    std::array<double, 8> t = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)

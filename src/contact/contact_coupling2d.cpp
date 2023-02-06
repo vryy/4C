@@ -497,7 +497,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   for (int gp = 0; gp < integrator.nGP(); ++gp)
   {
     // coordinates and weight
-    double eta[2] = {integrator.Coordinate(gp, 0), 0.0};
+    std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
     double wgt = integrator.Weight(gp);
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)

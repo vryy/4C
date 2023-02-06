@@ -198,7 +198,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
   const double beta = params_->beta_;
   const double gamma = params_->gamma_;
 
-  const double identity[6] = {1.0, 1.0, 1.0, 0.0, 0.0, 0.0};
+  const std::array<double, 6> identity = {1.0, 1.0, 1.0, 0.0, 0.0, 0.0};
 
   // (0) contribution
   {

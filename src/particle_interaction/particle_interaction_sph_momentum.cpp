@@ -501,8 +501,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
       force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     // contribution from neighboring boundary particle j
-    double acc_ij[3] = {0.0};
-    double mod_acc_ij[3] = {0.0};
+    double acc_ij[3] = {0.0, 0.0, 0.0};
+    double mod_acc_ij[3] = {0.0, 0.0, 0.0};
 
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
@@ -700,7 +700,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -714,8 +714,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     }
 
     // sum contribution from neighboring virtual particle k
-    double sumk_acc_ik[3] = {0.0};
-    double sumk_mod_acc_ik[3] = {0.0};
+    double sumk_acc_ik[3] = {0.0, 0.0, 0.0};
+    double sumk_mod_acc_ik[3] = {0.0, 0.0, 0.0};
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
@@ -867,7 +867,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     if (mod_acc_i) UTILS::VecAdd(mod_acc_i, sumk_mod_acc_ik);
 
     // calculation of wall contact force
-    double wallcontactforce[3] = {0.0};
+    double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
       UTILS::VecSetScale(wallcontactforce, -mass_i[0], sumk_acc_ik);
 

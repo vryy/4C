@@ -584,8 +584,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
     {
       for (int sdm = 0; sdm < numderiv2_; ++sdm)
       {
-        const int i[6] = {0, 1, 2, 0, 0, 1};
-        const int j[6] = {0, 1, 2, 1, 2, 2};
+        const std::array<int, 6> i = {0, 1, 2, 0, 0, 1};
+        const std::array<int, 6> j = {0, 1, 2, 1, 2, 2};
         derxyenr2_(sdm, inode) += derxy2_(sdm, inode) * (psigp - epsi_(inode)) +
                                   derxy_(i[sdm], inode) * derpsigp(j[sdm]) +
                                   derxy_(j[sdm], inode) * derpsigp(i[sdm]) +
@@ -609,8 +609,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
       {
         for (int sdm = 0; sdm < numderiv2_; ++sdm)
         {
-          const int i[6] = {0, 1, 2, 0, 0, 1};
-          const int j[6] = {0, 1, 2, 1, 2, 2};
+          const std::array<int, 6> i = {0, 1, 2, 0, 0, 1};
+          const std::array<int, 6> j = {0, 1, 2, 1, 2, 2};
 
           derxyenr2_(sdm, inode) *= ramp;
           derxyenr2_(sdm, inode) += derxyenr_(i[sdm], inode) * derramp(j[sdm]) +
@@ -694,8 +694,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EnrichmentShapeDer(
 
     for (int sdm = 0; sdm < numderiv2_; ++sdm)
     {
-      const int i[6] = {0, 1, 2, 0, 0, 1};
-      const int j[6] = {0, 1, 2, 1, 2, 2};
+      const std::array<int, 6> i = {0, 1, 2, 0, 0, 1};
+      const std::array<int, 6> j = {0, 1, 2, 1, 2, 2};
 
       der2trans_1(sdm) = dertrans(i[sdm]) * dertrans(j[sdm]);
 
@@ -848,8 +848,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
     if (ewdist_(inode) < 1e-4)
     {
       LINALG::Matrix<3, 1> test = DRT::UTILS::getNodeCoordinates(inode, distype);
-      const double gp[] = {test(0, 0), test(1, 0), test(2, 0)};
-      const double* gpc = gp;
+      const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
+      const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
       EvalShapeFuncAndDerivsAtIntPoint(gpc, 1.0);
 
@@ -863,8 +863,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
       if (normwall.Norm2() < 1.0e-10)
       {
         test.Scale(0.95);
-        const double gp[] = {test(0, 0), test(1, 0), test(2, 0)};
-        const double* gpc = gp;
+        const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
+        const double* gpc = gp.data();
         // evaluate shape functions and derivatives at integration point
         EvalShapeFuncAndDerivsAtIntPoint(gpc, 1.0);
 

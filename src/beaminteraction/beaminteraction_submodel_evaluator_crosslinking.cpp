@@ -1026,7 +1026,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
   }
 
   // get maximal displacement increment since last redistribution over all procs
-  double extrema[2] = {0.0, 0.0};
+  std::array<double, 2> extrema = {0.0, 0.0};
   dis_increment->MinValue(&extrema[0]);
   dis_increment->MaxValue(&extrema[1]);
   const double gmaxdisincr = std::max(-extrema[0], extrema[1]);

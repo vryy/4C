@@ -1032,14 +1032,15 @@ void XSTR::MultiDiscretizationWrapper::Evaluate(Teuchos::ParameterList& params,
   CheckInitSetup();
   XDisMap::const_iterator cit;
   // put input into arrays, such that a loop treatment becomes possible
-  Teuchos::RCP<Epetra_Vector> full_systemvectors[3] = {
+  std::array<Teuchos::RCP<Epetra_Vector>, 3> full_systemvectors = {
       full_systemvector1, full_systemvector2, full_systemvector3};
-  Teuchos::RCP<LINALG::SparseOperator> full_systemmatrices[2] = {
+  std::array<Teuchos::RCP<LINALG ::SparseOperator>, 2> full_systemmatrices = {
       full_systemmatrix1, full_systemmatrix2};
   // initialize temporal partial vector pointers
-  Teuchos::RCP<Epetra_Vector> psys_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<Epetra_Vector>, 3> psys_vec = {
+      Teuchos::null, Teuchos::null, Teuchos::null};
   // initialize temporal partial matrix pointers
-  Teuchos::RCP<LINALG::SparseOperator> psys_mat[2] = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<LINALG ::SparseOperator>, 2> psys_mat = {Teuchos::null, Teuchos::null};
 
   for (cit = discret_map_.begin(); cit != discret_map_.end(); ++cit)
   {

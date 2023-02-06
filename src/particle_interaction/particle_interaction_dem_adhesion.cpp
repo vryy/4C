@@ -392,7 +392,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     if (not(surface_energy > 0.0)) continue;
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -440,7 +440,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
       adhesionhistorydata[globalid_i[0]][histele] = touchedadhesionhistory_ij;
 
     // calculation of wall adhesion force
-    double walladhesionforce[3] = {0.0};
+    double walladhesionforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
     {
       UTILS::VecSetScale(

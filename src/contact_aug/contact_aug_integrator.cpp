@@ -527,7 +527,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   for (int gp = 0; gp < this->Wrapper().nGP(); ++gp)
   {
-    const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+    const std::array<double, 2> eta = {
+        this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
     const double wgt = this->Wrapper().Weight(gp);
 
     // get Gauss point in slave element coordinates
@@ -675,7 +676,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
@@ -810,7 +812,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
@@ -890,7 +893,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates

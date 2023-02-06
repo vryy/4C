@@ -278,8 +278,9 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
-  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
+      Teuchos::null, Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<LINALG ::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
   // -------------------------------------------------------------------------
   // set brwonian force vector (gets filled on element level)
   // -------------------------------------------------------------------------
@@ -339,8 +340,9 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
-  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
+      Teuchos::null, Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<LINALG ::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
   // -------------------------------------------------------------------------
   // set jac matrix and brownian force vector (filled on element level)
   // -------------------------------------------------------------------------

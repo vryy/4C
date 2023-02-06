@@ -1097,9 +1097,9 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1111,9 +1111,9 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];
@@ -1370,9 +1370,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1384,9 +1384,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];
@@ -1581,9 +1581,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1595,9 +1595,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];

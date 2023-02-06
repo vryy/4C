@@ -139,8 +139,8 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // communicate the minimal edge length and element area over all procs
-  double lMins[2] = {myMinEdgeLength, myMinAreaMa};
-  double gMins[2] = {1.0e12, 1.0e12};
+  std::array<double, 2> lMins = {myMinEdgeLength, myMinAreaMa};
+  std::array<double, 2> gMins = {1.0e12, 1.0e12};
   Comm().MinAll(&lMins[0], &gMins[0], 2);
 
   if (gMins[0] == 1.0e12 or gMins[0] < 0.0)
@@ -163,8 +163,8 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // communicate the maximal slave element area over all procs
-  double lMaxs[2] = {myMaxAreaSl, static_cast<double>(myTriangleOnMaster)};
-  double gMaxs[2] = {0.0, 0.0};
+  std::array<double, 2> lMaxs = {myMaxAreaSl, static_cast<double>(myTriangleOnMaster)};
+  std::array<double, 2> gMaxs = {0.0, 0.0};
   Comm().MaxAll(&lMaxs[0], &gMaxs[0], 2);
 
   const double gMaxAreaSl = gMaxs[0];
@@ -1472,8 +1472,8 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   myTGids.resize(countT);
 
   // communicate countN and countT among procs
-  int lCount[2] = {countN, countT};
-  int gCount[2] = {0, 0};
+  std::array<int, 2> lCount = {countN, countT};
+  std::array<int, 2> gCount = {0, 0};
   Comm().SumAll(&lCount[0], &gCount[0], 2);
 
   const int gCountN = gCount[0];

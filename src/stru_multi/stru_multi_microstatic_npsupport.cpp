@@ -61,8 +61,8 @@ void STRUMULTI::np_support_drt()
   while (true)
   {
     // receive what to do and which element is intended to work
-    int task[3] = {-1, -1};
-    subcomm->Broadcast(task, 2, 0);
+    std::array<int, 2> task = {-1, -1};
+    subcomm->Broadcast(task.data(), 2, 0);
     int whattodo = task[0];
     int eleID = task[1];
 

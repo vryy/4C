@@ -849,9 +849,9 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
     /*====================================================================*/
     // (r,s,t) gp-locations of sampling points A,B,C,D,E
     // numsp = 5 here set explicitly to allow direct initializing
-    double r[5] = {0.5, 0.0, 0.0, 1.0, 0.0};
-    double s[5] = {0.0, 0.5, 0.0, 0.0, 1.0};
-    double t[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+    std::array<double, 5> r = {0.5, 0.0, 0.0, 1.0, 0.0};
+    std::array<double, 5> s = {0.0, 0.5, 0.0, 0.0, 1.0};
+    std::array<double, 5> t = {0.0, 0.0, 0.0, 0.0, 0.0};
 
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)

@@ -604,7 +604,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
-    double X[3] = {0., 0., 0.};
+    std::array<double, 3> X = {0., 0., 0.};
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned m = 0; m < NUMNODES; ++m) X[i] += funct(m) * (nodes[m]->X()[i]);
 
@@ -764,8 +764,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
-    std::vector<double> val(numdf);
-    std::fill(val.data(), val.data() + numdf, 0.0);
+    std::vector<double> val(numdf, 0.0);
 
     for (unsigned m = 0; m < NUMNODES; ++m)
     {

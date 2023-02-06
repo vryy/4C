@@ -1754,7 +1754,7 @@ namespace FLD
 
       double elesize = abs(copycoordinates->at(1) - copycoordinates->at(0));
       // use 5 sampling locations in each element in each direction
-      const double localcoords[5] = {0.9, 0.7, 0.5, 0.3, 0.1};
+      std::array<const double, 5> localcoords = {0.9, 0.7, 0.5, 0.3, 0.1};
       for (std::vector<double>::iterator coord1 = copycoordinates->begin();
            coord1 != copycoordinates->end(); ++coord1)
       {

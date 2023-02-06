@@ -1860,7 +1860,7 @@ void EXODUS::PrintSet(std::ostream& os, const std::set<int> actset)
 /*----------------------------------------------------------------------*/
 int EXODUS::HexSideNumberExoToBaci(const int exoface)
 {
-  const int map[6] = {1, 2, 3, 4, 0, 5};
+  constexpr std::array<int, 6> map = {1, 2, 3, 4, 0, 5};
   return map[exoface];
 }
 
@@ -1868,6 +1868,6 @@ int EXODUS::HexSideNumberExoToBaci(const int exoface)
 /*----------------------------------------------------------------------*/
 int EXODUS::PyrSideNumberExoToBaci(const int exoface)
 {
-  const int map[5] = {1, 2, 3, 4, 0};
+  constexpr std::array<int, 5> map = {1, 2, 3, 4, 0};
   return map[exoface];
 }

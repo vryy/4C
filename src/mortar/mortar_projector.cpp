@@ -704,7 +704,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
   std::vector<double> proj_gp(3);
   LINALG::Matrix<3, 3> P;
   LINALG::Matrix<3, 3> T;
-  double n[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> n = {0.0, 0.0, 0.0};
   double length_t = 0.0;
   double length_n = 0.0;
   double a1 = 0.0;
@@ -1098,7 +1098,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
   LINALG::Matrix<3, 3> df;
@@ -1150,9 +1150,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
 
     // normal grad
     LINALG::Matrix<3, n_> secderiv;
-    double meta00[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_0
-    double meta11[3] = {0.0, 0.0, 0.0};  // x,xi_1 xi_1
-    double meta01[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_1
+    std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
+    std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
+    std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
     DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
@@ -1168,8 +1168,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
       }
     }
 
-    double naux_0[3] = {0.0, 0.0, 0.0};
-    double naux_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_1 = {0.0, 0.0, 0.0};
 
     // normal grad xi_0
     naux_0[0] = (meta00[1] * meta1[2] - meta00[2] * meta1[1]);
@@ -1189,8 +1189,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     naux_1[1] += (meta0[2] * meta11[0] - meta0[0] * meta11[2]);
     naux_1[2] += (meta0[0] * meta11[1] - meta0[1] * meta11[0]);
 
-    double n_0[3] = {0.0, 0.0, 0.0};
-    double n_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_1 = {0.0, 0.0, 0.0};
 
     double fac0 = 0.0;
     double fac1 = 0.0;
@@ -1261,7 +1261,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
   LINALG::Matrix<3, 3> df;
@@ -1306,16 +1306,16 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     //   F GRADIENT CALCULATION                   //
     //**********************************************
     // master coordinate grad
-    double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
-    double meta1[3] = {0.0, 0.0, 0.0};  // x,xi_1
+    std::array<double, 3> meta0 = {0.0, 0.0, 0.0};  // x , xi_0
+    std::array<double, 3> meta1 = {0.0, 0.0, 0.0};  // x , xi_1
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
 
     // normal grad
     LINALG::Matrix<3, n_> secderiv;
-    double meta00[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_0
-    double meta11[3] = {0.0, 0.0, 0.0};  // x,xi_1 xi_1
-    double meta01[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_1
+    std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
+    std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
+    std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
     DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
@@ -1331,8 +1331,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
       }
     }
 
-    double naux_0[3] = {0.0, 0.0, 0.0};
-    double naux_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_1 = {0.0, 0.0, 0.0};
 
     // normal grad xi_0
     naux_0[0] = (meta00[1] * meta1[2] - meta00[2] * meta1[1]);
@@ -1352,8 +1352,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     naux_1[1] += (meta0[2] * meta11[0] - meta0[0] * meta11[2]);
     naux_1[2] += (meta0[0] * meta11[1] - meta0[1] * meta11[0]);
 
-    double n_0[3] = {0.0, 0.0, 0.0};
-    double n_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_1 = {0.0, 0.0, 0.0};
 
     double fac0 = 0.0;
     double fac1 = 0.0;
@@ -1413,13 +1413,13 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
   // start in the element center
-  double eta[2] = {0.0, 0.0};
+  std::array<double, 2> eta = {0.0, 0.0};
 
   // auxiliary variable for distance
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
   LINALG::Matrix<3, 3> df;
@@ -1441,10 +1441,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
     // build interpolation of master node coordinates for current eta
-    double xm[3] = {0.0, 0.0, 0.0};
-    double xs[3] = {0.0, 0.0, 0.0};
-    double normalnewton[3] = {0.0, 0.0, 0.0};
-    double normalpart[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xm = {0.0, 0.0, 0.0};
+    std::array<double, 3> xs = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalnewton = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalpart = {0.0, 0.0, 0.0};
 
     // calc xmaster
     for (int j = 0; j < n_; ++j)
@@ -1485,8 +1485,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     //**********************************************
 
     // master coordinate grad
-    double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
-    double meta1[3] = {0.0, 0.0, 0.0};  // x,xi_1
+    std::array<double, 3> meta0 = {0.0, 0.0, 0.0};  // x , xi_0
+    std::array<double, 3> meta1 = {0.0, 0.0, 0.0};  // x , xi_1
 
     // calc xmaster
     for (int j = 0; j < n_; ++j)
@@ -1500,8 +1500,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
       }
     }
 
-    double n_0[3] = {0.0, 0.0, 0.0};
-    double n_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_1 = {0.0, 0.0, 0.0};
 
     // calc normal part
     for (int j = 0; j < n_; ++j)
@@ -1733,7 +1733,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[2] = {0.0, 0.0};
+  std::array<double, 2> f = {0.0, 0.0};
 
   // gradient of f (df/deta[0], df/dalpha)
   LINALG::Matrix<2, 2> df;
@@ -1755,10 +1755,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
     // build interpolation of master node coordinates for current eta
-    double xm[3] = {0.0, 0.0, 0.0};
-    double xs[3] = {0.0, 0.0, 0.0};
-    double normalnewton[3] = {0.0, 0.0, 0.0};
-    double normalpart[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xm = {0.0, 0.0, 0.0};
+    std::array<double, 3> xs = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalnewton = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalpart = {0.0, 0.0, 0.0};
 
     // calc xmaster
     for (int j = 0; j < n_; ++j)
@@ -1799,7 +1799,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     //**********************************************
 
     // master coordinate grad
-    double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
+    std::array<double, 3> meta0 = {0.0, 0.0, 0.0};  // x , xi_0
 
     // calc xmaster
     for (int j = 0; j < n_; ++j)
@@ -1812,7 +1812,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
       }
     }
 
-    double n_0[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
 
     // calc normal part
     for (int j = 0; j < n_; ++j)
@@ -2023,7 +2023,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
   LINALG::Matrix<3, 3> df;
@@ -2075,9 +2075,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
 
     // normal grad
     LINALG::Matrix<1, n_> secderiv;
-    double meta00[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_0
-    double meta11[3] = {0.0, 0.0, 0.0};  // x,xi_1 xi_1
-    double meta01[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_1
+    std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
+    std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
+    std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
     DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
@@ -2088,8 +2088,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
 
-    double naux_0[3] = {0.0, 0.0, 0.0};
-    double naux_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_1 = {0.0, 0.0, 0.0};
 
     // normal grad xi_0
     naux_0[0] = (meta00[1] * meta1[2] - meta00[2] * meta1[1]);
@@ -2109,8 +2109,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     naux_1[1] += (meta0[2] * meta11[0] - meta0[0] * meta11[2]);
     naux_1[2] += (meta0[0] * meta11[1] - meta0[1] * meta11[0]);
 
-    double n_0[3] = {0.0, 0.0, 0.0};
-    double n_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_1 = {0.0, 0.0, 0.0};
 
     double fac0 = 0.0;
     double fac1 = 0.0;
@@ -2174,7 +2174,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   double alpha = 0.0;
 
   // function f (vector-valued)
-  double f[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
   LINALG::Matrix<3, 3> df;
@@ -2226,9 +2226,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
 
     // normal grad
     LINALG::Matrix<1, n_> secderiv;
-    double meta00[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_0
-    double meta11[3] = {0.0, 0.0, 0.0};  // x,xi_1 xi_1
-    double meta01[3] = {0.0, 0.0, 0.0};  // x,xi_0 xi_1
+    std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
+    std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
+    std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
     DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
@@ -2239,8 +2239,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
 
-    double naux_0[3] = {0.0, 0.0, 0.0};
-    double naux_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> naux_1 = {0.0, 0.0, 0.0};
 
     // normal grad xi_0
     naux_0[0] = (meta00[1] * meta1[2] - meta00[2] * meta1[1]);
@@ -2260,8 +2260,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     naux_1[1] += (meta0[2] * meta11[0] - meta0[0] * meta11[2]);
     naux_1[2] += (meta0[0] * meta11[1] - meta0[1] * meta11[0]);
 
-    double n_0[3] = {0.0, 0.0, 0.0};
-    double n_1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> n_1 = {0.0, 0.0, 0.0};
 
     double fac0 = 0.0;
     double fac1 = 0.0;
@@ -2360,7 +2360,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     (auxnormalLin[1])[p->first] -= (p->second);
 
   // calc normalpart without alpha
-  double linnormalaux[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> linnormalaux = {0.0, 0.0, 0.0};
   linnormalaux[0] = normal[0] * normallength;
   linnormalaux[1] = normal[1] * normallength;
   linnormalaux[2] = normal[2] * normallength;

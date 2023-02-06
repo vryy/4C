@@ -596,8 +596,8 @@ void INVANA::Triangulation::EvaluatePoints()
     else if (numnodes == 4)
     {
       // permutations to split the quad
-      int perm0[] = {0, 1, 2};  // nodes of the first tri
-      int perm1[] = {0, 2, 3};  // nodes of the second tri
+      std::array<int, 3> perm0 = {0, 1, 2};  // nodes of the first tri
+      std::array<int, 3> perm1 = {0, 2, 3};  // nodes of the second tri
 
       // first tri
       for (int i = 0; i < 3; ++i)
@@ -659,8 +659,8 @@ void INVANA::Triangulation::EvaluateDofs()
     else if (numnodes == 4)
     {
       // permutations to split the quad
-      int perm0[] = {0, 1, 2};  // nodes of the first tri
-      int perm1[] = {0, 2, 3};  // nodes of the second tri
+      std::array<int, 3> perm0 = {0, 1, 2};  // nodes of the first tri
+      std::array<int, 3> perm1 = {0, 2, 3};  // nodes of the second tri
 
       std::vector<int> dofs;
 
@@ -753,8 +753,8 @@ void INVANA::Triangulation::EvaluateWarp()
     else if (numnodes == 4)
     {
       // permutations to split the quad
-      int perm0[] = {0, 1, 2};  // nodes of the first tri
-      int perm1[] = {0, 2, 3};  // nodes of the second tri
+      std::array<int, 3> perm0 = {0, 1, 2};  // nodes of the first tri
+      std::array<int, 3> perm1 = {0, 2, 3};  // nodes of the second tri
 
       // first tri
       for (int i = 0; i < 3; ++i)

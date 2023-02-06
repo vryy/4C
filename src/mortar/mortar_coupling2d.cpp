@@ -173,7 +173,7 @@ bool MORTAR::Coupling2d::Project()
         for (int dim = 0; dim < 2; ++dim) xm[dim] += mval(mn) * mnode2->xspatial()[dim];
       }
       std::vector<int> mdofs(2);
-      MORTAR::MortarNode tmp_node(mnode->Id(), &(xm[0]), mnode->Owner(), 2, mdofs, false);
+      MORTAR::MortarNode tmp_node(mnode->Id(), xm, mnode->Owner(), 2, mdofs, false);
       MORTAR::MortarProjector::Impl(SlaveElement())
           ->ProjectElementNormal(tmp_node, SlaveElement(), xi);
     }
@@ -1196,7 +1196,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
 
     // coordinates and weight
-    double eta[2] = {integrator.Coordinate(gp, 0), 0.0};
+    std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
     double wgt = integrator.Weight(gp);
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)

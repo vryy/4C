@@ -1868,7 +1868,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
   LINALG::Matrix<2, 2, TYPEBTS> Jinv(true);
 
   // Initialize vector with parameters xi1, xi2, eta
-  TYPEBTS par[3] = {xi1, xi2, eta};
+  std::array<TYPEBTS, 3> par = {xi1, xi2, eta};
 
   // Get indices of not fixed parameters
   int par_i[2];

@@ -73,10 +73,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   int duplicates = 0;
   if (Comm().NumProc() > 1)
   {
-    std::vector<int> mygpvec(numgp_per_artele);
-    std::vector<int> sumgpvec(numgp_per_artele);
-    std::fill(mygpvec.data(), mygpvec.data() + numgp_per_artele, 0);
-    std::fill(sumgpvec.data(), sumgpvec.data() + numgp_per_artele, 0);
+    std::vector<int> mygpvec(numgp_per_artele, 0);
+    std::vector<int> sumgpvec(numgp_per_artele, 0);
     // loop over all GIDs
     for (int gid = gp_vector->Map().MinAllGID(); gid <= gp_vector->Map().MaxAllGID(); gid++)
     {

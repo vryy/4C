@@ -694,7 +694,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     const double rad_j = 0.0;
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -732,7 +732,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     UTILS::VecAddScale(force_i, normalcontactforce, particlewallpair.e_ji_);
 
     // calculation of tangential contact force
-    double tangentialcontactforce[3] = {0.0};
+    double tangentialcontactforce[3] = {0.0, 0.0, 0.0};
     if (contacttangential_ and mu_tangential > 0.0)
     {
       // get reference to touched tangential history
@@ -767,7 +767,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     }
 
     // calculation of rolling contact moment
-    double rollingcontactmoment[3] = {0.0};
+    double rollingcontactmoment[3] = {0.0, 0.0, 0.0};
     if (contactrolling_ and mu_rolling > 0.0)
     {
       // get reference to touched rolling history
@@ -803,7 +803,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     }
 
     // calculation of wall contact force
-    double wallcontactforce[3] = {0.0};
+    double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
     {
       UTILS::VecSetScale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);

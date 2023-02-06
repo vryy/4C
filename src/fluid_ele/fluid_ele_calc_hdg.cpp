@@ -854,7 +854,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
   dsassert(elevec1.M() == numsamppoints * numsamppoints * numsamppoints * 6,
       "Vector does not have correct size");
   // sampling locations in 1D in parent domain
-  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+  std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
   Epetra_SerialDenseMatrix locations(3, 125);
   Epetra_SerialDenseVector values(shapes_->ndofs_);
 
@@ -919,7 +919,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
   //  correct size");
   // sampling locations in 1D in parent domain
-  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+  std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   Epetra_SerialDenseMatrix locations;
 #ifdef DEBUG
@@ -1034,7 +1034,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
   //  correct size");
   // sampling locations in 1D in parent domain
-  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+  std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   Epetra_SerialDenseMatrix locations;
 #ifdef DEBUG

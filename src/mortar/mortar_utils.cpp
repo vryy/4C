@@ -446,7 +446,7 @@ int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed
 
   // initialize starting point
   int startindex = 0;
-  double startpoint[2] = {transformed(0, 0), transformed(1, 0)};
+  std::array<double, 2> startpoint = {transformed(0, 0), transformed(1, 0)};
 
   int np = (int)collconvexhull.size();
   for (int i = 1; i < np; ++i)
@@ -601,8 +601,8 @@ int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed
 
   for (int i = 0; i < np - 1; ++i)
   {
-    double edge1[2] = {0.0, 0.0};
-    double edge2[2] = {0.0, 0.0};
+    std::array<double, 2> edge1 = {0.0, 0.0};
+    std::array<double, 2> edge2 = {0.0, 0.0};
 
     // first triple
     if (i == 0)

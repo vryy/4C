@@ -179,9 +179,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     {
       for (int k = ijk_range[4]; k <= ijk_range[5]; ++k)
       {
-        int ijk[3] = {i, j, k};
+        int ijk[] = {i, j, k};
 
-        const int gid = ConvertijkToGid(&ijk[0]);
+        const int gid = ConvertijkToGid(ijk);
         if (gid != -1)
         {
           if (checkexistence)
@@ -212,9 +212,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     {
       for (int k = ijk_range[4]; k <= ijk_range[5]; ++k)
       {
-        int ijk[3] = {i, j, k};
+        int ijk[] = {i, j, k};
 
-        const int gid = ConvertijkToGid(&ijk[0]);
+        const int gid = ConvertijkToGid(ijk);
         if (gid != -1)
         {
           if (checkexistence)
@@ -406,8 +406,8 @@ void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(
     {
       for (int k = ijk_base[2] - 1; k <= ijk_base[2] + 1; ++k)
       {
-        int ijk[3] = {i, j, k};
-        const int gid = ConvertijkToGid(&ijk[0]);
+        int ijk[] = {i, j, k};
+        const int gid = ConvertijkToGid(ijk);
         if (gid != -1 and gid != binId)
         {
           binIds.push_back(gid);
@@ -454,7 +454,7 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
     {
       for (int i = ijk_base[0]; i < (ijk_base[0] + 2); ++i)
       {
-        const int ijk_curr[] = {i, j, k};
+        const std::array<int, 3> ijk_curr = {i, j, k};
         LINALG::Matrix<3, 1> curr_corner;
         for (int dim = 0; dim < 3; ++dim)
         {
@@ -939,7 +939,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
       // get corresponding bin ids in ijk range
       std::vector<int> binIds;
       binIds.reserve(GetNumberOfBinsInijkRange(ijk_range));
-      GidsInijkRange(&ijk_range[0], binIds, false);
+      GidsInijkRange(ijk_range, binIds, false);
 
       // assign element to bins
       for (std::vector<int>::const_iterator biniter = binIds.begin(); biniter != binIds.end();
@@ -1518,10 +1518,10 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
     for (int iparticle = 0; iparticle < bindis_->lColElement(k)->NumNode(); ++iparticle)
     {
       double const* pos = particles[iparticle]->X();
-      int ijk[3] = {-1, -1, -1};
+      int ijk[] = {-1, -1, -1};
       ConvertPosToijk(pos, ijk);
 
-      int gidofbin = ConvertijkToGid(&ijk[0]);
+      int gidofbin = ConvertijkToGid(ijk);
       if (gidofbin != binid)
         dserror("after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid);
     }
@@ -1938,8 +1938,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
   double globmin[3];
   double globmax[3];
   // do the necessary communication
-  discret->Comm().MinAll(&locmin[0], &globmin[0], 3);
-  discret->Comm().MaxAll(&locmax[0], &globmax[0], 3);
+  discret->Comm().MinAll(locmin, globmin, 3);
+  discret->Comm().MaxAll(locmax, globmax, 3);
 
   // set global XAABB for discret
   for (int dim = 0; dim < 3; ++dim)

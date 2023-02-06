@@ -341,7 +341,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
   {
     // locactions given by Vogel&Eaton
-    double givenpos[10] = {2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
+    std::array<double, 10> givenpos = {2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
     if (numx1statlocations_ != 10) dserror("wrong number of numx1statlocations_");
     // find locations
     for (int rr = 0; rr < numx1statlocations_; rr++)

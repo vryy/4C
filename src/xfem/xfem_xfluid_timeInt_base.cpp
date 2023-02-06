@@ -3257,8 +3257,8 @@ void XFEM::XFLUID_STD::exportStartData()
   // unpack received data
   while (posinData < dataRecv.size())
   {
-    double coords[nsd] = {0.0};
-    DRT::Node node(0, (double*)coords, 0);  // initialize node
+    std::array<double, nsd> coords = {0.0};
+    DRT::Node node(0, coords.data(), 0);  // initialize node
     int nds_np = -1;
     LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
     std::vector<LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x

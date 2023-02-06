@@ -161,7 +161,6 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
 Teuchos::ParameterList& LINALG::Preconditioner::Params() { return solver_->Params(); }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int LINALG::Preconditioner::SetUseTranspose(bool UseTranspose)

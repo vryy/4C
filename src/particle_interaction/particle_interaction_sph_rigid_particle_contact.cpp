@@ -281,7 +281,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -306,7 +306,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     if (force_i) UTILS::VecAddScale(force_i, -fac, particlewallpair.e_ij_);
 
     // calculation of wall contact force
-    double wallcontactforce[3] = {0.0};
+    double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
       UTILS::VecSetScale(wallcontactforce, fac, particlewallpair.e_ij_);
 

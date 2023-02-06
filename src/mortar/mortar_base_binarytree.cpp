@@ -159,7 +159,7 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
       // get current node position
-      double pos[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> pos = {0.0, 0.0, 0.0};
       for (int j = 0; j < Dim(); ++j) pos[j] = mrtrnode->xspatial()[j];
 
       // calculate slabs
@@ -187,7 +187,7 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
         mrtrelement->ComputeUnitNormalAtXi(xi, normal);
 
         // now the auxiliary position
-        double auxpos[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> auxpos = {0.0, 0.0, 0.0};
         double scalar = 0.0;
         for (int j = 0; j < Dim(); ++j)
           scalar = scalar +
