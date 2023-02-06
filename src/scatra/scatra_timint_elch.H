@@ -75,6 +75,8 @@ namespace SCATRA
     //! calculate error compared to analytical solution
     void EvaluateErrorComparedToAnalyticalSol() override;
 
+    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest() override;
+
     /*========================================================================*/
     //! @name ELCH methods
     /*========================================================================*/

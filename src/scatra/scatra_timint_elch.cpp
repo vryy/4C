@@ -34,6 +34,7 @@
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
+#include "scatra_resulttest_elch.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3313,4 +3314,11 @@ double SCATRA::ScaTraTimIntElch::GetCurrentTemperature() const
     temperature = ComputeTemperatureFromFunction();
 
   return temperature;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElch::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp(this, false)));
 }

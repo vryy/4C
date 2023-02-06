@@ -178,9 +178,7 @@ void scatra_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform the result test if required
-      DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
-
+      scatraonly->ScaTraField()->TestResults();
       break;
     }
     case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
@@ -318,9 +316,7 @@ void scatra_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      algo->TestResults();
 
       break;
     }  // case 2

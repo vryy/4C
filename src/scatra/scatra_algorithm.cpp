@@ -13,6 +13,7 @@
 #include "scatra_timint_implicit.H"
 #include "scatra_algorithm.H"
 #include "adapter_coupling_volmortar.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -656,4 +657,14 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
   ScaTraField()->SetTimeStep(FluidField()->Time(), FluidField()->Step());
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScaTraAlgorithm::TestResults()
+{
+  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  DRT::Problem::Instance()->TestAll(Comm());
 }

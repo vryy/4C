@@ -624,35 +624,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-
-  bool is_elch_timeint = false;
-  if (probtype == ProblemType::ssi)
-  {
-    is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
-                          DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                      INPAR::SSI::ScaTraTimIntType::elch;
-  }
-  else if (probtype == ProblemType::ssti)
-  {
-    is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
-                          DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
-                      INPAR::SSTI::ScaTraTimIntType::elch;
-  }
-
-  const std::string disname = scatra_->Discretization()->Name();
-
-  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
-    return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
-  else if (probtype == ProblemType::elch or
-           (is_elch_timeint and disname == "scatra" and
-               (probtype == ProblemType::ssi or probtype == ProblemType::ssti)))
-  {
-    return Teuchos::rcp(
-        new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatra_)));
-  }
-  else
-    return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
+  return scatra_->CreateScaTraFieldTest();
 }
 
 /*----------------------------------------------------------------------*/

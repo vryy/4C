@@ -54,6 +54,9 @@ namespace ELCH
     /// read restart data
     void ReadRestart(int step);
 
+    /// Add tests to global problem and start tests
+    void TestResults();
+
    protected:
     /// start a new time step
     void PrepareTimeStep();

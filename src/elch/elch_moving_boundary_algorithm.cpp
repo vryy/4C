@@ -13,6 +13,7 @@
 #include "fluid_utils_mapextractor.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_elch.H"
 
@@ -406,7 +407,6 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
@@ -422,4 +422,15 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
   reader.ReadVector(idispnp_, "idispn");
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::TestResults()
+{
+  auto* problem = DRT::Problem::Instance();
+  problem->AddFieldTest(FluidField()->CreateFieldTest());
+  problem->AddFieldTest(AleField()->CreateFieldTest());
+  problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());
+  problem->TestAll(ScaTraField()->Discretization()->Comm());
 }

@@ -119,11 +119,7 @@ void elch_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform the result test if required
-      Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatraonly->ScaTraField());
-      if (elchtimint == Teuchos::null) dserror("Time integrator is not of electrochemistry type!");
-      DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-      DRT::Problem::Instance()->TestAll(comm);
+      scatraonly->ScaTraField()->TestResults();
 
       break;
     }
@@ -230,14 +226,7 @@ void elch_dyn(int restart)
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
-        problem->AddFieldTest(elch->AleField()->CreateFieldTest());
-        Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
-        if (elchtimint == Teuchos::null)
-          dserror("Time integrator is not of electrochemistry type!");
-        problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-        problem->TestAll(comm);
+        elch->TestResults();
       }
       else
       {
@@ -270,7 +259,6 @@ void elch_dyn(int restart)
         // discretizations are done, now we can call Setup() on the algorithm
         elch->Setup();
 
-
         // read the restart information, set vectors and variables
         if (restart) elch->ReadRestart(restart);
 
@@ -281,13 +269,7 @@ void elch_dyn(int restart)
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
-        Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
-        if (elchtimint == Teuchos::null)
-          dserror("Time integrator is not of electrochemistry type!");
-        problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-        problem->TestAll(comm);
+        elch->TestResults();
       }
 
       break;

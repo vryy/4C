@@ -87,8 +87,7 @@ namespace SCATRA
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
-    /// perform result test
-    void TestResults();
+    void TestResults() override;
 
     /// set time and step value
     void SetTimeStep(const double time, const int step);

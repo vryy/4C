@@ -54,6 +54,9 @@ namespace SCATRA
     /// read restart for preceding turbulent inflow simulation
     void ReadInflowRestart(int restart);
 
+    /// Add tests to global problem and start tests
+    void TestResults();
+
    protected:
     /// time loop for one-way coupling
     void TimeLoopOneWay();
