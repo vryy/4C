@@ -34,7 +34,7 @@ namespace ELCH
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~MovingBoundaryAlgorithm();
+    virtual ~MovingBoundaryAlgorithm() = default;
 
     /// setup
     virtual void Setup();

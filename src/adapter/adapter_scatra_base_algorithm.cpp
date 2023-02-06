@@ -15,7 +15,6 @@
 #include "io_control.H"
 #include "io.H"
 #include "solver_linalg_solver.H"
-#include "inpar_elch.H"
 #include "inpar_ssi.H"
 #include "inpar_ssti.H"
 #include "inpar_sti.H"
@@ -38,7 +37,6 @@
 #include "scatra_timint_loma_ost.H"
 
 // elch specific files
-#include "scatra_resulttest_elch.H"
 #include "scatra_timint_elch_scheme.H"
 
 // level set specific files
@@ -76,12 +74,12 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  auto probtype = DRT::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> discret = DRT::Problem::Instance()->GetDis(disname);
+  auto discret = DRT::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -91,7 +89,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = discret->Writer();
+  auto output = discret->Writer();
   if (discret->NumGlobalElements() == 0)
     dserror("No elements in discretization %s", discret->Name().c_str());
   output->WriteMesh(0, 0.0);
@@ -102,15 +100,14 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
+  auto solver = Teuchos::rcp(new LINALG::Solver(
       solverparams, discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams =
-      Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
+  auto scatratimeparams = Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
   if (scatratimeparams == Teuchos::null) dserror("Instantiation of Teuchos::ParameterList failed!");
 
   // -------------------------------------------------------------------
@@ -181,7 +178,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // list for extra parameters
   // (put here everything that is not available in scatradyn or its sublists)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
+  auto extraparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // ------------------------------pointer to the error file (for output)
   extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
@@ -190,7 +187,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   extraparams->set<bool>("isale", isale);
 
   // ------------------------------------get also fluid turbulence sublist
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const auto& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   extraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
   extraparams->sublist("SUBGRID VISCOSITY") = fdyn.sublist("SUBGRID VISCOSITY");
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES") = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
@@ -211,7 +208,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // low Mach number flow
   if (probtype == ProblemType::loma or probtype == ProblemType::thermo_fsi)
   {
-    Teuchos::RCP<Teuchos::ParameterList> lomaparams =
+    auto lomaparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
     switch (timintscheme)
     {
@@ -257,7 +254,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
                                DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
                                INPAR::STI::ScaTraTimIntType::elch)))))
   {
-    Teuchos::RCP<Teuchos::ParameterList> elchparams =
+    auto elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
     switch (timintscheme)
@@ -401,8 +398,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                    INPAR::SSI::ScaTraTimIntType::cardiac_monodomain))
   {
-    Teuchos::RCP<Teuchos::ParameterList> cmonoparams =
-        rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
+    auto cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
     if (DRT::Problem::Instance()->SpatialApproximationType() ==
@@ -564,14 +560,14 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   scatra_->Setup();
 
   // get the parameter list
-  Teuchos::RCP<Teuchos::ParameterList> scatradyn = scatra_->ScatraParameterList();
+  auto scatradyn = scatra_->ScatraParameterList();
   // get the discretization
-  Teuchos::RCP<DRT::Discretization> discret = scatra_->Discretization();
+  auto discret = scatra_->Discretization();
 
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  auto probtype = DRT::Problem::Instance()->GetProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
   if (probtype == ProblemType::elch or
@@ -580,13 +576,13 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
               DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
               INPAR::STI::ScaTraTimIntType::elch))
   {
-    Teuchos::RCP<Teuchos::ParameterList> elchparams =
+    auto elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
     if (DRT::INPUT::IntegralValue<int>(*elchparams, "BLOCKPRECOND"))
     {
-      const Teuchos::RCP<LINALG::Solver>& solver = scatra_->Solver();
+      const auto& solver = scatra_->Solver();
 
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
@@ -611,8 +607,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       // information for the subblocks. Therefore we need the nodal block information in the first
       // subblock for the velocities. The pressure null space is trivial to be built using a
       // constant vector
-      Teuchos::ParameterList& inv1 =
-          solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+      auto& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
       inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
     }
   }

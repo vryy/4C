@@ -36,7 +36,7 @@ namespace ELCH
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    virtual ~Algorithm() = default;
 
    protected:
     /// provide information about initial field

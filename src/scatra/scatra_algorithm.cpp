@@ -9,11 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fluid_turbulence_statistic_manager.H"
-#include "scatra_timint_implicit.H"
 #include "scatra_algorithm.H"
+
 #include "adapter_coupling_volmortar.H"
+#include "fluid_turbulence_statistic_manager.H"
 #include "lib_globalproblem.H"
+#include "scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -32,15 +33,7 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
       samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
       samstop_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
-  // no stuff to add here at the moment
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-SCATRA::ScaTraAlgorithm::~ScaTraAlgorithm() { return; }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -56,10 +49,7 @@ void SCATRA::ScaTraAlgorithm::Setup()
 
   if (velincnp_ == Teuchos::null) dserror("velincnp_ == Teuchos::null");
   if (phiincnp_ == Teuchos::null) dserror("phiincnp_ == Teuchos::null");
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -73,13 +63,9 @@ void SCATRA::ScaTraAlgorithm::Init(
 {
   // call init in base class
   ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | Provide required time loop                                fang 07/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoop()
 {
@@ -90,17 +76,13 @@ void SCATRA::ScaTraAlgorithm::TimeLoop()
   // provide information about initial field
   PrepareTimeLoop();
 
-  if (natconv_ == false)
+  if (!natconv_)
     TimeLoopOneWay();  // one-way coupling
   else
     TimeLoopTwoWay();  // two-way coupling (natural convection)
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | Time loop for one-way coupled problems                    fang 07/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
 {
@@ -133,14 +115,10 @@ void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
 
     // write output to screen and files
     Output();
-  }  // while(NotFinished())
-
-  return;
+  }
 }
 
-
 /*--------------------------------------------------------------------------*
- | Time loop for two-way coupled problems (natural convection)   fang 07/14 |
  *--------------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
 {
@@ -166,11 +144,8 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
 
     // write output to screen and files
     Output();
-  }  // while(NotFinished())
-
-  return;
+  }
 }
-
 
 /*----------------------------------------------------------------------*
  | Initial calculations for two-way coupling time loop       fang 08/14 |
@@ -201,10 +176,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
 
   // compute initial density
   ScaTraField()->ComputeDensity();
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -230,10 +202,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
     std::cout << "\n******************\n   TIME STEP     \n******************\n";
     std::cout << "\nStep:   " << Step() << " / " << NStep() << "\n";
   }
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -278,10 +247,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
   ScaTraField()->PrepareTimeStep();
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  | Print scatra solver type to screen                        fang 08/14 |
@@ -291,10 +257,7 @@ void SCATRA::ScaTraAlgorithm::PrintScaTraSolver()
   if (Comm().MyPID() == 0)
     std::cout
         << "\n****************************\n      TRANSPORT SOLVER\n****************************\n";
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -309,10 +272,7 @@ void SCATRA::ScaTraAlgorithm::DoFluidStep()
   FluidField()->CalcIntermediateSolution();
 
   FluidField()->Solve();
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -325,10 +285,7 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
 
   // solve the transport equation(s)
   ScaTraField()->Solve();
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -375,7 +332,6 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
@@ -416,7 +372,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
   myoutput->WriteMesh(0, 0.0);
 #endif
 
-  while (stopnonliniter == false)
+  while (!stopnonliniter)
   {
     natconvitnum++;
 
@@ -456,9 +412,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     // myoutput->WriteVector("velnp", FluidField()->Velnp());
 #endif
   }
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -466,9 +420,7 @@ void SCATRA::ScaTraAlgorithm::Update(const int num)
 {
   FluidField()->Update();
   ScaTraField()->Update(num);
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -477,10 +429,7 @@ void SCATRA::ScaTraAlgorithm::UpdateConvection()
   // update scatra and fluid fields
   ScaTraField()->Update();
   FluidField()->Update();
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -508,10 +457,7 @@ void SCATRA::ScaTraAlgorithm::Output()
   if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
     FluidField()->TurbulenceStatisticManager()->DoOutputForScaTra(
         *ScaTraField()->DiscWriter(), ScaTraField()->Step());
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -644,7 +590,6 @@ bool SCATRA::ScaTraAlgorithm::ConvergenceCheck(
   return stopnonliniter;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
@@ -656,7 +601,6 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
   // time and step have not been set in the superior class and the ScaTraField
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
   ScaTraField()->SetTimeStep(FluidField()->Time(), FluidField()->Step());
-  return;
 }
 
 

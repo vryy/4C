@@ -34,22 +34,16 @@ namespace SCATRA
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraAlgorithm();
+    ~ScaTraAlgorithm() override = default;
 
-    /// setup
-    virtual void Setup();
+    void Setup() override;
 
-    /// init
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-    );
+    void Init(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& scatradyn,
+        const Teuchos::ParameterList& solverparams, const std::string& disname = "scatra",
+        const bool isale = false) override;
 
     /// outer level time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// read restart for preceding turbulent inflow simulation
     void ReadInflowRestart(int restart);
@@ -65,16 +59,13 @@ namespace SCATRA
     void TimeLoopTwoWay();
 
     /// provide information about initial field
-    virtual void PrepareTimeLoop()
-    {
-      return;
-    };  // do nothing in base algorithm (only relevant for derived algorithms)
+    virtual void PrepareTimeLoop(){};
 
     /// initial calculations for two-way coupling time loop
     void PrepareTimeLoopTwoWay();
 
     /// start a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// start a new time step
     void PrepareTimeStepConvection();
@@ -101,7 +92,7 @@ namespace SCATRA
     void UpdateConvection();
 
     /// write output
-    void Output();
+    void Output() override;
 
     /// convergence check for natural convection solver
     virtual bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
