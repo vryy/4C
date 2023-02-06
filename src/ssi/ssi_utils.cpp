@@ -1148,8 +1148,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
   }
 
   // communicate to all other procs
-  std::vector<std::pair<int, int>> all_coupling_pairs;
-  DRT::UTILS::BroadcastPairVector(my_coupling_pairs, all_coupling_pairs, comm_);
+  const auto all_coupling_pairs = DRT::UTILS::BroadcastPairVector(my_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1320,8 +1319,8 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  DRT::UTILS::BroadcastVector(my_master_gids, master_gids, comm_);
-  DRT::UTILS::BroadcastMap(my_slave_master_pair, slave_master_pair, comm_);
+  master_gids = DRT::UTILS::BroadcastVector(my_master_gids, comm_);
+  slave_master_pair = DRT::UTILS::BroadcastMap(my_slave_master_pair, comm_);
 
 #ifdef DEBUG
   // check if everything worked fine
@@ -1368,8 +1367,8 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
   }
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
-  DRT::UTILS::BroadcastVector(
-      my_coupled_original_slave_gids, all_coupled_original_slave_gids, comm_);
+  all_coupled_original_slave_gids =
+      DRT::UTILS::BroadcastVector(my_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*

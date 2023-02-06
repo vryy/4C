@@ -19,9 +19,8 @@ namespace
     ASSERT_GT(comm.NumProc(), 1);
 
     const int myPID = comm.MyPID();
-    std::vector<double> vec_in(myPID + 1, static_cast<double>(myPID));
-    std::vector<double> vec_out;
-    DRT::UTILS::BroadcastVector(vec_in, vec_out, comm);
+    const std::vector<double> vec_in(myPID + 1, static_cast<double>(myPID));
+    const auto vec_out = DRT::UTILS::BroadcastVector(vec_in, comm);
 
     std::vector<double> vec_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -40,10 +39,9 @@ namespace
     ASSERT_GT(comm.NumProc(), 1);
 
     const int myPID = comm.MyPID();
-    std::vector<std::pair<int, double>> pair_vec_in(
+    const std::vector<std::pair<int, double>> pair_vec_in(
         myPID + 1, std::make_pair(myPID, static_cast<double>(myPID)));
-    std::vector<std::pair<int, double>> pair_vec_out;
-    DRT::UTILS::BroadcastPairVector(pair_vec_in, pair_vec_out, comm);
+    const auto pair_vec_out = DRT::UTILS::BroadcastPairVector(pair_vec_in, comm);
 
     std::vector<std::pair<int, double>> pair_vec_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -65,12 +63,8 @@ namespace
     ASSERT_GT(comm.NumProc(), 1);
 
     const int myPID = comm.MyPID();
-
-    std::map<int, double> map_in;
-    map_in.insert(std::make_pair(myPID, static_cast<double>(myPID)));
-
-    std::map<int, double> map_out;
-    DRT::UTILS::BroadcastMap(map_in, map_out, comm);
+    const std::map<int, double> map_in = {std::make_pair(myPID, static_cast<double>(myPID))};
+    const auto map_out = DRT::UTILS::BroadcastMap(map_in, comm);
 
     std::map<int, double> map_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -79,5 +73,25 @@ namespace
     }
 
     EXPECT_EQ(map_out, map_expected);
+  }
+
+  TEST(BroadcastMapVector, Set)
+  {
+    Epetra_MpiComm comm(MPI_COMM_WORLD);
+
+    // at least two procs required
+    ASSERT_GT(comm.NumProc(), 1);
+
+    const int myPID = comm.MyPID();
+    const std::set<int> set_in = {myPID};
+    const std::set<int> set_out = DRT::UTILS::BroadcastSet(set_in, comm);
+
+    std::set<int> set_expected;
+    for (int pid = 0; pid < comm.NumProc(); ++pid)
+    {
+      set_expected.insert(pid);
+    }
+
+    EXPECT_EQ(set_out, set_expected);
   }
 }  // namespace
