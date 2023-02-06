@@ -157,6 +157,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
 
         solid_material.Update(strains.defgrd_, gp, params, ele.Id());
       });
+
+  solid_material.Update();
 }
 
 template <DRT::Element::DiscretizationType distype>
