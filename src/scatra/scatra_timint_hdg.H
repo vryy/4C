@@ -77,6 +77,8 @@ namespace SCATRA
     */
     virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError() const;
 
+    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest() override;
+
    protected:
     //! copy constructor
     TimIntHDG(const TimIntHDG& old);

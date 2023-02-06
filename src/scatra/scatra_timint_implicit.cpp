@@ -21,14 +21,15 @@
 
 #include "scatra_timint_implicit.H"
 
+#include "scatra_resulttest.H"
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 #include "scatra_timint_meshtying_strategy_fluid.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_std.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
-#include "scatra_utils.H"
 #include "scatra_turbulence_hit_initial_scalar_field.H"
 #include "scatra_turbulence_hit_scalar_forcing.H"
+#include "scatra_utils.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
 
@@ -3706,4 +3707,19 @@ void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntImpl::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false)));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::TestResults()
+{
+  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  DRT::Problem::Instance()->TestAll(discret_->Comm());
 }

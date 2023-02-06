@@ -18,20 +18,10 @@ ELCH::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList
     const Teuchos::ParameterList& solverparams)
     : ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra", solverparams)
 {
-  // Setup of TurbulenceStatisticManager is performed in the
-  // constructor of class ScaTraFluidCouplingAlgorithm
-
-  return;
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ELCH::Algorithm::~Algorithm() { return; }
-
-
 /*----------------------------------------------------------------------*
- | Provide information about initial field                   fang 08/14 |
  *----------------------------------------------------------------------*/
 void ELCH::Algorithm::PrepareTimeLoop()
 {
@@ -44,21 +34,16 @@ void ELCH::Algorithm::PrepareTimeLoop()
     // compute error for problems with analytical solution (initial field!)
     ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- | Print scatra solver type to screen                        fang 08/14 |
  *----------------------------------------------------------------------*/
 void ELCH::Algorithm::PrintScaTraSolver()
 {
   if (Comm().MyPID() == 0)
     std::cout
         << "\n****************************\n      ELCH SOLVER\n****************************\n";
-
-  return;
 }
 
 
@@ -78,12 +63,12 @@ bool ELCH::Algorithm::ConvergenceCheck(
   Teuchos::RCP<LINALG::MapExtractor> conpotsplitter = ScaTraField()->Splitter();
   // Variables to save different L2 - Norms
 
-  double potincnorm_L2(0.0);
-  double potnorm_L2(0.0);
-  double velincnorm_L2(0.0);
-  double velnorm_L2(0.0);
-  double connorm_L2(0.0);
-  double conincnorm_L2(0.0);
+  double potincnorm_L2 = 0.0;
+  double potnorm_L2 = 0.0;
+  double velincnorm_L2 = 0.0;
+  double velnorm_L2 = 0.0;
+  double connorm_L2 = 0.0;
+  double conincnorm_L2 = 0.0;
 
   // Calculate velocity increment and velocity L2 - Norm
   // velincnp_ = 1.0 * convelnp_ - 1.0 * conveln_
@@ -95,13 +80,13 @@ bool ELCH::Algorithm::ConvergenceCheck(
 
   // Calculate concentration increment and concentration L2 - Norm
   phiincnp_->Update(1.0, *ScaTraField()->Phinp(), -1.0);
-  Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter->ExtractOtherVector(phiincnp_);
+  auto onlycon = conpotsplitter->ExtractOtherVector(phiincnp_);
   onlycon->Norm2(&conincnorm_L2);
   conpotsplitter->ExtractOtherVector(ScaTraField()->Phinp(), onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
-  Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter->ExtractCondVector(phiincnp_);
+  auto onlypot = conpotsplitter->ExtractCondVector(phiincnp_);
   onlypot->Norm2(&potincnorm_L2);
   conpotsplitter->ExtractCondVector(ScaTraField()->Phinp(), onlypot);
   onlypot->Norm2(&potnorm_L2);

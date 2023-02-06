@@ -26,6 +26,8 @@
 
 #include "binstrategy.H"
 
+#include "scatra_resulttest_hdg.H"
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
@@ -1429,3 +1431,10 @@ void SCATRA::TimIntHDG::AssembleRHS()
 
   return;
 }  // TimIntHDG::AssembleRHS
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
+}

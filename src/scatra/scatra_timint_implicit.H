@@ -60,6 +60,7 @@ namespace DRT
   class DofSet;
   class Condition;
   class Problem;
+  class ResultTest;
 }  // namespace DRT
 
 namespace IO
@@ -283,6 +284,12 @@ namespace SCATRA
     {
       macro_micro_rea_coeff_ = macro_micro_rea_coeff;
     }
+
+    //! create result test for scalar transport field
+    virtual Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
+
+    //! Add tests to global problem and start tests
+    virtual void TestResults();
 
     /*--- calculate and update -----------------------------------------------*/
 
