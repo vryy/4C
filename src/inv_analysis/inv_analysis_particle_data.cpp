@@ -84,10 +84,10 @@ void INVANA::ParticleData::Pack(DRT::PackBuffer& data) const
   int glength = state_->GlobalLength();
   // extract the values
   std::vector<double> state(llength);
-  state_->ExtractCopy(&state[0]);
+  state_->ExtractCopy(state.data());
   // extract the gids
   std::vector<int> gids(llength);
-  state_->Map().MyGlobalElements(&gids[0]);
+  state_->Map().MyGlobalElements(gids.data());
   // ---- end
 
   // pack stuff
@@ -133,9 +133,9 @@ void INVANA::ParticleData::Unpack(const std::vector<char>& data)
   //  std::cout << "PROC: " << DRT::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()
   //  << "arrives here" << std::endl;
   // ---- reconstruct state_
-  Epetra_Map amap((int)glength, llength, &gids[0], 0, *lcomm_);
+  Epetra_Map amap((int)glength, llength, gids.data(), 0, *lcomm_);
   state_ = Teuchos::rcp(new Epetra_Vector(amap, false));
-  state_->ReplaceGlobalValues(llength, &state[0], &gids[0]);
+  state_->ReplaceGlobalValues(llength, state.data(), gids.data());
   // ---- end
 
   if (position != data.size())

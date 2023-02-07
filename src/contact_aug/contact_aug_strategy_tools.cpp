@@ -10,6 +10,7 @@
 
 #include "contact_aug_strategy.H"
 #include "contact_aug_interface.H"
+#include "contact_paramsinterface.H"
 
 #include "contact_node.H"
 
@@ -246,7 +247,7 @@ void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
     std::vector<double> rValFD(rLengthFD);
     std::vector<int> cIdsFD(rLengthFD);
     fdMatrixNew.EpetraMatrix()->ExtractGlobalRowCopy(
-        rowId, rLengthFD, numEntriesFD, &rValFD[0], &cIdsFD[0]);
+        rowId, rLengthFD, numEntriesFD, rValFD.data(), cIdsFD.data());
 
     // *** analytical solution ***
     // get all non-zero values and the corresponding ids of the current row
@@ -255,7 +256,7 @@ void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
     std::vector<double> rValAna(rLengthAna);
     std::vector<int> cIdsAna(rLengthAna);
     derivMatrix.EpetraMatrix()->ExtractGlobalRowCopy(
-        rowId, rLengthAna, numEntriesAna, &rValAna[0], &cIdsAna[0]);
+        rowId, rLengthAna, numEntriesAna, rValAna.data(), cIdsAna.data());
 
     /*-------------------------------------------------------------*
      |   Compare analytical and finite difference solution         |
@@ -471,5 +472,5 @@ void CONTACT::AUG::RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red
   myGids.resize(count);
   int gCount = 0;
   comm.SumAll(&count, &gCount, 1);
-  red_map = Epetra_Map(gCount, count, &myGids[0], 0, comm);
+  red_map = Epetra_Map(gCount, count, myGids.data(), 0, comm);
 }

@@ -549,7 +549,7 @@ void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(
     condIDs.push_back(*it);
   }
   Teuchos::RCP<Epetra_Map> nopendofmap =
-      Teuchos::rcp(new Epetra_Map(-1, int(condIDs.size()), &condIDs[0], 0, comm));
+      Teuchos::rcp(new Epetra_Map(-1, int(condIDs.size()), condIDs.data(), 0, comm));
 
   nopenetration_ = Teuchos::rcp(new LINALG::MapExtractor(*dofRowMap, nopendofmap));
 }

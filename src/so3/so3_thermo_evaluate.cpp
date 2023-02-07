@@ -655,7 +655,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         }
 
         // vector of the current element temperatures
-        LINALG::Matrix<nen_, 1> etemp(&mytempnp[0]);
+        LINALG::Matrix<nen_, 1> etemp(mytempnp.data());
         LINALG::Matrix<nen_, 1> shapefunct;
 
         // --------------------------------------------------

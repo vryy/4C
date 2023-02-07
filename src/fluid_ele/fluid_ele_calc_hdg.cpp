@@ -2332,14 +2332,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
   const int size = uuMatFinal.M();
   pivots.resize(size);
   int errnum;
-  lapack.GETRF(size, size, uuMatFinal.A(), size, &(pivots[0]), &errnum);
+  lapack.GETRF(size, size, uuMatFinal.A(), size, pivots.data(), &errnum);
   if (errnum > 0)
   {
     uuMatFinal.Print(std::cout);
     uuMat.Print(std::cout);
   }
   dsassert(errnum == 0, "Factorization failed");
-  lapack.GETRS('N', size, 1, uuMatFinal.A(), size, &(pivots[0]), upUpd.A(), size, &errnum);
+  lapack.GETRS('N', size, 1, uuMatFinal.A(), size, pivots.data(), upUpd.A(), size, &errnum);
   dsassert(errnum == 0, "Substitution failed");
 
   // compute Rg - GU * upUpd
@@ -2440,7 +2440,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   int errnum;
   dsassert(pivots.size() == static_cast<unsigned int>(uuMatFinal.M()) && pivots[0] + pivots[1] > 0,
       "Matrix seems to not have been factorized");
-  lapack.GETRS('N', uuMatFinal.M(), ufMat.N(), uuMatFinal.A(), uuMatFinal.M(), &(pivots[0]),
+  lapack.GETRS('N', uuMatFinal.M(), ufMat.N(), uuMatFinal.A(), uuMatFinal.M(), pivots.data(),
       ufMat.A(), ufMat.M(), &errnum);
   dsassert(errnum == 0, "Substitution failed");
 

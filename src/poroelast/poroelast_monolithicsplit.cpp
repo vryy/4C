@@ -169,7 +169,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   }
 
   Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::rcp(
-      new Epetra_Map(-1, structfsidbcvector.size(), &structfsidbcvector[0], 0, Comm()));
+      new Epetra_Map(-1, structfsidbcvector.size(), structfsidbcvector.data(), 0, Comm()));
   // dsassert(fluidfsidbcmap->UniqueGIDs(),"fsidbcmap is not unique!");
 
   return structfsidbcmap;

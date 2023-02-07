@@ -1317,7 +1317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
     for (int i = 0; i < 3; ++i) coordgp[i] = shapesface_->xyzreal(i, iquad);
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
+    const double* coordgpref = coordgp;  // needed for function evaluation
 
     if ((*onoff)[0])  // is this dof activated?
     {

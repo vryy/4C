@@ -215,7 +215,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::SendMyQuantitiesToProc(
   PackMyQuantities(sdata);
 
   MPI_Request request;
-  exporter.ISend(exporter.Comm().MyPID(), 0, &sdata[0], sdata.size(), MPI_TAG, request);
+  exporter.ISend(exporter.Comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
   exporter.Wait(request);
 }
 

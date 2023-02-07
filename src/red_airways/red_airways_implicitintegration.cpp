@@ -114,14 +114,14 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
     Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), &coleles[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, discret_->Comm()));
 
     discret_->ExportColumnElements(*extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
     Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, discret_->Comm()));
 
     discret_->ExportColumnNodes(*extendednodecolmap);
 
@@ -2402,7 +2402,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   }
   unsigned int numcond = tmp.size();
   if (numcond == 0) dserror("no coupling conditions found");
-  coupmap_ = Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), &tmp[0], 0, discret_->Comm()));
+  coupmap_ = Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discret_->Comm()));
 }
 
 

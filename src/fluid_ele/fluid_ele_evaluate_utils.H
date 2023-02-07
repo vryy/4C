@@ -49,8 +49,8 @@ namespace FLD
       Teuchos::ParameterList& params, const double eosfac)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(&(velocitypressure[0]), true);
-    LINALG::Matrix<4 * iel, 1> temp(&(temperature[0]), true);
+    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    LINALG::Matrix<4 * iel, 1> temp(temperature.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -458,8 +458,8 @@ namespace FLD
       Teuchos::ParameterList& params)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(&(velocitypressure[0]), true);
-    LINALG::Matrix<4 * iel, 1> phi(&(scalar[0]), true);
+    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    LINALG::Matrix<4 * iel, 1> phi(scalar.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -877,8 +877,8 @@ namespace FLD
     LINALG::Matrix<1, iel> etemp;
 
     // wrap matrix objects in fixed-size arrays
-    LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(&(myvel[0]), true);
-    LINALG::Matrix<iel, 1> mytempvec(&(mytemp[0]), true);
+    LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(myvel.data(), true);
+    LINALG::Matrix<iel, 1> mytempvec(mytemp.data(), true);
 
     // split velocity and throw away  pressure, insert into element array
     for (int i = 0; i < iel; ++i)

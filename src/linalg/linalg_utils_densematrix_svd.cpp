@@ -27,8 +27,8 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q
   double rwork;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GESVD(jobu, jobvt, m, n, tmp.A(), tmp.LDA(), &s[0], Q.A(), Q.LDA(), VT.A(), VT.LDA(),
-      &work[0], lwork, &rwork, &info);
+  lapack.GESVD(jobu, jobvt, m, n, tmp.A(), tmp.LDA(), s.data(), Q.A(), Q.LDA(), VT.A(), VT.LDA(),
+      work.data(), lwork, &rwork, &info);
 
   if (info) dserror("Lapack's dgesvd returned %d", info);
 

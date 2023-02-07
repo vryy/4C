@@ -569,7 +569,7 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
 
       // set to a dofrowmap based vector!
       const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
-      const int err = target_vec_dofbased->ReplaceMyValues(1, &val_source[0], &lid_target);
+      const int err = target_vec_dofbased->ReplaceMyValues(1, val_source.data(), &lid_target);
       if (err) dserror("could not replace values for convective velocity");
     }
   }
@@ -597,7 +597,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVec
     if (val_source.size() != 1) dserror("we expect only one dof");
 
     const int lid_target = bg_dis_->NodeRowMap()->LID(node->Id());
-    const int err = bg_phinp_nodemap_->ReplaceMyValues(1, &val_source[0], &lid_target);
+    const int err = bg_phinp_nodemap_->ReplaceMyValues(1, val_source.data(), &lid_target);
     if (err) dserror("could not replace values for phi vector");
   }
 

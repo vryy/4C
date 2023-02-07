@@ -95,9 +95,9 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 
     int size = firstdim * secondim * sizeof(double);
 
-    ExtractfromPack(position, data, &(saccn_.A()[0]), size);
-    ExtractfromPack(position, data, &(svelnp_.A()[0]), size);
-    ExtractfromPack(position, data, &(sveln_.A()[0]), size);
+    ExtractfromPack(position, data, saccn_.A(), size);
+    ExtractfromPack(position, data, svelnp_.A(), size);
+    ExtractfromPack(position, data, sveln_.A(), size);
   }
 
   if (position != data.size())

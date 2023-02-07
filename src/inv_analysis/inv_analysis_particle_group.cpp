@@ -286,7 +286,7 @@ double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double s
 
   // normalize
   std::vector<double> weights(gnumparticles_);
-  pcomm_->IComm().GatherAll(&myweights[0], &weights[0], lnumparticles_);
+  pcomm_->IComm().GatherAll(myweights.data(), weights.data(), lnumparticles_);
 
   double sum = 0.0;
   for (int i = 0; i < (int)weights.size(); i++) sum += weights[i];
@@ -368,7 +368,7 @@ double INVANA::ParticleGroup::EffectiveSampleSize()
 
   // gather all weights on all procs
   std::vector<double> weights(gnumparticles_);
-  pcomm_->IComm().GatherAll(&myweights[0], &weights[0], lnumparticles_);
+  pcomm_->IComm().GatherAll(myweights.data(), weights.data(), lnumparticles_);
 
   // compute the same ess on all procs
   double sum = 0.0;
@@ -394,8 +394,8 @@ void INVANA::ParticleGroup::ResampleParticles()
   // all particles and weights an all procs
   std::vector<int> particles(gnumparticles_);
   std::vector<double> weights(gnumparticles_);
-  pcomm_->IComm().GatherAll(&my_particle_gids_[0], &particles[0], lnumparticles_);
-  pcomm_->IComm().GatherAll(&myweights[0], &weights[0], lnumparticles_);
+  pcomm_->IComm().GatherAll(my_particle_gids_.data(), particles.data(), lnumparticles_);
+  pcomm_->IComm().GatherAll(myweights.data(), weights.data(), lnumparticles_);
 
   std::vector<double> intervals(gnumparticles_ + 1);
   for (int i = 0; i <= gnumparticles_; i++) intervals[i] = (double)i;
@@ -647,15 +647,15 @@ void INVANA::ParticleGroup::ComputeMean(
 
   // particle ids
   std::vector<int> pgids(gnumparticles_);
-  pcomm_->IComm().GatherAll(&my_particle_gids_[0], &pgids[0], lnumparticles_);
+  pcomm_->IComm().GatherAll(my_particle_gids_.data(), pgids.data(), lnumparticles_);
 
   // set up tomap and frommap
   int ntosend = lnumparticles_;
   int ntorecv = 0;
   if (mygroup_ == 0) ntorecv = gnumparticles_;
 
-  Epetra_Map frommap(-1, ntosend, &my_particle_gids_[0], 0, pcomm_->IComm());
-  Epetra_Map tomap(-1, ntorecv, &pgids[0], 0, pcomm_->IComm());
+  Epetra_Map frommap(-1, ntosend, my_particle_gids_.data(), 0, pcomm_->IComm());
+  Epetra_Map tomap(-1, ntorecv, pgids.data(), 0, pcomm_->IComm());
 
   // export
   DRT::Exporter ex(frommap, tomap, pcomm_->IComm());

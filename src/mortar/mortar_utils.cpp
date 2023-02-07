@@ -173,7 +173,7 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransformGIDs(
 
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
-                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), &idx[0]);
+                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) dserror("InsertGlobalValues error: %d", err);
   }
 
@@ -226,11 +226,11 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
         dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
     }
 
-    Values = &vals[0];
+    Values = vals.data();
     NumEntries = vals.size();
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
-                  inmat->RowMap().GID(i), NumEntries, const_cast<double*>(Values), &idx[0]);
+                  inmat->RowMap().GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) dserror("InsertGlobalValues error: %d", err);
   }
 
@@ -279,7 +279,7 @@ void MORTAR::CreateNewColMap(const LINALG::SparseMatrix& mat, const Epetra_Map& 
   }
 
   newcolmap = Teuchos::rcp(new Epetra_Map(mat.ColMap().NumGlobalElements(),
-      static_cast<int>(my_col_gids.size()), &my_col_gids[0], 0, mat.Comm()));
+      static_cast<int>(my_col_gids.size()), my_col_gids.data(), 0, mat.Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -351,11 +351,11 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
         dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
     }
 
-    Values = &vals[0];
+    Values = vals.data();
     NumEntries = vals.size();
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
-                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), &idx[0]);
+                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) dserror("InsertGlobalValues error: %d", err);
   }
 
@@ -554,7 +554,7 @@ int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed
   if ((int)cotangle.size() != np - 1) dserror("Size went wrong for cot angle!");
 
   // now sort descending w.r.t cotangle = ascending w.r.t angle
-  MORTAR::Sort(&cotangle[0], np - 1, &sorted[0]);
+  MORTAR::Sort(cotangle.data(), np - 1, sorted.data());
   std::reverse(cotangle.begin(), cotangle.end());
   std::reverse(sorted.begin(), sorted.end());
 
@@ -761,8 +761,8 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, voldis[disidx]->Comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the

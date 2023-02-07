@@ -454,7 +454,7 @@ void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::DiscretizationInterface& d
     dbcgidsv.reserve(dbcrowgids->size());
     dbcgidsv.assign(dbcrowgids->begin(), dbcrowgids->end());
     nummyelements = dbcgidsv.size();
-    myglobalelements = &(dbcgidsv[0]);
+    myglobalelements = dbcgidsv.data();
   }
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
       discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));

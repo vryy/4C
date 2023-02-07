@@ -247,8 +247,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(&(mytempnp[0]), true);  // view only!
-        etemp_.Update(etemp);                                 // copy
+        LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+        etemp_.Update(etemp);                                  // copy
       }  // discretization.HasState("temperature")
       else
         dserror("No old temperature T_n+1 available");
@@ -265,8 +265,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(&(mytempn[0]), true);  // view only!
-        etemp_.Update(etemp);                                // copy
+        LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+        etemp_.Update(etemp);                                 // copy
       }  // discretization.HasState("old temperature")
       else
         dserror("No old temperature T_n available");
@@ -460,8 +460,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(&(mytempnp[0]), true);  // view only!
-            etemp_.Update(etemp);                                 // copy
+            LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+            etemp_.Update(etemp);                                  // copy
           }  // discretization.HasState("temperature")
           else
             dserror("No old temperature T_n+1 available");
@@ -478,8 +478,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(&(mytempn[0]), true);  // view only!
-            etemp_.Update(etemp);                                // copy
+            LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+            etemp_.Update(etemp);                                 // copy
           }  // discretization.HasState("old temperature")
           else
             dserror("No old temperature T_n available");

@@ -109,7 +109,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   // to construct the lambda_dof_rowmap_.
   std::vector<int> lambda_dof_per_rank(discretization_structure_->Comm().NumProc(), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
-  discretization_structure_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
+  discretization_structure_->Comm().GatherAll(&temp_my_n_lambda_dof, lambda_dof_per_rank.data(), 1);
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
@@ -130,9 +130,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
   // global node / element ids and the global Lagrange multiplier DOF ids.
   Teuchos::RCP<Epetra_Map> node_gid_rowmap = Teuchos::rcp(
-      new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discretization_structure_->Comm()));
+      new Epetra_Map(-1, n_nodes, my_nodes_gid.data(), 0, discretization_structure_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_rowmap = Teuchos::rcp(
-      new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discretization_structure_->Comm()));
+      new Epetra_Map(-1, n_element, my_elements_gid.data(), 0, discretization_structure_->Comm()));
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -216,9 +216,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
 
   // Create the beam and fluid maps.
   beam_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(
-      -1, field_dofs[0].size(), &(field_dofs[0])[0], 0, discretization_structure_->Comm()));
+      -1, field_dofs[0].size(), field_dofs[0].data(), 0, discretization_structure_->Comm()));
   fluid_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(
-      -1, field_dofs[1].size(), &(field_dofs[1])[0], 0, discretization_fluid_->Comm()));
+      -1, field_dofs[1].size(), field_dofs[1].data(), 0, discretization_fluid_->Comm()));
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -279,9 +279,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
 
   // Create the maps for the extraction of the values.
   Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, node_gid_needed.size(), &node_gid_needed[0], 0, discretization_structure_->Comm()));
-  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, element_gid_needed.size(), &element_gid_needed[0], 0, discretization_structure_->Comm()));
+      -1, node_gid_needed.size(), node_gid_needed.data(), 0, discretization_structure_->Comm()));
+  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1,
+      element_gid_needed.size(), element_gid_needed.data(), 0, discretization_structure_->Comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
@@ -331,7 +331,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
 
   // Create the global lambda col map.
   lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, lambda_gid_for_col_map.size(),
-      &lambda_gid_for_col_map[0], 0, discretization_structure_->Comm()));
+      lambda_gid_for_col_map.data(), 0, discretization_structure_->Comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;
@@ -467,12 +467,12 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
       global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
       global_M_->FEAssemble(local_M, lambda_row, fluid_row);
       global_kappa_->SumIntoGlobalValues(
-          local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
+          local_kappa.RowDim(), lambda_row.data(), local_kappa.Values());
 
       // Set all entries in the local kappa vector to 1 and add them to the active vector.
       for (int i_local = 0; i_local < local_kappa.RowDim(); i_local++) local_kappa(i_local) = 1.;
       global_active_lambda_->SumIntoGlobalValues(
-          local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
+          local_kappa.RowDim(), lambda_row.data(), local_kappa.Values());
     }
   }
 

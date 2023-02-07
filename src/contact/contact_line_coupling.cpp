@@ -910,7 +910,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
     // last element in list
     else
     {
-      MasterVertices()[i].AssignNext(&MasterVertices()[0]);
+      MasterVertices()[i].AssignNext(MasterVertices().data());
       MasterVertices()[i].AssignPrev(&MasterVertices()[i - 1]);
     }
   }
@@ -1137,7 +1137,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 
           // store intersection points
           TempInterSections().push_back(MORTAR::Vertex(coords, MORTAR::Vertex::lineclip, lcids,
-              &SlaveVertices()[1], &SlaveVertices()[0], true, false, NULL, alpha));
+              SlaveVertices().data() + 1, SlaveVertices().data(), true, false, NULL, alpha));
         }
       }
     }  // end vertex loop
@@ -2420,7 +2420,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   std::array<double, 3> gpn = {0.0, 0.0, 0.0};
   GEN::pairedvector<int, double> dgapgp(
       (ncol * ndof) + 10 * linsize);  // gap lin. without lm and jac.
-  std::array<double, 1> gap = {0.0};
+  double gap = 0.0;
   std::vector<GEN::pairedvector<int, double>> dnmap_unit(
       3, 10 * linsize);  // deriv of x,y and z comp. of gpn (unit)
 
@@ -2457,7 +2457,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
   // build gap function at current GP
-  for (int i = 0; i < Dim(); ++i) gap[0] += (mgpx[i] - sgpx[i]) * gpn[i];
+  for (int i = 0; i < Dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
   // build directional derivative of slave GP normal (non-unit)
   GEN::pairedvector<int, double> dmap_nxsl_gp(linsize);
@@ -2578,12 +2578,12 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   // (their row entries would be zero anyway!)
   if (cnode->IsOnBound()) return;
 
-  if (gap[0] >= 0.0) return;
+  if (gap >= 0.0) return;
 
   double value[3] = {0.0, 0.0, 0.0};
-  value[0] = (mgpx[0] - sgpx[0]);  // gap[0]*gpn[0];
-  value[1] = (mgpx[1] - sgpx[1]);  // gap[0]*gpn[1];
-  value[2] = (mgpx[2] - sgpx[2]);  // gap[0]*gpn[2];
+  value[0] = (mgpx[0] - sgpx[0]);  // gap*gpn[0];
+  value[1] = (mgpx[1] - sgpx[1]);  // gap*gpn[1];
+  value[2] = (mgpx[2] - sgpx[2]);  // gap*gpn[2];
 
   // add current Gauss point's contribution to gseg
   cnode->AddltlGapValue(value);
@@ -2605,11 +2605,11 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   }
 
   for (_CI p = dnmap_unit[0].begin(); p != dnmap_unit[0].end(); ++p)
-    dgmap[0][p->first] += gap[0] * (p->second);
+    dgmap[0][p->first] += gap * (p->second);
   for (_CI p = dnmap_unit[1].begin(); p != dnmap_unit[1].end(); ++p)
-    dgmap[1][p->first] += gap[0] * (p->second);
+    dgmap[1][p->first] += gap * (p->second);
   for (_CI p = dnmap_unit[2].begin(); p != dnmap_unit[2].end(); ++p)
-    dgmap[2][p->first] += gap[0] * (p->second);
+    dgmap[2][p->first] += gap * (p->second);
 
   //*****************************************
   // integrate D and M matrix

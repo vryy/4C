@@ -212,7 +212,7 @@ Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::ExtendMap(
     }
   }
 
-  return Teuchos::rcp(new Epetra_Map(-1, dstgids.size(), &dstgids[0], 0, srcmap->Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, dstgids.size(), dstgids.data(), 0, srcmap->Comm()));
 }
 
 /*----------------------------------------------------------------------*

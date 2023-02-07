@@ -399,7 +399,7 @@ void STI::Monolithic::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)
@@ -540,7 +540,7 @@ void STI::Monolithic::OutputMatrixToFile(
   // copy global IDs of matrix rows stored on current processor into vector
   std::vector<int> myrowgids(rowmap.NumMyElements(), 0);
   int* myglobalelements = rowmap.MyGlobalElements();
-  std::copy(myglobalelements, myglobalelements + rowmap.NumMyElements(), &myrowgids[0]);
+  std::copy(myglobalelements, myglobalelements + rowmap.NumMyElements(), myrowgids.data());
 
   // communicate global IDs
   std::vector<int> rowgids(0, 0);
@@ -551,7 +551,7 @@ void STI::Monolithic::OutputMatrixToFile(
 
   // create full row map on processor with ID 0
   const Epetra_Map fullrowmap(
-      -1, static_cast<int>(rowgids.size()), rowgids.size() ? &rowgids[0] : nullptr, 0, comm);
+      -1, static_cast<int>(rowgids.size()), rowgids.size() ? rowgids.data() : nullptr, 0, comm);
 
   // import matrix to processor with ID 0
   Epetra_CrsMatrix crsmatrix(Copy, fullrowmap, 0);
@@ -647,7 +647,7 @@ void STI::Monolithic::OutputVectorToFile(
   // copy global IDs of vector components stored on current processor into vector
   std::vector<int> mygids(map.NumMyElements(), 0);
   int* myglobalelements = map.MyGlobalElements();
-  std::copy(myglobalelements, myglobalelements + map.NumMyElements(), &mygids[0]);
+  std::copy(myglobalelements, myglobalelements + map.NumMyElements(), mygids.data());
 
   // communicate global IDs
   std::vector<int> gids(0, 0);
@@ -658,7 +658,7 @@ void STI::Monolithic::OutputVectorToFile(
 
   // create full vector map on processor with ID 0
   const Epetra_Map fullmap(
-      -1, static_cast<int>(gids.size()), gids.size() ? &gids[0] : nullptr, 0, comm);
+      -1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr, 0, comm);
 
   // export vector to processor with ID 0
   Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);

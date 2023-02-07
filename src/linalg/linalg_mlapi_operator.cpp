@@ -338,7 +338,7 @@ MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(MLAPI::Operator& A)
   for (int i = 0; i < nummyrows; ++i)
   {
     int numentries;
-    int err = B->ExtractMyRowCopy(i, maxnumentries, numentries, &vals[0], &indices[0]);
+    int err = B->ExtractMyRowCopy(i, maxnumentries, numentries, vals.data(), indices.data());
     if (err) dserror("Epetra_RowMatrix::ExtractMyRowCopy returned err=%d", err);
     double sum = 0.0;
     for (int j = 0; j < numentries; ++j) sum += abs(vals[j]);

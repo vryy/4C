@@ -61,7 +61,7 @@ void LINALG::SymmetricEigen(
   int info = 0;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.SYEV(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &info);
+  lapack.SYEV(jobz, uplo, dim, a, lda, w, work.data(), lwork, &info);
 
   if (!postproc)
   {

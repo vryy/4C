@@ -69,7 +69,7 @@ int DRT::UTILS::MatchingOctree::Setup()
     //
     Epetra_SerialDenseMatrix initialboundingbox(3, 2);
     double pointcoord[3];
-    CalcPointCoordinate(discret_, masterentityids_->at(0), &pointcoord[0]);
+    CalcPointCoordinate(discret_, masterentityids_->at(0), pointcoord);
     for (int dim = 0; dim < 3; dim++)
     {
       initialboundingbox(dim, 0) = pointcoord[dim] - tol_;
@@ -91,7 +91,7 @@ int DRT::UTILS::MatchingOctree::Setup()
 
       masternodesonthisproc.push_back(masterentityids_->at(locn));
 
-      CalcPointCoordinate(discret_, masternodesonthisproc[locn], &pointcoord[0]);
+      CalcPointCoordinate(discret_, masternodesonthisproc[locn], pointcoord);
 
       for (int dim = 0; dim < 3; dim++)
       {
@@ -232,7 +232,7 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
 
       int length = sblockofnodes.size();
 
-      exporter.ISend(frompid, topid, &(sblockofnodes[0]), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -287,7 +287,7 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
       if (masterplanecoords_.empty() != true)
       {
         double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), &pointcoord[0]);
+        CalcPointCoordinate(o.getRawPtr(), pointcoord);
 
         // get its coordinates
         std::vector<double> x(3);
@@ -487,7 +487,7 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
 
       int length = sblockofnodes.size();
 
-      exporter.ISend(frompid, topid, &(sblockofnodes[0]), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -537,7 +537,7 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
       if (not masterplanecoords_.empty())
       {
         double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), &pointcoord[0]);
+        CalcPointCoordinate(o.getRawPtr(), pointcoord);
 
         // get its coordinates
         std::vector<double> x(pointcoord, pointcoord + 3);
@@ -649,7 +649,7 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
 
       int length = sblockofnodes.size();
 
-      exporter.ISend(frompid, topid, &(sblockofnodes[0]), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -698,7 +698,7 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
       if (not masterplanecoords_.empty())
       {
         double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), &pointcoord[0]);
+        CalcPointCoordinate(o.getRawPtr(), pointcoord);
 
         // get its coordinates
         std::vector<double> x(pointcoord, pointcoord + 3);
@@ -1135,7 +1135,7 @@ int DRT::UTILS::OctreeElement::Setup()
     // calculate mean coordinate for all directions
     for (int locn = 0; locn < numnodestoadd; locn++)
     {
-      CalcPointCoordinate(discret_, nodeids_.at(locn), &pointcoord[0]);
+      CalcPointCoordinate(discret_, nodeids_.at(locn), pointcoord);
 
       for (int dim = 0; dim < 3; dim++)
       {
@@ -1251,7 +1251,7 @@ int DRT::UTILS::OctreeElement::Setup()
     std::vector<int> childnodeids2;
     for (int locn = 0; locn < (int)nodeids_.size(); locn++)
     {
-      CalcPointCoordinate(discret_, nodeids_.at(locn), &pointcoord[0]);
+      CalcPointCoordinate(discret_, nodeids_.at(locn), pointcoord);
 
       // node is in "lower" bounding box
       if (pointcoord[direction] < childboundingbox1(direction, 1))
@@ -1300,7 +1300,7 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
   double pointcoord[3];
 
   // the first node is the guess for the closest node
-  CalcPointCoordinate(discret_, nodeids_.at(0), &pointcoord[0]);
+  CalcPointCoordinate(discret_, nodeids_.at(0), pointcoord);
   for (int dim = 0; dim < 3; dim++)
   {
     dx[dim] = pointcoord[dim] - x[dim];
@@ -1312,7 +1312,7 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
   // now loop the others and check whether they are better
   for (int nn = 1; nn < (int)nodeids_.size(); nn++)
   {
-    CalcPointCoordinate(discret_, nodeids_.at(nn), &pointcoord[0]);
+    CalcPointCoordinate(discret_, nodeids_.at(nn), pointcoord);
 
     for (int dim = 0; dim < 3; dim++)
     {

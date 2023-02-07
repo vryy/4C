@@ -78,7 +78,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -153,7 +153,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -228,7 +228,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -303,7 +303,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -381,7 +381,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);

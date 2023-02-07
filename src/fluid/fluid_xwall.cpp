@@ -309,7 +309,7 @@ void FLD::XWall::InitXWallMaps()
     }
 
     xwallrownodemap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)rowvec.size(), &rowvec[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, (int)rowvec.size(), rowvec.data(), 0, discret_->Comm()));
   }
 
   // get Dirichlet conditions
@@ -335,7 +335,7 @@ void FLD::XWall::InitXWallMaps()
     int gcount;
     (discret_->Comm()).SumAll(&count, &gcount, 1);
     dircolnodemap_ =
-        Teuchos::rcp(new Epetra_Map(gcount, count, &testcollect[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(gcount, count, testcollect.data(), 0, discret_->Comm()));
   }  // end loop this conditions
   else
     dserror("You need DESIGN FLUID STRESS CALC SURF CONDITIONS for xwall");
@@ -419,7 +419,7 @@ void FLD::XWall::InitWallDist()
   }
   int count = (int)colvec.size();
 
-  xwallcolnodemap_ = Teuchos::rcp(new Epetra_Map(count, count, &colvec[0], 0, discret_->Comm()));
+  xwallcolnodemap_ = Teuchos::rcp(new Epetra_Map(count, count, colvec.data(), 0, discret_->Comm()));
 
   for (int j = 0; j < xwallcolnodemap_->NumMyElements(); ++j)
   {
@@ -699,7 +699,7 @@ void FLD::XWall::SetupL2Projection()
     }
 
     enrdofrowmap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), &enrdf[0], 0, xwdiscret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->Comm()));
 
     massmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
 
@@ -791,7 +791,7 @@ void FLD::XWall::SetupL2Projection()
             // allocate dimns times the local length of the rowmap
             const int lrows = enrdofrowmap_->NumMyElements();
             ns = Teuchos::rcp(new std::vector<double>(3 * lrows));
-            double* nullsp = &((*ns)[0]);
+            double* nullsp = ns->data();
             mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
             mllist.set("null space: vectors", nullsp);
 

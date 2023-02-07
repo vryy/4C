@@ -284,7 +284,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
     lcoords[count * 3 + 2] = node->X()[2];
     count++;
   }
-  dis->Comm().SumAll(&lcoords[0], &gcoords[0], nnodes * 3);
+  dis->Comm().SumAll(lcoords.data(), gcoords.data(), nnodes * 3);
   lcoords.clear();
   allnodes.clear();
 
@@ -554,7 +554,7 @@ void PATSPEC::InitializeMappingInnerSurface(Teuchos::RCP<DRT::Discretization> di
     lcoords[count * 3 + 2] = node->X()[2];
     count++;
   }
-  dis->Comm().SumAll(&lcoords[0], &gcoords[0], nnodes * 3);
+  dis->Comm().SumAll(lcoords.data(), gcoords.data(), nnodes * 3);
   lcoords.clear();
   allnodes.clear();
 
@@ -741,7 +741,7 @@ void PATSPEC::ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis)
     linnerradius[count] = mindist;
     count++;
   }
-  dis->Comm().SumAll(&linnerradius[0], &ginnerradius[0], nnodes);
+  dis->Comm().SumAll(linnerradius.data(), ginnerradius.data(), nnodes);
 
   // add inner radius to condition
   for (unsigned int j = 0; j < mypatspeccond.size(); ++j)
@@ -1015,7 +1015,7 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
     count_lum_ilt++;
   }
   dis->Comm().Barrier();
-  dis->Comm().SumAll(&lcoords_lum_ilt[0], &gcoords_lum_ilt[0], n_lum_itl_nodes * 3);
+  dis->Comm().SumAll(lcoords_lum_ilt.data(), gcoords_lum_ilt.data(), n_lum_itl_nodes * 3);
   lcoords_lum_ilt.clear();
   // because we have all nodes of luminal side stored redundant on all procs,
   // we only need to loop over local nodes of the wall surface

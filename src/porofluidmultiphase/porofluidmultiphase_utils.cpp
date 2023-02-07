@@ -258,14 +258,14 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
   Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), &coleles[0], 0, contdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, contdis->Comm()));
 
   artdis->ExportColumnElements(*extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
   Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, contdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, contdis->Comm()));
 
   artdis->ExportColumnNodes(*extendednodecolmap);
 
@@ -346,8 +346,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // gather
   std::vector<int> procs(contdis->Comm().NumProc());
   for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
-  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
-      my_positions_artery, positions_artery, contdis->Comm().NumProc(), &procs[0], contdis->Comm());
+  LINALG::Gather<int, LINALG::Matrix<3, 1>>(my_positions_artery, positions_artery,
+      contdis->Comm().NumProc(), procs.data(), contdis->Comm());
 
   // do the actual search on fully overlapping artery discretization
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)

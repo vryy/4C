@@ -270,10 +270,10 @@ UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
       std::vector<int> ngid_ele = defnodeIDs;
       ngid_ele.push_back(ngid[nodeiter]);
       const int numnodes = ngid_ele.size();
-      remove_copy_if(&ngid_ele[0], &ngid_ele[0] + numnodes,
+      remove_copy_if(ngid_ele.data(), ngid_ele.data() + numnodes,
           inserter(rownodeset, rownodeset.begin()), not1(DRT::UTILS::MyGID(actnoderowmap)));
       // copy node ids specified in condition to colnodeset
-      copy(&ngid_ele[0], &ngid_ele[0] + numnodes, inserter(colnodeset, colnodeset.begin()));
+      copy(ngid_ele.data(), ngid_ele.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
       // construct constraint nodes, which use the same global id as the standard nodes
       for (int i = 0; i < actnoderowmap->NumMyElements(); ++i)
@@ -291,7 +291,7 @@ UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
         Teuchos::RCP<DRT::Element> constraintele =
             DRT::UTILS::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
-        constraintele->SetNodeIds(ngid_ele.size(), &(ngid_ele[0]));
+        constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
         // add constraint element
         newdis->AddElement(constraintele);
       }
@@ -310,15 +310,15 @@ UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
     // build unique node row map
     std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
     rownodeset.clear();
-    Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(
-        new Epetra_Map(-1, boundarynoderowvec.size(), &boundarynoderowvec[0], 0, newdis->Comm()));
+    Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(
+        -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->Comm()));
     boundarynoderowvec.clear();
 
     // build overlapping node column map
     std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
     colnodeset.clear();
     Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, constraintnodecolvec.size(), &constraintnodecolvec[0], 0, newdis->Comm()));
+        -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->Comm()));
 
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);

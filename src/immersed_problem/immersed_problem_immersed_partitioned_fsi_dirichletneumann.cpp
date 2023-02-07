@@ -492,7 +492,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(
   }
 
   int nummydirichvals = mydirichdofs.size();
-  dirichmap = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, dis->Comm()));
+  dirichmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, dis->Comm()));
 
   return;
 }

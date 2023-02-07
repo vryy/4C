@@ -41,7 +41,7 @@ namespace LIBB64
   {
     uLongf compressed_data_length = compressBound(data.size() * sizeof(T));
     char* compressed_data = new char[compressed_data_length];
-    int err = compress2((Bytef*)compressed_data, &compressed_data_length, (const Bytef*)&data[0],
+    int err = compress2((Bytef*)compressed_data, &compressed_data_length, (const Bytef*)data.data(),
         data.size() * sizeof(T), Z_BEST_COMPRESSION);
     if (err != Z_OK) dserror("zlib compression failed");
 
@@ -52,7 +52,7 @@ namespace LIBB64
         (uint32_t)compressed_data_length};     /* list of compressed sizes of blocks */
 
     char* encoded_header =
-        encode_block((char*)&compression_header[0], 4 * sizeof(compression_header[0]));
+        encode_block((char*)compression_header, 4 * sizeof(compression_header[0]));
     out << encoded_header;
     delete[] encoded_header;
 

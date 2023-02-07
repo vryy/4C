@@ -124,11 +124,11 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     if (ndim > static_cast<int>(dof.size()))
       dserror(
           "got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i, ndim);
-    std::copy(&dof[0], &dof[0] + ndim, back_inserter(dofmapvec));
+    std::copy(dof.data(), dof.data() + ndim, back_inserter(dofmapvec));
   }
 
   lungconstraintmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
+      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
 }
 
 

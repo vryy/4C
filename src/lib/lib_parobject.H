@@ -248,7 +248,7 @@ namespace DRT
     {
       int numele = stuff.size();
       AddtoPack(data, numele);
-      AddtoPack(data, &stuff[0], numele * sizeof(T));
+      AddtoPack(data, stuff.data(), numele * sizeof(T));
     }
 
     /*!
@@ -262,7 +262,7 @@ namespace DRT
     template <typename T, std::size_t numentries>
     static void AddtoPack(PackBuffer& data, const std::array<T, numentries>& stuff)
     {
-      AddtoPack(data, &stuff[0], numentries * sizeof(T));
+      AddtoPack(data, stuff.data(), numentries * sizeof(T));
     }
 
     /*!
@@ -607,7 +607,7 @@ namespace DRT
       ExtractfromPack(position, data, dim);
       stuff.resize(dim);
       int size = dim * sizeof(T);
-      ExtractfromPack(position, data, &stuff[0], size);
+      ExtractfromPack(position, data, stuff.data(), size);
     }
 
     /*!
@@ -626,7 +626,7 @@ namespace DRT
         const std::vector<char>& data, std::array<T, numentries>& stuff)
     {
       int size = numentries * sizeof(T);
-      ExtractfromPack(position, data, &stuff[0], size);
+      ExtractfromPack(position, data, stuff.data(), size);
     }
 
     /*!

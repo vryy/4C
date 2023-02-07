@@ -219,7 +219,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
               for (int k = numdim; k < 3;
                    k++)  // set a zero value for the remaining spatial directions
                 gp_coord2[k] = 0.0;
-              const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
@@ -274,7 +274,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           for (int k = 0; k < numdim; k++) gp_coord2[k] = gp_coord(0, k);
           for (int k = numdim; k < 3; k++)  // set a zero value for the remaining spatial directions
             gp_coord2[k] = 0.0;
-          const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+          const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()

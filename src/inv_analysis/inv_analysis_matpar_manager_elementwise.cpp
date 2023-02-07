@@ -389,7 +389,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       // send current face-key to all procs
       std::vector<int> facekey(keylength, 0);
       if (Discret()->Comm().MyPID() == i) facekey = face_it->first;
-      Discret()->Comm().Broadcast(&(facekey[0]), keylength, i);
+      Discret()->Comm().Broadcast(facekey.data(), keylength, i);
 
       // check whether one of the other procs also has this key and write IDs of
       // procs who own this face in "sowningprocs" and distribute this knowledge
@@ -451,7 +451,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       {
         // like this the diagonal entries are inserted redundantly and summed up
         // after FillComplete() is called; they are more or less useless anyways
-        graph->InsertGlobalValues(globalrow, parameters.size(), &weights[0], &parameters[0]);
+        graph->InsertGlobalValues(globalrow, parameters.size(), weights.data(), parameters.data());
       }
     }
   }

@@ -466,7 +466,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
       }
 
       Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(
-          ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), &(nidsoff[0]), true));
+          ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), nidsoff.data(), true));
 
       interface->AddCoElement(cele);
     }

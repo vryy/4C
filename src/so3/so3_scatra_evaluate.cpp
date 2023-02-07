@@ -248,7 +248,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
   // call base class
   so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
       d_cauchyndir_dd, nullptr, nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir,
-      d_cauchyndir_dxi, nullptr, nullptr, nullptr, &scalar_values_at_xi[0], &d_cauchyndir_ds_gp);
+      d_cauchyndir_dxi, nullptr, nullptr, nullptr, scalar_values_at_xi.data(), &d_cauchyndir_ds_gp);
 
   if (d_cauchyndir_ds != nullptr)
   {

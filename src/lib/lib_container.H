@@ -153,7 +153,7 @@ namespace DRT
     */
     void Add(const std::string& name, const std::vector<int>& data)
     {
-      Add(name, &data[0], data.size());
+      Add(name, data.data(), data.size());
       return;
     }
 
@@ -202,7 +202,7 @@ namespace DRT
     */
     void Add(const std::string& name, const std::vector<double>& data)
     {
-      Add(name, &data[0], data.size());
+      Add(name, data.data(), data.size());
       return;
     }
 

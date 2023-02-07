@@ -718,7 +718,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
                   tangtwoforcecoef_ * tangtwoforce * unitnormal[j];
     }
 
-    int error = struiveln_->ReplaceGlobalValues(numdim, &Values[0], &globaldofs[0]);
+    int error = struiveln_->ReplaceGlobalValues(numdim, Values.data(), globaldofs.data());
     if (error > 0) dserror("Could not insert values into vector struiveln_: error %d", error);
   }
 

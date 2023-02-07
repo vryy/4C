@@ -150,7 +150,7 @@ namespace SCATRA
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -346,7 +346,7 @@ namespace SCATRA
     // get values from all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(&((*local_phi)[0]), &((*global_phi)[0]), countallnodes);
+    discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -357,8 +357,8 @@ namespace SCATRA
 
 #ifdef HAVE_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_phi)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
+        (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -691,7 +691,7 @@ namespace SCATRA
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(&((*local_phi)[0]), &((*global_phi)[0]), countallnodes);
+      discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -702,8 +702,8 @@ namespace SCATRA
 
 #ifdef HAVE_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_phi)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
+          (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
@@ -744,7 +744,7 @@ namespace SCATRA
 #ifdef HAVE_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*fphi_hat)[0]))), &((*fphi)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(fphi_hat->data())), fphi->data(), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft_back);
       // free memory

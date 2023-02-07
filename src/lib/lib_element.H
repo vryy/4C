@@ -322,7 +322,7 @@ namespace DRT
     virtual const int* NodeIds() const
     {
       if (nodeid_.size())
-        return &nodeid_[0];
+        return nodeid_.data();
       else
         return NULL;
     }
@@ -342,7 +342,7 @@ namespace DRT
     virtual Node** Nodes()
     {
       if (node_.size())
-        return &node_[0];
+        return node_.data();
       else
         return NULL;
     }
@@ -366,7 +366,7 @@ namespace DRT
     virtual const Node* const* Nodes() const
     {
       if (node_.size())
-        return (const DRT::Node* const*)(&node_[0]);
+        return (const DRT::Node* const*)(node_.data());
       else
         return NULL;
     }
@@ -483,13 +483,16 @@ namespace DRT
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<DRT::FaceElement>* Faces() { return face_.empty() ? NULL : &face_[0]; }
+    Teuchos::RCP<DRT::FaceElement>* Faces() { return face_.empty() ? NULL : face_.data(); }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<DRT::FaceElement> const* Faces() const { return face_.empty() ? NULL : &face_[0]; }
+    Teuchos::RCP<DRT::FaceElement> const* Faces() const
+    {
+      return face_.empty() ? NULL : face_.data();
+    }
 
     /*!
     \brief Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary

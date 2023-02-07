@@ -2312,7 +2312,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
 
       functfac = DRT::Problem::Instance()
                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                     .Evaluate(&(coordgp3D[0]), time, 0);
+                     .Evaluate(coordgp3D.data(), time, 0);
     }
     else
       functfac = 1.0;

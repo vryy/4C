@@ -113,7 +113,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       if (ndi->NumElement() != 1)
         dserror("artery %d must have one element connected to the inlet node!", Artery_Number);
 
-      Elem_i = &Elements[0][0];
+      Elem_i = Elements[0];
 
       sorted_nodes->push_back(ndi->Id());
 

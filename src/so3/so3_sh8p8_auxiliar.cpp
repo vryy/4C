@@ -1385,8 +1385,8 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
 
   // linearised residual
   {
-    LINALG::Matrix<NUMDOF_, 1> os = LINALG::Matrix<NUMDOF_, 1>(&(oldstate[0]));
-    LINALG::Matrix<NUMDOF_, 1> ls = LINALG::Matrix<NUMDOF_, 1>(&(laststate[0]));
+    LINALG::Matrix<NUMDOF_, 1> os = LINALG::Matrix<NUMDOF_, 1>(oldstate.data());
+    LINALG::Matrix<NUMDOF_, 1> ls = LINALG::Matrix<NUMDOF_, 1>(laststate.data());
     LINALG::Matrix<NUMDOF_, 1> is;
     is = ls;
     is -= os;

@@ -262,7 +262,7 @@ bool DRT::FIBER::UTILS::HaveNodalFibers(DRT::Node** nodes)
   // check whether node can be casted to FiberNode
   auto nodeHasFibers = [](const Node* n)
   { return dynamic_cast<const DRT::FIBER::FiberNode*>(n) != nullptr; };
-  return std::all_of(&nodes[0], &nodes[numberOfNodes], nodeHasFibers);
+  return std::all_of(nodes, &nodes[numberOfNodes], nodeHasFibers);
 }
 
 template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::tet4>(

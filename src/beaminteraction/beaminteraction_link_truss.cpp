@@ -109,10 +109,8 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
-  int nodeids[2];
-  for (unsigned int i = 0; i < 2; ++i) nodeids[i] = -1;
-  linkele_->SetNodeIds(2, &nodeids[0]);
-
+  int nodeids[] = {-1, -1};
+  linkele_->SetNodeIds(2, nodeids);
 
   std::vector<double> refpos(6, 0.0);
 

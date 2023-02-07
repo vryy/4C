@@ -48,7 +48,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
         MortarNode(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), 3, empty_dofs, isslave));
   for (int i = 0; i < numnode; ++i) nodes_ptr_.push_back(&(nodes_[i]));
 
-  if (numnode > 0) BuildNodalPointers(&nodes[0]);
+  if (numnode > 0) BuildNodalPointers(nodes.data());
 
   // as discretization is already evaluated, compute area
   // (data container has to be initialized first)

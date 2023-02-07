@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
 
     // ---- send ----
     MPI_Request request;
-    exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+    exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
 
     // ---- receive ----
@@ -260,7 +260,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
     exporter.ISend(
-        myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+        myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
   if (tag != length) dserror("Number of messages is mixed up");
@@ -360,7 +360,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
     exporter.ISend(
-        myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+        myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
   if (tag != length) dserror("Number of messages is mixed up");
@@ -564,14 +564,14 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
       std::vector<double> pos(3, 0.0);
       for (int dim = 0; dim < 3; ++dim) pos[dim] = currnode->X()[dim];
 
-      const int gidofbin = binstrategy_->ConvertPosToGid(&pos[0]);
+      const int gidofbin = binstrategy_->ConvertPosToGid(pos.data());
       // linker has left current bin
       if (gidofbin != binId)
       {
         // (looping over nodes and deleting at the same time is detrimental)
         tobemoved.push_back(currnode->Id());
         // find new bin for linker
-        PlaceNodeCorrectly(Teuchos::rcp(currnode, false), &pos[0], homelesslinker);
+        PlaceNodeCorrectly(Teuchos::rcp(currnode, false), pos.data(), homelesslinker);
       }
     }
 

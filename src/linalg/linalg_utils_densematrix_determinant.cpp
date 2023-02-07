@@ -25,7 +25,7 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   int info;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GETRF(m, n, tmp.A(), tmp.LDA(), &ipiv[0], &info);
+  lapack.GETRF(m, n, tmp.A(), tmp.LDA(), ipiv.data(), &info);
 
   if (info < 0)
     dserror("Lapack's dgetrf returned %d", info);

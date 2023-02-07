@@ -1061,8 +1061,8 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
       // create the internal face element
       Teuchos::RCP<DRT::FaceElement> surf = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-          parent_master->CreateFaceElement(parent_slave, nodeids.size(), &nodeids[0], &nodes[0],
-              face_it->second.GetLSurfaceMaster(), face_it->second.GetLSurfaceSlave(),
+          parent_master->CreateFaceElement(parent_slave, nodeids.size(), nodeids.data(),
+              nodes.data(), face_it->second.GetLSurfaceMaster(), face_it->second.GetLSurfaceSlave(),
               face_it->second.GetLocalNumberingMap()),
           true);
       dsassert(surf != Teuchos::null,
@@ -1135,7 +1135,7 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of internal faces");
-  facerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, &eleids[0], 0, Comm()));
+  facerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
 
@@ -1158,7 +1158,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
     ++count;
   }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  facecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, &eleids[0], 0, Comm()));
+  facecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
 

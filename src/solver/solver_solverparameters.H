@@ -69,7 +69,7 @@ namespace LINALG::SOLVER
         // communicate data to procs without row element
         std::array<int, 4> ldata{numdf, dimns, nv, np};
         std::array<int, 4> gdata{0, 0, 0, 0};
-        dis.Comm().MaxAll(&ldata[0], &gdata[0], 4);
+        dis.Comm().MaxAll(ldata.data(), gdata.data(), 4);
         numdf = gdata[0];
         dimns = gdata[1];
         nv = gdata[2];

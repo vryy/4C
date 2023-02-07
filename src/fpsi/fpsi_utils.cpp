@@ -364,7 +364,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
       mastercomm.Broadcast(&parenteleid, 1, proc);
       mastercomm.Broadcast(&parenteleowner, 1, proc);
-      mastercomm.Broadcast(&masterloc[0], masterloc.size(), proc);
+      mastercomm.Broadcast(masterloc.data(), masterloc.size(), proc);
 
       mastercomm.Barrier();
       // match current master element
@@ -476,7 +476,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
   std::vector<int> mapsizearray(comm.NumProc());
-  comm.GatherAll(&mymapsize, &mapsizearray[0], 1);
+  comm.GatherAll(&mymapsize, mapsizearray.data(), 1);
   comm.SumAll(&mymapsize, &globalmapsize, 1);
 
   int counter = 0;
@@ -524,7 +524,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
         }
       }  // only the owner of the masterele has a pointer != NULL and mastereleowner != -1
 
-      comm.GatherAll(&mastereleowner, &mastereleowners[0], 1);
+      comm.GatherAll(&mastereleowner, mastereleowners.data(), 1);
 
       for (int i = 0; i < comm.NumProc(); i++)
       {
@@ -533,14 +533,14 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
 
       std::vector<int> procHasMasterEle(comm.NumProc());
       HasMasterEle = masterdis->HaveGlobalElement(mastereleid);
-      comm.GatherAll(&HasMasterEle, &procHasMasterEle[0], 1);
+      comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
 
       // ghost parent master element on master discretization of proc owning the matching slave
       // interface element
       const Epetra_Map colcopy = *(masterdis->ElementColMap());
       int myglobalelementsize = colcopy.NumMyElements();
       std::vector<int> myglobalelements(myglobalelementsize);
-      colcopy.MyGlobalElements(&myglobalelements[0]);
+      colcopy.MyGlobalElements(myglobalelements.data());
 
       if (comm.MyPID() == proc and
           mastereleowner != proc)  // ghost master ele on owner of slave ele, but only if this proc
@@ -556,7 +556,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
       int globalsize;
       comm.SumAll(&myglobalelementsize, &globalsize, 1);
       Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(globalsize, myglobalelementsize, &myglobalelements[0], 0, comm));
+          new Epetra_Map(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm));
 
       if (mastereleid == printid)
       {

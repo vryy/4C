@@ -203,7 +203,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs
 
   // gather number of requested global ids of each processor on master processor
   std::vector<int> numberofrequestedgidsofallprocs(comm_.NumProc(), 0);
-  MPI_Gather(&numberofrequestedgids, 1, MPI_INT, &numberofrequestedgidsofallprocs[0], 1, MPI_INT,
+  MPI_Gather(&numberofrequestedgids, 1, MPI_INT, numberofrequestedgidsofallprocs.data(), 1, MPI_INT,
       masterrank_, mpicomm->Comm());
 
   if (myrank_ == masterrank_)

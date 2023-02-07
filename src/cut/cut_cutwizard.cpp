@@ -405,7 +405,7 @@ void GEO::CutWizard::AddMeshCuttingSide(
 
         if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-        LINALG::Matrix<3, 1> disp(&mydisp[0], true);
+        LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
         x.Update(1, disp, 1);
@@ -509,7 +509,7 @@ void GEO::CutWizard::AddBackgroundElements()
       myphinp.clear();
 
       DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
-      AddElement(element, xyze, &myphinp[0], lsv_only_plus_domain_);
+      AddElement(element, xyze, myphinp.data(), lsv_only_plus_domain_);
     }
     else
     {
@@ -566,7 +566,7 @@ void GEO::CutWizard::GetPhysicalNodalCoordinates(
 
       if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-      LINALG::Matrix<3, 1> disp(&mydisp[0], true);
+      LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
       // update x-position of cutter node for current time step (update with displacement)
       x.Update(1, disp, 1);
@@ -935,7 +935,7 @@ void GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> 
 
         if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-        LINALG::Matrix<3, 1> disp(&mydisp[0], true);
+        LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
         x.Update(1, disp, 1);

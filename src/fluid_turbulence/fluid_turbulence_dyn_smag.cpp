@@ -277,7 +277,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
         modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_sum");
     Teuchos::RCP<std::vector<double>> global_Cs_delta_sq_sum;
     global_Cs_delta_sq_sum = Teuchos::rcp(new std::vector<double>(nlayer, 0.0));
-    discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum)[0]), &((*global_Cs_delta_sq_sum)[0]),
+    discret_->Comm().SumAll(local_Cs_delta_sq_sum->data(), global_Cs_delta_sq_sum->data(),
         local_Cs_delta_sq_sum->size());
     extramodelparams->set<Teuchos::RCP<std::vector<double>>>(
         "global_Cs_delta_sq_sum", global_Cs_delta_sq_sum);

@@ -52,6 +52,7 @@
 #include "contact_aug_lagrange_interface.H"
 #include "contact_aug_combo_strategy.H"
 #include "contact_constitutivelaw_interface.H"
+#include "contact_paramsinterface.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1508,8 +1509,9 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
    * till then we use the shown workaround.
    *  enum MORTAR::MortarElement::PhysicalType slaveTypeList[Comm().NumProc()];
    *  enum MORTAR::MortarElement::PhysicalType masterTypeList[Comm().NumProc()];
-   *  Comm().GatherAll(static_cast<int*>(&slavetype),static_cast<int*>(&slaveTypeList[0]),1);
-   *  Comm().GatherAll(static_cast<int*>(&mastertype),static_cast<int*>(&masterTypeList[0]),1); */
+   *  Comm().GatherAll(static_cast<int*>(&slavetype),static_cast<int*>(slaveTypeList.data()),1);
+   *  Comm().GatherAll(static_cast<int*>(&mastertype),static_cast<int*>(masterTypeList.data()),1);
+   */
   std::vector<int> slaveTypeList(Comm().NumProc());
   std::vector<int> masterTypeList(Comm().NumProc());
   int int_slavetype = static_cast<int>(slavetype);

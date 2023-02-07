@@ -1213,7 +1213,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
   {
     // in this case, we need to "add" reference values first, because if rotvec_==true,
     // we can extract tangent vectors only from total rotation vectors
-    LINALG::Matrix<15, 1, double> disp_totlag(&disp[0]);
+    LINALG::Matrix<15, 1, double> disp_totlag(disp.data());
     AddRefValuesDisp<2, double>(disp_totlag);
     this->ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
         disp_totlag, disp_totlag_centerline);
@@ -1223,7 +1223,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
     /* in this case, we expect the position and tangent DOF values for both boundary nodes;
      * for rotvec_==true, the tangents are NOT nodal DOFs, so they need to be pre-calculated
      * before calling this method */
-    disp_totlag_centerline = LINALG::Matrix<12, 1>(&disp[0]);
+    disp_totlag_centerline = LINALG::Matrix<12, 1>(disp.data());
     AddRefValuesDispCenterline<2, 2, double>(disp_totlag_centerline);
   }
   else
@@ -1812,8 +1812,8 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   dofvec_centerline.resize(12, 0.0);
 
   // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
-  LINALG::Matrix<15, 1, double> dofvec_fixedsize(&dofvec[0]);
-  LINALG::Matrix<12, 1, double> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+  LINALG::Matrix<15, 1, double> dofvec_fixedsize(dofvec.data());
+  LINALG::Matrix<12, 1, double> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
 
   this->ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
       dofvec_fixedsize, dofvec_centerline_fixedsize, add_reference_values);

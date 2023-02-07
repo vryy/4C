@@ -181,7 +181,7 @@ std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const E
 
     // communicate vector
     vec_broadcast.resize(size);
-    comm.Broadcast(&vec_broadcast[0], size, iproc);
+    comm.Broadcast(vec_broadcast.data(), size, iproc);
 
     // append communicated vector to vec_out
     for (const auto& item : vec_broadcast) vec_out.emplace_back(item);

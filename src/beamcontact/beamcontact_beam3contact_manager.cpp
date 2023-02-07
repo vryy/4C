@@ -909,9 +909,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
   LINALG::Gather<int>(
-      stproc, rtproc, BTSolDiscret().Comm().NumProc(), &allproc[0], BTSolDiscret().Comm());
+      stproc, rtproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
   LINALG::Gather<int>(
-      estproc, ertproc, BTSolDiscret().Comm().NumProc(), &allproc[0], BTSolDiscret().Comm());
+      estproc, ertproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
 
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
   // numbers which are  stored on different processors in their own variables (e)sdata; thus,
@@ -920,12 +920,12 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   std::vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  LINALG::Gather<int>(sdata, rdata, (int)rtproc.size(), &rtproc[0], BTSolDiscret().Comm());
-  LINALG::Gather<int>(esdata, erdata, (int)ertproc.size(), &ertproc[0], BTSolDiscret().Comm());
+  LINALG::Gather<int>(sdata, rdata, (int)rtproc.size(), rtproc.data(), BTSolDiscret().Comm());
+  LINALG::Gather<int>(esdata, erdata, (int)ertproc.size(), ertproc.data(), BTSolDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, BTSolDiscret().Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, BTSolDiscret().Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
@@ -933,7 +933,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
   // build completely overlapping element map (on participating processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)erdata.size(), &erdata[0], 0, BTSolDiscret().Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)erdata.size(), erdata.data(), 0, BTSolDiscret().Comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();

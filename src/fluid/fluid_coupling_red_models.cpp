@@ -878,7 +878,7 @@ double FLD::UTILS::Fluid_couplingBc::Area(double& density, double& viscosity, in
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_3D_->Comm().GatherAll(&density, &(alldens[0]), 1);
+  discret_3D_->Comm().GatherAll(&density, alldens.data(), 1);
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {

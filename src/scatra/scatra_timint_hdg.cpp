@@ -548,7 +548,7 @@ void SCATRA::TimIntHDG::SetInitialField(
           dsassert(localDofs.size() == static_cast<std::size_t>(updateVec2.M()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.A(), &localDofs[0]);
+          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.A(), localDofs.data());
         }
 
         // now fill the element vector into the discretization
@@ -668,7 +668,7 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
     {
       localDofs[i] = intdofrowmap->LID(localDofs[i]);
     }
-    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), &localDofs[0]);
+    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), localDofs.data());
   }
 
   discret_->ClearState(true);
@@ -824,7 +824,7 @@ void SCATRA::TimIntHDG::FDCheck()
         int numentries;
         std::vector<double> values(length);
         std::vector<int> indices(length);
-        sysmatcopy->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+        sysmatcopy->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
 
         for (int ientry = 0; ientry < length; ++ientry)
         {
@@ -1335,7 +1335,7 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
       dsassert(localDofs.size() == static_cast<std::size_t>(intphi_ele.M()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), &localDofs[0]);
+      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), localDofs.data());
     }
 
     // now fill the element vector into the new state vector for the trace values

@@ -1240,12 +1240,12 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
 
     if (countFluid > 0)
     {
-      int err = fluidGraphRedist->InsertGlobalIndices(gid, countFluid, &fluidInd[0]);
+      int err = fluidGraphRedist->InsertGlobalIndices(gid, countFluid, fluidInd.data());
       if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
     }
     else if (countStructure > 0)
     {
-      int err = structureGraphRedist->InsertGlobalIndices(gid, countStructure, &structureInd[0]);
+      int err = structureGraphRedist->InsertGlobalIndices(gid, countStructure, structureInd.data());
       if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
     }
   }
@@ -1265,7 +1265,7 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
       std::vector<int> insert = edgesToInsert[gid];
       int num = insert.size();
 
-      int err = fluidGraphRedist->InsertGlobalIndices(gid, num, &insert[0]);
+      int err = fluidGraphRedist->InsertGlobalIndices(gid, num, insert.data());
       if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
     }
   }
@@ -1628,7 +1628,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
         }
       }
 
-      err = monolithicGraph->InsertGlobalIndices(gid, numInsert, &insert_ind[0]);
+      err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
       if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
     }
     else
@@ -1673,7 +1673,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
       numInsert = insert_ind.size();
 
-      err = monolithicGraph->InsertGlobalIndices(gid, numInsert, &insert_ind[0]);
+      err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
       if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
     }
   }  // end of structure part
@@ -1740,7 +1740,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
       // insertion
 
-      int err = monolithicGraph->InsertGlobalIndices(gid, numInsert, &insert_ind[0]);
+      int err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
       if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
     }
 
@@ -1810,7 +1810,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 //  }
 //
 //  Teuchos::RCP<Epetra_Map> structureRowmap = Teuchos::rcp(new
-//  Epetra_Map(numGlobalStructureNodes,numMyRedistStructureRowNodes,&myRedistStructureRowNodes[0],0,oldStructureMap.Comm()));
+//  Epetra_Map(numGlobalStructureNodes,numMyRedistStructureRowNodes,myRedistStructureRowNodes.data(),0,oldStructureMap.Comm()));
 //
 //  return structureRowmap;
 //
@@ -1900,7 +1900,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 //  }
 //
 //  Teuchos::RCP<Epetra_Map> fluidRowmap = Teuchos::rcp(new
-//  Epetra_Map(numGlobalFluidNodes,numMyRedistFluidRowNodes,&myRedistFluidRowNodes[0],0,oldFluidMap.Comm()));
+//  Epetra_Map(numGlobalFluidNodes,numMyRedistFluidRowNodes,myRedistFluidRowNodes.data(),0,oldFluidMap.Comm()));
 //
 //  return fluidRowmap;
 //
@@ -1986,8 +1986,8 @@ Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetRedistRowMap(const Epetra_Map&
     }
   }
 
-  Teuchos::RCP<Epetra_Map> redistRowmap = Teuchos::rcp(
-      new Epetra_Map(numGlobalNodes, numMyRedistRowNodes, &myRedistRowNodes[0], 0, oldMap.Comm()));
+  Teuchos::RCP<Epetra_Map> redistRowmap = Teuchos::rcp(new Epetra_Map(
+      numGlobalNodes, numMyRedistRowNodes, myRedistRowNodes.data(), 0, oldMap.Comm()));
 
   return redistRowmap;
 }

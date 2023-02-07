@@ -321,7 +321,7 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   std::vector<int> localnumbers(numproc, 0);
   std::vector<int> globalnumbers(numproc, 0);
   localnumbers[mypid] = mymap->NumMyElements();
-  comm.SumAll(&localnumbers[0], &globalnumbers[0], numproc);
+  comm.SumAll(localnumbers.data(), globalnumbers.data(), numproc);
 
   int factor(0);
   for (int i = 0; i < mypid; i++) factor += globalnumbers[i];

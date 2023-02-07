@@ -138,7 +138,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     }
     Teuchos::RCP<std::vector<double>> pos_ =
         params.get<Teuchos::RCP<std::vector<double>>>("position");
-    const double* coordgpref_ = &(*pos_)[0];
+    const double* coordgpref_ = pos_->data();
     activationFunction =
         DRT::Problem::Instance()
             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)

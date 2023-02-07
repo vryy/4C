@@ -1990,10 +1990,10 @@ const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_t
       (5.0 + 3.0 * sqrt(5.0)) / 20.0;  // gp sampling point value for quadr. fct
   const double gploc_beta = (5.0 - sqrt(5.0)) / 20.0;
 
-  std::array<const double, 4> xsi1 = {gploc_alpha, gploc_beta, gploc_beta, gploc_beta};
-  std::array<const double, 4> xsi2 = {gploc_beta, gploc_alpha, gploc_beta, gploc_beta};
-  std::array<const double, 4> xsi3 = {gploc_beta, gploc_beta, gploc_alpha, gploc_beta};
-  std::array<const double, 4> xsi4 = {gploc_beta, gploc_beta, gploc_beta, gploc_alpha};
+  const std::array<double, 4> xsi1 = {gploc_alpha, gploc_beta, gploc_beta, gploc_beta};
+  const std::array<double, 4> xsi2 = {gploc_beta, gploc_alpha, gploc_beta, gploc_beta};
+  const std::array<double, 4> xsi3 = {gploc_beta, gploc_beta, gploc_alpha, gploc_beta};
+  const std::array<double, 4> xsi4 = {gploc_beta, gploc_beta, gploc_beta, gploc_alpha};
 
   for (int gp = 0; gp < 4; gp++)
   {

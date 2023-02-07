@@ -540,7 +540,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = DRT::Problem::Instance()
                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(&X_ref[0], time, dof);
+                            .Evaluate(X_ref.data(), time, dof);
         }
         else
           functionfac = 1.0;
@@ -2318,7 +2318,7 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
   UpdateDispTotlag<nnode, vpernode * ndim>(disp, disp_totlag);
 
   // export current velocity state of element to fixed size matrix
-  const LINALG::Matrix<nnode * vpernode * ndim, 1> vel_fixedsize(&vel[0]);
+  const LINALG::Matrix<nnode * vpernode * ndim, 1> vel_fixedsize(vel.data());
 
   // Evaluation of force vectors and stiffness matrices
 

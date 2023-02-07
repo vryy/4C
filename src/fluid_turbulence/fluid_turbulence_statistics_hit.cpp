@@ -159,7 +159,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -363,7 +363,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHit::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -447,11 +447,11 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -462,21 +462,21 @@ namespace FLD
 
 #ifdef HAVE_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -718,7 +718,7 @@ namespace FLD
   void TurbulenceStatisticsHit::DoScatraTimeSample(
       Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -855,13 +855,13 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_phi)[0]), &((*global_phi)[0]), countallnodes);
+    discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -872,28 +872,28 @@ namespace FLD
 
 #ifdef HAVE_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
 
     // as well as phi
-    fftw_plan fft_4 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_phi)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_4 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
+        (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_4);
     // free memory
     fftw_destroy_plan(fft_4);
@@ -1836,7 +1836,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHitHDG::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -1938,11 +1938,11 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -1953,21 +1953,21 @@ namespace FLD
 
 #ifdef HAVE_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-        (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);

@@ -115,7 +115,7 @@ void CONTACT::AUG::Potential::Compute()
 
   std::array<double, 4> gterms = {0.0, 0.0, 0.0, 0.0};
 
-  strategy_.Comm().SumAll(&lterms[0], &gterms[0], 4);
+  strategy_.Comm().SumAll(lterms.data(), gterms.data(), 4);
 
   // copy results into the container
   potdata_.zn_gn_ = gterms[0];

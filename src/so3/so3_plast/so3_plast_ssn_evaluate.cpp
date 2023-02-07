@@ -440,7 +440,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       if (res == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res, myres, la[0].lm_);
-      LINALG::Matrix<nen_ * nsd_, 1> res_d(&myres[0], true);
+      LINALG::Matrix<nen_ * nsd_, 1> res_d(myres.data(), true);
 
       std::vector<double> mytempres(0);
       LINALG::Matrix<nen_, 1> res_t;
@@ -460,7 +460,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           // extract the current temperatures
           mytempres.resize(((la[0].lm_).size()) / nsd_, 0.0);
           DRT::UTILS::ExtractMyValues(*tempres, mytempres, la[1].lm_);
-          res_t = LINALG::Matrix<nen_, 1>(&mytempres[0], true);
+          res_t = LINALG::Matrix<nen_, 1>(mytempres.data(), true);
           res_t_ptr = &res_t;
         }
 

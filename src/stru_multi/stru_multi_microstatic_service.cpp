@@ -91,8 +91,8 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
-  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, &fdof[0], 0, discret_->Comm()));
+  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, pdof.data(), 0, discret_->Comm()));
+  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->Comm()));
 
   // create importer
   importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));

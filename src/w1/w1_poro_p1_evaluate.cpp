@@ -948,7 +948,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
           for (int k = Base::numdim_; k < 3;
                k++)  // set a zero value for the remaining spatial directions
             gp_coord2[k] = 0.0;
-          const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+          const double* coordgpref = gp_coord2.data();  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()

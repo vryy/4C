@@ -827,13 +827,14 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
       global_FS_L.FEAssemble(-local_M(i_lambda, i_other), other_row[i_other], lambda_row[i_lambda]);
     }
   }
-  global_kappa.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_kappa.A());
-  global_constraint.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_constraint.A());
+  global_kappa.SumIntoGlobalValues(mortar::n_dof_, lambda_row.data(), local_kappa.A());
+  global_constraint.SumIntoGlobalValues(mortar::n_dof_, lambda_row.data(), local_constraint.A());
 
   // Set all entries in the local kappa vector to 1 and add them to the active vector.
   LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa_active;
   local_kappa_active.PutScalar(1.0);
-  global_lambda_active.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_kappa_active.A());
+  global_lambda_active.SumIntoGlobalValues(
+      mortar::n_dof_, lambda_row.data(), local_kappa_active.A());
 }
 
 

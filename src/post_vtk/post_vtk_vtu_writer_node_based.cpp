@@ -278,7 +278,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
     for (int i = 0; i < vecmap.NumMyElements(); ++i)
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
-        vecmap.NumGlobalElements(), vecmap.NumMyElements(), &gids[0], 0, vecmap.Comm()));
+        vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
     Teuchos::RCP<Epetra_Vector> dofvec = LINALG::CreateVector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 

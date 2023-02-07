@@ -309,10 +309,10 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
   // transform sets to maps
   std::vector<int> conddofmapvec(conddofset.begin(), conddofset.end());
   const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(conddofmapvec.size()), &conddofmapvec[0], 0, discret_->Comm()));
+      -1, static_cast<int>(conddofmapvec.size()), conddofmapvec.data(), 0, discret_->Comm()));
   std::vector<int> otherdofmapvec(otherdofset.begin(), otherdofset.end());
   const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(otherdofmapvec.size()), &otherdofmapvec[0], 0, discret_->Comm()));
+      -1, static_cast<int>(otherdofmapvec.size()), otherdofmapvec.data(), 0, discret_->Comm()));
 
   // set up concentration-potential splitter
   splitter_ =
@@ -347,14 +347,14 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
   // transform sets to maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(3, Teuchos::null);
   std::vector<int> dofmapvec_conc_el(dofset_conc_el.begin(), dofset_conc_el.end());
-  maps[0] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_conc_el.size()), &dofmapvec_conc_el[0], 0, discret_->Comm()));
+  maps[0] = Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dofmapvec_conc_el.size()),
+      dofmapvec_conc_el.data(), 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_el(dofset_pot_el.begin(), dofset_pot_el.end());
   maps[1] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_el.size()), &dofmapvec_pot_el[0], 0, discret_->Comm()));
+      -1, static_cast<int>(dofmapvec_pot_el.size()), dofmapvec_pot_el.data(), 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_ed(dofset_pot_ed.begin(), dofset_pot_ed.end());
   maps[2] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_ed.size()), &dofmapvec_pot_ed[0], 0, discret_->Comm()));
+      -1, static_cast<int>(dofmapvec_pot_ed.size()), dofmapvec_pot_ed.data(), 0, discret_->Comm()));
 
   // set up concentration-potential-potential splitter
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
@@ -2857,7 +2857,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
       const Teuchos::RCP<const Epetra_Map> dbcmap =
-          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), &dbcgidsvec[0],
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), dbcgidsvec.data(),
               DofRowMap()->IndexBase(), DofRowMap()->Comm()));
 
       // merge map with existing map for Dirichlet boundary conditions
@@ -3214,7 +3214,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
           dofidvec.reserve(dofids[iset].size());
           dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
           nummyelements = static_cast<int>(dofidvec.size());
-          myglobalelements = &(dofidvec[0]);
+          myglobalelements = dofidvec.data();
         }
         blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
             myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));

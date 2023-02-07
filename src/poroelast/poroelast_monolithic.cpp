@@ -1301,7 +1301,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> errorindices(errorlength);
             // int errorextractionstatus =
             error_crs->ExtractGlobalRowCopy(
-                i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+                i, errorlength, errornumentries, errorvalues.data(), errorindices.data());
             for (int k = 0; k < errorlength; ++k)
             {
               if (errorindices[k] == j)
@@ -1322,7 +1322,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> sparseindices(sparselength);
             // int sparseextractionstatus =
             sparse_crs->ExtractGlobalRowCopy(
-                i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+                i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
             for (int k = 0; k < sparselength; ++k)
             {
               if (sparseindices[k] == j)
@@ -1343,7 +1343,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> approxindices(approxlength);
             // int approxextractionstatus =
             stiff_approx->ExtractGlobalRowCopy(
-                i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+                i, approxlength, approxnumentries, approxvalues.data(), approxindices.data());
             for (int k = 0; k < approxlength; ++k)
             {
               if (approxindices[k] == j)

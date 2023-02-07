@@ -57,7 +57,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
     exporter.ISend(
-        myrank, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+        myrank, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
   if (tag != length) dserror("Number of messages is mixed up");

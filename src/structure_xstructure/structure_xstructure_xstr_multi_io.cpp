@@ -365,7 +365,7 @@ void XSTR::IO::MultiDiscretizationWriter::WriteElementData(bool writeowner)
     std::vector<char> buffer(0);
     unsigned bufferlength = cit->second->AugmentControlFile(curr_step_, buffer);
     cit->second->WriteElementData(writeowner);
-    cit->second->AugmentControlFile(&buffer[0], bufferlength);
+    cit->second->AugmentControlFile(buffer.data(), bufferlength);
   }
 }
 
@@ -536,7 +536,7 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(int step, std::vecto
 
   // go to the end of the first block
   icontrol.seekg(slength, icontrol.beg);
-  icontrol.read(&ebuffer[0], elength);
+  icontrol.read(ebuffer.data(), elength);
 
   //  std::cout << " :::: " << dis_->Name() << " :::: \n";
   //  std::cout << "=== sbuffer ===\n";

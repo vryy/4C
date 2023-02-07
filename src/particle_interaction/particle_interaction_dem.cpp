@@ -552,7 +552,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localkinenergy(1, 0.0);
     EvaluateParticleKineticEnergy(localkinenergy[0]);
-    comm_.SumAll(&localkinenergy[0], &kinenergy[0], 1);
+    comm_.SumAll(localkinenergy.data(), kinenergy.data(), 1);
   }
 
   // evaluate particle gravitational potential energy contribution
@@ -560,7 +560,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localgravpotenergy(1, 0.0);
     EvaluateParticleGravitationalPotentialEnergy(localgravpotenergy[0]);
-    comm_.SumAll(&localgravpotenergy[0], &gravpotenergy[0], 1);
+    comm_.SumAll(localgravpotenergy.data(), gravpotenergy.data(), 1);
   }
 
   // evaluate elastic potential energy contribution
@@ -568,7 +568,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localelastpotenergy(1, 0.0);
     contact_->EvaluateElasticPotentialEnergy(localelastpotenergy[0]);
-    comm_.SumAll(&localelastpotenergy[0], &elastpotenergy[0], 1);
+    comm_.SumAll(localelastpotenergy.data(), elastpotenergy.data(), 1);
   }
 
   // get specific runtime csv writer
@@ -651,6 +651,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalP
 
     // add gravitational potential energy contribution
     for (int i = 0; i < particlestored; ++i)
-      gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(&gravity_[0], &pos[statedim * i]);
+      gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(gravity_.data(), &pos[statedim * i]);
   }
 }

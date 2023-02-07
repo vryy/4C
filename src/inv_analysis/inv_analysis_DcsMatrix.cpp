@@ -174,7 +174,7 @@ Teuchos::RCP<Epetra_CrsMatrix> INVANA::DcsMatrix::FillMatrix() const
 
     // get colum
     int colnnz;
-    this->ExtractGlobalColumnCopy(col_GID, mylength, colnnz, &colvalues[0], &colindices[0]);
+    this->ExtractGlobalColumnCopy(col_GID, mylength, colnnz, colvalues.data(), colindices.data());
 
     for (int row = 0; row < mylength; row++)
     {
@@ -203,7 +203,7 @@ int INVANA::DcsMatrix::ExtractDiagonalCopy(Epetra_Vector& diagonal) const
 
     // get colum
     int colnnz;
-    this->ExtractGlobalColumnCopy(col_GID, mylength, colnnz, &colvalues[0], &colindices[0]);
+    this->ExtractGlobalColumnCopy(col_GID, mylength, colnnz, colvalues.data(), colindices.data());
 
     int lrow = rowmap_->LID(col_GID);
     if (lrow != -1)

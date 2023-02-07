@@ -2014,12 +2014,12 @@ int STR::TimIntImpl::NewtonLS()
     ***************************************************************/
 
     while ((iter_ - fscontrol > 0) &&
-           ((!LsConverged(&merit_fct[0], step_red) || eval_error) && (iter_ls < ls_maxiter_)))
+           ((!LsConverged(merit_fct.data(), step_red) || eval_error) && (iter_ls < ls_maxiter_)))
     {
       /**************************************************************
       ***           Display line search information               ***
       ***************************************************************/
-      if (iter_ls == 0) LsPrintLineSearchIter(&merit_fct[0], iter_ls, step_red);
+      if (iter_ls == 0) LsPrintLineSearchIter(merit_fct.data(), iter_ls, step_red);
 
       // increase inner loop count
       ++iter_ls;
@@ -2048,7 +2048,7 @@ int STR::TimIntImpl::NewtonLS()
       /**************************************************************
       ***           Display line search information               ***
       ***************************************************************/
-      LsPrintLineSearchIter(&merit_fct[0], iter_ls, step_red);
+      LsPrintLineSearchIter(merit_fct.data(), iter_ls, step_red);
 
       if (!(eval_error) && (outputeveryiter_)) OutputEveryIter(true, true);
     }

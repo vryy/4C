@@ -303,7 +303,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 
     // re-build element column map
     Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-        new Epetra_Map(-1, static_cast<int>(rdata.size()), &rdata[0], 0, voldi->Comm()));
+        new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->Comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the

@@ -798,19 +798,19 @@ namespace GEO
           case DRT::Element::tri3:
           {
             const double rs[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
-            std::copy(&rs[0], &rs[0] + 6, rst_corners);
+            std::copy(rs, rs + 6, rst_corners);
             break;
           }
           case DRT::Element::quad4:
           {
             const double rs[8] = {-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0};
-            std::copy(&rs[0], &rs[0] + 8, rst_corners);
+            std::copy(rs, rs + 8, rst_corners);
             break;
           }
           case DRT::Element::line2:
           {
             const double r[2] = {-1.0, 1.0};
-            std::copy(&r[0], &r[0] + 2, rst_corners);
+            std::copy(r, r + 2, rst_corners);
             break;
           }
           default:

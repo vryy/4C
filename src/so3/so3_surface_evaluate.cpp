@@ -320,7 +320,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
               {
                 gp_coord2[i] = gp_coord(0, i);
               }
-              const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
@@ -367,7 +367,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
           {
             gp_coord2[i] = gp_coord(0, i);
           }
-          const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+          const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
@@ -443,7 +443,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
             {
               gp_coord2[i] = gp_coord(0, i);
             }
-            const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+            const double* coordgpref = gp_coord2;  // needed for function evaluation
 
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()

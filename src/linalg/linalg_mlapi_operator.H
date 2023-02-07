@@ -64,7 +64,7 @@ namespace LINALG
     /*!
     \brief Returns the label of this class.
     */
-    const char* Label() const { return &label_[0]; }
+    const char* Label() const { return label_.data(); }
 
     /*!
     \brief get Comm of this class

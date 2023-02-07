@@ -140,7 +140,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -205,7 +205,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbInitialField::CalculateInitialField()
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
 
     // set and initialize working arrays
     Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
@@ -468,7 +468,7 @@ namespace FLD
 #ifdef HAVE_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u1_hat_fftw)[0]))), &((*u1)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -476,12 +476,12 @@ namespace FLD
 
     // similar for the remaining two directions
     fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u2_hat_fftw)[0]))), &((*u2)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u2_hat_fftw->data())), u2->data(), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
     fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u3_hat_fftw)[0]))), &((*u3)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u3_hat_fftw->data())), u3->data(), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -892,7 +892,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbInitialFieldHDG::CalculateInitialField()
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
 
     // set and initialize working arrays
     Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
@@ -1155,7 +1155,7 @@ namespace FLD
 #ifdef HAVE_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u1_hat_fftw)[0]))), &((*u1)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -1163,12 +1163,12 @@ namespace FLD
 
     // similar for the remaining two directions
     fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u2_hat_fftw)[0]))), &((*u2)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u2_hat_fftw->data())), u2->data(), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
     fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*u3_hat_fftw)[0]))), &((*u3)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u3_hat_fftw->data())), u3->data(), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -1266,7 +1266,7 @@ namespace FLD
         dsassert(localDofs.size() == static_cast<std::size_t>(elevec1.M()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
           localDofs[i] = intdofrowmap->LID(localDofs[i]);
-        intvelnp_->ReplaceMyValues(localDofs.size(), elevec1.A(), &localDofs[0]);
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec1.A(), localDofs.data());
       }
 
       // now fill the ele vector into the discretization

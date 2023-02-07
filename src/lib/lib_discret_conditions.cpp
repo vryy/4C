@@ -166,7 +166,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
   std::copy(sendblock.begin(), sendblock.end(), &send[mypos]);
   sendblock.clear();
   std::vector<int> recv(size);
-  comm.SumAll(&send[0], &recv[0], size);
+  comm.SumAll(send.data(), recv.data(), size);
 
   send.clear();
 
@@ -207,7 +207,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
 
   comm.Broadcast(&size, 1, 0);
   send.resize(size);
-  comm.Broadcast(&send[0], send.size(), 0);
+  comm.Broadcast(send.data(), send.size(), 0);
 
   // Unpack sorted elements. Take element position for gid.
 

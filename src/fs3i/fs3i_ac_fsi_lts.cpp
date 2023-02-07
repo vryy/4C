@@ -814,16 +814,16 @@ std::vector<Teuchos::RCP<LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
     conddofmapvec.reserve(conddofset.size());
     conddofmapvec.assign(conddofset.begin(), conddofset.end());
     conddofset.clear();
-    Teuchos::RCP<Epetra_Map> conddofmap =
-        Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis->Comm()));
+    Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+        new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis->Comm()));
     conddofmapvec.clear();
 
     std::vector<int> otherdofmapvec;
     otherdofmapvec.reserve(otherdofset.size());
     otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
     otherdofset.clear();
-    Teuchos::RCP<Epetra_Map> otherdofmap =
-        Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis->Comm()));
+    Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
+        new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis->Comm()));
     otherdofmapvec.clear();
 
     Teuchos::RCP<LINALG::MapExtractor> getjdof = Teuchos::rcp(new LINALG::MapExtractor);

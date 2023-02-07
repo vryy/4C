@@ -1207,7 +1207,7 @@ void GEO::CUT::Parallel::sendData(
   // send length of the data to be received ...
   MPI_Request req_length_data;
   int length_tag = 0;
-  exporter.ISend(myrank_, dest, &(lengthSend[0]), size_one, length_tag, req_length_data);
+  exporter.ISend(myrank_, dest, lengthSend.data(), size_one, length_tag, req_length_data);
 
   // ... and receive length
   std::vector<int> lengthRecv(1, 0);
@@ -1219,7 +1219,7 @@ void GEO::CUT::Parallel::sendData(
   // send actual data ...
   int data_tag = 4;
   MPI_Request req_data;
-  exporter.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
+  exporter.ISend(myrank_, dest, dataSend().data(), lengthSend[0], data_tag, req_data);
 
   // ... and receive data
   dataRecv.clear();

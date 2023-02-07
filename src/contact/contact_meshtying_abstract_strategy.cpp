@@ -433,7 +433,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     }
 
     // re-setup old slave dof row map (with restriction now)
-    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)data.size(), &data[0], 0, Comm()));
+    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)data.size(), data.data(), 0, Comm()));
   }
 
   // Step 5: re-setup internal dof row map (non-interface dofs)
@@ -1141,18 +1141,18 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(llmx, glmx, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(llmy, glmy, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(llmz, glmz, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(llmx, glmx, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(llmy, glmy, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(llmz, glmz, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
 
   // output is solely done by proc 0
   if (Comm().MyPID() == 0)

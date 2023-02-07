@@ -100,8 +100,8 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement
     gxi.at(1).at(2) = 1.;
   }
 
-  LINALG::Matrix<3, 1> t1(&gxi.at(0)[0], true);
-  LINALG::Matrix<3, 1> t2(&gxi.at(1)[0], true);
+  LINALG::Matrix<3, 1> t1(gxi.at(0).data(), true);
+  LINALG::Matrix<3, 1> t2(gxi.at(1).data(), true);
   LINALG::Matrix<3, 1> n;
   n.CrossProduct(t1, t2);
   n.Scale(1. / n.Norm2());

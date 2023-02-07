@@ -174,7 +174,7 @@ void INVANA::MatParManagerUniform::Finalize(
 {
   // sum across processor
   std::vector<double> val(source->MyLength(), 0.0);
-  Discret()->Comm().SumAll((*source)(0)->Values(), &val[0], source->MyLength());
+  Discret()->Comm().SumAll((*source)(0)->Values(), val.data(), source->MyLength());
 
   for (int i = 0; i < target->MyLength(); i++) target->SumIntoGlobalValue(i, 0, val[i]);
 
@@ -229,7 +229,7 @@ void INVANA::MatParManagerUniform::CreateProjection()
     std::vector<double> values(numentries, 1.0);
 
     int err =
-        projector_->InsertGlobalValues(i, numentries, &values[0], maps[i]->MyGlobalElements());
+        projector_->InsertGlobalValues(i, numentries, values.data(), maps[i]->MyGlobalElements());
     if (err < 0) dserror("Restrictor/Prolongator insertion failed.");
   }
   int err = projector_->FillComplete(*paramapextractor_->FullMap(), *paramlayoutmapunique_, true);

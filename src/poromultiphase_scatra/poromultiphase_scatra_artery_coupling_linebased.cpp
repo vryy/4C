@@ -150,7 +150,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
   // build map
   int nummydirichvals = mydirichdofs.size();
   Teuchos::RCP<Epetra_Map> dirichmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, arterydis_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, arterydis_->Comm()));
 
   // build vector of maps
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
@@ -231,7 +231,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
   // communicate the dummy map to all procs.
   std::vector<int> allproc(Comm().NumProc());
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), allproc.data(), Comm());
 
   // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
   // id)
@@ -610,7 +610,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
   std::vector<int> allproc(Comm().NumProc());
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
   LINALG::Gather<double>(
-      gid_to_seglength, gid_to_seglength, (int)allproc.size(), &allproc[0], Comm());
+      gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), Comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -907,7 +907,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     {
       // evaluate
       coupl_elepairs_[i]->EvaluateAdditionalLinearizationofIntegratedDiam(
-          &elestiff[0], &elestiff[1]);
+          elestiff.data(), elestiff.data() + 1);
 
       // and FE-Assemble
       const int ele1gid = coupl_elepairs_[i]->Ele1GID();

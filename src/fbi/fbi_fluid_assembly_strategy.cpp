@@ -49,11 +49,11 @@ void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discre
   // assemble both element vectors into global system vector
   if (f1 != Teuchos::null)
   {
-    f1->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
+    f1->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
   }
   if (f2 != Teuchos::null)
   {
-    f2->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+    f2->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
   }
 
   // and finally also assemble stiffness contributions

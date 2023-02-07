@@ -2185,12 +2185,12 @@ namespace LINALG
       // taken from src/linalg/linalg_utils_densematrix_eigen.cpp: LINALG::DeterminantLU,
       // only with minor changes.
       std::vector<double> tmp(i * j);
-      std::copy(mat, mat + i * j, &tmp[0]);
+      std::copy(mat, mat + i * j, tmp.data());
       std::vector<int> ipiv(j);
       int info;
 
       Teuchos::LAPACK<int, double> lapack;
-      lapack.GETRF(i, j, &tmp[0], i, &ipiv[0], &info);
+      lapack.GETRF(i, j, tmp.data(), i, ipiv.data(), &info);
 
       if (info < 0)
         dserror("Lapack's dgetrf returned %d", info);
@@ -4169,7 +4169,7 @@ namespace LINALG
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
-      data_ = &datafieldsmall_[0];
+      data_ = datafieldsmall_;
     if (setzero) DENSEFUNCTIONS::clearMatrix<value_type, rows, cols>(data_);
   }
 
@@ -4187,7 +4187,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       std::copy(d, d + rows * cols, data_);
     }
   }
@@ -4207,7 +4207,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       std::copy(d, d + rows * cols, data_);
     }
   }
@@ -4228,7 +4228,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       std::copy(d.A(), d.A() + rows * cols, data_);
     }
   }
@@ -4253,7 +4253,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       std::copy(source.data_, source.data_ + rows * cols, data_);
     }
   }
@@ -4266,7 +4266,7 @@ namespace LINALG
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
-      data_ = &datafieldsmall_[0];
+      data_ = datafieldsmall_;
     std::copy(source.data_, source.data_ + rows * cols, data_);
   }
 
@@ -4285,7 +4285,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       std::copy(source.data_, source.data_ + rows * cols, data_);
     }
   }
@@ -4327,7 +4327,7 @@ namespace LINALG
       if (allocatesmemory_)
         data_ = new value_type[rows * cols];
       else
-        data_ = &datafieldsmall_[0];
+        data_ = datafieldsmall_;
       isview_ = false;
     }
     std::copy(data, data + rows * cols, data_);
@@ -4731,7 +4731,7 @@ namespace LINALG
     if (equilibrate_) errnum = EquilibrateMatrix();
     if (errnum != 0) return errnum;
     if (pivot_vec_.empty()) pivot_vec_.resize(rows);
-    lapack_.GETRF(rows, cols, matrix_->A(), rows, &(pivot_vec_[0]), &errnum);
+    lapack_.GETRF(rows, cols, matrix_->A(), rows, pivot_vec_.data(), &errnum);
     if (errnum != 0) return errnum;
 
     factored_ = true;
@@ -4768,7 +4768,7 @@ namespace LINALG
       }
 
       if (vec_B_ != vec_X_) *vec_X_ = *vec_B_;
-      lapack_.GETRS(transpose_ ? 'T' : 'N', cols, dim_rhs, matrix_->A(), rows, &(pivot_vec_[0]),
+      lapack_.GETRS(transpose_ ? 'T' : 'N', cols, dim_rhs, matrix_->A(), rows, pivot_vec_.data(),
           vec_X_->A(), cols, &errnum);
       if (errnum != 0) return errnum;
       solved_ = true;
@@ -4787,7 +4787,7 @@ namespace LINALG
     r_.resize(rows);
     c_.resize(cols);
     lapack_.GEEQU(
-        rows, cols, matrix_->A(), rows, &(r_[0]), &(c_[0]), &rowcnd, &colcnd, &amax, &errnum);
+        rows, cols, matrix_->A(), rows, r_.data(), c_.data(), &rowcnd, &colcnd, &amax, &errnum);
     if (errnum != 0) return errnum;
 
     return 0;
@@ -4862,7 +4862,7 @@ namespace LINALG
 
     int lwork = 4 * cols;
     std::vector<double> work(lwork);
-    lapack_.GETRI(cols, matrix_->A(), rows, &(pivot_vec_[0]), &(work[0]), lwork, &errnum);
+    lapack_.GETRI(cols, matrix_->A(), rows, pivot_vec_.data(), work.data(), lwork, &errnum);
     if (errnum != 0) return errnum;
     inverted_ = true;
     factored_ = false;

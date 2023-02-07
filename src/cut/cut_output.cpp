@@ -355,7 +355,7 @@ void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
       for (unsigned int dim = 0; dim < 3; ++dim)
         xmid[dim] = xmid[dim] / facet->CornerPoints().size();
 
-      ConcretePoint<3> midpoint = ConcretePoint<3>(-1, &xmid[0], NULL, NULL, 0.0);
+      ConcretePoint<3> midpoint = ConcretePoint<3>(-1, xmid.data(), NULL, NULL, 0.0);
 
       std::vector<Point*> tri;
       for (unsigned int i = 0; i < facet->CornerPoints().size(); ++i)

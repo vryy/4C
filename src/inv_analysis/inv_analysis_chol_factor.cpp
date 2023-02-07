@@ -106,7 +106,7 @@ int INVANA::CholFactor::Compute()
       indices[j] = j;
       values[j] = (*L)(i, j);
     }
-    HSerial->InsertGlobalValues(i, values.size(), &values[0], &indices[0]);
+    HSerial->InsertGlobalValues(i, values.size(), values.data(), indices.data());
   }
   HSerial->FillComplete();
 

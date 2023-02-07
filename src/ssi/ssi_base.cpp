@@ -320,7 +320,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         my_node_ids.resize(max_num_nodes, -1);
 
         std::vector<int> glob_node_ids(max_num_nodes * Comm().NumProc(), -1);
-        Comm().GatherAll(&my_node_ids[0], &glob_node_ids[0], static_cast<int>(my_node_ids.size()));
+        Comm().GatherAll(
+            my_node_ids.data(), glob_node_ids.data(), static_cast<int>(my_node_ids.size()));
 
         // remove place holders (-1)
         glob_node_ids.erase(

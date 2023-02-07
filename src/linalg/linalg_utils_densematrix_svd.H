@@ -57,8 +57,8 @@ namespace LINALG
     double rwork;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), &s[0], Q.A(), Q.M(), VT.A(), VT.M(),
-        &work[0], lwork, &rwork, &info);
+    lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), s.data(), Q.A(), Q.M(), VT.A(), VT.M(),
+        work.data(), lwork, &rwork, &info);
 
     if (info) dserror("Lapack's dgesvd returned %d", info);
 

@@ -571,8 +571,8 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
   veldofset.clear();
-  Teuchos::RCP<Epetra_Map> velrowmap =
-      Teuchos::rcp(new Epetra_Map(-1, veldofmapvec.size(), &veldofmapvec[0], 0, fluiddis.Comm()));
+  Teuchos::RCP<Epetra_Map> velrowmap = Teuchos::rcp(
+      new Epetra_Map(-1, veldofmapvec.size(), veldofmapvec.data(), 0, fluiddis.Comm()));
   veldofmapvec.clear();
 
   std::vector<int> presdofmapvec;
@@ -580,7 +580,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
   presdofset.clear();
   Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::rcp(
-      new Epetra_Map(-1, presdofmapvec.size(), &presdofmapvec[0], 0, alefluiddis.Comm()));
+      new Epetra_Map(-1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.Comm()));
   extractor.Setup(*fullmap, presrowmap, velrowmap);
 }
 
@@ -658,7 +658,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
-        LINALG::Matrix<3, 1> axisvec(&((*axisvecptr)[0]), false);
+        LINALG::Matrix<3, 1> axisvec(axisvecptr->data(), false);
         if (axisvec.Norm2() > 1.0e-9) axis_for_moment = true;  // axis has been set
       }
 
@@ -690,7 +690,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       // get also pointer to center coordinates
       const std::vector<double>* centerCoordvec = ldcoordmap[label];
       if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
-      LINALG::Matrix<3, 1> centerCoord(&((*centerCoordvec)[0]), false);
+      LINALG::Matrix<3, 1> centerCoord(centerCoordvec->data(), false);
 
       // loop all nodes within my set
       for (std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end();
@@ -736,7 +736,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         if (axis_for_moment)
         {
           const std::vector<double>* axisvecptr = ldaxismap[label];
-          LINALG::Matrix<3, 1> axisvec(&((*axisvecptr)[0]), false);
+          LINALG::Matrix<3, 1> axisvec(axisvecptr->data(), false);
           double norm = 0.0;
           if (axisvec.Norm2() != 0.0)
           {
@@ -760,8 +760,8 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       }  // end: loop over nodes
 
       // care for the fact that we are (most likely) parallel
-      trueresidual->Comm().SumAll(&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
-      trueresidual->Comm().SumAll(&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
+      trueresidual->Comm().SumAll(myforces.data(), ((*liftdragvals)[label]).data(), 3);
+      trueresidual->Comm().SumAll(mymoments.data(), ((*liftdragvals)[label]).data() + 3, 3);
 
       // do the output
       if (myrank == 0)

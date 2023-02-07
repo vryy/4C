@@ -66,7 +66,7 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
     int numindex;
     std::vector<int> indices(lenindices, 0);
     std::vector<double> weights(lenindices, 0);
-    adjacency_->ExtractMyRowCopy(i, lenindices, numindex, &weights[0], &indices[0]);
+    adjacency_->ExtractMyRowCopy(i, lenindices, numindex, weights.data(), indices.data());
 
     // row in local index space of the collayout
     int rowi = thetacol.Map().LID(thetaele.Map().GID(i));
@@ -129,7 +129,7 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(
     int numindex;
     std::vector<int> indices(lenindices, 0);
     std::vector<double> weights(lenindices, 0);
-    adjacency_->ExtractMyRowCopy(i, lenindices, numindex, &weights[0], &indices[0]);
+    adjacency_->ExtractMyRowCopy(i, lenindices, numindex, weights.data(), indices.data());
 
     if (numindex != lenindices) dserror("bla");
 

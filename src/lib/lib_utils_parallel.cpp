@@ -114,11 +114,11 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
 
   // gather all master row node gids redundantly in rdata
   std::vector<int> rdata;
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], *com);
+  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new node column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, *com));
+      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, *com));
   sdata.clear();
   rdata.clear();
 
@@ -133,11 +133,11 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], *com);
+  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new element column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, *com));
+      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, *com));
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -150,8 +150,8 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
   // Safety checks in DEBUG
 #ifdef DEBUG
   int nummycolnodes = newnodecolmap->NumMyElements();
-  int sizelist[com->NumProc()];
-  com->GatherAll(&nummycolnodes, &sizelist[0], 1);
+  std::vector<int> sizelist(com->NumProc());
+  com->GatherAll(&nummycolnodes, sizelist.data(), 1);
   com->Barrier();
   for (int k = 1; k < com->NumProc(); ++k)
   {
@@ -200,12 +200,12 @@ void DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
         dis_template, dis_to_redistribute, redistribute_nodegid_vec, redistribute_colnodegid_vec);
 
     // construct redistributed node row map
-    Teuchos::RCP<Epetra_Map> redistributed_noderowmap = Teuchos::rcp(
-        new Epetra_Map(-1, redistribute_nodegid_vec.size(), &redistribute_nodegid_vec[0], 0, *com));
+    Teuchos::RCP<Epetra_Map> redistributed_noderowmap = Teuchos::rcp(new Epetra_Map(
+        -1, redistribute_nodegid_vec.size(), redistribute_nodegid_vec.data(), 0, *com));
 
     // construct redistributed node col map
     Teuchos::RCP<Epetra_Map> redistributed_nodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_colnodegid_vec.size(), &redistribute_colnodegid_vec[0], 0, *com));
+        -1, redistribute_colnodegid_vec.size(), redistribute_colnodegid_vec.data(), 0, *com));
 
     // we finally redistribute.
     // FillComplete(...) inside.
@@ -260,11 +260,11 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
 
     // construct redistributed element row map
     Teuchos::RCP<Epetra_Map> redistributed_elerowmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_rowelegid_vec.size(), &redistribute_rowelegid_vec[0], 0, *com));
+        -1, redistribute_rowelegid_vec.size(), redistribute_rowelegid_vec.data(), 0, *com));
 
     // construct redistributed element col map
     Teuchos::RCP<Epetra_Map> redistributed_elecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_colelegid_vec.size(), &redistribute_colelegid_vec[0], 0, *com));
+        -1, redistribute_colelegid_vec.size(), redistribute_colelegid_vec.data(), 0, *com));
 
     ////////////////////////////////////////
     // MATCH NODES
@@ -278,12 +278,12 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
         dis_template, dis_to_redistribute, redistribute_nodegid_vec, redistribute_colnodegid_vec);
 
     // construct redistributed node row map
-    Teuchos::RCP<Epetra_Map> redistributed_noderowmap = Teuchos::rcp(
-        new Epetra_Map(-1, redistribute_nodegid_vec.size(), &redistribute_nodegid_vec[0], 0, *com));
+    Teuchos::RCP<Epetra_Map> redistributed_noderowmap = Teuchos::rcp(new Epetra_Map(
+        -1, redistribute_nodegid_vec.size(), redistribute_nodegid_vec.data(), 0, *com));
 
     // construct redistributed node col map
     Teuchos::RCP<Epetra_Map> redistributed_nodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_colnodegid_vec.size(), &redistribute_colnodegid_vec[0], 0, *com));
+        -1, redistribute_colnodegid_vec.size(), redistribute_colnodegid_vec.data(), 0, *com));
 
     ////////////////////////////////////////
     // REDISTRIBUTE
@@ -463,11 +463,11 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
 
     // construct redistributed element row map
     Teuchos::RCP<Epetra_Map> redistributed_elerowmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_rowelegid_vec.size(), &redistribute_rowelegid_vec[0], 0, *com));
+        -1, redistribute_rowelegid_vec.size(), redistribute_rowelegid_vec.data(), 0, *com));
 
     // construct redistributed element col map
     Teuchos::RCP<Epetra_Map> redistributed_elecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_colelegid_vec.size(), &redistribute_colelegid_vec[0], 0, *com));
+        -1, redistribute_colelegid_vec.size(), redistribute_colelegid_vec.data(), 0, *com));
 
 
     ////////////////////////////////////////
@@ -560,11 +560,11 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
 
     // construct redistributed node row map
     Teuchos::RCP<Epetra_Map> redistributed_noderowmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_rownodegid_vec.size(), &redistribute_rownodegid_vec[0], 0, *com));
+        -1, redistribute_rownodegid_vec.size(), redistribute_rownodegid_vec.data(), 0, *com));
 
     // construct redistributed node col map
     Teuchos::RCP<Epetra_Map> redistributed_nodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, redistribute_colnodegid_vec.size(), &redistribute_colnodegid_vec[0], 0, *com));
+        -1, redistribute_colnodegid_vec.size(), redistribute_colnodegid_vec.data(), 0, *com));
 
 
     ////////////////////////////////////////
@@ -634,7 +634,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
   const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
 
   std::vector<int> mycolnodes(oldcolnodemap->NumMyElements());
-  oldcolnodemap->MyGlobalElements(&mycolnodes[0]);
+  oldcolnodemap->MyGlobalElements(mycolnodes.data());
   for (int inode = 0; inode != subdis->NumMyColNodes(); ++inode)
   {
     const DRT::Node* newnode = subdis->lColNode(inode);
@@ -647,7 +647,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
 
   // now reconstruct the extended colmap
   Teuchos::RCP<Epetra_Map> newcolnodemap =
-      Teuchos::rcp(new Epetra_Map(-1, mycolnodes.size(), &mycolnodes[0], 0, sourcedis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis->Comm()));
   return newcolnodemap;
 }  // DRT::UTILS::ComputeNodeColMap
 

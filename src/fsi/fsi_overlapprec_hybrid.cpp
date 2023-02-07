@@ -178,7 +178,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
         if (additiveschwarzeverywhere_ or interfaceproc)
         {
           int err = rows[j][c]->ExtractGlobalRowCopy(
-              fieldmap.GID(i), maxNumEntries, numEntries, &values[0], &indices[0]);
+              fieldmap.GID(i), maxNumEntries, numEntries, values.data(), indices.data());
           if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
         }
         else
@@ -192,7 +192,8 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
         }
         if (numEntries > 0)
         {
-          int err = A->InsertGlobalValues(fieldmap.GID(i), numEntries, &values[0], &indices[0]);
+          int err =
+              A->InsertGlobalValues(fieldmap.GID(i), numEntries, values.data(), indices.data());
           if (err != 0)
             dserror(
                 "InsertGlobalValues failed, error = %d!.\n"

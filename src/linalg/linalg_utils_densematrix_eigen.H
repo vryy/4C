@@ -92,7 +92,7 @@ namespace LINALG
     int info;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, &(w[0]), &(work[0]), lwork, &info);
+    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, w.data(), work.data(), lwork, &info);
 
     if (info) dserror("Lapack's SYEV returned %d", info);
 

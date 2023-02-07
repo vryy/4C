@@ -145,11 +145,11 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
   }
 
   // Epetra maps
-  Teuchos::RCP<Epetra_Map> targetnodemap =
-      Teuchos::rcp(new Epetra_Map(-1, patchedtargetnodes.size(), &patchedtargetnodes[0], 0, *com));
+  Teuchos::RCP<Epetra_Map> targetnodemap = Teuchos::rcp(
+      new Epetra_Map(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com));
 
   Teuchos::RCP<Epetra_Map> permsourcenodemap =
-      Teuchos::rcp(new Epetra_Map(-1, permsourcenodes.size(), &permsourcenodes[0], 0, *com));
+      Teuchos::rcp(new Epetra_Map(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com));
 
   // we expect to get maps of exactly the same shape
   if (not targetnodemap->PointSameAs(*permsourcenodemap))

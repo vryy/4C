@@ -155,7 +155,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
-  // requires a penalty regularization. Here, the penalty contriutions for this
+  // requires a penalty regularization. Here, the penalty contributions for this
   // special case are applied:
   if (nonSmoothContact_)
   {

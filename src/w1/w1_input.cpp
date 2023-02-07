@@ -36,7 +36,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   else if ((NumNode() == 6) and (ngp[0] < 3))
     dserror("Insufficient number of Gauss points");
 
-  gaussrule_ = getGaussrule(&ngp[0]);
+  gaussrule_ = getGaussrule(ngp.data());
 
   // read number of material model
   int material = 0;

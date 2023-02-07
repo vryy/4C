@@ -403,7 +403,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
   UpdateLinkerLength();
 
   // build sum over all procs
-  MPI_Reduce(&num_local[0], &num_global[0], 3, MPI_INT, MPI_SUM, 0,
+  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   if (GState().GetMyRank() == 0)

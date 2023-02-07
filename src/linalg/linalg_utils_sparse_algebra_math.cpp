@@ -76,7 +76,7 @@ namespace LINALG
             // did not find index in linear search (re-indexing from A.ColMap() to B.ColMap()
             // might pass through the indices differently), try binary search
             if (indicesB[jB] != col)
-              jB = std::lower_bound(&indicesB[0], &indicesB[0] + NumEntriesB, col) - &indicesB[0];
+              jB = std::lower_bound(indicesB, indicesB + NumEntriesB, col) - indicesB;
 
             // not found, sparsity pattern of B does not contain the index from A -> terminate
             if (indicesB[jB] != col)
@@ -110,7 +110,8 @@ namespace LINALG
       {
         const int Row = A.GRID(i);
         int NumEntries = 0;
-        int ierr = A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries, &Values[0], &Indices[0]);
+        int ierr =
+            A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries, Values.data(), Indices.data());
         if (ierr) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
         if (scalarA != 1.0)
           for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;

@@ -835,7 +835,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
-          numnodes * 3, nodal_force.data(), &(lmele)[0]);
+          numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }

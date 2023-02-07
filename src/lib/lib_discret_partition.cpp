@@ -100,7 +100,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   // proc 0 looks for elements that are to be send to other procs
   int size = (int)gidlist.size();
   std::vector<int> pidlist(size);  // gids on proc 0
-  int err = target.RemoteIDList(size, &gidlist[0], &pidlist[0], nullptr);
+  int err = target.RemoteIDList(size, gidlist.data(), pidlist.data(), nullptr);
   if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
@@ -138,7 +138,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   size = (int)receivers.size();
   Comm().Broadcast(&size, 1, 0);
   if (myrank != 0) receivers.resize(size);
-  Comm().Broadcast(&receivers[0], size, 0);
+  Comm().Broadcast(receivers.data(), size, 0);
   int foundme = -1;
   if (myrank != 0)
     for (int i = 0; i < size; ++i)
@@ -157,7 +157,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
          ++fool)
     {
-      exporter.ISend(0, fool->first, &fool->second[0], (int)fool->second.size(), tag, request[tag]);
+      exporter.ISend(
+          0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
     if (tag != size) dserror("Number of messages is mixed up");
@@ -211,7 +212,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   if (myrank) size = 0;
   std::vector<int> pidlist(size, -1);
   {
-    int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), &pidlist[0], nullptr);
+    int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), pidlist.data(), nullptr);
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
   }
 
@@ -251,7 +252,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   size = (int)receivers.size();
   Comm().Broadcast(&size, 1, 0);
   if (myrank != 0) receivers.resize(size);
-  Comm().Broadcast(&receivers[0], size, 0);
+  Comm().Broadcast(receivers.data(), size, 0);
   int foundme = -1;
   if (myrank != 0)
     for (int i = 0; i < size; ++i)
@@ -270,7 +271,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
          ++fool)
     {
-      exporter.ISend(0, fool->first, &fool->second[0], (int)fool->second.size(), tag, request[tag]);
+      exporter.ISend(
+          0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
     if (tag != size) dserror("Number of messages is mixed up");
@@ -465,7 +467,8 @@ DRT::Discretization::BuildElementRowColumn(
   // find all owners for the overlapping node map
   const int ncnode = nodecolmap.NumMyElements();
   std::vector<int> cnodeowner(ncnode);
-  int err = noderowmap.RemoteIDList(ncnode, nodecolmap.MyGlobalElements(), &cnodeowner[0], nullptr);
+  int err =
+      noderowmap.RemoteIDList(ncnode, nodecolmap.MyGlobalElements(), cnodeowner.data(), nullptr);
   if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
 
   // build connectivity of elements
@@ -499,7 +502,7 @@ DRT::Discretization::BuildElementRowColumn(
   // communicate number of nodes per proc
   std::vector<int> nodesperproc(numproc);
   int nummynodes = noderowmap.NumMyElements();
-  Comm().GatherAll(&nummynodes, &nodesperproc[0], 1);
+  Comm().GatherAll(&nummynodes, nodesperproc.data(), 1);
 
   // estimate no. of elements equal to no. of nodes
   std::vector<int> myele(nummynodes);
@@ -518,7 +521,7 @@ DRT::Discretization::BuildElementRowColumn(
     if (size > (int)rtopo.size()) rtopo.resize(size);
     if (proc == myrank)
       for (int i = 0; i < size; ++i) rtopo[i] = stopo[i];
-    Comm().Broadcast(&rtopo[0], size, proc);
+    Comm().Broadcast(rtopo.data(), size, proc);
     for (int i = 0; i < size;)
     {
       const int elegid = rtopo[i++];
@@ -604,7 +607,7 @@ DRT::Discretization::BuildElementRowColumn(
   // discretization, otherwise we lost some
   // build the rowmap of elements
   Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummyele, &myele[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummyele, myele.data(), 0, Comm()));
   if (!elerowmap->UniqueGIDs()) dserror("Element row map is not unique");
 
   // build elecolmap
@@ -612,7 +615,7 @@ DRT::Discretization::BuildElementRowColumn(
   for (int i = 0; i < nummyele; ++i) elecol[i] = myele[i];
   for (int i = 0; i < nummyghostele; ++i) elecol[nummyele + i] = myghostele[i];
   Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummyghostele + nummyele, &elecol[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummyghostele + nummyele, elecol.data(), 0, Comm()));
 
   return {elerowmap, elecolmap};
 }
@@ -788,7 +791,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
 
   std::vector<int> colnodes(nodes.begin(), nodes.end());
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, Comm()));
 
   // now ghost the nodes
   ExportColumnNodes(*nodecolmap);
@@ -836,13 +839,13 @@ void DRT::Discretization::SetupGhosting(
     entriesperrow.push_back(localgraph[i->first].size());
   }
 
-  Epetra_Map rownodes(-1, gids.size(), &gids[0], 0, *comm_);
+  Epetra_Map rownodes(-1, gids.size(), gids.data(), 0, *comm_);
 
   // Construct FE graph. This graph allows processor off-rows to be inserted
   // as well. The communication issue is solved.
 
   Teuchos::RCP<Epetra_FECrsGraph> graph =
-      Teuchos::rcp(new Epetra_FECrsGraph(Copy, rownodes, &entriesperrow[0], false));
+      Teuchos::rcp(new Epetra_FECrsGraph(Copy, rownodes, entriesperrow.data(), false));
 
   gids.clear();
   entriesperrow.clear();
@@ -857,7 +860,7 @@ void DRT::Discretization::SetupGhosting(
     row.assign(rowset.begin(), rowset.end());
     rowset.clear();
 
-    int err = graph->InsertGlobalIndices(1, &i->first, row.size(), &row[0]);
+    int err = graph->InsertGlobalIndices(1, &i->first, row.size(), row.data());
     if (err < 0) dserror("graph->InsertGlobalIndices returned %d", err);
   }
 

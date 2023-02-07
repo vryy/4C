@@ -46,8 +46,8 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
   }
-  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), &gid_beam_dof[0], 0, discret_ptr->Comm());
-  Epetra_Map solid_dof_map(-1, gid_solid_dof.size(), &gid_solid_dof[0], 0, discret_ptr->Comm());
+  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0, discret_ptr->Comm());
+  Epetra_Map solid_dof_map(-1, gid_solid_dof.size(), gid_solid_dof.data(), 0, discret_ptr->Comm());
 
   // Extract the forces and add them to the discretization.
   Teuchos::RCP<Epetra_Vector> force_beam =

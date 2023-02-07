@@ -747,7 +747,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
 
   // communicate global ids between all processors
-  MPI_Allreduce(MPI_IN_PLACE, &particlestoproc[0], vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
+  MPI_Allreduce(MPI_IN_PLACE, particlestoproc.data(), vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
 }
 
 void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* position,
@@ -1002,7 +1002,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
   // copy bin gids to a vector and create bincolmap
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
   bincolmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), &bincolmapvec[0], 0, comm_));
+      new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_));
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
     dserror("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");

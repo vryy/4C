@@ -468,7 +468,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // care for the parallel case
     std::vector<double> parnormfluxintegral(NumDofPerNode());
-    discret_->Comm().SumAll(&normfluxintegral[0], &parnormfluxintegral[0], NumDofPerNode());
+    discret_->Comm().SumAll(normfluxintegral.data(), parnormfluxintegral.data(), NumDofPerNode());
     double parboundaryint = 0.0;
     discret_->Comm().SumAll(&boundaryint, &parboundaryint, 1);
 
@@ -2197,7 +2197,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)
@@ -3222,8 +3222,8 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
   std::vector<int> vecnumdofpernode(maxsize * discret->Comm().NumProc(), 0);
 
   // communicate
-  discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
+  discret->Comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)
@@ -3280,8 +3280,8 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   std::vector<int> vecnumdofpernode(maxsize * discret->Comm().NumProc(), 0);
 
   // communicate
-  discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
+  discret->Comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)

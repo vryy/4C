@@ -106,7 +106,7 @@ DRT::ParObject* DRT::ParObjectFactory::Create(const std::vector<char>& data)
   FinalizeRegistration();
 
   // mv ptr behind the size record
-  const int* ptr = (const int*)(&data[0]);
+  const int* ptr = (const int*)(data.data());
   // get the type
   const int type = *ptr;
 

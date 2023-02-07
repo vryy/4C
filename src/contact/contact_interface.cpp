@@ -274,12 +274,12 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
       }
     }
 
-    sdofVertexRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVr.size(), &sVr[0], 0, Comm()));
-    sdofVertexColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVc.size(), &sVc[0], 0, Comm()));
-    sdofEdgeRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEr.size(), &sEr[0], 0, Comm()));
-    sdofEdgeColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEc.size(), &sEc[0], 0, Comm()));
-    sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), &sSr[0], 0, Comm()));
-    sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), &sSc[0], 0, Comm()));
+    sdofVertexRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVr.size(), sVr.data(), 0, Comm()));
+    sdofVertexColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVc.size(), sVc.data(), 0, Comm()));
+    sdofEdgeRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEr.size(), sEr.data(), 0, Comm()));
+    sdofEdgeColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEc.size(), sEc.data(), 0, Comm()));
+    sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), sSr.data(), 0, Comm()));
+    sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), sSc.data(), 0, Comm()));
   }
 
   return;
@@ -526,11 +526,11 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of nodes redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build completely overlapping map of nodes (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
 
@@ -541,11 +541,11 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build complete overlapping map of elements (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -583,7 +583,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all master row node gids redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* nodecolmap = Discret().NodeColMap();
@@ -598,7 +598,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // build new node column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
 
@@ -616,7 +616,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* elecolmap = Discret().ElementColMap();
@@ -631,7 +631,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // build new element column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -682,7 +682,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
       Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, Comm()));
 
       Discret().ExportColumnNodes(*nodecolmap);
       break;
@@ -756,9 +756,9 @@ void CONTACT::CoInterface::Redistribute()
 
   // we need an arbitrary preliminary element row map
   Teuchos::RCP<Epetra_Map> slaveCloseRowEles =
-      Teuchos::rcp(new Epetra_Map(-1, (int)closeele.size(), &closeele[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)closeele.size(), closeele.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles =
-      Teuchos::rcp(new Epetra_Map(-1, (int)noncloseele.size(), &noncloseele[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)noncloseele.size(), noncloseele.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::rcp(new Epetra_Map(*MasterRowElements()));
 
   // check for consistency
@@ -851,7 +851,7 @@ void CONTACT::CoInterface::Redistribute()
       std::vector<int> nodeids(numnode);
       for (int n = 0; n < numnode; ++n) nodeids[n] = ele->NodeIds()[n];
 
-      int err = graph->InsertGlobalIndices(gid, numnode, &nodeids[0]);
+      int err = graph->InsertGlobalIndices(gid, numnode, nodeids.data());
       if (err < 0) dserror("graph->InsertGlobalIndices returned %d", err);
       if (err == 1) dserror("graph->InsertGlobalIndices returned %d", err);
     }
@@ -871,7 +871,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalcns;
   std::set<int> setglobalcns;
   std::vector<int> scnids;
-  LINALG::Gather<int>(localcns, globalcns, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalcns.size(); ++i) setglobalcns.insert(globalcns[i]);
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
@@ -898,7 +898,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalfns;
   std::set<int> setglobalfns;
   std::vector<int> sncnids;
-  LINALG::Gather<int>(localfns, globalfns, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalfns.size(); ++i) setglobalfns.insert(globalfns[i]);
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
@@ -973,7 +973,7 @@ void CONTACT::CoInterface::Redistribute()
     mygids.resize(count);
     sort(mygids.begin(), mygids.end());
     srownodes = Teuchos::rcp(
-        new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, slaveCloseRowNodes->Comm()));
+        new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, slaveCloseRowNodes->Comm()));
   }
 
   // merge interface node row map from slave and master parts
@@ -8184,12 +8184,12 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           // extract entries of this row from matrix
           int err = (dmatrixmod->EpetraMatrix())
                         ->ExtractGlobalRowCopy(row, (dmatrixmod->EpetraMatrix())->MaxNumEntries(),
-                            NumEntries, &Values[0], &Indices[0]);
+                            NumEntries, Values.data(), Indices.data());
           if (err) dserror("ExtractMyRowView failed: err=%d", err);
 
           int errold = (doldmod->EpetraMatrix())
                            ->ExtractGlobalRowCopy(row, (doldmod->EpetraMatrix())->MaxNumEntries(),
-                               NumEntriesOld, &ValuesOld[0], &IndicesOld[0]);
+                               NumEntriesOld, ValuesOld.data(), IndicesOld.data());
           if (errold) dserror("ExtractMyRowView failed: err=%d", err);
 
           // loop over entries of this vector
@@ -9142,8 +9142,8 @@ bool CONTACT::CoInterface::SplitActiveDofs()
     dserror("SplitActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, &myNgids[0], 0, Comm()));
-  activet_ = Teuchos::rcp(new Epetra_Map(gcountT, countT, &myTgids[0], 0, Comm()));
+  activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, myNgids.data(), 0, Comm()));
+  activet_ = Teuchos::rcp(new Epetra_Map(gcountT, countT, myTgids.data(), 0, Comm()));
 
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -9198,7 +9198,7 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   Comm().SumAll(&countslipT, &gcountslipT, 1);
 
   // create Tslipmap objects
-  slipt_ = Teuchos::rcp(new Epetra_Map(gcountslipT, countslipT, &myslipTgids[0], 0, Comm()));
+  slipt_ = Teuchos::rcp(new Epetra_Map(gcountslipT, countslipT, myslipTgids.data(), 0, Comm()));
 
   return true;
 }

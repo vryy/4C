@@ -170,7 +170,7 @@ void VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization>& dis
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, *comm_));
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_));
 
   return;
 }

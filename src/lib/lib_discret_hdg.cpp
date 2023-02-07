@@ -68,7 +68,7 @@ int DRT::DiscretizationHDG::FillComplete(
     if (f->second->Owner() == Comm().MyPID()) continue;
     std::vector<int>& ids = nodeIds[f->first];
     dsassert(ids.size() > 0, "Lost a face during communication");
-    f->second->SetNodeIds(ids.size(), &ids[0]);
+    f->second->SetNodeIds(ids.size(), ids.data());
     f->second->SetLocalTrafoMap(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
@@ -86,7 +86,7 @@ int DRT::DiscretizationHDG::FillComplete(
           }
         dsassert(nodes[i] != 0, "Could not find node.");
       }
-      f->second->BuildNodalPointers(&nodes[0]);
+      f->second->BuildNodalPointers(nodes.data());
     }
 
     // check master/slave relation of current face in terms of the local trafo map
@@ -200,7 +200,7 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
   std::copy(sendblock.begin(), sendblock.end(), &send[mypos]);
   sendblock.clear();
   std::vector<int> recv(size);
-  comm.SumAll(&send[0], &recv[0], size);
+  comm.SumAll(send.data(), recv.data(), size);
   send.clear();
 
   // unpack, unify and sort elements on processor 0
@@ -252,7 +252,7 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
 
   comm.Broadcast(&size, 1, 0);
   send.resize(size);
-  comm.Broadcast(&send[0], send.size(), 0);
+  comm.Broadcast(send.data(), send.size(), 0);
 
   // Unpack sorted elements. Take element position for gid.
 
@@ -316,7 +316,7 @@ void DRT::DiscretizationHDG::AddElementGhostLayer()
     if (nodeids[i].second != mypid) indices.push_back(nodeids[i].first);
   const int numindices = indices.size();
   if (numindices == 0) indices.push_back(-1);
-  Epetra_Map targetmap(-1, numindices, &indices[0], 0, Comm());
+  Epetra_Map targetmap(-1, numindices, indices.data(), 0, Comm());
 
   // step 2b: create a copy of the element topology for owned nodes
   std::map<int, std::vector<int>> nodetoelement;
@@ -350,7 +350,7 @@ void DRT::DiscretizationHDG::AddElementGhostLayer()
       std::unique(newcolelements.begin(), newcolelements.end()) - newcolelements.begin());
   const int numcolelements = newcolelements.size();
   if (numcolelements == 0) newcolelements.push_back(-1);
-  Epetra_Map elecolmap(-1, numcolelements, &newcolelements[0], 0, Comm());
+  Epetra_Map elecolmap(-1, numcolelements, newcolelements.data(), 0, Comm());
 
   // step 5: find node col map that matches the selected elements, similarly to elements
   std::map<int, std::vector<int>> elementtonode;
@@ -376,7 +376,7 @@ void DRT::DiscretizationHDG::AddElementGhostLayer()
   newcolnodes.resize(std::unique(newcolnodes.begin(), newcolnodes.end()) - newcolnodes.begin());
   const int numcolnodes = newcolnodes.size();
   if (numcolnodes == 0) newcolnodes.push_back(-1);
-  Epetra_Map nodecolmap(-1, numcolnodes, &newcolnodes[0], 0, Comm());
+  Epetra_Map nodecolmap(-1, numcolnodes, newcolnodes.data(), 0, Comm());
 
   // step 6: pass information about new col elements to the discretization (i.e., myself)
   ExportColumnNodes(nodecolmap);

@@ -446,7 +446,7 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-  exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
 
   // for safety

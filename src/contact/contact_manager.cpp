@@ -1431,7 +1431,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), allproc.data(), Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 

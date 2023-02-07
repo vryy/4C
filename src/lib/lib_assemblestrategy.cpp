@@ -86,7 +86,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::AssembleStrategy::MatrixGraph(
       if (dbcmap != Teuchos::null and dbcmap->MyGID(rgid))
         err = crsgraph->InsertGlobalIndices(rgid, 1, &rgid);
       else
-        err = crsgraph->InsertGlobalIndices(rgid, lcoldim, const_cast<int*>(&lmcol[0]));
+        err = crsgraph->InsertGlobalIndices(rgid, lcoldim, const_cast<int*>(lmcol.data()));
       if (err < 0) dserror("graph->InsertGlobalIndices returned err=%d", err);
     }
   }

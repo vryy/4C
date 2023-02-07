@@ -1063,8 +1063,8 @@ std::vector<std::pair<int, int>> SSI::ManifoldMeshTyingStrategyBase::ConstructCo
     }
     vec_1.resize(size_1);
     vec_2.resize(size_2);
-    comm.Broadcast(&vec_1[0], size_1, iproc);
-    comm.Broadcast(&vec_2[0], size_2, iproc);
+    comm.Broadcast(vec_1.data(), size_1, iproc);
+    comm.Broadcast(vec_2.data(), size_2, iproc);
 
     // reassemble to coupling map on this proc
     for (int i = 0; i < static_cast<int>(size_1); ++i)

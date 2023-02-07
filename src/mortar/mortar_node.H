@@ -484,7 +484,7 @@ namespace MORTAR
     /*!
      \brief Get predefined degrees of freedom
      */
-    const int* Dofs() const { return &dofs_[0]; }
+    const int* Dofs() const { return dofs_.data(); }
 
     /*!
      \brief Return current configuration (length 3)

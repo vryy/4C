@@ -1301,7 +1301,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
     // add Kda . res_d to feas
     LINALG::DENSEFUNCTIONS::multiply<double, soshw6_easpoisthick, NUMDOF_WEG6, 1>(
-        1.0, oldfeas->A(), 1.0, oldKda->A(), &(residual[0]));
+        1.0, oldfeas->A(), 1.0, oldKda->A(), residual.data());
     // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     LINALG::DENSEFUNCTIONS::multiply<double, soshw6_easpoisthick, soshw6_easpoisthick, 1>(
         0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);

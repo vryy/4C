@@ -2883,8 +2883,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
--      EvaluateShape(gpc1, val1, deriv1, nnodes);
--      detg = Jacobian(gpc1);
+       EvaluateShape(gpc1, val1, deriv1, nnodes);
+       detg = Jacobian(gpc1);
 
        for (int j=0;j<nnodes;++j)
        for (int k=0;k<nnodes;++k)

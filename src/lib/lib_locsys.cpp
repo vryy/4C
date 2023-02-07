@@ -230,7 +230,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                   functfac =
                       (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
-                          .Evaluate(&currPos[0], time, j);
+                          .Evaluate(currPos.data(), time, j);
                 }
                 else
                 {
@@ -410,7 +410,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
     locsysdofs.reserve(locsysdofset.size());
     locsysdofs.assign(locsysdofset.begin(), locsysdofset.end());
     nummyentries = static_cast<int>(locsysdofs.size());
-    myglobalentries = &(locsysdofs[0]);
+    myglobalentries = locsysdofs.data();
   }
   locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
       -1, nummyentries, myglobalentries, discret_.DofRowMap()->IndexBase(), discret_.Comm()));

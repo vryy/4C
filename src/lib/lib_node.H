@@ -132,7 +132,7 @@ namespace DRT
     /*!
     \brief Return coordinates (length 3 or 6 for a Cosserat node)
     */
-    virtual inline const double* X() const { return &x_[0]; }
+    virtual inline const double* X() const { return x_.data(); }
 
     /*!
     \brief return spatial dimension of node coordinates
@@ -155,7 +155,7 @@ namespace DRT
     virtual inline DRT::Element** Elements()
     {
       if (NumElement())
-        return &element_[0];
+        return element_.data();
       else
         return NULL;
     }
@@ -166,7 +166,7 @@ namespace DRT
     virtual inline const DRT::Element* const* Elements() const
     {
       if (NumElement())
-        return (const DRT::Element* const*)(&element_[0]);
+        return (const DRT::Element* const*)(element_.data());
       else
         return NULL;
     }
