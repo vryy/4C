@@ -176,7 +176,7 @@ namespace CONTACT
       void WriteOutput(IO::DiscretizationWriter& writer) const override;
 
       /// function wrapper
-      void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+      void EvaluateReferenceState() override;
 
       /// function wrapper
       bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,

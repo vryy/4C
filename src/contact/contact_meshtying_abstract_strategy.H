@@ -475,7 +475,7 @@ namespace CONTACT
     {
       return Teuchos::null;
     }
-    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) {}
+    void EvaluateReferenceState() override {}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
     const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }

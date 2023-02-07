@@ -2208,7 +2208,7 @@ void CONTACT::AUG::Strategy::SetCurrentEvalState(const CONTACT::ParamsInterface&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
+void CONTACT::AUG::Strategy::EvaluateReferenceState()
 {
   // do nothing for the augmented strategy
 }

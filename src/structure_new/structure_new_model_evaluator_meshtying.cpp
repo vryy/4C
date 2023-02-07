@@ -110,7 +110,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   strategy_ptr_->StoreDirichletStatus(Int().GetDbc().GetDBCMapExtractor());
   strategy_ptr_->SetState(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
-  strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
+  strategy_ptr_->EvaluateReferenceState();
   strategy_ptr_->Inttime_init();
   SetTimeIntegrationInfo(*strategy_ptr_);
   strategy_ptr_->RedistributeContact(

@@ -57,7 +57,7 @@ namespace CONTACT
      * 'UpdateTraceIneqEtimates' at the moment since at this stage we do not have the gp
      * concentrations -> so far no adaptive nitsche penalty possible!
      */
-    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+    void EvaluateReferenceState() override;
 
     /*!
      * @brief initialize TraceHE parameter of the mortar elements

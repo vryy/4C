@@ -658,10 +658,7 @@ void CONTACT::AUG::ComboStrategy::WriteOutput(IO::DiscretizationWriter& writer) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
-{
-  Get().EvaluateReferenceState(vec);
-}
+void CONTACT::AUG::ComboStrategy::EvaluateReferenceState() { Get().EvaluateReferenceState(); }
 
 /*----------------------------------------------------------------------*
  *  *----------------------------------------------------------------------*/

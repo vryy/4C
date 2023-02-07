@@ -273,7 +273,7 @@ namespace MORTAR
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) = 0;
+    virtual void EvaluateReferenceState() = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() const = 0;

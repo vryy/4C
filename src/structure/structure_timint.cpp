@@ -584,7 +584,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // FOR CONTACT FORMULATIONS (ONLY ONCE)
     // (1) Evaluate reference state for friction and initialize gap
-    cmtbridge_->ContactManager()->GetStrategy().EvaluateReferenceState(zeros_);
+    cmtbridge_->ContactManager()->GetStrategy().EvaluateReferenceState();
   }
 
   // visualization of initial configuration
