@@ -19,7 +19,6 @@ namespace DRT
   class Element;
 }
 
-// forward declaration
 namespace ADAPTER
 {
   INPAR::SCATRA::ImplType GetScaTraImplType(DRT::Element* ele);

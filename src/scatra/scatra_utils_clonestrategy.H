@@ -37,7 +37,7 @@ namespace SCATRA
     virtual ~ScatraFluidCloneStrategy() {}
 
     /// returns conditions names to be copied (source and target name)
-    virtual std::map<std::string, std::string> ConditionsToCopy();
+    virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
    protected:
     /// determine element type std::string and whether element is copied or not
@@ -68,7 +68,7 @@ namespace SCATRA
     virtual ~ScatraReactionCloneStrategy() {}
 
     /// returns conditions names to be copied (source and target name)
-    virtual std::map<std::string, std::string> ConditionsToCopy();
+    virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
    protected:
     /// determine element type std::string and whether element is copied or not

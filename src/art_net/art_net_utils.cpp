@@ -159,21 +159,10 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
 /*----------------------------------------------------------------------*
  |                                                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy() const
 {
-  // map
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"Initfield", "Initfield"}, {"ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"},
+      {"PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"},
+      {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }

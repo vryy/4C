@@ -342,9 +342,8 @@ Teuchos::RCP<::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
   // copy conditions
   // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
   // as standard DIRICHLET/NEUMANN CONDITIONS
-  std::map<std::string, std::string> conditions_to_copy;
   SCATRA::ScatraFluidCloneStrategy clonestrategy;
-  conditions_to_copy = clonestrategy.ConditionsToCopy();
+  const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
   DRT::UTILS::DiscretizationCreatorBase creator;
   creator.CopyConditions(*slavedis, *slavedis, conditions_to_copy);
 

@@ -680,11 +680,6 @@ namespace ADAPTER
         const Teuchos::ParameterList& timeadaptivity,
         Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 
-    /// create the adaptive time integrator wrapper
-    void CreateAdaptiveWrapper(const Teuchos::ParameterList& ioflags,
-        const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
-        const Teuchos::ParameterList& taflags, Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
-
     /// create the time integrator wrapper
     void CreateWrapper(Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 

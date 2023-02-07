@@ -843,25 +843,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags, Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
-  // create a adaptive wrapper
-  CreateAdaptiveWrapper(ioflags, sdyn, xparams, taflags, ti_strategy);
-
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
 
   if (str_wrapper_.is_null()) dserror("No proper time integration found!");
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
-    const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams, const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
-{
   return;
 }
 

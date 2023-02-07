@@ -25,8 +25,7 @@
 /*----------------------------------------------------------------------*/
 FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : itnum_(-1)
 {
-  std::vector<std::string> conditions_to_copy;
-  conditions_to_copy.push_back("FSICoupling");
+  std::vector<std::string> conditions_to_copy = {"FSICoupling"};
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
   dis_ = discreator->CreateMatchingDiscretizationFromCondition(

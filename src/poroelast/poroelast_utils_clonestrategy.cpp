@@ -32,33 +32,16 @@
 #include "scatra_ele.H"
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
+    const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroVolumeNeumann", "VolumeNeumann"));
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("NoPenetration", "NoPenetration"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroPartInt", "PoroPartInt"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroCoupling", "PoroCoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FPSICoupling", "FPSICoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroPresInt", "PoroPresInt"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Mortar", "Mortar"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("SurfFlowRate", "SurfFlowRate"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LineFlowRate", "LineFlowRate"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ImmersedSearchbox", "ImmersedSearchbox"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("XFEMSurfFPIMono", "XFEMSurfFPIMono"));
-
-  return conditions_to_copy;
+  return {{"PoroDirichlet", "Dirichlet"}, {"PoroPointNeumann", "PointNeumann"},
+      {"PoroLineNeumann", "LineNeumann"}, {"PoroSurfaceNeumann", "SurfaceNeumann"},
+      {"PoroVolumeNeumann", "VolumeNeumann"}, {"NoPenetration", "NoPenetration"},
+      {"PoroPartInt", "PoroPartInt"}, {"PoroCoupling", "PoroCoupling"},
+      {"FSICoupling", "FSICoupling"}, {"FPSICoupling", "FPSICoupling"},
+      {"PoroPresInt", "PoroPresInt"}, {"Mortar", "Mortar"}, {"SurfFlowRate", "SurfFlowRate"},
+      {"LineFlowRate", "LineFlowRate"}, {"ImmersedSearchbox", "ImmersedSearchbox"},
+      {"XFEMSurfFPIMono", "XFEMSurfFPIMono"}};
 }
 
 void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(const int matid)
@@ -391,53 +374,18 @@ void POROELAST::UTILS::PoroScatraCloneStrategy::SetElementData(
 }
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::ConditionsToCopy()
+    const
 {
-  // call base class
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportNeumannInflow", "TransportNeumannInflow"));
-  // for moving boundary problems
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
-  // for coupled scalar transport fields
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraCoupling", "ScaTraCoupling"));
-  // boundary flux evaluation condition for scalar transport
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
-  // initial field conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroCoupling", "PoroCoupling"));
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-
-  // artery to scatra coupling
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
-
-  // oxygen partial pressure calculation
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
-
-  // Robin boundary condition
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
-
-  // artery to scatra coupling node-to-point
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
+      {"TransportVolumeNeumann", "VolumeNeumann"},
+      {"TransportNeumannInflow", "TransportNeumannInflow"}, {"FSICoupling", "FSICoupling"},
+      {"ScaTraCoupling", "ScaTraCoupling"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
+      {"Initfield", "Initfield"}, {"PoroCoupling", "PoroCoupling"}, {"Initfield", "Initfield"},
+      {"ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"},
+      {"PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"},
+      {"TransportRobin", "TransportRobin"},
+      {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }
 
 void POROELAST::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const int matid)

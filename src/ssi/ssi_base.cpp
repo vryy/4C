@@ -354,9 +354,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     // copy conditions
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
     // as standard DIRICHLET/NEUMANN CONDITIONS
-    std::map<std::string, std::string> conditions_to_copy;
     SSI::ScatraStructureCloneStrategy clonestrategy;
-    conditions_to_copy = clonestrategy.ConditionsToCopy();
+    const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
     DRT::UTILS::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 

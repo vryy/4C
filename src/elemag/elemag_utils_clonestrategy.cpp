@@ -24,13 +24,9 @@
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <ShapeFunctionType sft>
-std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy()
+std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Dirichlet", "Dirichlet"));
-
-  return conditions_to_copy;
+  return {{"Dirichlet", "Dirichlet"}};
 }
 
 /*----------------------------------------------------------------------------*/
