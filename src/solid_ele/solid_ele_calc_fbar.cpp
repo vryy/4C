@@ -360,6 +360,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
 
         solid_material.Update(strains_bar.defgrd_, gp, params, ele.Id());
       });
+
+  solid_material.Update();
 }
 
 template <DRT::Element::DiscretizationType distype>
