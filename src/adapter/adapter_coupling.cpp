@@ -219,6 +219,21 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   slaveexport_ = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(Teuchos::RCP<const Epetra_Map> slavedofmap,
+    Teuchos::RCP<const Epetra_Map> permslavedofmap, Teuchos::RCP<const Epetra_Map> masterdofmap,
+    Teuchos::RCP<const Epetra_Map> permmasterdofmap)
+{
+  masterdofmap_ = masterdofmap;
+  slavedofmap_ = slavedofmap;
+  permmasterdofmap_ = permmasterdofmap;
+  permslavedofmap_ = permslavedofmap;
+
+  masterexport_ = Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+  slaveexport_ = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
