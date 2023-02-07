@@ -179,9 +179,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     {
       for (int k = ijk_range[4]; k <= ijk_range[5]; ++k)
       {
-        int ijk[] = {i, j, k};
+        std::array ijk = {i, j, k};
 
-        const int gid = ConvertijkToGid(ijk);
+        const int gid = ConvertijkToGid(ijk.data());
         if (gid != -1)
         {
           if (checkexistence)
@@ -212,9 +212,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     {
       for (int k = ijk_range[4]; k <= ijk_range[5]; ++k)
       {
-        int ijk[] = {i, j, k};
+        std::array ijk = {i, j, k};
 
-        const int gid = ConvertijkToGid(ijk);
+        const int gid = ConvertijkToGid(ijk.data());
         if (gid != -1)
         {
           if (checkexistence)
@@ -406,8 +406,8 @@ void BINSTRATEGY::BinningStrategy::GetNeighborBinIds(
     {
       for (int k = ijk_base[2] - 1; k <= ijk_base[2] + 1; ++k)
       {
-        int ijk[] = {i, j, k};
-        const int gid = ConvertijkToGid(ijk);
+        std::array ijk = {i, j, k};
+        const int gid = ConvertijkToGid(ijk.data());
         if (gid != -1 and gid != binId)
         {
           binIds.push_back(gid);
@@ -1518,10 +1518,10 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
     for (int iparticle = 0; iparticle < bindis_->lColElement(k)->NumNode(); ++iparticle)
     {
       double const* pos = particles[iparticle]->X();
-      int ijk[] = {-1, -1, -1};
+      std::array ijk = {-1, -1, -1};
       ConvertPosToijk(pos, ijk);
 
-      int gidofbin = ConvertijkToGid(ijk);
+      int gidofbin = ConvertijkToGid(ijk.data());
       if (gidofbin != binid)
         dserror("after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid);
     }

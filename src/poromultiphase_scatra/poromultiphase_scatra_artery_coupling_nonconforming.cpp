@@ -464,9 +464,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     const std::vector<double> seglengths = GetEleSegmentLengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
-    const double integrated_diam = coupl_elepairs_[i]->Evaluate(eleforce.data(),
-        eleforce.data() + 1, elestiff[0].data(), elestiff[0].data() + 1, elestiff[1].data(),
-        elestiff[1].data() + 1, &D_ele, &M_ele, &Kappa_ele, seglengths);
+    const double integrated_diam = coupl_elepairs_[i]->Evaluate(&(eleforce[0]), &(eleforce[1]),
+        &(elestiff[0][0]), &(elestiff[0][1]), &(elestiff[1][0]), &(elestiff[1][1]), &D_ele, &M_ele,
+        &Kappa_ele, seglengths);
 
     // assemble
     FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),

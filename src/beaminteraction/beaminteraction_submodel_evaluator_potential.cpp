@@ -177,8 +177,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
-          pair_is_active = elepairptr->Evaluate(eleforce_centerlineDOFs.data(),
-              eleforce_centerlineDOFs.data() + 1, NULL, NULL, NULL, NULL, currconds,
+          pair_is_active = elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]),
+              &(eleforce_centerlineDOFs[1]), NULL, NULL, NULL, NULL, currconds,
               BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
               BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
@@ -267,9 +267,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(NULL, NULL, elestiff_centerlineDOFs[0].data(),
-              elestiff_centerlineDOFs[0].data() + 1, elestiff_centerlineDOFs[1].data(),
-              elestiff_centerlineDOFs[1].data() + 1, currconds,
+          pair_is_active = elepairptr->Evaluate(NULL, NULL, &(elestiff_centerlineDOFs[0][0]),
+              &(elestiff_centerlineDOFs[0][1]), &(elestiff_centerlineDOFs[1][0]),
+              &(elestiff_centerlineDOFs[1][1]), currconds,
               BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
               BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
@@ -367,12 +367,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(eleforce_centerlineDOFs.data(),
-              eleforce_centerlineDOFs.data() + 1, elestiff_centerlineDOFs[0].data(),
-              elestiff_centerlineDOFs[0].data() + 1, elestiff_centerlineDOFs[1].data(),
-              elestiff_centerlineDOFs[1].data() + 1, currconds,
-              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
-              BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
+          pair_is_active =
+              elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
+                  &(elestiff_centerlineDOFs[0][0]), &(elestiff_centerlineDOFs[0][1]),
+                  &(elestiff_centerlineDOFs[1][0]), &(elestiff_centerlineDOFs[1][1]), currconds,
+                  BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
+                  BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication

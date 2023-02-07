@@ -907,7 +907,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     {
       // evaluate
       coupl_elepairs_[i]->EvaluateAdditionalLinearizationofIntegratedDiam(
-          elestiff.data(), elestiff.data() + 1);
+          &(elestiff[0]), &(elestiff[1]));
 
       // and FE-Assemble
       const int ele1gid = coupl_elepairs_[i]->Ele1GID();

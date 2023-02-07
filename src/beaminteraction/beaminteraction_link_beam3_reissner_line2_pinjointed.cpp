@@ -235,8 +235,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
-  int nodeids[] = {-1, -1};
-  linkele_->SetNodeIds(2, nodeids);
+  constexpr std::array nodeids = {-1, -1};
+  linkele_->SetNodeIds(2, nodeids.data());
 
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one

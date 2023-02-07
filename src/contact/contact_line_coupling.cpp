@@ -1137,7 +1137,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 
           // store intersection points
           TempInterSections().push_back(MORTAR::Vertex(coords, MORTAR::Vertex::lineclip, lcids,
-              SlaveVertices().data() + 1, SlaveVertices().data(), true, false, NULL, alpha));
+              &(SlaveVertices()[1]), &(SlaveVertices()[0]), true, false, NULL, alpha));
         }
       }
     }  // end vertex loop

@@ -66,9 +66,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
   {
     // Evaluate the pair and check if there is active contact
     pair_is_active =
-        elepairptr->Evaluate(eleforce_centerlineDOFs.data(), eleforce_centerlineDOFs.data() + 1,
-            elestiff_centerlineDOFs[0].data(), elestiff_centerlineDOFs[0].data() + 1,
-            elestiff_centerlineDOFs[1].data(), elestiff_centerlineDOFs[1].data() + 1);
+        elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
+            &(elestiff_centerlineDOFs[0][0]), &(elestiff_centerlineDOFs[0][1]),
+            &(elestiff_centerlineDOFs[1][0]), &(elestiff_centerlineDOFs[1][1]));
 
     if (pair_is_active)
     {
