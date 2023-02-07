@@ -519,7 +519,7 @@ void TSI::Algorithm::GetContactStrategy()
         Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
     contact_strategy_lagrange_->SetState(MORTAR::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->SaveReferenceState(zero_disp);
-    contact_strategy_lagrange_->EvaluateReferenceState(zero_disp);
+    contact_strategy_lagrange_->EvaluateReferenceState();
     contact_strategy_lagrange_->Inttime_init();
     contact_strategy_lagrange_->SetTimeIntegrationInfo(StructureField()->TimIntParam(),
         DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(

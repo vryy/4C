@@ -959,7 +959,7 @@ namespace CONTACT
       virtual double InactiveScaleFactor() const { return 0.5; }
 
       /// derived
-      void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+      void EvaluateReferenceState() override;
 
       /// set current evaluation state in the \c cparams object
       void SetCurrentEvalState(const CONTACT::ParamsInterface& cparams);

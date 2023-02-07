@@ -30,7 +30,7 @@ void CONTACT::CoNitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategySsi::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
+void CONTACT::CoNitscheStrategySsi::EvaluateReferenceState()
 {
   // initialize an estimate of TraceHE
   InitTraceHE();

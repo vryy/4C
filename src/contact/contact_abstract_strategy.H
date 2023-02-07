@@ -1298,8 +1298,11 @@ namespace CONTACT
 
      for frictional contact we need history values (relative velocity) and
      therefore we store the nodal entries of mortar matrices (reference
-     configuration) before the first time step */
-    virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
+     configuration) before the first time step
+
+     \pre SetState() has been called.
+     */
+    void EvaluateReferenceState() override;
 
     /*! \brief Evaluate matrix of nodal normals
 

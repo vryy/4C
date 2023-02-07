@@ -99,7 +99,7 @@ namespace CONTACT
     void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */};
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
-    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+    void EvaluateReferenceState() override;
     void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart) const override{
         /* nothing stored in nitsche strategy that would need to be written */};

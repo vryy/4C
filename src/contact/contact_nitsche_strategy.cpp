@@ -409,10 +409,8 @@ void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   }
 }
 
-void CONTACT::CoNitscheStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::CoNitscheStrategy::EvaluateReferenceState()
 {
-  SetState(MORTAR::state_new_displacement, *dis);
-
   if (friction_)
   {
     for (const auto& interface : interface_)

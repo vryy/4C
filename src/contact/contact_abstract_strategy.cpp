@@ -1489,9 +1489,8 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate reference state                               gitterle 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
+void CONTACT::CoAbstractStrategy::EvaluateReferenceState()
 {
   // flag for initialization of contact with nodal gaps
   bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(), "INITCONTACTBYGAP");
@@ -1500,8 +1499,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
   // or for initialization of initial contact set with nodal gap
   if (!friction_ and !initcontactbygap) return;
 
-  // set state and do mortar calculation
-  SetState(MORTAR::state_new_displacement, *vec);
+  // do mortar calculation
   InitMortar();
   InitEvalInterface();
   AssembleMortar();
@@ -1511,21 +1509,21 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
   if (initcontactbygap)
   {
     // merge interface maps to global maps
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
+    for (const auto& interface : Interfaces())
     {
       // merge active sets and slip sets of all interfaces
       // (these maps are NOT allowed to be overlapping !!!)
-      Interfaces()[i]->BuildActiveSet(true);
-      gactivenodes_ = LINALG::MergeMap(gactivenodes_, Interfaces()[i]->ActiveNodes(), false);
-      gactivedofs_ = LINALG::MergeMap(gactivedofs_, Interfaces()[i]->ActiveDofs(), false);
-      gactiven_ = LINALG::MergeMap(gactiven_, Interfaces()[i]->ActiveNDofs(), false);
-      gactivet_ = LINALG::MergeMap(gactivet_, Interfaces()[i]->ActiveTDofs(), false);
+      interface->BuildActiveSet(true);
+      gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface->ActiveNodes(), false);
+      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface->ActiveDofs(), false);
+      gactiven_ = LINALG::MergeMap(gactiven_, interface->ActiveNDofs(), false);
+      gactivet_ = LINALG::MergeMap(gactivet_, interface->ActiveTDofs(), false);
 
       if (friction_)
       {
-        gslipnodes_ = LINALG::MergeMap(gslipnodes_, Interfaces()[i]->SlipNodes(), false);
-        gslipdofs_ = LINALG::MergeMap(gslipdofs_, Interfaces()[i]->SlipDofs(), false);
-        gslipt_ = LINALG::MergeMap(gslipt_, Interfaces()[i]->SlipTDofs(), false);
+        gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface->SlipNodes(), false);
+        gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface->SlipDofs(), false);
+        gslipt_ = LINALG::MergeMap(gslipt_, interface->SlipTDofs(), false);
       }
     }
 
