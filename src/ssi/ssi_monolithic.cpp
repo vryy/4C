@@ -147,6 +147,7 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
  *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: apply mesh tying");
   if (SSIInterfaceMeshtying())
   {
     // check if matrices are filled because they have to be for the below methods
@@ -246,6 +247,8 @@ void SSI::SSIMono::ApplyManifoldMeshtying()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: assemble global system");
+
   AssembleMatScaTra();
 
   AssembleMatStructure();
@@ -321,6 +324,8 @@ void SSI::SSIMono::AssembleMatStructure()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::EvaluateSubproblems()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: evaluate sub problems");
+
   // clear all matrices and residuals from previous Newton iteration
   ssi_matrices_->ClearMatrices();
   ssi_vectors_->ClearResiduals();
@@ -855,6 +860,7 @@ void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) co
  *---------------------------------------------------------------------------------*/
 void SSI::SSIMono::SolveLinearSystem()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve linear system");
   strategy_equilibration_->EquilibrateSystem(
       ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), BlockMapSystemMatrix());
 
@@ -870,6 +876,7 @@ void SSI::SSIMono::SolveLinearSystem()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::NewtonLoop()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve Newton loop");
   // reset counter for Newton-Raphson iteration
   ResetIterationCount();
 
@@ -935,8 +942,7 @@ void SSI::SSIMono::NewtonLoop()
     // update states for next Newton iteration
     UpdateIterScaTra();
     UpdateIterStructure();
-
-  }  // Newton-Raphson iteration
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -948,6 +954,7 @@ void SSI::SSIMono::Timeloop()
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
   {
+    TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve time step");
     // prepare time step
     PrepareTimeStep();
 
