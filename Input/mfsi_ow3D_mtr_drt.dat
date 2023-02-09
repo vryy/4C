@@ -107,7 +107,7 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*a
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1.00000002)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 500000.0 DESCRIPTION (1-cos(2*t*pi/5)) (1-cos(2*5*pi/5))
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
@@ -3560,6 +3560,6 @@ STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28504130468710919e-05 TO
 FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00126570728137784e-05 TOLERANCE 1e-9
 FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97219302619371843e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36253693499267552e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36253345824634112e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
