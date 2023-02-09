@@ -983,6 +983,7 @@ void SSI::SSIMono::Timeloop()
     // output solution to screen and files
     Output();
   }
+  strategy_convcheck_->PrintNonConvergedSteps(Comm().MyPID());
 }
 
 /*--------------------------------------------------------------------------------------*

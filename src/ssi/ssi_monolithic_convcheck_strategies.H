@@ -50,9 +50,14 @@ namespace SSI
     ConvCheckStrategyBase(const Teuchos::ParameterList& global_time_parameters);
 
     //! Check, if Newton-Raphson has converged and print residuals and increments to screen
-    bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const;
+    bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono);
 
-    virtual bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) const = 0;
+    //! Check, if Newton-Raphson of initial potential calculation has converged and print residuals
+    //! and increments to screen
+    virtual bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) = 0;
+
+    //! print all time steps that have not been converged
+    void PrintNonConvergedSteps(int pid) const;
 
    protected:
     //! get L2 norms from structure field and check if they are reasonable
@@ -84,6 +89,9 @@ namespace SSI
     //! relative tolerance for Newton-Raphson iteration
     const double itertol_;
 
+    //! time steps that have not converged
+    std::set<int> non_converged_steps_;
+
     //! absolute tolerance for residual vectors
     const double restol_;
 
@@ -112,17 +120,16 @@ namespace SSI
         bool exit, const std::map<L2norm, double>& norms) const = 0;
   };
 
-
   class SSIMono::ConvCheckStrategyStd : public SSIMono::ConvCheckStrategyBase
   {
    public:
     ConvCheckStrategyStd(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyBase(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) const override
+    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override
     {
       dserror("Caluclation of initial potential only for Elch");
-      return false;
+      return {};
     }
 
    protected:
@@ -147,7 +154,7 @@ namespace SSI
     ConvCheckStrategyElch(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyBase(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) const override;
+    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override;
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable
@@ -174,7 +181,7 @@ namespace SSI
     ConvCheckStrategyElchScaTraManifold(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyElch(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) const override;
+    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override;
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable

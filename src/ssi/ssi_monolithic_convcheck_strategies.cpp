@@ -32,19 +32,22 @@ SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
     )
     : itermax_(parameters.get<int>("ITEMAX")),
       itertol_(parameters.sublist("MONOLITHIC").get<double>("CONVTOL")),
+      non_converged_steps_(),
       restol_(parameters.sublist("MONOLITHIC").get<double>("ABSTOLRES"))
 {
 }
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyBase::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const
+bool SSI::SSIMono::ConvCheckStrategyBase::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono)
 {
   const auto norms = ComputeNorms(ssi_mono);
   const bool converged = CheckConvergence(ssi_mono, norms);
   const bool exit = ComputeExit(ssi_mono, converged);
 
   PrintNewtonIterationInformation(ssi_mono, converged, exit, norms);
+
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
 
   return exit;
 }
@@ -88,6 +91,22 @@ void SSI::SSIMono::ConvCheckStrategyBase::GetAndCheckL2NormStructure(
   ssi_mono.StructureField()->Dispnp()->Norm2(&dofnorm);
 
   CheckL2Norm(incnorm, resnorm, dofnorm);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyBase::PrintNonConvergedSteps(const int pid) const
+{
+  if (pid == 0 and not non_converged_steps_.empty())
+  {
+    std::cout << std::endl << "Non converged time steps: ";
+    for (int step : non_converged_steps_)
+    {
+      std::cout << step;
+      if (step != (*non_converged_steps_.end())) std::cout << ", ";
+    }
+    std::cout << std::endl << std::endl;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -387,8 +406,7 @@ void SSI::SSIMono::ConvCheckStrategyElch::PrintNewtonIterationInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
-    const SSI::SSIMono& ssi_mono) const
+bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono)
 {
   const auto norms = ComputeNorms(ssi_mono);
   const bool converged =
@@ -397,6 +415,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
               norms.at(SSI::L2norm::potincnorm) / norms.at(SSI::L2norm::potdofnorm) <= itertol_)) or
       norms.at(SSI::L2norm::potresnorm) < restol_;
   const bool exit = ComputeExit(ssi_mono, converged);
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
 
   if (ssi_mono.Comm().MyPID() == 0)
   {
@@ -668,7 +687,7 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::PrintNewtonIterationInfo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPotCalc(
-    const SSI::SSIMono& ssi_mono) const
+    const SSI::SSIMono& ssi_mono)
 {
   const auto norms = ComputeNorms(ssi_mono);
   const bool converged =
@@ -680,6 +699,7 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
       (norms.at(SSI::L2norm::potresnorm) < restol_ and
           norms.at(SSI::L2norm::manifoldpotresnorm) < restol_);
   const bool exit = ComputeExit(ssi_mono, converged);
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
 
   if (ssi_mono.Comm().MyPID() == 0)
   {
@@ -744,5 +764,5 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
     }
   }
 
-  return converged;
+  return exit;
 }
