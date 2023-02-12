@@ -95,31 +95,26 @@ namespace INPAR::SOLVER
           tuple<int>(0, 1, 2), &list);
     }
 
-    /* Iterative solver options
-     *
-     * Options available for every iterative solver:
-     * AZTOL: "Convergence Tolerance": convergence tolerance used for iterative solver
-     * AZCONV: "Implicit Residual Scaling": residual scaling approach
-     * AZITER: "Maximum Iterations": maximum iteration count
-     * AZREUSE: "reuse": how often to recompute the preconditioner (counts on solver calls)
-     * AZOUTPUT: "Output frequency": number of iterations written to screen
-     *
-     * Options additionally available for gmres:
-     * AZSUB: "Num Blocks" <-> AZ_kspace: maximum size of krylov subspace before a restart is done
-     */
+    // Iterative solver options
     {
-      IntParameter("AZITER", 1000, "max iterations", &list);
+      IntParameter("AZITER", 1000,
+          "The maximum number of iterations the underlying iterative solver is allowed to perform",
+          &list);
 
-      DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
+      DoubleParameter("AZTOL", 1e-8,
+          "The level the residual norms must reach to decide about successful convergence", &list);
 
       setStringToIntegralParameter<Belos::ScaleType>("AZCONV", "AZ_r0",
-          "The convergence test to use for terminating the iterative solver.",
+          "The implicit residual norm scaling type to use for terminating the iterative solver.",
           tuple<std::string>("AZ_r0", "AZ_noscaled"),
           tuple<Belos::ScaleType>(Belos::ScaleType::NormOfInitRes, Belos::ScaleType::None), &list);
 
       IntParameter("AZOUTPUT", 0,
-          "The number of iterations between each output of the solver's progress.", &list);
-      IntParameter("AZREUSE", 0, "how often to recompute some preconditioners", &list);
+          "The number of iterations between each output of the solver's progress is written to "
+          "screen",
+          &list);
+      IntParameter(
+          "AZREUSE", 0, "The number specifying how often to recompute some preconditioners", &list);
 
       IntParameter("AZSUB", 50,
           "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
