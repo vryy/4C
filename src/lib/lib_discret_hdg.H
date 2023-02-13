@@ -140,10 +140,12 @@ namespace DRT
        *
        *  \author kronbichler \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
+          const DRT::Condition& cond, Epetra_Vector& toggle,
+          Epetra_Vector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
       void ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-          const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
+          const DRT::Condition& cond, Epetra_Vector& toggle,
+          Epetra_Vector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Determine Dirichlet condition at given time and apply its

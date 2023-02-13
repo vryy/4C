@@ -93,11 +93,12 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+    Epetra_Vector& hierarchy, Epetra_Vector& values,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, toggle, hierarchy, dbcgids);
+  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, toggle, hierarchy, values, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -115,7 +116,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  ReadDirichletCondition(discret, conds, toggle, hierarchy, dbcgids);
+  ReadDirichletCondition(discret, conds, toggle, hierarchy, values, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
   conds.clear();
@@ -133,7 +134,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
   // build dummy column toggle vector
   Epetra_Vector toggle_col = Epetra_Vector(*discret_nurbs->DofColMap());
 
-  ReadDirichletCondition(discret, conds, toggle_col, hierarchy, dbcgids_nurbs);
+  ReadDirichletCondition(discret, conds, toggle_col, hierarchy, values, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
   DoDirichletCondition(discret, conds, time, systemvectors, toggle_col, dbcgids_nurbs);
