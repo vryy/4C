@@ -13,6 +13,7 @@
 #define SRC_LIB_UTILS_DISCRET_H_
 
 #include <Teuchos_RCP.hpp>
+#include <Epetra_IntVector.h>
 // include due to enumerator...
 #include "lib_condition.H"
 
@@ -194,14 +195,6 @@ namespace DRT
       Teuchos::RCP<Epetra_Vector> CreateToggleVector(const Teuchos::RCP<Epetra_Vector> toggle_input,
           const Teuchos::RCP<Epetra_Vector>* systemvectors) const;
 
-      /// create the hierarchy vector based on the toggle vector
-      Teuchos::RCP<Epetra_Vector> CreateHierarchyVector(
-          const Teuchos::RCP<Epetra_Vector> toggle) const;
-
-      /// create the values vector based on the toggle vector
-      Teuchos::RCP<Epetra_Vector> CreateValuesVector(
-          const Teuchos::RCP<Epetra_Vector> toggle) const;
-
       /** \brief Evaluate Dirichlet boundary conditions
        *
        *  Loop all Dirichlet conditions attached to the discretization and evaluate
@@ -244,7 +237,7 @@ namespace DRT
        *  \author rauch \date 06/16 */
       virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
-          Epetra_Vector& hierarchy, Epetra_Vector& values,
+          Epetra_IntVector& hierarchy, Epetra_Vector& values,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief loop through Dirichlet conditions and evaluate them
@@ -281,14 +274,14 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, Epetra_Vector& toggle,
-          Epetra_Vector& hierarchy, Epetra_Vector& values,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
+          Epetra_Vector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, Epetra_Vector& toggle,
-          Epetra_Vector& hierarchy, Epetra_Vector& values,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
+          Epetra_Vector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
 
@@ -320,7 +313,8 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
+          const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+          Epetra_IntVector& hierarchy,
           Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
           const int& hierarchical_order) const;
 

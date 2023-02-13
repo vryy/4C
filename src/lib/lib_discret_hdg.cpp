@@ -399,8 +399,8 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
-    Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
+    const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+    Epetra_IntVector& hierarchy, Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
     const int& hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
@@ -409,20 +409,20 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterfa
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
   ReadDirichletCondition(
-      face_discret, cond, toggle, hierarchy, values, dbcgids, hierarchical_order);
+      face_discret, cond, time, toggle, hierarchy, values, dbcgids, hierarchical_order);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
-    Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
+    const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+    Epetra_IntVector& hierarchy, Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
     const int& hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
   DRT::UTILS::Dbc::ReadDirichletCondition(
-      discret, cond, toggle, hierarchy, values, dbcgids, hierarchical_order);
+      discret, cond, time, toggle, hierarchy, values, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == NULL) return;
