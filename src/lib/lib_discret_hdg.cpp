@@ -399,7 +399,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, Epetra_Vector& toggle,
+    const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
@@ -407,18 +407,18 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterfa
   const DRT::DiscretizationFaces& face_discret =
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
-  ReadDirichletCondition(face_discret, cond, toggle, dbcgids);
+  ReadDirichletCondition(face_discret, cond, toggle, hierarchy, dbcgids);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, Epetra_Vector& toggle,
+    const DRT::Condition& cond, Epetra_Vector& toggle, Epetra_Vector& hierarchy,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  DRT::UTILS::Dbc::ReadDirichletCondition(discret, cond, toggle, dbcgids);
+  DRT::UTILS::Dbc::ReadDirichletCondition(discret, cond, toggle, hierarchy, dbcgids, -1);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == NULL) return;
