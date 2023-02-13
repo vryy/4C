@@ -96,8 +96,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
   // create the values vector, to record the prescribed value assigned to dof
   // This is necessary to check the DBC consistency
   // --------------------------------------------------------------------------
-  Epetra_Vector values(toggleaux->Map());
-  values.PutScalar(0.0);
+  Epetra_Vector values(toggleaux->Map(), true);
 
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
@@ -193,8 +192,6 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum DRT::Condition::ConditionType& type) const
 {
-  std::vector<Teuchos::RCP<Condition>>::const_iterator fool;
-
   int hierarchical_order;
   if (type == DRT::Condition::PointDirichlet)
     hierarchical_order = 0;
@@ -206,13 +203,13 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
     hierarchical_order = 3;
 
   // Gather dbcgids of given type
-  for (fool = conds.begin(); fool != conds.end(); ++fool)
+  for (const auto& cool : conds)
   {
     // skip conditions of different type
-    if ((*fool)->Type() != type) continue;
+    if (cool->Type() != type) continue;
 
     ReadDirichletCondition(
-        discret, **fool, time, toggle, hierarchy, values, dbcgids, hierarchical_order);
+        discret, *cool, time, toggle, hierarchy, values, dbcgids, hierarchical_order);
   }
 }
 
@@ -302,7 +299,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
       int onesetj = j % numdf;
 
       // get the current hierarchical order this dof is currently applying to
-      int current_order = hierarchy[lid];
+      const int current_order = hierarchy[lid];
 
       if ((*onoff)[onesetj] == 0)
       {
@@ -348,7 +345,12 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
           const double current_val = values[lid];
 
           // if the current value is nonzero, and the current condition set it to other value,
-          // then we found an inconsistency, see MR #1238
+          // then we found an inconsistency. The basis for this is:
+          // Overwriting should be allowed over hierarchies (line overwrites surface, and so on)
+          // which is one of the main features of our DBC application work flow. And in such a case
+          // it is fully okay if the line prescribes also an inconsistent value (regarding the surface value).
+          // Of course, an error/warning is given if different values are prescribed on the
+          // same hierarchy level. Here, inconsistency matters.
           if ((std::abs(current_val) > 1.0e-13) && (std::abs(current_val - value) > 1.0e-13))
           {
             std::string geom_name;
@@ -420,13 +422,12 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum DRT::Condition::ConditionType& type) const
 {
-  std::vector<Teuchos::RCP<Condition>>::const_iterator fool;
-  for (fool = conds.begin(); fool != conds.end(); ++fool)
+  for (const auto& cool : conds)
   {
     // skip conditions of different type
-    if ((*fool)->Type() != type) continue;
+    if (cool->Type() != type) continue;
 
-    DoDirichletCondition(discret, **fool, time, systemvectors, toggle, dbcgids);
+    DoDirichletCondition(discret, *cool, time, systemvectors, toggle, dbcgids);
   }
 }
 
