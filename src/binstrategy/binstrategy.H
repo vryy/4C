@@ -162,14 +162,14 @@ namespace BINSTRATEGY
      *
      * \return const pointer to array containing bin sizes in all tree directions
      */
-    inline double const* BinSize() const { return &bin_size_[0]; }
+    inline double const* BinSize() const { return bin_size_; }
 
     /*!
      * \brief get number of bins in all three directions
      *
      * \return const pointer to array containing number of bins in all directions
      */
-    inline int const* BinPerDir() const { return &bin_per_dir_[0]; }
+    inline int const* BinPerDir() const { return bin_per_dir_; }
 
     /*!
      * \brief check if periodic boundary conditions are applied in at least one direction
@@ -217,7 +217,7 @@ namespace BINSTRATEGY
      *
      * \return pointer to array containing inverses of bin sizes
      */
-    inline double const* InvBinSize() const { return &inv_bin_size_[0]; }
+    inline double const* InvBinSize() const { return inv_bin_size_; }
 
     //! \}
 

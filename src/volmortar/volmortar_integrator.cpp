@@ -1306,7 +1306,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADi
     // quantities for eval. outside gp
     double gpdist = 1.0e12;
     int gpid = 0;
-    double AuxXi[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> AuxXi = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
     jac = UTILS::Jacobian<distypeS>(eta, Aele);

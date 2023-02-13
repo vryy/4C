@@ -274,12 +274,12 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
       }
     }
 
-    sdofVertexRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVr.size(), &sVr[0], 0, Comm()));
-    sdofVertexColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVc.size(), &sVc[0], 0, Comm()));
-    sdofEdgeRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEr.size(), &sEr[0], 0, Comm()));
-    sdofEdgeColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEc.size(), &sEc[0], 0, Comm()));
-    sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), &sSr[0], 0, Comm()));
-    sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), &sSc[0], 0, Comm()));
+    sdofVertexRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVr.size(), sVr.data(), 0, Comm()));
+    sdofVertexColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sVc.size(), sVc.data(), 0, Comm()));
+    sdofEdgeRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEr.size(), sEr.data(), 0, Comm()));
+    sdofEdgeColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEc.size(), sEc.data(), 0, Comm()));
+    sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), sSr.data(), 0, Comm()));
+    sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), sSc.data(), 0, Comm()));
   }
 
   return;
@@ -318,9 +318,9 @@ void CONTACT::CoInterface::SetCnCtValues(const int& iter)
     // calculate characteristic edge length:
     DRT::Element* ele = cnode->Elements()[0];
     CoElement* cele = dynamic_cast<CoElement*>(ele);
-    double pos1[3] = {0.0, 0.0, 0.0};
-    double pos2[3] = {0.0, 0.0, 0.0};
-    double vec[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> pos1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> pos2 = {0.0, 0.0, 0.0};
+    std::array<double, 3> vec = {0.0, 0.0, 0.0};
 
     pos1[0] = dynamic_cast<CoNode*>(cele->Nodes()[0])->X()[0];
     pos1[1] = dynamic_cast<CoNode*>(cele->Nodes()[0])->X()[1];
@@ -526,11 +526,11 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of nodes redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build completely overlapping map of nodes (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
 
@@ -541,11 +541,11 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build complete overlapping map of elements (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -583,7 +583,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all master row node gids redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* nodecolmap = Discret().NodeColMap();
@@ -598,7 +598,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // build new node column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
 
@@ -616,7 +616,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], Comm());
+      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* elecolmap = Discret().ElementColMap();
@@ -631,7 +631,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // build new element column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, Comm()));
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -682,7 +682,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
       Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, Comm()));
 
       Discret().ExportColumnNodes(*nodecolmap);
       break;
@@ -756,9 +756,9 @@ void CONTACT::CoInterface::Redistribute()
 
   // we need an arbitrary preliminary element row map
   Teuchos::RCP<Epetra_Map> slaveCloseRowEles =
-      Teuchos::rcp(new Epetra_Map(-1, (int)closeele.size(), &closeele[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)closeele.size(), closeele.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles =
-      Teuchos::rcp(new Epetra_Map(-1, (int)noncloseele.size(), &noncloseele[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)noncloseele.size(), noncloseele.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::rcp(new Epetra_Map(*MasterRowElements()));
 
   // check for consistency
@@ -851,7 +851,7 @@ void CONTACT::CoInterface::Redistribute()
       std::vector<int> nodeids(numnode);
       for (int n = 0; n < numnode; ++n) nodeids[n] = ele->NodeIds()[n];
 
-      int err = graph->InsertGlobalIndices(gid, numnode, &nodeids[0]);
+      int err = graph->InsertGlobalIndices(gid, numnode, nodeids.data());
       if (err < 0) dserror("graph->InsertGlobalIndices returned %d", err);
       if (err == 1) dserror("graph->InsertGlobalIndices returned %d", err);
     }
@@ -871,7 +871,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalcns;
   std::set<int> setglobalcns;
   std::vector<int> scnids;
-  LINALG::Gather<int>(localcns, globalcns, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalcns.size(); ++i) setglobalcns.insert(globalcns[i]);
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
@@ -898,7 +898,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalfns;
   std::set<int> setglobalfns;
   std::vector<int> sncnids;
-  LINALG::Gather<int>(localfns, globalfns, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalfns.size(); ++i) setglobalfns.insert(globalfns[i]);
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
@@ -973,7 +973,7 @@ void CONTACT::CoInterface::Redistribute()
     mygids.resize(count);
     sort(mygids.begin(), mygids.end());
     srownodes = Teuchos::rcp(
-        new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, slaveCloseRowNodes->Comm()));
+        new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, slaveCloseRowNodes->Comm()));
   }
 
   // merge interface node row map from slave and master parts
@@ -1936,7 +1936,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
   const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
-  double oldtraction[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -1977,11 +1977,11 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
         cnode->CoData().Getgltl()[2] < 1e8)
     {
       // normal force
-      double fn[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> fn = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < Dim(); ++dim) fn[dim] = -penalty * cnode->CoData().Getgltl()[dim];
 
       // f trial tangential
-      double ftrial[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> ftrial = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < Dim(); ++dim)
         ftrial[dim] = oldtraction[dim] - penaltytan * cnode->CoData().Getjumpltl()[dim];
 
@@ -1993,7 +1993,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       double maxtrac = sqrt(fn[0] * fn[0] + fn[1] * fn[1] + fn[2] * fn[2]);
 
       // real traction
-      double ftan[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> ftan = {0.0, 0.0, 0.0};
 
       if (trialnorm - frcoeff * maxtrac <= 0.0)
       {
@@ -2026,11 +2026,11 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {(p->second) * ftan[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value = (p->second) * ftan[dim];
+            const int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            slaveforce += value[0];
+            slaveforce += value;
           }
         }
       }
@@ -2054,12 +2054,12 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {-(p->second) * ftan[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value = -(p->second) * ftan[dim];
+            const int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
 
-            masterforce += value[0];
+            masterforce += value;
           }
         }
       }
@@ -2092,7 +2092,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
-  double oldtraction[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
 
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
@@ -2134,11 +2134,11 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
       GEN::pairedvector<int, double> coefflin(100);
 
       // normal force
-      double fn[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> fn = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < Dim(); ++dim) fn[dim] = -penalty * cnode->CoData().Getgltl()[dim];
 
       // f trial tangential
-      double ftrial[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> ftrial = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < Dim(); ++dim)
         ftrial[dim] = oldtraction[dim] - penaltytan * cnode->CoData().Getjumpltl()[dim];
 
@@ -2152,7 +2152,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
       double maxtrac = sqrt(fn[0] * fn[0] + fn[1] * fn[1] + fn[2] * fn[2]);
 
       // real traction
-      double ftan[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> ftan = {0.0, 0.0, 0.0};
 
       if (trialnorm - frcoeff * maxtrac <= 0.0)
       {
@@ -2330,8 +2330,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
               for (CImap pp = cnode->CoData().GetDerivJumpltl()[dim].begin();
                    pp != cnode->CoData().GetDerivJumpltl()[dim].end(); ++pp)
               {
-                double value[1] = {penaltytan * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = penaltytan * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2358,8 +2358,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
               for (CImap pp = cnode->CoData().GetDerivJumpltl()[dim].begin();
                    pp != cnode->CoData().GetDerivJumpltl()[dim].end(); ++pp)
               {
-                double value[1] = {-penaltytan * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = -penaltytan * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2392,8 +2392,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
               for (CImap pp = cnode->CoData().GetDerivJumpltl()[dim].begin();
                    pp != cnode->CoData().GetDerivJumpltl()[dim].end(); ++pp)
               {
-                double value[1] = {penaltytan * coeff * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = penaltytan * coeff * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2420,8 +2420,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             {
               for (CI pp = coefflin.begin(); pp != coefflin.end(); ++pp)
               {
-                double value[1] = {-penaltytan * ftan[dim] * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = -penaltytan * ftan[dim] * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2449,8 +2449,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
               for (CImap pp = cnode->CoData().GetDerivJumpltl()[dim].begin();
                    pp != cnode->CoData().GetDerivJumpltl()[dim].end(); ++pp)
               {
-                double value[1] = {-penaltytan * coeff * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = -penaltytan * coeff * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2475,8 +2475,8 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             {
               for (CI pp = coefflin.begin(); pp != coefflin.end(); ++pp)
               {
-                double value[1] = {penaltytan * ftan[dim] * (p->second) * (pp->second)};
-                kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+                double value = penaltytan * ftan[dim] * (p->second) * (pp->second);
+                kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
               }
             }
           }
@@ -2531,10 +2531,10 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {
-                penalty * (p->second) * cnode->CoData().Getgnts() * cnode->MoData().n()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value =
+                penalty * (p->second) * cnode->CoData().Getgnts() * cnode->MoData().n()[dim];
+            int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
           }
         }
@@ -2559,10 +2559,10 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {
-                -penalty * (p->second) * cnode->CoData().Getgnts() * cnode->MoData().n()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value =
+                -penalty * (p->second) * cnode->CoData().Getgnts() * cnode->MoData().n()[dim];
+            int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
           }
         }
@@ -2619,10 +2619,10 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {
-                penaltyLts * (p->second) * cnode->CoData().Getglts() * cnode->MoData().n()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value =
+                penaltyLts * (p->second) * cnode->CoData().Getglts() * cnode->MoData().n()[dim];
+            int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
           }
         }
@@ -2647,10 +2647,10 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {
-                -penaltyLts * (p->second) * cnode->CoData().Getglts() * cnode->MoData().n()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value =
+                -penaltyLts * (p->second) * cnode->CoData().Getglts() * cnode->MoData().n()[dim];
+            int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
           }
         }
@@ -2706,11 +2706,11 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {penalty * (p->second) * cnode->CoData().Getgltl()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value = penalty * (p->second) * cnode->CoData().Getgltl()[dim];
+            int ltlid = csnode->Dofs()[dim];
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            slaveforce += value[0];
+            slaveforce += value;
           }
         }
       }
@@ -2734,11 +2734,11 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 
           for (int dim = 0; dim < Dim(); ++dim)
           {
-            double value[1] = {-penalty * (p->second) * cnode->CoData().Getgltl()[dim]};
-            const int ltlid[1] = {csnode->Dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, ltlid, value);
+            double value = -penalty * (p->second) * cnode->CoData().Getgltl()[dim];
+            int ltlid = {csnode->Dofs()[dim]};
+            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            masterforce += value[0];
+            masterforce += value;
           }
         }
       }
@@ -2784,7 +2784,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
     // is gap is in contact
     if (cnode->CoData().Getglts() < 1e-12)
     {
-      double lm[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> lm = {0.0, 0.0, 0.0};
       lm[0] = penaltyLts * cnode->CoData().Getglts() * cnode->MoData().n()[0];
       lm[1] = penaltyLts * cnode->CoData().Getglts() * cnode->MoData().n()[1];
       lm[2] = penaltyLts * cnode->CoData().Getglts() * cnode->MoData().n()[2];
@@ -2895,17 +2895,15 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
             for (CImap pp = cnode->CoData().GetDerivGlts().begin();
                  pp != cnode->CoData().GetDerivGlts().end(); ++pp)
             {
-              double value[1] = {
-                  -penaltyLts * (p->second) * (pp->second) * cnode->MoData().n()[dim]};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = -penaltyLts * (p->second) * (pp->second) * cnode->MoData().n()[dim];
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
             // normal linearization
             for (CI pp = cnode->CoData().GetDerivN()[dim].begin();
                  pp != cnode->CoData().GetDerivN()[dim].end(); ++pp)
             {
-              double value[1] = {
-                  -penaltyLts * (p->second) * (pp->second) * cnode->CoData().Getglts()};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = -penaltyLts * (p->second) * (pp->second) * cnode->CoData().Getglts();
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -2932,17 +2930,15 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
             for (CImap pp = cnode->CoData().GetDerivGlts().begin();
                  pp != cnode->CoData().GetDerivGlts().end(); ++pp)
             {
-              double value[1] = {
-                  penaltyLts * (p->second) * (pp->second) * cnode->MoData().n()[dim]};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = penaltyLts * (p->second) * (pp->second) * cnode->MoData().n()[dim];
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
             // normal linearization
             for (CI pp = cnode->CoData().GetDerivN()[dim].begin();
                  pp != cnode->CoData().GetDerivN()[dim].end(); ++pp)
             {
-              double value[1] = {
-                  penaltyLts * (p->second) * (pp->second) * cnode->CoData().Getglts()};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = penaltyLts * (p->second) * (pp->second) * cnode->CoData().Getglts();
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -2981,7 +2977,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
     // is gap is in contact
     if (cnode->CoData().Getgnts() < 1e-12)
     {
-      double lm[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> lm = {0.0, 0.0, 0.0};
       lm[0] = penalty * cnode->CoData().Getgnts() * cnode->MoData().n()[0];
       lm[1] = penalty * cnode->CoData().Getgnts() * cnode->MoData().n()[1];
       lm[2] = penalty * cnode->CoData().Getgnts() * cnode->MoData().n()[2];
@@ -3049,15 +3045,15 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
             for (CImap pp = cnode->CoData().GetDerivGnts().begin();
                  pp != cnode->CoData().GetDerivGnts().end(); ++pp)
             {
-              double value[1] = {-penalty * (p->second) * (pp->second) * cnode->MoData().n()[dim]};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = -penalty * (p->second) * (pp->second) * cnode->MoData().n()[dim];
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
             // normal linearization
             for (CI pp = cnode->CoData().GetDerivN()[dim].begin();
                  pp != cnode->CoData().GetDerivN()[dim].end(); ++pp)
             {
-              double value[1] = {-penalty * (p->second) * (pp->second) * cnode->CoData().Getgnts()};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = -penalty * (p->second) * (pp->second) * cnode->CoData().Getgnts();
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -3084,15 +3080,15 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
             for (CImap pp = cnode->CoData().GetDerivGnts().begin();
                  pp != cnode->CoData().GetDerivGnts().end(); ++pp)
             {
-              double value[1] = {penalty * (p->second) * (pp->second) * cnode->MoData().n()[dim]};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = penalty * (p->second) * (pp->second) * cnode->MoData().n()[dim];
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
             // normal linearization
             for (CI pp = cnode->CoData().GetDerivN()[dim].begin();
                  pp != cnode->CoData().GetDerivN()[dim].end(); ++pp)
             {
-              double value[1] = {penalty * (p->second) * (pp->second) * cnode->CoData().Getgnts()};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = penalty * (p->second) * (pp->second) * cnode->CoData().Getgnts();
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -3129,7 +3125,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
     if (cnode->CoData().Getgltl()[0] < 1e8 and cnode->CoData().Getgltl()[1] < 1e8 and
         cnode->CoData().Getgltl()[2] < 1e8)
     {
-      double lm[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> lm = {0.0, 0.0, 0.0};
       lm[0] = penalty * cnode->CoData().Getgltl()[0];
       lm[1] = penalty * cnode->CoData().Getgltl()[1];
       lm[2] = penalty * cnode->CoData().Getgltl()[2];
@@ -3239,8 +3235,8 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
             for (CImap pp = cnode->CoData().GetDerivGltl()[dim].begin();
                  pp != cnode->CoData().GetDerivGltl()[dim].end(); ++pp)
             {
-              double value[1] = {-penalty * (p->second) * (pp->second)};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = -penalty * (p->second) * (pp->second);
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -3267,8 +3263,8 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
             for (CImap pp = cnode->CoData().GetDerivGltl()[dim].begin();
                  pp != cnode->CoData().GetDerivGltl()[dim].end(); ++pp)
             {
-              double value[1] = {penalty * (p->second) * (pp->second)};
-              kteff->FEAssemble(value[0], csnode->Dofs()[dim], pp->first);
+              double value = penalty * (p->second) * (pp->second);
+              kteff->FEAssemble(value, csnode->Dofs()[dim], pp->first);
             }
           }
         }
@@ -3930,8 +3926,8 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
     }
 
     int loc = 0;
-    double normalsele0[3] = {0.0, 0.0, 0.0};
-    double normalsele1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalsele0 = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalsele1 = {0.0, 0.0, 0.0};
 
     // build normal at node for 1. ele
     CoElement* sele0 = dynamic_cast<CoElement*>(cnode->Elements()[0]);
@@ -4002,8 +3998,8 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   if (length1 < 1e-12 or length2 < 1e-12) return dist;
 
   // calc angle between tangents
-  double t1[3] = {0.0, 0.0, 0.0};
-  double t2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> t1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> t2 = {0.0, 0.0, 0.0};
 
   t1[0] = node1->MoData().EdgeTangent()[0];
   t1[1] = node1->MoData().EdgeTangent()[1];
@@ -4019,7 +4015,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 
   double f = 0.0;
   double df = 0.0;
-  double xi[1] = {0.0};
+  double xi = 0.0;
 
   // newton loop
   for (int k = 0; k < MORTARMAXITER; ++k)
@@ -4030,10 +4026,10 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
     //**********************************************
     LINALG::SerialDenseVector sval(nrow);
     LINALG::SerialDenseMatrix sderiv(nrow, 1);
-    mele.EvaluateShape(xi, sval, sderiv, nrow);
+    mele.EvaluateShape(&xi, sval, sderiv, nrow);
 
     // tangent part
-    double tangent[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> tangent = {0.0, 0.0, 0.0};
     tangent[0] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[0];
     tangent[1] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[1];
     tangent[2] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[2];
@@ -4047,7 +4043,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
                    tangent[2] * snode.xspatial()[2];
 
     // master part
-    double master[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> master = {0.0, 0.0, 0.0};
     master[0] += sval[0] * node1->xspatial()[0];
     master[1] += sval[0] * node1->xspatial()[1];
     master[2] += sval[0] * node1->xspatial()[2];
@@ -4065,7 +4061,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
     //   F GRADIENT CALCULATION                   //
     //**********************************************
     // lin tangent part
-    double lintangent[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> lintangent = {0.0, 0.0, 0.0};
     lintangent[0] += sderiv(0, 0) * node1->MoData().EdgeTangent()[0];
     lintangent[1] += sderiv(0, 0) * node1->MoData().EdgeTangent()[1];
     lintangent[2] += sderiv(0, 0) * node1->MoData().EdgeTangent()[2];
@@ -4079,7 +4075,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
                       lintangent[2] * snode.xspatial()[2];
 
     // lin master part
-    double linmaster[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> linmaster = {0.0, 0.0, 0.0};
     linmaster[0] += sderiv(0, 0) * node1->xspatial()[0];
     linmaster[1] += sderiv(0, 0) * node1->xspatial()[1];
     linmaster[2] += sderiv(0, 0) * node1->xspatial()[2];
@@ -4098,13 +4094,13 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 
     df = lintangentSlave - lintangentMaster - tangentlinMaster;
     if (abs(df) < 1e-12) dserror("df zero");
-    xi[0] += -f / df;
+    xi += -f / df;
   }
 
   //**********************************************
   //   CHECK XI                                 //
   //**********************************************
-  if (-1.0 - tol > xi[0] or xi[0] > 1.0 + tol) return dist;
+  if (-1.0 - tol > xi or xi > 1.0 + tol) return dist;
 
   //**********************************************
   //   LINEARIZATION   df                       //
@@ -4112,10 +4108,10 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow, 1);
-  mele.EvaluateShape(xi, sval, sderiv, nrow);
+  mele.EvaluateShape(&xi, sval, sderiv, nrow);
 
   // tangent part
-  double tangent[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> tangent = {0.0, 0.0, 0.0};
   tangent[0] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[0];
   tangent[1] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[1];
   tangent[2] += sval[0] * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[2];
@@ -4125,7 +4121,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   tangent[2] += sval[1] * dynamic_cast<CoNode*>(mele.Nodes()[1])->MoData().EdgeTangent()[2];
 
   // master part
-  double master[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> master = {0.0, 0.0, 0.0};
   master[0] += sval[0] * node1->xspatial()[0];
   master[1] += sval[0] * node1->xspatial()[1];
   master[2] += sval[0] * node1->xspatial()[2];
@@ -4135,7 +4131,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   master[2] += sval[1] * node2->xspatial()[2];
 
   // lin tangent part
-  double lintangent[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> lintangent = {0.0, 0.0, 0.0};
   lintangent[0] += sderiv(0, 0) * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[0];
   lintangent[1] += sderiv(0, 0) * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[1];
   lintangent[2] += sderiv(0, 0) * dynamic_cast<CoNode*>(mele.Nodes()[0])->MoData().EdgeTangent()[2];
@@ -4145,7 +4141,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   lintangent[2] += sderiv(1, 0) * dynamic_cast<CoNode*>(mele.Nodes()[1])->MoData().EdgeTangent()[2];
 
   // lin master part
-  double linmaster[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> linmaster = {0.0, 0.0, 0.0};
   linmaster[0] += sderiv(0, 0) * node1->xspatial()[0];
   linmaster[1] += sderiv(0, 0) * node1->xspatial()[1];
   linmaster[2] += sderiv(0, 0) * node1->xspatial()[2];
@@ -4225,7 +4221,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   //**********************************************
   //   CALC NORMAL                              //
   //**********************************************
-  double auxnormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> auxnormal = {0.0, 0.0, 0.0};
   auxnormal[0] = snode.xspatial()[0] - master[0];
   auxnormal[1] = snode.xspatial()[1] - master[1];
   auxnormal[2] = snode.xspatial()[2] - master[2];
@@ -4271,7 +4267,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 
   //******************************
   // Orientation check:
-  double slavebasednormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
   DRT::Element** adjeles = snode.Elements();
 
@@ -4346,12 +4342,12 @@ double CONTACT::CoInterface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
 
   // distance between node and surface
   double gdist = 1e12;
-  double gnormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
   std::vector<GEN::pairedvector<int, double>> glin(3, 1000);
   typedef GEN::pairedvector<int, double>::const_iterator CI;
 
   double dist = 1e12;
-  double auxnormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> auxnormal = {0.0, 0.0, 0.0};
 
   // loop over found master nodes
   std::vector<GEN::pairedvector<int, double>> auxlin(3, 1000);
@@ -4399,7 +4395,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
 
   //******************************
   // Orientation check:
-  double slavebasednormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
   DRT::Element** adjeles = snode.Elements();
 
@@ -4921,8 +4917,9 @@ void CONTACT::CoInterface::ComputeScalingLTL()
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();
@@ -5018,8 +5015,9 @@ void CONTACT::CoInterface::ComputeScalingLTL()
                 j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
             // get nodes
-            DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
-            lineEle->BuildNodalPointers(nodes);
+            std::array<DRT::Node*, 2> nodes = {
+                melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
+            lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
             lineEle->InitializeDataContainer();
@@ -5054,15 +5052,15 @@ void CONTACT::CoInterface::ComputeScalingLTL()
           break;
         }
         // create empty points
-        double sxi[1] = {0.0};
-        double mxi[1] = {0.0};
+        double sxi = 0.0;
+        double mxi = 0.0;
         GEN::pairedvector<int, double> dsxi(
             3 * lineElementsM[m]->NumNode() + 3 * lineElementsS[s]->NumNode());
         GEN::pairedvector<int, double> dmxi(
             3 * lineElementsM[m]->NumNode() + 3 * lineElementsS[s]->NumNode());
 
-        coup.LineIntersection(sxi, mxi, dsxi, dmxi);
-        bool valid = coup.CheckIntersection(sxi, mxi);
+        coup.LineIntersection(&sxi, &mxi, dsxi, dmxi);
+        bool valid = coup.CheckIntersection(&sxi, &mxi);
 
         // no valid intersection
         if (!valid)
@@ -5343,7 +5341,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
     if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // get cpp normal
-    double normalcpp[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalcpp = {0.0, 0.0, 0.0};
 
     // get cpp normal lin.
     std::vector<GEN::pairedvector<int, double>> dcppaux(3, 1000);
@@ -5377,7 +5375,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
       Epetra_SerialDenseMatrix elens(6, 1);
       seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
-      double normalsele[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
       normalsele[0] = elens(0, 0) / elens(4, 0);
       normalsele[1] = elens(1, 0) / elens(4, 0);
       normalsele[2] = elens(2, 0) / elens(4, 0);
@@ -5419,7 +5417,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
     Epetra_SerialDenseMatrix elens(6, 1);
     seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
-    double normalsele[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
     normalsele[0] = elens(0, 0) / elens(4, 0);
     normalsele[1] = elens(1, 0) / elens(4, 0);
     normalsele[2] = elens(2, 0) / elens(4, 0);
@@ -5526,13 +5524,13 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
 
   // distance between node and surface
   double gdist = 1e12;  // distance
-  double gnormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
   std::vector<GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
   std::set<int> donebeforeMasterCorner;
 
-  bool nodeOnNode = false;           // flag for node on node (corner on corner) setting
-  bool pathdependent = false;        // flag if we have to check path from last converged check
-  double vect[3] = {0.0, 0.0, 0.0};  // patch
+  bool nodeOnNode = false;     // flag for node on node (corner on corner) setting
+  bool pathdependent = false;  // flag if we have to check path from last converged check
+  std::array<double, 3> vect = {0.0, 0.0, 0.0};  // patch
 
   // calc trajectory and node-to-node distance for corner nodes
   if (mrtrnode.IsOnCorner())
@@ -5543,8 +5541,8 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
 
     // calculate path
     // check trajectory from considered node
-    double Posn[3] = {0.0, 0.0, 0.0};
-    double Posnp[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> Posn = {0.0, 0.0, 0.0};
+    std::array<double, 3> Posnp = {0.0, 0.0, 0.0};
     Posn[0] = mrtrnode.X()[0] + mrtrnode.uold()[0];
     Posn[1] = mrtrnode.X()[1] + mrtrnode.uold()[1];
     Posn[2] = mrtrnode.X()[2] + mrtrnode.uold()[2];
@@ -5724,15 +5722,15 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
   bool pathdependent = true;
   const double validAngle = 5.0;
   double gdist = 1e12;  // distance
-  double gnormal[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
   std::vector<GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
 
   //******************************************************
   //             CALC TRAJECTORY
   //******************************************************
-  double Posn[3] = {0.0, 0.0, 0.0};
-  double Posnp[3] = {0.0, 0.0, 0.0};
-  double vect[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> Posn = {0.0, 0.0, 0.0};
+  std::array<double, 3> Posnp = {0.0, 0.0, 0.0};
+  std::array<double, 3> vect = {0.0, 0.0, 0.0};
 
   Posn[0] = mrtrnode.X()[0] + mrtrnode.uold()[0];
   Posn[1] = mrtrnode.X()[1] + mrtrnode.uold()[1];
@@ -6842,8 +6840,9 @@ void CONTACT::CoInterface::EvaluateSTL()
                 j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
             // get nodes
-            DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
-            lineEle->BuildNodalPointers(nodes);
+            std::array<DRT::Node*, 2> nodes = {
+                melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
+            lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
             lineEle->InitializeDataContainer();
@@ -7133,9 +7132,9 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
               j, meleElements[m]->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {
+          std::array<DRT::Node*, 2> nodes = {
               meleElements[m]->Nodes()[nodeLIds[0]], meleElements[m]->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();
@@ -7380,8 +7379,9 @@ void CONTACT::CoInterface::EvaluateLTS()
             j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
         // get nodes
-        DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-        lineEle->BuildNodalPointers(nodes);
+        std::array<DRT::Node*, 2> nodes = {
+            selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+        lineEle->BuildNodalPointers(nodes.data());
 
         // init data container for dual shapes
         lineEle->InitializeDataContainer();
@@ -7500,8 +7500,9 @@ void CONTACT::CoInterface::EvaluateLTL()
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();
@@ -7571,8 +7572,9 @@ void CONTACT::CoInterface::EvaluateLTL()
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();
@@ -7668,8 +7670,9 @@ void CONTACT::CoInterface::EvaluateLTL()
                 j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
             // get nodes
-            DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
-            lineEle->BuildNodalPointers(nodes);
+            std::array<DRT::Node*, 2> nodes = {
+                melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
+            lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
             lineEle->InitializeDataContainer();
@@ -7739,8 +7742,9 @@ void CONTACT::CoInterface::EvaluateLTL()
                 j, melement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
             // get nodes
-            DRT::Node* nodes[2] = {melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
-            lineEle->BuildNodalPointers(nodes);
+            std::array<DRT::Node*, 2> nodes = {
+                melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
+            lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
             lineEle->InitializeDataContainer();
@@ -8180,12 +8184,12 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           // extract entries of this row from matrix
           int err = (dmatrixmod->EpetraMatrix())
                         ->ExtractGlobalRowCopy(row, (dmatrixmod->EpetraMatrix())->MaxNumEntries(),
-                            NumEntries, &Values[0], &Indices[0]);
+                            NumEntries, Values.data(), Indices.data());
           if (err) dserror("ExtractMyRowView failed: err=%d", err);
 
           int errold = (doldmod->EpetraMatrix())
                            ->ExtractGlobalRowCopy(row, (doldmod->EpetraMatrix())->MaxNumEntries(),
-                               NumEntriesOld, &ValuesOld[0], &IndicesOld[0]);
+                               NumEntriesOld, ValuesOld.data(), IndicesOld.data());
           if (errold) dserror("ExtractMyRowView failed: err=%d", err);
 
           // loop over entries of this vector
@@ -9138,8 +9142,8 @@ bool CONTACT::CoInterface::SplitActiveDofs()
     dserror("SplitActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, &myNgids[0], 0, Comm()));
-  activet_ = Teuchos::rcp(new Epetra_Map(gcountT, countT, &myTgids[0], 0, Comm()));
+  activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, myNgids.data(), 0, Comm()));
+  activet_ = Teuchos::rcp(new Epetra_Map(gcountT, countT, myTgids.data(), 0, Comm()));
 
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -9194,7 +9198,7 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   Comm().SumAll(&countslipT, &gcountslipT, 1);
 
   // create Tslipmap objects
-  slipt_ = Teuchos::rcp(new Epetra_Map(gcountslipT, countslipT, &myslipTgids[0], 0, Comm()));
+  slipt_ = Teuchos::rcp(new Epetra_Map(gcountslipT, countslipT, myslipTgids.data(), 0, Comm()));
 
   return true;
 }
@@ -9263,8 +9267,8 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
     }
     for (unsigned k = 0; k < 3; ++k) lresFSl[k] += nforce(k, 0);
   }
-  Comm().SumAll(&lresMoSl[0], &gresMoSl[0], 3);
-  Comm().SumAll(&lresFSl[0], &gresFSl[0], 3);
+  Comm().SumAll(lresMoSl, gresMoSl, 3);
+  Comm().SumAll(lresFSl, gresFSl, 3);
 
   // loop over proc's master nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -9285,8 +9289,8 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
     }
     for (unsigned k = 0; k < 3; ++k) lresFMa[k] += nforce(k, 0);
   }
-  Comm().SumAll(&lresMoMa[0], &gresMoMa[0], 3);
-  Comm().SumAll(&lresFMa[0], &gresFMa[0], 3);
+  Comm().SumAll(lresMoMa, gresMoMa, 3);
+  Comm().SumAll(lresFMa, gresFMa, 3);
 
   for (int d = 0; d < 3; ++d)
   {

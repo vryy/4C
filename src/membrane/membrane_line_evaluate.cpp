@@ -129,7 +129,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
               // write coordinates in another datatype
               double gp_coord2[noddof_];
               for (int k = 0; k < noddof_; k++) gp_coord2[k] = gp_coord(k, 0);
-              const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()

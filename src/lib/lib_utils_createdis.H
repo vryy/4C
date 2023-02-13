@@ -186,7 +186,7 @@ namespace DRT
               // create an element with the same global element id
               condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
               // set the same global node ids to the new element
-              condele->SetNodeIds(nids.size(), &nids[0]);
+              condele->SetNodeIds(nids.size(), nids.data());
             }
             // add element
             targetdis->AddElement(condele);
@@ -657,7 +657,7 @@ namespace DRT
               back_inserter(nids), std::mem_fun(&DRT::Node::Id));
 
           // set the same global node ids to the new element
-          newele->SetNodeIds(nids.size(), &nids[0]);
+          newele->SetNodeIds(nids.size(), nids.data());
 
           // We need to set material and gauss points to complete element setup.
           // This is again really ugly as we have to extract the actual
@@ -770,7 +770,7 @@ namespace DRT
               back_inserter(nids), std::mem_fun(&DRT::Node::Id));
 
           // set the same global node ids to the new element
-          newele->SetNodeIds(nids.size(), &nids[0]);
+          newele->SetNodeIds(nids.size(), nids.data());
 
           // We need to set material and gauss points to complete element setup.
           // This is again really ugly as we have to extract the actual

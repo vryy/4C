@@ -50,8 +50,8 @@ namespace BINSTRATEGY
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
-      Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, discret->Comm()));
+      Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(
+          new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, discret->Comm()));
 
       // now ghost the nodes
       discret->ExportColumnNodes(*nodecolmap);
@@ -146,7 +146,7 @@ namespace BINSTRATEGY
       for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end();
            ++p)
       {
-        exporter.ISend(discret->Comm().MyPID(), p->first, &((p->second)[0]),
+        exporter.ISend(discret->Comm().MyPID(), p->first, (p->second).data(),
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }
@@ -246,7 +246,7 @@ namespace BINSTRATEGY
       for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end();
            ++p)
       {
-        exporter.ISend(discret->Comm().MyPID(), p->first, &((p->second)[0]),
+        exporter.ISend(discret->Comm().MyPID(), p->first, (p->second).data(),
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }

@@ -624,8 +624,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // (r,s) gp-locations of fully integrated linear 8-node Hex
   // necessary for ANS interpolation
   const double gploc = 1.0 / sqrt(3.0);  // gp sampling point value for linear fct
-  const double r[NUMGPT_] = {-gploc, gploc, gploc, -gploc, -gploc, gploc, gploc, -gploc};
-  const double s[NUMGPT_] = {-gploc, -gploc, gploc, gploc, -gploc, -gploc, gploc, gploc};
+  const std::array<double, NUMGPT_> r = {
+      -gploc, gploc, gploc, -gploc, -gploc, gploc, gploc, -gploc};
+  const std::array<double, NUMGPT_> s = {
+      -gploc, -gploc, gploc, gploc, -gploc, -gploc, gploc, gploc};
   // const double t[NUMGPT_] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
 
   // proportions of element

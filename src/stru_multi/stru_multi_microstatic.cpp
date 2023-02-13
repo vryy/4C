@@ -1125,7 +1125,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
 
     // sum result of matrix-matrix product over procs
     std::vector<double> sum(81, 0.0);
-    discret_->Comm().SumAll(&val[0], &sum[0], 81);
+    discret_->Comm().SumAll(val.data(), sum.data(), 81);
 
     if (discret_->Comm().MyPID() == 0)
     {

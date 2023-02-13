@@ -3821,7 +3821,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
   std::vector<double> mysol(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
   // get view of solution and subgrid-viscosity vector
-  LINALG::Matrix<4 * nen_, 1> sol(&(mysol[0]), true);
+  LINALG::Matrix<4 * nen_, 1> sol(mysol.data(), true);
 
   // the plane normal tells you in which plane the integration takes place
   const int normdirect = params.get<int>("normal direction to homogeneous plane");

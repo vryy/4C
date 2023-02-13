@@ -491,12 +491,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateInitialLinker(
     type_i.resize(numpairs);
     mat_i.resize(numpairs);
 
-    com.Broadcast(&elegid_1_i[0], numpairs, iproc);
-    com.Broadcast(&elegid_2_i[0], numpairs, iproc);
-    com.Broadcast(&locbspot_1_i[0], numpairs, iproc);
-    com.Broadcast(&locbspot_2_i[0], numpairs, iproc);
-    com.Broadcast(&type_i[0], numpairs, iproc);
-    com.Broadcast(&mat_i[0], numpairs, iproc);
+    com.Broadcast(elegid_1_i.data(), numpairs, iproc);
+    com.Broadcast(elegid_2_i.data(), numpairs, iproc);
+    com.Broadcast(locbspot_1_i.data(), numpairs, iproc);
+    com.Broadcast(locbspot_2_i.data(), numpairs, iproc);
+    com.Broadcast(type_i.data(), numpairs, iproc);
+    com.Broadcast(mat_i.data(), numpairs, iproc);
 
     elegid_1.insert(elegid_1.end(), elegid_1_i.begin(), elegid_1_i.end());
     elegid_2.insert(elegid_2.end(), elegid_2_i.begin(), elegid_2_i.end());
@@ -639,7 +639,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetupMyInitialDoubleBonde
   // initialize std::vector for communication
   std::vector<int> numnewlinks(com.NumProc(), 0);
   // communicate
-  com.GatherAll(&nummynewlinks[0], &numnewlinks[0], nummynewlinks.size());
+  com.GatherAll(nummynewlinks.data(), numnewlinks.data(), nummynewlinks.size());
   com.Barrier();
 
   // calculate starting index on myrank
@@ -654,7 +654,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetupMyInitialDoubleBonde
     for (unsigned int dim = 0; dim < 3; ++dim) X[dim] = newlinker[i]->GetPosition()(dim);
 
     Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
-        Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid, &X[0], GState().GetMyRank()));
+        Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid, X.data(), GState().GetMyRank()));
     newcrosslinker->SetMaterial(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
         MAT::Material::Factory(newlinkermatid[i])));  // HACK HACK HACK
     BinDiscretPtr()->AddNode(newcrosslinker);
@@ -732,7 +732,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
 
         // construct node, init data container, set material and add to bin discret
         Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
-            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid++, &X[0], GState().GetMyRank()));
+            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid++, X.data(), GState().GetMyRank()));
         newcrosslinker->SetMaterial(matcrosslinkerpertype[cltype_i]);
         BinDiscretPtr()->AddNode(newcrosslinker);
       }
@@ -1026,7 +1026,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
   }
 
   // get maximal displacement increment since last redistribution over all procs
-  double extrema[2] = {0.0, 0.0};
+  std::array<double, 2> extrema = {0.0, 0.0};
   dis_increment->MinValue(&extrema[0]);
   dis_increment->MaxValue(&extrema[1]);
   const double gmaxdisincr = std::max(-extrema[0], extrema[1]);
@@ -1486,7 +1486,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
 
   // build dummy map according to read data on myrank
   Teuchos::RCP<Epetra_Map> dummy_cl_map = Teuchos::rcp(
-      new Epetra_Map(-1, read_node_ids.size(), &read_node_ids[0], 0, BinDiscret().Comm()));
+      new Epetra_Map(-1, read_node_ids.size(), read_node_ids.data(), 0, BinDiscret().Comm()));
 
   // build exporter object
   Teuchos::RCP<DRT::Exporter> exporter = Teuchos::rcp(
@@ -1546,8 +1546,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
   }
 
   // build dummy map according to read data on myrank
-  Teuchos::RCP<Epetra_Map> dummy_beam_map =
-      Teuchos::rcp(new Epetra_Map(-1, read_ele_ids.size(), &read_ele_ids[0], 0, Discret().Comm()));
+  Teuchos::RCP<Epetra_Map> dummy_beam_map = Teuchos::rcp(
+      new Epetra_Map(-1, read_ele_ids.size(), read_ele_ids.data(), 0, Discret().Comm()));
 
   // build exporter object
   exporter = Teuchos::rcp(
@@ -2233,7 +2233,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::BindAndUnbindCrosslinker(
   num_local[0] = static_cast<int>(doublebondcl_.size());
   num_local[1] = num_new_linker;
   num_local[2] = num_dissolved_linker;
-  MPI_Reduce(&num_local[0], &num_global[0], 3, MPI_INT, MPI_SUM, 0,
+  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
   if (GState().GetMyRank() == 0)
   {
@@ -3677,7 +3677,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBinIds(
   for (p = binstosend.begin(); p != binstosend.end(); ++p)
   {
     targetprocs[p->first] = 1;
-    exporter.ISend(myrank, p->first, &((p->second)[0]), static_cast<int>((p->second).size()), 1234,
+    exporter.ISend(myrank, p->first, (p->second).data(), static_cast<int>((p->second).size()), 1234,
         request[tag]);
     ++tag;
   }
@@ -3967,8 +3967,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
   int tag = 0;
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
-    exporter.ISend(GState().GetMyRank(), p->first, &((p->second)[0]), (int)(p->second).size(), 1234,
-        request[tag]);
+    exporter.ISend(GState().GetMyRank(), p->first, (p->second).data(), (int)(p->second).size(),
+        1234, request[tag]);
     ++tag;
   }
   if (tag != length) dserror("Number of messages is mixed up");
@@ -4071,7 +4071,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter& expo
   int tag = 0;
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
-    exporter.ISend(GState().GetMyRank(), p->first, &((p->second)[0]),
+    exporter.ISend(GState().GetMyRank(), p->first, (p->second).data(),
         static_cast<int>((p->second).size()), 1234, request[tag]);
     ++tag;
   }

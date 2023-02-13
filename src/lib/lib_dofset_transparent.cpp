@@ -82,7 +82,8 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     dofrowvec.push_back(*idof);
   }
 
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
+  dofrowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.Comm()));
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -120,7 +121,8 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     dofcolvec.push_back(*idof);
   }
 
-  dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+  dofcolmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.Comm()));
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
@@ -281,7 +283,8 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     dofrowvec.push_back(*idof);
   }
 
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
+  dofrowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.Comm()));
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -314,7 +317,8 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     dofcolvec.push_back(*idof);
   }
 
-  dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+  dofcolmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.Comm()));
 
 
   return;
@@ -505,7 +509,7 @@ void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-  exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
 
   // for safety

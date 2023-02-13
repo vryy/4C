@@ -420,7 +420,7 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon(const std::vector<Point*
   {
     Point* pt = ptlist[i];
     std::vector<double> coo(3);
-    pt->Coordinates(&coo[0]);
+    pt->Coordinates(coo.data());
     vertices[i] = coo;
   }
 

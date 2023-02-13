@@ -136,11 +136,11 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
 
   // gather all gids of nodes redundantly
   std::vector<int> rdata;
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], discretization.Comm());
+  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
 
   // build completely overlapping map of nodes (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, discretization.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.Comm()));
   sdata.clear();
   rdata.clear();
 
@@ -151,11 +151,11 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), &allproc[0], discretization.Comm());
+  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
 
   // build complete overlapping map of elements (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), &rdata[0], 0, discretization.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.Comm()));
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -242,7 +242,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 
   // build overlapping column map of the elements
   Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(
-      -1, (int)element_recvdata.size(), &element_recvdata[0], 0, discretizations[1]->Comm()));
+      -1, (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->Comm()));
 
 
   if (!newelecolmap->SameAs(*elecolmap))
@@ -276,7 +276,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 
     // build complete overlapping map of elements (on ALL processors)
     Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, (int)node_recvdata.size(), &node_recvdata[0], 0, discretizations[1]->Comm()));
+        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->Comm()));
 
     // export nodes and elements
     discretizations[1]->ExportColumnNodes(*newnodecolmap);

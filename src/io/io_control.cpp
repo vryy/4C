@@ -72,7 +72,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
       int err = comm.Broadcast(&length, 1, 0);
       if (err) dserror("communication error");
       name.resize(length);
-      err = comm.Broadcast(&name[0], length, 0);
+      err = comm.Broadcast(name.data(), length, 0);
       if (err) dserror("communication error");
       filename_.assign(name.begin(), name.end());
     }
@@ -151,7 +151,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
       int err = comm.Broadcast(&length, 1, 0);
       if (err) dserror("communication error");
       name.resize(length);
-      err = comm.Broadcast(&name[0], length, 0);
+      err = comm.Broadcast(name.data(), length, 0);
       if (err) dserror("communication error");
       filename_.assign(name.begin(), name.end());
     }

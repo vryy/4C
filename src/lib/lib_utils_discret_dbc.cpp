@@ -69,11 +69,11 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
     dserror("The 'total time' needs to be specified in your parameter list!");
 
   // vector of DOF-IDs which are Dirichlet BCs
-  Teuchos::RCP<std::set<int>> dbcgids[2] = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<std::set<int>>, 2> dbcgids = {Teuchos::null, Teuchos::null};
   if (dbcmapextractor != Teuchos::null)
     dbcgids[set_row] = Teuchos::rcp<std::set<int>>(new std::set<int>());
 
-  const Teuchos::RCP<Epetra_Vector> systemvectors[3] = {
+  const std::array<Teuchos::RCP<Epetra_Vector>, 3> systemvectors = {
       systemvector, systemvectord, systemvectordd};
 
   /* If no toggle vector is provided we have to create a temporary one,
@@ -83,12 +83,12 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
    * a certain dof in the input file overwrites the corresponding entry
    * in the toggle vector. The entity hierarchy is:
    * point>line>surface>volume */
-  Teuchos::RCP<Epetra_Vector> toggleaux = CreateToggleVector(toggle, systemvectors);
+  Teuchos::RCP<Epetra_Vector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
 
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
   // --------------------------------------------------------------------------
-  Evaluate(discret, time, systemvectors, *toggleaux, dbcgids);
+  Evaluate(discret, time, systemvectors.data(), *toggleaux, dbcgids.data());
 
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
@@ -454,7 +454,7 @@ void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::DiscretizationInterface& d
     dbcgidsv.reserve(dbcrowgids->size());
     dbcgidsv.assign(dbcrowgids->begin(), dbcrowgids->end());
     nummyelements = dbcgidsv.size();
-    myglobalelements = &(dbcgidsv[0]);
+    myglobalelements = dbcgidsv.data();
   }
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
       discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));

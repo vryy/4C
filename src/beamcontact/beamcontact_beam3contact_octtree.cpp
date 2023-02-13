@@ -1077,7 +1077,7 @@ bool Beam3ContactOctTree::locateAll()
     for (int i = 0; i < bboxlengthglobal; i++) gids.push_back(i);
     // crosslinker column and row map
     Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
-    Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
+    Epetra_Map octtreemap(-1, (int)gids.size(), gids.data(), 0, discret_.Comm());
 
     // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
     bboxesinoctants_ = Teuchos::rcp(new Epetra_MultiVector(octtreemap, maxdepthglobal), true);

@@ -178,12 +178,12 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       my_n_ghostele[mypid] = discret_->NumMyColElements() - discret_->NumMyRowElements();
       my_n_dof[mypid] = dofrowmap->NumMyElements();
 
-      discret_->Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numprocs);
-      discret_->Comm().SumAll(&my_n_master[0], &n_master[0], numprocs);
-      discret_->Comm().SumAll(&my_n_slave[0], &n_slave[0], numprocs);
-      discret_->Comm().SumAll(&my_n_elements[0], &n_elements[0], numprocs);
-      discret_->Comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numprocs);
-      discret_->Comm().SumAll(&my_n_dof[0], &n_dof[0], numprocs);
+      discret_->Comm().SumAll(my_n_nodes.data(), n_nodes.data(), numprocs);
+      discret_->Comm().SumAll(my_n_master.data(), n_master.data(), numprocs);
+      discret_->Comm().SumAll(my_n_slave.data(), n_slave.data(), numprocs);
+      discret_->Comm().SumAll(my_n_elements.data(), n_elements.data(), numprocs);
+      discret_->Comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numprocs);
+      discret_->Comm().SumAll(my_n_dof.data(), n_dof.data(), numprocs);
 
       if (discret_->Comm().MyPID() == 0 && verbose_)
       {
@@ -841,7 +841,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
 
           // ---- send ----
           MPI_Request request;
-          exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1337, request);
+          exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1337, request);
 
           // ---- receive ----
           int length = rdata.size();
@@ -964,7 +964,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     std::vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
 
     // get all node gids of nodes on this proc
-    discret_->NodeRowMap()->MyGlobalElements(&nodesonthisproc[0]);
+    discret_->NodeRowMap()->MyGlobalElements(nodesonthisproc.data());
 
     std::set<int> nodeset;
 
@@ -1147,7 +1147,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
     newrownodemap = Teuchos::rcp(new Epetra_Map(discret_->NumGlobalNodes(), nodesonthisproc.size(),
-        &nodesonthisproc[0], 0, discret_->Comm()));
+        nodesonthisproc.data(), 0, discret_->Comm()));
 
     // create nodal graph of problem, according to old RowNodeMap
     Teuchos::RCP<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
@@ -1213,7 +1213,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       // mycolnodes contains all nodes which will be stored on this proc
       // according to the colmap constructed
       std::vector<int> mycolnodes(newcolnodemap->NumMyElements());
-      newcolnodemap->MyGlobalElements(&(mycolnodes[0]));
+      newcolnodemap->MyGlobalElements(mycolnodes.data());
 
       // determine all ghosted slave nodes in this vector which do not have
       // a ghosted master on this proc --- we have to fetch it to be able
@@ -1244,7 +1244,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       {
         // now reconstruct the extended colmap
         newcolnodemap = Teuchos::rcp(
-            new Epetra_Map(-1, mycolnodes.size(), &mycolnodes[0], 0, discret_->Comm()));
+            new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->Comm()));
 
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
@@ -1283,8 +1283,8 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       }
 
       // now reconstruct the extended colmap
-      newcolnodemap =
-          Teuchos::rcp(new Epetra_Map(-1, mycolnodes.size(), &mycolnodes[0], 0, discret_->Comm()));
+      newcolnodemap = Teuchos::rcp(
+          new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->Comm()));
 
       *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
@@ -1537,10 +1537,10 @@ void PeriodicBoundaryConditions::BalanceLoad()
         const int glob_length = nodegraph->NumGlobalIndices(grow);
         int numentries = 0;
         std::vector<int> indices(glob_length);
-        nodegraph->ExtractGlobalRowCopy(grow, glob_length, numentries, &indices[0]);
+        nodegraph->ExtractGlobalRowCopy(grow, glob_length, numentries, indices.data());
 
         std::vector<double> values(numentries, 1.0);
-        edge_weights->InsertGlobalValues(grow, numentries, &(values[0]), &(indices[0]));
+        edge_weights->InsertGlobalValues(grow, numentries, values.data(), indices.data());
         if (err < 0) dserror("edge_weights->InsertGlobalValues returned err=%d", err);
       }
 
@@ -1567,9 +1567,9 @@ void PeriodicBoundaryConditions::BalanceLoad()
           // add 99 to the initial value of 1.0 to set costs to 100
           std::vector<double> value(1, 99.0);
 
-          err = edge_weights->InsertGlobalValues(master->Id(), 1, &(value[0]), &(slave_gid[0]));
+          err = edge_weights->InsertGlobalValues(master->Id(), 1, value.data(), slave_gid.data());
           if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
-          err = edge_weights->InsertGlobalValues(slave->Id(), 1, &(value[0]), &(master_gid[0]));
+          err = edge_weights->InsertGlobalValues(slave->Id(), 1, value.data(), master_gid.data());
           if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
         }
       }

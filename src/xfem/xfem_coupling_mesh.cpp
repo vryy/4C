@@ -447,10 +447,10 @@ void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
 
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, cond_dis_->Comm()));
+    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, full_nodes.size(), full_nodes.data(), 0, cond_dis_->Comm()));
     Teuchos::RCP<const Epetra_Map> full_elecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, cond_dis_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), full_eles.data(), 0, cond_dis_->Comm()));
 
     // redistribute nodes and elements to column (ghost) map
     cond_dis_->ExportColumnNodes(*full_nodecolmap);
@@ -606,14 +606,14 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
     // (expected by Epetra_Map ctor)
     std::vector<int> rownodes(adjacent_row.begin(), adjacent_row.end());
     // build noderowmap for new distribution of nodes
-    newnoderowmap =
-        Teuchos::rcp(new Epetra_Map(-1, rownodes.size(), &rownodes[0], 0, aux_coup_dis_->Comm()));
+    newnoderowmap = Teuchos::rcp(
+        new Epetra_Map(-1, rownodes.size(), rownodes.data(), 0, aux_coup_dis_->Comm()));
 
     std::vector<int> colnodes(adjacent_col.begin(), adjacent_col.end());
 
     // build nodecolmap for new distribution of nodes
-    newnodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, aux_coup_dis_->Comm()));
+    newnodecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->Comm()));
 
     aux_coup_dis_->Redistribute(*newnoderowmap, *newnodecolmap, false, false, false);
 

@@ -492,7 +492,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(
   }
 
   int nummydirichvals = mydirichdofs.size();
-  dirichmap = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, dis->Comm()));
+  dirichmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, dis->Comm()));
 
   return;
 }
@@ -550,10 +551,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretiza
   // map with current structural positions should be same on all procs
   // to make use of the advantages of ghosting the structure redundantly
   // on all procs.
-  int procs[numproc_];
+  std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
   LINALG::Gather<int, LINALG::Matrix<3, 1>>(
-      my_currpositions_struct, currpositions_struct_, numproc_, &procs[0], Comm());
+      my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), Comm());
 
   // find the bounding box of the elements and initialize the search tree
   const LINALG::Matrix<3, 2> rootBox2 = GEO::getXAABBofDis(*structdis_, currpositions_struct_);
@@ -654,10 +655,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   // map with current structural positions should be same on all procs
   // to make use of the advantages of ghosting the structure redundantly
   // on all procs.
-  int procs[numproc_];
+  std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
   LINALG::Gather<int, LINALG::Matrix<3, 1>>(
-      my_currpositions_struct, currpositions_struct_, numproc_, &procs[0], Comm());
+      my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), Comm());
 
   // take special care in case of multibody simulations
   if (multibodysimulation_ == false)

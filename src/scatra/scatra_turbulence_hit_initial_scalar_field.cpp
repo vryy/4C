@@ -133,7 +133,7 @@ namespace SCATRA
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -385,7 +385,7 @@ namespace SCATRA
 #ifdef HAVE_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(&((*phi_hat_fftw)[0]))), &((*phi)[0]), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(phi_hat_fftw->data())), phi->data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory

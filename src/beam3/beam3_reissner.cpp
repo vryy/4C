@@ -1390,13 +1390,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     {
       if (this->HermiteCenterlineInterpolation())
       {
-        LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
+        LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 2, double>(disp_totlag_centerline_fixedsize);
         pos = this->GetPosAtXi<2, 2>(xi, disp_totlag_centerline_fixedsize);
       }
       else
       {
-        LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
+        LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 1, double>(disp_totlag_centerline_fixedsize);
         pos = this->GetPosAtXi<2, 1>(xi, disp_totlag_centerline_fixedsize);
       }
@@ -1404,21 +1404,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     }
     case 3:
     {
-      LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
+      LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<3, 1, double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<3, 1>(xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
-      LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
+      LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<4, 1, double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<4, 1>(xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
-      LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(&disp_centerline[0]);
+      LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<5, 1, double>(disp_totlag_centerline_fixedsize);
       pos = this->GetPosAtXi<5, 1>(xi, disp_totlag_centerline_fixedsize);
       break;
@@ -1929,13 +1929,13 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
       if (vpernode == 2)
       {
         // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
-        LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+        LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
         this->ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
             dofvec, dofvec_centerline_fixedsize, add_reference_values);
       }
       else
       {
-        LINALG::Matrix<6, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+        LINALG::Matrix<6, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
         this->ExtractCenterlineDofValuesFromElementStateVector<2, 1, double>(
             dofvec, dofvec_centerline_fixedsize, add_reference_values);
       }
@@ -1943,21 +1943,21 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
     }
     case 3:
     {
-      LINALG::Matrix<9, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+      LINALG::Matrix<9, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->ExtractCenterlineDofValuesFromElementStateVector<3, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;
     }
     case 4:
     {
-      LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+      LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->ExtractCenterlineDofValuesFromElementStateVector<4, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;
     }
     case 5:
     {
-      LINALG::Matrix<15, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+      LINALG::Matrix<15, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->ExtractCenterlineDofValuesFromElementStateVector<5, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;

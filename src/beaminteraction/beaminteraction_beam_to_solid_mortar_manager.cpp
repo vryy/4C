@@ -136,7 +136,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   // to construct the lambda_dof_rowmap_.
   std::vector<int> lambda_dof_per_rank(discret_->Comm().NumProc(), 0);
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
-  discret_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
+  discret_->Comm().GatherAll(&temp_my_n_lambda_dof, lambda_dof_per_rank.data(), 1);
 
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
@@ -183,9 +183,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
   // global node / element ids and the global Lagrange multiplier DOF ids.
   Teuchos::RCP<Epetra_Map> node_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, n_nodes, my_nodes_gid.data(), 0, discret_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, n_element, my_elements_gid.data(), 0, discret_->Comm()));
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -269,9 +269,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetGlobalMaps()
 
   // Create the beam and solid maps.
   beam_dof_rowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, beam_dofs.size(), &beam_dofs[0], 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, beam_dofs.size(), beam_dofs.data(), 0, discret_->Comm()));
   solid_dof_rowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, solid_dofs.size(), &solid_dofs[0], 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, solid_dofs.size(), solid_dofs.data(), 0, discret_->Comm()));
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -334,9 +334,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
 
   // Create the maps for the extraction of the values.
   Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->Comm()));
-  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, element_gid_needed.size(), &element_gid_needed[0], 0, discret_->Comm()));
+      new Epetra_Map(-1, node_gid_needed.size(), node_gid_needed.data(), 0, discret_->Comm()));
+  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
+      -1, element_gid_needed.size(), element_gid_needed.data(), 0, discret_->Comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
@@ -386,7 +386,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
 
   // Create the global lambda col map.
   lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, lambda_gid_for_col_map.size(), &lambda_gid_for_col_map[0], 0, discret_->Comm()));
+      -1, lambda_gid_for_col_map.size(), lambda_gid_for_col_map.data(), 0, discret_->Comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;

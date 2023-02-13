@@ -366,7 +366,7 @@ namespace DRT
               }
               // All other processors get this info broadcasted
               comm_->Broadcast(
-                  &box_specifications[0], static_cast<int>(box_specifications.size()), 0);
+                  box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
               cached_box_specifications_[disname] = box_specifications;
             }
 
@@ -1072,7 +1072,7 @@ namespace DRT
         // another EVIL HACK. Don't tell anybody.
         lines_.reserve(numrows_ + 1);
 
-        lines_.push_back(&(inputfile_[0]));
+        lines_.push_back(inputfile_.data());
         for (std::list<std::string>::const_iterator i = content.begin(); i != content.end(); ++i)
         {
           inputfile_.insert(inputfile_.end(), i->begin(), i->end());
@@ -1109,16 +1109,16 @@ namespace DRT
         }
 
         // There are no char based functions available! Do it by hand!
-        // comm->Broadcast(&inputfile_[0],arraysize,0);
+        // comm->Broadcast(inputfile_.data(),arraysize,0);
 
         const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm);
 
-        MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
+        MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
         /* We have not yet set the row pointers on procs > 0. So do it now. */
         if (comm->MyPID() > 0)
         {
-          lines_.push_back(&inputfile_[0]);
+          lines_.push_back(inputfile_.data());
           for (int i = 0; i < arraysize; ++i)
           {
             if (inputfile_[i] == '\0')

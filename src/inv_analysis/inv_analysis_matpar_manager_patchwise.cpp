@@ -174,7 +174,7 @@ void INVANA::MatParManagerPerPatch::Finalize(
 {
   // sum across processor
   std::vector<double> val(source->MyLength(), 0.0);
-  Discret()->Comm().SumAll((*source)(0)->Values(), &val[0], source->MyLength());
+  Discret()->Comm().SumAll((*source)(0)->Values(), val.data(), source->MyLength());
 
   for (int i = 0; i < target->MyLength(); i++) target->SumIntoGlobalValue(i, 0, val[i]);
 
@@ -427,7 +427,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
     int numentries = patches[i].size();
     std::vector<double> values(numentries, 1.0 / sqrt(numentries));
 
-    int err = projector_->InsertGlobalValues(i, numentries, &values[0], patches[i].data());
+    int err = projector_->InsertGlobalValues(i, numentries, values.data(), patches[i].data());
     if (err < 0) dserror("Restrictor/Prolongator insertion failed.");
   }
   int err = projector_->FillComplete(*patchmap_->FullMap(), *paramlayoutmapunique_, true);

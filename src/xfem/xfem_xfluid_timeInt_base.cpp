@@ -797,7 +797,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
   // send length of the data to be received ...
   MPI_Request req_length_data;
   int length_tag = 0;
-  exporter.ISend(myrank_, dest, &(lengthSend[0]), size_one, length_tag, req_length_data);
+  exporter.ISend(myrank_, dest, lengthSend.data(), size_one, length_tag, req_length_data);
   // ... and receive length
   std::vector<int> lengthRecv(1, 0);
   exporter.Receive(source, length_tag, lengthRecv, size_one);
@@ -806,7 +806,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
   // send actual data ...
   int data_tag = 4;
   MPI_Request req_data;
-  exporter.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
+  exporter.ISend(myrank_, dest, dataSend().data(), lengthSend[0], data_tag, req_data);
 
   // ... and receive data
   dataRecv.clear();
@@ -3257,8 +3257,8 @@ void XFEM::XFLUID_STD::exportStartData()
   // unpack received data
   while (posinData < dataRecv.size())
   {
-    double coords[nsd] = {0.0};
-    DRT::Node node(0, (double*)coords, 0);  // initialize node
+    std::array<double, nsd> coords = {0.0};
+    DRT::Node node(0, coords.data(), 0);  // initialize node
     int nds_np = -1;
     LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
     std::vector<LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x

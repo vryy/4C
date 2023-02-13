@@ -48,7 +48,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
         MortarNode(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), 3, empty_dofs, isslave));
   for (int i = 0; i < numnode; ++i) nodes_ptr_.push_back(&(nodes_[i]));
 
-  if (numnode > 0) BuildNodalPointers(&nodes[0]);
+  if (numnode > 0) BuildNodalPointers(nodes.data());
 
   // as discretization is already evaluated, compute area
   // (data container has to be initialized first)
@@ -581,15 +581,15 @@ MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, do
   if (shape == DRT::Element::tri3)
   {
     // compute area of IntCell
-    double t1[3] = {0.0, 0.0, 0.0};
-    double t2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> t2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       t1[k] = Coords()(k, 1) - Coords()(k, 0);
       t2[k] = Coords()(k, 2) - Coords()(k, 0);
     }
 
-    double t1xt2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1xt2 = {0.0, 0.0, 0.0};
     t1xt2[0] = t1[1] * t2[2] - t1[2] * t2[1];
     t1xt2[1] = t1[2] * t2[0] - t1[0] * t2[2];
     t1xt2[2] = t1[0] * t2[1] - t1[1] * t2[0];
@@ -598,7 +598,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, do
   else if (shape == DRT::Element::line2)
   {
     // compute length of IntLine
-    double v[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> v = {0.0, 0.0, 0.0};
     v[0] = Coords()(0, 0) - Coords()(0, 1);
     v[1] = Coords()(1, 0) - Coords()(1, 1);
     v[2] = Coords()(2, 0) - Coords()(2, 1);
@@ -764,7 +764,7 @@ void MORTAR::IntCell::DerivJacobian(GEN::pairedvector<int, double>& derivjac)
   if (Shape() == DRT::Element::line2)
   {
     // compute length of IntLine
-    double v[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> v = {0.0, 0.0, 0.0};
     v[0] = Coords()(0, 0) - Coords()(0, 1);
     v[1] = Coords()(1, 0) - Coords()(1, 1);
     v[2] = Coords()(2, 0) - Coords()(2, 1);
@@ -824,7 +824,7 @@ void MORTAR::IntCell::DerivJacobian(GEN::pairedvector<int, double>& derivjac)
     }
 
     // cross product of gxi and geta
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = gxi[1] * geta[2] - gxi[2] * geta[1];
     cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
     cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];

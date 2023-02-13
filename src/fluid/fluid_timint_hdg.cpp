@@ -75,14 +75,14 @@ void FLD::TimIntHDG::Init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, hdgdis->Comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->Comm()));
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, hdgdis->Comm()));
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
   velpressplitter_->Setup(*hdgdis->DofRowMap(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
@@ -390,9 +390,9 @@ void FLD::TimIntHDG::SetInitialFlowField(
         dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
           localDofs[i] = intdofrowmap->LID(localDofs[i]);
-        intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-        intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-        intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+        intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+        intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
       }
     }
     double globerror = 0;

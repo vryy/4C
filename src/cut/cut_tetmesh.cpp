@@ -419,7 +419,7 @@ void GEO::CUT::TetMesh::Init()
   for (unsigned i = 0; i < numtets; ++i)
   {
     const std::vector<int>& t = tets_[i];
-    tet_entities_.push_back(Entity<4>(i, Handle<4>(&t[0])));
+    tet_entities_.push_back(Entity<4>(i, Handle<4>(t.data())));
   }
 
   for (std::vector<Entity<4>>::iterator i = tet_entities_.begin(); i != tet_entities_.end(); ++i)
@@ -560,8 +560,8 @@ void GEO::CUT::TetMesh::CallQHull(
     std::cout << "counter_qhull: " << counter_qhull << std::endl;
 #endif
     std::string& ostr = *i;
-    if (not qh_new_qhull(
-            dim, n, &coordinates[0], ismalloc, const_cast<char*>(ostr.c_str()), outfile, errfile))
+    if (not qh_new_qhull(dim, n, coordinates.data(), ismalloc, const_cast<char*>(ostr.c_str()),
+            outfile, errfile))
     {
       // triangulate non-simplicial facets
       qh_triangulate();

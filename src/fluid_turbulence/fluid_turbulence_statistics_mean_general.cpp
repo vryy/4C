@@ -715,7 +715,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       frompid = myrank;
       topid = (myrank + 1) % numprocs;
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
 
@@ -1011,7 +1011,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       frompid = myrank;
       topid = (myrank + 1) % numprocs;
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
 

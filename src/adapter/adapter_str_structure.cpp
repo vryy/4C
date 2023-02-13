@@ -182,17 +182,17 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     // Note: We assume 3d here!
 
     Teuchos::RCP<Epetra_Vector> nsv1 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[0])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), ns->data()));
     Teuchos::RCP<Epetra_Vector> nsv2 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[size])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(size)));
     Teuchos::RCP<Epetra_Vector> nsv3 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[2 * size])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(2 * size)));
     Teuchos::RCP<Epetra_Vector> nsv4 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[3 * size])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(3 * size)));
     Teuchos::RCP<Epetra_Vector> nsv5 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[4 * size])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(4 * size)));
     Teuchos::RCP<Epetra_Vector> nsv6 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &((*ns)[5 * size])));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(5 * size)));
 
 
     // prepare matrix for scaled thickness business of thin shell structures

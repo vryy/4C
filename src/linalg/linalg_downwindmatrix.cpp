@@ -55,7 +55,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       i += (bsize - 1);
     }
     if (count != numnoderows) dserror("# nodes wrong: %d != %d", count, numnoderows);
-    onoderowmap = Teuchos::rcp(new Epetra_Map(-1, numnoderows, &gnodeids[0], 0, A.Comm()));
+    onoderowmap = Teuchos::rcp(new Epetra_Map(-1, numnoderows, gnodeids.data(), 0, A.Comm()));
   }
 
 
@@ -77,10 +77,10 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       {
         int iii = i + ii;
         int numentries;
-        int err = A.ExtractMyRowCopy(iii, maxnumentries, numentries, &values[0], &indices[0]);
+        int err = A.ExtractMyRowCopy(iii, maxnumentries, numentries, values.data(), indices.data());
         if (err) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", err);
         for (int j = 0; j < numentries; ++j) indices[j] = A.ColMap().GID(indices[j]);
-        ML_az_sort(&indices[0], numentries, NULL, &values[0]);
+        ML_az_sort(indices.data(), numentries, NULL, values.data());
         for (int j = 0; j < numentries; ++j)
         {
           const int gdofcol = indices[j];
@@ -241,9 +241,11 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     std::vector<int> gindices(mynodelength * bs_);
     for (int i = 0; i < mynodelength; ++i)
       for (int j = 0; j < bs_; ++j) gindices[i * bs_ + j] = nnoderowmap->GID(i) * bs_ + j;
-    ndofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, &gindices[0], 0, A.Comm()));
-    ML_az_sort(&gindices[0], mynodelength * bs_, NULL, NULL);
-    sndofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, &gindices[0], 0, A.Comm()));
+    ndofrowmap_ =
+        Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, gindices.data(), 0, A.Comm()));
+    ML_az_sort(gindices.data(), mynodelength * bs_, NULL, NULL);
+    sndofrowmap_ =
+        Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, gindices.data(), 0, A.Comm()));
   }
 
 

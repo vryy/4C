@@ -160,7 +160,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -413,7 +413,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcing::CalculateForcing(const int step)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     // check if forcing is selected
     if (flow_type_ == forced_homogeneous_isotropic_turbulence or
         (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
@@ -514,11 +514,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -529,20 +529,20 @@ namespace FLD
 
 #ifdef HAVE_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+          (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
       fftw_destroy_plan(fft);
       // analogously for remaining directions
-      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+          (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_2);
       // free memory
       fftw_destroy_plan(fft_2);
-      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+          (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_3);
       // free memory
       fftw_destroy_plan(fft_3);
@@ -847,7 +847,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcing::UpdateForcing(const int step)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     // check if forcing is selected
     if (activate_ and
         (flow_type_ == forced_homogeneous_isotropic_turbulence or
@@ -948,11 +948,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -963,20 +963,20 @@ namespace FLD
 
 #ifdef HAVE_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+          (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
       fftw_destroy_plan(fft);
       // analogously for remaining directions
-      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+          (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_2);
       // free memory
       fftw_destroy_plan(fft_2);
-      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+          (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_3);
       // free memory
       fftw_destroy_plan(fft_3);
@@ -1030,7 +1030,7 @@ namespace FLD
 #ifdef HAVE_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f1_hat)[0]))), &((*f1)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f1_hat->data())), f1->data(), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft_back);
       // free memory
@@ -1038,12 +1038,12 @@ namespace FLD
 
       // similar for the remaining two directions
       fftw_plan fft_back_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f2_hat)[0]))), &((*f2)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f2_hat->data())), f2->data(), FFTW_ESTIMATE);
       fftw_execute(fft_back_2);
       // free memory
       fftw_destroy_plan(fft_back_2);
       fftw_plan fft_back_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f3_hat)[0]))), &((*f3)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f3_hat->data())), f3->data(), FFTW_ESTIMATE);
       fftw_execute(fft_back_3);
       // free memory
       fftw_destroy_plan(fft_back_3);
@@ -1185,7 +1185,7 @@ namespace FLD
 
       double elesize = abs(copycoordinates->at(1) - copycoordinates->at(0));
       // use 5 sampling locations in each element in each direction
-      const double localcoords[5] = {0.9, 0.7, 0.5, 0.3, 0.1};
+      const std::array<double, 5> localcoords = {0.9, 0.7, 0.5, 0.3, 0.1};
       for (std::vector<double>::iterator coord1 = copycoordinates->begin();
            coord1 != copycoordinates->end(); ++coord1)
       {
@@ -1242,7 +1242,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcingHDG::CalculateForcing(const int step)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     // check if forcing is selected
     if (flow_type_ == forced_homogeneous_isotropic_turbulence or
         (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
@@ -1355,11 +1355,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1370,21 +1370,21 @@ namespace FLD
 
 #ifdef HAVE_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+          (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
       fftw_destroy_plan(fft);
 
       // analogously for remaining directions
-      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+          (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_2);
       // free memory
       fftw_destroy_plan(fft_2);
-      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+          (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_3);
       // free memory
       fftw_destroy_plan(fft_3);
@@ -1689,7 +1689,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcingHDG::UpdateForcing(const int step)
   {
-#if HAVE_FFTW
+#ifdef HAVE_FFTW
     // check if forcing is selected
     if (activate_ and
         (flow_type_ == forced_homogeneous_isotropic_turbulence or
@@ -1798,11 +1798,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(&((*local_u1)[0]), &((*global_u1)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u2)[0]), &((*global_u2)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(&((*local_u3)[0]), &((*global_u3)[0]), countallnodes);
+      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1813,21 +1813,21 @@ namespace FLD
 
 #ifdef HAVE_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u1)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
+          (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
       fftw_destroy_plan(fft);
 
       // analogously for remaining directions
-      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u2)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
+          (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_2);
       // free memory
       fftw_destroy_plan(fft_2);
-      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, &((*global_u3)[0]),
-          (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))), FFTW_ESTIMATE);
+      fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
+          (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
       fftw_execute(fft_3);
       // free memory
       fftw_destroy_plan(fft_3);
@@ -1881,7 +1881,7 @@ namespace FLD
 #ifdef HAVE_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f1_hat)[0]))), &((*f1)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f1_hat->data())), f1->data(), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft_back);
       // free memory
@@ -1889,12 +1889,12 @@ namespace FLD
 
       // similar for the remaining two directions
       fftw_plan fft_back_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f2_hat)[0]))), &((*f2)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f2_hat->data())), f2->data(), FFTW_ESTIMATE);
       fftw_execute(fft_back_2);
       // free memory
       fftw_destroy_plan(fft_back_2);
       fftw_plan fft_back_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(&((*f3_hat)[0]))), &((*f3)[0]), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(f3_hat->data())), f3->data(), FFTW_ESTIMATE);
       fftw_execute(fft_back_3);
       // free memory
       fftw_destroy_plan(fft_back_3);
@@ -1991,7 +1991,7 @@ namespace FLD
           dsassert(localDofs.size() == static_cast<std::size_t>(elevec1.M()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          forcing_->ReplaceMyValues(localDofs.size(), elevec1.A(), &localDofs[0]);
+          forcing_->ReplaceMyValues(localDofs.size(), elevec1.A(), localDofs.data());
         }
       }
     }

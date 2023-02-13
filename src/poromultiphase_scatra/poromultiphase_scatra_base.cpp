@@ -162,7 +162,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   std::vector<int> mydirichdofs(0);
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(
-      -1, 0, &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      -1, 0, mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // done.
 }
@@ -408,7 +408,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
   // build map
   int nummydirichvals = mydirichdofs.size();
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals,
-      &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // add the condition
   ScatraAlgo()->ScaTraField()->AddDirichCond(add_dirichmaps_volfrac_spec_);

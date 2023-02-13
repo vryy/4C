@@ -21,8 +21,8 @@ DRT::NodeType DRT::NodeType::instance_;
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::NodeType::Create(const std::vector<char>& data)
 {
-  double dummycoord[6] = {999., 999., 999., 999., 999., 999.};
-  DRT::Node* object = new DRT::Node(-1, dummycoord, -1);
+  std::array<double, 6> dummycoord = {999., 999., 999., 999., 999., 999.};
+  DRT::Node* object = new DRT::Node(-1, dummycoord.data(), -1);
   object->Unpack(data);
   return object;
 }

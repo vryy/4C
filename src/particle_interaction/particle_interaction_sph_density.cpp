@@ -630,7 +630,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    std::array<double, 3> vel_j = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -646,7 +646,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     // get pointer to virtual particle states
     const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
-    const double* vel_k = &vel_j[0];
+    const double* vel_k = vel_j.data();
 
     // (current) volume of virtual particle k
     const double V_k = mass_k[0] / dens_k[0];

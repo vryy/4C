@@ -2152,7 +2152,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vect
   Epetra_SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
   Epetra_SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
   Epetra_SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
-  std::vector<double> fluidphi(&phiAtGP[0], &phiAtGP[numfluidphases]);
+  std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
   fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
@@ -2199,13 +2199,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfSolPressWrtDisp(
     const LINALG::Matrix<1, numdof_>& dphi_dus, LINALG::Matrix<1, numdof_>& dps_dus)
 {
   // get volume fraction primary variables
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases], &phiAtGP[numfluidphases + numvolfrac]);
+  std::vector<double> volfracphi(
+      phiAtGP.data() + numfluidphases, phiAtGP.data() + numfluidphases + numvolfrac);
   double sumaddvolfrac = 0.0;
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
   // get volume fraction pressure at [numfluidphases+numvolfrac...totalnumdofpernode-1]
   std::vector<double> volfracpressure(
-      &phiAtGP[numfluidphases + numvolfrac], &phiAtGP[totalnumdofpernode]);
+      phiAtGP.data() + numfluidphases + numvolfrac, phiAtGP.data() + totalnumdofpernode);
 
   // p_s = (porosity - sumaddvolfrac)/porosity * fluidpress
   //       + 1.0 / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
@@ -2230,7 +2231,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureDeriv(
     std::vector<double>& solidpressderiv)
 {
   // get volume fraction primary variables
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases], &phiAtGP[numfluidphases + numvolfrac]);
+  std::vector<double> volfracphi(
+      phiAtGP.data() + numfluidphases, phiAtGP.data() + numfluidphases + numvolfrac);
   double sumaddvolfrac = 0.0;
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
@@ -2243,7 +2245,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureDeriv(
 
   // get volfrac pressures at [numfluidphases+numvolfrac...totalnumdofpernode-1]
   std::vector<double> volfracpressure(
-      &phiAtGP[numfluidphases + numvolfrac], &phiAtGP[totalnumdofpernode]);
+      phiAtGP.data() + numfluidphases + numvolfrac, phiAtGP.data() + totalnumdofpernode);
 
 
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
@@ -2264,7 +2266,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureAtGP(
   std::vector<double> genpress(numfluidphases, 0.0);
   std::vector<double> sat(numfluidphases, 0.0);
   std::vector<double> press(numfluidphases, 0.0);
-  std::vector<double> fluidphi(&phiAtGP[0], &phiAtGP[numfluidphases]);
+  std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
   fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
@@ -2287,7 +2289,8 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureAtGP(double pre
     const int numvolfrac, const std::vector<double>& phiAtGP)
 {
   // get volume fraction primary variables at [numfluidphases-1...numfluidphase-1+numvolfrac]
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases], &phiAtGP[numfluidphases + numvolfrac]);
+  std::vector<double> volfracphi(
+      phiAtGP.data() + numfluidphases, phiAtGP.data() + numfluidphases + numvolfrac);
   double sumaddvolfrac = 0.0;
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
@@ -2298,7 +2301,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureAtGP(double pre
 
   // get volfrac pressures at [numfluidphases+numvolfrac...totalnumdofpernode-1]
   std::vector<double> volfracpressure(
-      &phiAtGP[numfluidphases + numvolfrac], &phiAtGP[totalnumdofpernode]);
+      phiAtGP.data() + numfluidphases + numvolfrac, phiAtGP.data() + totalnumdofpernode);
 
   // second part
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)

@@ -700,7 +700,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, &nodepos[0], myrank_)));
+      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, nodepos.data(), myrank_)));
 
       // add node id
       nodeids.push_back(nodeid++);
@@ -735,7 +735,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
             DRT::UTILS::Factory("BELE3_3", "Polynomial", eleid, myrank_);
 
         // set node ids to element
-        wallele->SetNodeIds(4, &(nodeidsofelements[dim * 2 + sign])[0]);
+        wallele->SetNodeIds(4, nodeidsofelements[dim * 2 + sign].data());
 
         // create material for current wall element
         if (not(mat < 0)) wallele->SetMaterial(mat);
@@ -753,15 +753,15 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
   }
 
   // node row map of wall elements
-  std::shared_ptr<Epetra_Map> noderowmap =
-      std::make_shared<Epetra_Map>(-1, nodeids.size(), &nodeids[0], 0, walldiscretization_->Comm());
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(
+      -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping node column map
   Teuchos::RCP<Epetra_Map> nodecolmap = LINALG::AllreduceEMap(*noderowmap);
 
   // element row map of wall elements
-  std::shared_ptr<Epetra_Map> elerowmap =
-      std::make_shared<Epetra_Map>(-1, eleids.size(), &eleids[0], 0, walldiscretization_->Comm());
+  std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
+      -1, eleids.size(), eleids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping element column map
   Teuchos::RCP<Epetra_Map> elecolmap = LINALG::AllreduceEMap(*elerowmap);

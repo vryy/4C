@@ -150,7 +150,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
+    const double* coordgpref = coordgp;  // needed for function evaluation
 
     for (size_t node = 0; node < iel; ++node)
     {

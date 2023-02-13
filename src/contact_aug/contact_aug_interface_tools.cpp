@@ -55,7 +55,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck1stOrder(
 
   const unsigned dim = inter_.Dim();
 
-  Teuchos::RCP<Epetra_Map> fullmaps[2] = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<Epetra_Map>, 2> fullmaps = {Teuchos::null, Teuchos::null};
 
   fullmaps[0] = GetFullMap(snode_row_map);
   fullmaps[1] = GetFullMap(mnode_row_map);

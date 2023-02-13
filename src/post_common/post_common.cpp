@@ -207,7 +207,7 @@ PostField* PostProblem::get_discretization(const int num)
               << " discretization(s)!";
     dserror("This is a bug!");
   }
-  return &fields_[num];
+  return fields_.data() + num;
 }
 
 
@@ -219,7 +219,7 @@ int PostProblem::field_pos(const PostField* field) const
   {
     if (&*i == field)
     {
-      return field - &fields_[0];
+      return field - fields_.data();
     }
   }
   dserror("field not in list");
@@ -535,7 +535,7 @@ void PostProblem::read_meshes()
                 topid = np;
 
                 exporter.ISend(
-                    frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
+                    frompid, topid, cond_pbcsline->data(), cond_pbcsline->size(), tag, request);
               }
             }
           }
@@ -579,7 +579,7 @@ void PostProblem::read_meshes()
                 topid = np;
 
                 exporter.ISend(
-                    frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
+                    frompid, topid, cond_pbcssurf->data(), cond_pbcssurf->size(), tag, request);
               }
             }
           }
@@ -642,7 +642,7 @@ void PostProblem::read_meshes()
                 topid = np;
 
                 exporter.ISend(
-                    frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
+                    frompid, topid, packed_knots->data(), packed_knots->size(), tag, request);
               }
             }
             else
@@ -829,7 +829,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
               topid = np;
 
               exporter.ISend(
-                  frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
+                  frompid, topid, cond_pbcsline->data(), cond_pbcsline->size(), tag, request);
             }
           }
         }
@@ -873,7 +873,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
               topid = np;
 
               exporter.ISend(
-                  frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
+                  frompid, topid, cond_pbcssurf->data(), cond_pbcssurf->size(), tag, request);
             }
           }
         }
@@ -936,7 +936,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
               topid = np;
 
               exporter.ISend(
-                  frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
+                  frompid, topid, packed_knots->data(), packed_knots->size(), tag, request);
             }
           }
           else

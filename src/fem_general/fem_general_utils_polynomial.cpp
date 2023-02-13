@@ -599,7 +599,7 @@ namespace DRT
       }
       else if (degree == 1)
       {
-        double list[] = {0, 0, 1, 0, 0, 1};
+        std::array<double, 6> list = {0, 0, 1, 0, 0, 1};
         for (unsigned int i = 0; i < 3; ++i)
           for (unsigned int d = 0; d < 2; ++d) feketePoints_(d, i) = list[i * 2 + d];
       }

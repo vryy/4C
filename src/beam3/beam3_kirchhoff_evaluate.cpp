@@ -2578,7 +2578,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
         functionfac =
             DRT::Problem::Instance()
                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
-                .Evaluate(&X_ref[0], time, idof);
+                .Evaluate(X_ref.data(), time, idof);
       }
       else
         functionfac = 1.0;
@@ -2633,7 +2633,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
   // export current velocity state of element to fixed size matrix
   LINALG::Matrix<nnode * vpernode * ndim + BEAM3K_COLLOCATION_POINTS, 1> vel_fixedsize(
-      &vel[0], true);
+      vel.data(), true);
   LINALG::Matrix<nnode * vpernode * ndim, 1> vel_centerline(true);
 
   // update current values of centerline (i.e. translational) velocity

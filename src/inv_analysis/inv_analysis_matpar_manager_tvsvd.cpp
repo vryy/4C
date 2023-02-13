@@ -212,7 +212,7 @@ void INVANA::MatParManagerTVSVD::Finalize(
 {
   // sum across processor
   std::vector<double> val(source->MyLength(), 0.0);
-  Discret()->Comm().SumAll((*source)(0)->Values(), &val[0], source->MyLength());
+  Discret()->Comm().SumAll((*source)(0)->Values(), val.data(), source->MyLength());
 
   for (int i = 0; i < target->MyLength(); i++) target->SumIntoGlobalValue(i, 0, val[i]);
 
@@ -369,7 +369,7 @@ void INVANA::MatParManagerTVSVD::SetupTVOperator()
     int numindex;
     std::vector<int> indices(lenindices, 0);
     std::vector<double> weights(lenindices, 0);
-    graph_->ExtractMyRowCopy(i, lenindices, numindex, &weights[0], &indices[0]);
+    graph_->ExtractMyRowCopy(i, lenindices, numindex, weights.data(), indices.data());
 
     // row in local index space of the collayout
     int rowi = thetacol.Map().LID(optparams_elewise_->Map().GID(i));
@@ -632,7 +632,7 @@ void INVANA::MatParManagerTVSVD::BroadcastEigenvectors(Epetra_MultiVector& evecs
     targetgids.resize(numtargetgids);
     for (int i = 0; i < numtargetgids; i++) targetgids[i] = i;
   }
-  Epetra_Map targetmap(-1, numtargetgids, &targetgids[0], 0, *gcomm);
+  Epetra_Map targetmap(-1, numtargetgids, targetgids.data(), 0, *gcomm);
 
   // create exporter for the data and export
   DRT::Exporter ex(sourcemap, targetmap, *gcomm);

@@ -308,8 +308,8 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(std::map<int, DRT::ELEMENTS::
     }
   }  // i
 
-  elecmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)ctmp.size(), &ctmp[0], 0, dis.Comm()));
-  elermap_ = Teuchos::rcp(new Epetra_Map(-1, (int)rtmp.size(), &rtmp[0], 0, dis.Comm()));
+  elecmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)ctmp.size(), ctmp.data(), 0, dis.Comm()));
+  elermap_ = Teuchos::rcp(new Epetra_Map(-1, (int)rtmp.size(), rtmp.data(), 0, dis.Comm()));
 
   return;
 }
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::NStetType::InitMISnode(std::map<int, int>& misnodesmap,
     auto size = (int)deletednodes.size();
     dis.Comm().Broadcast(&size, 1, proc);
     if (proc != myrank) deletednodes.resize(size);
-    dis.Comm().Broadcast(&deletednodes[0], size, proc);
+    dis.Comm().Broadcast(deletednodes.data(), size, proc);
 
     // all other procs have to remove nodes adjacent to mis nodes from
     // their potential list
@@ -523,9 +523,9 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyI(std::map<int, int>& misnode
       sendelemis.resize(size);
       sendelemisweight.resize(size);
     }
-    dis.Comm().Broadcast(&sendeles[0], size, proc);
-    dis.Comm().Broadcast(&sendelemis[0], size, proc);
-    dis.Comm().Broadcast(&sendelemisweight[0], size, proc);
+    dis.Comm().Broadcast(sendeles.data(), size, proc);
+    dis.Comm().Broadcast(sendelemis.data(), size, proc);
+    dis.Comm().Broadcast(sendelemisweight.data(), size, proc);
 
     // all other procs remove the already taken elements from their list
     if (myrank != proc)
@@ -638,9 +638,9 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyII(std::map<int, int>& misnod
       sendelemis.resize(size);
       sendelemisweight.resize(size);
     }
-    dis.Comm().Broadcast(&sendeles[0], size, proc);
-    dis.Comm().Broadcast(&sendelemis[0], size, proc);
-    dis.Comm().Broadcast(&sendelemisweight[0], size, proc);
+    dis.Comm().Broadcast(sendeles.data(), size, proc);
+    dis.Comm().Broadcast(sendelemis.data(), size, proc);
+    dis.Comm().Broadcast(sendelemisweight.data(), size, proc);
 
     // all other procs remove the already taken elements from their list
     // of not-yet taken elements
@@ -789,16 +789,16 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(std::map<int, int>& misno
     int sizenum = sendnums.size();
     dis.Comm().Broadcast(&sizenum, 1, proc);
     if (proc != myrank) sendnums.resize(sizenum);
-    dis.Comm().Broadcast(&sendnums[0], sizenum, proc);
+    dis.Comm().Broadcast(sendnums.data(), sizenum, proc);
 
     int sizeele = sendeles.size();
     dis.Comm().Broadcast(&sizeele, 1, proc);
     if (proc != myrank) sendeles.resize(sizeele);
-    dis.Comm().Broadcast(&sendeles[0], sizeele, proc);
+    dis.Comm().Broadcast(sendeles.data(), sizeele, proc);
 
     if (proc != myrank)
     {
-      int* i = &sendeles[0];
+      int* i = sendeles.data();
       while (i < &sendeles[sizeele - 1] + 1)
       {
         const int eleid = *i;
@@ -960,7 +960,7 @@ Teuchos::RCP<Epetra_Map> DRT::ELEMENTS::NStetType::InitMISStressMap(
   std::map<int, int>::iterator fool2;
   for (fool2 = ngidmap.begin(); fool2 != ngidmap.end(); ++fool2) ngid.push_back(fool2->first);
 
-  return (Teuchos::rcp(new Epetra_Map(-1, (int)ngid.size(), &ngid[0], 0, dis.Comm())));
+  return (Teuchos::rcp(new Epetra_Map(-1, (int)ngid.size(), ngid.data(), 0, dis.Comm())));
 }
 
 

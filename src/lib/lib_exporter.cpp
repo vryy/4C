@@ -76,7 +76,7 @@ void DRT::Exporter::ReceiveAny(
   MPI_Get_count(&status, MPI_CHAR, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::Receive(
@@ -90,7 +90,7 @@ void DRT::Exporter::Receive(
   MPI_Get_count(&status, MPI_CHAR, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const
@@ -106,7 +106,7 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff
   MPI_Get_count(&status, MPI_INT, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::Receive(
@@ -120,7 +120,7 @@ void DRT::Exporter::Receive(
   MPI_Get_count(&status, MPI_INT, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::ReceiveAny(
@@ -137,7 +137,7 @@ void DRT::Exporter::ReceiveAny(
   MPI_Get_count(&status, MPI_DOUBLE, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::Receive(
@@ -151,7 +151,7 @@ void DRT::Exporter::Receive(
   MPI_Get_count(&status, MPI_DOUBLE, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+  MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
 void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
@@ -162,7 +162,7 @@ void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recv
   int length = (int)sendbuff.size();
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
 
-  MPI_Allreduce(&(sendbuff[0]), &(recvbuff[0]), length, MPI_INT, mpi_op, comm->Comm());
+  MPI_Allreduce(sendbuff.data(), recvbuff.data(), length, MPI_INT, mpi_op, comm->Comm());
 }
 
 void DRT::Exporter::Broadcast(const int frompid, std::vector<char>& data, const int tag) const
@@ -176,7 +176,7 @@ void DRT::Exporter::Broadcast(const int frompid, std::vector<char>& data, const 
   {
     data.resize(length);
   }
-  MPI_Bcast((void*)&data[0], length, MPI_CHAR, frompid, comm->Comm());
+  MPI_Bcast((void*)data.data(), length, MPI_CHAR, frompid, comm->Comm());
 }
 
 void DRT::Exporter::ConstructExporter()
@@ -211,9 +211,9 @@ void DRT::Exporter::ConstructExporter()
     Comm().Broadcast(recvsizes, 2, proc);
     const int recvsize = recvsizes[0] + recvsizes[1];
     std::vector<int> recvbuff(recvsize);
-    if (proc == MyPID()) std::copy(sendbuff.begin(), sendbuff.end(), &recvbuff[0]);
-    Comm().Broadcast(&recvbuff[0], recvsize, proc);
-    // const int* have = &recvbuff[0];            // this is what proc has
+    if (proc == MyPID()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
+    Comm().Broadcast(recvbuff.data(), recvsize, proc);
+    // const int* have = recvbuff.data();            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
     // Loop what proc wants and what I have (SendPlan)
@@ -282,14 +282,14 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     snmessages[1] = sendgid.size();
 
     MPI_Request sizerequest;
-    ISend(MyPID(), tproc, &snmessages[0], 2, 1, sizerequest);
+    ISend(MyPID(), tproc, snmessages.data(), 2, 1, sizerequest);
 
     // do the sending of the objects
     MPI_Request sendrequest;
-    ISend(MyPID(), tproc, &sendblock()[0], sendblock().size(), 2, sendrequest);
+    ISend(MyPID(), tproc, sendblock().data(), sendblock().size(), 2, sendrequest);
 
     MPI_Request sendgidrequest;
-    ISend(MyPID(), tproc, &sendgid[0], sendgid.size(), 3, sendgidrequest);
+    ISend(MyPID(), tproc, sendgid.data(), sendgid.size(), 3, sendgidrequest);
 
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc

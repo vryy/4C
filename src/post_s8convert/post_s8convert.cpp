@@ -132,7 +132,7 @@ Converter::Converter(PostField* field) : field_(field)
     }
     Teuchos::RCP<DRT::ELEMENTS::So_hex8> h8 =
         Teuchos::rcp(new DRT::ELEMENTS::So_hex8(actshell->Id(), 0));
-    h8->SetNodeIds(8, &h8nodeids[0]);
+    h8->SetNodeIds(8, h8nodeids.data());
     h8dis_->AddElement(h8);
   }
 

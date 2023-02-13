@@ -514,7 +514,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
   Teuchos::RCP<Epetra_Map> auxmap = Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(auxgids.size()), &auxgids[0], 0, bindis_->Comm()));
+      new Epetra_Map(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->Comm()));
 
   Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->ExtendElementColMap(
       ia_state_ptr_->GetMutableBinToRowEleMap(), ia_state_ptr_->GetMutableBinToRowEleMap(),
@@ -920,7 +920,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::CheckIfBeamDiscretRedistributionNeeds
   }
 
   // get maximal displacement increment since last redistribution over all procs
-  double extrema[2] = {0.0, 0.0};
+  std::array<double, 2> extrema = {0.0, 0.0};
   dis_increment->MinValue(&extrema[0]);
   dis_increment->MaxValue(&extrema[1]);
   double gmaxdisincr = std::max(-extrema[0], extrema[1]);

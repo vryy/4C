@@ -323,9 +323,9 @@ DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
 {
   std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-  const double r[NUMNOD_SOH8] = {-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0};
-  const double s[NUMNOD_SOH8] = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};
-  const double t[NUMNOD_SOH8] = {-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0};
+  const std::array<double, NUMNOD_SOH8> r = {-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0};
+  const std::array<double, NUMNOD_SOH8> s = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};
+  const std::array<double, NUMNOD_SOH8> t = {-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0};
   //  const double t[NUMNOD_SOH8] = {0.0,0.0,0.0,0.0, 0.0, 0.0, 0.0, 0.0};
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   for (int i = 0; i < NUMNOD_SOH8; ++i)

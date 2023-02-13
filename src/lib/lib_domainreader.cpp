@@ -190,7 +190,7 @@ namespace DRT
       ssize_t data_size = data.size();
       comm->Broadcast(&data_size, 1, 0);
       if (myrank != 0) data.resize(data_size, 0);
-      comm->Broadcast(&(data[0]), data.size(), 0);
+      comm->Broadcast(data.data(), data.size(), 0);
 
       if (myrank != 0)
       {

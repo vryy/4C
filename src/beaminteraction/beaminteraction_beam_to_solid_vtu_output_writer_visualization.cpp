@@ -247,7 +247,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
     }
   }
   node_gid_map_ = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, my_global_dof_ids.size(), &my_global_dof_ids[0], 0, discret_->Comm()));
+      new Epetra_Map(-1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->Comm()));
 }
 
 /**

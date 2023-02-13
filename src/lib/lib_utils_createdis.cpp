@@ -92,8 +92,8 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateMap(
   std::vector<int> targetgidvec(gidset.begin(), gidset.end());
   gidset.clear();
 
-  Teuchos::RCP<Epetra_Map> map =
-      Teuchos::rcp(new Epetra_Map(-1, targetgidvec.size(), &targetgidvec[0], 0, targetdis.Comm()));
+  Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
+      new Epetra_Map(-1, targetgidvec.size(), targetgidvec.data(), 0, targetdis.Comm()));
   targetgidvec.clear();
 
   return map;

@@ -183,7 +183,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -246,7 +246,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -341,7 +341,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
   {
     // locactions given by Vogel&Eaton
-    double givenpos[10] = {2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
+    std::array<double, 10> givenpos = {2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
     if (numx1statlocations_ != 10) dserror("wrong number of numx1statlocations_");
     // find locations
     for (int rr = 0; rr < numx1statlocations_; rr++)
@@ -645,9 +645,9 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
           std::vector<int> dof = discret_->Dof(node);
           double one = 1.0;
 
-          togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
+          togglep_->ReplaceGlobalValues(1, &one, dof.data() + 3);
           // stresses
-          togglev_->ReplaceGlobalValues(1, &one, &(dof[0]));
+          togglev_->ReplaceGlobalValues(1, &one, dof.data());
 
           countnodes++;
         }
@@ -658,7 +658,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
           std::vector<int> dof = discret_->Dof(node);
           double one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
+          toggleu_->ReplaceGlobalValues(1, &one, dof.data());
         }
       }
 
@@ -902,7 +902,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
           std::vector<int> dof = discret_->Dof(node);
           double one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
+          toggleu_->ReplaceGlobalValues(1, &one, dof.data());
         }
       }
 
@@ -1204,7 +1204,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
           std::vector<int> dof = discret_->Dof(node);
           double one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
+          toggleu_->ReplaceGlobalValues(1, &one, dof.data());
         }
       }
 

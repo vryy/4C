@@ -103,7 +103,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -166,7 +166,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -349,7 +349,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -539,7 +539,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
           std::vector<int> dof = discret_->Dof(node);
           double one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
+          toggleu_->ReplaceGlobalValues(1, &one, dof.data());
           countnodes++;
         }
       }

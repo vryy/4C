@@ -24,9 +24,9 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
   std::vector<int> rnum(numproc);
   snum[myrank] = nummyelements;
 
-  comm.SumAll(&snum[0], &rnum[0], numproc);
+  comm.SumAll(snum.data(), rnum.data(), numproc);
 
-  return std::accumulate(&rnum[0], &rnum[myrank], 0);
+  return std::accumulate(rnum.data(), rnum.data() + myrank, 0);
 }
 
 /*----------------------------------------------------------------------*/
@@ -43,8 +43,8 @@ void LINALG::AllreduceVector(
   int pos = FindMyPos(localsize, comm);
   std::vector<int> sendglobal(globalsize, 0);
   dest.resize(globalsize);
-  std::copy(src.begin(), src.end(), &sendglobal[pos]);
-  comm.SumAll(&sendglobal[0], &dest[0], globalsize);
+  std::copy(src.begin(), src.end(), sendglobal.data() + pos);
+  comm.SumAll(sendglobal.data(), dest.data(), globalsize);
 
   // sort & unique
   std::sort(dest.begin(), dest.end());
@@ -61,10 +61,10 @@ void LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
   std::vector<int> sredundant(emap.NumGlobalElements(), 0);
 
   int* gids = emap.MyGlobalElements();
-  std::copy(gids, gids + emap.NumMyElements(), &sredundant[mynodepos]);
+  std::copy(gids, gids + emap.NumMyElements(), sredundant.data() + mynodepos);
 
   rredundant.resize(emap.NumGlobalElements());
-  emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
+  emap.Comm().SumAll(sredundant.data(), rredundant.data(), emap.NumGlobalElements());
 }
 
 /*----------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int
 
   if (emap.Comm().MyPID() == pid)
   {
-    rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+    rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
     // check the map
     dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -127,7 +127,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
   AllreduceEMap(rv, emap);
   Teuchos::RCP<Epetra_Map> rmap;
 
-  rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+  rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
 
   return rmap;
 }
@@ -144,7 +144,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
   std::set<int> rs(rv.begin(), rv.end());
   rv.assign(rs.begin(), rs.end());
 
-  return Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -162,7 +162,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
     std::set<int> rs(rv.begin(), rv.end());
     rv.assign(rs.begin(), rs.end());
 
-    rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+    rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
     // check the map
     dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -217,8 +217,8 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
 
-    int status =
-        MPI_Alltoall(&sendcounts[0], 1, MPI_INT, &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm());
+    int status = MPI_Alltoall(
+        sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
 
     if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
 
@@ -238,14 +238,15 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
     // transmit communication: Send and get the data.
 
-    status = MPI_Alltoallv(&sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT, &recvbuf[0],
-        &recvcounts[0], &rdispls[0], MPI_INT, mpicomm.GetMpiComm());
+    status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT,
+        recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
     if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
 
     recv.clear();
     for (int proc = 0; proc < comm.NumProc(); ++proc)
     {
-      recv.push_back(std::vector<int>(&recvbuf[rdispls[proc]], &recvbuf[rdispls[proc + 1]]));
+      recv.push_back(
+          std::vector<int>(recvbuf.data() + rdispls[proc], recvbuf.data() + rdispls[proc + 1]));
     }
   }
 }
@@ -290,8 +291,8 @@ void LINALG::AllToAllCommunication(
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
 
-    int status =
-        MPI_Alltoall(&sendcounts[0], 1, MPI_INT, &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm());
+    int status = MPI_Alltoall(
+        sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
 
     if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
 
@@ -314,8 +315,8 @@ void LINALG::AllToAllCommunication(
     recv.clear();
     recv.resize(rdispls.back());
 
-    status = MPI_Alltoallv(&sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT, &recv[0],
-        &recvcounts[0], &rdispls[0], MPI_INT, mpicomm.GetMpiComm());
+    status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT, recv.data(),
+        recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
     if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
   }
 }

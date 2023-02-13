@@ -3405,7 +3405,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
         dofidvec.reserve(dofids.size());
         dofidvec.assign(dofids.begin(), dofids.end());
         nummyelements = static_cast<int>(dofidvec.size());
-        myglobalelements = &(dofidvec[0]);
+        myglobalelements = dofidvec.data();
       }
       blockmaps[icond] = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
           discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));

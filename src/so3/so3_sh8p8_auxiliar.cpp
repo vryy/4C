@@ -130,9 +130,9 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup2(
     // (r,s,t) gp-locations of sampling points AL,AU,BL,BU,CL,CU,DL,DU
     // numsp = 8 here set explicitly to allow direct initializing
     //                           AL,  BL,  CL,  DL,  AU,  BU,  CU,  DU
-    const double r[NUMSP2ND_] = {0.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0};
-    const double s[NUMSP2ND_] = {-1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0};
-    const double t[NUMSP2ND_] = {-gpl, -gpl, -gpl, -gpl, gpl, gpl, gpl, gpl};
+    const std::array<double, NUMSP2ND_> r = {0.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0};
+    const std::array<double, NUMSP2ND_> s = {-1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0};
+    const std::array<double, NUMSP2ND_> t = {-gpl, -gpl, -gpl, -gpl, gpl, gpl, gpl, gpl};
 
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
@@ -269,9 +269,9 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
     // (r,s,t) gp-locations of sampling points
     // numsp = 8 here set explicitly to allow direct initializing
     //                             EL,  FL,  GL,  HL,  EU,  FU,  GU,  HU
-    const double r[NUMSP3RD_] = {-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0};
-    const double s[NUMSP3RD_] = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};
-    const double t[NUMSP3RD_] = {-gpl, -gpl, -gpl, -gpl, gpl, gpl, gpl, gpl};
+    const std::array<double, NUMSP3RD_> r = {-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0};
+    const std::array<double, NUMSP3RD_> s = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};
+    const std::array<double, NUMSP3RD_> t = {-gpl, -gpl, -gpl, -gpl, gpl, gpl, gpl, gpl};
 
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
@@ -1385,8 +1385,8 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
 
   // linearised residual
   {
-    LINALG::Matrix<NUMDOF_, 1> os = LINALG::Matrix<NUMDOF_, 1>(&(oldstate[0]));
-    LINALG::Matrix<NUMDOF_, 1> ls = LINALG::Matrix<NUMDOF_, 1>(&(laststate[0]));
+    LINALG::Matrix<NUMDOF_, 1> os = LINALG::Matrix<NUMDOF_, 1>(oldstate.data());
+    LINALG::Matrix<NUMDOF_, 1> ls = LINALG::Matrix<NUMDOF_, 1>(laststate.data());
     LINALG::Matrix<NUMDOF_, 1> is;
     is = ls;
     is -= os;

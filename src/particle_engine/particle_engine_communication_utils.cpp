@@ -104,7 +104,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     rbuffer.resize(msgsizetorecv);
 
     // perform non-blocking receive operation
-    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, 5678, mpicomm->Comm(),
+    MPI_Irecv((void*)(rbuffer.data()), msgsizetorecv, MPI_CHAR, msgsource, 5678, mpicomm->Comm(),
         &recvrequest[rec]);
   }
 
@@ -116,7 +116,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     // test for non-blocking send operation
     int index = -1;
     int flag = 0;
-    MPI_Testany(numsendtoprocs, &sizerequest[0], &index, &flag, MPI_STATUS_IGNORE);
+    MPI_Testany(numsendtoprocs, sizerequest.data(), &index, &flag, MPI_STATUS_IGNORE);
 
     if (flag)
     {
@@ -128,7 +128,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
       std::vector<char>& sbuffer = sdata[torank];
 
       // perform non-blocking send operation
-      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
+      MPI_Isend((void*)(sbuffer.data()), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
           mpicomm->Comm(), &sendrequest[index]);
 
       ++counter;
@@ -136,11 +136,11 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   }
 
   // ---- wait for completion of send operations ----
-  MPI_Waitall(numsendtoprocs, &sendrequest[0], MPI_STATUSES_IGNORE);
+  MPI_Waitall(numsendtoprocs, sendrequest.data(), MPI_STATUSES_IGNORE);
 
   // clear send buffer after successful communication
   sdata.clear();
 
   // ---- wait for completion of receive operations ----
-  MPI_Waitall(numrecvfromprocs, &recvrequest[0], MPI_STATUSES_IGNORE);
+  MPI_Waitall(numrecvfromprocs, recvrequest.data(), MPI_STATUSES_IGNORE);
 }

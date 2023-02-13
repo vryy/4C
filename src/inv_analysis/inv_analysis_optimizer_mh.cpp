@@ -335,11 +335,11 @@ void INVANA::OptimizerMH::Integrate()
     // particle ids
     std::vector<int> mypgids(1, mygroup_);
     std::vector<int> pgids(ngroups_);
-    pcomm_->IComm().GatherAll(&mypgids[0], &pgids[0], 1);
+    pcomm_->IComm().GatherAll(mypgids.data(), pgids.data(), 1);
 
     // set up tomap and frommap
-    Epetra_Map frommap(-1, 1, &mypgids[0], 0, pcomm_->IComm());
-    Epetra_Map tomap(-1, ngroups_, &pgids[0], 0, pcomm_->IComm());
+    Epetra_Map frommap(-1, 1, mypgids.data(), 0, pcomm_->IComm());
+    Epetra_Map tomap(-1, ngroups_, pgids.data(), 0, pcomm_->IComm());
 
     // export
     DRT::Exporter ex(frommap, tomap, pcomm_->IComm());

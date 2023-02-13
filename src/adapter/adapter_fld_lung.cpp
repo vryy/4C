@@ -92,14 +92,14 @@ void ADAPTER::FluidLung::Init()
     const int ndim = DRT::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs but expected %d", dof.size(), ndim);
-    std::copy(&dof[0], &dof[0] + ndim, back_inserter(dofmapvec));
+    std::copy(dof.data(), dof.data() + ndim, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
   if (pos != dofmapvec.end() and *pos < 0) dserror("illegal dof number %d", *pos);
 
   Teuchos::RCP<Epetra_Map> outflowfsidofmap = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
+      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
 
   outflowfsiinterface_ =
       Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));

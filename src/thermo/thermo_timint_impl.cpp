@@ -1127,7 +1127,7 @@ void THR::TimIntImpl::FDCheck()
           std::vector<double> errorvalues(errorlength);
           std::vector<int> errorindices(errorlength);
           error_crs->ExtractGlobalRowCopy(
-              i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+              i, errorlength, errornumentries, errorvalues.data(), errorindices.data());
           for (int k = 0; k < errorlength; ++k)
           {
             if (errorindices[k] == j)
@@ -1144,7 +1144,7 @@ void THR::TimIntImpl::FDCheck()
           std::vector<double> sparsevalues(sparselength);
           std::vector<int> sparseindices(sparselength);
           sparse_crs->ExtractGlobalRowCopy(
-              i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+              i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
           for (int k = 0; k < sparselength; ++k)
           {
             if (sparseindices[k] == j)
@@ -1161,7 +1161,7 @@ void THR::TimIntImpl::FDCheck()
           std::vector<double> approxvalues(approxlength);
           std::vector<int> approxindices(approxlength);
           tang_approx->ExtractGlobalRowCopy(
-              i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+              i, approxlength, approxnumentries, approxvalues.data(), approxindices.data());
           for (int k = 0; k < approxlength; ++k)
           {
             if (approxindices[k] == j)

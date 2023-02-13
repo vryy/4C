@@ -618,7 +618,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 

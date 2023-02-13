@@ -501,8 +501,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
       force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     // contribution from neighboring boundary particle j
-    double acc_ij[3] = {0.0};
-    double mod_acc_ij[3] = {0.0};
+    double acc_ij[3] = {0.0, 0.0, 0.0};
+    double mod_acc_ij[3] = {0.0, 0.0, 0.0};
 
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
@@ -700,7 +700,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -714,8 +714,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     }
 
     // sum contribution from neighboring virtual particle k
-    double sumk_acc_ik[3] = {0.0};
-    double sumk_mod_acc_ik[3] = {0.0};
+    double sumk_acc_ik[3] = {0.0, 0.0, 0.0};
+    double sumk_mod_acc_ik[3] = {0.0, 0.0, 0.0};
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
@@ -723,7 +723,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
 
     // vector from weighted fluid particle positions l to wall contact point j
     double r_jl_weighted[3];
-    UTILS::VecSet(r_jl_weighted, &weighteddistancevector[particlewallpairindex][0]);
+    UTILS::VecSet(r_jl_weighted, weighteddistancevector[particlewallpairindex].data());
 
     // inverse normal distance from weighted fluid particle positions l to wall contact point j
     const double inv_norm_dist_jl_weighted =
@@ -765,7 +765,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
 
         const double temp_press_k =
             weightedpressure[particlewallpairindex] +
-            UTILS::VecDot(r_kl_weighted, &weightedpressuregradient[particlewallpairindex][0]);
+            UTILS::VecDot(r_kl_weighted, weightedpressuregradient[particlewallpairindex].data());
         const double* press_k = &temp_press_k;
 
         const double temp_dens_k =
@@ -775,8 +775,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
         double temp_vel_k[3];
         double fac = -virtualparticle[0] * inv_norm_dist_jl_weighted;
         UTILS::VecSetScale(temp_vel_k, 1 + fac, vel_j);
-        UTILS::VecAddScale(temp_vel_k, -fac, &weightedvelocity[particlewallpairindex][0]);
-        const double* vel_k = &temp_vel_k[0];
+        UTILS::VecAddScale(temp_vel_k, -fac, weightedvelocity[particlewallpairindex].data());
+        const double* vel_k = temp_vel_k;
 
         // versor from virtual particle k to particle i
         double e_ik[3];
@@ -867,7 +867,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     if (mod_acc_i) UTILS::VecAdd(mod_acc_i, sumk_mod_acc_ik);
 
     // calculation of wall contact force
-    double wallcontactforce[3] = {0.0};
+    double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
       UTILS::VecSetScale(wallcontactforce, -mass_i[0], sumk_acc_ik);
 
@@ -889,14 +889,14 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
       // determine nodal forces
-      double nodal_force[numnodes * 3];
+      std::vector<double> nodal_force(numnodes * 3);
       for (int node = 0; node < numnodes; ++node)
         for (int dim = 0; dim < 3; ++dim)
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
-          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+          numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }

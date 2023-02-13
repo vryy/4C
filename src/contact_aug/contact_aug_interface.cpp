@@ -139,9 +139,9 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // communicate the minimal edge length and element area over all procs
-  double lMins[2] = {myMinEdgeLength, myMinAreaMa};
-  double gMins[2] = {1.0e12, 1.0e12};
-  Comm().MinAll(&lMins[0], &gMins[0], 2);
+  std::array<double, 2> lMins = {myMinEdgeLength, myMinAreaMa};
+  std::array<double, 2> gMins = {1.0e12, 1.0e12};
+  Comm().MinAll(lMins.data(), gMins.data(), 2);
 
   if (gMins[0] == 1.0e12 or gMins[0] < 0.0)
     dserror(
@@ -163,9 +163,9 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // communicate the maximal slave element area over all procs
-  double lMaxs[2] = {myMaxAreaSl, static_cast<double>(myTriangleOnMaster)};
-  double gMaxs[2] = {0.0, 0.0};
-  Comm().MaxAll(&lMaxs[0], &gMaxs[0], 2);
+  std::array<double, 2> lMaxs = {myMaxAreaSl, static_cast<double>(myTriangleOnMaster)};
+  std::array<double, 2> gMaxs = {0.0, 0.0};
+  Comm().MaxAll(lMaxs.data(), gMaxs.data(), 2);
 
   const double gMaxAreaSl = gMaxs[0];
   const bool isTriangleOnMaster = static_cast<bool>(gMaxs[1]);
@@ -1123,10 +1123,10 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     std::fill(vals.A() + 1, vals.A() + numdof, ct_inv * augA);
 
     // copy dof ids
-    std::copy(cnode->Dofs(), cnode->Dofs() + numdof, &rowIds[0]);
+    std::copy(cnode->Dofs(), cnode->Dofs() + numdof, rowIds.data());
 
     // insert owner
-    std::fill(&rowner[0], &rowner[0] + numdof, cnode->Owner());
+    std::fill(rowner.data(), rowner.data() + numdof, cnode->Owner());
 
     LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
   }
@@ -1305,9 +1305,9 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 
   // create interface local augmented active node map and augmented active dof map
   activenodes_ = Teuchos::rcp(
-      new Epetra_Map(-1, (int)myactivenodegids.size(), &myactivenodegids[0], 0, Comm()));
-  activedofs_ =
-      Teuchos::rcp(new Epetra_Map(-1, (int)myactivedofgids.size(), &myactivedofgids[0], 0, Comm()));
+      new Epetra_Map(-1, (int)myactivenodegids.size(), myactivenodegids.data(), 0, Comm()));
+  activedofs_ = Teuchos::rcp(
+      new Epetra_Map(-1, (int)myactivedofgids.size(), myactivedofgids.data(), 0, Comm()));
 
   inactivenodes_ = LINALG::SplitMap(*snoderowmap_, *activenodes_);
   inactivedofs_ = LINALG::SplitMap(*sdofrowmap_, *activedofs_);
@@ -1420,8 +1420,8 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
     dserror("SplitAugActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
-  activet_ = Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
+  activen_ = Teuchos::rcp(new Epetra_Map(gCountN, countN, myNGids.data(), 0, Comm()));
+  activet_ = Teuchos::rcp(new Epetra_Map(gCountT, countT, myTGids.data(), 0, Comm()));
 
   return;
 }
@@ -1472,9 +1472,9 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   myTGids.resize(countT);
 
   // communicate countN and countT among procs
-  int lCount[2] = {countN, countT};
-  int gCount[2] = {0, 0};
-  Comm().SumAll(&lCount[0], &gCount[0], 2);
+  std::array<int, 2> lCount = {countN, countT};
+  std::array<int, 2> gCount = {0, 0};
+  Comm().SumAll(lCount.data(), gCount.data(), 2);
 
   const int gCountN = gCount[0];
   const int gCountT = gCount[1];
@@ -1485,9 +1485,9 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
   // create Nmap and Tmap objects
   interfaceData_.SNDofRowMap() =
-      Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(gCountN, countN, myNGids.data(), 0, Comm()));
   interfaceData_.STDofRowMap() =
-      Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(gCountT, countT, myTGids.data(), 0, Comm()));
 
   return;
 }
@@ -1588,7 +1588,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Interface::BuildActiveForceMap(
   }
 
   return Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(my_active_gids.size()), &my_active_gids[0], 0, force.Comm()));
+      -1, static_cast<int>(my_active_gids.size()), my_active_gids.data(), 0, force.Comm()));
 }
 
 /*----------------------------------------------------------------------------*

@@ -275,7 +275,7 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector(
   doublevec->resize(length);
 
   // now distribute information to all procs
-  Comm().Broadcast(&((*doublevec)[0]), length, 0);
+  Comm().Broadcast(doublevec->data(), length, 0);
   return;
 }
 
@@ -304,7 +304,7 @@ void IO::DiscretizationReader::ReadRedundantIntVector(
   intvec->resize(length);
 
   // now distribute information to all procs
-  Comm().Broadcast(&((*intvec)[0]), length, 0);
+  Comm().Broadcast(intvec->data(), length, 0);
   return;
 }
 
@@ -582,7 +582,7 @@ IO::DiscretizationWriter::~DiscretizationWriter()
     // get vector to store ids of open groups
     std::vector<hid_t> oid_list(num_og, -1);
 
-    herr_t status = H5Fget_obj_ids(resultfile_, H5F_OBJ_GROUP, num_og, &(oid_list[0]));
+    herr_t status = H5Fget_obj_ids(resultfile_, H5F_OBJ_GROUP, num_og, oid_list.data());
     if (status < 0) dserror("Failed to get id's of open groups in resultfile");
 
     // loop over open groups
@@ -951,7 +951,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
   {
     std::string valuename = name + ".values";
     const hsize_t size = vec.size();
-    const char* data = &vec[0];
+    const char* data = vec.data();
     if (size != 0)
     {
       const herr_t make_status =
@@ -1074,7 +1074,7 @@ void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
 
       hsize_t dim = static_cast<hsize_t>(block->size());
       const herr_t status =
-          H5LTmake_dataset_char(meshgroup_, condname.c_str(), 1, &dim, &((*block)[0]));
+          H5LTmake_dataset_char(meshgroup_, condname.c_str(), 1, &dim, block->data());
 
       if (status < 0) dserror("Failed to create dataset in HDF-meshfile");
     }
@@ -1102,13 +1102,13 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     if (dim != 0)
     {
       const herr_t element_status =
-          H5LTmake_dataset_char(meshgroup_, "elements", 1, &dim, &((*elementdata)[0]));
+          H5LTmake_dataset_char(meshgroup_, "elements", 1, &dim, elementdata->data());
       if (element_status < 0) dserror("Failed to create dataset in HDF-meshfile");
     }
     else
     {
       const herr_t element_status =
-          H5LTmake_dataset_char(meshgroup_, "elements", 0, &dim, &((*elementdata)[0]));
+          H5LTmake_dataset_char(meshgroup_, "elements", 0, &dim, elementdata->data());
       if (element_status < 0)
         dserror(
             "Failed to create dataset in HDF-meshfile on proc %d which does"
@@ -1122,13 +1122,13 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     if (dim != 0)
     {
       const herr_t node_status =
-          H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, &((*nodedata)[0]));
+          H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, nodedata->data());
       if (node_status < 0) dserror("Failed to create dataset in HDF-meshfile");
     }
     else
     {
       const herr_t node_status =
-          H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, &((*nodedata)[0]));
+          H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, nodedata->data());
       if (node_status < 0)
         dserror(
             "Failed to create dataset in HDF-meshfile on proc %d which"
@@ -1255,13 +1255,13 @@ void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
       if (dim != 0)
       {
         const herr_t node_status =
-            H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, &((*nodedata)[0]));
+            H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, nodedata->data());
         if (node_status < 0) dserror("Failed to create dataset in HDF-meshfile");
       }
       else
       {
         const herr_t node_status =
-            H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, &((*nodedata)[0]));
+            H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, nodedata->data());
         if (node_status < 0)
           dserror(
               "Failed to create dataset in HDF-meshfile on proc %d which "
@@ -1490,7 +1490,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
       {
         hsize_t dim = static_cast<hsize_t>(block().size());
         const herr_t status =
-            H5LTmake_dataset_char(meshgroup_, "knotvector", 1, &dim, &(block()[0]));
+            H5LTmake_dataset_char(meshgroup_, "knotvector", 1, &dim, block().data());
         if (status < 0) dserror("Failed to create dataset in HDF-meshfile");
       }
       else
@@ -1518,14 +1518,14 @@ void IO::DiscretizationWriter::WriteCharVector(
     if (size != 0)
     {
       const herr_t make_status =
-          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, &((*charvec)[0]));
+          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, charvec->data());
       if (make_status < 0)
         dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
       const herr_t make_status =
-          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, &((*charvec)[0]));
+          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, charvec->data());
       if (make_status < 0)
         dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
@@ -1568,14 +1568,14 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
       if (size != 0)
       {
         const herr_t make_status =
-            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, &((*doublevec)[0]));
+            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, doublevec->data());
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
-            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, &((*doublevec)[0]));
+            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, doublevec->data());
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
@@ -1615,14 +1615,14 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
       if (size != 0)
       {
         const herr_t make_status =
-            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 1, &size, &((*vectorint)[0]));
+            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 1, &size, vectorint->data());
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
-            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 0, &size, &((*vectorint)[0]));
+            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 0, &size, vectorint->data());
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }

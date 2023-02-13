@@ -1431,7 +1431,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), allproc.data(), Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 
@@ -1693,10 +1693,10 @@ void CONTACT::CoManager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslav
   // s-s, p-s, s-p, p-p
   // wait for all processors to determine if they have poro or structural master or slave elements
   comm_->Barrier();
-  int slaveTypeList[comm_->NumProc()];
-  int masterTypeList[comm_->NumProc()];
-  comm_->GatherAll(&slavetype, &slaveTypeList[0], 1);
-  comm_->GatherAll(&mastertype, &masterTypeList[0], 1);
+  std::vector<int> slaveTypeList(comm_->NumProc());
+  std::vector<int> masterTypeList(comm_->NumProc());
+  comm_->GatherAll(&slavetype, slaveTypeList.data(), 1);
+  comm_->GatherAll(&mastertype, masterTypeList.data(), 1);
   comm_->Barrier();
 
   for (int i = 0; i < comm_->NumProc(); ++i)

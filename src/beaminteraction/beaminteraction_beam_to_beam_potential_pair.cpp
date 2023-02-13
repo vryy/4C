@@ -1110,7 +1110,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   double rho1rho2_JacFac_GaussWeight = 0.0;
 
   const unsigned int num_initial_values = 9;
-  const double xi_master_initial_guess_values[num_initial_values] = {
+  const std::array<double, num_initial_values> xi_master_initial_guess_values = {
       0.0, -1.0, 1.0, -0.5, 0.5, -0.75, -0.25, 0.25, 0.75};
 
   unsigned int iter_projection = 0;

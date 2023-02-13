@@ -568,7 +568,7 @@ void XFEM::MeshProjector::SendBlock(
   // << topid << IO::endl;
 #endif
 
-  exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
   // for safety
   exporter.Comm().Barrier();

@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::Shell8::s8_recover(
     {
       // first, store the eas state of the previous accepted Newton step
       ParamsInterface().SumIntoMyPreviousSolNorm(
-          NOX::NLN::StatusTest::quantity_eas, nhyb_, &(*alfa)[0], Owner());
+          NOX::NLN::StatusTest::quantity_eas, nhyb_, alfa->data(), Owner());
 
       Epetra_SerialDenseMatrix* oldDtildinv =
           data_.GetMutable<Epetra_SerialDenseMatrix>("Dtildinv");
@@ -1084,7 +1084,7 @@ void DRT::ELEMENTS::Shell8::s8_recover(
   // contribution to the norm
   if (nhyb_)
     ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, nhyb_,
-        &(*alfa_inc)[0], &(*alfa)[0], step_length, Owner());
+        alfa_inc->data(), alfa->data(), step_length, Owner());
 
   // the element internal stuff should be up-to-date for now...
   return;

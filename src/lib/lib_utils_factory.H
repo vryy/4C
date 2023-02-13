@@ -131,8 +131,8 @@ namespace DRT
         }
 
         // allocate a new boundary element
-        boundaryeles[iele] = Teuchos::rcp(
-            new BoundaryEle(iele, ele->Owner(), nodeids.size(), &nodeids[0], &nodes[0], ele, iele));
+        boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(
+            iele, ele->Owner(), nodeids.size(), nodeids.data(), nodes.data(), ele, iele));
       }
 
       return boundaryeles;

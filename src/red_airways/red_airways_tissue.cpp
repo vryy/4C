@@ -94,7 +94,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   }
 
 
-  Epetra_Map redundantmap(tmp.size(), tmp.size(), &tmp[0], 0, comm);
+  Epetra_Map redundantmap(tmp.size(), tmp.size(), tmp.data(), 0, comm);
   couppres_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   couppres_ip_tilde_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   couppres_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));

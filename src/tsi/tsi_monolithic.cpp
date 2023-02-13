@@ -2629,7 +2629,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 
   // map containing all z-displacement DOFs which have a DBC
   Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, (int)sdata.size(), &sdata[0], 0, StructureField()->Discretization()->Comm()));
+      -1, (int)sdata.size(), sdata.data(), 0, StructureField()->Discretization()->Comm()));
 
   //---------------------------------------------------------------------------
   // ------------------------------------ initialse STRUCTURAL output variables

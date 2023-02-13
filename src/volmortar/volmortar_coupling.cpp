@@ -170,7 +170,7 @@ void VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization>& dis
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, *comm_));
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_));
 
   return;
 }
@@ -379,7 +379,7 @@ LINALG::Matrix<9, 2> VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
     DRT::Node* node = ele.Nodes()[k];
 
     // get current node position
-    double pos[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> pos = {0.0, 0.0, 0.0};
     for (int j = 0; j < dim_; ++j) pos[j] = node->X()[j];
 
     // calculate slabs
@@ -1300,16 +1300,16 @@ void VOLMORTAR::VolMortarCoupl::MeshInit()
     err = solDB->Update(-1.0, *solMB, 1.0);
     if (err != 0) dserror("stop");
 
-    double ra[1] = {0.0};
-    double rb[1] = {0.0};
+    double ra = 0.0;
+    double rb = 0.0;
 
     // Residuum k+1
-    solDA->Norm2(ra);
-    solDB->Norm2(rb);
+    solDA->Norm2(&ra);
+    solDB->Norm2(&rb);
 
-    std::cout << "ra= " << ra[0] << "    rb= " << rb[0] << std::endl;
+    std::cout << "ra= " << ra << "    rb= " << rb << std::endl;
 
-    if (ra[0] < 1e-10 and rb[0] < 1e-10) return;
+    if (ra < 1e-10 and rb < 1e-10) return;
 
     solDA->Scale(-1.0 * omega);
     solDB->Scale(-1.0 * omega);
@@ -1511,14 +1511,14 @@ void VOLMORTAR::VolMortarCoupl::MeshInit()
     err = finalDB->Update(-1.0, *finalMB, 1.0);
     if (err != 0) dserror("stop");
 
-    double finalra[1] = {0.0};
-    double finalrb[1] = {0.0};
+    double finalra = 0.0;
+    double finalrb = 0.0;
 
     // Residuum k+1
-    finalDA->Norm2(finalra);
-    finalDB->Norm2(finalrb);
+    finalDA->Norm2(&finalra);
+    finalDB->Norm2(&finalrb);
 
-    std::cout << "final ra= " << finalra[0] << "   final rb= " << finalrb[0] << std::endl;
+    std::cout << "final ra= " << finalra << "   final rb= " << finalrb << std::endl;
   }
 
   return;
@@ -3751,8 +3751,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
-  double center1[3] = {0.0, 0.0, 0.0};
-  double center2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> center1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> center2 = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < (int)poly1.size(); ++i)
     for (int k = 0; k < 3; ++k) center1[k] += poly1[i].Coord()[k] / ((int)poly1.size());
@@ -3761,10 +3761,10 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int k = 0; k < 3; ++k) center2[k] += poly2[i].Coord()[k] / ((int)poly2.size());
 
   // then we compute the counter-clockwise plane normal
-  double diff1[3] = {0.0, 0.0, 0.0};
-  double edge1[3] = {0.0, 0.0, 0.0};
-  double diff2[3] = {0.0, 0.0, 0.0};
-  double edge2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> diff1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> edge1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> diff2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
 
   for (int k = 0; k < 3; ++k)
   {
@@ -3774,8 +3774,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     edge2[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
   }
 
-  double cross1[3] = {0.0, 0.0, 0.0};
-  double cross2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> cross1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> cross2 = {0.0, 0.0, 0.0};
 
   cross1[0] = diff1[1] * edge1[2] - diff1[2] * edge1[1];
   cross1[1] = diff1[2] * edge1[0] - diff1[0] * edge1[2];
@@ -3801,7 +3801,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
   for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> edge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly1.size() - 1)
@@ -3811,13 +3811,13 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     }
 
     // edge normal is result of cross product
-    double n[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly1.size() - 2)
@@ -3836,7 +3836,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
   for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> edge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly2.size() - 1)
@@ -3846,13 +3846,13 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     }
 
     // edge normal is result of cross product
-    double n[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> n = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly2.size() - 2)
@@ -3946,8 +3946,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int j = 0; j < (int)poly2.size(); ++j)
     {
       // we need two edges first
-      double edge1[3] = {0.0, 0.0, 0.0};
-      double edge2[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge1 = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
@@ -3955,8 +3955,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       }
 
       // outward edge normals of polygon 1 and 2 edges
-      double n1[3] = {0.0, 0.0, 0.0};
-      double n2[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> n1 = {0.0, 0.0, 0.0};
+      std::array<double, 3> n2 = {0.0, 0.0, 0.0};
       n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
       n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
       n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
@@ -4032,7 +4032,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // distance vector
-      double diff[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -4051,7 +4051,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // distance vector
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -4088,8 +4088,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = {0.0, 0.0, 0.0};
-      double edge[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = poly1[i].Coord()[k] - poly1[j].Coord()[k];
@@ -4097,7 +4097,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> n = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4121,8 +4121,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = {0.0, 0.0, 0.0};
-        double edge[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
+        std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
@@ -4130,7 +4130,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> n = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4162,8 +4162,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = {0.0, 0.0, 0.0};
-      double edge[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
@@ -4171,7 +4171,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> n = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4195,8 +4195,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = {0.0, 0.0, 0.0};
-        double edge[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
+        std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = poly2[i].Coord()[k] - poly2[j].Coord()[k];
@@ -4204,7 +4204,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> n = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4236,8 +4236,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = {0.0, 0.0, 0.0};
-      double edge[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
+      std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = collintersec[i].Coord()[k] - poly1[j].Coord()[k];
@@ -4245,7 +4245,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> n = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4269,8 +4269,8 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = {0.0, 0.0, 0.0};
-        double edge[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
+        std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = collintersec[i].Coord()[k] - poly2[j].Coord()[k];
@@ -4278,7 +4278,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> n = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -4329,7 +4329,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
       if (convexhull[j].VType() != MORTAR::Vertex::slave) continue;
 
       // distance vector
-      double diff[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -4357,7 +4357,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
         if (convexhull[j].VType() != MORTAR::Vertex::projmaster) continue;
 
         // distance vector
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -4394,12 +4394,12 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
   else
   {
     // do transformation to auxiliary plane
-    double newzero[3] = {
+    std::array<double, 3> newzero = {
         collconvexhull[0].Coord()[0], collconvexhull[0].Coord()[1], collconvexhull[0].Coord()[2]};
-    double newxaxis[3] = {collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
+    std::array<double, 3> newxaxis = {collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
         collconvexhull[1].Coord()[1] - collconvexhull[0].Coord()[1],
         collconvexhull[1].Coord()[2] - collconvexhull[0].Coord()[2]};
-    double newyaxis[3] = {Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1],
+    std::array<double, 3> newyaxis = {Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1],
         Auxn()[2] * newxaxis[0] - Auxn()[0] * newxaxis[2],
         Auxn()[0] * newxaxis[1] - Auxn()[1] * newxaxis[0]};
     double lnewxaxis =
@@ -4434,7 +4434,7 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
     // transform each convex hull point
     for (int i = 0; i < np; ++i)
     {
-      double newpoint[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newpoint = {0.0, 0.0, 0.0};
 
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k)
@@ -4537,15 +4537,15 @@ bool VOLMORTAR::VolMortarCoupl::CenterTriangulation(
   double fac = 0.0;
 
   // first we need node averaged center
-  double nac[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> nac = {0.0, 0.0, 0.0};
   for (int i = 0; i < clipsize; ++i)
     for (int k = 0; k < 3; ++k) nac[k] += (clip[i].Coord()[k] / clipsize);
 
   // loop over all triangles of polygon
   for (int i = 0; i < clipsize; ++i)
   {
-    double xi_i[3] = {0.0, 0.0, 0.0};
-    double xi_ip1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_i = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_ip1 = {0.0, 0.0, 0.0};
 
     // standard case
     if (i < clipsize - 1)
@@ -4561,12 +4561,12 @@ bool VOLMORTAR::VolMortarCoupl::CenterTriangulation(
     }
 
     // triangle area
-    double diff1[3] = {0.0, 0.0, 0.0};
-    double diff2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k) diff1[k] = xi_ip1[k] - xi_i[k];
     for (int k = 0; k < 3; ++k) diff2[k] = xi_i[k] - nac[k];
 
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = diff1[1] * diff2[2] - diff1[2] * diff2[1];
     cross[1] = diff1[2] * diff2[0] - diff1[0] * diff2[2];
     cross[2] = diff1[0] * diff2[1] - diff1[1] * diff2[0];

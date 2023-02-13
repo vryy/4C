@@ -158,9 +158,9 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
   else if (Elelist().size() > 2)
   {
     // calculate splitting area (split along longest side)
-    double lmax = 0.0;                    // max. length of sides of DOP
-    int splittingnormal = -1;             // defines side to split
-    double xmedian[3] = {0.0, 0.0, 0.0};  // coordinates of centroid
+    double lmax = 0.0;                                // max. length of sides of DOP
+    int splittingnormal = -1;                         // defines side to split
+    std::array<double, 3> xmedian = {0.0, 0.0, 0.0};  // coordinates of centroid
 
     for (int i = 0; i < Kdop() / 2; ++i)
     {

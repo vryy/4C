@@ -113,7 +113,7 @@ void UTILS::MPConstraint2::Initialize(
   // systemvector is supposed to be the vector with initial values of the constraints
   if (actdisc_->Comm().MyPID() == 0)
   {
-    systemvector->ReplaceGlobalValues(amplit.size(), &(amplit[0]), &(IDs[0]));
+    systemvector->ReplaceGlobalValues(amplit.size(), amplit.data(), IDs.data());
   }
 
   return;
@@ -182,10 +182,10 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
     // We sort the global node ids according to the definition of the boundary condition
     ReorderConstraintNodes(ngid, constrcondvec[j]);
 
-    remove_copy_if(&ngid[0], &ngid[0] + numnodes, inserter(rownodeset, rownodeset.begin()),
+    remove_copy_if(ngid.data(), ngid.data() + numnodes, inserter(rownodeset, rownodeset.begin()),
         not1(DRT::UTILS::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
-    copy(&ngid[0], &ngid[0] + numnodes, inserter(colnodeset, colnodeset.begin()));
+    copy(ngid.data(), ngid.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
     // construct boundary nodes, which use the same global id as the cutter nodes
     for (int i = 0; i < actnoderowmap->NumMyElements(); ++i)
@@ -203,7 +203,7 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
       Teuchos::RCP<DRT::Element> constraintele =
           DRT::UTILS::Factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
-      constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
+      constraintele->SetNodeIds(ngid.size(), ngid.data());
 
       // add constraint element
       newdis->AddElement(constraintele);
@@ -216,14 +216,14 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
   Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(
-      new Epetra_Map(-1, boundarynoderowvec.size(), &boundarynoderowvec[0], 0, newdis->Comm()));
+      new Epetra_Map(-1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->Comm()));
   boundarynoderowvec.clear();
 
   // build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(
-      new Epetra_Map(-1, constraintnodecolvec.size(), &constraintnodecolvec[0], 0, newdis->Comm()));
+  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(
+      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->Comm()));
 
   constraintnodecolvec.clear();
 

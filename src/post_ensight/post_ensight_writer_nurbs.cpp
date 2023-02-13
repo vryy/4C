@@ -1344,7 +1344,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   }
 
   vispointmap_ = Teuchos::rcp(new Epetra_Map(
-      numvispoints, local_vis_point_ids.size(), &local_vis_point_ids[0], 0, nurbsdis->Comm()));
+      numvispoints, local_vis_point_ids.size(), local_vis_point_ids.data(), 0, nurbsdis->Comm()));
 
   // allocate the coordinates of the vizualisation points
   nodecoords = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_, 3));
@@ -1900,8 +1900,8 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
   coldofmapvec.reserve(coldofset.size());
   coldofmapvec.assign(coldofset.begin(), coldofset.end());
   coldofset.clear();
-  Teuchos::RCP<Epetra_Map> coldofmap =
-      Teuchos::rcp(new Epetra_Map(-1, coldofmapvec.size(), &coldofmapvec[0], 0, nurbsdis->Comm()));
+  Teuchos::RCP<Epetra_Map> coldofmap = Teuchos::rcp(
+      new Epetra_Map(-1, coldofmapvec.size(), coldofmapvec.data(), 0, nurbsdis->Comm()));
   coldofmapvec.clear();
 
   const Epetra_Map* fulldofmap = &(*coldofmap);
@@ -3427,7 +3427,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   colnodemapvec.assign(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   Teuchos::RCP<Epetra_Map> colnodemap = Teuchos::rcp(
-      new Epetra_Map(-1, colnodemapvec.size(), &colnodemapvec[0], 0, nurbsdis->Comm()));
+      new Epetra_Map(-1, colnodemapvec.size(), colnodemapvec.data(), 0, nurbsdis->Comm()));
   colnodemapvec.clear();
 
   const Epetra_Map* fullnodemap = &(*colnodemap);

@@ -126,7 +126,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
               // write coordinates in another datatype
               double gp_coord2[numdim];
               for (int k = 0; k < numdim; k++) gp_coord2[k] = gp_coord(0, k);
-              const double* coordgpref = &gp_coord2[0];  // needed for function evaluation
+              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()

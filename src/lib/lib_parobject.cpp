@@ -48,7 +48,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::string& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data, numele);
-  AddtoPack(data, &stuff[0], numele * sizeof(char));
+  AddtoPack(data, stuff.data(), numele * sizeof(char));
 }
 
 void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
@@ -92,5 +92,5 @@ void DRT::ParObject::ExtractfromPack(
   ExtractfromPack(position, data, dim);
   stuff.resize(dim);
   int size = dim * sizeof(char);
-  ExtractfromPack(position, data, &stuff[0], size);
+  ExtractfromPack(position, data, stuff.data(), size);
 }

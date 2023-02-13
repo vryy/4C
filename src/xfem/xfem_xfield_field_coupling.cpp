@@ -267,15 +267,16 @@ void XFEM::XFieldField::Coupling::BuildMinDofMaps(const DRT::DiscretizationInter
 
     const int numdof = min_dis.NumDof(actnode);
     const std::vector<int> dof = min_dis.Dof(0, actnode);
-    std::copy(&dof[0], &dof[0] + numdof, back_inserter(dofs[ngids[i]]));
-    std::copy(&dof[0], &dof[0] + numdof, back_inserter(dofmapvec));
+    std::copy(dof.data(), dof.data() + numdof, back_inserter(dofs[ngids[i]]));
+    std::copy(dof.data(), dof.data() + numdof, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
   if (pos != dofmapvec.end() and *pos < 0) dserror("Illegal DoF number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
-  min_dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, min_dis.Comm()));
+  min_dofmap =
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.Comm()));
 
   dofmapvec.clear();
 
@@ -306,7 +307,7 @@ void XFEM::XFieldField::Coupling::BuildMinDofMaps(const DRT::DiscretizationInter
 
   // permuted dof map according to a given permuted node map
   min_permdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, min_dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.Comm()));
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */
@@ -344,15 +345,16 @@ void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::DiscretizationInter
           ngids[i], i, numdof);
 
     // copy the first numdof dofs
-    std::copy(&dof[0], &dof[0] + numdof, back_inserter(dofs[ngids[i]]));
-    std::copy(&dof[0], &dof[0] + numdof, back_inserter(dofmapvec));
+    std::copy(dof.data(), dof.data() + numdof, back_inserter(dofs[ngids[i]]));
+    std::copy(dof.data(), dof.data() + numdof, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
   if (pos != dofmapvec.end() and *pos < 0) dserror("Illegal DoF number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
-  max_dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, max_dis.Comm()));
+  max_dofmap =
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.Comm()));
 
   dofmapvec.clear();
 
@@ -372,7 +374,7 @@ void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::DiscretizationInter
 
   // permuted dof map according to a given permuted node map
   max_permdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, max_dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.Comm()));
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */

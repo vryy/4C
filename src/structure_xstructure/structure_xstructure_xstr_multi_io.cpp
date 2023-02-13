@@ -365,7 +365,7 @@ void XSTR::IO::MultiDiscretizationWriter::WriteElementData(bool writeowner)
     std::vector<char> buffer(0);
     unsigned bufferlength = cit->second->AugmentControlFile(curr_step_, buffer);
     cit->second->WriteElementData(writeowner);
-    cit->second->AugmentControlFile(&buffer[0], bufferlength);
+    cit->second->AugmentControlFile(buffer.data(), bufferlength);
   }
 }
 
@@ -521,11 +521,11 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(int step, std::vecto
   // -----------------------
   // get the length and initialize a buffer
   int slength = icontrol.tellg();
-  char sbuffer[slength];
+  std::vector<char> sbuffer(slength);
 
   // go back to start first
   icontrol.seekg(0, icontrol.beg);
-  icontrol.read(sbuffer, slength);
+  icontrol.read(sbuffer.data(), slength);
 
   // -----------------------
   // read data of second block
@@ -536,7 +536,7 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(int step, std::vecto
 
   // go to the end of the first block
   icontrol.seekg(slength, icontrol.beg);
-  icontrol.read(&ebuffer[0], elength);
+  icontrol.read(ebuffer.data(), elength);
 
   //  std::cout << " :::: " << dis_->Name() << " :::: \n";
   //  std::cout << "=== sbuffer ===\n";
@@ -548,7 +548,7 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(int step, std::vecto
   // close the file and reopen it to add the sbuffer
   icontrol.close();
   icontrol.open(full_file_name.str().c_str(), std::fstream::out | std::fstream::trunc);
-  icontrol.write(sbuffer, slength);
+  icontrol.write(sbuffer.data(), slength);
   icontrol << std::flush;
 
   return static_cast<unsigned>(elength);

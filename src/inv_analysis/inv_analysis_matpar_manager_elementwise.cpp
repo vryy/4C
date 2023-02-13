@@ -364,7 +364,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
    * made redundant.
    */
   const int numprocs = Discret()->Comm().NumProc();
-  int allproc[numprocs];
+  std::vector<int> allproc(numprocs);
   for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
   for (int i = 0; i < Discret()->Comm().NumProc(); i++)
@@ -389,7 +389,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       // send current face-key to all procs
       std::vector<int> facekey(keylength, 0);
       if (Discret()->Comm().MyPID() == i) facekey = face_it->first;
-      Discret()->Comm().Broadcast(&(facekey[0]), keylength, i);
+      Discret()->Comm().Broadcast(facekey.data(), keylength, i);
 
       // check whether one of the other procs also has this key and write IDs of
       // procs who own this face in "sowningprocs" and distribute this knowledge
@@ -399,7 +399,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       std::vector<int> rowningprocs;
       if (face_abroad != facemap.end() && Discret()->Comm().MyPID() != i)
         sowningprocs.push_back(Discret()->Comm().MyPID());
-      LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc, Discret()->Comm());
+      LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc.data(), Discret()->Comm());
 
       // now bring parameters corresponding to this face on the other procs to proc i
       // (they are send to all procs but only proc i stores them in the map with
@@ -409,7 +409,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       if (std::find(rowningprocs.begin(), rowningprocs.end(), Discret()->Comm().MyPID()) !=
           rowningprocs.end())
         sparams = facemap[facekey];
-      LINALG::Gather(sparams, rparams, numprocs, allproc, Discret()->Comm());
+      LINALG::Gather(sparams, rparams, numprocs, allproc.data(), Discret()->Comm());
 
       // store additional elements on proc i
       if (Discret()->Comm().MyPID() == i)
@@ -451,7 +451,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       {
         // like this the diagonal entries are inserted redundantly and summed up
         // after FillComplete() is called; they are more or less useless anyways
-        graph->InsertGlobalValues(globalrow, parameters.size(), &weights[0], &parameters[0]);
+        graph->InsertGlobalValues(globalrow, parameters.size(), weights.data(), parameters.data());
       }
     }
   }

@@ -2630,12 +2630,12 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
 
   if (nd_newton_incmax_damping_)
   {
-    std::vector<double> incnorm;
-    incnorm.resize(5, -2.0);  // disp, vel, p , porovel, porop
+    std::array<double, 5> incnorm;
+    incnorm.fill(-2.0);  // disp, vel, p , porovel, porop
     if (!StructurePoro()->isPoro())
     {
       if (nd_max_incnorm_[0] > 0)
-        Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
+        Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
     }
     else if (nd_max_incnorm_[0] > 0 || nd_max_incnorm_[3] > 0 || nd_max_incnorm_[4] > 0)
     {
@@ -2645,7 +2645,7 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       fluidvelpres.push_back(StructurePoro()->FluidField()->PressureRowMap());
       LINALG::MultiMapExtractor fluidvelpresextract(
           *(StructurePoro()->FluidField()->DofRowMap()), fluidvelpres);
-      Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
+      Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 0)
           ->NormInf(&incnorm[3]);
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 1)

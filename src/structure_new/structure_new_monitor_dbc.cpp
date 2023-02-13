@@ -278,7 +278,7 @@ void STR::MonitorDbc::Execute(IO::DiscretizationWriter& writer)
   std::vector<Teuchos::RCP<DRT::Condition>> rconds;
   discret_ptr_->GetCondition("ReactionForce", rconds);
 
-  double area[2] = {0.0, 0.0};
+  std::array<double, 2> area = {0.0, 0.0};
   double& area_ref = area[0];
   double& area_curr = area[1];
   LINALG::Matrix<DIM, 1> rforce_xyz(false);
@@ -287,12 +287,12 @@ void STR::MonitorDbc::Execute(IO::DiscretizationWriter& writer)
   auto filepath = full_filepaths_.cbegin();
   for (const Teuchos::RCP<DRT::Condition>& rcond_ptr : rconds)
   {
-    std::fill(area, area + 2, 0.0);
+    std::fill(area.data(), area.data() + 2, 0.0);
     std::fill(rforce_xyz.A(), rforce_xyz.A() + DIM, 0.0);
     std::fill(rmoment_xyz.A(), rmoment_xyz.A() + DIM, 0.0);
 
     const int rid = rcond_ptr->Id();
-    GetArea(area, rcond_ptr.get());
+    GetArea(area.data(), rcond_ptr.get());
 
     GetReactionForce(rforce_xyz, react_maps_[rid].data());
     GetReactionMoment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr.get());
@@ -432,7 +432,7 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
     ref = 0,
     curr = 1
   };
-  double larea[2] = {0.0, 0.0};
+  std::array<double, 2> larea = {0.0, 0.0};
   LINALG::SerialDenseMatrix xyze_ref;
   LINALG::SerialDenseMatrix xyze_curr;
 
@@ -495,7 +495,7 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
     larea[AreaType::curr] += GEO::ElementArea(fele->Shape(), xyze_curr);
   }
 
-  discret.Comm().SumAll(&larea[0], &area[0], 2);
+  discret.Comm().SumAll(larea.data(), area, 2);
 }
 
 /*----------------------------------------------------------------------------*

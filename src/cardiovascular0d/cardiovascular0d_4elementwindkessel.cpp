@@ -58,7 +58,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
   double theta = params.get("scale_theta", 1.0);
   double ts_size = params.get("time_step_size", 1.0);
 
-  int numdof_per_cond = 3;
+  const int numdof_per_cond = 3;
 
   std::vector<bool> havegid(numdof_per_cond);
   for (int j = 0; j < numdof_per_cond; j++)
@@ -273,7 +273,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
 
   params.set("action", "calc_struct_constrvol");
 
-  int numdof_per_cond = 3;
+  const int numdof_per_cond = 3;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

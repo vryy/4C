@@ -901,7 +901,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::CoAbstractStrategy::CreateDeterministicLMDofRo
     my_lm_gids[slid] = interface_lmgid;
   }
   return Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(my_lm_gids.size()), &my_lm_gids[0], 0, Comm()));
+      new Epetra_Map(-1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0, Comm()));
 }
 
 
@@ -1254,9 +1254,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
 
   // global numbers
   std::vector<int> gsmpairs, gsmintpairs, gintcells;
-  LINALG::Gather<int>(smpairs, gsmpairs, numproc, &allproc[0], Comm());
-  LINALG::Gather<int>(smintpairs, gsmintpairs, numproc, &allproc[0], Comm());
-  LINALG::Gather<int>(intcells, gintcells, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(smpairs, gsmpairs, numproc, allproc.data(), Comm());
+  LINALG::Gather<int>(smintpairs, gsmintpairs, numproc, allproc.data(), Comm());
+  LINALG::Gather<int>(intcells, gintcells, numproc, allproc.data(), Comm());
 
   // output to screen
   if (Comm().MyPID() == 0)
@@ -2684,26 +2684,26 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(llmn, glmn, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(lgap, ggap, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<int>(lsta, gsta, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(llmn, glmn, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(lgap, ggap, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<int>(lsta, gsta, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
 
   // communicate some more data to proc 0 for friction
   if (friction_)
   {
-    LINALG::Gather<double>(llmt, glmt, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(ljtx, gjtx, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(ljte, gjte, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(lwear, gwear, (int)allproc.size(), &allproc[0], Comm());
+    LINALG::Gather<double>(llmt, glmt, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(ljtx, gjtx, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(ljte, gjte, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(lwear, gwear, (int)allproc.size(), allproc.data(), Comm());
   }
 
   // output is solely done by proc 0

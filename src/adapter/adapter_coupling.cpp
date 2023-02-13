@@ -124,14 +124,14 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
   // Epetra maps in original distribution
 
-  Teuchos::RCP<Epetra_Map> masternodemap = Teuchos::rcp(
-      new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
+  Teuchos::RCP<Epetra_Map> masternodemap = Teuchos::rcp(new Epetra_Map(
+      -1, patchedmasternodes.size(), patchedmasternodes.data(), 0, masterdis.Comm()));
 
   Teuchos::RCP<Epetra_Map> slavenodemap =
-      Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.Comm()));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap = Teuchos::rcp(
-      new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
+      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, masterdofs,
       slavedofs, nds_master, nds_slave);
@@ -257,12 +257,12 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
   // Epetra maps in original distribution
 
   Teuchos::RCP<Epetra_Map> masternodemap =
-      Teuchos::rcp(new Epetra_Map(-1, mastervect.size(), &mastervect[0], 0, masterdis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, mastervect.size(), mastervect.data(), 0, masterdis.Comm()));
 
   Teuchos::RCP<Epetra_Map> slavenodemap = Teuchos::rcp(new Epetra_Map(slavenodes));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap = Teuchos::rcp(
-      new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
+      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
       BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
@@ -336,11 +336,11 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
     MatchNodes(masterdis, slavedis, masternodes, permslavenodes, slavenodes, matchall, tolerance);
 
     masternodemap_cond.push_back(Teuchos::rcp(
-        new const Epetra_Map(-1, masternodes.size(), &masternodes[0], 0, masterdis.Comm())));
+        new const Epetra_Map(-1, masternodes.size(), masternodes.data(), 0, masterdis.Comm())));
     slavenodemap_cond.push_back(Teuchos::rcp(
-        new const Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm())));
-    permslavenodemap_cond.push_back(Teuchos::rcp(
-        new const Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm())));
+        new const Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.Comm())));
+    permslavenodemap_cond.push_back(Teuchos::rcp(new const Epetra_Map(
+        -1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm())));
   }
 
   // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
@@ -531,10 +531,10 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
           "got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i, numdof);
     for (int idof = 0; idof < numdof; idof++)
     {
-      copy(&dof[0] + coupled_dofs[idof], &dof[0] + coupled_dofs[idof] + 1,
+      copy(dof.data() + coupled_dofs[idof], dof.data() + coupled_dofs[idof] + 1,
           back_inserter(dofs[nodes[i]]));
-      copy(
-          &dof[0] + coupled_dofs[idof], &dof[0] + coupled_dofs[idof] + 1, back_inserter(dofmapvec));
+      copy(dof.data() + coupled_dofs[idof], dof.data() + coupled_dofs[idof] + 1,
+          back_inserter(dofmapvec));
     }
   }
 
@@ -542,7 +542,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
   if (pos != dofmapvec.end() and *pos < 0) dserror("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.Comm()));
 
   dofmapvec.clear();
 
@@ -561,7 +561,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
   dofs.clear();
 
   // permuted dof map according to a given permuted node map
-  permdofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
+  permdofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.Comm()));
 
   // prepare communication plan to create a dofmap out of a permuted
   // dof map
@@ -761,7 +761,7 @@ Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra
   }
 
   return Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, nummyele, &globalelements[0], 0, slave->Comm()));
+      new Epetra_Map(-1, nummyele, globalelements.data(), 0, slave->Comm()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -782,7 +782,7 @@ Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra
   }
 
   return Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, nummyele, &globalelements[0], 0, master->Comm()));
+      new Epetra_Map(-1, nummyele, globalelements.data(), 0, master->Comm()));
 }
 
 

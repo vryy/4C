@@ -652,7 +652,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFace
         // numerical integration: sum over quadrature points
         double tempE = 0.0;
         double tempC = 0.0;
-        double temp_d[nsd_] = {0.0};
+        std::array<double, nsd_> temp_d = {0.0};
         // loop over number of quadrature points on face
         for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
         {
@@ -1317,7 +1317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
     for (int i = 0; i < 3; ++i) coordgp[i] = shapesface_->xyzreal(i, iquad);
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
+    const double* coordgpref = coordgp;  // needed for function evaluation
 
     if ((*onoff)[0])  // is this dof activated?
     {

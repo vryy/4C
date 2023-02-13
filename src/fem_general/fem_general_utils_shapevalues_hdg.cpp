@@ -399,7 +399,7 @@ void DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
             // but it does not seem worth it)
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              double point[2] = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
+              std::array<double, 2> point = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
               point[0] = 1. - point[1] - point[0];
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
@@ -422,7 +422,7 @@ void DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
             // zeroth and second node permuted
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              double point[2] = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
+              std::array<double, 2> point = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
               point[1] = 1. - point[1] - point[0];
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
@@ -445,7 +445,7 @@ void DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
             // first and second node permuted
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              double point[2] = {quadrature_->Point(q)[1], quadrature_->Point(q)[0]};
+              std::array<double, 2> point = {quadrature_->Point(q)[1], quadrature_->Point(q)[0]};
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
                 if (std::abs(quadrature_->Point(r)[0] - point[0]) < 1e-14 &&

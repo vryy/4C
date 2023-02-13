@@ -126,7 +126,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     cmap[i] = B.DomainMap().GID(i);
     dtemp[i] = (double)cmap[i];
   }
-  ML_cheap_exchange_bdry(&dtemp[0], getrow_comm, N_local, N_send, comm);
+  ML_cheap_exchange_bdry(dtemp.data(), getrow_comm, N_local, N_send, comm);
   if (flag)
   {
     int count = N_local;
@@ -143,7 +143,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   dtemp.clear();
 
   // we can now determine a matching column map for the result
-  Epetra_Map gcmap(-1, N_local + N_rcvd, &cmap[0], B.ColMap().IndexBase(), A.Comm());
+  Epetra_Map gcmap(-1, N_local + N_rcvd, cmap.data(), B.ColMap().IndexBase(), A.Comm());
 
   int allocated = 0;
   int rowlength;
@@ -181,10 +181,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
 #endif
     }
 #ifdef DEBUG
-    int err = result->InsertGlobalValues(grid, rowlength, val, &gcid[0]);
+    int err = result->InsertGlobalValues(grid, rowlength, val, gcid.data());
     if (err != 0 && err != 1) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
-    result->InsertGlobalValues(grid, rowlength, val, &gcid[0]);
+    result->InsertGlobalValues(grid, rowlength, val, gcid.data());
 #endif
   }
   if (bindx) ML_free(bindx);

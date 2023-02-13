@@ -155,7 +155,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
   MaterialConfiguration(xrefe_surf);
 
   std::vector<double> n(3);
-  LINALG::Matrix<3, 1> n_v(&n[0], true);
+  LINALG::Matrix<3, 1> n_v(n.data(), true);
   LINALG::Matrix<3, 3> nn;
   double detA;
   double jac;
@@ -540,7 +540,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
   MaterialConfiguration(xrefe_surf);
 
   std::vector<double> n(3);
-  LINALG::Matrix<3, 1> n_v(&n[0], true), iCn;
+  LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
   double detA;
 
   DRT::UTILS::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);

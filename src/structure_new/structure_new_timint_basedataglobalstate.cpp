@@ -550,7 +550,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
   additdofmapvec.assign(additdofset.begin(), additdofset.end());
   additdofset.clear();
   Teuchos::RCP<Epetra_Map> additdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, additdofmapvec.size(), &additdofmapvec[0], 0, discret_->Comm()));
+      new Epetra_Map(-1, additdofmapvec.size(), additdofmapvec.data(), 0, discret_->Comm()));
   additdofmapvec.clear();
 
   std::vector<int> rotvecdofmapvec;
@@ -558,7 +558,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
   rotvecdofmapvec.assign(rotvecdofset.begin(), rotvecdofset.end());
   rotvecdofset.clear();
   Teuchos::RCP<Epetra_Map> rotvecdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, rotvecdofmapvec.size(), &rotvecdofmapvec[0], 0, discret_->Comm()));
+      new Epetra_Map(-1, rotvecdofmapvec.size(), rotvecdofmapvec.data(), 0, discret_->Comm()));
   rotvecdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);

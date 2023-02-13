@@ -1398,8 +1398,8 @@ void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
     }
   }
   std::vector<int> my_sele_ids(my_sele_ids_.begin(), my_sele_ids_.end());
-  contact_ele_rowmap_fluidownerbased_ =
-      Teuchos::rcp(new Epetra_Map(-1, my_sele_ids.size(), &my_sele_ids[0], 0, fluiddis_->Comm()));
+  contact_ele_rowmap_fluidownerbased_ = Teuchos::rcp(
+      new Epetra_Map(-1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->Comm()));
 }
 
 void XFEM::XFluid_Contact_Comm::PrepareTimeStep()
@@ -1481,7 +1481,7 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
 #endif
 
   std::vector<int> g_sum_gps(5);
-  fluiddis_->Comm().SumAll(&sum_gps_[0], &g_sum_gps[0], 5);
+  fluiddis_->Comm().SumAll(sum_gps_.data(), g_sum_gps.data(), 5);
   if (!fluiddis_->Comm().MyPID())
   {
     std::cout << "===| Summary Contact GPs |===" << std::endl;

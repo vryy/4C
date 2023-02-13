@@ -126,7 +126,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContri
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  double A_ij_e_ij[3] = {0.0};
+  double A_ij_e_ij[3] = {0.0, 0.0, 0.0};
 
   if (mod_vel_i)
   {
@@ -224,7 +224,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribut
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  double A_ij_e_ij[3] = {0.0};
+  double A_ij_e_ij[3] = {0.0, 0.0, 0.0};
 
   if (mod_vel_i)
   {

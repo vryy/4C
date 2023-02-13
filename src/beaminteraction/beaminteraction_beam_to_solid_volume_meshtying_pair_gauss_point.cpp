@@ -244,7 +244,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
   this->Element1()->LocationVector(*discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(*discret, lm_solid, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_pair(i) = lm_beam[rot_dof_indices[i]];
   for (unsigned int i = 0; i < solid::n_dof_; i++) gid_pair(i + n_dof_rot_) = lm_solid[i];

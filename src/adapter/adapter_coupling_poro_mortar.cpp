@@ -264,10 +264,10 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
 
   // wait for all processors to determine if they have poro or structural master or slave elements
   comm_->Barrier();
-  int slaveTypeList[comm_->NumProc()];
-  int masterTypeList[comm_->NumProc()];
-  comm_->GatherAll(&slavetype_, &slaveTypeList[0], 1);
-  comm_->GatherAll(&mastertype_, &masterTypeList[0], 1);
+  std::vector<int> slaveTypeList(comm_->NumProc());
+  std::vector<int> masterTypeList(comm_->NumProc());
+  comm_->GatherAll(&slavetype_, slaveTypeList.data(), 1);
+  comm_->GatherAll(&mastertype_, masterTypeList.data(), 1);
   comm_->Barrier();
 
   for (int i = 0; i < comm_->NumProc(); ++i)

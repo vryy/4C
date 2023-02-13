@@ -158,8 +158,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(&(mytempnp[0]), true);  // view only!
-    etempn_.Update(etempn);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
+    etempn_.Update(etempn);                                                  // copy
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -169,8 +169,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
     DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempn[0]), true);  // view only!
-    etemp_.Update(etemp);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
+    etemp_.Update(etemp);                                                  // copy
   }
 
   double time = 0.0;
@@ -375,7 +375,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           // fill the vector myratem with the global values of ratem
           DRT::UTILS::ExtractMyValues(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
-          LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(&(myratem[0]), true);  // view only!
+          LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(myratem.data(), true);  // view only!
           efcap.Multiply(ecapa, eratem);
         }  // ratem != Teuchos::null
         break;
@@ -628,8 +628,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, lm);
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempnp[0]), true);  // view only!
-    etempn_.Update(etemp);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
+    etempn_.Update(etemp);                                                  // copy
   }
   // check for the action parameter
   const auto action = DRT::INPUT::get<THR::Action>(params, "action");

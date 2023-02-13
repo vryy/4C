@@ -4056,7 +4056,7 @@ Teuchos::RCP<LINALG::MapExtractor> FLD::XFluid::CreateDBCMapExtractor(
     dbcgidsv.reserve(dbcgids->size());
     dbcgidsv.assign(dbcgids->begin(), dbcgids->end());
     nummyelements = dbcgidsv.size();
-    myglobalelements = &(dbcgidsv[0]);
+    myglobalelements = dbcgidsv.data();
   }
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(
       -1, nummyelements, myglobalelements, dofrowmap->IndexBase(), dofrowmap->Comm()));

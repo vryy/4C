@@ -616,8 +616,8 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double maxx[3], 
     std::vector<std::vector<double>> linePts;
     ymin += toler * dx1[1];
     bool intersec = false;
-    double a[] = {xmin, ymin, zmin};
-    intersec = IsIntersect(a, minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    std::array<double, 3> a = {xmin, ymin, zmin};
+    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
 
     // the area of the solid volume in this particular z-plane is almost negligible
     // if the area of volumecell is less than 1% of bounding box
@@ -640,8 +640,8 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double maxx[3], 
     ymax -= toler * dx1[1];
 
     bool intersec = false;
-    double a[] = {xmin, ymax, zmin};
-    intersec = IsIntersect(a, minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    std::array<double, 3> a = {xmin, ymax, zmin};
+    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
     if ((ymax - ymin) < toler * dx1[1])
     {
       isArea = false;
@@ -662,10 +662,10 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double maxx[3], 
   bool previous = true;
   for (int i = 1; i < num - 1; i++)
   {
-    double a[] = {xmin, yplane[i], zmin};
+    std::array<double, 3> a = {xmin, yplane[i], zmin};
     bool intersec = false;
     std::vector<std::vector<double>> linePts;
-    intersec = IsIntersect(a, minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
     if (intersec)
     {
       pts.insert(pts.end(), linePts.begin(), linePts.end());
@@ -680,10 +680,10 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double maxx[3], 
       for (int k = 0; k < 4; k++)
       {
         dyym += 0.5 * dyym;
-        double a[] = {xmin, yplane[i] - dyym, zmin};
+        std::array<double, 3> a = {xmin, yplane[i] - dyym, zmin};
         bool innerintersec = false;
         std::vector<std::vector<double>> linePts;
-        innerintersec = IsIntersect(a, minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+        innerintersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
 
         if (innerintersec)
         {

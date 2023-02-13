@@ -225,7 +225,7 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::isValid(
 void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::getSubCubeBorders(
     const double* l, const double* r, std::list<BezierCube>& subcubes) const
 {
-  const double rl[3] = {0.5 * (r[0] + l[0]), 0.5 * (r[1] + l[1]), 0.5 * (r[2] + l[2])};
+  const std::array<double, 3> rl = {0.5 * (r[0] + l[0]), 0.5 * (r[1] + l[1]), 0.5 * (r[2] + l[2])};
   auto it = subcubes.begin();
 
   // sub-cube #0

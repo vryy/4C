@@ -151,8 +151,8 @@ void TUTORIAL::NonlinearTruss::SetupProblem()
   // The data are stored in 'vector_of_condition_matrices', and we just want to
   // extract the dirichlet and neumann parts for convenience.
   // Therefore we do not copy the data, we rather have pointers pointing to the data !
-  dirichletvalues_ = &(vector_of_condition_matrices[0]);
-  neumannvalues_ = &(vector_of_condition_matrices[1]);
+  dirichletvalues_ = vector_of_condition_matrices.data();
+  neumannvalues_ = vector_of_condition_matrices.data() + 1;
 
   // build the solver
   SetupSolver<numele + 1, numele + 1>();

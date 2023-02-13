@@ -61,7 +61,7 @@ void LINALG::SymmetricEigen(
   int info = 0;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.SYEV(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &info);
+  lapack.SYEV(jobz, uplo, dim, a, lda, w, work.data(), lwork, &info);
 
   if (!postproc)
   {
@@ -106,9 +106,9 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseM
   int LDB = tmpB.LDA();
 
   // the order of permutation matrix
-  int jpvt[N];
+  std::vector<int> jpvt(N);
   // factor uses for calculating orthogonal matrix Q
-  double tau[N];
+  std::vector<double> tau(N);
   for (int i = 0; i < N; ++i)
   {
     jpvt[i] = 0;
@@ -122,9 +122,9 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseM
   {
     lwork1 = N * 3 + 1;
   }
-  double work1[lwork1];
+  std::vector<double> work1(lwork1);
   int info;
-  dgeqp3(&N, &N, b, &LDB, jpvt, tau, work1, &lwork1, &info);
+  dgeqp3(&N, &N, b, &LDB, jpvt.data(), tau.data(), work1.data(), &lwork1, &info);
 
   if (info < 0)
     std::cout << "Lapack algorithm dgeqp3: The " << info << "-th argument had an illegal value"
@@ -199,10 +199,10 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseM
   char job = 'P';
   int ILO;
   int IHI;
-  double lscale[N];
-  double rscale[N];
-  double work0[6 * N];
-  dggbal(&job, &N, a, &N, b, &N, &ILO, &IHI, lscale, rscale, work0, &info);
+  std::vector<double> lscale(N);
+  std::vector<double> rscale(N);
+  std::vector<double> work0(6 * N);
+  dggbal(&job, &N, a, &N, b, &N, &ILO, &IHI, lscale.data(), rscale.data(), work0.data(), &info);
   if (info != 0) dserror("error dggbal");
 
   job = 'E';
@@ -216,7 +216,7 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseM
   {
     lwork = N;
   }
-  double work[lwork];
+  std::vector<double> work(lwork);
 
   Epetra_SerialDenseMatrix A1(true);
   Epetra_SerialDenseMatrix A2(true);
@@ -257,7 +257,7 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseM
   char COMPZ2 = 'V';
 
   dhgeqz(&job, &COMPQ2, &COMPZ2, &N, &ILO, &IHI, a, &LDH, b, &LDT, ALPHAR, ALPHAI, BETA, Q, &LDQ, Z,
-      &LDZ, work, &lwork, &info);
+      &LDZ, work.data(), &lwork, &info);
 
   if (info < 0)
     std::cout << "Lapack algorithm dhgeqz: The " << info << "-th argument haa an illegal value!"

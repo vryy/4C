@@ -865,7 +865,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
   // build map
   int nummydirichvals = mydirichdofs.size();
   Teuchos::RCP<Epetra_Map> dirichmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, discret_->Comm()));
 
   // build vector of maps
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
@@ -924,7 +924,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
 
   // build combined DBC map
   Teuchos::RCP<Epetra_Map> additional_map = Teuchos::rcp(
-      new Epetra_Map(-1, dirichlet_dofs.size(), &(dirichlet_dofs[0]), 0, discret_->Comm()));
+      new Epetra_Map(-1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0, discret_->Comm()));
 
   std::vector<Teuchos::RCP<const Epetra_Map>> condition_maps;
   condition_maps.emplace_back(additional_map);
@@ -2172,7 +2172,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)

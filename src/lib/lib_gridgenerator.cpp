@@ -118,19 +118,19 @@ namespace DRT
           IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x"
                    << subdivisions[1] << "x" << subdivisions[2] << "\n";
 
-        unsigned int xranges[subdivisions[0] + 1ul];
+        std::vector<unsigned int> xranges(subdivisions[0] + 1ul);
         for (size_t i = 0; i < subdivisions[0] + 1ul; ++i)
           xranges[i] =
               std::max(0, std::min(inputData.interval_[0],
                               static_cast<int>(round(i * dinterval[0] / subdivisions[0]))));
 
-        unsigned int yranges[subdivisions[1] + 1ul];
+        std::vector<unsigned int> yranges(subdivisions[1] + 1ul);
         for (size_t i = 0; i < subdivisions[1] + 1ul; ++i)
           yranges[i] =
               std::max(0, std::min(inputData.interval_[1],
                               static_cast<int>(round(i * dinterval[1] / subdivisions[1]))));
 
-        unsigned int zranges[subdivisions[2] + 1ul];
+        std::vector<unsigned int> zranges(subdivisions[2] + 1ul);
         for (size_t i = 0; i < subdivisions[2] + 1ul; ++i)
           zranges[i] =
               std::max(0, std::min(inputData.interval_[2],
@@ -142,7 +142,7 @@ namespace DRT
         const int nummynewele = (xranges[mysection[0] + 1] - xranges[mysection[0]]) *
                                 (yranges[mysection[1] + 1] - yranges[mysection[1]]) *
                                 (zranges[mysection[2] + 1] - zranges[mysection[2]]);
-        int mynewele[nummynewele];
+        std::vector<int> mynewele(nummynewele);
 
         size_t idx = 0;
         for (size_t iz = zranges[mysection[2]]; iz < zranges[mysection[2] + 1]; ++iz)
@@ -150,7 +150,7 @@ namespace DRT
             for (size_t ix = xranges[mysection[0]]; ix < xranges[mysection[0] + 1]; ++ix)
               mynewele[idx++] = (iz * inputData.interval_[1] + iy) * inputData.interval_[0] + ix;
 
-        elementRowMap = Teuchos::rcp(new Epetra_Map(-1, nummynewele, mynewele, 0, comm));
+        elementRowMap = Teuchos::rcp(new Epetra_Map(-1, nummynewele, mynewele.data(), 0, comm));
       }
 
       // Create the actual elements according to the row map

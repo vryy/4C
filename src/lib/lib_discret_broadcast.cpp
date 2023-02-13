@@ -198,8 +198,8 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     sbcaster[1] = icomm->MyPID();
     sgsize[1] = group->GroupSize();
   }
-  icomm->MaxAll(&sbcaster[0], &bcaster[0], 2);
-  icomm->MaxAll(&sgsize[0], &gsize[0], 2);
+  icomm->MaxAll(sbcaster.data(), bcaster.data(), 2);
+  icomm->MaxAll(sgsize.data(), gsize.data(), 2);
   // printf("proc %d sgroup %d rgroup %d bcaster %d %d gsize %d
   // %d\n",icomm->MyPID(),sgroup,rgroup,bcaster[0],bcaster[1],gsize[0],gsize[1]);
 
@@ -275,11 +275,11 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     int nummyelements = (int)condmap.size();
     std::vector<int> myelements(nummyelements, -1);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
-    Epetra_Map smap(-1, nummyelements, &myelements[0], 0, *icomm);
+    Epetra_Map smap(-1, nummyelements, myelements.data(), 0, *icomm);
     nummyelements = smap.NumGlobalElements();
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
-    Epetra_Map rmap(-1, nummyelements, &myelements[0], 0, *icomm);
+    Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
     DRT::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
@@ -301,8 +301,8 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
 
   //-------------------------------------- finalize the commondis
   {
-    Teuchos::RCP<Epetra_Map> roweles =
-        Teuchos::rcp(new Epetra_Map(-1, (int)myrowelements.size(), &myrowelements[0], -1, *icomm));
+    Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(
+        new Epetra_Map(-1, (int)myrowelements.size(), myrowelements.data(), -1, *icomm));
 
     Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(commondis, roweles);
 
@@ -346,7 +346,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
       std::vector<int> recvbuff(nrecv, 0);
       if (icomm->MyPID() == proc)
         for (int i = 0; i < nrecv; ++i) recvbuff[i] = myglobalelements[i];
-      icomm->Broadcast(&recvbuff[0], nrecv, proc);
+      icomm->Broadcast(recvbuff.data(), nrecv, proc);
       // receivers share these gids equally
       if (group->GroupId() == rgroup)
       {
@@ -364,7 +364,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
-  Epetra_Map targetrowele(-1, (int)targetgids.size(), &targetgids[0], 0, *icomm);
+  Epetra_Map targetrowele(-1, (int)targetgids.size(), targetgids.data(), 0, *icomm);
 
   // -------------------------------------- build target row map for nodes
   {
@@ -397,7 +397,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
       std::vector<int> recvbuff(nrecv, 0);
       if (icomm->MyPID() == proc)
         for (int i = 0; i < nrecv; ++i) recvbuff[i] = myglobalelements[i];
-      icomm->Broadcast(&recvbuff[0], nrecv, proc);
+      icomm->Broadcast(recvbuff.data(), nrecv, proc);
       // receivers share these gids equally
       if (group->GroupId() == rgroup)
       {
@@ -415,7 +415,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
-  Epetra_Map targetrownode(-1, (int)targetgids.size(), &targetgids[0], 0, *icomm);
+  Epetra_Map targetrownode(-1, (int)targetgids.size(), targetgids.data(), 0, *icomm);
 
   // -------------- perform export of elements and nodes
   commondis->ExportRowElements(targetrowele);
@@ -481,8 +481,8 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     sbcaster[1] = icomm->MyPID();
     sgsize[1] = group->GroupSize();
   }
-  icomm->MaxAll(&sbcaster[0], &bcaster[0], 2);
-  icomm->MaxAll(&sgsize[0], &gsize[0], 2);
+  icomm->MaxAll(sbcaster.data(), bcaster.data(), 2);
+  icomm->MaxAll(sgsize.data(), gsize.data(), 2);
 
   // create a common discretization that we then fill with all stuff from sender group
   std::string name = dis->Name();
@@ -557,11 +557,11 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     int nummyelements = (int)condmap.size();
     std::vector<int> myelements(nummyelements, -1);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
-    Epetra_Map smap(-1, nummyelements, &myelements[0], 0, *icomm);
+    Epetra_Map smap(-1, nummyelements, myelements.data(), 0, *icomm);
     nummyelements = smap.NumGlobalElements();
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
-    Epetra_Map rmap(-1, nummyelements, &myelements[0], 0, *icomm);
+    Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
     DRT::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
@@ -603,7 +603,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
             mpi_icomm);
         // second: send data
         tag = 2674;
-        MPI_Send(&myglobalelements[0], lengthSend, MPI_INT,
+        MPI_Send(myglobalelements, lengthSend, MPI_INT,
             (proc + icomm->NumProc() / 2) % icomm->NumProc(), tag, mpi_icomm);
       }
       if (icomm->MyPID() == proc && group->GroupId() == rgroup)
@@ -618,12 +618,12 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
         // second: receive data
         tag = 2674;
         targetgids.resize(lengthRecv);
-        MPI_Recv(&targetgids[0], lengthRecv, MPI_INT,
+        MPI_Recv(targetgids.data(), lengthRecv, MPI_INT,
             (proc + icomm->NumProc() / 2) % icomm->NumProc(), tag, mpi_icomm, &status);
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
-  Epetra_Map targetrowele(-1, (int)targetgids.size(), &targetgids[0], 0, *icomm);
+  Epetra_Map targetrowele(-1, (int)targetgids.size(), targetgids.data(), 0, *icomm);
   // -------------------------------------- build target row map for nodes
   {
     const Epetra_Map* noderowmap = commondis->NodeRowMap();
@@ -646,7 +646,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
 
         // second: send data
         tag = 2674;
-        MPI_Send(&myglobalelements[0], lengthSend, MPI_INT,
+        MPI_Send(myglobalelements, lengthSend, MPI_INT,
             (proc + icomm->NumProc() / 2) % icomm->NumProc(), tag, mpi_icomm);
       }
       if (icomm->MyPID() == proc && group->GroupId() == rgroup)
@@ -662,12 +662,12 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
         // second: receive data
         tag = 2674;
         targetgids.resize(lengthRecv);
-        MPI_Recv(&targetgids[0], lengthRecv, MPI_INT,
+        MPI_Recv(targetgids.data(), lengthRecv, MPI_INT,
             (proc + icomm->NumProc() / 2) % icomm->NumProc(), tag, mpi_icomm, &status);
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
-  Epetra_Map targetrownode(-1, (int)targetgids.size(), &targetgids[0], 0, *icomm);
+  Epetra_Map targetrownode(-1, (int)targetgids.size(), targetgids.data(), 0, *icomm);
   // -------------- perform export of elements and nodes
   commondis->ExportRowElements(targetrowele);
   commondis->ExportRowNodes(targetrownode);

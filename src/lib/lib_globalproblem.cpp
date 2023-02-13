@@ -2235,7 +2235,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   // array is filled with either its local proc id or -1 when no micro mat was found
   std::vector<int> foundmyranks;
   foundmyranks.resize(lcomm->NumProc(), -1);
-  lcomm->GatherAll(&foundmicromatmyrank, &foundmyranks[0], 1);
+  lcomm->GatherAll(&foundmicromatmyrank, foundmyranks.data(), 1);
 
   // determine color of macro procs with any contribution to micro material, only important for
   // procs with micro material color starts with 0 and is incremented for each group

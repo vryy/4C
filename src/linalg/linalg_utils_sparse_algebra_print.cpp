@@ -58,15 +58,15 @@ void LINALG::PrintMatrixInMatlabFormat(
         indices_iproc.resize(max_num_inidces);
         values_iproc.resize(max_num_inidces);
 
-        sparsematrix.ExtractGlobalRowCopy(
-            row_gid_iproc, max_num_inidces, num_indices_iproc, &values_iproc[0], &indices_iproc[0]);
+        sparsematrix.ExtractGlobalRowCopy(row_gid_iproc, max_num_inidces, num_indices_iproc,
+            values_iproc.data(), indices_iproc.data());
       }
       comm.Broadcast(&num_indices_iproc, 1, iproc);
       values_iproc.resize(num_indices_iproc);
       indices_iproc.resize(num_indices_iproc);
 
-      comm.Broadcast(&values_iproc[0], num_indices_iproc, iproc);
-      comm.Broadcast(&indices_iproc[0], num_indices_iproc, iproc);
+      comm.Broadcast(values_iproc.data(), num_indices_iproc, iproc);
+      comm.Broadcast(indices_iproc.data(), num_indices_iproc, iproc);
 
       if (my_PID == 0)
       {
@@ -141,9 +141,9 @@ void LINALG::PrintVectorInMatlabFormat(
       }
     }
 
-    comm.Broadcast(&global_elements_iproc[0], num_elements_iproc, iproc);
-    comm.Broadcast(&values_iproc[0], num_elements_iproc, iproc);
-    comm.Broadcast(&first_point_in_element_list_iproc[0], num_elements_iproc, iproc);
+    comm.Broadcast(global_elements_iproc.data(), num_elements_iproc, iproc);
+    comm.Broadcast(values_iproc.data(), num_elements_iproc, iproc);
+    comm.Broadcast(first_point_in_element_list_iproc.data(), num_elements_iproc, iproc);
 
     if (my_PID == 0)
     {
@@ -207,7 +207,7 @@ void LINALG::PrintMapInMatlabFormat(
       for (int i = 0; i < num_elements_iproc; ++i)
         global_elements_iproc[i] = map.MyGlobalElements()[i];
     }
-    comm.Broadcast(&global_elements_iproc[0], num_elements_iproc, iproc);
+    comm.Broadcast(global_elements_iproc.data(), num_elements_iproc, iproc);
 
     if (my_PID == 0)
     {

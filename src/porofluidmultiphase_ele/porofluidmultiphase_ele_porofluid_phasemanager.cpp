@@ -342,14 +342,14 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
     dserror("Length of phinp vector is not equal to the number of dofs");
 
   // fluid primary variables at phinp[0 ... numfluidphases - 1]
-  const std::vector<double> fluid_phinp(&phinp[0], &phinp[numfluidphases_]);
+  const std::vector<double> fluid_phinp(phinp.data(), phinp.data() + numfluidphases_);
   // volume fractions at phinp[numfluidphases ... numfluidphases - 1 + numvolfrac]
   const std::vector<double> volfrac(
-      &(phinp[numfluidphases_]), &(phinp[numfluidphases_ + numvolfrac_]));
+      phinp.data() + numfluidphases_, phinp.data() + numfluidphases_ + numvolfrac_);
   // volume fraction pressures at phinp[numfluidphases + numvolfrac ... numfluidphases - 1 +
   // 2*numvolfrac]
-  const std::vector<double> volfracpressure(&(phinp[numfluidphases_ + numvolfrac_]),
-      &(phinp[numfluidphases_ + numvolfrac_ + numvolfrac_]));
+  const std::vector<double> volfracpressure(phinp.data() + numfluidphases_ + numvolfrac_,
+      phinp.data() + numfluidphases_ + numvolfrac_ + numvolfrac_);
 
   if (numfluidphases_ != (int)fluid_phinp.size())
     dserror("Length of fluid-phinp vector is not equal to the number of phases");
@@ -666,7 +666,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
     dserror("Length of phinp vector is not equal to the number of dofs");
 
   // get fluid primary variable
-  const std::vector<double> fluid_phinp(&phinp[0], &phinp[numfluidphases]);
+  const std::vector<double> fluid_phinp(phinp.data(), phinp.data() + numfluidphases);
 
   if (numfluidphases != (int)fluid_phinp.size())
     dserror("Length of phinp vector is not equal to the number of phases");

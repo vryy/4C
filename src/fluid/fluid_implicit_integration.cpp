@@ -2531,7 +2531,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 
           // Calculate current position for node
           DRT::Node* currNode = discret_->gNode(gIdNode);
-          double currPos[numdim_];
+          std::vector<double> currPos(numdim_);
 
           const double* refPos = currNode->X();
 
@@ -2546,7 +2546,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
             (*nodeNormals)[dofsLocalInd[i]] =
                 (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
-                    .Evaluate(&currPos[0], 0.0, i);
+                    .Evaluate(currPos.data(), 0.0, i);
           }
         }
       }
@@ -2769,7 +2769,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 
           // Calculate current position for node and its vector length
           DRT::Node* currNode = discret_->gNode(gIdNode);
-          double currPos[numdim_];
+          std::vector<double> currPos(numdim_);
 
           const double* refPos = currNode->X();
 

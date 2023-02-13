@@ -264,7 +264,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     for (int i = 0; i < vecmap.NumMyElements(); ++i)
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
-        vecmap.NumGlobalElements(), vecmap.NumMyElements(), &gids[0], 0, vecmap.Comm()));
+        vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
     Teuchos::RCP<Epetra_Vector> dofvec = LINALG::CreateVector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
@@ -604,7 +604,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
-    double X[3] = {0., 0., 0.};
+    std::array<double, 3> X = {0., 0., 0.};
     for (unsigned i = 0; i < 3; ++i)
       for (unsigned m = 0; m < NUMNODES; ++m) X[i] += funct(m) * (nodes[m]->X()[i]);
 
@@ -764,8 +764,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
     DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
-    double val[numdf];
-    std::fill(val, val + numdf, 0.0);
+    std::vector<double> val(numdf, 0.0);
 
     for (unsigned m = 0; m < NUMNODES; ++m)
     {
@@ -937,7 +936,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   std::vector<Epetra_SerialDenseVector> myknots(3);
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
   if (zero_ele) return;
-  double val[numdf];
+  std::vector<double> val(numdf);
   for (unsigned n = 0; n < NUMNODES; ++n)
   {
     LINALG::Matrix<NUMNODES, 1> funct;

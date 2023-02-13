@@ -507,7 +507,8 @@ void ElchFilter::WriteAllResults(PostField* field)
   std::vector<int> mynumdofpernodevec(mynumdofpernodeset.begin(), mynumdofpernodeset.end());
   mynumdofpernodevec.resize(maxsize, -1);
   std::vector<int> numdofpernodevec(maxsize * discret.Comm().NumProc(), -1);
-  discret.Comm().GatherAll(&mynumdofpernodevec[0], &numdofpernodevec[0], mynumdofpernodevec.size());
+  discret.Comm().GatherAll(
+      mynumdofpernodevec.data(), numdofpernodevec.data(), mynumdofpernodevec.size());
   std::set<int> numdofpernodeset;
   for (unsigned i = 0; i < numdofpernodevec.size(); ++i)
     if (numdofpernodevec[i] > 0) numdofpernodeset.insert(numdofpernodevec[i]);

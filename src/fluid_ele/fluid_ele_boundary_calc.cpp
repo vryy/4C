@@ -441,7 +441,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
     for (int i = 0; i < nsd_; i++) coordgp3D[i] = coordgp(i);
 
     int functnum = -1;
-    const double* coordgpref = &coordgp3D[0];  // needed for function evaluation
+    const double* coordgpref = coordgp3D;  // needed for function evaluation
 
     for (int idim = 0; idim < (nsd_); ++idim)
     {

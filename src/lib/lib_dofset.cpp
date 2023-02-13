@@ -532,16 +532,16 @@ int DRT::DofSet::AssignDegreesOfFreedom(
   }
 
   dofrowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), &localrowdofs[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
   dofcolmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), &localcoldofs[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.Comm()));
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
   dofscolnodes_ = Teuchos::rcp(
-      new Epetra_Map(-1, allnodelocalcoldofs.size(), &allnodelocalcoldofs[0], 0, dis.Comm()));
+      new Epetra_Map(-1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.Comm()));
 
   // build shift vector
   shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));

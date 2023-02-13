@@ -155,7 +155,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
-  // requires a penalty regularization. Here, the penalty contriutions for this
+  // requires a penalty regularization. Here, the penalty contributions for this
   // special case are applied:
   if (nonSmoothContact_)
   {
@@ -1626,8 +1626,9 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();

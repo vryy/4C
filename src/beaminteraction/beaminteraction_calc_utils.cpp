@@ -341,7 +341,7 @@ namespace BEAMINTERACTION
 
         // proc i actually sends nodegids
         requirednodes.resize(numnodes);
-        discret->Comm().Broadcast(&requirednodes[0], numnodes, iproc);
+        discret->Comm().Broadcast(requirednodes.data(), numnodes, iproc);
 
         std::set<int> sdata;
         std::set<int> rdata;
@@ -370,7 +370,7 @@ namespace BEAMINTERACTION
 
       // create new ele col map
       Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(-1, static_cast<int>(colgids.size()), &colgids[0], 0, discret->Comm()));
+          new Epetra_Map(-1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->Comm()));
 
       // temporarily extend ghosting
       BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(discret, newelecolmap, true, false, true);
@@ -602,8 +602,8 @@ namespace BEAMINTERACTION
       // assemble both element vectors into global system vector
       if (fe_sysvec != Teuchos::null)
       {
-        fe_sysvec->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
-        fe_sysvec->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+        fe_sysvec->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
+        fe_sysvec->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
       }
 
       // and finally also assemble stiffness contributions
@@ -1171,7 +1171,8 @@ namespace BEAMINTERACTION
       {
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
-        maps[i] = Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), &mapvec[0], 0, discret->Comm()));
+        maps[i] =
+            Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->Comm()));
       }
 
       eletypeextractor->Setup(*discret()->ElementRowMap(), maps);

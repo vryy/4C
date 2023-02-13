@@ -1342,20 +1342,20 @@ void CONTACT::AUG::Strategy::EvalAugmentedForces()
   // scale the averaged weighted gap elementwise by cn
   MultiplyElementwise(Data().Cn(), Data().GActiveNodeRowMap(), awgapn, false);
 
-  double* values[2] = {NULL, NULL};
+  std::array<double*, 2> values = {NULL, NULL};
 
   values[lm_term] = zn.Values();
   values[g_term] = awgapn.Values();
 
-  const Epetra_MultiVector zn_awgapn(View, Data().GActiveNDofRowMap(), values, 2);
+  const Epetra_MultiVector zn_awgapn(View, Data().GActiveNDofRowMap(), values.data(), 2);
 
   /*----------------- SLAVE SIDE ---------------------------------------------*/
-  double* f_values[2] = {NULL, NULL};
+  std::array<double*, 2> f_values = {NULL, NULL};
   f_values[lm_term] = Data().SlForceLm().Values();
   f_values[g_term] = Data().SlForceG().Values();
 
   // interface forces on the slave side
-  Epetra_MultiVector slForces(View, SlDoFRowMap(true), f_values, 2);
+  Epetra_MultiVector slForces(View, SlDoFRowMap(true), f_values.data(), 2);
 
   Data().DMatrix().Multiply(true, zn_awgapn, slForces);
 
@@ -1372,7 +1372,7 @@ void CONTACT::AUG::Strategy::EvalAugmentedForces()
   f_values[g_term] = Data().MaForceG().Values();
 
   // interface forces on the slave side
-  Epetra_MultiVector maForces(View, MaDoFRowMap(true), f_values, 2);
+  Epetra_MultiVector maForces(View, MaDoFRowMap(true), f_values.data(), 2);
 
   Data().MMatrix().Multiply(true, zn_awgapn, maForces);
 }

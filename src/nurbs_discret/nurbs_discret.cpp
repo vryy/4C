@@ -174,7 +174,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       dbcgidsv.reserve(dbcgids[set_row]->size());
       dbcgidsv.assign(dbcgids[set_row]->begin(), dbcgids[set_row]->end());
       nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      myglobalelements = dbcgidsv.data();
     }
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
         myglobalelements, discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));
@@ -194,7 +194,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       dbcgidsv.reserve(dbcgids[set_col]->size());
       dbcgidsv.assign(dbcgids[set_col]->begin(), dbcgids[set_col]->end());
       nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      myglobalelements = dbcgidsv.data();
     }
     dbccolmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
         nurbs_dis.DofColMap()->IndexBase(), discret.DofRowMap()->Comm()));

@@ -324,7 +324,7 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
 
     const double time = constants[size - 4].second;
 
-    double gpcoord[3] = {0.0};
+    double gpcoord[3] = {0.0, 0.0, 0.0};
     gpcoord[0] = constants[size - 3].second;
     gpcoord[1] = constants[size - 2].second;
     gpcoord[2] = constants[size - 1].second;

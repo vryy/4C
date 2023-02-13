@@ -459,10 +459,10 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(dis->Comm().Clone());
 
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::rcp(new Epetra_Map(-1, noderowvec.size(), &noderowvec[0], 0, *comm));
+      Teuchos::rcp(new Epetra_Map(-1, noderowvec.size(), noderowvec.data(), 0, *comm));
 
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, nodecolvec.size(), &nodecolvec[0], 0, *comm));
+      Teuchos::rcp(new Epetra_Map(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm));
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));

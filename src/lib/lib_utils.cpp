@@ -221,8 +221,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   for (int elid = 0; elid < elecolmap.NumMyElements(); ++elid)
     coleles[elid] = dis.gElement(elecolmap.GID(elid));
 
-  return ComputeNodalL2Projection(dis, noderowmap, &coleles[0], coleles.size(), statename, numvec,
-      params, solvernumber, l2_proj_type, fullnoderowmap, slavetomastercolnodesmap,
+  return ComputeNodalL2Projection(dis, noderowmap, coleles.data(), coleles.size(), statename,
+      numvec, params, solvernumber, l2_proj_type, fullnoderowmap, slavetomastercolnodesmap,
       sys_mat_diagonal_ptr);
 }
 
@@ -380,7 +380,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
 
   // build node row map which does not include slave pbc nodes
   Epetra_Map noderowmap(
-      -1, (int)reducednoderowmap.size(), &reducednoderowmap[0], 0, fullnoderowmap->Comm());
+      -1, (int)reducednoderowmap.size(), reducednoderowmap.data(), 0, fullnoderowmap->Comm());
 
   // use fast access methods
   const int numcolele = dis->NumMyColElements();
@@ -631,10 +631,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
   // build node row map which does not include slave pbc nodes
   Epetra_Map noderowmap(
-      -1, (int)reducednoderowmap.size(), &reducednoderowmap[0], 0, fullnoderowmap->Comm());
+      -1, (int)reducednoderowmap.size(), reducednoderowmap.data(), 0, fullnoderowmap->Comm());
   // build node col map which does not include slave pbc nodes
   Epetra_Map nodecolmap(
-      -1, (int)reducednodecolmap.size(), &reducednodecolmap[0], 0, fullnodecolmap->Comm());
+      -1, (int)reducednodecolmap.size(), reducednodecolmap.data(), 0, fullnodecolmap->Comm());
 
 
   // step 1: get state to be reconstruced (e.g. velocity gradient) at element

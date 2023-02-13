@@ -2059,8 +2059,8 @@ void FSI::SlidingMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int,
     stowner = -1;
 
     int NumEntries = 0;
-    double Values[numStructureDofs];
-    int stdofGID[numStructureDofs];
+    std::vector<double> Values(numStructureDofs);
+    std::vector<int> stdofGID(numStructureDofs);
 
     if (NumMyElements > 0)
     {
@@ -2070,7 +2070,8 @@ void FSI::SlidingMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int,
       flnode = re[0];
       flowner = re[1];
 
-      P_->ExtractGlobalRowCopy(fldofGID, numStructureDofs, NumEntries, Values, stdofGID);
+      P_->ExtractGlobalRowCopy(
+          fldofGID, numStructureDofs, NumEntries, Values.data(), stdofGID.data());
     }
 
     // Loop over related structure dofs and get related nodes.

@@ -85,8 +85,8 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
   for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     globaldof.push_back(discret_->NodeRowMap()->GID(i));
   // create dof map (one dof for each node)
-  dofmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, (int)globaldof.size(), &globaldof[0], 0, discret_->Comm()));
+  dofmap_ = Teuchos::rcp(
+      new Epetra_Map(-1, (int)globaldof.size(), globaldof.data(), 0, discret_->Comm()));
 
 
   return;

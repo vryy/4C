@@ -527,7 +527,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   for (int gp = 0; gp < this->Wrapper().nGP(); ++gp)
   {
-    const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+    const std::array<double, 2> eta = {
+        this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
     const double wgt = this->Wrapper().Weight(gp);
 
     // get Gauss point in slave element coordinates
@@ -675,7 +676,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
@@ -714,14 +716,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
       evaluator_->Deriv_MXiGP(
-          sele, mele, &sxi[0], uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
+          sele, mele, sxi, uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
 
       //**********************************************************************
       // evaluate at GP and lin char. quantities
       //**********************************************************************
       // calculate the averaged normal + derivative at gp level
-      GP_Normal_DerivNormal(
-          sele, sval_, &gpn_[0], dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
+      GP_Normal_DerivNormal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
 
       // integrate scaling factor kappa
       GP_kappa(sele, lmval_, wgt, jacslave);
@@ -729,7 +730,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // integrate the inner integral relating to the first order derivative of
       // the discrete normal gap for later usage (for all found slave nodes)
       IntPolicy::Get_Deriv1st_GapN(
-          sele, mele, sval_, mval_, &gpn_[0], mtau, dmxigp_, deriv_gapn_sl_, deriv_gapn_ma_);
+          sele, mele, sval_, mval_, gpn_, mtau, dmxigp_, deriv_gapn_sl_, deriv_gapn_ma_);
 
       // evaluate normal gap (split into slave and master contributions)
       double gapn_sl = 0.0;
@@ -746,8 +747,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // 1-st order derivative of the weighted gap (necessary for the
       // linearization of the constraint equations in case of the complete AND
       // incomplete variational approach)
-      IntPolicy::Get_Deriv1st_WGap_Complete(linsize, sele, mele, sval_, mval_, lmval_, &gpn_[0],
-          mtau, dmxigp_, gapn_sl, gapn_ma, wgt, jacslave, derivjac_);
+      IntPolicy::Get_Deriv1st_WGap_Complete(linsize, sele, mele, sval_, mval_, lmval_, gpn_, mtau,
+          dmxigp_, gapn_sl, gapn_ma, wgt, jacslave, derivjac_);
 
       IntPolicy::Get_Debug(sele, lmval_, gapn_sl, gapn_ma, wgt, jacslave, gpn_, uniqueMxi.A());
 
@@ -810,7 +811,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
@@ -837,7 +839,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       GP_kappa(sele, lmval_, wgt, jacslave);
 
       // calculate the averaged unified GP normal
-      GP_Normal(sele, sval_, &gpn_[0]);
+      GP_Normal(sele, sval_, gpn_);
 
       // evaluate normal gap (split into slave and master contributions)
       double gapn_sl = 0.0;
@@ -890,7 +892,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       const int gp = projInfo.gaussPoints_[my::gp_id_];
 
       // coordinates and weight
-      const double eta[2] = {this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
+      const std::array<double, 2> eta = {
+          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
       const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
@@ -928,19 +931,18 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
       evaluator_->Deriv_MXiGP(
-          sele, mele, &sxi[0], uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
+          sele, mele, sxi, uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
 
       //**********************************************************************
       // evaluate at GP and lin char. quantities
       //**********************************************************************
       // calculate the averaged normal + derivative at gp level
-      GP_Normal_DerivNormal(
-          sele, sval_, &gpn_[0], dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
+      GP_Normal_DerivNormal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
 
       // integrate the inner integral relating to the first order derivative of
       // the discrete normal gap for later usage (for all found slave nodes)
       IntPolicy::Get_Deriv1st_GapN(
-          sele, mele, sval_, mval_, &gpn_[0], mtau, dmxigp_, deriv_gapn_sl_, deriv_gapn_ma_);
+          sele, mele, sval_, mval_, gpn_, mtau, dmxigp_, deriv_gapn_sl_, deriv_gapn_ma_);
 
       // evaluate normal gap (split into slave and master contributions)
       double gapn_sl = 0.0;

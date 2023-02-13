@@ -101,7 +101,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
 
   int nummydirichvals = mydirichdofs.size();
   cond_dofmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, dis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, dis->Comm()));
 
   return;
 }  // BuildConditionDofRowMap

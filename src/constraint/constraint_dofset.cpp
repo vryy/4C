@@ -72,7 +72,7 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
   for (int i = 0; i < dofrowmap->NumMyElements(); i++) gids.push_back(dofrowmap->GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, dis->Comm()));
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, dis->Comm()));
 
   return count;
 }

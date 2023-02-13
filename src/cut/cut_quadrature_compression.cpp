@@ -387,7 +387,7 @@ void GEO::CUT::QuadratureCompression::ComputeAndPrintError(DRT::UTILS::GaussPoin
 {
   /*-------------------------------------------------------------------*/
   // solution check
-  double check[na];
+  std::vector<double> check(na);
   for (int pt = 0; pt < na; pt++) check[pt] = 0.0;
 
   for (int pt = 0; pt < na; pt++)
@@ -508,7 +508,7 @@ void GEO::CUT::QuadratureCompression::ComputeAndPrintError(DRT::UTILS::GaussPoin
     }
   }
   double max_error = 0.0;
-  double error[na];
+  std::vector<double> error(na);
   for (int pt = 0; pt < na; pt++)
   {
     error[pt] = fabs(check[pt] - (*rhs)(pt));

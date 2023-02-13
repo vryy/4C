@@ -336,7 +336,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -614,9 +614,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     std::vector<double> lnodeplanes(*nodeplanes_);
     std::vector<double> lplanecoordinates(*planecoordinates_);
 
-    discret_->Comm().SumAll(&(lnodeplanes[0]), &((*nodeplanes_)[0]), nodeplanes_->size());
+    discret_->Comm().SumAll(lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size());
     discret_->Comm().SumAll(
-        &(lplanecoordinates[0]), &((*planecoordinates_)[0]), planecoordinates_->size());
+        lplanecoordinates.data(), planecoordinates_->data(), planecoordinates_->size());
 
     {
       (*nodeplanes_).resize(nele_x_mele_x_lele[1] + 1);
@@ -1974,20 +1974,20 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(&((*locarea)[0]), &((*globarea)[0]), size);
+  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumu)[0]), &((*globsumu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumv)[0]), &((*globsumv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumw)[0]), &((*globsumw)[0]), size);
-  discret_->Comm().SumAll(&((*locsump)[0]), &((*globsump)[0]), size);
+  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumsqu)[0]), &((*globsumsqu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqv)[0]), &((*globsumsqv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqw)[0]), &((*globsumsqw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuv)[0]), &((*globsumuv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuw)[0]), &((*globsumuw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumvw)[0]), &((*globsumvw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqp)[0]), &((*globsumsqp)[0]), size);
+  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
 
 
   //----------------------------------------------------------------------
@@ -2205,30 +2205,30 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes(const 
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(&((*locarea)[0]), &((*globarea)[0]), size);
+  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumu)[0]), &((*globsumu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumv)[0]), &((*globsumv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumw)[0]), &((*globsumw)[0]), size);
-  discret_->Comm().SumAll(&((*locsump)[0]), &((*globsump)[0]), size);
-  discret_->Comm().SumAll(&((*locsumrho)[0]), &((*globsumrho)[0]), size);
-  discret_->Comm().SumAll(&((*locsumT)[0]), &((*globsumT)[0]), size);
-  discret_->Comm().SumAll(&((*locsumrhou)[0]), &((*globsumrhou)[0]), size);
-  discret_->Comm().SumAll(&((*locsumrhouT)[0]), &((*globsumrhouT)[0]), size);
+  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
+  discret_->Comm().SumAll(locsumrho->data(), globsumrho->data(), size);
+  discret_->Comm().SumAll(locsumT->data(), globsumT->data(), size);
+  discret_->Comm().SumAll(locsumrhou->data(), globsumrhou->data(), size);
+  discret_->Comm().SumAll(locsumrhouT->data(), globsumrhouT->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumsqu)[0]), &((*globsumsqu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqv)[0]), &((*globsumsqv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqw)[0]), &((*globsumsqw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqp)[0]), &((*globsumsqp)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqrho)[0]), &((*globsumsqrho)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqT)[0]), &((*globsumsqT)[0]), size);
+  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  discret_->Comm().SumAll(locsumsqrho->data(), globsumsqrho->data(), size);
+  discret_->Comm().SumAll(locsumsqT->data(), globsumsqT->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumuv)[0]), &((*globsumuv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuw)[0]), &((*globsumuw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumvw)[0]), &((*globsumvw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuT)[0]), &((*globsumuT)[0]), size);
-  discret_->Comm().SumAll(&((*locsumvT)[0]), &((*globsumvT)[0]), size);
-  discret_->Comm().SumAll(&((*locsumwT)[0]), &((*globsumwT)[0]), size);
+  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->Comm().SumAll(locsumuT->data(), globsumuT->data(), size);
+  discret_->Comm().SumAll(locsumvT->data(), globsumvT->data(), size);
+  discret_->Comm().SumAll(locsumwT->data(), globsumwT->data(), size);
 
 
   //----------------------------------------------------------------------
@@ -2420,26 +2420,26 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(&((*locarea)[0]), &((*globarea)[0]), size);
+  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumu)[0]), &((*globsumu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumv)[0]), &((*globsumv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumw)[0]), &((*globsumw)[0]), size);
-  discret_->Comm().SumAll(&((*locsump)[0]), &((*globsump)[0]), size);
-  discret_->Comm().SumAll(&((*locsumphi)[0]), &((*globsumphi)[0]), size);
+  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
+  discret_->Comm().SumAll(locsumphi->data(), globsumphi->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumsqu)[0]), &((*globsumsqu)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqv)[0]), &((*globsumsqv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqw)[0]), &((*globsumsqw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqp)[0]), &((*globsumsqp)[0]), size);
-  discret_->Comm().SumAll(&((*locsumsqphi)[0]), &((*globsumsqphi)[0]), size);
+  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  discret_->Comm().SumAll(locsumsqphi->data(), globsumsqphi->data(), size);
 
-  discret_->Comm().SumAll(&((*locsumuv)[0]), &((*globsumuv)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuw)[0]), &((*globsumuw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumvw)[0]), &((*globsumvw)[0]), size);
-  discret_->Comm().SumAll(&((*locsumuphi)[0]), &((*globsumuphi)[0]), size);
-  discret_->Comm().SumAll(&((*locsumvphi)[0]), &((*globsumvphi)[0]), size);
-  discret_->Comm().SumAll(&((*locsumwphi)[0]), &((*globsumwphi)[0]), size);
+  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->Comm().SumAll(locsumuphi->data(), globsumuphi->data(), size);
+  discret_->Comm().SumAll(locsumvphi->data(), globsumvphi->data(), size);
+  discret_->Comm().SumAll(locsumwphi->data(), globsumwphi->data(), size);
 
 
   //----------------------------------------------------------------------
@@ -2734,19 +2734,19 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
     dserror("local_Ci_delta_sq_sum==null from parameterlist");
 
   // now add all the stuff from the different processors
-  discret_->Comm().SumAll(&((*local_Cs_sum)[0]), &((*global_incr_Cs_sum)[0]), local_Cs_sum->size());
-  discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum)[0]), &((*global_incr_Cs_delta_sq_sum)[0]),
+  discret_->Comm().SumAll(local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size());
+  discret_->Comm().SumAll(local_Cs_delta_sq_sum->data(), global_incr_Cs_delta_sq_sum->data(),
       local_Cs_delta_sq_sum->size());
   discret_->Comm().SumAll(
-      &((*local_visceff_sum)[0]), &((*global_incr_visceff_sum)[0]), local_visceff_sum->size());
+      local_visceff_sum->data(), global_incr_visceff_sum->data(), local_visceff_sum->size());
   discret_->Comm().SumAll(
-      &((*local_Prt_sum)[0]), &((*global_incr_Prt_sum)[0]), local_Prt_sum->size());
-  discret_->Comm().SumAll(&((*local_Cs_delta_sq_Prt_sum)[0]),
-      &((*global_incr_Cs_delta_sq_Prt_sum)[0]), local_Cs_delta_sq_Prt_sum->size());
+      local_Prt_sum->data(), global_incr_Prt_sum->data(), local_Prt_sum->size());
+  discret_->Comm().SumAll(local_Cs_delta_sq_Prt_sum->data(),
+      global_incr_Cs_delta_sq_Prt_sum->data(), local_Cs_delta_sq_Prt_sum->size());
   discret_->Comm().SumAll(
-      &((*local_diffeff_sum)[0]), &((*global_incr_diffeff_sum)[0]), local_diffeff_sum->size());
-  discret_->Comm().SumAll(&((*local_Ci_sum)[0]), &((*global_incr_Ci_sum)[0]), local_Ci_sum->size());
-  discret_->Comm().SumAll(&((*local_Ci_delta_sq_sum)[0]), &((*global_incr_Ci_delta_sq_sum)[0]),
+      local_diffeff_sum->data(), global_incr_diffeff_sum->data(), local_diffeff_sum->size());
+  discret_->Comm().SumAll(local_Ci_sum->data(), global_incr_Ci_sum->data(), local_Ci_sum->size());
+  discret_->Comm().SumAll(local_Ci_delta_sq_sum->data(), global_incr_Ci_delta_sq_sum->data(),
       local_Ci_delta_sq_sum->size());
 
   // Replace increment to compute average of Smagorinsky Constant, effective
@@ -2940,29 +2940,29 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
   // now add all the stuff from the different processors
   discret_->Comm().SumAll(
-      &((*local_N_stream_sum)[0]), &((*global_incr_N_stream_sum)[0]), local_N_stream_sum->size());
+      local_N_stream_sum->data(), global_incr_N_stream_sum->data(), local_N_stream_sum->size());
   discret_->Comm().SumAll(
-      &((*local_N_normal_sum)[0]), &((*global_incr_N_normal_sum)[0]), local_N_normal_sum->size());
+      local_N_normal_sum->data(), global_incr_N_normal_sum->data(), local_N_normal_sum->size());
   discret_->Comm().SumAll(
-      &((*local_N_span_sum)[0]), &((*global_incr_N_span_sum)[0]), local_N_span_sum->size());
+      local_N_span_sum->data(), global_incr_N_span_sum->data(), local_N_span_sum->size());
   discret_->Comm().SumAll(
-      &((*local_B_stream_sum)[0]), &((*global_incr_B_stream_sum)[0]), local_B_stream_sum->size());
+      local_B_stream_sum->data(), global_incr_B_stream_sum->data(), local_B_stream_sum->size());
   discret_->Comm().SumAll(
-      &((*local_B_normal_sum)[0]), &((*global_incr_B_normal_sum)[0]), local_B_normal_sum->size());
+      local_B_normal_sum->data(), global_incr_B_normal_sum->data(), local_B_normal_sum->size());
   discret_->Comm().SumAll(
-      &((*local_B_span_sum)[0]), &((*global_incr_B_span_sum)[0]), local_B_span_sum->size());
+      local_B_span_sum->data(), global_incr_B_span_sum->data(), local_B_span_sum->size());
   discret_->Comm().SumAll(
-      &((*local_Csgs_sum)[0]), &((*global_incr_Csgs_sum)[0]), local_Csgs_sum->size());
+      local_Csgs_sum->data(), global_incr_Csgs_sum->data(), local_Csgs_sum->size());
   discret_->Comm().SumAll(
-      &((*local_sgvisc_sum)[0]), &((*global_incr_sgvisc_sum)[0]), local_sgvisc_sum->size());
+      local_sgvisc_sum->data(), global_incr_sgvisc_sum->data(), local_sgvisc_sum->size());
   if (withscatra)
   {
     discret_->Comm().SumAll(
-        &((*local_Nphi_sum)[0]), &((*global_incr_Nphi_sum)[0]), local_Nphi_sum->size());
+        local_Nphi_sum->data(), global_incr_Nphi_sum->data(), local_Nphi_sum->size());
     discret_->Comm().SumAll(
-        &((*local_Dphi_sum)[0]), &((*global_incr_Dphi_sum)[0]), local_Dphi_sum->size());
+        local_Dphi_sum->data(), global_incr_Dphi_sum->data(), local_Dphi_sum->size());
     discret_->Comm().SumAll(
-        &((*local_Csgs_phi_sum)[0]), &((*global_incr_Csgs_phi_sum)[0]), local_Csgs_phi_sum->size());
+        local_Csgs_phi_sum->data(), global_incr_Csgs_phi_sum->data(), local_Csgs_phi_sum->size());
   }
 
   // Replace increment to compute average of parameters N and B as well as
@@ -3356,69 +3356,66 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // global sums
 
     // compute global sum, volume
-    discret_->Comm().SumAll(&((*local_vol)[0]), &((*global_vol)[0]), presize);
+    discret_->Comm().SumAll(local_vol->data(), global_vol->data(), presize);
 
     // compute global sum, element sizes
-    discret_->Comm().SumAll(&((*local_incrhk)[0]), &((*global_incrhk)[0]), presize);
+    discret_->Comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
 
     // compute global sum, element sizes in viscous regime, Bazilevs parameter
-    discret_->Comm().SumAll(&((*local_incrhbazilevs)[0]), &((*global_incrhbazilevs)[0]), presize);
+    discret_->Comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
 
     // compute global sum, element sizes
-    discret_->Comm().SumAll(&((*local_incrstrle)[0]), &((*global_incrstrle)[0]), presize);
+    discret_->Comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
 
     // compute global sum, gradient based element sizes
-    discret_->Comm().SumAll(&((*local_incrgradle)[0]), &((*global_incrgradle)[0]), presize);
+    discret_->Comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
 
     // compute global sums, stabilisation parameters
-    discret_->Comm().SumAll(&((*local_incrtauM)[0]), &((*global_incrtauM)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incrtauC)[0]), &((*global_incrtauC)[0]), presize);
+    discret_->Comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
+    discret_->Comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
 
     // compute global sum, mk
-    discret_->Comm().SumAll(&((*local_incrmk)[0]), &((*global_incrmk)[0]), presize);
+    discret_->Comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
 
     // compute global sums, momentum equation residuals
-    discret_->Comm().SumAll(&((*local_incrres)[0]), &((*global_incrres)[0]), velsize);
-    discret_->Comm().SumAll(&((*local_incrres_sq)[0]), &((*global_incrres_sq)[0]), velsize);
-    discret_->Comm().SumAll(&((*local_incrtauinvsvel)[0]), &((*global_incrtauinvsvel)[0]), velsize);
-    discret_->Comm().SumAll(&((*local_incrabsres)[0]), &((*global_incrabsres)[0]), presize);
+    discret_->Comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
+    discret_->Comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
+    discret_->Comm().SumAll(local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
+    discret_->Comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
 
-    discret_->Comm().SumAll(&((*local_incrsvelaf)[0]), &((*global_incrsvelaf)[0]), velsize);
-    discret_->Comm().SumAll(&((*local_incrsvelaf_sq)[0]), &((*global_incrsvelaf_sq)[0]), velsize);
-    discret_->Comm().SumAll(&((*local_incrabssvelaf)[0]), &((*global_incrabssvelaf)[0]), presize);
+    discret_->Comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
+    discret_->Comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
+    discret_->Comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
 
     // compute global sums, incompressibility residuals
-    discret_->Comm().SumAll(&((*local_incrresC)[0]), &((*global_incrresC)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incrresC_sq)[0]), &((*global_incrresC_sq)[0]), presize);
+    discret_->Comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
+    discret_->Comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
 
-    discret_->Comm().SumAll(&((*local_incrspressnp)[0]), &((*global_incrspressnp)[0]), presize);
-    discret_->Comm().SumAll(
-        &((*local_incrspressnp_sq)[0]), &((*global_incrspressnp_sq)[0]), presize);
+    discret_->Comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
+    discret_->Comm().SumAll(local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
 
     // compute global sums, disspiation rates
 
-    discret_->Comm().SumAll(&((*local_incr_eps_pspg)[0]), &((*global_incr_eps_pspg)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_supg)[0]), &((*global_incr_eps_supg)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_cross)[0]), &((*global_incr_eps_cross)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_rey)[0]), &((*global_incr_eps_rey)[0]), presize);
+    discret_->Comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
     discret_->Comm().SumAll(
-        &((*local_incr_eps_graddiv)[0]), &((*global_incr_eps_graddiv)[0]), presize);
+        local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
     discret_->Comm().SumAll(
-        &((*local_incr_eps_eddyvisc)[0]), &((*global_incr_eps_eddyvisc)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_visc)[0]), &((*global_incr_eps_visc)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_conv)[0]), &((*global_incr_eps_conv)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_avm3)[0]), &((*global_incr_eps_avm3)[0]), presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_mfs)[0]), &((*global_incr_eps_mfs)[0]), presize);
+        local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
     discret_->Comm().SumAll(
-        &((*local_incr_eps_mfscross)[0]), &((*global_incr_eps_mfscross)[0]), presize);
-    discret_->Comm().SumAll(
-        &((*local_incr_eps_mfsrey)[0]), &((*global_incr_eps_mfsrey)[0]), presize);
+        local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
+    discret_->Comm().SumAll(local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
 
     // compute global sums, subgrid stresses
     discret_->Comm().SumAll(
-        &((*local_incrcrossstress)[0]), &((*global_incrcrossstress)[0]), stresssize);
-    discret_->Comm().SumAll(
-        &((*local_incrreystress)[0]), &((*global_incrreystress)[0]), stresssize);
+        local_incrcrossstress->data(), global_incrcrossstress->data(), stresssize);
+    discret_->Comm().SumAll(local_incrreystress->data(), global_incrreystress->data(), stresssize);
 
 
     for (int rr = 0; rr < velsize; ++rr)
@@ -3640,40 +3637,38 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       // global sums
 
       // compute global sum, volume
-      discret_->Comm().SumAll(&((*local_scatra_vol)[0]), &((*global_scatra_vol)[0]), phisize);
+      discret_->Comm().SumAll(local_scatra_vol->data(), global_scatra_vol->data(), phisize);
 
       // compute global sums, stabilisation parameters
       discret_->Comm().SumAll(
-          &((*local_scatra_incrtauS)[0]), &((*global_scatra_incrtauS)[0]), phisize);
+          local_scatra_incrtauS->data(), global_scatra_incrtauS->data(), phisize);
 
       // compute global sums, incompressibility residuals
       discret_->Comm().SumAll(
-          &((*local_scatra_incrresS)[0]), &((*global_scatra_incrresS)[0]), phisize);
+          local_scatra_incrresS->data(), global_scatra_incrresS->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incrresS_sq)[0]), &((*global_scatra_incrresS_sq)[0]), phisize);
+          local_scatra_incrresS_sq->data(), global_scatra_incrresS_sq->data(), phisize);
 
       // compute global sums, disspiation rates
 
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_supg)[0]), &((*global_scatra_incr_eps_supg)[0]), phisize);
+          local_scatra_incr_eps_supg->data(), global_scatra_incr_eps_supg->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_cross)[0]), &((*global_scatra_incr_eps_cross)[0]), phisize);
+          local_scatra_incr_eps_cross->data(), global_scatra_incr_eps_cross->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_rey)[0]), &((*global_scatra_incr_eps_rey)[0]), phisize);
-      discret_->Comm().SumAll(&((*local_scatra_incr_eps_eddyvisc)[0]),
-          &((*global_scatra_incr_eps_eddyvisc)[0]), phisize);
+          local_scatra_incr_eps_rey->data(), global_scatra_incr_eps_rey->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_visc)[0]), &((*global_scatra_incr_eps_visc)[0]), phisize);
+          local_scatra_incr_eps_eddyvisc->data(), global_scatra_incr_eps_eddyvisc->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_conv)[0]), &((*global_scatra_incr_eps_conv)[0]), phisize);
+          local_scatra_incr_eps_visc->data(), global_scatra_incr_eps_visc->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_avm3)[0]), &((*global_scatra_incr_eps_avm3)[0]), phisize);
+          local_scatra_incr_eps_conv->data(), global_scatra_incr_eps_conv->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_mfs)[0]), &((*global_scatra_incr_eps_mfs)[0]), phisize);
-      discret_->Comm().SumAll(&((*local_scatra_incr_eps_mfscross)[0]),
-          &((*global_scatra_incr_eps_mfscross)[0]), phisize);
+          local_scatra_incr_eps_avm3->data(), global_scatra_incr_eps_avm3->data(), phisize);
       discret_->Comm().SumAll(
-          &((*local_scatra_incr_eps_mfsrey)[0]), &((*global_scatra_incr_eps_mfsrey)[0]), phisize);
+          local_scatra_incr_eps_mfs->data(), global_scatra_incr_eps_mfs->data(), phisize);
+      discret_->Comm().SumAll(
+          local_scatra_incr_eps_mfsrey->data(), global_scatra_incr_eps_mfsrey->data(), phisize);
 
       for (int rr = 0; rr < presize; ++rr)
       {

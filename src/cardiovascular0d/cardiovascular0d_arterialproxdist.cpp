@@ -63,7 +63,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
   const double tim = params.get("total time", -1.0);
   if (tim < 0.0) usetime = false;
 
-  int numdof_per_cond = 4;
+  const int numdof_per_cond = 4;
 
   std::vector<bool> havegid(numdof_per_cond);
   for (int j = 0; j < numdof_per_cond; j++)
@@ -348,7 +348,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
 
   params.set("action", "calc_struct_constrvol");
 
-  int numdof_per_cond = 4;
+  const int numdof_per_cond = 4;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

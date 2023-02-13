@@ -408,7 +408,7 @@ namespace IMMERSED
     std::vector<double> myvalues;
 
     // declare vector of global current coordinates
-    double x[globdim];
+    std::vector<double> x(globdim);
 
     // dimension of source discretization
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
@@ -424,7 +424,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
-        targetele, globdim, &targetxi[0], targetedisp, &x[0]);
+        targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
     xvec[1] = x[1];
@@ -562,7 +562,7 @@ namespace IMMERSED
               if (distance < 1.5 * diagonal)
               {
                 MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(
-                    *(curr->second), &sourceeledisp[0], &xvec[0], &xi(0), converged, residual);
+                    *(curr->second), sourceeledisp, xvec.data(), &xi(0), converged, residual);
                 if (converged == false)
                 {
                   //                  std::cout<<"Warning!! GlobalToCurrentLocal() in
@@ -602,7 +602,7 @@ namespace IMMERSED
                 // get parameter space coords xi in source element of global point xvec of target
                 // element
                 MORTAR::UTILS::GlobalToLocal<sourcedistype>(
-                    *(curr->second), &xvec[0], &xi(0), converged);
+                    *(curr->second), xvec.data(), &xi(0), converged);
                 if (converged == false)
                 {
                   xi(0) = 2.0;
@@ -833,7 +833,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();
@@ -929,7 +929,7 @@ namespace IMMERSED
     // pointer to background element
     DRT::Element* sourceele;
     // declare vector of global current coordinates
-    double x[globdim];
+    std::vector<double> x(globdim);
     // dimension of source discretization
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
     // declarations and definitions for round robin loop
@@ -946,7 +946,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
-        targetele, globdim, &targetxi[0], targetedisp, &x[0]);
+        targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
     xvec[1] = x[1];
@@ -1042,13 +1042,13 @@ namespace IMMERSED
             }
 
             // check if given point lies within bounding box
-            bool within = bbside->Within(1.0, &xvec[0]);
+            bool within = bbside->Within(1.0, xvec.data());
 
             // only try to match given target point and sourceele if within bounding box
             if (within)
             {
               MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(
-                  *sourceele, &mysourcedispnp[0], &xvec[0], &xi(0), converged, residual);
+                  *sourceele, mysourcedispnp.data(), xvec.data(), &xi(0), converged, residual);
 
               if (converged == false)
               {
@@ -1161,7 +1161,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();
@@ -1253,7 +1253,7 @@ namespace IMMERSED
     const int globdim = problem->NDim();
 
     // declare vector of global current coordinates of fluid node
-    double x_fluid_node[globdim];
+    std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
     static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
@@ -1287,7 +1287,7 @@ namespace IMMERSED
 
     // get current global coordinates of the given fluid node fluid_xi
     MORTAR::UTILS::LocalToCurrentGlobal<fluiddistype>(
-        fluidele, globdim, &fluidxi[0], fluideledisp, &x_fluid_node[0]);
+        fluidele, globdim, fluidxi.data(), fluideledisp, x_fluid_node.data());
     // get as vector
     std::vector<double> fluid_node_glob_coord(globdim);
     for (int idim = 0; idim < 3; ++idim) fluid_node_glob_coord[idim] = x_fluid_node[idim];
@@ -1440,11 +1440,11 @@ namespace IMMERSED
                   for (int i = 0; i < struct_dim; ++i) struct_xi(i) = struct_xsi[i];
 
                   // declare vector of global current coordinates
-                  double structsurf_gp_glob_coord[globdim];
+                  std::vector<double> structsurf_gp_glob_coord(globdim);
 
                   // get current global position of the given int point xi on the structural surface
                   MORTAR::UTILS::LocalToCurrentGlobal<structdistype>(*(structele), globdim,
-                      &struct_xsi[0], mydispnp, &structsurf_gp_glob_coord[0]);
+                      struct_xsi.data(), mydispnp, structsurf_gp_glob_coord.data());
 
                   // distance between fluid node and given structure gp
                   double dist =
@@ -1495,9 +1495,10 @@ namespace IMMERSED
           // space
           if (isALE)
             MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(
-                fluidele, &fluideledisp[0], &xvec[0], &fluid_xi(0), converged, residual);
+                fluidele, fluideledisp.data(), xvec.data(), &fluid_xi(0), converged, residual);
           else
-            MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele, &xvec[0], &fluid_xi(0), converged);
+            MORTAR::UTILS::GlobalToLocal<fluiddistype>(
+                fluidele, xvec.data(), &fluid_xi(0), converged);
 
           if (converged == false)
           {
@@ -1566,7 +1567,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();
@@ -1798,7 +1799,7 @@ namespace IMMERSED
 
               // ---- send ----
               MPI_Request request;
-              exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+              exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
               // ---- receive ----
               int length = rdata.size();

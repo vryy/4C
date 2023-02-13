@@ -169,7 +169,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -232,7 +232,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -295,7 +295,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 

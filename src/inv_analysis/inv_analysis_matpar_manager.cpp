@@ -153,7 +153,7 @@ void INVANA::MatParManager::SetupMatOptMap(const Teuchos::ParameterList& invp)
   char* pEnd;
   while (pstream >> word2)
   {
-    matid = std::strtol(&word2[0], &pEnd, 10);
+    matid = std::strtol(word2.data(), &pEnd, 10);
     if (*pEnd == '\0')  // if (matid != 0)
     {
       actmatid = matid;

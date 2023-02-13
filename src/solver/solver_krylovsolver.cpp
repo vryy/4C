@@ -537,7 +537,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindNonD
   }
 
   const Teuchos::ArrayView<const LocalOrdinal> NonDiagonalDominantGIDs_view(
-      &NonDiagonalDominantGIDs[0], NonDiagonalDominantGIDs.size());
+      NonDiagonalDominantGIDs.data(), NonDiagonalDominantGIDs.size());
 
   Teuchos::RCP<Map> NonDiagonalDominantGIDsMap = MapFactory::Build(xA->getRowMap()->lib(),
       Teuchos::OrdinalTraits<int>::invalid(), NonDiagonalDominantGIDs_view, 0, comm);
@@ -594,7 +594,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::FindZero
     }
   }
 
-  const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(&zeroGids[0], zeroGids.size());
+  const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(zeroGids.data(), zeroGids.size());
 
   Teuchos::RCP<Map> zeroDiagonalMap = MapFactory::Build(
       xA->getRowMap()->lib(), Teuchos::OrdinalTraits<int>::invalid(), zeroGids_view, 0, comm);

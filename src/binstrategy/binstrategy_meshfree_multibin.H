@@ -192,7 +192,7 @@ namespace DRT
       inline const int* AssociatedEleIds(BINSTRATEGY::UTILS::BinContentType bin_content) const
       {
         if (associatedeleid_[bin_content].size())
-          return &associatedeleid_[bin_content][0];
+          return associatedeleid_[bin_content].data();
         else
           return NULL;
       }
@@ -208,7 +208,7 @@ namespace DRT
       inline virtual Element** AssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content)
       {
         if (associatedeleid_[bin_content].size())
-          return &associatedele_[bin_content][0];
+          return associatedele_[bin_content].data();
         else
           return NULL;
       }

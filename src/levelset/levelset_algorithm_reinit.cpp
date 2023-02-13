@@ -681,7 +681,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
       }
     }
 
-    discret_->Comm().SumAll(&(nodecoords[0]), &(allnodecoords[0]), (int)nodecoords.size());
+    discret_->Comm().SumAll(nodecoords.data(), allnodecoords.data(), (int)nodecoords.size());
   }
 
   //================================================================

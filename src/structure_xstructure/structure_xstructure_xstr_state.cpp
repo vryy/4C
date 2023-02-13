@@ -303,7 +303,7 @@ Teuchos::RCP<Epetra_Map> XSTR::XStructureState::BuildNewStandardDofRowMap(
   }
 
   return Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(my_std_row_dofs.size()), &my_std_row_dofs[0], 0, new_discret.Comm()));
+      -1, static_cast<int>(my_std_row_dofs.size()), my_std_row_dofs.data(), 0, new_discret.Comm()));
 }
 
 /*----------------------------------------------------------------------------*

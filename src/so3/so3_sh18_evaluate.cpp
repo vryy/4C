@@ -1131,7 +1131,7 @@ void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& de
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<9, 9>& dsg_shear_r)
 {
   dsg_shear_r.Clear();
-  const double coord_refNode[2] = {0., 0.};
+  const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
@@ -1176,7 +1176,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<9, 9>& dsg_shear_s)
 {
   dsg_shear_s.Clear();
-  const double coord_refNode[2] = {0., 0.};
+  const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
   dsg_membrane_rs.Clear();
 
   // integration
-  const double coord_refNode[2] = {0., 0.};
+  const std::array<double, 2> coord_refNode = {0., 0.};
   const LINALG::Matrix<18, 3> coords = NodeParamCoord();
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
   LINALG::Matrix<2, 9> deriv_xieta;
@@ -1275,7 +1275,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
     const int gp, LINALG::Matrix<9, 9>& dsg_membrane_r)
 {
   dsg_membrane_r.Clear();
-  const double coord_refNode[2] = {0., 0.};
+  const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
@@ -1320,7 +1320,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
     const int gp, LINALG::Matrix<9, 9>& dsg_membrane_s)
 {
   dsg_membrane_s.Clear();
-  const double coord_refNode[2] = {0., 0.};
+  const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
   DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);

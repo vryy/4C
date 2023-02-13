@@ -725,7 +725,7 @@ namespace DRT
 #ifdef DEBUG
       if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
 #endif
-      return &elecolptr_[0];
+      return elecolptr_.data();
     }
 
     /*!
@@ -785,7 +785,7 @@ namespace DRT
 #ifdef DEBUG
       if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
 #endif
-      return &nodecolptr_[0];
+      return nodecolptr_.data();
     }
 
     //@}
@@ -1410,7 +1410,7 @@ namespace DRT
       std::map<std::string, Teuchos::RCP<const Epetra_Vector>>::const_iterator fool =
           state_[nds].find(name);
       if (fool == state_[nds].end())
-        dserror("Cannot find state %s", &name[0]);
+        dserror("Cannot find state %s", name.data());
       else
         return fool->second;
       return Teuchos::null;

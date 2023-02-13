@@ -1855,8 +1855,8 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      double coords[nsd] = {0.0};
-      DRT::Node node(0, (double*)coords, 0);
+      std::array<double, nsd> coords = {0.0};
+      DRT::Node node(0, coords.data(), 0);
       int nds_np;
       LINALG::Matrix<nsd, 1> vel;
       std::vector<LINALG::Matrix<nsd, nsd>> velDeriv;
@@ -2003,8 +2003,8 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      double coords[nsd] = {0.0};
-      DRT::Node node(0, (double*)coords, 0);
+      std::array<double, nsd> coords = {0.0};
+      DRT::Node node(0, coords.data(), 0);
       int nds_np;
       LINALG::Matrix<nsd, 1> vel;
       std::vector<LINALG::Matrix<nsd, nsd>> velDeriv;
