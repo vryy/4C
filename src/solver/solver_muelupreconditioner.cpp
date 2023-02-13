@@ -477,7 +477,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   if (muelulist_.isSublist("Linear System properties"))
   {
     const Teuchos::ParameterList& linSystemProps = muelulist_.sublist("Linear System properties");
-    // extract information provided by solver (e.g. PermutedAztecSolver)
     epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact masterDofMap");
     epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
     epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");

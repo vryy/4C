@@ -159,7 +159,6 @@ AZCONV                         AZ_r0
 AZOUTPUT                       10
 AZITER                         400
 AZTOL                          1e-9
-VERBOSITY                      0
 NAME                           FPSI_Solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                fpsi_bending_struct_BGSAMG.xml

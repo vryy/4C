@@ -158,7 +158,6 @@ NAME                            TSI_MONOLITHIC_SOLVER
 SIMPLE_DAMPING                  1
 SOLVER                          Belos  // UMFPACK,Superlu,undefined
 MUELU_XML_ENFORCE               No
-VERBOSITY                       0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15
 MAT 2 THERM_FourierIso CAPA 3405.49 CONDUCT 3.1e5

@@ -409,7 +409,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       scatrablockstr << ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
-      blocksmootherparamsscatra.sublist("Aztec Parameters");
+      blocksmootherparamsscatra.sublist("Belos Parameters");
       blocksmootherparamsscatra.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -422,7 +422,7 @@ void SSI::SSIMono::BuildNullSpaces() const
         scatramanifoldblockstr << ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0) + 1;
         Teuchos::ParameterList& blocksmootherparamsscatramanifold =
             solver_->Params().sublist("Inverse" + scatramanifoldblockstr.str());
-        blocksmootherparamsscatramanifold.sublist("Aztec Parameters");
+        blocksmootherparamsscatramanifold.sublist("Belos Parameters");
         blocksmootherparamsscatramanifold.sublist("MueLu Parameters");
 
         // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -449,7 +449,7 @@ void SSI::SSIMono::BuildNullSpaces() const
   // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + iblockstr.str());
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   // equip smoother for structural matrix block with null space associated with all degrees of

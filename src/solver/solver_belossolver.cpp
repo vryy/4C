@@ -119,8 +119,7 @@ void LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
   ////////////////////////////////////// permutation stuff
   if (this->bAllowPermutation_)
   {
-    // extract (user-given) additional information about linear system from
-    // "Aztec Parameters" -> "Linear System properties"
+    // extract (user-given) additional information about linear system
     Teuchos::RCP<Epetra_Map> epSlaveDofMap =
         this->ExtractPermutationMap("Belos Parameters", "contact slaveDofMap");
 

@@ -336,24 +336,8 @@ void UTILS::ConstraintSolver::SolveSimple(Teuchos::RCP<LINALG::SparseMatrix> sti
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
   // LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
-  if (!solver_->Params().isSublist("Aztec Parameters") &&
-      !solver_->Params().isSublist("Belos Parameters"))
-  {
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION "
-                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-              << std::endl;
-    std::cout << "You need a \'CONTACT SOLVER\' block within your dat file with either "
-                 "\'Aztec_MSR\' or \'Belos\' as SOLVER."
-              << std::endl;
-    std::cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within "
-                 "CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' "
-              << std::endl;
-    std::cout << "block for the constraint block" << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION "
-                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-              << std::endl;
-    dserror("Please edit your dat file");
-  }
+  if (!solver_->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
+
   solver_->Params().set<bool>(
       "CONSTRAINT", true);  // handling of constraint null space within Simple type preconditioners
   solver_->Params().sublist(

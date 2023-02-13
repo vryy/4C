@@ -85,7 +85,6 @@ AZCONV                         AZ_r0
 AZOUTPUT                       10
 AZITER                         400
 AZTOL                          1e-9
-VERBOSITY                      0
 NAME                           Poro_solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml

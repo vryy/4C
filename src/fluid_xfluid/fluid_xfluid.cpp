@@ -4121,14 +4121,12 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
   Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
 
   // use iterative solver
-  Teuchos::ParameterList& azlist = solverparams->sublist("Aztec Parameters");
-  azlist.set<int>("reuse", 0);
-  azlist.set<double>("AZ_tol", 1.0e-12);
-  // azlist.set("AZ_kspace",inparams.get<int>("AZSUB")); //AZSUB
-  azlist.set("AZ_overlap", 0);
-  azlist.set("AZ_output", 50);
+  solverparams->set("solver", "belos");
+  Teuchos::ParameterList& solverlist = solverparams->sublist("Belos Parameters");
+  solverlist.set("Solver Type", "GMRES");
+  solverlist.set<double>("Convergence Tolerance", 1.0e-12);
+  solverlist.set<int>("reuse", 0);
   solverparams->sublist("IFPACK Parameters");
-  solverparams->set("solver", "aztec");
 
   Teuchos::RCP<LINALG::Solver> solver_gp = Teuchos::rcp(new LINALG::Solver(
       solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));

@@ -178,7 +178,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 IFPACKOVERLAP                   3
 IFPACKGFILL                     3
-VERBOSITY                       5
 --------------------------------------------------------------------SOLVER 2
 NAME                            Scatra_Solver
 SOLVER                          UMFPACK

@@ -28,7 +28,7 @@
 
 namespace LINALG::SOLVER
 {
-  //! krylov subspace linear solvers (aztec) with right-side preconditioning
+  //! krylov subspace linear solvers with right-side preconditioning
   template <class MatrixType, class VectorType>
   class KrylovSolver : public SolverType<MatrixType, VectorType>
   {
@@ -69,11 +69,11 @@ namespace LINALG::SOLVER
 
     /*! \brief Function for creating preconditioner object
      *
-     * @param azlist Aztec parameter list
+     * @param solverlist liner solver parameter list
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    void CreatePreconditioner(Teuchos::ParameterList& azlist, const bool isCrsMatrix,
+    void CreatePreconditioner(Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
         Teuchos::RCP<LINALG::KrylovProjector> projector);
 
     //! a communicator

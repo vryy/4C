@@ -5,8 +5,6 @@ set(OBJS_SOLVER
     solver_amgnxn_preconditioner.cpp
     solver_amgnxn_smoothers.cpp
     solver_amgnxn_vcycle.cpp
-    solver_aztecsolver.cpp
-    solver_aztecsolver_projectedresidual.cpp
     solver_belossolver.cpp
     solver_bgs2x2_operator.cpp
     solver_blockpreconditioners.cpp

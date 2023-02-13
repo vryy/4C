@@ -35,7 +35,6 @@ MUELU_XML_FILE                        beam3eb_static_beam_to_solid_volume_meshty
 AZOUTPUT                              1
 AZTOL                                 1.0e-8
 AZCONV                                AZ_r0
-VERBOSITY                             5
 -------------------------------------------------------------STRUCT NOX/Printing
 Error                               = Yes
 Warning                             = Yes

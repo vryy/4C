@@ -146,9 +146,7 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("aztec solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -170,13 +168,13 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
   // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams1 = Solver().Params().sublist("Inverse1");
-  blocksmootherparams1.sublist("Aztec Parameters");
+  blocksmootherparams1.sublist("Belos Parameters");
   blocksmootherparams1.sublist("MueLu Parameters");
 
   scatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = Solver().Params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("Belos Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
 
   artscatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams2);

@@ -47,8 +47,8 @@ namespace LINALG::SOLVER
     //! IFPACK parameter list
     Teuchos::ParameterList& ifpacklist_;
 
-    //! AZTEC parameter list
-    Teuchos::ParameterList& azlist_;
+    //! solver parameter list
+    Teuchos::ParameterList& solverlist_;
 
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;

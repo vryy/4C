@@ -933,9 +933,6 @@ SUB_SOLVER1                     -1
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
 //
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
-//
 // solver parameters for solver block 2
 --------------------------------------------------------------------SOLVER 2
 //
@@ -1152,9 +1149,6 @@ SUB_SOLVER1                     -1
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
 //
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
-//
 // solver parameters for solver block 3
 --------------------------------------------------------------------SOLVER 3
 //
@@ -1370,9 +1364,6 @@ SUB_SOLVER1                     -1
 //
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
-//
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
 //
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //

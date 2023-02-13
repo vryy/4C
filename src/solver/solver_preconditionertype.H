@@ -44,7 +44,7 @@ namespace LINALG::SOLVER
 
     /// linear problem created (managed) by this preconditioner
     /*!
-       This is how aztec sees the linear problem that needs to be solved.
+       This is how the iterative solver sees the linear problem that needs to be solved.
     */
     virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
 
@@ -76,7 +76,7 @@ namespace LINALG::SOLVER
 
     /// linear operator used for preconditioning
     /*!
-      This is how aztec sees the linear operator to be used for preconditioning.
+      This is how the iterative solver sees the linear operator to be used for preconditioning.
     */
     virtual Epetra_Operator* PrecOperator() const = 0;
 

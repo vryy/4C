@@ -119,8 +119,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
   // Modify lists to reuse subblock preconditioner at least maxiter times
   //-------------------------------------------------------------------------
   {
-    int maxiter = predictSolver_list_.sublist("Aztec Parameters").get("AZ_max_iter", 1);
-    predictSolver_list_.sublist("Aztec Parameters").set("reuse", maxiter + 1);
+    int maxiter = predictSolver_list_.sublist("Belos Parameters").get("Maximum Iterations", 1);
+    predictSolver_list_.sublist("Belos Parameters").set("reuse", maxiter + 1);
   }
 
 #if SIMPLEC_DIAGONAL
@@ -260,7 +260,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     else
     {
       std::string type =
-          predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type", "ILU");
+          predictSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack factory;
       Ifpack_Preconditioner* prec = factory.Create(type, A00, 0);
       prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
@@ -338,7 +338,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     {
       Ifpack factory;
       std::string type =
-          schurSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type", "ILU");
+          schurSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack_Preconditioner* prec = factory.Create(type, A11, 0);
       prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
@@ -389,7 +389,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
 int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  // note: Aztec might pass X and Y as physically identical objects,
+  // note: might pass X and Y as physically identical objects,
   // so we better deep copy here
 
   // extract initial guess and rhs for velocity and pressure

@@ -251,7 +251,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
 
       // plausibility check
 
-      // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
+      // solver can be either UMFPACK (direct solver) or an iterative solver
       const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
           DRT::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
@@ -368,24 +368,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
       linsolver->Params() = LINALG::Solver::TranslateSolverParameters(
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
-      if (!linsolver->Params().isSublist("Aztec Parameters") &&
-          !linsolver->Params().isSublist("Belos Parameters"))
-      {
-        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION "
-                     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                  << std::endl;
-        std::cout << "You need a \'CONTACT SOLVER\' block within your dat file with either "
-                     "\'Aztec_MSR\' or \'Belos\' as SOLVER."
-                  << std::endl;
-        std::cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within "
-                     "CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' "
-                  << std::endl;
-        std::cout << "block for the constraint block" << std::endl;
-        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION "
-                     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                  << std::endl;
-        dserror("Please edit your dat file");
-      }
+      if (!linsolver->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
 
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");

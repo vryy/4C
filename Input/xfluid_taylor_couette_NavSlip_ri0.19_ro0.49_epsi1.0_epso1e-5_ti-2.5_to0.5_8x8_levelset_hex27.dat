@@ -106,7 +106,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 IFPACKOVERLAP                   3
 IFPACKGFILL                     3
-VERBOSITY                       5
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver_Large_Systems
 SOLVER                          Belos
@@ -118,7 +117,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 IFPACKOVERLAP                   3
 IFPACKGFILL                     3
-VERBOSITY                       5
 --------------------------------------------------------------------SOLVER 3
 NAME                            L2_Projection
 SOLVER                          UMFPACK

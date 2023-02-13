@@ -633,8 +633,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -643,7 +642,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fpsisolverparams, "AZPREC");

@@ -1155,7 +1155,7 @@ void STI::Monolithic::BuildNullSpaces() const
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null space
       // computation
       Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
-      blocksmootherparams.sublist("Aztec Parameters");
+      blocksmootherparams.sublist("Belos Parameters");
       blocksmootherparams.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -1180,7 +1180,7 @@ void STI::Monolithic::BuildNullSpaces() const
   // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + iblockstr.str());
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   // equip smoother for thermo matrix block with null space associated with all degrees of freedom

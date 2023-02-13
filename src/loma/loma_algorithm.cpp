@@ -185,7 +185,7 @@ void LOMA::Algorithm::Setup()
     if (linsolvernumber == (-1))
       dserror(
           "no linear solver defined for LOMA. Please set LINEAR_SOLVER in LOMA CONTROL to a valid "
-          "number! This solver has to be an Aztec solver with BGS2x2 block preconditioner.");
+          "number! This solver has to be an iterative solver with BGS2x2 block preconditioner.");
 
     // create loma solver
     // get solver parameter list of linear LOMA solver
@@ -195,10 +195,9 @@ void LOMA::Algorithm::Setup()
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
 
-    if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
-        solvertype != INPAR::SOLVER::SolverType::belos)
+    if (solvertype != INPAR::SOLVER::SolverType::belos)
       dserror(
-          "SOLVER %i is not valid for LOMA. It has to be an Aztec/Belos Solver (with BGS2x2 block "
+          "SOLVER %i is not valid for LOMA. It has to be an iterative Solver (with BGS2x2 block "
           "preconditioner)",
           linsolvernumber);
 
@@ -206,7 +205,7 @@ void LOMA::Algorithm::Setup()
         Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(lomasolverparams, "AZPREC");
     if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
       dserror(
-          "SOLVER %i is not valid for LOMA. It has to be an Aztec/Belos Solver with BGS2x2 block "
+          "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with BGS2x2 block "
           "preconditioner",
           linsolvernumber);
 

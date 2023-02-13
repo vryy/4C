@@ -131,7 +131,7 @@ namespace LINALG
        }
 
        and the documentation to LinalgPrecondOperator as well as the source
-       to LINALG::Solver::Solve_aztec.
+       to LINALG::Solver.
 
     */
     //! @}

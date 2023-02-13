@@ -1078,7 +1078,6 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
         solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
         break;
       }
-      case INPAR::SOLVER::SolverType::aztec_msr:
       case INPAR::SOLVER::SolverType::superlu:
       {
         // solve for 9 rhs iteratively
@@ -1091,9 +1090,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
       }
       default:
       {
-        dserror(
-            "You have to choose Belos or Aztec_MSR as solver for micro structures! Belos is "
-            "superior for this application.");
+        dserror("You have to choose an iterative solver for micro structures!");
         break;
       }
     }

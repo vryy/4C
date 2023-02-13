@@ -580,7 +580,7 @@ namespace STR
      *  Epetra_Operator::Apply method will apply this user supplied
      *  preconditioner to epetra vectors. The Epetra_Operator M can also be an
      *  Epetra_RowMatrix that can be used by internally constructed
-     *  preconditioner objects such as AztecOO, Ifpack, and ML.
+     *  preconditioner objects such as Ifpack, and ML.
      */
     bool computePreconditioner(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from
                                                         //!< NOX i.e. total displacements
