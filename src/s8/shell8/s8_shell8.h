@@ -93,26 +93,6 @@ void s8mtr(double **x, double **a3, double e3, double **gkov, double **gkon, dou
  *----------------------------------------------------------------------*/
 void s8_mat_neohooke(NEO_HOOKE *mat, double *stress, double **CC, double **gmkonr, double **gmkonc,
     double detr, double detc);
-/*----------------------------------------------------------------------*
- |  shell8_s8_mat_ogden.c                                       m.gee 06/03    |
- *----------------------------------------------------------------------*/
-void s8_mat_ogden_coupled(COMPOGDEN *mat, double *stress_cart, double C_cart[3][3][3][3],
-    double **gkonr, double **gmkovc);
-void s8_ogden_Ccart(double C[3][3][3][3], double C_cart[3][3][3][3], double N[3][3]);
-void s8_ogden_cartPK2(double PK2[3][3], double PK2main[3], double N[3][3]);
-void s8_ogden_principal_CG(double CG[3][3], double lambda[3], double N[3][3]);
-void s8_kov_CGcuca(double T[3][3], double **gkon);
-/*----------------------------------------------------------------------*
- |  shell8_s8_mat_ogden2.c                                      m.gee 06/03    |
- *----------------------------------------------------------------------*/
-void s8_mat_ogden_uncoupled(COMPOGDEN *mat, double *stress_cart, double *strain,
-    double C_cart[3][3][3][3], double **gkovr, double **gkonr, double **gkovc, double **gkonc,
-    double **gmkovr, double **gmkonr, double **gmkovc, double **gmkonc);
-/*----------------------------------------------------------------------*
- |  shell8_s8_mat_ogden3.c                                      m.gee 06/03    |
- *----------------------------------------------------------------------*/
-void s8_mat_ogden_uncoupled2(COMPOGDEN *mat, double *stress_cart, double C_cart[3][3][3][3],
-    double **gkonr, double **gmkovc);
 
 /*----------------------------------------------------------------------*
  |  shell8_s8_mattransform.c                                    m.gee 06/03    |

@@ -21,7 +21,6 @@ set(OBJS_MAT
     mat_beam_elasthyper_parameter.cpp
     mat_carreauyasuda.cpp
     mat_cnst_1d_art.cpp
-    mat_compogden.cpp
     mat_constraintmixture.cpp
     mat_constraintmixture_history.cpp
     mat_crosslinkermat.cpp

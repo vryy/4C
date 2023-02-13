@@ -60,7 +60,6 @@
 #include "mat_newman.H"
 #include "mat_newman_multiscale.H"
 #include "mat_electrode.H"
-#include "mat_compogden.H"
 #include "mat_elasthyper.H"
 #include "mat_viscoelasthyper.H"
 #include "mat_plasticelasthyper.H"
@@ -723,12 +722,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::NewmanMultiScale(curmat));
       auto* params = static_cast<MAT::PAR::NewmanMultiScale*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_compogden:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::CompOgden(curmat));
-      auto* params = static_cast<MAT::PAR::CompOgden*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_elasthyper:

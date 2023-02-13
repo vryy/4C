@@ -7,9 +7,6 @@ set(OBJS_S8_LIB
     s8_line_evaluate.cpp
     s8_scatra.cpp
     shell8/s8_shell8_mat_linel.c
-    shell8/s8_shell8_mat_ogden.c
-    shell8/s8_shell8_mat_ogden2.c
-    shell8/s8_shell8_mat_ogden3.c
     shell8/s8_shell8_mattransform.c
     shell8/s8_shell8_tmat.c
     )
@@ -23,8 +20,3 @@ set(LIBS_ELE_S8
     )
 
 target_link_libraries(ele_s8 PUBLIC ${LIBS_ELE_S8})
-
-baci_add_library(ele_s8_fortran fortran/s8_fserv.f)
-target_link_libraries(ele_s8_fortran PRIVATE fortran)
-
-target_link_libraries(ele_s8 PRIVATE ele_s8_fortran)

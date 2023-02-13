@@ -12,7 +12,6 @@ typedef enum _MATERIAL_TYP
 {
   m_stvenant,  /* St.Venant Kirchhoff material */
   m_neohooke,  /* Neo-Hooke material */
-  m_compogden, /* compressible Ogden material (with shell8) */
   m_viscohyper /* compressible viscous Ogden material (with shell8) */
 } MATERIAL_TYP;
 
