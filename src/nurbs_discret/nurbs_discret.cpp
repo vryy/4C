@@ -93,11 +93,11 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
-    Epetra_IntVector& hierarchy, Epetra_Vector& values, Teuchos::RCP<std::set<int>>* dbcgids) const
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, DRT::UTILS::Dbc::DbcInfo& info,
+    Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, toggle, hierarchy, values, dbcgids);
+  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -115,7 +115,14 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  ReadDirichletCondition(discret, conds, time, toggle, hierarchy, values, dbcgids);
+  Epetra_IntVector toggle2 = Epetra_IntVector(info.toggle.Map());
+  Epetra_IntVector hierarchy2(info.hierarchy.Map());
+  hierarchy2.PutValue(99);  // the value 99 is arbitrary, it just needs to be greater than 3
+  Epetra_IntVector condition2(info.condition.Map(), true);
+  condition2.PutValue(-1);
+  Epetra_Vector values2(info.values.Map(), true);
+  DRT::UTILS::Dbc::DbcInfo info2(toggle2, hierarchy2, condition2, values2);
+  ReadDirichletCondition(discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
   conds.clear();
@@ -130,10 +137,16 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&discret);
   if (not discret_nurbs) dserror("Dynamic cast failed!");
 
-  // build dummy column toggle vector
+  // build dummy column toggle vector and auxiliary vectors
   Epetra_IntVector toggle_col = Epetra_IntVector(*discret_nurbs->DofColMap());
+  Epetra_IntVector hierarchy_col(toggle_col.Map());
+  hierarchy_col.PutValue(99);  // the value 99 is arbitrary, it just needs to be greater than 3
+  Epetra_IntVector condition_col(toggle_col.Map(), true);
+  condition_col.PutValue(-1);
+  Epetra_Vector values_col(toggle_col.Map(), true);
+  DRT::UTILS::Dbc::DbcInfo info_col(toggle_col, hierarchy_col, condition_col, values_col);
 
-  ReadDirichletCondition(discret, conds, time, toggle_col, hierarchy, values, dbcgids_nurbs);
+  ReadDirichletCondition(discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
   DoDirichletCondition(discret, conds, time, systemvectors, toggle_col, dbcgids_nurbs);

@@ -170,6 +170,19 @@ namespace DRT
         set_col = 1   ///< access the dbc column GID set
       };
 
+      struct DbcInfo
+      {
+        Epetra_IntVector& toggle;
+        Epetra_IntVector& hierarchy;
+        Epetra_IntVector& condition;
+        Epetra_Vector& values;
+
+        DbcInfo(Epetra_IntVector& t, Epetra_IntVector& h, Epetra_IntVector& c, Epetra_Vector& v)
+            : toggle(t), hierarchy(h), condition(c), values(v)
+        {
+        }
+      };
+
      public:
       /** \brief constructor
        *
@@ -237,8 +250,7 @@ namespace DRT
        *  \author mwgee (original) \date 02/08
        *  \author rauch \date 06/16 */
       virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
-          Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief loop through Dirichlet conditions and evaluate them
@@ -275,14 +287,12 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          Epetra_IntVector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          Epetra_IntVector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
 
@@ -314,8 +324,7 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
-          Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const DRT::Condition& cond, const double& time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.

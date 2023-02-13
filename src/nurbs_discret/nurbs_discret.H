@@ -189,8 +189,7 @@ namespace DRT
        *
        *  \author hiermeier, vuong \date 01/17 */
       void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
-          Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       /** \brief Determine Dirichlet condition at given time and apply its
