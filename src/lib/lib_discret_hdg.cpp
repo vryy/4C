@@ -399,7 +399,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+    const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
     Epetra_IntVector& hierarchy, Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
     const int& hierarchical_order) const
 {
@@ -415,7 +415,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterfa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+    const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
     Epetra_IntVector& hierarchy, Epetra_Vector& values, const Teuchos::RCP<std::set<int>>* dbcgids,
     const int& hierarchical_order) const
 
@@ -457,7 +457,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
           const int lid = discret.DofRowMap(0)->LID(gid);
 
           // set toggle vector
-          toggle[lid] = 1.0;
+          toggle[lid] = 1;
           // amend vector of DOF-IDs which are Dirichlet BCs
           if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).insert(gid);
           pressureDone = true;
@@ -495,7 +495,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
         if ((*onoff)[onesetj] == 0)
         {
           // no DBC on this dof, set toggle zero
-          toggle[lid] = 0.0;
+          toggle[lid] = 0;
           // get rid of entry in DBC map - if it exists
           if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).erase(gid);
           continue;
@@ -503,7 +503,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
         else  // if ((*onoff)[onesetj]==1)
         {
           // dof has DBC, set toggle vector one
-          toggle[lid] = 1.0;
+          toggle[lid] = 1;
           // amend vector of DOF-IDs which are dirichlet BCs
           if (dbcgids[set_row] != Teuchos::null) (*dbcgids[set_row]).insert(gid);
         }
@@ -519,7 +519,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
     const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
@@ -534,7 +534,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationInterface
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
     const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle) const
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, NULL);
@@ -731,7 +731,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
         int onesetj = j / dofpercomponent;
 
         // check whether dof gid is a dbc gid
-        if (std::abs(toggle[lid] - 1.0) > 1e-13) continue;
+        if (toggle[lid] == 0) continue;
 
         std::vector<double> value(deg + 1, (*val)[onesetj]);
 

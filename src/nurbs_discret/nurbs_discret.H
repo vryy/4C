@@ -189,7 +189,7 @@ namespace DRT
        *
        *  \author hiermeier, vuong \date 01/17 */
       virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -207,7 +207,7 @@ namespace DRT
        * \author vuong */
       virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const DRT::Condition& cond, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
      private:

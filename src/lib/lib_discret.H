@@ -1634,10 +1634,10 @@ namespace DRT
     \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
                                   Dirichlet boundary conditions and the remaining/free DOFs
     */
-    virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null);
+    void EvaluateDirichlet(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+        Teuchos::RCP<Epetra_Vector> systemvectord, Teuchos::RCP<Epetra_Vector> systemvectordd,
+        Teuchos::RCP<Epetra_IntVector> toggle,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null) override;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void EvaluateCondition(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,

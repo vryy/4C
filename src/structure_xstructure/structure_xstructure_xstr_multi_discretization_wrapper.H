@@ -13,6 +13,7 @@
 #ifndef SRC_STRUCTURE_XSTRUCTURE_XSTR_MULTI_DISCRETIZATION_WRAPPER_H_
 #define SRC_STRUCTURE_XSTRUCTURE_XSTR_MULTI_DISCRETIZATION_WRAPPER_H_
 
+#include <Epetra_IntVector.h>
 #include "lib_discret_interface.H"
 // necessary due to enum definition
 #include "xfem_enum_lists.H"
@@ -457,7 +458,7 @@ namespace XSTR
      *  \author hiermeier \date 10/16 */
     virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
+        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
         Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null);
 
     /** \brief Evaluate a specific condition [derived]

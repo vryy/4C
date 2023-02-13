@@ -104,7 +104,7 @@ namespace DRT
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
-        const Teuchos::RCP<Epetra_Vector>& toggle,
+        const Teuchos::RCP<Epetra_IntVector>& toggle,
         const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor);
 
     /** \brief Evaluate Dirichlet boundary conditions
@@ -117,7 +117,7 @@ namespace DRT
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
-        const Teuchos::RCP<Epetra_Vector>& toggle)
+        const Teuchos::RCP<Epetra_IntVector>& toggle)
     {
       EvaluateDirichlet(
           discret, params, systemvector, systemvectord, systemvectordd, toggle, Teuchos::null);
@@ -187,12 +187,13 @@ namespace DRT
           const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
           const Teuchos::RCP<Epetra_Vector>& systemvectordd,
-          const Teuchos::RCP<Epetra_Vector>& toggle,
+          const Teuchos::RCP<Epetra_IntVector>& toggle,
           const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const;
 
      protected:
       /// create the toggle vector based on the given systemvector maps
-      Teuchos::RCP<Epetra_Vector> CreateToggleVector(const Teuchos::RCP<Epetra_Vector> toggle_input,
+      Teuchos::RCP<Epetra_IntVector> CreateToggleVector(
+          const Teuchos::RCP<Epetra_IntVector> toggle_input,
           const Teuchos::RCP<Epetra_Vector>* systemvectors) const;
 
       /** \brief Evaluate Dirichlet boundary conditions
@@ -236,7 +237,7 @@ namespace DRT
        *  \author mwgee (original) \date 02/08
        *  \author rauch \date 06/16 */
       virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -275,13 +276,13 @@ namespace DRT
        *  \author rauch \date 06/16 */
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          Epetra_Vector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          Epetra_IntVector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          Epetra_Vector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
+          Epetra_IntVector& toggle, Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
 
@@ -313,7 +314,7 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+          const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
 
@@ -327,13 +328,13 @@ namespace DRT
        *  \author hiermeier \date 10/16 */
       void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
 
@@ -379,7 +380,7 @@ namespace DRT
        *  \author rauch (modified) \date 06/2016 */
       virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const DRT::Condition& cond, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired

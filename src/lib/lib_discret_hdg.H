@@ -140,11 +140,11 @@ namespace DRT
        *
        *  \author kronbichler \date 06/16 */
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+          const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const override;
       void ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-          const DRT::Condition& cond, const double& time, Epetra_Vector& toggle,
+          const DRT::Condition& cond, const double& time, Epetra_IntVector& toggle,
           Epetra_IntVector& hierarchy, Epetra_Vector& values,
           const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
 
@@ -163,11 +163,11 @@ namespace DRT
        *  \author kronbichler \date 02/08 */
       virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
           const DRT::Condition& cond, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,
           const double& time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_Vector& toggle) const;
+          const Epetra_IntVector& toggle) const;
     };  // class DbcHDG
   }     // namespace UTILS
 }  // namespace DRT

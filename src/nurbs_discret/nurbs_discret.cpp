@@ -93,7 +93,7 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_IntVector& toggle,
     Epetra_IntVector& hierarchy, Epetra_Vector& values, Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
@@ -131,7 +131,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
   if (not discret_nurbs) dserror("Dynamic cast failed!");
 
   // build dummy column toggle vector
-  Epetra_Vector toggle_col = Epetra_Vector(*discret_nurbs->DofColMap());
+  Epetra_IntVector toggle_col = Epetra_IntVector(*discret_nurbs->DofColMap());
 
   ReadDirichletCondition(discret, conds, time, toggle_col, hierarchy, values, dbcgids_nurbs);
 
@@ -143,7 +143,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
     const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call

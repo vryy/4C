@@ -16,6 +16,7 @@
 
 #include "lib_dserror.H"
 #include <Teuchos_RCP.hpp>
+#include <Epetra_IntVector.h>
 
 // forward declarations ...
 class Epetra_Map;
@@ -530,7 +531,7 @@ namespace DRT
      *                                the remaining/free DOFs */
     virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
+        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
         Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null) = 0;
 
     /** \brief Evaluate a specified condition
