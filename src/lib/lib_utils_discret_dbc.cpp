@@ -83,7 +83,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
    * a certain dof in the input file overwrites the corresponding entry
    * in the toggle vector. The entity hierarchy is:
    * point>line>surface>volume */
-  Teuchos::RCP<Epetra_Vector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
+  Teuchos::RCP<Epetra_IntVector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
 
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
