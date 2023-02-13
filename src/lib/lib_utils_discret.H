@@ -170,20 +170,59 @@ namespace DRT
         set_col = 1   ///< access the dbc column GID set
       };
 
+     public:
       struct DbcInfo
       {
-        Epetra_IntVector& toggle;
-        Epetra_IntVector& hierarchy;
-        Epetra_IntVector& condition;
-        Epetra_Vector& values;
+        /*!
+         * \brief toggle vector to store the fix/free state of a dof
+         */
+        Epetra_IntVector toggle;
 
-        DbcInfo(Epetra_IntVector& t, Epetra_IntVector& h, Epetra_IntVector& c, Epetra_Vector& v)
-            : toggle(t), hierarchy(h), condition(c), values(v)
+        /*!
+         * \brief record the lowest geometrical order that a dof applies
+         */
+        Epetra_IntVector hierarchy;
+
+        /*!
+         * \brief record the last condition id prescribed and assign value to dof
+         */
+        Epetra_IntVector condition;
+
+        /*!
+         * \brief the prescribed value assigned to dof
+         * \note This is necessary to check the DBC consistency
+         */
+        Epetra_Vector values;
+
+        /*!
+         * \brief constructor using the toggle vector as input
+         * \note all the vectors use the same map
+         */
+        DbcInfo(const Epetra_IntVector& toggle_input)
+            : toggle(toggle_input),
+              hierarchy(Epetra_IntVector(toggle_input.Map())),
+              condition(Epetra_IntVector(toggle_input.Map())),
+              values(Epetra_Vector(toggle_input.Map(), true))
         {
+          hierarchy.PutValue(std::numeric_limits<int>::max());
+          condition.PutValue(-1);
+        }
+
+        /*!
+         * \brief constructor using the vector map as input
+         * \note all the vectors use the same map
+         */
+        DbcInfo(const Epetra_BlockMap& toggle_map)
+            : toggle(Epetra_IntVector(toggle_map)),
+              hierarchy(Epetra_IntVector(toggle_map)),
+              condition(Epetra_IntVector(toggle_map)),
+              values(Epetra_Vector(toggle_map, true))
+        {
+          hierarchy.PutValue(std::numeric_limits<int>::max());
+          condition.PutValue(-1);
         }
       };
 
-     public:
       /** \brief constructor
        *
        *  Intentionally left blank! */
@@ -249,7 +288,7 @@ namespace DRT
        *
        *  \author mwgee (original) \date 02/08
        *  \author rauch \date 06/16 */
-      virtual void Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
+      virtual void Evaluate(const DRT::DiscretizationInterface& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -287,12 +326,12 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time, DbcInfo& info,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time, DbcInfo& info,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
 
@@ -324,8 +363,8 @@ namespace DRT
        *
        *  \author rauch \date 06/16 */
       virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, const double& time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const;
+          const DRT::Condition& cond, double time, DbcInfo& info,
+          const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
        *
@@ -336,13 +375,13 @@ namespace DRT
        *
        *  \author hiermeier \date 10/16 */
       void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
+          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
@@ -388,9 +427,8 @@ namespace DRT
        *  \author mwgee (original) \date 02/08
        *  \author rauch (modified) \date 06/2016 */
       virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, const double& time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        *

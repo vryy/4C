@@ -399,8 +399,8 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, const double& time, DRT::UTILS::Dbc::DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const
+    const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
@@ -413,8 +413,8 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterfa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, const double& time, DRT::UTILS::Dbc::DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids, const int& hierarchical_order) const
+    const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
@@ -514,9 +514,8 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
@@ -529,8 +528,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationInterface
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
+    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, NULL);
