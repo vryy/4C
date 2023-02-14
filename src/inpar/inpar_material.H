@@ -64,7 +64,6 @@ namespace INPAR
                                                          ///< deformation modes
       m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_cnst_art,            ///< 1D_Artery constant material properties
-      m_compogden,           ///< compressible Ogden material (with shell8)
       m_constraintmixture,   ///< growth and remodeling of arteries
       m_crosslinkermat,      ///< material for crosslinker in biopolymer networks
       m_crystplast,          ///< crystal plasticity

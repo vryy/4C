@@ -18,7 +18,6 @@
 #include "mat_stvenantkirchhoff.H"
 #include "mat_elasthyper.H"
 #include "matelast_coupneohooke.H"
-#include "mat_compogden.H"
 #include "lib_globalproblem.H"
 #include "structure_new_elements_paramsinterface.H"
 
@@ -128,22 +127,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
       actmat->m.neohooke->density = mat->Density();
       actmat->m.neohooke->possionratio = mat_elast_neohooke.NUE();
       actmat->m.neohooke->youngs = mat_elast_neohooke.YOUNGS();
-      break;
-    }
-    case INPAR::MAT::m_compogden:
-    {
-      const MAT::CompOgden* mat = static_cast<const MAT::CompOgden*>(material.get());
-      actmat->mattyp = m_compogden;
-      actmat->m.compogden = new COMPOGDEN();
-      actmat->m.compogden->nue = mat->Nue();
-      actmat->m.compogden->beta = mat->Beta();
-      actmat->m.compogden->alfap[0] = mat->AlfaP(0);
-      actmat->m.compogden->alfap[1] = mat->AlfaP(1);
-      actmat->m.compogden->alfap[2] = mat->AlfaP(2);
-      actmat->m.compogden->mup[0] = mat->MuP(0);
-      actmat->m.compogden->mup[1] = mat->MuP(1);
-      actmat->m.compogden->mup[2] = mat->MuP(2);
-      actmat->m.compogden->density = mat->Density();
       break;
     }
     default:
@@ -299,11 +282,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
     case INPAR::MAT::m_elasthyper:
     {
       delete actmat->m.neohooke;
-      break;
-    }
-    case INPAR::MAT::m_compogden:
-    {
-      delete actmat->m.compogden;
       break;
     }
     default:
@@ -1922,38 +1900,9 @@ void DRT::ELEMENTS::Shell8::s8tmat(struct _MATERIAL* material, double stress[], 
       amdel(&tmp2);
       break;
     }
-    case m_compogden: /*--------------------------------- kompressible ogden */
-    {
-      ARRAY tmp1;
-      ARRAY tmp2;
-      double** gkonrtmp = (double**)amdef((char*)"tmp", &tmp1, 3, 3, (char*)"DA");
-      double** gmkovctmp = (double**)amdef((char*)"tmp", &tmp2, 3, 3, (char*)"DA");
-      for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j)
-        {
-          gkonrtmp[i][j] = gkonr[i][j];
-          gmkovctmp[i][j] = gmkovc[i][j];
-        }
-      /*----------------------------- call compressible ogden material law */
-      double C4[3][3][3][3];
-      /*         Ogden hyperelasticity without deviatoric-volumetric split */
-      // s8_mat_ogden_coupled(mat->m.compogden,stress,C4,gkonrtmp,gmkovctmp);
-      /*            Ogden hyperelasticity with deviatoric-volumetric split */
-      s8_mat_ogden_uncoupled2(material->m.compogden, stress, C4, gkonrtmp, gmkovctmp);
-      /* PK2 stresses are cartesian ->  return stresses to curvilinear bases */
-      s8_kon_cacu(stress, gkonrtmp);
-      /*---------------- C4 is cartesian -> return C4 to curvilinear bases */
-      s8_4kon_cacu(C4, gkonrtmp);
-      /*---------------------- sort material tangent from tensor to matrix */
-      s8_c4_to_C2(C4, C);
-      /*-------------------------------------------------------------------*/
-      amdel(&tmp1);
-      amdel(&tmp2);
-      break;
-    }
     default:
     {
-      dserror("Ilegal typ of material for element shell8");
+      dserror("Illegal type of material for element shell8");
       break;
     }
   }  // switch (material->mattyp)

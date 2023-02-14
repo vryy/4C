@@ -24,9 +24,6 @@
 #define dgghrd dgghrd_
 #define dgeqp3 dgeqp3_
 #define dggbal dggbal_
-// defined in src/fortran
-#define fortranpow fortranpow_
-#define s8jacb s8jacb_
 
 #endif
 

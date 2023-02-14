@@ -26,9 +26,6 @@ void s8_getdensity(MATERIAL *mat, DOUBLE *density)
     case m_neohooke: /*------------------------------ kompressible neo-hooke */
       *density = mat->m.neohooke->density;
       break;
-    case m_compogden: /*-------------------------------- kompressible ogden */
-      *density = mat->m.compogden->density;
-      break;
     case m_viscohyper: /*---------------------------viscos compressible ogden */
       *density = mat->m.viscohyper->density;
       break;
