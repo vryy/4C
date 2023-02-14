@@ -1519,7 +1519,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
     {
       double const* pos = particles[iparticle]->X();
       std::array ijk = {-1, -1, -1};
-      ConvertPosToijk(pos, ijk);
+      ConvertPosToijk(pos, ijk.data());
 
       int gidofbin = ConvertijkToGid(ijk.data());
       if (gidofbin != binid)
