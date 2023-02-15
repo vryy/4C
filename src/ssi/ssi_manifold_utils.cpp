@@ -686,8 +686,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
   scatra_->ScaTraField()->Discretization()->EvaluateScalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
 
-  inflow_cond->Print(std::cout << std::scientific << std::setprecision(16));
-
   for (int i = 0; i < inflow_cond->Length(); ++i)
     inflow_.at(kineticsID).at(i) += inflow_cond->Values()[i];
 }
