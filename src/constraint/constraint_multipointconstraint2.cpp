@@ -183,7 +183,7 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
     ReorderConstraintNodes(ngid, constrcondvec[j]);
 
     remove_copy_if(ngid.data(), ngid.data() + numnodes, inserter(rownodeset, rownodeset.begin()),
-        not1(DRT::UTILS::MyGID(actnoderowmap)));
+        std::not_fn(DRT::UTILS::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
     copy(ngid.data(), ngid.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 

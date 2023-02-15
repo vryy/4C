@@ -143,7 +143,8 @@ Teuchos::RCP<const Epetra_Map> FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Ma
   std::vector<int> gids;
   gids.reserve(emap->NumMyElements());
   std::transform(emap->MyGlobalElements(), emap->MyGlobalElements() + emap->NumMyElements(),
-      std::back_inserter(gids), std::bind2nd(std::plus<int>(), maxgid + 1 - emap->MinAllGID()));
+      std::back_inserter(gids),
+      std::bind(std::plus<int>(), std::placeholders::_1, maxgid + 1 - emap->MinAllGID()));
 
   return Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, emap->Comm()));
 }
