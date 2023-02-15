@@ -56,8 +56,6 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 
 #include "beam3_base.H"
 
-#include <unistd.h>
-#include <sys/times.h>
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;

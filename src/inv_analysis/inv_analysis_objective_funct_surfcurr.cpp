@@ -22,7 +22,6 @@
 #include "Epetra_SerialSpdDenseSolver.h"
 #include "Epetra_SerialSymDenseMatrix.h"
 
-#include <sys/time.h>
 #include <random>
 
 /*----------------------------------------------------------------------*/
@@ -184,16 +183,16 @@ void INVANA::SurfCurrentGroup::Evaluate(Teuchos::RCP<Epetra_Vector> state, doubl
   // considered
   sourcedis_->SetState("displacements", state);
 
-  struct timeval begin, end;
-  gettimeofday(&begin, NULL);
+  const double begin = DRT::Problem::Walltime();
 
   for (int i = 0; i < (int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     val += currents_[0][i]->WSpaceNorm();
   }
-  gettimeofday(&end, NULL);
-  double dtime = 1.0 * (end.tv_sec - begin.tv_sec) + 1.0e-6 * (end.tv_usec - begin.tv_usec);
+
+  const double end = DRT::Problem::Walltime();
+  double dtime = end - begin;
 
   if (sourcedis_->Comm().MyPID() == 0)
     IO::cout << "SURFACE CURRENT function evaluation took: " << dtime << " seconds" << IO::endl;
@@ -210,16 +209,16 @@ void INVANA::SurfCurrentGroup::EvaluateGradient(
 
   sourcedis_->SetState("displacements", state);
 
-  struct timeval begin, end;
-  gettimeofday(&begin, NULL);
+  const double begin = DRT::Problem::Walltime();
 
   for (int i = 0; i < (int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     currents_[0][i]->GradientWSpaceNorm(gradient);
   }
-  gettimeofday(&end, NULL);
-  double dtime = 1.0 * (end.tv_sec - begin.tv_sec) + 1.0e-6 * (end.tv_usec - begin.tv_usec);
+
+  const double end = DRT::Problem::Walltime();
+  double dtime = end - begin;
 
   if (sourcedis_->Comm().MyPID() == 0)
     IO::cout << "SURFACE CURRENT gradient evaluation took: " << dtime << " seconds" << IO::endl;
