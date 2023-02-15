@@ -71,7 +71,7 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     DRT::INPUT::DoubleParameter("Min Scale Factor", 1.0e-3,
         "Minimum scale factor for scaling parameter term of arc-length equation", &stepper);
     DRT::INPUT::BoolParameter("Enable Tangent Factor Step Size Scaling", "No",
-        "Enable step size scaling by cosine between two consective tangent vector "
+        "Enable step size scaling by cosine between two consecutive tangent vectors "
         "\f$v_0\f$ and \f$v_1\f$ to continuation curve "
         "\f$|v_0 * v_1|^{\\alpha}\f$ where \f$\\alpha\f$ is the tangent factor exponent.",
         &stepper);
