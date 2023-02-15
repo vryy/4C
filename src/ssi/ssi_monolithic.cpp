@@ -617,14 +617,15 @@ void SSI::SSIMono::PrepareTimeLoop()
 {
   SetStructSolution(
       StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
-  ScaTraField()->Output();
-  if (IsScaTraManifold()) ScaTraManifold()->Output();
 
   // calculate initial potential field if needed
   if (DoCalculateInitialPotentialField()) CalcInitialPotentialField();
 
   // calculate initial time derivatives
   CalcInitialTimeDerivative();
+
+  ScaTraField()->Output();
+  if (IsScaTraManifold()) ScaTraManifold()->Output();
 }
 
 /*--------------------------------------------------------------------------*
