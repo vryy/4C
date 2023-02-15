@@ -94,26 +94,10 @@ void DRT::INPUT::MeshReader::ReadAndPartition()
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("MeshReader::ReadMeshFromDatFile");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::INPUT::MeshReader::ReadMeshFromDatFile");
 
   // read element information
   for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
-
-  // build node graph and corresponding maps
-  for (size_t i = 0; i < element_readers_.size(); i++)
-  {
-    // global node ids --- this will be a fully redundant vector!
-    int numnodes = static_cast<int>(element_readers_[i].GetUniqueNodes().size());
-    comm_->Broadcast(&numnodes, 1, 0);
-
-    // We want to be able to read empty fields. If we have such a beast
-    // just skip the partitioning and do a proper initialization
-    if (numnodes)
-      graph_[i] =
-          REBALANCE::BuildGraph(element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
-    else
-      graph_[i] = Teuchos::null;
-  }
 
   // read nodes based on the element information
   node_reader_->Read(element_readers_, max_node_id);
@@ -123,11 +107,22 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::MeshReader::Rebalance()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::INPUT::MeshReader::Rebalance");
+
   // do the real partitioning and distribute maps
   for (size_t i = 0; i < element_readers_.size(); i++)
   {
-    // build internal discretization maps (node & element maps) from scratch
-    element_readers_[i].GetDis()->SetupGhosting(false, false, false);
+    // global node ids --- this will be a fully redundant vector!
+    int numnodes = static_cast<int>(element_readers_[i].GetUniqueNodes().size());
+    comm_->Broadcast(&numnodes, 1, 0);
+
+    // We want to be able to read empty fields. If we have such a beast
+    // just skip the building of the node  graph and do a proper initialization
+    if (numnodes)
+      graph_[i] =
+          REBALANCE::BuildGraph(element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
+    else
+      graph_[i] = Teuchos::null;
 
     // create partitioning parameters
     const double imbalance_tol =
