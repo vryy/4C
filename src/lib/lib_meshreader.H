@@ -116,9 +116,9 @@ namespace DRT::INPUT
     void ReadMeshFromDatFile(int& node_id_offset);
 
     /*!
-    \brief Partition discretizations built in ReadMeshFromDatFile()
+    \brief Rebalance discretizations built in ReadMeshFromDatFile()
     */
-    void Partition();
+    void Rebalance();
 
     /*!
     \brief Create inline mesh
@@ -133,10 +133,6 @@ namespace DRT::INPUT
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
-
-    //! relevant maps of each discretization
-    std::vector<Teuchos::RCP<Epetra_Map>> rowmaps_;
-    std::vector<Teuchos::RCP<Epetra_Map>> colmaps_;
 
     //! graphs of each discretization
     std::vector<Teuchos::RCP<const Epetra_CrsGraph>> graph_;

@@ -80,12 +80,10 @@ void DRT::INPUT::MeshReader::ReadAndPartition()
   // We need to track the max global node ID to offset node numbering and for sanity checks
   int max_node_id = 0;
 
-  rowmaps_.resize(element_readers_.size());
-  colmaps_.resize(element_readers_.size());
   graph_.resize(element_readers_.size());
 
   ReadMeshFromDatFile(max_node_id);
-  Partition();
+  Rebalance();
   CreateInlineMesh(max_node_id);
 
   // last check if there are enough nodes
@@ -111,38 +109,26 @@ void DRT::INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
     // We want to be able to read empty fields. If we have such a beast
     // just skip the partitioning and do a proper initialization
     if (numnodes)
-    {
       graph_[i] =
           REBALANCE::BuildGraph(element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
-      rowmaps_[i] = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->RowMap().NumMyElements(),
-          graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
-      colmaps_[i] = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
-          graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
-    }
     else
-    {
       graph_[i] = Teuchos::null;
-      rowmaps_[i] = colmaps_[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-    }
   }
 
   // read nodes based on the element information
   node_reader_->Read(element_readers_, max_node_id);
-
-  // last thing to do here is to distribute the maps
-  for (size_t i = 0; i < element_readers_.size(); i++)
-  {
-    // element_readers_[i].GetDis()->Redistribute(*rowmaps_[i], *colmaps_[i]);
-  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::MeshReader::Partition()
+void DRT::INPUT::MeshReader::Rebalance()
 {
   // do the real partitioning and distribute maps
   for (size_t i = 0; i < element_readers_.size(); i++)
   {
+    // build internal discretization maps (node & element maps) from scratch
+    element_readers_[i].GetDis()->SetupGhosting(false, false, false);
+
     // create partitioning parameters
     const double imbalance_tol =
         DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
@@ -154,6 +140,8 @@ void DRT::INPUT::MeshReader::Partition()
     const auto rebalanceMethod = Teuchos::getIntegralValue<INPAR::REBALANCE::RebalanceType>(
         DRT::Problem::Instance()->MeshPartitioningParams(), "METHOD");
 
+    Teuchos::RCP<Epetra_Map> rowmap, colmap;
+
     switch (rebalanceMethod)
     {
       case INPAR::REBALANCE::RebalanceType::hypergraph:
@@ -162,11 +150,10 @@ void DRT::INPUT::MeshReader::Partition()
         if (!graph_[i].is_null())
         {
           // here we can reuse the graph, which was calculated before, this saves us some time
-          std::tie(rowmaps_[i], colmaps_[i]) =
-              REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
+          std::tie(rowmap, colmap) = REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
         }
         else
-          rowmaps_[i] = colmaps_[i] = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
+          rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
         break;
       }
       case INPAR::REBALANCE::RebalanceType::recursive_coordinate_bisection:
@@ -180,12 +167,8 @@ void DRT::INPUT::MeshReader::Partition()
         break;
       }
     }
-  }
 
-  // distribute maps
-  for (size_t i = 0; i < element_readers_.size(); i++)
-  {
-    element_readers_[i].GetDis()->Redistribute(*rowmaps_[i], *colmaps_[i], false, false, false);
+    element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
 
     REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i].GetDis());
   }
