@@ -27,13 +27,14 @@
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
-    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
+    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
+    const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
   TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
 
   // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = REBALANCE::RebalanceGraph(
-      *initialGraph, rebalanceParams, initialNodeWeights, initialEdgeWeights);
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = REBALANCE::RebalanceGraph(*initialGraph,
+      rebalanceParams, initialNodeWeights, initialEdgeWeights, initialNodeCoordinates);
 
   // extract repartitioned maps
   Teuchos::RCP<Epetra_Map> rownodes =
@@ -51,7 +52,8 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::Rebalan
 Teuchos::RCP<Epetra_CrsGraph> REBALANCE::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
     const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
-    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights)
+    const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
+    const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
   TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceGraph");
 
@@ -59,8 +61,17 @@ Teuchos::RCP<Epetra_CrsGraph> REBALANCE::RebalanceGraph(const Epetra_CrsGraph& i
   if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
   if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
 
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner;
+  if (initialNodeCoordinates != Teuchos::null)
+  {
+    partitioner = Teuchos::rcp(new Isorropia::Epetra::Partitioner(
+        &initialGraph, &costs, initialNodeCoordinates.get(), nullptr, rebalanceParams));
+  }
+  else
+  {
+    partitioner =
+        Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
+  }
 
   Isorropia::Epetra::Redistributor rd(partitioner);
   Teuchos::RCP<Epetra_CrsGraph> balancedGraph = rd.redistribute(initialGraph, true);

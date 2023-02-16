@@ -21,7 +21,7 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 
   setStringToIntegralParameter<RebalanceType>("METHOD", "hypergraph",
       "Type of rebalance/partition algorithm to use.",
-      tuple<std::string>("none", "hypergraph", "rcb"),
+      tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection"),
       tuple<RebalanceType>(RebalanceType::none, RebalanceType::hypergraph,
           RebalanceType::recursive_coordinate_bisection),
       &meshpartitioning);
