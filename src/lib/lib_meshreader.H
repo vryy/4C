@@ -11,6 +11,8 @@
 #ifndef DRT_MESHREADER_H
 #define DRT_MESHREADER_H
 
+#include "Epetra_CrsGraph.h"
+
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"
 #include "lib_domainreader.H"
@@ -105,12 +107,18 @@ namespace DRT::INPUT
 
    private:
     /*!
-    \brief Read pre-generated mesh from dat-file
+    \brief Read pre-generated mesh from dat-file and generate related FillCompleted()
+    discretizations
 
     \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
     nodes)
     */
     void ReadMeshFromDatFile(int& node_id_offset);
+
+    /*!
+    \brief Rebalance discretizations built in ReadMeshFromDatFile()
+    */
+    void Rebalance();
 
     /*!
     \brief Create inline mesh
@@ -125,6 +133,9 @@ namespace DRT::INPUT
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
+
+    //! graphs of each discretization
+    std::vector<Teuchos::RCP<const Epetra_CrsGraph>> graph_;
 
     /// my element readers
     std::vector<ElementReader> element_readers_;
