@@ -48,7 +48,6 @@ set(OBJS_LIB
     lib_node.cpp
     lib_parobject.cpp
     lib_parobjectfactory.cpp
-    lib_parobjectregister.cpp
     lib_periodicbc.cpp
     lib_resulttest.cpp
     lib_symbolic_expression.cpp

@@ -30,7 +30,7 @@ its parameters and conditions.
 #include "inpar_validconditions.H"
 #include "lib_conditiondefinition.H"
 #include "lib_elementdefinition.H"
-#include "lib_parobjectregister.H"
+#include "module_registry_parobjectregister.H"
 #include "comm_utils.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
@@ -48,6 +48,8 @@ int main(int argc, char** argv)
   // communication
   MPI_Init(&argc, &argv);
 
+  DRT::ForceRegistrationOfParObjectTypes();
+
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // create default communicators
@@ -64,8 +66,6 @@ int main(int argc, char** argv)
     std::string headfile;
     std::string datfile;
     std::string cline;
-
-    int printparobjecttypes = 0;
 
     // related to solid shell extrusion
     double soshthickness = 0.0;
@@ -121,10 +121,6 @@ int main(int argc, char** argv)
     My_CLP.setOption(
         "quadtri", "noquadtri", &quadtri, "transform quads to tris by cutting in two halves");
 
-    // print parobject types (needed for making automatic object registration working)
-    My_CLP.setOption("printparobjecttypes", &printparobjecttypes,
-        "print names of parobject types (registration hack)");
-
     Teuchos::CommandLineProcessor::EParseCommandLineReturn parseReturn = My_CLP.parse(argc, argv);
 
     if (parseReturn == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED)
@@ -136,16 +132,6 @@ int main(int argc, char** argv)
     if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
     {
       dserror("CommandLineProcessor reported an error");
-    }
-
-    if (printparobjecttypes)
-    {
-      // hack so that the parobject types are registered!!!
-      PrintParObjectList();
-
-      // free the global problem instance
-      problem->Done();
-      return 0;
     }
 
     // create error file (enforce the file opening!)
