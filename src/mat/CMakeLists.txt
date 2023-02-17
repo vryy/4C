@@ -158,4 +158,4 @@ set(LIBS_MAT
     stru_multi
     )
 
-target_link_libraries(mat PUBLIC ${LIBS_MAT})
+baci_add_dependency(mat ${LIBS_MAT})

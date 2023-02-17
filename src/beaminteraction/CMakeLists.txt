@@ -94,4 +94,4 @@ set(LIBS_LIB_BEAMINTERACTION
     timestepping
     )
 
-target_link_libraries(lib_beaminteraction PUBLIC ${LIBS_LIB_BEAMINTERACTION})
+baci_add_dependency(lib_beaminteraction ${LIBS_LIB_BEAMINTERACTION})

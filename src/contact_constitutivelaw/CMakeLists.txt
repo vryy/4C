@@ -18,4 +18,4 @@ set(LIBS_LIB_CONTACT_CONSTITUTIVELAW
     alg_contact
     )
 
-target_link_libraries(lib_contact_constitutivelaw PUBLIC ${LIBS_LIB_CONTACT_CONSTITUTIVELAW})
+baci_add_dependency(lib_contact_constitutivelaw ${LIBS_LIB_CONTACT_CONSTITUTIVELAW})

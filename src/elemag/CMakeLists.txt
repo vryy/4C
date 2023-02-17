@@ -13,7 +13,7 @@ set(LIBS_ALG_ELEMEAG
     linalg
     )
 
-target_link_libraries(alg_elemag PUBLIC ${LIBS_ALG_ELEMEAG})
+baci_add_dependency(alg_elemag ${LIBS_ALG_ELEMEAG})
 
 set(OBJS_ELEMAG_LIB
     # cmake-format: sortable
@@ -34,4 +34,4 @@ set(LIBS_ELE_ELEMAG
     linalg
     )
 
-target_link_libraries(ele_elemag PUBLIC ${LIBS_ELE_ELEMAG})
+baci_add_dependency(ele_elemag ${LIBS_ELE_ELEMAG})

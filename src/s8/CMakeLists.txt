@@ -19,4 +19,4 @@ set(LIBS_ELE_S8
     linalg
     )
 
-target_link_libraries(ele_s8 PUBLIC ${LIBS_ELE_S8})
+baci_add_dependency(ele_s8 ${LIBS_ELE_S8})

@@ -47,4 +47,4 @@ set(LIBS_ALG_PARTICLE_INTERACTION
     particleengine
     )
 
-target_link_libraries(alg_particle_interaction PUBLIC ${LIBS_ALG_PARTICLE_INTERACTION})
+baci_add_dependency(alg_particle_interaction ${LIBS_ALG_PARTICLE_INTERACTION})

@@ -21,4 +21,4 @@ set(LIBS_ALG_POROFLUIDMULTIPHASE
     lib
     )
 
-target_link_libraries(ele_porofluidmultiphase PUBLIC ${LIBS_ALG_POROFLUIDMULTIPHASE})
+baci_add_dependency(ele_porofluidmultiphase ${LIBS_ALG_POROFLUIDMULTIPHASE})

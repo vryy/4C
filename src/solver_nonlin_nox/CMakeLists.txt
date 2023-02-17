@@ -46,4 +46,4 @@ set(LIBS_NLNSOLVER_NOX
     linalg
     )
 
-target_link_libraries(nlnsolver_nox PUBLIC ${LIBS_NLNSOLVER_NOX})
+baci_add_dependency(nlnsolver_nox ${LIBS_NLNSOLVER_NOX})

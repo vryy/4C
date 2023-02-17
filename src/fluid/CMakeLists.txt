@@ -55,4 +55,4 @@ set(LIBS_ALG_FLUID
     red_airways
     )
 
-target_link_libraries(alg_fluid PUBLIC ${LIBS_ALG_FLUID})
+baci_add_dependency(alg_fluid ${LIBS_ALG_FLUID})

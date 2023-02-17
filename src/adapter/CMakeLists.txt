@@ -104,4 +104,4 @@ set(LIBS_ADAPTER
     volmortar
     )
 
-target_link_libraries(adapter PUBLIC ${LIBS_ADAPTER})
+baci_add_dependency(adapter ${LIBS_ADAPTER})

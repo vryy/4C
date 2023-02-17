@@ -84,7 +84,7 @@ set(LIBS_LIB
     nurbs_discret
     )
 
-target_link_libraries(lib PUBLIC ${LIBS_LIB})
+baci_add_dependency(lib ${LIBS_LIB})
 
 # TODO this module requires a lot more includes that are currently included transitively from linalg
 
@@ -108,6 +108,6 @@ set(LIBS_LIB_IO
     lib_fiber
     )
 
-target_link_libraries(lib_io PUBLIC ${LIBS_LIB_IO})
+baci_add_dependency(lib_io ${LIBS_LIB_IO})
 
 add_subdirectory(error)

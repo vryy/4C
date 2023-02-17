@@ -10,7 +10,7 @@ set(LIBS_LIB_IMMERSED
     lib
     )
 
-target_link_libraries(lib_immersed PUBLIC ${LIBS_LIB_IMMERSED})
+baci_add_dependency(lib_immersed ${LIBS_LIB_IMMERSED})
 
 set(OBJS_ALG_IMMERSED_PROBLEMS
     # cmake-format: sortable
@@ -27,4 +27,4 @@ set(LIBS_ALG_IMMERSED_PROBLEMS
     alg_fsi
     )
 
-target_link_libraries(alg_immersed_problem PUBLIC ${LIBS_ALG_IMMERSED_PROBLEMS})
+baci_add_dependency(alg_immersed_problem ${LIBS_ALG_IMMERSED_PROBLEMS})

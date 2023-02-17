@@ -25,4 +25,4 @@ set(LIBS_ALG_PARTICLE_ALGORITHM
     particleengine
     )
 
-target_link_libraries(alg_particle_algorithm PUBLIC ${LIBS_ALG_PARTICLE_ALGORITHM})
+baci_add_dependency(alg_particle_algorithm ${LIBS_ALG_PARTICLE_ALGORITHM})

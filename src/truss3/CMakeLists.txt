@@ -13,4 +13,4 @@ set(LIBS_ELET3
     lib
     )
 
-target_link_libraries(ele_t3 PUBLIC ${LIBS_ELET3})
+baci_add_dependency(ele_t3 ${LIBS_ELET3})

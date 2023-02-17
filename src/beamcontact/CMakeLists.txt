@@ -21,4 +21,4 @@ set(LIBS_LIB_BEAMCONTACT
     lib_beaminteraction
     )
 
-target_link_libraries(lib_beamcontact PUBLIC ${LIBS_LIB_BEAMCONTACT})
+baci_add_dependency(lib_beamcontact ${LIBS_LIB_BEAMCONTACT})

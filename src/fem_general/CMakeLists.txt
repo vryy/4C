@@ -27,4 +27,4 @@ set(LIBS_FEM_GENERAL
     lib_cut
     )
 
-target_link_libraries(fem_general PUBLIC ${LIBS_FEM_GENERAL})
+baci_add_dependency(fem_general ${LIBS_FEM_GENERAL})

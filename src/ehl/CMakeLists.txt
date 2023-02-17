@@ -14,4 +14,4 @@ set(LIBS_ALG_EHL
     linalg
     )
 
-target_link_libraries(alg_ehl PUBLIC ${LIBS_ALG_EHL})
+baci_add_dependency(alg_ehl ${LIBS_ALG_EHL})

@@ -18,4 +18,4 @@ set(LIBS_ELE_MEMBRANE
     lib
     )
 
-target_link_libraries(ele_membrane PUBLIC ${LIBS_ELE_MEMBRANE})
+baci_add_dependency(ele_membrane ${LIBS_ELE_MEMBRANE})

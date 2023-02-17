@@ -13,4 +13,4 @@ set(LIBS_NURBS_DISCRET
     lib
     )
 
-target_link_libraries(nurbs_discret PUBLIC ${LIBS_NURBS_DISCRET})
+baci_add_dependency(nurbs_discret ${LIBS_NURBS_DISCRET})

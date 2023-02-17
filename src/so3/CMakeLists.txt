@@ -112,4 +112,4 @@ set(LIBS_ELE_SO
     patspec
     )
 
-target_link_libraries(ele_so PUBLIC ${LIBS_ELE_SO})
+baci_add_dependency(ele_so ${LIBS_ELE_SO})

@@ -12,4 +12,4 @@ set(LIBS_ELE_RIGIDSPHERE
     linalg
     )
 
-target_link_libraries(ele_rigidsphere PUBLIC ${LIBS_ELE_RIGIDSPHERE})
+baci_add_dependency(ele_rigidsphere ${LIBS_ELE_RIGIDSPHERE})

@@ -28,4 +28,4 @@ set(LIBS_SOLVER
     linalg
     )
 
-target_link_libraries(solver PUBLIC ${LIBS_SOLVER})
+baci_add_dependency(solver ${LIBS_SOLVER})

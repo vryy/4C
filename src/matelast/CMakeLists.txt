@@ -58,4 +58,4 @@ set(LIBS_MATELAST
     mat
     )
 
-target_link_libraries(matelast PUBLIC ${LIBS_MATELAST})
+baci_add_dependency(matelast ${LIBS_MATELAST})

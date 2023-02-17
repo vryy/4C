@@ -33,4 +33,4 @@ set(LIBS_ALG_FBI
     linalg
     )
 
-target_link_libraries(alg_fbi PUBLIC ${LIBS_ALG_FBI})
+baci_add_dependency(alg_fbi ${LIBS_ALG_FBI})

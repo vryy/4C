@@ -30,4 +30,4 @@ set(LIBS_ELE_BEAM3
     linalg
     )
 
-target_link_libraries(ele_beam3 PUBLIC ${LIBS_ELE_BEAM3})
+baci_add_dependency(ele_beam3 ${LIBS_ELE_BEAM3})

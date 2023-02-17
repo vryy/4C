@@ -77,4 +77,4 @@ set(LIBS_INPAR
     lib_contact_constitutivelaw
     )
 
-target_link_libraries(inpar PUBLIC ${LIBS_INPAR})
+baci_add_dependency(inpar ${LIBS_INPAR})

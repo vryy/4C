@@ -12,4 +12,4 @@ set(LIBS_ELET3CL
     lib
     )
 
-target_link_libraries(ele_t3cl PUBLIC ${LIBS_ELET3CL})
+baci_add_dependency(ele_t3cl ${LIBS_ELET3CL})

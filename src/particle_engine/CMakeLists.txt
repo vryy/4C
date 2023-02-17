@@ -18,7 +18,7 @@ set(LIBS_ALG_PARTICLE_ENGINE
     linalg
     )
 
-target_link_libraries(alg_particle_engine PUBLIC ${LIBS_ALG_PARTICLE_ENGINE})
+baci_add_dependency(alg_particle_engine ${LIBS_ALG_PARTICLE_ENGINE})
 
 set(OBJS_PARTICLE_ENGINE_LIB
     # cmake-format: sortable
@@ -34,4 +34,4 @@ set(LIBS_PARTICLEENGINE
     linalg
     )
 
-target_link_libraries(particleengine PUBLIC ${LIBS_PARTICLEENGINE})
+baci_add_dependency(particleengine ${LIBS_PARTICLEENGINE})

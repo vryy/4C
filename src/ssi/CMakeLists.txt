@@ -31,4 +31,4 @@ set(LIBS_ALG_SSI
     lib
     )
 
-target_link_libraries(alg_ssi PUBLIC ${LIBS_ALG_SSI})
+baci_add_dependency(alg_ssi ${LIBS_ALG_SSI})

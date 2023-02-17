@@ -19,4 +19,4 @@ set(LIBS_ALG_XFLUID
     lib
     )
 
-target_link_libraries(alg_xfluid PUBLIC ${LIBS_ALG_XFLUID})
+baci_add_dependency(alg_xfluid ${LIBS_ALG_XFLUID})

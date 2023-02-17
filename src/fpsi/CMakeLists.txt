@@ -15,4 +15,4 @@ set(LIBS_ALG_FPSI
     adapter
     )
 
-target_link_libraries(alg_fpsi PUBLIC ${LIBS_ALG_FPSI})
+baci_add_dependency(alg_fpsi ${LIBS_ALG_FPSI})

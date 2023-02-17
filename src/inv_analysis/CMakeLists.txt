@@ -47,7 +47,7 @@ set(LIBS_ALG_STATINVANALYSIS
     lib
     )
 
-target_link_libraries(alg_statinvanalysis PUBLIC ${LIBS_ALG_STATINVANALYSIS})
+baci_add_dependency(alg_statinvanalysis ${LIBS_ALG_STATINVANALYSIS})
 
 set(OBJS_STATINV_ANALYSIS_LIB
     # cmake-format: sortable
@@ -61,4 +61,4 @@ set(LIBS_LIB_STATINV_ANA
     lib
     )
 
-target_link_libraries(lib_statinv_ana PUBLIC ${LIBS_LIB_STATINV_ANA})
+baci_add_dependency(lib_statinv_ana ${LIBS_LIB_STATINV_ANA})

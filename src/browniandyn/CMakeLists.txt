@@ -11,4 +11,4 @@ set(LIBS_LIB_BROWNIANDYN
     alg_structure
     )
 
-target_link_libraries(lib_browniandyn PUBLIC ${LIBS_LIB_BROWNIANDYN})
+baci_add_dependency(lib_browniandyn ${LIBS_LIB_BROWNIANDYN})

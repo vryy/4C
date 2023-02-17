@@ -11,4 +11,4 @@ set(LIBS_ALG_TUTORIAL_ELE
     alg_tutorial
     )
 
-target_link_libraries(alg_tutorial_ele PUBLIC ${LIBS_ALG_TUTORIAL_ELE})
+baci_add_dependency(alg_tutorial_ele ${LIBS_ALG_TUTORIAL_ELE})

@@ -12,4 +12,4 @@ set(LIBS_ALG_TWO_PHASE
     lib
     )
 
-target_link_libraries(alg_two_phase PUBLIC ${LIBS_ALG_TWO_PHASE})
+baci_add_dependency(alg_two_phase ${LIBS_ALG_TWO_PHASE})

@@ -15,4 +15,4 @@ set(LIBS_ALG_LUBRICATION
     inpar
     )
 
-target_link_libraries(alg_lubrication PUBLIC ${LIBS_ALG_LUBRICATION})
+baci_add_dependency(alg_lubrication ${LIBS_ALG_LUBRICATION})

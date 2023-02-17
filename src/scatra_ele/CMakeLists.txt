@@ -91,4 +91,4 @@ set(LIBS_ELE_SCATRA
     lib
     )
 
-target_link_libraries(ele_scatra PUBLIC ${LIBS_ELE_SCATRA})
+baci_add_dependency(ele_scatra ${LIBS_ELE_SCATRA})

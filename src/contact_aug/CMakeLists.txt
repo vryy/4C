@@ -35,4 +35,4 @@ set(LIBS_ALG_CONTACT_AUG
     alg_contact
     )
 
-target_link_libraries(alg_contact_aug PUBLIC ${LIBS_ALG_CONTACT_AUG})
+baci_add_dependency(alg_contact_aug ${LIBS_ALG_CONTACT_AUG})
