@@ -11,8 +11,8 @@ be directly assembled into the global matrices.
 /*-----------------------------------------------------------*/
 
 
-#ifndef PARTITIONED_PENALTYCOUPLING_ASSEMBLY_DIRECT_H
-#define PARTITIONED_PENALTYCOUPLING_ASSEMBLY_DIRECT_H
+#ifndef FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_DIRECT_H
+#define FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_DIRECT_H
 
 #include <Epetra_FEVector.h>
 #include "fbi_partitioned_penaltycoupling_assembly_manager.H"

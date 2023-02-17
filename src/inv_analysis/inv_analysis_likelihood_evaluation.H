@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LIKELIHOOD_EVALUATION_H_
-#define LIKELIHOOD_EVALUATION_H_
+#ifndef INV_ANALYSIS_LIKELIHOOD_EVALUATION_H
+#define INV_ANALYSIS_LIKELIHOOD_EVALUATION_H
 
 #include <random>
 
@@ -221,4 +221,4 @@ namespace INVANA
 
 
 
-#endif /* LIKELIHOOD_EVALUATION_H_ */
+#endif  // INV_ANALYSIS_LIKELIHOOD_EVALUATION_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMPOTENTIALVTKPARAMS_H
-#define BEAMPOTENTIALVTKPARAMS_H
+#ifndef BEAMINTERACTION_POTENTIAL_RUNTIME_VTK_OUTPUT_PARAMS_H
+#define BEAMINTERACTION_POTENTIAL_RUNTIME_VTK_OUTPUT_PARAMS_H
 
 #include "inpar_beampotential.H"
 

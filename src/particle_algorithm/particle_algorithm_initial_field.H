@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INITIAL_FIELD_H
-#define PARTICLE_INITIAL_FIELD_H
+#ifndef PARTICLE_ALGORITHM_INITIAL_FIELD_H
+#define PARTICLE_ALGORITHM_INITIAL_FIELD_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

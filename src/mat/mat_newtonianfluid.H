@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef NEWTONIANFLUID_H
-#define NEWTONIANFLUID_H
+#ifndef MAT_NEWTONIANFLUID_H
+#define MAT_NEWTONIANFLUID_H
 
 
 

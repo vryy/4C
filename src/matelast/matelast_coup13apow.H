@@ -7,8 +7,8 @@ invariant and the Jacobi determinant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUP13APOW_H_
-#define ELAST_COUP13APOW_H_
+#ifndef MATELAST_COUP13APOW_H
+#define MATELAST_COUP13APOW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -128,4 +128,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUP13APOW_H_
+#endif  // MATELAST_COUP13APOW_H

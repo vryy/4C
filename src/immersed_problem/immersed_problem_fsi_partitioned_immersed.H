@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef FSI_PARTITIONED_IMMERSED_H
-#define FSI_PARTITIONED_IMMERSED_H
+#ifndef IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_H
+#define IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_H
 
 #include "fsi_partitioned.H"
 

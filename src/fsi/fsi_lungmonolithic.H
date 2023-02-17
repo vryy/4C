@@ -9,8 +9,8 @@
 
 
 
-#ifndef FSI_LUNG_MONOLITHIC_H
-#define FSI_LUNG_MONOLITHIC_H
+#ifndef FSI_LUNGMONOLITHIC_H
+#define FSI_LUNGMONOLITHIC_H
 
 #include <fstream>
 

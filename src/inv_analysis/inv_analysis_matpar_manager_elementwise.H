@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef MATPAR_MANAGER_PERELEMENT_H
-#define MATPAR_MANAGER_PERELEMENT_H
+#ifndef INV_ANALYSIS_MATPAR_MANAGER_ELEMENTWISE_H
+#define INV_ANALYSIS_MATPAR_MANAGER_ELEMENTWISE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

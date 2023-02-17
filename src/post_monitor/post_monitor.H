@@ -13,8 +13,8 @@
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-#ifndef POST_MONITOR_H_
-#define POST_MONITOR_H_
+#ifndef POST_MONITOR_H
+#define POST_MONITOR_H
 
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -620,5 +620,5 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 };  // end of class PoroMultiElastScatraArteryScatraMonWriter
 
 
-#endif /*POST_MONITOR_H_*/
+#endif  // POST_MONITOR_H
 /*! @} (documentation module close)*/

@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef MORTAR_CALC_UTILS_H_
-#define MORTAR_CALC_UTILS_H_
+#ifndef MORTAR_CALC_UTILS_H
+#define MORTAR_CALC_UTILS_H
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
@@ -747,4 +747,4 @@ namespace MORTAR
 
 
 
-#endif /* MORTAR_CALC_UTILS_H_ */
+#endif  // MORTAR_CALC_UTILS_H

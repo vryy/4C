@@ -8,8 +8,8 @@
  */
 
 
-#ifndef POST_SINGLE_FIELD_WRITER_H_
-#define POST_SINGLE_FIELD_WRITER_H_
+#ifndef POST_COMMON_SINGLE_FIELD_WRITERS_H
+#define POST_COMMON_SINGLE_FIELD_WRITERS_H
 
 #include "post_common_writer_base.H"
 #include "post_common_filter_base.H"
@@ -277,4 +277,4 @@ class AnyFilter : public PostFilterBase
 };
 
 
-#endif /*POST_ENSIGHT_SINGLE_FIELD_WRITER_H_*/
+#endif  // POST_COMMON_SINGLE_FIELD_WRITERS_H

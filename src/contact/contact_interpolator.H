@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------*
  | definitions                                             farah 09/14 |
  *---------------------------------------------------------------------*/
-#ifndef CONTACT_INTERPOLATOR_H_
-#define CONTACT_INTERPOLATOR_H_
+#ifndef CONTACT_INTERPOLATOR_H
+#define CONTACT_INTERPOLATOR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 09/14 |
@@ -259,4 +259,4 @@ namespace NTS
 
 }  // namespace NTS
 
-#endif /* CONTACT_INTERPOLATOR_H_ */
+#endif  // CONTACT_INTERPOLATOR_H

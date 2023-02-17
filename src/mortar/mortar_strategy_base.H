@@ -413,4 +413,4 @@ namespace MORTAR
   };  // class StrategyBase
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_STRATEGY_BASE_H
+#endif  // MORTAR_STRATEGY_BASE_H

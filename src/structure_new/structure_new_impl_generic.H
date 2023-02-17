@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_IMPL_GENERIC_H_
-#define STR_IMPL_GENERIC_H_
+#ifndef STRUCTURE_NEW_IMPL_GENERIC_H
+#define STRUCTURE_NEW_IMPL_GENERIC_H
 
 #include "structure_new_integrator.H"
 #include "solver_nonlin_nox_abstract_prepostoperator.H"
@@ -322,4 +322,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* STR_IMPL_GENERIC_H_ */
+#endif  // STRUCTURE_NEW_IMPL_GENERIC_H

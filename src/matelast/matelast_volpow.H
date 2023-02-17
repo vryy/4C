@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_VOLPOW_H_
-#define ELAST_VOLPOW_H_
+#ifndef MATELAST_VOLPOW_H
+#define MATELAST_VOLPOW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -128,4 +128,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // VOLPOW_H_
+#endif  // MATELAST_VOLPOW_H

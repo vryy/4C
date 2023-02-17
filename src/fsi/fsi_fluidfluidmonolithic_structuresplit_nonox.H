@@ -8,8 +8,8 @@ using XFEM
 
 *----------------------------------------------------------------------*/
 
-#ifndef FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_NONOX_H
-#define FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_NONOX_H
+#ifndef FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_NONOX_H
+#define FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_NONOX_H
 
 #include "fsi_monolithic_nonox.H"
 

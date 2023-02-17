@@ -11,8 +11,8 @@
 
 
 
-#ifndef FSI_PSEUDOFSISTRUCTURE_H
-#define FSI_PSEUDOFSISTRUCTURE_H
+#ifndef FSI_STRUCTUREALE_H
+#define FSI_STRUCTUREALE_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

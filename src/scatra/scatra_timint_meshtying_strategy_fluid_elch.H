@@ -59,4 +59,4 @@ namespace SCATRA
     void InitConvCheckStrategy();
   };  // class MeshtyingStrategyFluidElch
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H

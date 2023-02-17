@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ADAPTER_FLUID_ALE_H
-#define ADAPTER_FLUID_ALE_H
+#ifndef ADAPTER_FLD_FLUID_ALE_H
+#define ADAPTER_FLD_FLUID_ALE_H
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

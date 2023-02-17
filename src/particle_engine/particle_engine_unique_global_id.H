@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_UNIQUE_GLOBAL_ID_HANDLER_H
-#define PARTICLE_UNIQUE_GLOBAL_ID_HANDLER_H
+#ifndef PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_H
+#define PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

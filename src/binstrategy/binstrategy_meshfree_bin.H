@@ -7,8 +7,8 @@
 \level 2
 
 *---------------------------------------------------------------------------*/
-#ifndef MESHFREE_MESHFREEBIN_H
-#define MESHFREE_MESHFREEBIN_H
+#ifndef BINSTRATEGY_MESHFREE_BIN_H
+#define BINSTRATEGY_MESHFREE_BIN_H
 
 #include "lib_element.H"
 #include "lib_node.H"
@@ -157,4 +157,4 @@ namespace DRT
   }  // namespace MESHFREE
 }  // namespace DRT
 
-#endif  // #ifndef MESHFREE_MESHFREEBIN_H
+#endif  // BINSTRATEGY_MESHFREE_BIN_H

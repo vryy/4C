@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLD_TIMINT_BDF2_H
-#define FLD_TIMINT_BDF2_H
+#ifndef FLUID_TIMINT_BDF2_H
+#define FLUID_TIMINT_BDF2_H
 
 
 #include "fluid_implicit_integration.H"
@@ -179,4 +179,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_BDF2_H
+#endif  // FLUID_TIMINT_BDF2_H

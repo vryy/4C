@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_EHL_H
-#define CONTACT_INTEGRATOR_EHL_H
+#ifndef CONTACT_EHL_INTEGRATOR_H
+#define CONTACT_EHL_INTEGRATOR_H
 
 #include "contact_integrator.H"
 #include "headers_pairedvector.H"
@@ -102,4 +102,4 @@ namespace CONTACT
   };
 
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_EHL_H
+#endif  // CONTACT_EHL_INTEGRATOR_H

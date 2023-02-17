@@ -7,8 +7,8 @@
 
 */
 
-#ifndef PRESTRESS_SERVICE_H_
-#define PRESTRESS_SERVICE_H_
+#ifndef LIB_PRESTRESS_SERVICE_H
+#define LIB_PRESTRESS_SERVICE_H
 
 #include <Teuchos_ParameterList.hpp>
 #include "lib_globalproblem.H"
@@ -260,4 +260,4 @@ namespace UTILS
   }  // namespace PRESTRESS
 }  // namespace UTILS
 
-#endif  // PRESTRESS_SERVICE_H_
+#endif  // LIB_PRESTRESS_SERVICE_H

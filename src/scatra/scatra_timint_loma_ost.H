@@ -87,4 +87,4 @@ namespace SCATRA
   };  // class TimIntLomaOST
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_LOMA_OST_H
+#endif  // SCATRA_TIMINT_LOMA_OST_H

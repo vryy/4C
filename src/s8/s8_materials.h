@@ -1,3 +1,6 @@
+#ifndef S8_MATERIALS_H
+#define S8_MATERIALS_H
+
 /*---------------------------------------------------------------------*/
 /*! \file
 
@@ -91,3 +94,5 @@ typedef struct _VISCOHYPER
   DOUBLE tau[4];   /* relaxation times of hte maxwell elements */
   DOUBLE betas[4]; /* strain energy factors of the springs of the maxwell elements */
 } VISCOHYPER;
+
+#endif

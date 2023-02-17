@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef UTILS_CREATEDIS_H
-#define UTILS_CREATEDIS_H
+#ifndef LIB_UTILS_CREATEDIS_H
+#define LIB_UTILS_CREATEDIS_H
 
 #include "lib_condition_utils.H"
 #include "lib_utils_factory.H"
@@ -927,4 +927,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef DRT_UTILS_CREATEDIS_H
+#endif  // LIB_UTILS_CREATEDIS_H

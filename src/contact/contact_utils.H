@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_UTILS_H_
-#define SRC_CONTACT_CONTACT_UTILS_H_
+#ifndef CONTACT_UTILS_H
+#define CONTACT_UTILS_H
 
 #include <set>
 #include <vector>
@@ -121,4 +121,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_CONTACT_UTILS_H_ */
+#endif  // CONTACT_UTILS_H

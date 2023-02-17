@@ -387,4 +387,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_THERMO_H
+#endif  // INPAR_THERMO_H

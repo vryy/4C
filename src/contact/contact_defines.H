@@ -66,4 +66,4 @@
 // CONTACTFORCEOUTPUT also has to be switched on*/ #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
 // for printing all nodes and xspatial in current configuration - only works for 1 processor*/
 
-#endif  // #ifndef CONTACT_DEFINES_H
+#endif  // CONTACT_DEFINES_H

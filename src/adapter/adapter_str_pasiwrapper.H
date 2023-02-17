@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-#ifndef PASI_STRUCTURE_WRAPPER_H
-#define PASI_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_PASIWRAPPER_H
+#define ADAPTER_STR_PASIWRAPPER_H
 
 /*----------------------------------------------------------------------*
  | headers                                                              |

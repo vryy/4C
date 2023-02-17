@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AMGNXN_OPERATOR_H
-#define AMGNXN_OPERATOR_H
+#ifndef SOLVER_AMGNXN_PRECONDITIONER_H
+#define SOLVER_AMGNXN_PRECONDITIONER_H
 
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
@@ -297,4 +297,4 @@ namespace LINALG::SOLVER
 
 }  // namespace LINALG::SOLVER
 
-#endif  // AMGNXN_OPERATOR_H
+#endif  // SOLVER_AMGNXN_PRECONDITIONER_H

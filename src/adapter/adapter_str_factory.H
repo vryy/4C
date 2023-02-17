@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_STR_FACTORY_H_
-#define SRC_ADAPTER_AD_STR_FACTORY_H_
+#ifndef ADAPTER_STR_FACTORY_H
+#define ADAPTER_STR_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -45,4 +45,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_STR_FACTORY_H_ */
+#endif  // ADAPTER_STR_FACTORY_H

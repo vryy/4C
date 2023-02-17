@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_CHEAPSIMPLE_H
-#define SOLVER_CHEAPSIMPLE_H
+#ifndef SOLVER_CHEAPSIMPLEPRECONDITIONER_H
+#define SOLVER_CHEAPSIMPLEPRECONDITIONER_H
 
 #include "solver_preconditionertype.H"
 

@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_
-#define SRC_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_
+#ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
+#define SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
 
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
@@ -188,4 +188,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif /* SRC_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_ */
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H

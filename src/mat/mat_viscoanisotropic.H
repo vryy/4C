@@ -9,8 +9,8 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef VISCOANISOTROPIC_H_
-#define VISCOANISOTROPIC_H_
+#ifndef MAT_VISCOANISOTROPIC_H
+#define MAT_VISCOANISOTROPIC_H
 
 
 #include "mat_so3_material.H"

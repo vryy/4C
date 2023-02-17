@@ -76,4 +76,4 @@ namespace ALE
   }     // namespace UTILS
 }  // namespace ALE
 
-#endif /* ALE_UTILS_CLONESTRATEGY_H */
+#endif  // ALE_UTILS_CLONESTRATEGY_H

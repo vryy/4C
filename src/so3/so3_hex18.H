@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SOH18_H
-#define SOH18_H
+#ifndef SO3_HEX18_H
+#define SO3_HEX18_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_element.H"
@@ -418,4 +418,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef SOH18_H
+#endif  // SO3_HEX18_H

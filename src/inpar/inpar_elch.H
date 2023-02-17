@@ -91,4 +91,4 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace ELCH
 }  // namespace INPAR
-#endif  // #ifndef INPAR_ELCH_H
+#endif  // INPAR_ELCH_H

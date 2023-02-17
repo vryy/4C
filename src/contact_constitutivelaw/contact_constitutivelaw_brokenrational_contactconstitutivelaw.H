@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BROKENRATIONAL_COCONSTLAW_H_
-#define BROKENRATIONAL_COCONSTLAW_H_
+#ifndef CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_H
+#define CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_H
 
 
 #include "contact_constitutivelaw_contactconstitutivelaw.H"
@@ -103,4 +103,4 @@ namespace CONTACT
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
 
-#endif /*BROKENRATIONAL_COCONSTLAW_H_*/
+#endif  // CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_H

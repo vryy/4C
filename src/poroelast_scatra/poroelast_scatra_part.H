@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef PORO_SCATRA_PART_H
-#define PORO_SCATRA_PART_H
+#ifndef POROELAST_SCATRA_PART_H
+#define POROELAST_SCATRA_PART_H
 
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |

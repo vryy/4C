@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_EXTENSION_H
-#define BACI_ANISOTROPY_EXTENSION_H
+#ifndef MAT_ANISOTROPY_EXTENSION_H
+#define MAT_ANISOTROPY_EXTENSION_H
 
 #include <functional>
 #include <utility>
@@ -306,4 +306,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_EXTENSION_H
+#endif  // MAT_ANISOTROPY_EXTENSION_H

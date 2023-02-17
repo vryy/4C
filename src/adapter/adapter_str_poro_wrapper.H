@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTPORO_WRAPPER_H
-#define ADAPTER_STRUCTPORO_WRAPPER_H
+#ifndef ADAPTER_STR_PORO_WRAPPER_H
+#define ADAPTER_STR_PORO_WRAPPER_H
 
 #include "adapter_field_wrapper.H"
 #include "adapter_str_fsiwrapper.H"

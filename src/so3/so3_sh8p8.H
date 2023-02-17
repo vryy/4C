@@ -6,8 +6,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef SO_SH8P8_H
-#define SO_SH8P8_H
+#ifndef SO3_SH8P8_H
+#define SO3_SH8P8_H
 
 /*----------------------------------------------------------------------*/
 #include "so3_sh8.H"
@@ -888,4 +888,4 @@ namespace DRT
 #include "so3_sh8p8_eas.H"
 
 
-#endif  // #ifndef SO_SH8P8_H
+#endif  // SO3_SH8P8_H

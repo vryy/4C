@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------     */
-#ifndef BEAMPOTENTIALPAIR_H
-#define BEAMPOTENTIALPAIR_H
+#ifndef BEAMINTERACTION_POTENTIAL_PAIR_H
+#define BEAMINTERACTION_POTENTIAL_PAIR_H
 
 #include "fem_general_utils_integration.H"
 

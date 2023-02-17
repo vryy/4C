@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef OPTIMIZER_LBFGS_H
-#define OPTIMIZER_LBFGS_H
+#ifndef INV_ANALYSIS_OPTIMIZER_LBFGS_H
+#define INV_ANALYSIS_OPTIMIZER_LBFGS_H
 
 #include "inv_analysis_optimizer_base.H"
 
@@ -110,4 +110,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*OPTIMIZER_LBFGS_H*/
+#endif  // INV_ANALYSIS_OPTIMIZER_LBFGS_H

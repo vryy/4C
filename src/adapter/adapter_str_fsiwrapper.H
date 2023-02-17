@@ -8,8 +8,8 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef FSI_STRUCTURE_WRAPPER_H
-#define FSI_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_FSIWRAPPER_H
+#define ADAPTER_STR_FSIWRAPPER_H
 
 #include "adapter_str_wrapper.H"
 

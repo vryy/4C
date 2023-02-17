@@ -43,4 +43,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_PROBLEMTYPE_H
+#endif  // INPAR_PROBLEMTYPE_H

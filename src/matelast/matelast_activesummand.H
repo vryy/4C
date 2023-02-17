@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ACTIVESUMMAND_H_
-#define ELAST_ACTIVESUMMAND_H_
+#ifndef MATELAST_ACTIVESUMMAND_H
+#define MATELAST_ACTIVESUMMAND_H
 #include "matelast_summand.H"
 
 namespace MAT
@@ -51,4 +51,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif  // ELAST_ACTIVESUMMAND_H_
+#endif  // MATELAST_ACTIVESUMMAND_H

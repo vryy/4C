@@ -7,8 +7,8 @@ material in terms of the first Cauchy-Green invariant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISO1POW_H_
-#define ELAST_ISO1POW_H_
+#ifndef MATELAST_ISO1POW_H
+#define MATELAST_ISO1POW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -118,4 +118,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ISO1POW_H_
+#endif  // MATELAST_ISO1POW_H

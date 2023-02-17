@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TRANSPARENTINDEPENDENTDOFSET_H
-#define TRANSPARENTINDEPENDENTDOFSET_H
+#ifndef LIB_DOFSET_TRANSPARENT_INDEPENDENT_H
+#define LIB_DOFSET_TRANSPARENT_INDEPENDENT_H
 
 
 #include "lib_exporter.H"
@@ -66,4 +66,4 @@ namespace DRT
   };  // class TransparentDofSet
 }  // namespace DRT
 
-#endif  // #ifndef  TRANSPARENTINDEPENDENTDOFSET_H
+#endif  // LIB_DOFSET_TRANSPARENT_INDEPENDENT_H

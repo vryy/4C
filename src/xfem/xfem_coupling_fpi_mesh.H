@@ -9,8 +9,8 @@ xfluid class and the cut-library
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_COUPLING_FPI_MESH_H_
-#define XFEM_COUPLING_FPI_MESH_H_
+#ifndef XFEM_COUPLING_FPI_MESH_H
+#define XFEM_COUPLING_FPI_MESH_H
 
 #include "xfem_coupling_mesh.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -271,4 +271,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_FPI_MESH_H_*/
+#endif  // XFEM_COUPLING_FPI_MESH_H

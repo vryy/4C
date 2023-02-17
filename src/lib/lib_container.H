@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef CONTAINER_H
-#define CONTAINER_H
+#ifndef LIB_CONTAINER_H
+#define LIB_CONTAINER_H
 
 
 #include <string>
@@ -559,4 +559,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Container& node);
 
 
 
-#endif  // #ifndef CONTAINER_H
+#endif  // LIB_CONTAINER_H

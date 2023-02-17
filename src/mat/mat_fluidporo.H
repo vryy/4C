@@ -6,8 +6,8 @@
 \level 2
  *-----------------------------------------------------------------------*/
 
-#ifndef FLUIDPORO_H_
-#define FLUIDPORO_H_
+#ifndef MAT_FLUIDPORO_H
+#define MAT_FLUIDPORO_H
 
 #include "mat_material.H"
 #include "mat_par_parameter.H"
@@ -213,4 +213,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // FluidPoro_H_
+#endif  // MAT_FLUIDPORO_H

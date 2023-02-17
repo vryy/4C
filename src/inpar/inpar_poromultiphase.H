@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_INPAR_INPAR_POROMULTIPHASE_H_
-#define SRC_INPAR_INPAR_POROMULTIPHASE_H_
+#ifndef INPAR_POROMULTIPHASE_H
+#define INPAR_POROMULTIPHASE_H
 
 
 #include "inpar_parameterlist_utils.H"
@@ -101,4 +101,4 @@ namespace INPAR
 
 
 
-#endif /* SRC_INPAR_INPAR_POROMULTIPHASE_H_ */
+#endif  // INPAR_POROMULTIPHASE_H

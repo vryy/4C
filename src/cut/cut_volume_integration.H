@@ -10,8 +10,8 @@ equations
 *----------------------------------------------------------------------*/
 
 
-#ifndef VOLUME_INTEGRATION_H
-#define VOLUME_INTEGRATION_H
+#ifndef CUT_VOLUME_INTEGRATION_H
+#define CUT_VOLUME_INTEGRATION_H
 
 #include <vector>
 #include "cut_facet_integration.H"

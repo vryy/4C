@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef ARTERY_LIN_EXP_H
-#define ARTERY_LIN_EXP_H
+#ifndef ART_NET_ARTERY_ELE_CALC_LIN_EXP_H
+#define ART_NET_ARTERY_ELE_CALC_LIN_EXP_H
 
 #include "art_net_artery.H"
 #include "art_net_artery_ele_action.H"

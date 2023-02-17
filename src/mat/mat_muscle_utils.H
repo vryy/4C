@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef MUSCLE_UTILS_H
-#define MUSCLE_UTILS_H
+#ifndef MAT_MUSCLE_UTILS_H
+#define MAT_MUSCLE_UTILS_H
 
 #include <vector>
 #include "linalg_fixedsizematrix.H"

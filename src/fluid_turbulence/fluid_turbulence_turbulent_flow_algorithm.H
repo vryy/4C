@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENT_FLOW_ALGORITHM_H
-#define TURBULENT_FLOW_ALGORITHM_H
+#ifndef FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_H
+#define FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_H
 
 #include "adapter_fld_base_algorithm.H"
 
@@ -67,4 +67,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // #ifndef TURBULENT_FLOW_ALGORITHM_H
+#endif  // FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_H

@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef MATPAR_MANAGER_TVSVD_H
-#define MATPAR_MANAGER_TVSVD_H
+#ifndef INV_ANALYSIS_MATPAR_MANAGER_TVSVD_H
+#define INV_ANALYSIS_MATPAR_MANAGER_TVSVD_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

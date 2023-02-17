@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAM3_BASE_H_
-#define BEAM3_BASE_H_
+#ifndef BEAM3_BASE_H
+#define BEAM3_BASE_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

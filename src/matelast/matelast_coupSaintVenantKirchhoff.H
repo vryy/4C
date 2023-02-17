@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_SVK_H_
-#define ELAST_SVK_H_
+#ifndef MATELAST_COUPSAINTVENANTKIRCHHOFF_H
+#define MATELAST_COUPSAINTVENANTKIRCHHOFF_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -129,4 +129,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_SVK_H_
+#endif  // MATELAST_COUPSAINTVENANTKIRCHHOFF_H

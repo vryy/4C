@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*/
 /* macros */
 
-#ifndef STRTIMADA_CREATE_H
-#define STRTIMADA_CREATE_H
+#ifndef STRUCTURE_TIMADA_CREATE_H
+#define STRUCTURE_TIMADA_CREATE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -41,4 +41,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef STRTIMADA_CREATE_H */
+#endif  // STRUCTURE_TIMADA_CREATE_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BEAMINTERACTION_DATA_H_
-#define BEAMINTERACTION_DATA_H_
+#ifndef BEAMINTERACTION_DATA_H
+#define BEAMINTERACTION_DATA_H
 
 #include "linalg_fixedsizematrix.H"
 #include "inpar_beaminteraction.H"

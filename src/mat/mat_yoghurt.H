@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef YOGHURT_H
-#define YOGHURT_H
+#ifndef MAT_YOGHURT_H
+#define MAT_YOGHURT_H
 
 
 

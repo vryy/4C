@@ -4,8 +4,8 @@
 \level 3
 
  *-----------------------------------------------------------------------*/
-#ifndef FPSI_UTILS_H_
-#define FPSI_UTILS_H_
+#ifndef FPSI_UTILS_H
+#define FPSI_UTILS_H
 
 /*----------------------------------------------------------------------*
  | headers                                                              |
@@ -134,4 +134,4 @@ namespace FPSI
   }  // namespace UTILS
 }  // namespace FPSI
 
-#endif /* FPSI_UTILS_H_ */
+#endif  // FPSI_UTILS_H

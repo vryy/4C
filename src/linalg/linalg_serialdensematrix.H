@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SERIALDENSEMATRIX_H
-#define SERIALDENSEMATRIX_H
+#ifndef LINALG_SERIALDENSEMATRIX_H
+#define LINALG_SERIALDENSEMATRIX_H
 
 
 #include "Epetra_SerialDenseMatrix.h"
@@ -194,4 +194,4 @@ namespace LINALG
 
 
 
-#endif  // #ifndef SERIALDENSEMATRIX_H
+#endif  // LINALG_SERIALDENSEMATRIX_H

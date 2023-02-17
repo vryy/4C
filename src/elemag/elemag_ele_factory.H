@@ -42,4 +42,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif /* ELEMAG_ELE_FACTORY_H_ */
+#endif  // ELEMAG_ELE_FACTORY_H

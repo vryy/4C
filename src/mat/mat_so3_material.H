@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SO3MATERIAL_H
-#define SO3MATERIAL_H
+#ifndef MAT_SO3_MATERIAL_H
+#define MAT_SO3_MATERIAL_H
 
 #include "mat_material.H"
 

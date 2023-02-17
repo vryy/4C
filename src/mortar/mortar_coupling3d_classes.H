@@ -531,4 +531,4 @@ namespace MORTAR
 
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_COUPLING3D_CLASSES_H
+#endif  // MORTAR_COUPLING3D_CLASSES_H

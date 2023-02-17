@@ -157,4 +157,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_PARAMETER_BOUNDARY_H */
+#endif  // SCATRA_ELE_PARAMETER_BOUNDARY_H

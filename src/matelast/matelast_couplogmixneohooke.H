@@ -8,8 +8,8 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_LOGMIXNEOHOOKE_H_
-#define ELAST_LOGMIXNEOHOOKE_H_
+#ifndef MATELAST_COUPLOGMIXNEOHOOKE_H
+#define MATELAST_COUPLOGMIXNEOHOOKE_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -159,4 +159,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_LOGMIXNEOHOOKE_H_
+#endif  // MATELAST_COUPLOGMIXNEOHOOKE_H

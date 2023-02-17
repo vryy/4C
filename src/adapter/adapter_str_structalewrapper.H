@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef STRUCT_ALE_STRUCTURE_WRAPPER_H
-#define STRUCT_ALE_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_STRUCTALEWRAPPER_H
+#define ADAPTER_STR_STRUCTALEWRAPPER_H
 
 
 #include "adapter_str_wrapper.H"
@@ -75,4 +75,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* STRUCT_ALE_STRUCTURE_WRAPPER_H */
+#endif  // ADAPTER_STR_STRUCTALEWRAPPER_H

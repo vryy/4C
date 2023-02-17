@@ -6,8 +6,8 @@
 \brief BACI implementation of main class to control all meshtying
 */
 /*----------------------------------------------------------------------*/
-#ifndef MESHTYING_MANAGER_H
-#define MESHTYING_MANAGER_H
+#ifndef CONTACT_MESHTYING_MANAGER_H
+#define CONTACT_MESHTYING_MANAGER_H
 
 #include "mortar_manager_base.H"
 
@@ -143,4 +143,4 @@ namespace CONTACT
   };  // class MtManager
 }  // namespace CONTACT
 
-#endif  // #ifndef MESHTYING_MANAGER_H
+#endif  // CONTACT_MESHTYING_MANAGER_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef SRC_XFEM_XFIELD_STATE_H_
-#define SRC_XFEM_XFIELD_STATE_H_
+#ifndef XFEM_XFIELD_STATE_H
+#define XFEM_XFIELD_STATE_H
 
 #include "lib_dserror.H"
 #include <Teuchos_RCP.hpp>
@@ -163,4 +163,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* SRC_XFEM_XFIELD_STATE_H_ */
+#endif  // XFEM_XFIELD_STATE_H

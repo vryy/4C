@@ -9,8 +9,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_NONLIN_MORTAR_H_
-#define ADAPTER_COUPLING_NONLIN_MORTAR_H_
+#ifndef ADAPTER_COUPLING_NONLIN_MORTAR_H
+#define ADAPTER_COUPLING_NONLIN_MORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/14 |
@@ -227,4 +227,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_NONLIN_MORTAR_H_ */
+#endif  // ADAPTER_COUPLING_NONLIN_MORTAR_H

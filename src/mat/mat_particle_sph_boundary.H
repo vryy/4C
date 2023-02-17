@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_SPH_BOUNDARY_H
-#define PARTICLE_MATERIAL_SPH_BOUNDARY_H
+#ifndef MAT_PARTICLE_SPH_BOUNDARY_H
+#define MAT_PARTICLE_SPH_BOUNDARY_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |

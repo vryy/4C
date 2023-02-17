@@ -603,4 +603,4 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THERMO_ELEMENT_H
+#endif  // THERMO_ELEMENT_H

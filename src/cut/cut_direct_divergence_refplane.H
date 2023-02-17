@@ -7,8 +7,8 @@ coordinate system
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#ifndef DIRECT_DIVERGENCE_REFPLANE_H_
-#define DIRECT_DIVERGENCE_REFPLANE_H_
+#ifndef CUT_DIRECT_DIVERGENCE_REFPLANE_H
+#define CUT_DIRECT_DIVERGENCE_REFPLANE_H
 
 #include <vector>
 #include "cut_element.H"
@@ -104,4 +104,4 @@ namespace GEO
 
   } /* namespace CUT */
 } /* namespace GEO */
-#endif /* DIRECT_DIVERGENCE_REFPLANE_H_ */
+#endif  // CUT_DIRECT_DIVERGENCE_REFPLANE_H

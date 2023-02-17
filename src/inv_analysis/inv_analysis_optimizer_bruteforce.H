@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OPTIMIZER_BRUTEFORCE_H_
-#define OPTIMIZER_BRUTEFORCE_H_
+#ifndef INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H
+#define INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H
 
 #include "inv_analysis_optimizer_base.H"  // base class
 
@@ -58,4 +58,4 @@ namespace INVANA
 
 
 
-#endif /* OPTIMIZER_BRUTEFORCE_H_ */
+#endif  // INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H

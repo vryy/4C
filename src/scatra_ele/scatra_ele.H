@@ -9,8 +9,8 @@ Pack, Unpack, NumDofPerNode etc.
 \level 1
 
 */
-#ifndef SCATRA_ELEMENT_H
-#define SCATRA_ELEMENT_H
+#ifndef SCATRA_ELE_H
+#define SCATRA_ELE_H
 
 #include "inpar_scatra.H"
 
@@ -746,4 +746,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SCATRA_ELEMENT_H
+#endif  // SCATRA_ELE_H

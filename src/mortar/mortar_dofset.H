@@ -71,4 +71,4 @@ namespace MORTAR
   };  // class MortarDofSet
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_DOFSET_H
+#endif  // MORTAR_DOFSET_H

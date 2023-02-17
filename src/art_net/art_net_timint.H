@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ART_NET_TIMINT_H_
-#define SRC_ART_NET_ART_NET_TIMINT_H_
+#ifndef ART_NET_TIMINT_H
+#define ART_NET_TIMINT_H
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -227,4 +227,4 @@ namespace ART
 
 
 
-#endif /* SRC_ART_NET_ART_NET_TIMINT_H_ */
+#endif  // ART_NET_TIMINT_H

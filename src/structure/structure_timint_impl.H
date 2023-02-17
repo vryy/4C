@@ -7,8 +7,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_IMPL_H
-#define STRTIMINT_IMPL_H
+#ifndef STRUCTURE_TIMINT_IMPL_H
+#define STRUCTURE_TIMINT_IMPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -1068,4 +1068,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_IMPL_H
+#endif  // STRUCTURE_TIMINT_IMPL_H

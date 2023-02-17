@@ -671,4 +671,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SO3_PORO_H */
+#endif  // SO3_PORO_H

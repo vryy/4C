@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_HIT_FORCING_H
-#define TURBULENCE_HIT_FORCING_H
+#ifndef FLUID_TURBULENCE_HIT_FORCING_H
+#define FLUID_TURBULENCE_HIT_FORCING_H
 
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"

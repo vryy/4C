@@ -8,8 +8,8 @@ approach for Fluid-beam interaction.
 
 *----------------------------------------------------------------------*/
 
-#ifndef AD_FBI_CONSTRAINTBRIDGE_PENALTY_H_
-#define AD_FBI_CONSTRAINTBRIDGE_PENALTY_H_
+#ifndef FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
+#define FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_FEVector.h>
@@ -150,4 +150,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* AD_FBI_CONSTRAINTBRIDGE_PENALTY_H_ */
+#endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H

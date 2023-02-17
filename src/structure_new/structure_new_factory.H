@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_FACTORY_H_
-#define SRC_STRUCTURE_NEW_STR_FACTORY_H_
+#ifndef STRUCTURE_NEW_FACTORY_H
+#define STRUCTURE_NEW_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -78,4 +78,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_FACTORY_H_ */
+#endif  // STRUCTURE_NEW_FACTORY_H

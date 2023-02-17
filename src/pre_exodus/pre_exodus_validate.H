@@ -10,8 +10,8 @@ Validate a given BACI input file (after all preprocessing steps)
 
 */
 
-#ifndef PRE_EXODUS_VALIDATE_H_
-#define PRE_EXODUS_VALIDATE_H_
+#ifndef PRE_EXODUS_VALIDATE_H
+#define PRE_EXODUS_VALIDATE_H
 
 #include <string>
 #include <Teuchos_RCP.hpp>
@@ -52,4 +52,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif  // PRE_EXODUS_VALIDATE_H_
+#endif  // PRE_EXODUS_VALIDATE_H

@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_NEUMANN_H_
-#define XFEM_NEUMANN_H_
+#ifndef XFEM_NEUMANN_H
+#define XFEM_NEUMANN_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -58,4 +58,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /* XFEM_NEUMANN_H_ */
+#endif  // XFEM_NEUMANN_H

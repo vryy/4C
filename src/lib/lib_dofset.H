@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSET_H
-#define DOFSET_H
+#ifndef LIB_DOFSET_H
+#define LIB_DOFSET_H
 
 #include <vector>
 #include <list>
@@ -429,4 +429,4 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset);
 
 
-#endif  // #ifndef DOFSET_H
+#endif  // LIB_DOFSET_H

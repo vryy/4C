@@ -12,8 +12,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 /*----------------------------------------------------------------------*/
 
 
-#ifndef GROWTH_LAW_H
-#define GROWTH_LAW_H
+#ifndef MAT_GROWTH_LAW_H
+#define MAT_GROWTH_LAW_H
 
 /* forward declarations */
 namespace MAT
@@ -1511,4 +1511,4 @@ namespace MAT
 
 
 
-#endif /* GROWTH_LAW_H_ */
+#endif  // MAT_GROWTH_LAW_H

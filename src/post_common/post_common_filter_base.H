@@ -8,8 +8,8 @@
  \level 1
  */
 
-#ifndef POST_FILTER_BASE_H_
-#define POST_FILTER_BASE_H_
+#ifndef POST_COMMON_FILTER_BASE_H
+#define POST_COMMON_FILTER_BASE_H
 
 #include "lib_dserror.H"
 
@@ -100,4 +100,4 @@ class PostFilterBase
   Teuchos::RCP<PostWriterBase> writer_;
 };
 
-#endif /* POST_FILTER_BASE_H_ */
+#endif  // POST_COMMON_FILTER_BASE_H

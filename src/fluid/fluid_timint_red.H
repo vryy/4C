@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLD_TIMINT_RED_H
-#define FLD_TIMINT_RED_H
+#ifndef FLUID_TIMINT_RED_H
+#define FLUID_TIMINT_RED_H
 
 
 #include "fluid_implicit_integration.H"
@@ -172,4 +172,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_RED_H
+#endif  // FLUID_TIMINT_RED_H

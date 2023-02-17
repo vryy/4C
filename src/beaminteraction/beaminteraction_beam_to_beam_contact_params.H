@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BEAMTOBEAMCONTACTPARAMS_H
-#define BEAMTOBEAMCONTACTPARAMS_H
+#ifndef BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PARAMS_H
+#define BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PARAMS_H
 
 #include "inpar_beamcontact.H"
 

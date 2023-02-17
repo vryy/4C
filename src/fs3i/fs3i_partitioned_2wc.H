@@ -12,8 +12,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef FS3I_PART_2WC_H
-#define FS3I_PART_2WC_H
+#ifndef FS3I_PARTITIONED_2WC_H
+#define FS3I_PARTITIONED_2WC_H
 
 
 #include "fs3i_partitioned.H"

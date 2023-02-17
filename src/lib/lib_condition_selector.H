@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CONDITION_SELECTOR_H
-#define CONDITION_SELECTOR_H
+#ifndef LIB_CONDITION_SELECTOR_H
+#define LIB_CONDITION_SELECTOR_H
 
 #include <vector>
 #include <set>

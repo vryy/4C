@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef REDAIRWAYTISSUE_H
-#define REDAIRWAYTISSUE_H
+#ifndef RED_AIRWAYS_TISSUE_H
+#define RED_AIRWAYS_TISSUE_H
 
 #include "adapter_algorithmbase.H"
 #include "red_airways_resulttest.H"

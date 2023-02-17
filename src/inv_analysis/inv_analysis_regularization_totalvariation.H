@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef REGULARIZATION_TOTALVARIATION_H
-#define REGULARIZATION_TOTALVARIATION_H
+#ifndef INV_ANALYSIS_REGULARIZATION_TOTALVARIATION_H
+#define INV_ANALYSIS_REGULARIZATION_TOTALVARIATION_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

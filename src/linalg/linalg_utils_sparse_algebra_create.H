@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_
-#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_
+#ifndef LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
+#define LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
@@ -134,4 +134,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_ */
+#endif  // LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H

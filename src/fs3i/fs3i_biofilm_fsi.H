@@ -13,8 +13,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef FSI_BIOFILM_GROWTH_H
-#define FSI_BIOFILM_GROWTH_H
+#ifndef FS3I_BIOFILM_FSI_H
+#define FS3I_BIOFILM_FSI_H
 
 
 #include "fs3i_partitioned_1wc.H"

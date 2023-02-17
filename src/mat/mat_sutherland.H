@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SUTHERLAND_H
-#define SUTHERLAND_H
+#ifndef MAT_SUTHERLAND_H
+#define MAT_SUTHERLAND_H
 
 
 

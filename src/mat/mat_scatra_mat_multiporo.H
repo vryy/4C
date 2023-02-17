@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_SCATRA_MAT_MULTIPORO_H_
-#define SRC_MAT_SCATRA_MAT_MULTIPORO_H_
+#ifndef MAT_SCATRA_MAT_MULTIPORO_H
+#define MAT_SCATRA_MAT_MULTIPORO_H
 
 
 #include "mat_scatra_mat.H"
@@ -514,4 +514,4 @@ namespace MAT
 
 
 
-#endif /* SRC_MAT_SCATRA_MAT_MULTIPORO_H_ */
+#endif  // MAT_SCATRA_MAT_MULTIPORO_H

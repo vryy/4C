@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_BLOCKPRECONDITIONERS_H_
-#define SOLVER_BLOCKPRECONDITIONERS_H_
+#ifndef SOLVER_BLOCKPRECONDITIONERS_H
+#define SOLVER_BLOCKPRECONDITIONERS_H
 
 #include "solver_preconditionertype.H"
 

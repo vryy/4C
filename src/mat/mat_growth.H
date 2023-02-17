@@ -6,8 +6,8 @@ growth laws.
 \level 2
 
  *----------------------------------------------------------------------*/
-#ifndef GROWTH_H
-#define GROWTH_H
+#ifndef MAT_GROWTH_H
+#define MAT_GROWTH_H
 
 
 #include "mat_so3_material.H"
@@ -517,4 +517,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /*GROWTH_H_*/
+#endif  // MAT_GROWTH_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_STEPPER_H_
-#define SRC_LOCA_CONTINUATION_LOCA_NLN_STEPPER_H_
+#ifndef LOCA_CONTINUATION_NLN_STEPPER_H
+#define LOCA_CONTINUATION_NLN_STEPPER_H
 
 #include <LOCA_Stepper.H>
 
@@ -96,4 +96,4 @@ namespace LOCA
   }     // namespace NLN
 }  // namespace LOCA
 
-#endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_STEPPER_H_ */
+#endif  // LOCA_CONTINUATION_NLN_STEPPER_H

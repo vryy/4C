@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef GRIDGENERATOR_H
-#define GRIDGENERATOR_H
+#ifndef LIB_GRIDGENERATOR_H
+#define LIB_GRIDGENERATOR_H
 
 #include <string>
 #include <array>

@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_RESULT_TEST_H
-#define PARTICLE_RESULT_TEST_H
+#ifndef PARTICLE_ALGORITHM_RESULT_TEST_H
+#define PARTICLE_ALGORITHM_RESULT_TEST_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

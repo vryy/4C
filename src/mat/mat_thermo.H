@@ -5,8 +5,8 @@
 
 */
 
-#ifndef MATERIAL_THERMO_H
-#define MATERIAL_THERMO_H
+#ifndef MAT_THERMO_H
+#define MAT_THERMO_H
 
 #include "mat_material.H"
 #include "mat_trait_thermo.H"

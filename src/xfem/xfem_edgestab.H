@@ -9,8 +9,8 @@ continuous interior penalty) scheme
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_EDGESTAB_H_
-#define XFEM_EDGESTAB_H_
+#ifndef XFEM_EDGESTAB_H
+#define XFEM_EDGESTAB_H
 
 
 #include <vector>
@@ -136,4 +136,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_EDGESTAB_H_*/
+#endif  // XFEM_EDGESTAB_H

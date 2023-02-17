@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BEAM3CONTACT_UTILS_H
-#define BEAM3CONTACT_UTILS_H
+#ifndef BEAMINTERACTION_BEAM3CONTACT_UTILS_H
+#define BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"

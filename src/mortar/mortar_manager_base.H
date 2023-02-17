@@ -138,4 +138,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif  // #ifndef MORTAR_MANAGER_BASE_H
+#endif  // MORTAR_MANAGER_BASE_H

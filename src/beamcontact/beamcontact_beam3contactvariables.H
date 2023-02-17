@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BEAM3CV_H
-#define BEAM3CV_H
+#ifndef BEAMCONTACT_BEAM3CONTACTVARIABLES_H
+#define BEAMCONTACT_BEAM3CONTACTVARIABLES_H
 
 #include "beaminteraction_beam3contact_utils.H"
 #include "linalg_fixedsizematrix.H"
@@ -234,4 +234,4 @@ namespace CONTACT
   };  // class Beam3contactvariables
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3CV_H
+#endif  // BEAMCONTACT_BEAM3CONTACTVARIABLES_H

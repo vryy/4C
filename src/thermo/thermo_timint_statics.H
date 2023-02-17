@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 06/09 |
  *----------------------------------------------------------------------*/
-#ifndef THRTIMINT_STATICS_H
-#define THRTIMINT_STATICS_H
+#ifndef THERMO_TIMINT_STATICS_H
+#define THERMO_TIMINT_STATICS_H
 
 
 /*----------------------------------------------------------------------*
@@ -196,4 +196,4 @@ namespace THR
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THRTIMINT_STATICS_H
+#endif  // THERMO_TIMINT_STATICS_H

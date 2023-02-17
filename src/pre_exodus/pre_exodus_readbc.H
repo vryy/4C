@@ -9,8 +9,8 @@
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_READBC_H_
-#define PRE_EXODUS_READBC_H_
+#ifndef PRE_EXODUS_READBC_H
+#define PRE_EXODUS_READBC_H
 
 #include <string>
 #include <iostream>
@@ -108,4 +108,4 @@ namespace EXODUS
 }  // namespace EXODUS
 
 
-#endif /*PRE_EXODUS_READBC_H_*/
+#endif  // PRE_EXODUS_READBC_H

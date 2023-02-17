@@ -945,4 +945,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SCATRA_ELE_HDG_H
+#endif  // SCATRA_ELE_HDG_H

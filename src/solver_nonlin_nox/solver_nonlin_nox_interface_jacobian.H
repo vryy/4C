@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_INTERFACE_JACOBIAN_H_
-#define NOX_NLN_INTERFACE_JACOBIAN_H_
+#ifndef SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H
+#define SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H
 
 #include <NOX_Epetra_Interface_Jacobian.H>  // base class
 #include <NOX_Epetra_Interface_Required.H>
@@ -66,4 +66,4 @@ namespace NOX
 }  // end namespace NOX
 
 
-#endif /* NOX_NLN_INTERFACE_JACOBIAN_H_ */
+#endif  // SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H

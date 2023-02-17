@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_MONITOR_DBC_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_MONITOR_DBC_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_H
+#define STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_H
 
 #include <string>
 

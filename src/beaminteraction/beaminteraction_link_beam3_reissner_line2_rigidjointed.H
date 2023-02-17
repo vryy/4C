@@ -8,8 +8,8 @@ elements
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BeamLinkBeam3rLine2RigidJointed_H
-#define BeamLinkBeam3rLine2RigidJointed_H
+#ifndef BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_RIGIDJOINTED_H
+#define BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_RIGIDJOINTED_H
 
 #include "linalg_fixedsizematrix.H"
 #include "beaminteraction_link_rigidjointed.H"

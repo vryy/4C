@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SOP5_H
-#define SOP5_H
+#ifndef SO3_PYRAMID5_H
+#define SO3_PYRAMID5_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -483,4 +483,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SOP5_H
+#endif  // SO3_PYRAMID5_H

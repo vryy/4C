@@ -1121,4 +1121,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef DISCSH3_H
+#endif  // DISCSH3_H

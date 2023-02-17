@@ -7,8 +7,8 @@ electric potential as degrees of freedom
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef ELCHSINGLEMAT_H
-#define ELCHSINGLEMAT_H
+#ifndef MAT_ELCHSINGLEMAT_H
+#define MAT_ELCHSINGLEMAT_H
 
 #include "mat_material.H"
 #include "mat_par_parameter.H"

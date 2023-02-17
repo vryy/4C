@@ -13,8 +13,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_MODEL_EVALUATOR_BROWNIANDYN_H_
-#define STR_MODEL_EVALUATOR_BROWNIANDYN_H_
+#ifndef BROWNIANDYN_STR_MODEL_EVALUATOR_H
+#define BROWNIANDYN_STR_MODEL_EVALUATOR_H
 
 #include "structure_new_model_evaluator_generic.H"  // base class
 #include <Teuchos_RCP.hpp>

@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ELECTRODE_H
-#define ELECTRODE_H
+#ifndef MAT_ELECTRODE_H
+#define MAT_ELECTRODE_H
 
 #include "mat_elchsinglemat.H"
 

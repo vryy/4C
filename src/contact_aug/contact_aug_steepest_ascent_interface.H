@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H_
+#ifndef CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H
+#define CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H
 
 #include "contact_aug_interface.H"
 
@@ -89,4 +89,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H_ */
+#endif  // CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H

@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALE2_NURBS_H
-#define ALE2_NURBS_H
+#ifndef ALE_ALE2_NURBS_H
+#define ALE_ALE2_NURBS_H
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
@@ -126,4 +126,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef ALE2_NURBS_H
+#endif  // ALE_ALE2_NURBS_H

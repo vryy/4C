@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_CONSTR_MONOLITHIC_FLUIDSPLIT_H
-#define FSI_CONSTR_MONOLITHIC_FLUIDSPLIT_H
+#ifndef FSI_CONSTRMONOLITHIC_FLUIDSPLIT_H
+#define FSI_CONSTRMONOLITHIC_FLUIDSPLIT_H
 
 #include "fsi_constrmonolithic.H"
 

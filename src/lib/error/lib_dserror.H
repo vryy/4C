@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DSERROR_H
-#define DSERROR_H
+#ifndef LIB_DSERROR_H
+#define LIB_DSERROR_H
 
 #ifdef __cplusplus
 

@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef SRC_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_
-#define SRC_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_
+#ifndef STRUCTURE_XSTRUCTURE_XSTR_STATE_H
+#define STRUCTURE_XSTRUCTURE_XSTR_STATE_H
 
 #include "xfem_xfield_state.H"
 #include "structure_new_timint_basedataglobalstate.H"
@@ -181,4 +181,4 @@ namespace XSTR
 }  // namespace XSTR
 
 
-#endif /* SRC_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_ */
+#endif  // STRUCTURE_XSTRUCTURE_XSTR_STATE_H

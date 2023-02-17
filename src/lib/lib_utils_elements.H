@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_UTILS_ELEMENTS_H_
-#define SRC_LIB_UTILS_ELEMENTS_H_
+#ifndef LIB_UTILS_ELEMENTS_H
+#define LIB_UTILS_ELEMENTS_H
 
 #include "fem_general_utils_fem_shapefunctions.H"
 
@@ -58,4 +58,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_UTILS_ELEMENTS_H_ */
+#endif  // LIB_UTILS_ELEMENTS_H

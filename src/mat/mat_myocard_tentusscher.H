@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef Myocard_TenTusscher_H
-#define Myocard_TenTusscher_H
+#ifndef MAT_MYOCARD_TENTUSSCHER_H
+#define MAT_MYOCARD_TENTUSSCHER_H
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

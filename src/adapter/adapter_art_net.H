@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_ART_NET_H_
-#define SRC_ADAPTER_AD_ART_NET_H_
+#ifndef ADAPTER_ART_NET_H
+#define ADAPTER_ART_NET_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -110,4 +110,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_ART_NET_H_ */
+#endif  // ADAPTER_ART_NET_H

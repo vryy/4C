@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_HEADERS_PAIREDMATRIX_H_
-#define SRC_HEADERS_PAIREDMATRIX_H_
+#ifndef HEADERS_PAIREDMATRIX_H
+#define HEADERS_PAIREDMATRIX_H
 
 #include "headers_pairedvector.H"
 
@@ -502,4 +502,4 @@ namespace GEN
 }  // namespace GEN
 
 
-#endif /* SRC_HEADERS_PAIREDMATRIX_H_ */
+#endif  // HEADERS_PAIREDMATRIX_H

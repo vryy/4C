@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef MYOCARD_GENERAL_H
-#define MYOCARD_GENERAL_H
+#ifndef MAT_MYOCARD_GENERAL_H
+#define MAT_MYOCARD_GENERAL_H
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_MUELUPRECONDITIONER_H_
-#define SOLVER_MUELUPRECONDITIONER_H_
+#ifndef SOLVER_MUELUPRECONDITIONER_H
+#define SOLVER_MUELUPRECONDITIONER_H
 
 #include <Xpetra_MultiVector.hpp>
 

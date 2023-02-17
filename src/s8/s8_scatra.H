@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifndef SHELL8_SCATRA_H_
-#define SHELL8_SCATRA_H_
+#ifndef S8_SCATRA_H
+#define S8_SCATRA_H
 
 #include "s8.H"
 
@@ -146,4 +146,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SHELL8_SCATRA_H_ */
+#endif  // S8_SCATRA_H

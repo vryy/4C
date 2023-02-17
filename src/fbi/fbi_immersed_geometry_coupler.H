@@ -6,8 +6,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRYCOUPLER_FBI_H
-#define GEOMETRYCOUPLER_FBI_H
+#ifndef FBI_IMMERSED_GEOMETRY_COUPLER_H
+#define FBI_IMMERSED_GEOMETRY_COUPLER_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>

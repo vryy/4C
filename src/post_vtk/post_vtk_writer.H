@@ -7,8 +7,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_VTK_H
-#define POST_VTK_H
+#ifndef POST_VTK_WRITER_H
+#define POST_VTK_WRITER_H
 
 
 #include "post_common_writer_base.H"

@@ -7,8 +7,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H_
+#ifndef CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H
+#define CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H
 
 #include "contact_aug_strategy.H"
 
@@ -192,4 +192,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H_ */
+#endif  // CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H

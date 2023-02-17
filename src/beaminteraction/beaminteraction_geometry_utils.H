@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMINTERACTION_GEO_UTILS_H
-#define BEAMINTERACTION_GEO_UTILS_H
+#ifndef BEAMINTERACTION_GEOMETRY_UTILS_H
+#define BEAMINTERACTION_GEOMETRY_UTILS_H
 
 #include "linalg_fixedsizematrix.H"
 

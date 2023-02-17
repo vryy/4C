@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef PARTICLE_COMM_H_
-#define PARTICLE_COMM_H_
+#ifndef INV_ANALYSIS_PARTICLE_COMM_H
+#define INV_ANALYSIS_PARTICLE_COMM_H
 
 #include "comm_utils.H"
 
@@ -92,4 +92,4 @@ namespace INVANA
 
 
 }  // namespace INVANA
-#endif /* PARTICLE_COMM_H_ */
+#endif  // INV_ANALYSIS_PARTICLE_COMM_H

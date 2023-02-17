@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef THRTIMINT_IMPL_H
-#define THRTIMINT_IMPL_H
+#ifndef THERMO_TIMINT_IMPL_H
+#define THERMO_TIMINT_IMPL_H
 
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
@@ -401,4 +401,4 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THRTIMINT_IMPL_H
+#endif  // THERMO_TIMINT_IMPL_H

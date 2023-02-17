@@ -6,8 +6,8 @@
 \level 1
 *-----------------------------------------------------------------------*/
 
-#ifndef SO_UTILS_H
-#define SO_UTILS_H
+#ifndef SO3_UTILS_H
+#define SO3_UTILS_H
 
 #include "fem_general_utils_local_connectivity_matrices.H"
 #include "inpar_structure.H"

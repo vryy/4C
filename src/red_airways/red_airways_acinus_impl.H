@@ -11,8 +11,8 @@
 
 
 
-#ifndef ACINUS_IMPL_H
-#define ACINUS_IMPL_H
+#ifndef RED_AIRWAYS_ACINUS_IMPL_H
+#define RED_AIRWAYS_ACINUS_IMPL_H
 
 #include "red_airways_elementbase.H"
 #include "fem_general_utils_local_connectivity_matrices.H"

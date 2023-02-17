@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 /* macros */
-#ifndef WALL1_H
-#define WALL1_H
+#ifndef W1_H
+#define W1_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -977,4 +977,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef WALL1_H
+#endif  // W1_H

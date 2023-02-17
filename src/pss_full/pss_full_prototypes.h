@@ -7,8 +7,8 @@
 
 ---------------------------------------------------------------------*/
 
-#ifndef PSS_PROTOTYPES_H
-#define PSS_PROTOTYPES_H
+#ifndef PSS_FULL_PROTOTYPES_H
+#define PSS_FULL_PROTOTYPES_H
 
 #include "stdio.h"
 

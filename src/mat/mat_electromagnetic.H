@@ -11,8 +11,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELECTROMAGNETIC_H
-#define ELECTROMAGNETIC_H
+#ifndef MAT_ELECTROMAGNETIC_H
+#define MAT_ELECTROMAGNETIC_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"
@@ -160,4 +160,4 @@ namespace MAT
 
 
 
-#endif /* ELECTROMAGNETIC_H */
+#endif  // MAT_ELECTROMAGNETIC_H

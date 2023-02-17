@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef LIB_ELEMENT_H
+#define LIB_ELEMENT_H
 
 
 #include "Teuchos_RCP.hpp"
@@ -1700,4 +1700,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 
 
-#endif  // #ifndef ELEMENT_H
+#endif  // LIB_ELEMENT_H

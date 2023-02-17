@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_NLN_SOLVER_UZAWA_H_
-#define STR_NLN_SOLVER_UZAWA_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_UZAWA_H
+#define STRUCTURE_NEW_NLN_SOLVER_UZAWA_H
 
 #include "structure_new_nln_solver_generic.H"
 
@@ -32,4 +32,4 @@ namespace STR
   }    // namespace NLN
 }  // namespace STR
 
-#endif /* STR_NLN_SOLVER_UZAWA_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_UZAWA_H

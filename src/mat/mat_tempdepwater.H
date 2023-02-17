@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef TEMPDEPWATER_H
-#define TEMPDEPWATER_H
+#ifndef MAT_TEMPDEPWATER_H
+#define MAT_TEMPDEPWATER_H
 
 
 

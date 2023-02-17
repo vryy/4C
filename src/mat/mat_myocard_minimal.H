@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef MYOCARD_MINIMAL_H
-#define MYOCARD_MINIMAL_H
+#ifndef MAT_MYOCARD_MINIMAL_H
+#define MAT_MYOCARD_MINIMAL_H
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

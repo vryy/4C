@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_H_
-#define SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_H_
+#ifndef ADAPTER_POROFLUIDMULTIPHASE_H
+#define ADAPTER_POROFLUIDMULTIPHASE_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -175,4 +175,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_H_ */
+#endif  // ADAPTER_POROFLUIDMULTIPHASE_H

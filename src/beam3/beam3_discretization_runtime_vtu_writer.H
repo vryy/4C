@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BEAM_DISCRETIZATION_RUNTIME_VTU_WRITER_H
-#define BEAM_DISCRETIZATION_RUNTIME_VTU_WRITER_H
+#ifndef BEAM3_DISCRETIZATION_RUNTIME_VTU_WRITER_H
+#define BEAM3_DISCRETIZATION_RUNTIME_VTU_WRITER_H
 
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */

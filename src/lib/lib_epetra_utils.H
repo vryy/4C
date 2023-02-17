@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_EPETRA_UTILS_H_
-#define SRC_LIB_EPETRA_UTILS_H_
+#ifndef LIB_EPETRA_UTILS_H
+#define LIB_EPETRA_UTILS_H
 
 #include "lib_dserror.H"
 
@@ -46,4 +46,4 @@ void set_trace_back_mode(int tracebackmode);
   }
 
 
-#endif /* SRC_LIB_EPETRA_UTILS_H_ */
+#endif  // LIB_EPETRA_UTILS_H

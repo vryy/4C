@@ -7,8 +7,8 @@ transport problems
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SCATRA_MAT_MULTISCALE_GP_H
-#define SCATRA_MAT_MULTISCALE_GP_H
+#ifndef MAT_SCATRA_MULTISCALE_GP_H
+#define MAT_SCATRA_MULTISCALE_GP_H
 
 #include <vector>
 

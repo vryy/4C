@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 12/13 |
  *----------------------------------------------------------------------*/
-#ifndef WEAR_DEFINES_H_
-#define WEAR_DEFINES_H_
+#ifndef WEAR_DEFINES_H
+#define WEAR_DEFINES_H
 
 
 /************************************************************************/
@@ -28,4 +28,4 @@
 // convergence check
 #define WEARCONV 1.0e-12 /* tolerance for convergence check*/
 
-#endif /* WEAR_DEFINES_H_ */
+#endif  // WEAR_DEFINES_H

@@ -412,4 +412,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_FLUID_H
+#endif  // INPAR_FLUID_H

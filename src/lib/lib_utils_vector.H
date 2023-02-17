@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_H_VECTOR
-#define UTILS_H_VECTOR
+#ifndef LIB_UTILS_VECTOR_H
+#define LIB_UTILS_VECTOR_H
 
 namespace DRT
 {
@@ -30,4 +30,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_H_VECTOR
+#endif  // LIB_UTILS_VECTOR_H

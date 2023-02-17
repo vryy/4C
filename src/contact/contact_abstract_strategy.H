@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_STRATEGY_H
-#define CONTACT_STRATEGY_H
+#ifndef CONTACT_ABSTRACT_STRATEGY_H
+#define CONTACT_ABSTRACT_STRATEGY_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
@@ -2314,4 +2314,4 @@ namespace CONTACT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
 
-#endif  // #ifndef CONTACT_STRATEGY_H
+#endif  // CONTACT_ABSTRACT_STRATEGY_H

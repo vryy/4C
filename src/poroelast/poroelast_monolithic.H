@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef POROELAST_MONOLITHIC_H_
-#define POROELAST_MONOLITHIC_H_
+#ifndef POROELAST_MONOLITHIC_H
+#define POROELAST_MONOLITHIC_H
 
 #include "inpar_poroelast.H"
 #include "inpar_structure.H"
@@ -438,4 +438,4 @@ namespace POROELAST
 
 
 /*----------------------------------------------------------------------*/
-#endif /* POROELAST_MONOLITHIC_H_ */
+#endif  // POROELAST_MONOLITHIC_H

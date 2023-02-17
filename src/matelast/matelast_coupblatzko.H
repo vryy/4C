@@ -7,8 +7,8 @@ solid mechanics", 2001.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUPBLATZKO_H_
-#define ELAST_COUPBLATZKO_H_
+#ifndef MATELAST_COUPBLATZKO_H
+#define MATELAST_COUPBLATZKO_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -149,4 +149,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPBLATZKO_H_
+#endif  // MATELAST_COUPBLATZKO_H

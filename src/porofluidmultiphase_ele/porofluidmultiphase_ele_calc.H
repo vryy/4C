@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_FLUIDPOROMULTIPHASE_ELE_CALC_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_FLUIDPOROMULTIPHASE_ELE_CALC_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_CALC_H
+#define POROFLUIDMULTIPHASE_ELE_CALC_H
 
 #include "porofluidmultiphase_ele_interface.H"
 
@@ -274,4 +274,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_FLUIDPOROMULTIPHASE_ELE_CALC_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_CALC_H

@@ -8,8 +8,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BIOFILMFSIUTILS_H_
-#define BIOFILMFSIUTILS_H_
+#ifndef FS3I_BIOFILM_FSI_UTILS_H
+#define FS3I_BIOFILM_FSI_UTILS_H
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

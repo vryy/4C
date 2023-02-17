@@ -9,8 +9,8 @@ contact pressure based on micro interactions
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CONSTITUTIVELAW_H
-#define CONSTITUTIVELAW_H
+#ifndef CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_H
+#define CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_H
 
 
 

@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef QUADRATURE_COMPRESSION_H_
-#define QUADRATURE_COMPRESSION_H_
+#ifndef CUT_QUADRATURE_COMPRESSION_H
+#define CUT_QUADRATURE_COMPRESSION_H
 
 #include "fem_general_utils_gausspoints.H"
 
@@ -103,4 +103,4 @@ namespace GEO
 
   }  // namespace CUT
 }  // namespace GEO
-#endif /* QUADRATURE_COMPRESSION_H_ */
+#endif  // CUT_QUADRATURE_COMPRESSION_H

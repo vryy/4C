@@ -153,4 +153,4 @@ namespace TSI
 
 
 /*----------------------------------------------------------------------*/
-#endif  // TSI_ALGORITHM_H
+#endif  // TSI_PARTITIONED_H

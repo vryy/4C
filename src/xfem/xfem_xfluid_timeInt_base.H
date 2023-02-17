@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFLUID_TIMEINT_BASE_H_
-#define XFLUID_TIMEINT_BASE_H_
+#ifndef XFEM_XFLUID_TIMEINT_BASE_H
+#define XFEM_XFLUID_TIMEINT_BASE_H
 
 
 namespace GEO
@@ -935,4 +935,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFLUID_TIMEINT_BASE_H_*/
+#endif  // XFEM_XFLUID_TIMEINT_BASE_H

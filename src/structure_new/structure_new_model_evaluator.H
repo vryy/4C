@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_H_
-#define SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -517,4 +517,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_H

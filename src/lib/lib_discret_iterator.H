@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DISCRET_ITERATOR_H
-#define DISCRET_ITERATOR_H
+#ifndef LIB_DISCRET_ITERATOR_H
+#define LIB_DISCRET_ITERATOR_H
 
 #include "lib_discret.H"
 

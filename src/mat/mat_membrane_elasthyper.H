@@ -13,8 +13,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*
  | definitions                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-#ifndef MEMBRANE_ELASTHYPER_H
-#define MEMBRANE_ELASTHYPER_H
+#ifndef MAT_MEMBRANE_ELASTHYPER_H
+#define MAT_MEMBRANE_ELASTHYPER_H
 
 /*----------------------------------------------------------------------*
  | headers                                               sfuchs 08/2017 |
@@ -191,4 +191,4 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // MEMBRANE_ELASTHYPER_H
+#endif  // MAT_MEMBRANE_ELASTHYPER_H

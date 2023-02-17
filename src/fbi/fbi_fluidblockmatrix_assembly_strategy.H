@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLUID_ASSEMBLYBLOCK_STRATEGY_H_
-#define FLUID_ASSEMBLYBLOCK_STRATEGY_H_
+#ifndef FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
+#define FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
 
 #include <vector>
 

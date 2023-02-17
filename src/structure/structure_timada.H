@@ -7,8 +7,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef STRTIMADA_H
-#define STRTIMADA_H
+#ifndef STRUCTURE_TIMADA_H
+#define STRUCTURE_TIMADA_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -399,4 +399,4 @@ std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta);
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMADA_H
+#endif  // STRUCTURE_TIMADA_H

@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_MODEL_EVALUATOR_BEAMINTERACTION_H
-#define STR_MODEL_EVALUATOR_BEAMINTERACTION_H
+#ifndef BEAMINTERACTION_STR_MODEL_EVALUATOR_H
+#define BEAMINTERACTION_STR_MODEL_EVALUATOR_H
 
 #include "structure_new_model_evaluator_generic.H"  // base class
 #include "inpar_beaminteraction.H"

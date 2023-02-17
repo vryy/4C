@@ -10,8 +10,8 @@
 #include <Teuchos_Time.hpp>
 #include "Teuchos_RCP.hpp"
 
-#ifndef INVANA_CAL_H
-#define INVANA_CAL_H
+#ifndef INV_ANALYSIS_CAL_DRT_H
+#define INV_ANALYSIS_CAL_DRT_H
 
 
 void invana_cal();

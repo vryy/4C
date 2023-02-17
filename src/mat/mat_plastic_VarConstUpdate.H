@@ -6,8 +6,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PLASTIC_VARCONSTUPDATE_H
-#define PLASTIC_VARCONSTUPDATE_H
+#ifndef MAT_PLASTIC_VARCONSTUPDATE_H
+#define MAT_PLASTIC_VARCONSTUPDATE_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -382,4 +382,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // PLASTIC_VARCONSTUPDATE_H
+#endif  // MAT_PLASTIC_VARCONSTUPDATE_H

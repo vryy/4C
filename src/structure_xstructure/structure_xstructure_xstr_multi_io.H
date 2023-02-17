@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_
-#define SRC_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_
+#ifndef STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H
+#define STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H
 
 #include "io.H"
 #include "xfem_multi_field_mapextractor.H"
@@ -264,4 +264,4 @@ namespace XSTR
 }  // namespace XSTR
 
 
-#endif /* SRC_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_ */
+#endif  // STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H

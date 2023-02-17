@@ -7,8 +7,8 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#ifndef SCATRA_MAT_PORO_ECM_H_
-#define SCATRA_MAT_PORO_ECM_H_
+#ifndef MAT_SCATRA_MAT_PORO_ECM_H
+#define MAT_SCATRA_MAT_PORO_ECM_H
 
 #include "mat_scatra_reaction_mat.H"
 
@@ -132,4 +132,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /* SCATRA_MAT_PORO_ECM_H_ */
+#endif  // MAT_SCATRA_MAT_PORO_ECM_H

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CONTACT_AUGMENTED_STRATEGY_H_
-#define CONTACT_AUGMENTED_STRATEGY_H_
+#ifndef CONTACT_AUG_STRATEGY_H
+#define CONTACT_AUG_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
 #include "contact_aug_utils.H"
@@ -1472,4 +1472,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* #ifndef CONTACT_AUGMENTED_STRATEGY_H_ */
+#endif  // CONTACT_AUG_STRATEGY_H

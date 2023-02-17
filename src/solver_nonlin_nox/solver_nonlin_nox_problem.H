@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_PROBLEM_H_
-#define NOX_NLN_PROBLEM_H_
+#ifndef SOLVER_NONLIN_NOX_PROBLEM_H
+#define SOLVER_NONLIN_NOX_PROBLEM_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -138,4 +138,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_PROBLEM_H_ */
+#endif  // SOLVER_NONLIN_NOX_PROBLEM_H

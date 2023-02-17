@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BASE_BINARYTREE_H
-#define BASE_BINARYTREE_H
+#ifndef MORTAR_BASE_BINARYTREE_H
+#define MORTAR_BASE_BINARYTREE_H
 
 #include <vector>
 
@@ -315,4 +315,4 @@ namespace MORTAR
   };  // class BaseBinaryTree
 }  // namespace MORTAR
 
-#endif  // #ifndef BASE_BINARYTREE_H
+#endif  // MORTAR_BASE_BINARYTREE_H

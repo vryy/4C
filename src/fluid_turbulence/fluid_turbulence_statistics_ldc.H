@@ -34,8 +34,8 @@ output.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_STATISTICS_LDC_H
-#define TURBULENCE_STATISTICS_LDC_H
+#ifndef FLUID_TURBULENCE_STATISTICS_LDC_H
+#define FLUID_TURBULENCE_STATISTICS_LDC_H
 
 #include "Epetra_MpiComm.h"
 
@@ -255,4 +255,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // not TURBULENCE_STATISTICS_LDC_H
+#endif  // FLUID_TURBULENCE_STATISTICS_LDC_H

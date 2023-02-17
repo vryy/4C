@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUPANISOEXPOACTIVE_H_
-#define ELAST_COUPANISOEXPOACTIVE_H_
+#ifndef MATELAST_COUPANISOEXPOACTIVE_H
+#define MATELAST_COUPANISOEXPOACTIVE_H
 
 #include "matelast_activesummand.H"
 #include "mat_par_parameter.H"
@@ -253,4 +253,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_COUPANISOACTIVEFIBER_H_
+#endif  // MATELAST_COUPANISOEXPOACTIVE_H

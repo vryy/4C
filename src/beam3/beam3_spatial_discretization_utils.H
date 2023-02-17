@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAM_SPATIAL_DISCRET_UTILS_H
-#define BEAM_SPATIAL_DISCRET_UTILS_H
+#ifndef BEAM3_SPATIAL_DISCRETIZATION_UTILS_H
+#define BEAM3_SPATIAL_DISCRETIZATION_UTILS_H
 
 
 #include "lib_element.H"

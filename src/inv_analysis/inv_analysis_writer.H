@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef INVANA_WRITER_H
-#define INVANA_WRITER_H
+#ifndef INV_ANALYSIS_WRITER_H
+#define INV_ANALYSIS_WRITER_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -99,4 +99,4 @@ namespace INVANA
   };  // class InvanaWriter
 }  // namespace INVANA
 
-#endif /* INVANA_WRITER_H */
+#endif  // INV_ANALYSIS_WRITER_H

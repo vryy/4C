@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef ADAPTER_COUPLING_VOLMORTAR_H_
-#define ADAPTER_COUPLING_VOLMORTAR_H_
+#ifndef ADAPTER_COUPLING_VOLMORTAR_H
+#define ADAPTER_COUPLING_VOLMORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/13 |
@@ -231,4 +231,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_VOLMORTAR_H_ */
+#endif  // ADAPTER_COUPLING_VOLMORTAR_H

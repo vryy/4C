@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef AM_H
-#define AM_H
+#ifndef PSS_FULL_AM_H
+#define PSS_FULL_AM_H
 
 #include "pss_full_ccarat_datatypes.h"
 

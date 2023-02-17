@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_CONTAINER_BUNDLE_H
-#define PARTICLE_CONTAINER_BUNDLE_H
+#ifndef PARTICLE_ENGINE_CONTAINER_BUNDLE_H
+#define PARTICLE_ENGINE_CONTAINER_BUNDLE_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

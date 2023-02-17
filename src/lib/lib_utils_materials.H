@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_MATERIALS_H
-#define UTILS_MATERIALS_H
+#ifndef LIB_UTILS_MATERIALS_H
+#define LIB_UTILS_MATERIALS_H
 
 
 #include "lib_node.H"
@@ -38,4 +38,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_MATERIALS_H
+#endif  // LIB_UTILS_MATERIALS_H

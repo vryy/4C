@@ -7,8 +7,8 @@
 
  *-----------------------------------------------------------------------*/
 
-#ifndef PORO_PARTITIONED_H_
-#define PORO_PARTITIONED_H_
+#ifndef POROELAST_PARTITIONED_H
+#define POROELAST_PARTITIONED_H
 
 #include "inpar_poroelast.H"
 #include "inpar_structure.H"
@@ -70,4 +70,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-#endif /* PORO_PARTITIONED_H_ */
+#endif  // POROELAST_PARTITIONED_H

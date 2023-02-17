@@ -10,8 +10,8 @@
 
 #include "lib_function.H"
 
-#ifndef XFLUID_FUNCTION_H
-#define XFLUID_FUNCTION_H
+#ifndef FLUID_XFLUID_FUNCTIONS_H
+#define FLUID_XFLUID_FUNCTIONS_H
 
 namespace DRT
 {

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STR_MODEL_EVALUATOR_CARDIOVASCULAR0D_H
-#define STR_MODEL_EVALUATOR_CARDIOVASCULAR0D_H
+#ifndef CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_H
+#define CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_H
 
 #include "structure_new_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
@@ -139,4 +139,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_MODEL_EVALUATOR_CARDIOVASCULAR0D_H */
+#endif  // CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_H

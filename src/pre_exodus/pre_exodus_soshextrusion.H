@@ -9,8 +9,8 @@
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_SOSHEXTRUSION_H_
-#define PRE_EXODUS_SOSHEXTRUSION_H_
+#ifndef PRE_EXODUS_SOSHEXTRUSION_H
+#define PRE_EXODUS_SOSHEXTRUSION_H
 
 #include <string>
 #include <iostream>
@@ -110,4 +110,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif /*PRE_EXODUS_SOSHEXTRUSION_H_*/
+#endif  // PRE_EXODUS_SOSHEXTRUSION_H

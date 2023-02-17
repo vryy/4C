@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_DBC_H_
-#define SRC_STRUCTURE_NEW_STR_DBC_H_
+#ifndef STRUCTURE_NEW_DBC_H
+#define STRUCTURE_NEW_DBC_H
 
 #include <Teuchos_RCP.hpp>
 #include "solver_nonlin_nox_abstract_prepostoperator.H"
@@ -293,4 +293,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_DBC_H_ */
+#endif  // STRUCTURE_NEW_DBC_H

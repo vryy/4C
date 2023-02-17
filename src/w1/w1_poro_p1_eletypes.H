@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef WALL1_PORO_P1_ELETYPES_H_
-#define WALL1_PORO_P1_ELETYPES_H_
+#ifndef W1_PORO_P1_ELETYPES_H
+#define W1_PORO_P1_ELETYPES_H
 
 #include "w1_poro_eletypes.H"
 
@@ -122,4 +122,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* WALL1_PORO_P1_ELETYPES_H_ */
+#endif  // W1_PORO_P1_ELETYPES_H

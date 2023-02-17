@@ -236,4 +236,4 @@ namespace MORTAR
   }  // namespace UTILS
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_UTILS_H
+#endif  // MORTAR_UTILS_H

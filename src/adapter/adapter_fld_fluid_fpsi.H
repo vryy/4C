@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ADAPTER_FLUID_FPSI_H
-#define ADAPTER_FLUID_FPSI_H
+#ifndef ADAPTER_FLD_FLUID_FPSI_H
+#define ADAPTER_FLD_FLUID_FPSI_H
 
 #include "adapter_fld_fluid_fsi.H"
 

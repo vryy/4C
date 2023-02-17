@@ -20,8 +20,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLUIDIMPLICITINTEGRATION_H
-#define FLUIDIMPLICITINTEGRATION_H
+#ifndef FLUID_IMPLICIT_INTEGRATION_H
+#define FLUID_IMPLICIT_INTEGRATION_H
 
 
 #include "Epetra_MpiComm.h"
@@ -1447,4 +1447,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLUIDIMPLICITINTEGRATION_H
+#endif  // FLUID_IMPLICIT_INTEGRATION_H

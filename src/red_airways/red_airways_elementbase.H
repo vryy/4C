@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef RED_AIRWAY_H_
-#define RED_AIRWAY_H_
+#ifndef RED_AIRWAYS_ELEMENTBASE_H
+#define RED_AIRWAYS_ELEMENTBASE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
@@ -1974,4 +1974,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef RED_AIRWAY_H_
+#endif  // RED_AIRWAYS_ELEMENTBASE_H

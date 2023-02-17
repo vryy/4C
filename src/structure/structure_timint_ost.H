@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_OST_H
-#define STRTIMINT_OST_H
+#ifndef STRUCTURE_TIMINT_OST_H
+#define STRUCTURE_TIMINT_OST_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -365,4 +365,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_OST_H
+#endif  // STRUCTURE_TIMINT_OST_H

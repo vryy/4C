@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_IMPL_OST_H_
-#define STR_IMPL_OST_H_
+#ifndef STRUCTURE_NEW_IMPL_OST_H
+#define STRUCTURE_NEW_IMPL_OST_H
 
 #include "structure_new_impl_generic.H"
 
@@ -223,4 +223,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_IMPL_OST_H_ */
+#endif  // STRUCTURE_NEW_IMPL_OST_H

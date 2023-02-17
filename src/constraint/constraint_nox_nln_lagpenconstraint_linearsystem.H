@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_LAGPENCONSTRAINT_LINEARSYSTEM_H_
-#define NOX_LAGPENCONSTRAINT_LINEARSYSTEM_H_
+#ifndef CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_H
+#define CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_H
 
 #include "solver_nonlin_nox_linearsystem.H"
 #include "solver_nonlin_nox_constraint_interface_required.H"
@@ -79,4 +79,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_STR_LINEARSYSTEM_H_ */
+#endif  // CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_H

@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INPUT_GENERATOR_H
-#define PARTICLE_INPUT_GENERATOR_H
+#ifndef PARTICLE_ALGORITHM_INPUT_GENERATOR_H
+#define PARTICLE_ALGORITHM_INPUT_GENERATOR_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef VOLMORTAR_DEFINES_H_
-#define VOLMORTAR_DEFINES_H_
+#ifndef VOLMORTAR_DEFINES_H
+#define VOLMORTAR_DEFINES_H
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
@@ -21,4 +21,4 @@
 #define VOLMORTARCUTTOL 1.0e-12
 #define VOLMORTARCUT2TOL -1.0e-12
 
-#endif /* VOLMORTAR_DEFINES_H_ */
+#endif  // VOLMORTAR_DEFINES_H

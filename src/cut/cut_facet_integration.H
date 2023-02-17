@@ -8,8 +8,8 @@ equations
 
 
 *----------------------------------------------------------------------*/
-#ifndef FACET_INTEGRATION_H
-#define FACET_INTEGRATION_H
+#ifndef CUT_FACET_INTEGRATION_H
+#define CUT_FACET_INTEGRATION_H
 
 #include "cut_element.H"
 #include "cut_mesh.H"

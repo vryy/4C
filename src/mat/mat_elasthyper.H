@@ -13,8 +13,8 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 */
 /*-----------------------------------------------------------*/
-#ifndef ELASTHYPER_H
-#define ELASTHYPER_H
+#ifndef MAT_ELASTHYPER_H
+#define MAT_ELASTHYPER_H
 
 
 

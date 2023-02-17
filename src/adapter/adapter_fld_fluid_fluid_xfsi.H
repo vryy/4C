@@ -10,8 +10,8 @@ conjunction with XFluidFluid!
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef AD_FLD_FLUID_FLUID_XFSI_H_
-#define AD_FLD_FLUID_FLUID_XFSI_H_
+#ifndef ADAPTER_FLD_FLUID_FLUID_XFSI_H
+#define ADAPTER_FLD_FLUID_FLUID_XFSI_H
 
 #include "adapter_fld_fluid_xfsi.H"
 
@@ -41,4 +41,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* AD_FLD_FLUID_FLUID_XFSI_H_ */
+#endif  // ADAPTER_FLD_FLUID_FLUID_XFSI_H

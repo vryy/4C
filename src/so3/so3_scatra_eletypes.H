@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SO3_SCATRA_ELETYPES_H_
-#define SO3_SCATRA_ELETYPES_H_
+#ifndef SO3_SCATRA_ELETYPES_H
+#define SO3_SCATRA_ELETYPES_H
 
 #include "so3_hex8.H"
 #include "so3_hex8fbar.H"
@@ -238,4 +238,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SO3_SCATRA_ELETYPES_H_ */
+#endif  // SO3_SCATRA_ELETYPES_H

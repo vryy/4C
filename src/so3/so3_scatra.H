@@ -366,4 +366,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SO3_SCATRA_H */
+#endif  // SO3_SCATRA_H

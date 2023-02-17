@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_PROBLEM_H_
-#define SRC_LOCA_CONTINUATION_LOCA_NLN_PROBLEM_H_
+#ifndef LOCA_CONTINUATION_NLN_PROBLEM_H
+#define LOCA_CONTINUATION_NLN_PROBLEM_H
 
 #include "solver_nonlin_nox_problem.H"
 
@@ -61,4 +61,4 @@ namespace LOCA
 
 
 
-#endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_PROBLEM_H_ */
+#endif  // LOCA_CONTINUATION_NLN_PROBLEM_H

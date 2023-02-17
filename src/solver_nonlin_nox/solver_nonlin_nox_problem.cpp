@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_PROBLEM_CPP_
-#define NOX_NLN_PROBLEM_CPP_
+#ifndef SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
+#define SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 
 #include "solver_nonlin_nox_problem.H"  // class definition
 #include "solver_nonlin_nox_globaldata.H"
@@ -174,4 +174,4 @@ void NOX::NLN::Problem::CheckFinalStatus(const NOX::StatusTest::StatusType& fina
   return;
 }
 
-#endif /* NOX_NLN_PROBLEM_CPP_ */
+#endif  // SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP

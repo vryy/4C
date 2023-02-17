@@ -27,8 +27,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 03/13 |
  *----------------------------------------------------------------------*/
-#ifndef THERMO_PLAST_HYPERELAST_H_
-#define THERMO_PLAST_HYPERELAST_H_
+#ifndef MAT_THERMOPLASTICHYPERELAST_H
+#define MAT_THERMOPLASTICHYPERELAST_H
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 03/13 |
@@ -409,4 +409,4 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // THERMO_PLAST_HYPERELAST_H_
+#endif  // MAT_THERMOPLASTICHYPERELAST_H

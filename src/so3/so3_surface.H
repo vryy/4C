@@ -6,8 +6,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SO_SURFACE_H
-#define SO_SURFACE_H
+#ifndef SO3_SURFACE_H
+#define SO3_SURFACE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_element.H"
@@ -496,4 +496,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SO_SURFACE_H
+#endif  // SO3_SURFACE_H

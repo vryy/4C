@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_CONTAINER_H
-#define PARTICLE_CONTAINER_H
+#ifndef PARTICLE_ENGINE_CONTAINER_H
+#define PARTICLE_ENGINE_CONTAINER_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

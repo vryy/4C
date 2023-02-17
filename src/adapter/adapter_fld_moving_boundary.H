@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_GENERAL_FLUID_H
-#define ADAPTER_GENERAL_FLUID_H
+#ifndef ADAPTER_FLD_MOVING_BOUNDARY_H
+#define ADAPTER_FLD_MOVING_BOUNDARY_H
 
 
 #include "lib_discret.H"

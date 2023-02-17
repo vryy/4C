@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_UTILS_PARALLEL_H_
-#define SRC_CONTACT_CONTACT_UTILS_PARALLEL_H_
+#ifndef CONTACT_UTILS_PARALLEL_H
+#define CONTACT_UTILS_PARALLEL_H
 
 namespace Teuchos
 {
@@ -36,4 +36,4 @@ namespace CONTACT
   }  // namespace UTILS
 }  // namespace CONTACT
 
-#endif /* SRC_CONTACT_CONTACT_UTILS_PARALLEL_H_ */
+#endif  // CONTACT_UTILS_PARALLEL_H

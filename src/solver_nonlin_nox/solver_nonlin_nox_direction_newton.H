@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_DIRECTION_NEWTON_H_
-#define NOX_NLN_DIRECTION_NEWTON_H_
+#ifndef SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
+#define SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H
 
 #include <NOX_Direction_Newton.H>  // base class
 
@@ -57,4 +57,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_DIRECTION_NEWTON_H_ */
+#endif  // SOLVER_NONLIN_NOX_DIRECTION_NEWTON_H

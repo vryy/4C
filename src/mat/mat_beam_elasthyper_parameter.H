@@ -7,8 +7,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef MAT_BEAM_ELASTHYPER_PARAMETER_H_
-#define MAT_BEAM_ELASTHYPER_PARAMETER_H_
+#ifndef MAT_BEAM_ELASTHYPER_PARAMETER_H
+#define MAT_BEAM_ELASTHYPER_PARAMETER_H
 
 #include "mat_par_parameter.H"
 

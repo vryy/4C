@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
+#ifndef POROMULTIPHASE_UTILS_H
+#define POROMULTIPHASE_UTILS_H
 
 #include <set>
 
@@ -59,4 +59,4 @@ namespace POROMULTIPHASE
 
 
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_ */
+#endif  // POROMULTIPHASE_UTILS_H

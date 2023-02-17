@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_LINEDEFINITION_H
-#define UTILS_LINEDEFINITION_H
+#ifndef LIB_UTILS_LINEDEFINITION_H
+#define LIB_UTILS_LINEDEFINITION_H
 
 #include <memory>
 #include <string>
@@ -73,4 +73,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef UTILS_LINEDEFINTION_H
+#endif  // LIB_UTILS_LINEDEFINITION_H

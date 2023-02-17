@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SOH20_H
-#define SOH20_H
+#ifndef SO3_HEX20_H
+#define SO3_HEX20_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_element.H"
@@ -497,4 +497,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SOH20_H
+#endif  // SO3_HEX20_H

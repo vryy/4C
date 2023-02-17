@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_CONSTRAINT_GROUP_H_
-#define NOX_NLN_CONSTRAINT_GROUP_H_
+#ifndef SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H
+#define SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H
 
 #include "solver_nonlin_nox_group.H"
 #include "solver_nonlin_nox_constraint_interface_required.H"
@@ -145,4 +145,4 @@ namespace NOX
 }  // end namespace  NOX
 
 
-#endif /* NOX_NLN_CONSTRAINT_GROUP_H_ */
+#endif  // SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H

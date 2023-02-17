@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SOP5FBAR_H
-#define SOP5FBAR_H
+#ifndef SO3_PYRAMID5FBAR_H
+#define SO3_PYRAMID5FBAR_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "so3_pyramid5.H"
@@ -235,4 +235,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SOP5FBAR_H
+#endif  // SO3_PYRAMID5FBAR_H

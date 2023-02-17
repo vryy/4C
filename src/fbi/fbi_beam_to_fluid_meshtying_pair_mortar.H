@@ -8,8 +8,8 @@ functions.
 // End doxygen header.
 
 
-#ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_MORTAR_H_
-#define BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_MORTAR_H_
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_PAIR_MORTAR_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_PAIR_MORTAR_H
 
 
 #include "fbi_beam_to_fluid_meshtying_pair_base.H"

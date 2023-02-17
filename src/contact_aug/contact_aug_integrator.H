@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef CONTACT_AUGMENTED_INTEGRATOR_H_
-#define CONTACT_AUGMENTED_INTEGRATOR_H_
+#ifndef CONTACT_AUG_INTEGRATOR_H
+#define CONTACT_AUG_INTEGRATOR_H
 
 #include "contact_integrator.H"
 #include "fem_general_utils_integration.H"
@@ -528,4 +528,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* CONTACT_AUGMENTED_INTEGRATOR_H_ */
+#endif  // CONTACT_AUG_INTEGRATOR_H

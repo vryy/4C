@@ -5,8 +5,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SCATRA_MAT_H
-#define SCATRA_MAT_H
+#ifndef MAT_SCATRA_MAT_H
+#define MAT_SCATRA_MAT_H
 
 
 

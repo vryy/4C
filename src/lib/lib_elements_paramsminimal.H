@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_ELEMENTS_PARAMSMINIMAL_H_
-#define SRC_LIB_ELEMENTS_PARAMSMINIMAL_H_
+#ifndef LIB_ELEMENTS_PARAMSMINIMAL_H
+#define LIB_ELEMENTS_PARAMSMINIMAL_H
 
 #include "lib_elements_paramsinterface.H"
 
@@ -80,4 +80,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_ELEMENTS_PARAMSMINIMAL_H_ */
+#endif  // LIB_ELEMENTS_PARAMSMINIMAL_H

@@ -123,4 +123,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* ELEMAG_ELE_BOUNDARY_CALC_H */
+#endif  // ELEMAG_ELE_BOUNDARY_CALC_H

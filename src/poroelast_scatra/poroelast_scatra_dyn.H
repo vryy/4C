@@ -8,11 +8,11 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef PORO_SCATRA_DYN_H_
-#define PORO_SCATRA_DYN_H_
+#ifndef POROELAST_SCATRA_DYN_H
+#define POROELAST_SCATRA_DYN_H
 
 //! global control routine for Poro + ScaTra problem.
 void poro_scatra_drt();
 
 
-#endif /* PORO_SCATRA_DYN_H_ */
+#endif

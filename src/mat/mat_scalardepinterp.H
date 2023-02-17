@@ -14,8 +14,8 @@ parameters or totally different strain energy function).
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef SCALARDEPINTERP_H
-#define SCALARDEPINTERP_H
+#ifndef MAT_SCALARDEPINTERP_H
+#define MAT_SCALARDEPINTERP_H
 
 
 

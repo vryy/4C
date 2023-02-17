@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_GROWTH_EVOLUTION_LINEAR_CAUCHY_H
-#define BACI_GROWTH_EVOLUTION_LINEAR_CAUCHY_H
+#ifndef MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_H
+#define MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_H
 #include "mixture_growth_evolution.H"
 
 namespace MIXTURE
@@ -48,4 +48,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_GROWTH_EVOLUTION_LINEAR_CAUCHY_H
+#endif  // MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_H

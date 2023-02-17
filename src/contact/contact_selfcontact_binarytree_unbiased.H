@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef SELFCONTACT_BINARYTREE_UNBIASED_H
-#define SELFCONTACT_BINARYTREE_UNBIASED_H
+#ifndef CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H
+#define CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H
 
 #include "contact_selfcontact_binarytree.H"
 
@@ -135,4 +135,4 @@ namespace CONTACT
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
 
-#endif  // #ifndef SELFCONTACT_BINARYTREE_UNBIASED_H
+#endif  // CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H

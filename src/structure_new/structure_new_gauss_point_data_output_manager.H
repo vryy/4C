@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef GAUSS_POINT_DATA_OUTPUT_MANAGER_H
-#define GAUSS_POINT_DATA_OUTPUT_MANAGER_H
+#ifndef STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
+#define STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 
 #include <memory>
 #include <unordered_map>
@@ -152,4 +152,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif  // GAUSS_POINT_DATA_OUTPUT_MANAGER_H
+#endif  // STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H

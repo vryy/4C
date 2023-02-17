@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef ANISOTROPIC_GROWTH_STRATEGY_H
-#define ANISOTROPIC_GROWTH_STRATEGY_H
+#ifndef MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H
+#define MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H
 
 #include "mixture_growth_strategy.H"
 #include "mat_anisotropy_extension_default.H"
@@ -73,4 +73,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // ANISOTROPIC_GROWTH_STRATEGY_H
+#endif  // MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H

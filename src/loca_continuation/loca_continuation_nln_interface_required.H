@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_
-#define SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_
+#ifndef LOCA_CONTINUATION_NLN_INTERFACE_REQUIRED_H
+#define LOCA_CONTINUATION_NLN_INTERFACE_REQUIRED_H
 
 #include <LOCA_Epetra_Interface_Required.H>
 #include "solver_nonlin_nox_interface_required.H"
@@ -36,4 +36,4 @@ namespace LOCA
 }  // namespace LOCA
 
 
-#endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_ */
+#endif  // LOCA_CONTINUATION_NLN_INTERFACE_REQUIRED_H

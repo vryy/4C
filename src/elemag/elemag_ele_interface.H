@@ -67,4 +67,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_INTERFACE_H */
+#endif  // ELEMAG_ELE_INTERFACE_H

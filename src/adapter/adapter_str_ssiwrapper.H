@@ -7,8 +7,8 @@
 \level 1
 */
 
-#ifndef SSI_STRUCTURE_WRAPPER_H
-#define SSI_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_SSIWRAPPER_H
+#define ADAPTER_STR_SSIWRAPPER_H
 
 #include "adapter_str_wrapper.H"
 #include "ssi_str_model_evaluator_partitioned.H"
@@ -66,4 +66,4 @@ namespace ADAPTER
   };  // class SSIStructureWrapper
 }  // namespace ADAPTER
 
-#endif /* SSI_STRUCTURE_WRAPPER_H */
+#endif  // ADAPTER_STR_SSIWRAPPER_H

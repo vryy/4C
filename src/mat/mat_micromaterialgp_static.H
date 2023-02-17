@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MICROMATERIALGP_STAT_H
-#define MICROMATERIALGP_STAT_H
+#ifndef MAT_MICROMATERIALGP_STATIC_H
+#define MAT_MICROMATERIALGP_STATIC_H
 
 
 

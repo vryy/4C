@@ -5,8 +5,8 @@
 
 */
 
-#ifndef MATERIAL_THERMOMECHANICAL_H
-#define MATERIAL_THERMOMECHANICAL_H
+#ifndef MAT_THERMOMECHANICAL_H
+#define MAT_THERMOMECHANICAL_H
 
 #include "mat_so3_material.H"
 #include "mat_trait_thermo_solid.H"

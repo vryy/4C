@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_FACTORY_H
-#define UTILS_FACTORY_H
+#ifndef LIB_UTILS_FACTORY_H
+#define LIB_UTILS_FACTORY_H
 
 #include "lib_discret.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -180,4 +180,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_FACTORY_H
+#endif  // LIB_UTILS_FACTORY_H

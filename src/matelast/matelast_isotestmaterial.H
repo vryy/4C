@@ -6,8 +6,8 @@ parts of the Elasthyper-Toolbox.
 \level 1
 *----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOTESTMATERIAL_H_
-#define ELAST_ISOTESTMATERIAL_H_
+#ifndef MATELAST_ISOTESTMATERIAL_H
+#define MATELAST_ISOTESTMATERIAL_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"

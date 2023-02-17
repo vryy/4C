@@ -8,8 +8,8 @@ element
 
 
 *----------------------------------------------------------------------*/
-#ifndef BEAM3TSMT_H
-#define BEAM3TSMT_H
+#ifndef BEAMCONTACT_BEAM3TOSOLIDMESHTYING_H
+#define BEAMCONTACT_BEAM3TOSOLIDMESHTYING_H
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "beaminteraction_beam3contact_utils.H"
@@ -228,4 +228,4 @@ namespace CONTACT
   };  // class Beam3tosolidmeshtying
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3TSMT_H
+#endif  // BEAMCONTACT_BEAM3TOSOLIDMESHTYING_H

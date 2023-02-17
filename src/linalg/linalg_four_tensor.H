@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINALG_FOUR_TENSOR_H_
-#define LINALG_FOUR_TENSOR_H_
+#ifndef LINALG_FOUR_TENSOR_H
+#define LINALG_FOUR_TENSOR_H
 
 namespace LINALG
 {

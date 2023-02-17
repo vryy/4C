@@ -7,8 +7,8 @@ problems
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SCATRA_MULTISCALE_H
-#define SCATRA_MULTISCALE_H
+#ifndef MAT_SCATRA_MULTISCALE_H
+#define MAT_SCATRA_MULTISCALE_H
 
 #include <vector>
 

@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef ELEMENT_COORDTRAFO_H_
-#define ELEMENT_COORDTRAFO_H_
+#ifndef GEOMETRY_ELEMENT_COORDTRAFO_H
+#define GEOMETRY_ELEMENT_COORDTRAFO_H
 
 
 #include "fem_general_utils_fem_shapefunctions.H"
@@ -1392,4 +1392,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /*ELEMENT_COORDTRAFO_H_*/
+#endif  // GEOMETRY_ELEMENT_COORDTRAFO_H

@@ -7,8 +7,8 @@ multiplicatively into elastic and inelastic parts
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
-#define MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
+#ifndef MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
+#define MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 
 #include "mat_anisotropy.H"
 #include "mat_par_parameter.H"

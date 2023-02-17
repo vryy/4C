@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FUNCTION_MANAGER_H
-#define FUNCTION_MANAGER_H
+#ifndef LIB_FUNCTION_MANAGER_H
+#define LIB_FUNCTION_MANAGER_H
 
 
 #include <iostream>

@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef TIMINT_ADJOINT_PRESTRESS_H
-#define TIMINT_ADJOINT_PRESTRESS_H
+#ifndef INV_ANALYSIS_TIMINT_ADJOINT_PRESTRESS_H
+#define INV_ANALYSIS_TIMINT_ADJOINT_PRESTRESS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

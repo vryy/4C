@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_READER_H
-#define UTILS_READER_H
+#ifndef LIB_UTILS_READER_H
+#define LIB_UTILS_READER_H
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
@@ -75,4 +75,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_READER_H
+#endif  // LIB_UTILS_READER_H

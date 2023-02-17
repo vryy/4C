@@ -10,8 +10,8 @@ bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_COUPLING_LEVELSET_H_
-#define XFEM_COUPLING_LEVELSET_H_
+#ifndef XFEM_COUPLING_LEVELSET_H
+#define XFEM_COUPLING_LEVELSET_H
 
 #include "xfem_coupling_base.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -1177,4 +1177,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_LEVELSET_H_*/
+#endif  // XFEM_COUPLING_LEVELSET_H

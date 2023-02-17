@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef CROSSLINKER_NODE_H_
-#define CROSSLINKER_NODE_H_
+#ifndef BEAMINTERACTION_CROSSLINKER_NODE_H
+#define BEAMINTERACTION_CROSSLINKER_NODE_H
 
 #include "lib_node.H"
 #include "lib_parobjectfactory.H"
@@ -299,4 +299,4 @@ namespace CROSSLINKING
 // << operator
 std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& cnode);
 
-#endif /* CROSSLINKING_NODE_H_ */
+#endif  // BEAMINTERACTION_CROSSLINKER_NODE_H

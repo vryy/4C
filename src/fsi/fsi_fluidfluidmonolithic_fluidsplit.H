@@ -8,8 +8,8 @@
 */
 /*------------------------------------------------------*/
 
-#ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_
-#define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_
+#ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H
+#define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H
 
 #include "fsi_monolithicfluidsplit.H"
 #include "inpar_xfem.H"
@@ -69,4 +69,4 @@ namespace FSI
   };
 }  // namespace FSI
 
-#endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_ */
+#endif  // FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H

@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
+#ifndef MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
+#define MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
 
 #include <NOX_LAPACK.H>
 #include "linalg_fixedsizematrix.H"
@@ -102,4 +102,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H
+#endif  // MIXTURE_PRESTRESS_STRATEGY_ISOCYL_H

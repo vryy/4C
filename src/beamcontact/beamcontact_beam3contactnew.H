@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BEAM3CNEW_H
-#define BEAM3CNEW_H
+#ifndef BEAMCONTACT_BEAM3CONTACTNEW_H
+#define BEAMCONTACT_BEAM3CONTACTNEW_H
 
 #include "beaminteraction_beam3contact_utils.H"
 #include "beamcontact_beam3contactinterface.H"
@@ -731,4 +731,4 @@ namespace CONTACT
   };  // class Beam3contactnew
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3CNEW_H
+#endif  // BEAMCONTACT_BEAM3CONTACTNEW_H

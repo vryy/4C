@@ -354,4 +354,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_CALC_HDG_H_ */
+#endif  // SCATRA_ELE_CALC_HDG_H

@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SO_WEG6_H_
-#define SO_WEG6_H_
+#ifndef SO3_WEG6_H
+#define SO3_WEG6_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "Teuchos_RCP.hpp"
@@ -443,4 +443,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /*SO_WEG6_H_*/
+#endif  // SO3_WEG6_H

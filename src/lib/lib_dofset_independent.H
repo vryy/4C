@@ -14,8 +14,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSET_INDEPENDENT_H
-#define DOFSET_INDEPENDENT_H
+#ifndef LIB_DOFSET_INDEPENDENT_H
+#define LIB_DOFSET_INDEPENDENT_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -80,4 +80,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef DOFSET_INDEPENDENT_H
+#endif  // LIB_DOFSET_INDEPENDENT_H

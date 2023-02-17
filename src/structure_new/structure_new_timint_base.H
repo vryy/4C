@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_TIMINT_BASE_H_
-#define STR_TIMINT_BASE_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASE_H
+#define STRUCTURE_NEW_TIMINT_BASE_H
 
 #include "adapter_str_structure_new.H"
 #include "io_every_iteration_writer.H"
@@ -905,4 +905,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_TIMINT_BASE_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_BASE_H

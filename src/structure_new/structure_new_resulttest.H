@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_RESULTTEST_H_
-#define SRC_STRUCTURE_NEW_STR_RESULTTEST_H_
+#ifndef STRUCTURE_NEW_RESULTTEST_H
+#define STRUCTURE_NEW_RESULTTEST_H
 
 #include <Epetra_Vector.h>
 #include "lib_resulttest.H"
@@ -232,4 +232,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_RESULTTEST_H_ */
+#endif  // STRUCTURE_NEW_RESULTTEST_H

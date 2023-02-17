@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOEXPOPOW_H_
-#define ELAST_ISOEXPOPOW_H_
+#ifndef MATELAST_ISOEXPOPOW_H
+#define MATELAST_ISOEXPOPOW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"

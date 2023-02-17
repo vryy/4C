@@ -22,8 +22,8 @@ For a detailed description see:
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef CONSTRAINTMIXTURE_H_
-#define CONSTRAINTMIXTURE_H_
+#ifndef MAT_CONSTRAINTMIXTURE_H
+#define MAT_CONSTRAINTMIXTURE_H
 
 
 #include "mat_so3_material.H"
@@ -498,4 +498,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /* CONSTRAINTMIXTURE_H_ */
+#endif  // MAT_CONSTRAINTMIXTURE_H

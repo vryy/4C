@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STRU_MICRO_STAT_H
-#define STRU_MICRO_STAT_H
+#ifndef STRU_MULTI_MICROSTATIC_H
+#define STRU_MULTI_MICROSTATIC_H
 
 
 

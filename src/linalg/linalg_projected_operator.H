@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LINALG_PROJECTED_OPERATOR_H_
-#define LINALG_PROJECTED_OPERATOR_H_
+#ifndef LINALG_PROJECTED_OPERATOR_H
+#define LINALG_PROJECTED_OPERATOR_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Operator.h"
@@ -173,4 +173,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // LINALG_PROJECTED_OPERATOR_H_
+#endif  // LINALG_PROJECTED_OPERATOR_H

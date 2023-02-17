@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OBJECTIVE_FUNCT_SURFCURR_H
-#define OBJECTIVE_FUNCT_SURFCURR_H
+#ifndef INV_ANALYSIS_OBJECTIVE_FUNCT_SURFCURR_H
+#define INV_ANALYSIS_OBJECTIVE_FUNCT_SURFCURR_H
 
 #include "inv_analysis_objective_funct.H"
 
@@ -676,4 +676,4 @@ namespace INVANA
 
 }  // namespace INVANA
 
-#endif  // OBJECTIVE_FUNCT_SURFCURR_H
+#endif  // INV_ANALYSIS_OBJECTIVE_FUNCT_SURFCURR_H

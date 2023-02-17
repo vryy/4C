@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef GLOBALPROBLEM_H
-#define GLOBALPROBLEM_H
+#ifndef LIB_GLOBALPROBLEM_H
+#define LIB_GLOBALPROBLEM_H
 
 #include <memory>
 #include <vector>

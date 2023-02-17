@@ -6,8 +6,8 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#ifndef STRUCTPORO_REACTION_ECM_H_
-#define STRUCTPORO_REACTION_ECM_H_
+#ifndef MAT_STRUCTPORO_REACTION_ECM_H
+#define MAT_STRUCTPORO_REACTION_ECM_H
 
 #include "mat_structporo_reaction.H"
 
@@ -170,4 +170,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif /* STRUCTPORO_REACTION_ECM_H_ */
+#endif  // MAT_STRUCTPORO_REACTION_ECM_H

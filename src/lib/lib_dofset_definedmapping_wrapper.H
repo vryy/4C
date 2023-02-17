@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H_
-#define SRC_LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H_
+#ifndef LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H
+#define LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H
 
 #include "lib_dofset_base.H"
 
@@ -334,4 +334,4 @@ namespace DRT
 
 
 
-#endif /* SRC_LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H_ */
+#endif  // LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H

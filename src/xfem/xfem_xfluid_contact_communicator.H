@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_XFLUID_CONTACT_COMM_H_
-#define XFEM_XFLUID_CONTACT_COMM_H_
+#ifndef XFEM_XFLUID_CONTACT_COMMUNICATOR_H
+#define XFEM_XFLUID_CONTACT_COMMUNICATOR_H
 
 
 #include <vector>
@@ -366,4 +366,4 @@ namespace XFEM
   };  // class XFluid_Contact_Comm
 }  // namespace XFEM
 
-#endif /*XFEM_XFLUID_CONTACT_COMM_H_*/
+#endif  // XFEM_XFLUID_CONTACT_COMMUNICATOR_H

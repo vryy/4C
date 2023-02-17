@@ -8,8 +8,8 @@
 */
 
 
-#ifndef BEAM_TO_SOLID_UTILS_H
-#define BEAM_TO_SOLID_UTILS_H
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_UTILS_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_UTILS_H
 
 
 #include <Teuchos_RCP.hpp>

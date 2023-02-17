@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_SOLVER_PTC_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_SOLVER_PTC_H_
+#ifndef SOLVER_NONLIN_NOX_SOLVER_PTC_H
+#define SOLVER_NONLIN_NOX_SOLVER_PTC_H
 
 
 #include "solver_nonlin_nox_solver_linesearchbased.H"  // base class of NOX::NLN::Solver::PseudoTransient
@@ -474,4 +474,4 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_SOLVER_PTC_H_ */
+#endif  // SOLVER_NONLIN_NOX_SOLVER_PTC_H

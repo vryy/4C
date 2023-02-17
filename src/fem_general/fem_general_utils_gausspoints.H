@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef UTILS_GAUSSPOINTS_H
-#define UTILS_GAUSSPOINTS_H
+#ifndef FEM_GENERAL_UTILS_GAUSSPOINTS_H
+#define FEM_GENERAL_UTILS_GAUSSPOINTS_H
 
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "geometry_element_coordtrafo.H"

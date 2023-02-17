@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BEAM3C_MANAGER_H
-#define BEAM3C_MANAGER_H
+#ifndef BEAMCONTACT_BEAM3CONTACT_MANAGER_H
+#define BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Teuchos_RCP.hpp"
@@ -732,4 +732,4 @@ namespace CONTACT
   };  // class Beam3cmanager
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3C_MANAGER_H
+#endif  // BEAMCONTACT_BEAM3CONTACT_MANAGER_H

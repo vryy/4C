@@ -6,8 +6,8 @@
 \brief Bridge for accessing meshtying & contact from STR time integration
 */
 /*-----------------------------------------------------------------------*/
-#ifndef MESHTYING_CONTACT_BRIDGE_H_
-#define MESHTYING_CONTACT_BRIDGE_H_
+#ifndef CONTACT_MESHTYING_CONTACT_BRIDGE_H
+#define CONTACT_MESHTYING_CONTACT_BRIDGE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
@@ -184,4 +184,4 @@ namespace CONTACT
   };  // class MeshtyingContactBridge
 }  // namespace CONTACT
 
-#endif /* MESHTYING_CONTACT_BRIDGE_H_ */
+#endif  // CONTACT_MESHTYING_CONTACT_BRIDGE_H

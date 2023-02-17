@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DISCRET_FACES_H
-#define DISCRET_FACES_H
+#ifndef LIB_DISCRET_FACES_H
+#define LIB_DISCRET_FACES_H
 
 #include "lib_discret.H"
 #include "lib_dserror.H"
@@ -373,4 +373,4 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
 
-#endif  // #ifndef DISCRET_FACES_H
+#endif  // LIB_DISCRET_FACES_H

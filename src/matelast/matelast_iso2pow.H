@@ -7,8 +7,8 @@ material in terms of the second Cauchy-Green invariant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISO2POW_H_
-#define ELAST_ISO2POW_H_
+#ifndef MATELAST_ISO2POW_H
+#define MATELAST_ISO2POW_H
 
 #include "mat_par_parameter.H"
 #include "matelast_summand.H"
@@ -118,4 +118,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ISO2POW_H_
+#endif  // MATELAST_ISO2POW_H

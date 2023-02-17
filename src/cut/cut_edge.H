@@ -439,4 +439,4 @@ namespace GEO
   }     // namespace CUT
 }  // namespace GEO
 
-#endif /* CUT_EDGE_H */
+#endif  // CUT_EDGE_H

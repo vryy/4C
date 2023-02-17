@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_XFEM_XFIELD_FIELD_COUPLING_H_
-#define SRC_XFEM_XFIELD_FIELD_COUPLING_H_
+#ifndef XFEM_XFIELD_FIELD_COUPLING_H
+#define XFEM_XFIELD_FIELD_COUPLING_H
 
 
 #include "adapter_coupling.H"
@@ -244,4 +244,4 @@ namespace XFEM
 
 
 
-#endif /* SRC_XFEM_XFIELD_FIELD_COUPLING_H_ */
+#endif  // XFEM_XFIELD_FIELD_COUPLING_H

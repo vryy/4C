@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ART_JUNCTION_H_
-#define ART_JUNCTION_H_
+#ifndef ART_NET_ART_JUNCTION_H
+#define ART_NET_ART_JUNCTION_H
 
 
 #include "Epetra_MpiComm.h"
@@ -228,4 +228,4 @@ namespace ART
   }  // namespace UTILS
 }  // namespace ART
 
-#endif /* ART_JUNCION_H_ */
+#endif  // ART_NET_ART_JUNCTION_H

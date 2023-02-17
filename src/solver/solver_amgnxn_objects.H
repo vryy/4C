@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AMGNXN_OBJECTS_H
-#define AMGNXN_OBJECTS_H
+#ifndef SOLVER_AMGNXN_OBJECTS_H
+#define SOLVER_AMGNXN_OBJECTS_H
 
 // Trilinos includes
 #include "Epetra_MultiVector.h"
@@ -169,4 +169,4 @@ namespace LINALG::SOLVER::AMGNXN
 
 }  // namespace LINALG::SOLVER::AMGNXN
 
-#endif  // AMGNXN_OBJECTS_H
+#endif  // SOLVER_AMGNXN_OBJECTS_H

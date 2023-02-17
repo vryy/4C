@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_HIT_INITIAL_FIELD_H
-#define TURBULENCE_HIT_INITIAL_FIELD_H
+#ifndef FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
+#define FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
 
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"

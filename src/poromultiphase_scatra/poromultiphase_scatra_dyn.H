@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_DYN_H_
-#define SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_DYN_H_
+#ifndef POROMULTIPHASE_SCATRA_DYN_H
+#define POROMULTIPHASE_SCATRA_DYN_H
 
 
 /*! entry point for the solution of poro multiphase problems problems */
@@ -15,4 +15,4 @@ void poromultiphasescatra_dyn(int restart /* do we have to perform a restart?  *
 );
 
 
-#endif /* SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_DYN_H_ */
+#endif  // POROMULTIPHASE_SCATRA_DYN_H

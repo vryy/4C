@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_RULE_H
-#define BACI_MIXTURE_RULE_H
+#ifndef MIXTURE_RULE_H
+#define MIXTURE_RULE_H
 
 #include <memory>
 #include <unordered_map>
@@ -302,4 +302,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_RULE_H
+#endif  // MIXTURE_RULE_H

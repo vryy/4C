@@ -152,4 +152,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef MEMBRANE_ELETYPES_H
+#endif  // MEMBRANE_ELETYPES_H

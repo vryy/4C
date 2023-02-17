@@ -23,8 +23,8 @@ valves with k_p -> 0
 
 *----------------------------------------------------------------------*/
 
-#ifndef CARDIOVASCULAR0DARTERIALPROXDIST_H
-#define CARDIOVASCULAR0DARTERIALPROXDIST_H
+#ifndef CARDIOVASCULAR0D_ARTERIALPROXDIST_H
+#define CARDIOVASCULAR0D_ARTERIALPROXDIST_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -111,4 +111,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0DARTERIALPROXDIST_H*/
+#endif  // CARDIOVASCULAR0D_ARTERIALPROXDIST_H

@@ -474,4 +474,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif  // #ifndef MORTAR_PROJECTOR_H
+#endif  // MORTAR_PROJECTOR_H

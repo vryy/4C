@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef VOLMORTAR_UTILIS_H_
-#define VOLMORTAR_UTILIS_H_
+#ifndef VOLMORTAR_UTILS_H
+#define VOLMORTAR_UTILS_H
 
 #include <vector>
 
@@ -68,4 +68,4 @@ namespace VOLMORTAR
 }  // namespace VOLMORTAR
 
 
-#endif /* VOLMORTAR_UTILIS_H_ */
+#endif  // VOLMORTAR_UTILS_H

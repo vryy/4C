@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FUNCTIONVARIABLES_H
-#define FUNCTIONVARIABLES_H
+#ifndef LIB_FUNCTIONVARIABLES_H
+#define LIB_FUNCTIONVARIABLES_H
 
 #include <Sacado.hpp>
 #include "lib_symbolic_expression.H"

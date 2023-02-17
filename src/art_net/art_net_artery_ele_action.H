@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ARTERY_ELE_ACTION_H_
-#define SRC_ART_NET_ARTERY_ELE_ACTION_H_
+#ifndef ART_NET_ARTERY_ELE_ACTION_H
+#define ART_NET_ARTERY_ELE_ACTION_H
 
 
 namespace ARTERY
@@ -37,4 +37,4 @@ namespace ARTERY
 
 }  // namespace ARTERY
 
-#endif /* SRC_ART_NET_ARTERY_ELE_ACTION_H_ */
+#endif  // ART_NET_ARTERY_ELE_ACTION_H

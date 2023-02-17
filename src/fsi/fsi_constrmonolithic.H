@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_CONSTR_MONOLITHIC_H
-#define FSI_CONSTR_MONOLITHIC_H
+#ifndef FSI_CONSTRMONOLITHIC_H
+#define FSI_CONSTRMONOLITHIC_H
 
 #include "fsi_constr_overlapprec.H"
 #include "fsi_monolithic.H"

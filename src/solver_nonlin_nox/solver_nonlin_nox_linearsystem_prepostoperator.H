@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_LINEARSYSTEM_PREPOSTOPERATOR_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_LINEARSYSTEM_PREPOSTOPERATOR_H_
+#ifndef SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
+#define SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
 
 #include <Teuchos_RCP.hpp>
 #include "solver_nonlin_nox_abstract_prepostoperator.H"  // wrapped abstract class
@@ -234,4 +234,4 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(Epe
   }
 }
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_LINEARSYSTEM_PREPOSTOPERATOR_H_ */
+#endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H

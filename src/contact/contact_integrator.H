@@ -883,4 +883,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_INTEGRATOR_H
+#endif  // CONTACT_INTEGRATOR_H

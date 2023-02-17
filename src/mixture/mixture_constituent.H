@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_H
-#define BACI_MIXTURE_CONSTITUENT_H
+#ifndef MIXTURE_CONSTITUENT_H
+#define MIXTURE_CONSTITUENT_H
 
 #include <unordered_map>
 #include <memory>
@@ -340,4 +340,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_H
+#endif  // MIXTURE_CONSTITUENT_H

@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSTI_UTILS_H_
-#define SSTI_UTILS_H_
+#ifndef SSTI_UTILS_H
+#define SSTI_UTILS_H
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -253,4 +253,4 @@ namespace SSTI
   };
 }  // namespace SSTI
 
-#endif /* SSTI_UTILS_H_ */
+#endif  // SSTI_UTILS_H

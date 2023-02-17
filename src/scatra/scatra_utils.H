@@ -36,4 +36,4 @@ namespace SCATRA
 
   }  // namespace SCATRAUTILS
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_UTILS_H
+#endif  // SCATRA_UTILS_H

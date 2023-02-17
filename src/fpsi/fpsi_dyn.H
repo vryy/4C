@@ -5,11 +5,11 @@
 ----------------------------------------------------------------------------------------*/
 
 
-#ifndef FPSI_H
-#define FPSI_H
+#ifndef FPSI_DYN_H
+#define FPSI_DYN_H
 
 //! global control routine for fluid-porous-structure-interaction problem.
 void fpsi_drt();
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef FPSI_H */
+#endif  // FPSI_DYN_H

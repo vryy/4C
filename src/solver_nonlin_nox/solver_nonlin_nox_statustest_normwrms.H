@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_STATUSTEST_NORMWRMS_H_
-#define NOX_NLN_STATUSTEST_NORMWRMS_H_
+#ifndef SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H
+#define SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H
 
 #include <vector>
 
@@ -118,4 +118,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_STATUSTEST_NORMWRMS_H_ */
+#endif  // SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H

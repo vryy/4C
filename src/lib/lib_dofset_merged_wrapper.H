@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_DOFSET_MERGED_WRAPPER_H_
-#define SRC_LIB_DOFSET_MERGED_WRAPPER_H_
+#ifndef LIB_DOFSET_MERGED_WRAPPER_H
+#define LIB_DOFSET_MERGED_WRAPPER_H
 
 
 #include "lib_dofset_proxy.H"
@@ -267,4 +267,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_DOFSET_MERGED_WRAPPER_H_ */
+#endif  // LIB_DOFSET_MERGED_WRAPPER_H

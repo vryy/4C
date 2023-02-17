@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_MONOLITHICSPLIT_NOPENETRATION_H_
-#define PORO_MONOLITHICSPLIT_NOPENETRATION_H_
+#ifndef POROELAST_MONOLITHICSPLIT_NOPENETRATION_H
+#define POROELAST_MONOLITHICSPLIT_NOPENETRATION_H
 
 #include "poroelast_monolithicsplit.H"
 
@@ -163,4 +163,4 @@ namespace POROELAST
 }  // namespace POROELAST
 
 
-#endif /* PORO_MONOLITHICSPLIT_NOPENETRATION_H_ */
+#endif  // POROELAST_MONOLITHICSPLIT_NOPENETRATION_H

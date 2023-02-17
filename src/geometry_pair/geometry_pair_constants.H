@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_CONSTANTS_H_
-#define GEOMETRY_PAIR_CONSTANTS_H_
+#ifndef GEOMETRY_PAIR_CONSTANTS_H
+#define GEOMETRY_PAIR_CONSTANTS_H
 
 
 namespace GEOMETRYPAIR

@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_
+#ifndef SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
+#define SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
 
 #include <Teuchos_RCP.hpp>
 #include "solver_nonlin_nox_abstract_prepostoperator.H"
@@ -227,4 +227,4 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
   }
 }
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_ */
+#endif  // SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H

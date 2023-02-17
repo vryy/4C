@@ -7,8 +7,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef UTILS_SHAPEFUNCTION_SERVICE
-#define UTILS_SHAPEFUNCTION_SERVICE
+#ifndef FEM_GENERAL_UTILS_SHAPEFUNCTIONS_SERVICE_H
+#define FEM_GENERAL_UTILS_SHAPEFUNCTIONS_SERVICE_H
 
 
 #include "lib_element.H"
@@ -68,4 +68,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifdef UTILS_SHAPEFUNCTION_SERVICE
+#endif  // FEM_GENERAL_UTILS_SHAPEFUNCTIONS_SERVICE_H

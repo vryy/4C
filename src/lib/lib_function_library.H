@@ -10,7 +10,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 */
 /*----------------------------------------------------------------------*/
-
+#ifndef LIB_FUNCTION_LIBRARY_H
+#define LIB_FUNCTION_LIBRARY_H
 
 #include "lib_function.H"
 #include "lib_function_of_scalar.H"
@@ -105,3 +106,5 @@ namespace DRT::UTILS
     std::unique_ptr<CubicSplineInterpolation> cubic_spline_;
   };
 }  // namespace DRT::UTILS
+
+#endif

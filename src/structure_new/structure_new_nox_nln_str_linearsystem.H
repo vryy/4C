@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_STR_LINEARSYSTEM_H_
-#define NOX_STR_LINEARSYSTEM_H_
+#ifndef STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_H
+#define STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_H
 
 #include "solver_nonlin_nox_linearsystem.H"
 
@@ -80,4 +80,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_STR_LINEARSYSTEM_H_ */
+#endif  // STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_H

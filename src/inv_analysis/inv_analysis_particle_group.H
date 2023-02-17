@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef PARTICLE_GROUP_H_
-#define PARTICLE_GROUP_H_
+#ifndef INV_ANALYSIS_PARTICLE_GROUP_H
+#define INV_ANALYSIS_PARTICLE_GROUP_H
 
 #include <map>
 
@@ -296,4 +296,4 @@ namespace INVANA
 
 
 
-#endif /* PARTICLE_GROUP_H_ */
+#endif  // INV_ANALYSIS_PARTICLE_GROUP_H

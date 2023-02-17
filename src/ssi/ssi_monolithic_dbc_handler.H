@@ -180,4 +180,4 @@ namespace SSI
       Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_DBC_HANDLER_H
+#endif  // SSI_MONOLITHIC_DBC_HANDLER_H

@@ -5,8 +5,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_TEST_UTILS_H
-#define GEOMETRY_TEST_UTILS_H
+#ifndef CUT_TEST_UTILS_H
+#define CUT_TEST_UTILS_H
 
 #include <vector>
 #include <map>

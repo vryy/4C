@@ -17,8 +17,8 @@ the function value as well)
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef APPLY_NURBS_INITIAL_CONDITION_H
-#define APPLY_NURBS_INITIAL_CONDITION_H
+#ifndef NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
+#define NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
@@ -112,4 +112,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifdef APPLY_NURBS_INITIAL_CONDITION_H
+#endif  // NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H

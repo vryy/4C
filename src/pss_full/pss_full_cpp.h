@@ -7,8 +7,8 @@
 
 ---------------------------------------------------------------------*/
 
-#ifndef PSS_CPP_H
-#define PSS_CPP_H
+#ifndef PSS_FULL_CPP_H
+#define PSS_FULL_CPP_H
 
 // this ensures we always obtain the C++ version of mpi and
 // not its C version included by pss_table.h

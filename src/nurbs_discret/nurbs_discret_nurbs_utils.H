@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef NURBS_UTILS_H
-#define NURBS_UTILS_H
+#ifndef NURBS_DISCRET_NURBS_UTILS_H
+#define NURBS_DISCRET_NURBS_UTILS_H
 
 #include "nurbs_discret.H"
 
@@ -201,4 +201,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // ifndef NURBS_UTILS_H
+#endif  // NURBS_DISCRET_NURBS_UTILS_H

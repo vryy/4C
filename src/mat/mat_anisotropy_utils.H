@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_UTILS_H
-#define BACI_ANISOTROPY_UTILS_H
+#ifndef MAT_ANISOTROPY_UTILS_H
+#define MAT_ANISOTROPY_UTILS_H
 
 #include <string>
 #include <Teuchos_RCPDecl.hpp>
@@ -109,4 +109,4 @@ namespace MAT
       std::vector<std::array<T, numfib>>& vct);
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_UTILS_H
+#endif  // MAT_ANISOTROPY_UTILS_H

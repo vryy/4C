@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_PREDICT_CONSTDIS_H_
-#define STR_PREDICT_CONSTDIS_H_
+#ifndef STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_H
+#define STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_H
 
 #include "structure_new_predict_generic.H"
 
@@ -40,4 +40,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_PREDICT_CONSTDIS_H_ */
+#endif  // STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_H

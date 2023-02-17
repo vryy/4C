@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef LARGEROTATIONS_DEFINES_H
-#define LARGEROTATIONS_DEFINES_H
+#ifndef FEM_GENERAL_LARGEROTATIONS_H
+#define FEM_GENERAL_LARGEROTATIONS_H
 
 #include "linalg_fixedsizematrix.H"
 #include "headers_FAD_utils.H"

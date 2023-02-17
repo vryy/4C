@@ -9,8 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_STAT_HDG_H
-#define FLD_TIMINT_STAT_HDG_H  // TODO als fix fluid_timint_stat_hdg because it is not working
+#ifndef FLUID_TIMINT_STAT_HDG_H
+#define FLUID_TIMINT_STAT_HDG_H
+// TODO als fix
+// fluid_timint_stat_hdg
+// because it is not working
 
 
 #include "fluid_timint_stat.H"
@@ -105,4 +108,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // #ifndef FLD_TIMINT_STAT_HDG_H
+#endif  // FLUID_TIMINT_STAT_HDG_H

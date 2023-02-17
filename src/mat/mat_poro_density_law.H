@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_PORO_DENSITY_LAW_H_
-#define SRC_MAT_PORO_DENSITY_LAW_H_
+#ifndef MAT_PORO_DENSITY_LAW_H
+#define MAT_PORO_DENSITY_LAW_H
 
 #include "mat_par_parameter.H"
 
@@ -176,4 +176,4 @@ namespace MAT
 
 
 
-#endif /* SRC_MAT_PORO_DENSITY_LAW_H_ */
+#endif  // MAT_PORO_DENSITY_LAW_H

@@ -11,8 +11,8 @@
 
 
 
-#ifndef ELEMENTDEFINITION_H
-#define ELEMENTDEFINITION_H
+#ifndef LIB_ELEMENTDEFINITION_H
+#define LIB_ELEMENTDEFINITION_H
 
 #include <iostream>
 #include <map>

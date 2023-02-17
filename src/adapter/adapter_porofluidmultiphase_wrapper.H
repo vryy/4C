@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_WRAPPER_H_
-#define SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_WRAPPER_H_
+#ifndef ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H
+#define ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H
 
 #include "adapter_porofluidmultiphase.H"
 
@@ -175,4 +175,4 @@ namespace ADAPTER
 
 
 
-#endif /* SRC_ADAPTER_AD_POROFLUIDMULTIPHASE_WRAPPER_H_ */
+#endif  // ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H

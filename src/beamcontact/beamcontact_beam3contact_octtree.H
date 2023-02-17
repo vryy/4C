@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BEAM3OCTTREE_H
-#define BEAM3OCTTREE_H
+#ifndef BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
+#define BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -293,4 +293,4 @@ class Beam3ContactOctTree
   int numcrit2_;
 };
 
-#endif  // #ifndef BEAM3OCTTREE_H
+#endif  // BEAMCONTACT_BEAM3CONTACT_OCTTREE_H

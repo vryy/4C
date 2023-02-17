@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_INTERACTION_CONDITIONS_H_
-#define BEAM_INTERACTION_CONDITIONS_H_
+#ifndef BEAMINTERACTION_CONDITIONS_H
+#define BEAMINTERACTION_CONDITIONS_H
 
 
 #include "inpar_beaminteraction.H"

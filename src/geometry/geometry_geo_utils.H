@@ -11,8 +11,8 @@ header file
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef GEO_UTILS_H_
-#define GEO_UTILS_H_
+#ifndef GEOMETRY_GEO_UTILS_H
+#define GEOMETRY_GEO_UTILS_H
 
 
 #include <vector>
@@ -41,4 +41,4 @@ namespace GEO
   };
 }  // namespace GEO
 
-#endif /* GEO_UTILS_H_ */
+#endif  // GEOMETRY_GEO_UTILS_H

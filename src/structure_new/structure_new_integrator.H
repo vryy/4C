@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_INTEGRATOR_H_
-#define SRC_STRUCTURE_NEW_STR_INTEGRATOR_H_
+#ifndef STRUCTURE_NEW_INTEGRATOR_H
+#define STRUCTURE_NEW_INTEGRATOR_H
 
 #include <Teuchos_RCP.hpp>
 #include "inpar_structure.H"               // enumerators
@@ -429,4 +429,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_INTEGRATOR_H_ */
+#endif  // STRUCTURE_NEW_INTEGRATOR_H

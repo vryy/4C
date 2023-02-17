@@ -88,4 +88,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_BEAMPOTENTIAL_H
+#endif  // INPAR_BEAMPOTENTIAL_H

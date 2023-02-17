@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_STATUSTEST_COMBO_H_
-#define NOX_NLN_STATUSTEST_COMBO_H_
+#ifndef SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H
+#define SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H
 
 #include <NOX_StatusTest_Combo.H>  // base class
 
@@ -77,4 +77,4 @@ namespace NOX
 
 
 
-#endif /* NOX_NLN_STATUSTEST_COMBO_H_ */
+#endif  // SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H

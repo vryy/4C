@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_PV_H
-#define ARRHENIUS_PV_H
+#ifndef MAT_ARRHENIUS_PV_H
+#define MAT_ARRHENIUS_PV_H
 
 
 

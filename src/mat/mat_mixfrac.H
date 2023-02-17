@@ -5,8 +5,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef MIXFRAC_H
-#define MIXFRAC_H
+#ifndef MAT_MIXFRAC_H
+#define MAT_MIXFRAC_H
 
 
 

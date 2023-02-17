@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OPTIMIZER_SMC_PREDICT_H_
-#define OPTIMIZER_SMC_PREDICT_H_
+#ifndef INV_ANALYSIS_OPTIMIZER_SMC_PREDICT_H
+#define INV_ANALYSIS_OPTIMIZER_SMC_PREDICT_H
 
 #include "inv_analysis_optimizer_smc.H"
 
@@ -71,4 +71,4 @@ namespace INVANA
   };
 
 }  // namespace INVANA
-#endif /* OPTIMIZER_SMC_PREDICT_H_ */
+#endif  // INV_ANALYSIS_OPTIMIZER_SMC_PREDICT_H

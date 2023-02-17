@@ -7,8 +7,8 @@ determinant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUP3POW_H_
-#define ELAST_COUP3POW_H_
+#ifndef MATELAST_COUP3POW_H
+#define MATELAST_COUP3POW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -115,4 +115,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUP3POW_H_
+#endif  // MATELAST_COUP3POW_H

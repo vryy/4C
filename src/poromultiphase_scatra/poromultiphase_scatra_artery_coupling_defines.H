@@ -9,8 +9,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_
-#define SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_
+#ifndef POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H
+#define POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H
 /************************************************************************/
 /* Projection                                                           */
 /************************************************************************/
@@ -36,4 +36,4 @@ default: 1.0e-9  --> segments (in parameter space) cannot be smaller than this *
                      */
 #define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
 // default: 10
-#endif /* SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_ */
+#endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H

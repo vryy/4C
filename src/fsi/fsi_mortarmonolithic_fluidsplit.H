@@ -10,8 +10,8 @@ with condensed fluid interface velocities
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef FSI_MORTARMONOLITHICFLUID_H
-#define FSI_MORTARMONOLITHICFLUID_H
+#ifndef FSI_MORTARMONOLITHIC_FLUIDSPLIT_H
+#define FSI_MORTARMONOLITHIC_FLUIDSPLIT_H
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"

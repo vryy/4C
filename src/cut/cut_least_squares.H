@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef LEAST_SQUARES_H
-#define LEAST_SQUARES_H
+#ifndef CUT_LEAST_SQUARES_H
+#define CUT_LEAST_SQUARES_H
 
 #include <vector>
 #include "Epetra_SerialDenseSolver.h"

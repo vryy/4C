@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef KNOTVECTOR_H
-#define KNOTVECTOR_H
+#ifndef NURBS_DISCRET_KNOTVECTOR_H
+#define NURBS_DISCRET_KNOTVECTOR_H
 
 #include "lib_parobject.H"
 #include "lib_parobjectfactory.H"
@@ -511,4 +511,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // KNOTVECTOR_H
+#endif  // NURBS_DISCRET_KNOTVECTOR_H

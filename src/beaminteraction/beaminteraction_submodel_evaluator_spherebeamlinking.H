@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H
 
 #include "inpar_beaminteraction.H"
 #include "linalg_fixedsizematrix.H"

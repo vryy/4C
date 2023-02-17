@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BEAMTOBEAMCONTACTVARIABLES_H
-#define BEAMTOBEAMCONTACTVARIABLES_H
+#ifndef BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_VARIABLES_H
+#define BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_VARIABLES_H
 
 
 #include "beaminteraction_beam3contact_utils.H"

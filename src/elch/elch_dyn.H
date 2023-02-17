@@ -18,4 +18,4 @@ void elch_dyn(int restart /* do we have to perform a restart?  */
 void printlogo();
 
 
-#endif /* #ifndef ELCH_DYN_H */
+#endif  // ELCH_DYN_H

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H_
-#define SRC_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H_
+#ifndef MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H
+#define MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H
 
 
 
@@ -156,4 +156,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* SRC_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H_ */
+#endif  // MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H

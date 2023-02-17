@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMTOBEAMCONTACTPAIR_H
-#define BEAMTOBEAMCONTACTPAIR_H
+#ifndef BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PAIR_H
+#define BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PAIR_H
 
 #include "beaminteraction_contact_pair.H"
 

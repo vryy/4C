@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H
+#define POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H
 
 #include "porofluidmultiphase_ele_action.H"
 
@@ -3302,4 +3302,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H

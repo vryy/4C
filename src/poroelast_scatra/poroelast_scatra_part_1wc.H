@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_SCATRA_PART_1WC_H_
-#define PORO_SCATRA_PART_1WC_H_
+#ifndef POROELAST_SCATRA_PART_1WC_H
+#define POROELAST_SCATRA_PART_1WC_H
 
 #include "poroelast_scatra_part.H"
 
@@ -84,4 +84,4 @@ namespace POROELASTSCATRA
 }  // namespace POROELASTSCATRA
 
 
-#endif /* PORO_SCATRA_PART_1WC_H_ */
+#endif  // POROELAST_SCATRA_PART_1WC_H

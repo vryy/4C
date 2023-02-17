@@ -270,4 +270,4 @@ namespace SCATRA
     MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
   };  // class MeshtyingStrategyBase
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H

@@ -10,8 +10,8 @@
 
 
 
-#ifndef FSI_DIRICHLETNEUMANN_DIRICH_H
-#define FSI_DIRICHLETNEUMANN_DIRICH_H
+#ifndef FSI_DIRICHLETNEUMANN_VEL_H
+#define FSI_DIRICHLETNEUMANN_VEL_H
 
 #include "fsi_dirichletneumann.H"
 

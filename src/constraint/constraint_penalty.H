@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef CONSTRAINTPENALTY_H
-#define CONSTRAINTPENALTY_H
+#ifndef CONSTRAINT_PENALTY_H
+#define CONSTRAINT_PENALTY_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -129,4 +129,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CONSTRAINT_H*/
+#endif  // CONSTRAINT_PENALTY_H

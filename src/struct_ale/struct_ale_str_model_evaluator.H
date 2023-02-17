@@ -8,8 +8,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STRUCT_ALE_STR_MODEL_EVALUATOR_H_
-#define STRUCT_ALE_STR_MODEL_EVALUATOR_H_
+#ifndef STRUCT_ALE_STR_MODEL_EVALUATOR_H
+#define STRUCT_ALE_STR_MODEL_EVALUATOR_H
 
 #include "structure_new_model_evaluator_structure.H"
 
@@ -74,4 +74,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STRUCT_ALE_STR_MODEL_EVALUATOR_H_ */
+#endif  // STRUCT_ALE_STR_MODEL_EVALUATOR_H

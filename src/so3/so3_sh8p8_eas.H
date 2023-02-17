@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef SO_SH8P8_EAS_H
-#define SO_SH8P8_EAS_H
+#ifndef SO3_SH8P8_EAS_H
+#define SO3_SH8P8_EAS_H
 
 /*----------------------------------------------------------------------*/
 #include "so3_sh8p8.H"
@@ -273,4 +273,4 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef SO_SH8P8_EAS_H
+#endif  // SO3_SH8P8_EAS_H

@@ -8,8 +8,8 @@ linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef MAXWELL_0D_ACINUS_NEOHOOKEAN_H
-#define MAXWELL_0D_ACINUS_NEOHOOKEAN_H
+#ifndef MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_H
+#define MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_H
 
 
 #include "mat_maxwell_0d_acinus.H"

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSETBASE_H
-#define DOFSETBASE_H
+#ifndef LIB_DOFSET_BASE_H
+#define LIB_DOFSET_BASE_H
 
 #include <list>
 
@@ -101,4 +101,4 @@ namespace DRT
   };  // class DofSetBase
 }  // namespace DRT
 
-#endif  // #ifndef DofSetBase_H
+#endif  // LIB_DOFSET_BASE_H

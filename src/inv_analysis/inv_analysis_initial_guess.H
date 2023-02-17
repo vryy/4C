@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef INITIAL_GUESS_H_
-#define INITIAL_GUESS_H_
+#ifndef INV_ANALYSIS_INITIAL_GUESS_H
+#define INV_ANALYSIS_INITIAL_GUESS_H
 
 #include "Teuchos_RCP.hpp"
 
@@ -161,4 +161,4 @@ namespace INVANA
 
 }  // namespace INVANA
 /*----------------------------------------------------------------------*/
-#endif /* INITIAL_GUESS_H_ */
+#endif  // INV_ANALYSIS_INITIAL_GUESS_H

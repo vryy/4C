@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_EXPL_FORWARDEULER_H_
-#define STR_EXPL_FORWARDEULER_H_
+#ifndef STRUCTURE_NEW_EXPL_FORWARDEULER_H
+#define STRUCTURE_NEW_EXPL_FORWARDEULER_H
 
 #include "structure_new_expl_generic.H"
 
@@ -52,4 +52,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_EXPL_FORWARDEULER_H_ */
+#endif  // STRUCTURE_NEW_EXPL_FORWARDEULER_H

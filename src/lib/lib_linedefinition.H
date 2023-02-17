@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LINEDEFINITION_H
-#define LINEDEFINITION_H
+#ifndef LIB_LINEDEFINITION_H
+#define LIB_LINEDEFINITION_H
 
 #include <iostream>
 #include <string>

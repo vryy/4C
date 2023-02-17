@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TGV_STATISTICS_H
-#define TGV_STATISTICS_H
+#ifndef FLUID_TURBULENCE_STATISTICS_TGV_H
+#define FLUID_TURBULENCE_STATISTICS_TGV_H
 
 #include "Epetra_MpiComm.h"
 
@@ -170,4 +170,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // not TGV_STATISTICS_H
+#endif  // FLUID_TURBULENCE_STATISTICS_TGV_H

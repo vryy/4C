@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_TIMINT_IMPLICIT_H_
-#define STR_TIMINT_IMPLICIT_H_
+#ifndef STRUCTURE_NEW_TIMINT_IMPLICIT_H
+#define STRUCTURE_NEW_TIMINT_IMPLICIT_H
 
 #include "structure_new_timint_implicitbase.H"  // base class
 
@@ -195,4 +195,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_TIMINT_IMPLICIT_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_IMPLICIT_H

@@ -6,8 +6,8 @@
 \level 2
  *-----------------------------------------------------------------------*/
 
-#ifndef STRUCTPORO_H_
-#define STRUCTPORO_H_
+#ifndef MAT_STRUCTPORO_H
+#define MAT_STRUCTPORO_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -378,4 +378,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /* STRUCTPORO_H_ */
+#endif  // MAT_STRUCTPORO_H

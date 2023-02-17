@@ -223,4 +223,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_TSI_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H

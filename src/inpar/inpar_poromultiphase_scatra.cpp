@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_
-#define SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_
+#ifndef INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
+#define INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
 
 
 #include "inpar_validparameters.H"
@@ -193,4 +193,4 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
 }
 
 
-#endif /* SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_ */
+#endif  // INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP

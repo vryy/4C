@@ -9,8 +9,8 @@ equations
 
 *----------------------------------------------------------------------*/
 
-#ifndef LINE_INTEGRATION_H
-#define LINE_INTEGRATION_H
+#ifndef CUT_LINE_INTEGRATION_H
+#define CUT_LINE_INTEGRATION_H
 
 #include <vector>
 #include "cut_enum.H"

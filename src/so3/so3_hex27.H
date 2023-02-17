@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SOH27_H
-#define SOH27_H
+#ifndef SO3_HEX27_H
+#define SO3_HEX27_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -476,4 +476,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SOH27_H
+#endif  // SO3_HEX27_H

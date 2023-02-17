@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef PRESTRESS_H
-#define PRESTRESS_H
+#ifndef SO3_PRESTRESS_H
+#define SO3_PRESTRESS_H
 
 #include "lib_parobject.H"
 #include "lib_parobjectfactory.H"
@@ -138,4 +138,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef PreStress
+#endif  // SO3_PRESTRESS_H

@@ -7,8 +7,8 @@ St. Venant-Kirchhoff material
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef STVENANTKIRCHHOFF_H_
-#define STVENANTKIRCHHOFF_H_
+#ifndef MAT_STVENANTKIRCHHOFF_H
+#define MAT_STVENANTKIRCHHOFF_H
 
 
 #include "mat_par_parameter.H"
@@ -149,4 +149,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif /*STVENANTKIRCHHOFF_H_*/
+#endif  // MAT_STVENANTKIRCHHOFF_H

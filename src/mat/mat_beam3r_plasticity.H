@@ -8,8 +8,8 @@ function)
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef MAT_BEAM_PLASTICITY_H_
-#define MAT_BEAM_PLASTICITY_H_
+#ifndef MAT_BEAM3R_PLASTICITY_H
+#define MAT_BEAM3R_PLASTICITY_H
 
 #include "mat_material.H"
 #include "inpar_material.H"

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BEAM3TOSPHEREPOT_H
-#define BEAM3TOSPHEREPOT_H
+#ifndef BEAMCONTACT_BEAM3TOSPHEREPOTENTIAL_H
+#define BEAMCONTACT_BEAM3TOSPHEREPOTENTIAL_H
 
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
@@ -283,4 +283,4 @@ namespace CONTACT
   };  // class Beam3tospherepotential
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3TOSPHEREPOT_H
+#endif  // BEAMCONTACT_BEAM3TOSPHEREPOTENTIAL_H

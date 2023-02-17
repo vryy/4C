@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef THRTIMINT_EXPL_H
-#define THRTIMINT_EXPL_H
+#ifndef THERMO_TIMINT_EXPL_H
+#define THERMO_TIMINT_EXPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -209,4 +209,4 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THRTIMINT_EXPL_H
+#endif  // THERMO_TIMINT_EXPL_H

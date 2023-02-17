@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef LIB_UTILS_H
+#define LIB_UTILS_H
 
 #include <signal.h>
 #include <random>
@@ -426,4 +426,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_H
+#endif  // LIB_UTILS_H

@@ -38,8 +38,8 @@ total nodal rotation angles). This is not true for beam3r, where prescribed 3D r
 no direct physical interpretation. For 2D rotations both variants are identical.
 */
 
-#ifndef BEAM3K_H
-#define BEAM3K_H
+#ifndef BEAM3_KIRCHHOFF_H
+#define BEAM3_KIRCHHOFF_H
 
 
 // Todo @grill: get rid of header in header inclusions

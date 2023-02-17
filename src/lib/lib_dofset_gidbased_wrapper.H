@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef DOFSET_SUBSET_H_
-#define DOFSET_SUBSET_H_
+#ifndef LIB_DOFSET_GIDBASED_WRAPPER_H
+#define LIB_DOFSET_GIDBASED_WRAPPER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
@@ -279,4 +279,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* DOFSET_SUBSET_H_ */
+#endif  // LIB_DOFSET_GIDBASED_WRAPPER_H

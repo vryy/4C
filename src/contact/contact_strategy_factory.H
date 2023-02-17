@@ -6,8 +6,8 @@
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef SRC_CONTACT_CONTACT_STRATEGY_FACTORY_H_
-#define SRC_CONTACT_CONTACT_STRATEGY_FACTORY_H_
+#ifndef CONTACT_STRATEGY_FACTORY_H
+#define CONTACT_STRATEGY_FACTORY_H
 
 #include "inpar_contact.H"
 
@@ -165,4 +165,4 @@ namespace CONTACT
   }  // namespace STRATEGY
 }  // namespace CONTACT
 
-#endif /* SRC_CONTACT_CONTACT_STRATEGY_FACTORY_H_ */
+#endif  // CONTACT_STRATEGY_FACTORY_H

@@ -969,4 +969,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_H */
+#endif  // ELEMAG_ELE_H

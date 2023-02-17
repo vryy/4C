@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_FIBER_PROVIDER_H
-#define BACI_ANISOTROPY_FIBER_PROVIDER_H
+#ifndef MAT_ANISOTROPY_FIBER_PROVIDER_H
+#define MAT_ANISOTROPY_FIBER_PROVIDER_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -65,4 +65,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_FIBER_PROVIDER_H
+#endif  // MAT_ANISOTROPY_FIBER_PROVIDER_H

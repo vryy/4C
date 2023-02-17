@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
-#define BACI_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
+#ifndef MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
+#define MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
 
 #include "mat_anisotropy_cylinder_coordinate_system_provider.H"
 
@@ -130,4 +130,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H
+#endif  // MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H

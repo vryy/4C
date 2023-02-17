@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef AD_ALE_WEAR_H_
-#define AD_ALE_WEAR_H_
+#ifndef ADAPTER_ALE_WEAR_H
+#define ADAPTER_ALE_WEAR_H
 
 
 /*----------------------------------------------------------------------------*/
@@ -61,4 +61,4 @@ namespace ADAPTER
   };  // class AleWearWrapper
 }  // namespace ADAPTER
 
-#endif /* AD_ALE_WEAR_H_ */
+#endif  // ADAPTER_ALE_WEAR_H

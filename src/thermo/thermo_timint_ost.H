@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef THRTIMINT_OST_H
-#define THRTIMINT_OST_H
+#ifndef THERMO_TIMINT_OST_H
+#define THERMO_TIMINT_OST_H
 
 
 /*----------------------------------------------------------------------*
@@ -294,4 +294,4 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THRTIMINT_OST_H
+#endif  // THERMO_TIMINT_OST_H

@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BASE_VOL_H
-#define BASE_VOL_H
+#ifndef CUT_BASE_VOL_H
+#define CUT_BASE_VOL_H
 
 #include <vector>
 

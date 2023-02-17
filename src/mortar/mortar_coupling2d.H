@@ -325,4 +325,4 @@ namespace MORTAR
   // class Coupling2dManager
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_COUPLING2D_H
+#endif  // MORTAR_COUPLING2D_H

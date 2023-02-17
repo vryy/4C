@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_NLN_SOLVER_NOX_H_
-#define STR_NLN_SOLVER_NOX_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_NOX_H
+#define STRUCTURE_NEW_NLN_SOLVER_NOX_H
 
 #include "structure_new_nln_solver_generic.H"  // base class
 #include "NOX_StatusTest_Generic.H"
@@ -134,4 +134,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_NLN_SOLVER_NOX_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_NOX_H

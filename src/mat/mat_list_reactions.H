@@ -9,8 +9,8 @@ is just a "control instance".
 
 *----------------------------------------------------------------------*/
 
-#ifndef MatListReactions_H
-#define MatListReactions_H
+#ifndef MAT_LIST_REACTIONS_H
+#define MAT_LIST_REACTIONS_H
 
 
 

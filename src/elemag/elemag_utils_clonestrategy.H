@@ -77,4 +77,4 @@ namespace ELEMAG
   }     // namespace UTILS
 }  // namespace ELEMAG
 
-#endif /* ELEMAG_UTILS_CLONESTRATEGY_H */
+#endif  // ELEMAG_UTILS_CLONESTRATEGY_H

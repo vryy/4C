@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_MODEL_EVALUATOR_SPRINGDASHPOT_H
-#define STR_MODEL_EVALUATOR_SPRINGDASHPOT_H
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H
 
 #include "structure_new_model_evaluator_generic.H"
 #include "constraint_springdashpot.H"
@@ -138,4 +138,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* STR_MODEL_EVALUATOR_SPRINGDASHPOT_H */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H

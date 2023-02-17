@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BGS2X2_OPERATOR_H
-#define BGS2X2_OPERATOR_H
+#ifndef SOLVER_BGS2X2_OPERATOR_H
+#define SOLVER_BGS2X2_OPERATOR_H
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

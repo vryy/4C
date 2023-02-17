@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef INPAR_FPSI_H_
-#define INPAR_FPSI_H_
+#ifndef INPAR_FPSI_H
+#define INPAR_FPSI_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -74,4 +74,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif /* INPAR_FPSI_H_ */
+#endif  // INPAR_FPSI_H

@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef STRUCTPORO_REACTION_H_
-#define STRUCTPORO_REACTION_H_
+#ifndef MAT_STRUCTPORO_REACTION_H
+#define MAT_STRUCTPORO_REACTION_H
 
 #include "mat_structporo.H"
 
@@ -204,4 +204,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* STRUCTPORO_REACTION_H_ */
+#endif  // MAT_STRUCTPORO_REACTION_H

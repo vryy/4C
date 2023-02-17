@@ -11,8 +11,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LINALG_PROJECTED_PRECOND_H_
-#define LINALG_PROJECTED_PRECOND_H_
+#ifndef LINALG_PROJECTED_PRECOND_H
+#define LINALG_PROJECTED_PRECOND_H
 
 
 #include "Epetra_Operator.h"
@@ -203,4 +203,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // LINALG_PROJECTED_PRECOND_H_
+#endif  // LINALG_PROJECTED_PRECOND_H

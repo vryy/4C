@@ -117,4 +117,4 @@ namespace SSI
       Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_CONTACT_STRATEGY_H
+#endif  // SSI_MONOLITHIC_CONTACT_STRATEGY_H

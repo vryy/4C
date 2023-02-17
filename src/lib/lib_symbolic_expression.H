@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SYMBOLICEXPRESSION_H
-#define SYMBOLICEXPRESSION_H
+#ifndef LIB_SYMBOLIC_EXPRESSION_H
+#define LIB_SYMBOLIC_EXPRESSION_H
 
 #include <map>
 #include <string>
@@ -148,4 +148,4 @@ namespace DRT::UTILS
 
 }  // namespace DRT::UTILS
 
-#endif  // SYMBOLICEXPRESSION_H
+#endif  // LIB_SYMBOLIC_EXPRESSION_H

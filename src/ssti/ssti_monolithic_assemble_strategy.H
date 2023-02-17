@@ -366,4 +366,4 @@ namespace SSTI
       LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSTI
-#endif  // #ifndef SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
+#endif  // SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H

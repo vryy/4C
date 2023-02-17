@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef MESHTYING_ABSTRACT_STRATEGY_H
-#define MESHTYING_ABSTRACT_STRATEGY_H
+#ifndef CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
+#define CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -798,4 +798,4 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& strategy);
 
-#endif  // #ifndef MESHTYING_ABSTRACT_STRATEGY_H
+#endif  // CONTACT_MESHTYING_ABSTRACT_STRATEGY_H

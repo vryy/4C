@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_PORO_REAC_H_
-#define SCATRA_ELE_CALC_PORO_REAC_H_
+#ifndef SCATRA_ELE_CALC_PORO_REAC_H
+#define SCATRA_ELE_CALC_PORO_REAC_H
 
 #include "scatra_ele_calc.H"
 #include "scatra_ele_calc_poro.H"
@@ -81,4 +81,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_PORO_H_ */
+#endif  // SCATRA_ELE_CALC_PORO_REAC_H

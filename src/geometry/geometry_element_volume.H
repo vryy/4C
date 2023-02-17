@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef ELEMENT_VOLUME_H
-#define ELEMENT_VOLUME_H
+#ifndef GEOMETRY_ELEMENT_VOLUME_H
+#define GEOMETRY_ELEMENT_VOLUME_H
 
 
 #include "fem_general_utils_integration.H"
@@ -194,4 +194,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /*ELEMENT_VOLUME_H*/
+#endif  // GEOMETRY_ELEMENT_VOLUME_H

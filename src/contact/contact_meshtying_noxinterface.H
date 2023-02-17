@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_MESHTYING_NOXINTERFACE_H_
-#define SRC_CONTACT_MESHTYING_NOXINTERFACE_H_
+#ifndef CONTACT_MESHTYING_NOXINTERFACE_H
+#define CONTACT_MESHTYING_NOXINTERFACE_H
 
 
 #include "solver_nonlin_nox_constraint_interface_required.H"
@@ -96,4 +96,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_MESHTYING_NOXINTERFACE_H_ */
+#endif  // CONTACT_MESHTYING_NOXINTERFACE_H

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_POROMULTIPHASE_H_
-#define SRC_ADAPTER_AD_POROMULTIPHASE_H_
+#ifndef ADAPTER_POROMULTIPHASE_H
+#define ADAPTER_POROMULTIPHASE_H
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
@@ -154,4 +154,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_POROMULTIPHASE_H_ */
+#endif  // ADAPTER_POROMULTIPHASE_H

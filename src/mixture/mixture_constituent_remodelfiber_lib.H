@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
+#ifndef MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
+#define MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
 
 namespace MIXTURE::PAR
 {
@@ -22,4 +22,4 @@ namespace MIXTURE::PAR
   [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* FiberMaterialFactory(int matid);
 }  // namespace MIXTURE::PAR
 
-#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
+#endif  // MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H

@@ -224,4 +224,4 @@ namespace SSI
       LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H
+#endif  // SSI_MONOLITHIC_MESHTYING_STRATEGY_H

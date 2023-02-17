@@ -10,8 +10,8 @@ which govern the actual doings
 *----------------------------------------------------------------------*/
 
 
-#ifndef MATLIST_CHEMOREAC_H_
-#define MATLIST_CHEMOREAC_H_
+#ifndef MAT_LIST_CHEMOREAC_H
+#define MAT_LIST_CHEMOREAC_H
 
 
 
@@ -140,4 +140,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* MATLIST_CHEMOREAC_H_ */
+#endif  // MAT_LIST_CHEMOREAC_H

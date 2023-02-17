@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DISCRET_HDG_H
-#define DISCRET_HDG_H
+#ifndef LIB_DISCRET_HDG_H
+#define LIB_DISCRET_HDG_H
 
 #include "lib_utils_discret.H"
 #include "lib_discret_faces.H"
@@ -174,4 +174,4 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis);
 
 
-#endif  // #ifndef DISCRET_FACES_H
+#endif  // LIB_DISCRET_HDG_H

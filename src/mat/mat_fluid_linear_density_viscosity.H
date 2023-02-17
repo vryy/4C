@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINEARDENSITYVISCOSITY_H
-#define LINEARDENSITYVISCOSITY_H
+#ifndef MAT_FLUID_LINEAR_DENSITY_VISCOSITY_H
+#define MAT_FLUID_LINEAR_DENSITY_VISCOSITY_H
 
 
 

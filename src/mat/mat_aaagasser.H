@@ -17,8 +17,8 @@ CABLUM 1.98e-3
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AAAGASSER_H_
-#define AAAGASSER_H_
+#ifndef MAT_AAAGASSER_H
+#define MAT_AAAGASSER_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -450,4 +450,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // AAAGASSER_H_
+#endif  // MAT_AAAGASSER_H

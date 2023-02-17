@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef SO_ELEMENT_SERVICE_H
-#define SO_ELEMENT_SERVICE_H
+#ifndef SO3_ELEMENT_SERVICE_H
+#define SO3_ELEMENT_SERVICE_H
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_IntVector.h>
@@ -81,4 +81,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // SO_ELEMENT_SERVICE_H
+#endif  // SO3_ELEMENT_SERVICE_H

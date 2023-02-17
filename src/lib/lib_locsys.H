@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef LOCSYS_H
-#define LOCSYS_H
+#ifndef LIB_LOCSYS_H
+#define LIB_LOCSYS_H
 
 #include "Teuchos_RCP.hpp"
 #include "fluid_ele_action.H"
@@ -311,4 +311,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef LOCSYS_H
+#endif  // LIB_LOCSYS_H

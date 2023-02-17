@@ -9,8 +9,8 @@
 \level 3
 */
 /*-----------------------------------------------------------------------*/
-#ifndef MESHTYING_PORO_LAGRANGE_STRATEGY_H
-#define MESHTYING_PORO_LAGRANGE_STRATEGY_H
+#ifndef CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H
+#define CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H
 
 #include "contact_meshtying_lagrange_strategy.H"
 #include "lib_dserror.H"
@@ -59,4 +59,4 @@ namespace CONTACT
 
   };  // class POROLagrangeStrategy
 }  // namespace CONTACT
-#endif  // #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H

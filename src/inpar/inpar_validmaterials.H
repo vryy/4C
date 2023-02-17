@@ -12,8 +12,8 @@
 /* definitions */
 
 
-#ifndef VALIDMATERIALS_H
-#define VALIDMATERIALS_H
+#ifndef INPAR_VALIDMATERIALS_H
+#define INPAR_VALIDMATERIALS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

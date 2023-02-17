@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BEAM_CROSSLINKER_HANDLER_H
-#define BEAM_CROSSLINKER_HANDLER_H
+#ifndef BEAMINTERACTION_CROSSLINKER_HANDLER_H
+#define BEAMINTERACTION_CROSSLINKER_HANDLER_H
 
 #include "binstrategy.H"
 

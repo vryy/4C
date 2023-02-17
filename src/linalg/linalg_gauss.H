@@ -46,4 +46,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // #ifndef LINALG_GAUSS_H
+#endif  // LINALG_GAUSS_H

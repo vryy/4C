@@ -6,8 +6,8 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef SO_SH8_H
-#define SO_SH8_H
+#ifndef SO3_SH8_H
+#define SO3_SH8_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "so3_hex8.H"
@@ -337,4 +337,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SO_SH8_H
+#endif  // SO3_SH8_H

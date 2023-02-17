@@ -12,8 +12,8 @@
 #include "lib_function.H"
 #include "mat_stvenantkirchhoff.H"
 
-#ifndef STR_FUNCTION_H
-#define STR_FUNCTION_H
+#ifndef STRUCTURE_NEW_FUNCTIONS_H
+#define STRUCTURE_NEW_FUNCTIONS_H
 
 namespace DRT
 {

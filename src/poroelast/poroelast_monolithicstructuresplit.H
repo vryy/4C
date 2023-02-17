@@ -8,8 +8,8 @@ interface
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef PORO_MONOLITHICSTRUCTURESPLIT_H_
-#define PORO_MONOLITHICSTRUCTURESPLIT_H_
+#ifndef POROELAST_MONOLITHICSTRUCTURESPLIT_H
+#define POROELAST_MONOLITHICSTRUCTURESPLIT_H
 
 #include "poroelast_monolithicsplit.H"
 
@@ -110,4 +110,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-#endif /* PORO_MONOLITHICSTRUCTURESPLIT_H_ */
+#endif  // POROELAST_MONOLITHICSTRUCTURESPLIT_H

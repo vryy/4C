@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef CARDIOVASCULAR0D4ELEMENTWINDKESSEL_H
-#define CARDIOVASCULAR0D4ELEMENTWINDKESSEL_H
+#ifndef CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_H
+#define CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -114,4 +114,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0D4ELEMENTWINDKESSEL_H*/
+#endif  // CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_H

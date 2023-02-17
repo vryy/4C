@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef MORTAR_SHAPE_UTILS_H_
-#define MORTAR_SHAPE_UTILS_H_
+#ifndef MORTAR_SHAPE_UTILS_H
+#define MORTAR_SHAPE_UTILS_H
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
@@ -2124,4 +2124,4 @@ namespace MORTAR
   }  // namespace UTILS
 }  // namespace MORTAR
 
-#endif /* MORTAR_SHAPE_UTILS_H_ */
+#endif  // MORTAR_SHAPE_UTILS_H

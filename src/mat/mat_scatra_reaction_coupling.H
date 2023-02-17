@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_SCATRA_REACTION_COUPLING_H_
-#define SRC_MAT_SCATRA_REACTION_COUPLING_H_
+#ifndef MAT_SCATRA_REACTION_COUPLING_H
+#define MAT_SCATRA_REACTION_COUPLING_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"
@@ -698,4 +698,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* SRC_MAT_SCATRA_REACTION_COUPLING_H_ */
+#endif  // MAT_SCATRA_REACTION_COUPLING_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef UTILS_PARALLEL_PROCTOPROC_H
-#define UTILS_PARALLEL_PROCTOPROC_H
+#ifndef BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_H
+#define BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_H
 
 
 #include <map>

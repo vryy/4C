@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_LAGRANGIAN_MERITFUNCTION_H_
-#define NOX_LAGRANGIAN_MERITFUNCTION_H_
+#ifndef SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
+#define SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 
 #include <NOX_MeritFunction_Generic.H>  // base class
 #include <NOX_LineSearch_Utils_Slope.H>
@@ -139,4 +139,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_LAGRANGIAN_MERITFUNCTION_H_ */
+#endif  // SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H

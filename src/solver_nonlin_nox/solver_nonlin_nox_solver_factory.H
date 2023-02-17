@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_SOLVER_FACTORY_H_
-#define NOX_NLN_SOLVER_FACTORY_H_
+#ifndef SOLVER_NONLIN_NOX_SOLVER_FACTORY_H
+#define SOLVER_NONLIN_NOX_SOLVER_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -84,4 +84,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_SOLVER_FACTORY_H_ */
+#endif  // SOLVER_NONLIN_NOX_SOLVER_FACTORY_H

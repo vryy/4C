@@ -12,8 +12,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_ENUM_LISTS_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_ENUM_LISTS_H_
+#ifndef SOLVER_NONLIN_NOX_ENUM_LISTS_H
+#define SOLVER_NONLIN_NOX_ENUM_LISTS_H
 
 #include <string>
 #include <NOX_StatusTest_Generic.H>
@@ -392,4 +392,4 @@ namespace NOX
 
 
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_ENUM_LISTS_H_ */
+#endif  // SOLVER_NONLIN_NOX_ENUM_LISTS_H

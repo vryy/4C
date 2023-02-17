@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef STR_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H_
-#define STR_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H_
+#ifndef STRUCTURE_NEW_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
+#define STRUCTURE_NEW_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
 
 
 #include "inpar_IO_runtime_vtk_output_structure_beams.H"

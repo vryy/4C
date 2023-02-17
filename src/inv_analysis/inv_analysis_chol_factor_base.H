@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CHOL_FACTOR_BASE_H_
-#define CHOL_FACTOR_BASE_H_
+#ifndef INV_ANALYSIS_CHOL_FACTOR_BASE_H
+#define INV_ANALYSIS_CHOL_FACTOR_BASE_H
 
 #include "Teuchos_RefCountPtr.hpp"
 
@@ -88,4 +88,4 @@ namespace INVANA
 
 }  // namespace INVANA
 /*----------------------------------------------------------------------*/
-#endif /* CHOL_FACTOR_BASE_H_ */
+#endif  // INV_ANALYSIS_CHOL_FACTOR_BASE_H

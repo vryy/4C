@@ -7,8 +7,8 @@ fluid-beam interaction).
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef CONSTRAINTENFORCER_FBI_PENALTY_H
-#define CONSTRAINTENFORCER_FBI_PENALTY_H
+#ifndef FBI_CONSTRAINTENFORCER_PENALTY_H
+#define FBI_CONSTRAINTENFORCER_PENALTY_H
 
 #include "Teuchos_RCP.hpp"
 #include "fbi_constraintenforcer.H"

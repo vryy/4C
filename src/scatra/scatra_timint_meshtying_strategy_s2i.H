@@ -1275,4 +1275,4 @@ namespace SCATRA
     const int nds_cols_;
   };  // class MortarCellAssembleStrategy
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

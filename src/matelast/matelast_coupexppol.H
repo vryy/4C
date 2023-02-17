@@ -7,8 +7,8 @@ Weickenmeier_2014
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_EXPPOL_H_
-#define ELAST_EXPPOL_H_
+#ifndef MATELAST_COUPEXPPOL_H
+#define MATELAST_COUPEXPPOL_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -120,4 +120,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // EXPPOl_H_
+#endif  // MATELAST_COUPEXPPOL_H

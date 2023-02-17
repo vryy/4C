@@ -108,4 +108,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_BEAMCONTACT_H
+#endif  // INPAR_BEAMCONTACT_H

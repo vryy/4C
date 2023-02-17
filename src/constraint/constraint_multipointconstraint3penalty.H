@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef MPCONSTRAINT3PENALTY_H
-#define MPCONSTRAINT3PENALTY_H
+#ifndef CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H
+#define CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H
 
 #include "constraint_multipointconstraint.H"
 
@@ -125,4 +125,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /*MPCONSTRAINT_H*/
+#endif  // CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef METROPOLIS_KERNEL_H_
-#define METROPOLIS_KERNEL_H_
+#ifndef INV_ANALYSIS_METROPOLIS_KERNEL_H
+#define INV_ANALYSIS_METROPOLIS_KERNEL_H
 
 #include "Teuchos_RCP.hpp"
 
@@ -93,4 +93,4 @@ namespace INVANA
 
 }  // namespace INVANA
 
-#endif /* METROPOLIS_KERNEL_H_ */
+#endif  // INV_ANALYSIS_METROPOLIS_KERNEL_H

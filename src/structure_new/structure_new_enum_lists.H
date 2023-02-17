@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_ENUM_LISTS_H_
-#define SRC_STRUCTURE_NEW_STR_ENUM_LISTS_H_
+#ifndef STRUCTURE_NEW_ENUM_LISTS_H
+#define STRUCTURE_NEW_ENUM_LISTS_H
 
 #include <string>
 

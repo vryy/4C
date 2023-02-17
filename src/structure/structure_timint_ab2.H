@@ -6,8 +6,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_AB2_H
-#define STRTIMINT_AB2_H
+#ifndef STRUCTURE_TIMINT_AB2_H
+#define STRUCTURE_TIMINT_AB2_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -195,4 +195,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_AB2_H
+#endif  // STRUCTURE_TIMINT_AB2_H

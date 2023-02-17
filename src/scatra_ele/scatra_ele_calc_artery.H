@@ -8,8 +8,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_
-#define SRC_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_
+#ifndef SCATRA_ELE_CALC_ARTERY_H
+#define SCATRA_ELE_CALC_ARTERY_H
 
 #include "lib_discret.H"
 #include "lib_utils.H"
@@ -226,4 +226,4 @@ namespace DRT
 
 
 
-#endif /* SRC_SCATRA_ELE_SCATRA_ELE_CALC_ARTERY_H_ */
+#endif  // SCATRA_ELE_CALC_ARTERY_H

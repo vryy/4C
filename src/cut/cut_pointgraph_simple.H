@@ -10,8 +10,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SRC_CUT_CUT_POINTGRAPH_SIMPLE_H_
-#define SRC_CUT_CUT_POINTGRAPH_SIMPLE_H_
+#ifndef CUT_POINTGRAPH_SIMPLE_H
+#define CUT_POINTGRAPH_SIMPLE_H
 
 #include "cut_pointgraph.H"
 
@@ -197,4 +197,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /* SRC_CUT_CUT_POINTGRAPH_SIMPLE_H_ */
+#endif  // CUT_POINTGRAPH_SIMPLE_H

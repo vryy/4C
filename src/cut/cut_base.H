@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BASE_H
-#define BASE_H
+#ifndef CUT_BASE_H
+#define CUT_BASE_H
 
 #include <vector>
 #include <cmath>

@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_PARTITIONED2_WC_H_
-#define SSI_PARTITIONED2_WC_H_
+#ifndef SSI_PARTITIONED_2WC_H
+#define SSI_PARTITIONED_2WC_H
 
 #include "ssi_partitioned.H"
 #include "inpar_ssi.H"
@@ -296,4 +296,4 @@ namespace SSI
   };
 }  // namespace SSI
 
-#endif /* SSI_PARTITIONED2_WC_H_ */
+#endif  // SSI_PARTITIONED_2WC_H

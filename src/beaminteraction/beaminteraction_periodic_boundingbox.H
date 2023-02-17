@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef PERIODIC_BOUNDINGBOX_H
-#define PERIODIC_BOUNDINGBOX_H
+#ifndef BEAMINTERACTION_PERIODIC_BOUNDINGBOX_H
+#define BEAMINTERACTION_PERIODIC_BOUNDINGBOX_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>

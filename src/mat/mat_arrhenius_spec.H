@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_SPEC_H
-#define ARRHENIUS_SPEC_H
+#ifndef MAT_ARRHENIUS_SPEC_H
+#define MAT_ARRHENIUS_SPEC_H
 
 
 

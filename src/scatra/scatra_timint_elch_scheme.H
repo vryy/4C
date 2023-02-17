@@ -153,4 +153,4 @@ namespace SCATRA
   };
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_ELCH_SCHEME_H
+#endif  // SCATRA_TIMINT_ELCH_SCHEME_H

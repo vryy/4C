@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_GROUP_H_
-#define NOX_NLN_GROUP_H_
+#ifndef SOLVER_NONLIN_NOX_GROUP_H
+#define SOLVER_NONLIN_NOX_GROUP_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -330,4 +330,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_GROUP_H_ */
+#endif  // SOLVER_NONLIN_NOX_GROUP_H

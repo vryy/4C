@@ -10,8 +10,8 @@
 
 
 
-#ifndef VALIDCONDITIONS_H
-#define VALIDCONDITIONS_H
+#ifndef INPAR_VALIDCONDITIONS_H
+#define INPAR_VALIDCONDITIONS_H
 
 #include <vector>
 #include <string>

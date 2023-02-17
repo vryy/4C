@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_STATICS_H
-#define STRTIMINT_STATICS_H
+#ifndef STRUCTURE_TIMINT_STATICS_H
+#define STRUCTURE_TIMINT_STATICS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -257,4 +257,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_STATICS_H
+#endif  // STRUCTURE_TIMINT_STATICS_H

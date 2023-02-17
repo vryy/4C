@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef MATPAR_MATERIAL_H
-#define MATPAR_MATERIAL_H
+#ifndef MAT_PAR_MATERIAL_H
+#define MAT_PAR_MATERIAL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -169,4 +169,4 @@ namespace MAT
 std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& node);
 
 
-#endif  // #ifndef MATPAR_MATERIAL_H
+#endif  // MAT_PAR_MATERIAL_H

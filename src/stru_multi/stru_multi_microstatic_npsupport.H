@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STRU_MICRO_STAT_NPSUPPORT_H
-#define STRU_MICRO_STAT_NPSUPPORT_H
+#ifndef STRU_MULTI_MICROSTATIC_NPSUPPORT_H
+#define STRU_MULTI_MICROSTATIC_NPSUPPORT_H
 
 namespace STRUMULTI
 {

@@ -22,8 +22,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef VISCOPLASTICROBINSON_H_
-#define VISCOPLASTICROBINSON_H_
+#ifndef MAT_ROBINSON_H
+#define MAT_ROBINSON_H
 
 
 #include "mat_par_parameter.H"
@@ -458,4 +458,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // ROBINSON_H_
+#endif  // MAT_ROBINSON_H

@@ -5,8 +5,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef SCATRA_MAT_ANISO_H
-#define SCATRA_MAT_ANISO_H
+#ifndef MAT_SCATRA_MAT_ANISO_H
+#define MAT_SCATRA_MAT_ANISO_H
 
 
 

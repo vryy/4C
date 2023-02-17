@@ -167,4 +167,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_COUPLING2D_H
+#endif  // CONTACT_COUPLING2D_H

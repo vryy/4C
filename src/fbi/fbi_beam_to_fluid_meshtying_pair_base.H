@@ -6,8 +6,8 @@
 \level 2
 */
 
-#ifndef BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
-#define BEAM_TO_FLUID_VOLUME_MESHTYING_PAIR_BASE_H_
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_H
 
 #include "beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 

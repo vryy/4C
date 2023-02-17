@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef INVANA_RESULTTEST_H
-#define INVANA_RESULTTEST_H
+#ifndef INV_ANALYSIS_RESULTTEST_H
+#define INV_ANALYSIS_RESULTTEST_H
 
 
 #include "lib_resulttest.H"

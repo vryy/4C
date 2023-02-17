@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_COMMUNICATION_UTILS_H
-#define PARTICLE_COMMUNICATION_UTILS_H
+#ifndef PARTICLE_ENGINE_COMMUNICATION_UTILS_H
+#define PARTICLE_ENGINE_COMMUNICATION_UTILS_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

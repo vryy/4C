@@ -11,8 +11,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_NOXINTERFACE_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_NOXINTERFACE_H_
+#ifndef STRUCTURE_NEW_TIMINT_NOXINTERFACE_H
+#define STRUCTURE_NEW_TIMINT_NOXINTERFACE_H
 
 #include "solver_nonlin_nox_interface_required.H"  // (1) base class: rhs, status tests and more
 #include "solver_nonlin_nox_interface_jacobian.H"  // (2) base class: jacobian
@@ -204,4 +204,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_NOXINTERFACE_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_NOXINTERFACE_H

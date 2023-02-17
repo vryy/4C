@@ -7,8 +7,8 @@ Nonlinear viscosity according to a modified power law
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef MODPOWERLAW_H
-#define MODPOWERLAW_H
+#ifndef MAT_MODPOWERLAW_H
+#define MAT_MODPOWERLAW_H
 
 
 

@@ -86,4 +86,4 @@ namespace CONTACT
     INPAR::CONTACT::NitscheWeighting weighting_;
   };
 }  // namespace CONTACT
-#endif  //  CONTACT_NITSCHE_STRATEGY_FPI_H
+#endif  // CONTACT_NITSCHE_STRATEGY_FPI_H

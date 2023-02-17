@@ -8,8 +8,8 @@ using XFEM
 
 *----------------------------------------------------------------------*/
 
-#ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_
-#define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_
+#ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H
+#define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H
 
 #include "fsi_monolithic_nonox.H"
 
@@ -187,4 +187,4 @@ namespace FSI
   };
 }  // namespace FSI
 
-#endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_ */
+#endif  // FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H

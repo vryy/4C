@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BEAM3CONTACT_TANGENTSMOOTHING_H
-#define BEAM3CONTACT_TANGENTSMOOTHING_H
+#ifndef BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
+#define BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -191,4 +191,4 @@ namespace CONTACT
   }  // namespace B3TANGENTSMOOTHING
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3CONTACT_TANGENTSMOOTHING_H
+#endif  // BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H

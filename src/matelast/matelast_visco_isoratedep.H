@@ -7,8 +7,8 @@ law, modified from Pioletti, 1997
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef VISCO_ISORATEDEP_H_
-#define VISCO_ISORATEDEP_H_
+#ifndef MATELAST_VISCO_ISORATEDEP_H
+#define MATELAST_VISCO_ISORATEDEP_H
 
 #include "mat_par_parameter.H"
 #include "matelast_summand.H"
@@ -123,4 +123,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ISORATEDEP_H_
+#endif  // MATELAST_VISCO_ISORATEDEP_H

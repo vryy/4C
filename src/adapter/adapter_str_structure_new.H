@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef AD_STR_STRUCTURE_NEW_H_
-#define AD_STR_STRUCTURE_NEW_H_
+#ifndef ADAPTER_STR_STRUCTURE_NEW_H
+#define ADAPTER_STR_STRUCTURE_NEW_H
 
 #include <set>
 
@@ -704,4 +704,4 @@ namespace ADAPTER
   };  // class StructureBaseAlgorithmNew
 }  // namespace ADAPTER
 
-#endif /* AD_STR_STRUCTURE_NEW_H_ */
+#endif  // ADAPTER_STR_STRUCTURE_NEW_H

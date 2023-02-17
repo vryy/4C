@@ -9,8 +9,8 @@
 
 
 
-#ifndef VALIDPARAMETERS_H
-#define VALIDPARAMETERS_H
+#ifndef INPAR_VALIDPARAMETERS_H
+#define INPAR_VALIDPARAMETERS_H
 
 #include <string>
 #include <iostream>

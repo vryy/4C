@@ -9,8 +9,8 @@ with condensed structure interface displacements
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
-#define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
+#ifndef FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"

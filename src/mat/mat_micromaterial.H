@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MICROMATERIAL_H
-#define MICROMATERIAL_H
+#ifndef MAT_MICROMATERIAL_H
+#define MAT_MICROMATERIAL_H
 
 
 #include <Teuchos_RCP.hpp>

@@ -12,8 +12,8 @@ used during debugging, not in optimized runs.
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef DEBUG_NAN_H
-#define DEBUG_NAN_H
+#ifndef FEM_GENERAL_DEBUG_NAN_H
+#define FEM_GENERAL_DEBUG_NAN_H
 
 #include <vector>
 
@@ -45,4 +45,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef DEBUG_NAN_H
+#endif  // FEM_GENERAL_DEBUG_NAN_H

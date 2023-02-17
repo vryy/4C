@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_GEMM_H
-#define STRTIMINT_GEMM_H
+#ifndef STRUCTURE_TIMINT_GEMM_H
+#define STRUCTURE_TIMINT_GEMM_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -328,4 +328,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_GEMM_H
+#endif  // STRUCTURE_TIMINT_GEMM_H

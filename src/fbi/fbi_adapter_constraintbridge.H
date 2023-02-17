@@ -8,8 +8,8 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 
 *----------------------------------------------------------------------*/
 
-#ifndef AD_FBI_CONSTRAINTBRIDGE_H_
-#define AD_FBI_CONSTRAINTBRIDGE_H_
+#ifndef FBI_ADAPTER_CONSTRAINTBRIDGE_H
+#define FBI_ADAPTER_CONSTRAINTBRIDGE_H
 
 #include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"
@@ -177,4 +177,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* AD_FBI_CONSTRAINTBRIDGE_H_ */
+#endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_H

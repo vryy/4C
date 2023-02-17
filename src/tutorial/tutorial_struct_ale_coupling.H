@@ -39,4 +39,4 @@ namespace TUTORIAL
   };  // class StructAleCoupling
 }  // namespace TUTORIAL
 
-#endif /* TUTORIAL_STRUCT_ALE_COUPLING_H */
+#endif  // TUTORIAL_STRUCT_ALE_COUPLING_H

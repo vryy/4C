@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BEAMTOBEAMPOTENTIALPAIR_H
-#define BEAMTOBEAMPOTENTIALPAIR_H
+#ifndef BEAMINTERACTION_BEAM_TO_BEAM_POTENTIAL_PAIR_H
+#define BEAMINTERACTION_BEAM_TO_BEAM_POTENTIAL_PAIR_H
 
 #include "beaminteraction_potential_pair.H"
 

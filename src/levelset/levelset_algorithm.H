@@ -362,4 +362,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef LEVELSET_ALGORITHM_H
+#endif  // LEVELSET_ALGORITHM_H

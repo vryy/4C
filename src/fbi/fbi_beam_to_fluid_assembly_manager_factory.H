@@ -9,8 +9,8 @@ constraint discretization approach
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_H
-#define BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_H
+#ifndef FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_H
+#define FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 #include <vector>

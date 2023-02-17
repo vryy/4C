@@ -66,4 +66,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_TWOPHASE_H
+#endif  // INPAR_TWOPHASE_H

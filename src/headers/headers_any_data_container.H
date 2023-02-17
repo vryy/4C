@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_HEADERS_ANY_DATA_CONTAINER_H_
-#define SRC_HEADERS_ANY_DATA_CONTAINER_H_
+#ifndef HEADERS_ANY_DATA_CONTAINER_H
+#define HEADERS_ANY_DATA_CONTAINER_H
 
 #include <Teuchos_any.hpp>
 #include "lib_dserror.H"
@@ -391,4 +391,4 @@ namespace GEN
 }  // namespace GEN
 
 
-#endif /* SRC_HEADERS_ANY_DATA_CONTAINER_H_ */
+#endif  // HEADERS_ANY_DATA_CONTAINER_H

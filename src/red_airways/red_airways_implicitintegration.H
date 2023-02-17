@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef AIRWAYIMPLICITINTEGRATION_H
-#define AIRWAYIMPLICITINTEGRATION_H
+#ifndef RED_AIRWAYS_IMPLICITINTEGRATION_H
+#define RED_AIRWAYS_IMPLICITINTEGRATION_H
 
 #include "Epetra_MpiComm.h"
 
@@ -536,4 +536,4 @@ namespace AIRWAY
 }  // namespace AIRWAY
 
 
-#endif  // #ifndef AIRWAYIMPLICITINTEGRATION_H
+#endif  // RED_AIRWAYS_IMPLICITINTEGRATION_H

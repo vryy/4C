@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_SCATRA_SCATRA_TIMINT_POROMULTI_H_
-#define SRC_SCATRA_SCATRA_TIMINT_POROMULTI_H_
+#ifndef SCATRA_TIMINT_POROMULTI_H
+#define SCATRA_TIMINT_POROMULTI_H
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -195,4 +195,4 @@ namespace SCATRA
 
 
 
-#endif /* SRC_SCATRA_SCATRA_TIMINT_POROMULTI_H_ */
+#endif  // SCATRA_TIMINT_POROMULTI_H

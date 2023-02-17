@@ -723,4 +723,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_STRUCTURE_H
+#endif  // INPAR_STRUCTURE_H

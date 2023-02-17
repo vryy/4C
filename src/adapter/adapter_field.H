@@ -19,8 +19,8 @@ functions there exist also for fields.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef AD_FIELD_H
-#define AD_FIELD_H
+#ifndef ADAPTER_FIELD_H
+#define ADAPTER_FIELD_H
 
 // includes
 #include <Teuchos_RCP.hpp>

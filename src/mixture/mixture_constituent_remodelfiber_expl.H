@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#ifndef MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#define MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
 
 #include <Teuchos_RCPDecl.hpp>
 #include <cmath>
@@ -124,4 +124,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#endif  // MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H

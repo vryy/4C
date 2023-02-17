@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_CHEMO_H_
-#define SCATRA_ELE_CALC_CHEMO_H_
+#ifndef SCATRA_ELE_CALC_CHEMO_H
+#define SCATRA_ELE_CALC_CHEMO_H
 
 #include "scatra_ele_calc.H"
 #include "mat_scatra_chemotaxis_mat.H"
@@ -91,4 +91,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_CHEMO_H_ */
+#endif  // SCATRA_ELE_CALC_CHEMO_H

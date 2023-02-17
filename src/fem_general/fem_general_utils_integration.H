@@ -6,8 +6,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef UTILS_INTEGRATION_H
-#define UTILS_INTEGRATION_H
+#ifndef FEM_GENERAL_UTILS_INTEGRATION_H
+#define FEM_GENERAL_UTILS_INTEGRATION_H
 
 #include <string>
 #include <sstream>
@@ -1313,4 +1313,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef UTILS_INTEGRATION_H
+#endif  // FEM_GENERAL_UTILS_INTEGRATION_H

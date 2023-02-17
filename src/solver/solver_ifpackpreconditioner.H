@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef SOLVER_IFPACKPRECONDITIONER_H_
-#define SOLVER_IFPACKPRECONDITIONER_H_
+#ifndef SOLVER_IFPACKPRECONDITIONER_H
+#define SOLVER_IFPACKPRECONDITIONER_H
 
 #include "Ifpack.h"
 

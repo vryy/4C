@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef INTEGRATIONCELL_COORDTRAFO_H
-#define INTEGRATIONCELL_COORDTRAFO_H
+#ifndef GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
+#define GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
 
 
 #include "geometry_element_coordtrafo.H"

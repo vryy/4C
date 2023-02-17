@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef NOX_NLN_CONTACT_LINEARSYSTEM_H_
-#define NOX_NLN_CONTACT_LINEARSYSTEM_H_
+#ifndef CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H
+#define CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H
 
 #include "solver_nonlin_nox_linearsystem.H"
 #include "solver_nonlin_nox_constraint_interface_required.H"
@@ -153,4 +153,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_CONTACT_LINEARSYSTEM_H_ */
+#endif  // CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H

@@ -10,8 +10,8 @@ problem
 /*-----------------------------------------------------------*/
 
 // #ifdef D_COUPLED_ARTNET
-#ifndef FLUID_COUPLING_RED_MODELS_H_
-#define FLUID_COUPLING_RED_MODELS_H_
+#ifndef FLUID_COUPLING_RED_MODELS_H
+#define FLUID_COUPLING_RED_MODELS_H
 
 
 #include "Epetra_MpiComm.h"
@@ -315,4 +315,4 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-#endif /* FLUID_COUPLING_RED_MODELS_H_ */
+#endif  // FLUID_COUPLING_RED_MODELS_H

@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_MONOLITHICSPLIT_H_
-#define PORO_MONOLITHICSPLIT_H_
+#ifndef POROELAST_MONOLITHICSPLIT_H
+#define POROELAST_MONOLITHICSPLIT_H
 
 
 #include "poroelast_monolithic.H"
@@ -130,4 +130,4 @@ namespace POROELAST
   };
 }  // namespace POROELAST
 
-#endif /* PORO_MONOLITHICSPLIT_H_ */
+#endif  // POROELAST_MONOLITHICSPLIT_H

@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef COCONSTLAW_BUNDLE_H
-#define COCONSTLAW_BUNDLE_H
+#ifndef CONTACT_CONSTITUTIVELAW_BUNDLE_H
+#define CONTACT_CONSTITUTIVELAW_BUNDLE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -79,4 +79,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef MATPAR_BUNDLE_H
+#endif  // CONTACT_CONSTITUTIVELAW_BUNDLE_H

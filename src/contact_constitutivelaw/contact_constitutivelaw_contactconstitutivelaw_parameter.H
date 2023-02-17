@@ -9,8 +9,8 @@ relate the contact gap to the contact pressure based on micro interactions
 */
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef COCONSTLAW_PARAMETER_H
-#define COCONSTLAW_PARAMETER_H
+#ifndef CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_H
+#define CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_H
 
 
 /*----------------------------------------------------------------------*/
@@ -153,4 +153,4 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
-#endif  // #ifndef COCONSTLAW_PARAMETER_H
+#endif  // CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_H

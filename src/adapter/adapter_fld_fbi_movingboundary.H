@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUIDBEAM_IMMERSED_H
-#define ADAPTER_FLUIDBEAM_IMMERSED_H
+#ifndef ADAPTER_FLD_FBI_MOVINGBOUNDARY_H
+#define ADAPTER_FLD_FBI_MOVINGBOUNDARY_H
 
 #include "adapter_fld_moving_boundary.H"
 #include "fluid_meshtying.H"

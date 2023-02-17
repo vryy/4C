@@ -203,4 +203,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*SURFSTRESS_MANAGER_H*/
+#endif  // SURFSTRESS_MANAGER_H

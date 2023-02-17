@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_LIB_ELEMENTS_PARAMSINTERFACE_H_
-#define SRC_LIB_ELEMENTS_PARAMSINTERFACE_H_
+#ifndef LIB_ELEMENTS_PARAMSINTERFACE_H
+#define LIB_ELEMENTS_PARAMSINTERFACE_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -292,4 +292,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_ELEMENTS_PARAMSINTERFACE_H_ */
+#endif  // LIB_ELEMENTS_PARAMSINTERFACE_H

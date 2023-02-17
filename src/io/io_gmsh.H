@@ -16,8 +16,8 @@ documentation.
 \level 2
 
  */
-#ifndef GMSH_H
-#define GMSH_H
+#ifndef IO_GMSH_H
+#define IO_GMSH_H
 
 #include "lib_discret.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -603,4 +603,4 @@ namespace IO
   }  // namespace GMSH
 }  // namespace IO
 
-#endif /*GMSH_H*/
+#endif  // IO_GMSH_H

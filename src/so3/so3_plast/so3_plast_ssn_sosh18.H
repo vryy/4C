@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-#ifndef SO3_SSN_PLAST_SOSH18_H
-#define SO3_SSN_PLAST_SOSH18_H
+#ifndef SO3_PLAST_SSN_SOSH18_H
+#define SO3_PLAST_SSN_SOSH18_H
 
 #include "so3_plast_ssn.H"
 #include "so3_plast_ssn_eletypes.H"

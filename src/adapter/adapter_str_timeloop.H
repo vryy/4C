@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTURE_TIMELOOP_H
-#define ADAPTER_STRUCTURE_TIMELOOP_H
+#ifndef ADAPTER_STR_TIMELOOP_H
+#define ADAPTER_STR_TIMELOOP_H
 
 #include "adapter_str_wrapper.H"
 

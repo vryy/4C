@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef INVANA_UTILS_H
-#define INVANA_UTILS_H
+#ifndef INV_ANALYSIS_UTILS_H
+#define INV_ANALYSIS_UTILS_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
@@ -35,4 +35,4 @@ namespace INVANA
 
 }  // namespace INVANA
 
-#endif /*INVANA_UTILS_H_*/
+#endif  // INV_ANALYSIS_UTILS_H

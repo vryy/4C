@@ -8,8 +8,8 @@
 #include "mat_trait_thermo.H"
 #include "mat_trait_solid.H"
 
-#ifndef TRAIT_THERMO_SOLID_H
-#define TRAIT_THERMO_SOLID_H
+#ifndef MAT_TRAIT_THERMO_SOLID_H
+#define MAT_TRAIT_THERMO_SOLID_H
 namespace MAT
 {
   namespace TRAIT

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OBJECTIVE_FUNCT_H
-#define OBJECTIVE_FUNCT_H
+#ifndef INV_ANALYSIS_OBJECTIVE_FUNCT_H
+#define INV_ANALYSIS_OBJECTIVE_FUNCT_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
@@ -59,4 +59,4 @@ namespace INVANA
   };  // class ObjectiveFunct
 }  // namespace INVANA
 
-#endif  // OBJECTIVE_FUNCT_H_
+#endif  // INV_ANALYSIS_OBJECTIVE_FUNCT_H

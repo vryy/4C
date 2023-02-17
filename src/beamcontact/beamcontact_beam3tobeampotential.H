@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BEAM3TOBEAMPOT_H
-#define BEAM3TOBEAMPOT_H
+#ifndef BEAMCONTACT_BEAM3TOBEAMPOTENTIAL_H
+#define BEAMCONTACT_BEAM3TOBEAMPOTENTIAL_H
 
 #include "beaminteraction_beam3contact_utils.H"
 #include "linalg_fixedsizematrix.H"
@@ -290,4 +290,4 @@ namespace CONTACT
   };  // class Beam3tobeampotential
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3TOBEAMPOT_H
+#endif  // BEAMCONTACT_BEAM3TOBEAMPOTENTIAL_H

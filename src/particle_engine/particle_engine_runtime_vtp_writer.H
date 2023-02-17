@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_RUNTIME_VTP_WRITER_H
-#define PARTICLE_RUNTIME_VTP_WRITER_H
+#ifndef PARTICLE_ENGINE_RUNTIME_VTP_WRITER_H
+#define PARTICLE_ENGINE_RUNTIME_VTP_WRITER_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

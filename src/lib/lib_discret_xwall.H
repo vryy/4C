@@ -10,8 +10,8 @@ of dofs per node on a fluid discretization for xwall
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DISCRET_XWALL_H
-#define DISCRET_XWALL_H
+#ifndef LIB_DISCRET_XWALL_H
+#define LIB_DISCRET_XWALL_H
 
 #include "lib_discret_faces.H"
 #include "lib_dserror.H"
@@ -90,4 +90,4 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationXWall& dis);
 
 
-#endif  // #ifndef DISCRET_XWALL_H
+#endif  // LIB_DISCRET_XWALL_H

@@ -11,8 +11,8 @@ is just a "control instance".
 \level 3
 *----------------------------------------------------------------------*/
 
-#ifndef MATLIST_CHEMOTAXIS_H_
-#define MATLIST_CHEMOTAXIS_H_
+#ifndef MAT_LIST_CHEMOTAXIS_H
+#define MAT_LIST_CHEMOTAXIS_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"
@@ -156,4 +156,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* MATLIST_CHEMOTAXIS_H_ */
+#endif  // MAT_LIST_CHEMOTAXIS_H

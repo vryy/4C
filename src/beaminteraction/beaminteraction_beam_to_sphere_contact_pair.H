@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BEAMTOSPHERECONTACTPAIR_H
-#define BEAMTOSPHERECONTACTPAIR_H
+#ifndef BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
+#define BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
 
 #include "beaminteraction_contact_pair.H"
 

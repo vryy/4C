@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SO_HEX8P1J1_H
-#define SO_HEX8P1J1_H
+#ifndef SO3_HEX8P1J1_H
+#define SO3_HEX8P1J1_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "so3_hex8.H"
@@ -313,4 +313,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SO_HEX8P1J1_H
+#endif  // SO3_HEX8P1J1_H

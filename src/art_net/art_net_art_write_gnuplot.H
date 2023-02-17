@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ART_WRITE_GNUPLOT_H_
-#define ART_WRITE_GNUPLOT_H_
+#ifndef ART_NET_ART_WRITE_GNUPLOT_H
+#define ART_NET_ART_WRITE_GNUPLOT_H
 
 #include "Epetra_MpiComm.h"
 
@@ -118,4 +118,4 @@ namespace ART
 }  // namespace ART
 
 
-#endif  // ART_WRITE_GNUPLOT_H_
+#endif  // ART_NET_ART_WRITE_GNUPLOT_H

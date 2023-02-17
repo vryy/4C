@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef IMMERSED_BASE_H
-#define IMMERSED_BASE_H
+#ifndef IMMERSED_PROBLEM_IMMERSED_BASE_H
+#define IMMERSED_PROBLEM_IMMERSED_BASE_H
 
 
 #include "fluid_ele_immersed_base.H"

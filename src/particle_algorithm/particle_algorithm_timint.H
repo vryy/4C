@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_H
-#define PARTICLE_TIMINT_H
+#ifndef PARTICLE_ALGORITHM_TIMINT_H
+#define PARTICLE_ALGORITHM_TIMINT_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

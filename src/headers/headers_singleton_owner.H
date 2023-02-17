@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SINGLETON_OWNER_H
-#define SINGLETON_OWNER_H
+#ifndef HEADERS_SINGLETON_OWNER_H
+#define HEADERS_SINGLETON_OWNER_H
 
 #include <functional>
 #include <memory>
@@ -291,4 +291,4 @@ namespace UTILS
 }  // namespace UTILS
 
 
-#endif  // SINGLETON_OWNER_H
+#endif  // HEADERS_SINGLETON_OWNER_H

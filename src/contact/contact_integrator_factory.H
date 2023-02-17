@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_
-#define SRC_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_
+#ifndef CONTACT_INTEGRATOR_FACTORY_H
+#define CONTACT_INTEGRATOR_FACTORY_H
 
 #include "inpar_contact.H"
 #include "lib_element.H"
@@ -45,4 +45,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_ */
+#endif  // CONTACT_INTEGRATOR_FACTORY_H

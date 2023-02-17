@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_LOCA_CONTINUATION_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_LOCA_CONTINUATION_H_
+#ifndef STRUCTURE_NEW_TIMINT_LOCA_CONTINUATION_H
+#define STRUCTURE_NEW_TIMINT_LOCA_CONTINUATION_H
 
 
 #include "structure_new_timint_implicitbase.H"  // base class
@@ -121,4 +121,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_LOCA_CONTINUATION_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_LOCA_CONTINUATION_H

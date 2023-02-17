@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef MESHTYING_LAGRANGE_STRATEGY_H
-#define MESHTYING_LAGRANGE_STRATEGY_H
+#ifndef CONTACT_MESHTYING_LAGRANGE_STRATEGY_H
+#define CONTACT_MESHTYING_LAGRANGE_STRATEGY_H
 
 #include "contact_meshtying_abstract_strategy.H"
 
@@ -271,4 +271,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef MESHTYING_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_MESHTYING_LAGRANGE_STRATEGY_H

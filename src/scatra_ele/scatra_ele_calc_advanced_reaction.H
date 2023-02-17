@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_ADVANCED_REACTION_H_
-#define SCATRA_ELE_CALC_ADVANCED_REACTION_H_
+#ifndef SCATRA_ELE_CALC_ADVANCED_REACTION_H
+#define SCATRA_ELE_CALC_ADVANCED_REACTION_H
 
 #include "scatra_ele_calc.H"
 
@@ -251,4 +251,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_ADVANCED_REACTION_H_ */
+#endif  // SCATRA_ELE_CALC_ADVANCED_REACTION_H

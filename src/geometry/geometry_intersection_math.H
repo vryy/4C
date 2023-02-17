@@ -11,8 +11,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef INTERSECTION_MATH_H_
-#define INTERSECTION_MATH_H_
+#ifndef GEOMETRY_INTERSECTION_MATH_H
+#define GEOMETRY_INTERSECTION_MATH_H
 
 
 #include "linalg_fixedsizematrix.H"
@@ -169,4 +169,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // INTERSECTION_MATH_H_
+#endif  // GEOMETRY_INTERSECTION_MATH_H

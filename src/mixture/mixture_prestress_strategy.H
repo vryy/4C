@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_H
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_H
+#ifndef MIXTURE_PRESTRESS_STRATEGY_H
+#define MIXTURE_PRESTRESS_STRATEGY_H
 
 #include "mat_par_parameter.H"
 #include "linalg_fixedsizematrix.H"
@@ -172,4 +172,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_PRESTRESS_STRATEGY_H
+#endif  // MIXTURE_PRESTRESS_STRATEGY_H

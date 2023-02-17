@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_PREDICT_FACTORY_H_
-#define STR_PREDICT_FACTORY_H_
+#ifndef STRUCTURE_NEW_PREDICT_FACTORY_H
+#define STRUCTURE_NEW_PREDICT_FACTORY_H
 
 #include "inpar_structure.H"
 
@@ -48,4 +48,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_PREDICT_FACTORY_H_ */
+#endif  // STRUCTURE_NEW_PREDICT_FACTORY_H

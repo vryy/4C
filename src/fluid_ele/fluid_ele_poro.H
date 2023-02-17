@@ -13,8 +13,8 @@ Pack, Unpack, NumDofPerNode etc.
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLUID_ELE_PORO_H_
-#define FLUID_ELE_PORO_H_
+#ifndef FLUID_ELE_PORO_H
+#define FLUID_ELE_PORO_H
 
 #include "inpar_structure.H"
 #include "fluid_ele.H"
@@ -373,4 +373,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* FLUID_ELE_PORO_H_ */
+#endif  // FLUID_ELE_PORO_H

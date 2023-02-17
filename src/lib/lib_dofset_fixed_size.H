@@ -11,8 +11,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSET_FIXED_SIZE_H
-#define DOFSET_FIXED_SIZE_H
+#ifndef LIB_DOFSET_FIXED_SIZE_H
+#define LIB_DOFSET_FIXED_SIZE_H
 
 #include <vector>
 #include <map>
@@ -121,4 +121,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef DOFSET_FIXED_SIZE_H
+#endif  // LIB_DOFSET_FIXED_SIZE_H

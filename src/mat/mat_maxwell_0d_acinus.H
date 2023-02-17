@@ -12,8 +12,8 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef MAXWELL_0D_ACINUS_H
-#define MAXWELL_0D_ACINUS_H
+#ifndef MAT_MAXWELL_0D_ACINUS_H
+#define MAT_MAXWELL_0D_ACINUS_H
 
 
 

@@ -8,8 +8,8 @@
 
 */
 /*-----------------------------------------------------------*/
-#ifndef SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
-#define SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 
 #include "lib_dserror.H"
 #include <Epetra_MultiVector.h>
@@ -1438,4 +1438,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H

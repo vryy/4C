@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_STR_LOCA_WRAPPER_H_
-#define SRC_ADAPTER_AD_STR_LOCA_WRAPPER_H_
+#ifndef ADAPTER_STR_LOCA_WRAPPER_H
+#define ADAPTER_STR_LOCA_WRAPPER_H
 
 
 #include "adapter_str_wrapper.H"
@@ -57,4 +57,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_STR_LOCA_WRAPPER_H_ */
+#endif  // ADAPTER_STR_LOCA_WRAPPER_H

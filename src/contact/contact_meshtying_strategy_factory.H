@@ -6,8 +6,8 @@
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef SRC_CONTACT_MESHTYING_STRATEGY_FACTORY_H_
-#define SRC_CONTACT_MESHTYING_STRATEGY_FACTORY_H_
+#ifndef CONTACT_MESHTYING_STRATEGY_FACTORY_H
+#define CONTACT_MESHTYING_STRATEGY_FACTORY_H
 
 #include "inpar_contact.H"
 
@@ -126,4 +126,4 @@ namespace MORTAR
   }     // namespace STRATEGY
 }  // namespace MORTAR
 
-#endif /* SRC_CONTACT_MESHTYING_STRATEGY_FACTORY_H_ */
+#endif  // CONTACT_MESHTYING_STRATEGY_FACTORY_H

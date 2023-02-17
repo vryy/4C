@@ -7,8 +7,8 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#ifndef SRC_MORTAR_MORTAR_PARAMSINTERFACE_H_
-#define SRC_MORTAR_MORTAR_PARAMSINTERFACE_H_
+#ifndef MORTAR_PARAMSINTERFACE_H
+#define MORTAR_PARAMSINTERFACE_H
 
 #include "headers_any_data_container.H"
 
@@ -123,4 +123,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif /* SRC_MORTAR_MORTAR_PARAMSINTERFACE_H_ */
+#endif  // MORTAR_PARAMSINTERFACE_H

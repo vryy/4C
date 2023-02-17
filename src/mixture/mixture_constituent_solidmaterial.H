@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
-#define BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
+#ifndef MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
+#define MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
 
 #include "mat_par_parameter.H"
 #include "mixture_constituent.H"
@@ -89,4 +89,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
+#endif  // MIXTURE_CONSTITUENT_SOLIDMATERIAL_H

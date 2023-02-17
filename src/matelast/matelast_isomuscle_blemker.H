@@ -7,8 +7,8 @@ muscle material
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOMUSCLEBLEMKER_H_
-#define ELAST_ISOMUSCLEBLEMKER_H_
+#ifndef MATELAST_ISOMUSCLE_BLEMKER_H
+#define MATELAST_ISOMUSCLE_BLEMKER_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -148,4 +148,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_ISOMUSCLEBLEMKER_H_
+#endif  // MATELAST_ISOMUSCLE_BLEMKER_H

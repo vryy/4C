@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef COLORS_H
-#define COLORS_H
+#ifndef LIB_COLORS_H
+#define LIB_COLORS_H
 
 #ifdef COLOROUTPUT
 #define BLACK "[30m"

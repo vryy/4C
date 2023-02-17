@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_LOGNEOHOOKE_H_
-#define ELAST_LOGNEOHOOKE_H_
+#ifndef MATELAST_COUPLOGNEOHOOKE_H
+#define MATELAST_COUPLOGNEOHOOKE_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -199,4 +199,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // LOGNEOHOOKE_H_
+#endif  // MATELAST_COUPLOGNEOHOOKE_H

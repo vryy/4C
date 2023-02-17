@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SH18_H
-#define SH18_H
+#ifndef SO3_SH18_H
+#define SO3_SH18_H
 
 #include "lib_element.H"
 #include "lib_elementtype.H"
@@ -275,4 +275,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SH8_H
+#endif  // SO3_SH18_H

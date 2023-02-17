@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
+#ifndef SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H
+#define SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H
 
 #include <vector>
 
@@ -219,4 +219,4 @@ namespace NOX
   }       // namespace NLN
 }  // namespace NOX
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_ */
+#endif  // SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H

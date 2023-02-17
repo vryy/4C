@@ -4,8 +4,8 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#ifndef MONITOR_H
-#define MONITOR_H
+#ifndef CONSTRAINT_MONITOR_H
+#define CONSTRAINT_MONITOR_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -111,4 +111,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CONSTRAINT_H*/
+#endif  // CONSTRAINT_MONITOR_H

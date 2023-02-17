@@ -13,8 +13,8 @@ the input line should read
 
 
 *----------------------------------------------------------------------*/
-#ifndef AAA_MIXEDEFFECTS_H_
-#define AAA_MIXEDEFFECTS_H_
+#ifndef MAT_AAA_MIXEDEFFECTS_H
+#define MAT_AAA_MIXEDEFFECTS_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -173,4 +173,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // AAA_MIXEDEFFECTS_H_
+#endif  // MAT_AAA_MIXEDEFFECTS_H

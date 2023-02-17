@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AD_FLD_FLUID_XFSI_H
-#define AD_FLD_FLUID_XFSI_H
+#ifndef ADAPTER_FLD_FLUID_XFSI_H
+#define ADAPTER_FLD_FLUID_XFSI_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

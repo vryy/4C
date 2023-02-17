@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
-#define SSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
+#ifndef SSI_STR_MODEL_EVALUATOR_PARTITIONED_H
+#define SSI_STR_MODEL_EVALUATOR_PARTITIONED_H
 
 #include "ssi_str_model_evaluator_base.H"
 
@@ -64,4 +64,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SSI_STR_MODEL_EVALUATOR_PARTITIONED_H_ */
+#endif  // SSI_STR_MODEL_EVALUATOR_PARTITIONED_H

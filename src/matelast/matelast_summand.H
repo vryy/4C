@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_SUMMAND_H
-#define ELAST_SUMMAND_H
+#ifndef MATELAST_SUMMAND_H
+#define MATELAST_SUMMAND_H
 
 #include "inpar_material.H"
 #include "linalg_fixedsizematrix.H"

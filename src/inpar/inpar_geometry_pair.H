@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef INPAR_GEOMETRYPAIR_H
-#define INPAR_GEOMETRYPAIR_H
+#ifndef INPAR_GEOMETRY_PAIR_H
+#define INPAR_GEOMETRY_PAIR_H
 
 
 #include "fem_general_utils_integration.H"

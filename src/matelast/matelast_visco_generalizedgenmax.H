@@ -5,8 +5,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef VISCO_GENERALIZEDGENMAX_H_
-#define VISCO_GENERALIZEDGENMAX_H_
+#ifndef MATELAST_VISCO_GENERALIZEDGENMAX_H
+#define MATELAST_VISCO_GENERALIZEDGENMAX_H
 
 #include "mat_par_parameter.H"
 #include "matelast_summand.H"
@@ -277,4 +277,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // VISCO_GENERALIZEDGENMAX_H_
+#endif  // MATELAST_VISCO_GENERALIZEDGENMAX_H

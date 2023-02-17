@@ -6,8 +6,8 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINALG_ANA_H
-#define LINALG_ANA_H
+#ifndef SOLVER_LINALG_ANA_H
+#define SOLVER_LINALG_ANA_H
 
 // Trilinos includes
 #include "lib_dserror.H"
@@ -2257,4 +2257,4 @@ namespace LINALG
 
 
 
-#endif  // LINALG_ANA_H
+#endif  // SOLVER_LINALG_ANA_H

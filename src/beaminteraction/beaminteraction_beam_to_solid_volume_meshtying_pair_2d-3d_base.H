@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H_
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H
 
 
 #include "beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"

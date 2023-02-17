@@ -10,8 +10,8 @@ species
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef NEWMAN_H
-#define NEWMAN_H
+#ifndef MAT_NEWMAN_H
+#define MAT_NEWMAN_H
 
 #include "mat_elchsinglemat.H"
 

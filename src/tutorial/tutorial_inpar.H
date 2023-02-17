@@ -11,8 +11,8 @@
 
 // All header files should have #define guards to prevent multiple inclusion.
 // The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
-#ifndef INPAR_TUTORIAL_H_
-#define INPAR_TUTORIAL_H_
+#ifndef TUTORIAL_INPAR_H
+#define TUTORIAL_INPAR_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -37,4 +37,4 @@ namespace INPAR
   }  // namespace TUTORIAL
 }  // namespace INPAR
 /*----------------------------------------------------------------------*/
-#endif /* INPAR_TUTORIAL_H_ */
+#endif  // TUTORIAL_INPAR_H

@@ -6,8 +6,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef AD_SCATRA_WRAPPER_
-#define AD_SCATRA_WRAPPER_
+#ifndef ADAPTER_SCATRA_WRAPPER_H
+#define ADAPTER_SCATRA_WRAPPER_H
 
 
 #include "adapter_scatra_interface.H"
@@ -80,4 +80,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* AD_SCATRA_WRAPPER_ */
+#endif  // ADAPTER_SCATRA_WRAPPER_H

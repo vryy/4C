@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef CONSTRAINTDOFSET_H
-#define CONSTRAINTDOFSET_H
+#ifndef CONSTRAINT_DOFSET_H
+#define CONSTRAINT_DOFSET_H
 
 #include <vector>
 #include <list>
@@ -92,4 +92,4 @@ namespace UTILS
 std::ostream& operator<<(std::ostream& os, const UTILS::ConstraintDofSet& dofset);
 
 
-#endif  // #ifndef DOFSET_H
+#endif  // CONSTRAINT_DOFSET_H

@@ -13,8 +13,8 @@ attached parenchyma balloon
 /* macros */
 
 
-#ifndef ADAPTER_STRUCTURE_LUNG_H
-#define ADAPTER_STRUCTURE_LUNG_H
+#ifndef ADAPTER_STR_LUNG_H
+#define ADAPTER_STR_LUNG_H
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>

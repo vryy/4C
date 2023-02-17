@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSET_PROXY_H
-#define DOFSET_PROXY_H
+#ifndef LIB_DOFSET_PROXY_H
+#define LIB_DOFSET_PROXY_H
 
 #include "lib_dofset_base.H"
 

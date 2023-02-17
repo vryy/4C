@@ -8,8 +8,8 @@ performed afterwards
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef BINNINGGEOMETRYCOUPLER_FBI_H
-#define BINNINGGEOMETRYCOUPLER_FBI_H
+#ifndef FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
+#define FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Teuchos_RCP.hpp>

@@ -372,4 +372,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_MORTAR_H */
+#endif  // ADAPTER_COUPLING_MORTAR_H

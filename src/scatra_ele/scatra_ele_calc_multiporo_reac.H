@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_SCATRA_ELE_SCATRA_ELE_CALC_MULTIPORO_REAC_H_
-#define SRC_SCATRA_ELE_SCATRA_ELE_CALC_MULTIPORO_REAC_H_
+#ifndef SCATRA_ELE_CALC_MULTIPORO_REAC_H
+#define SCATRA_ELE_CALC_MULTIPORO_REAC_H
 
 
 #include "scatra_ele_calc_poro_reac.H"
@@ -1581,4 +1581,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SRC_SCATRA_ELE_SCATRA_ELE_CALC_MULTIPORO_REAC_H_ */
+#endif  // SCATRA_ELE_CALC_MULTIPORO_REAC_H

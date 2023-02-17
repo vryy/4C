@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef INPAR_POROSCATRA_H_
-#define INPAR_POROSCATRA_H_
+#ifndef INPAR_POROSCATRA_H
+#define INPAR_POROSCATRA_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -40,4 +40,4 @@ namespace INPAR
 
 
 
-#endif /* INPAR_POROSCATRA_H_ */
+#endif  // INPAR_POROSCATRA_H

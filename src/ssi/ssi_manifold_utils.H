@@ -8,8 +8,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_MANIFOLD_UTILS_H_
-#define SSI_MANIFOLD_UTILS_H_
+#ifndef SSI_MANIFOLD_UTILS_H
+#define SSI_MANIFOLD_UTILS_H
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -446,4 +446,4 @@ namespace SSI
 
 }  // namespace SSI
 
-#endif /* SSI_MANIFOLD_UTILS_H_ */
+#endif  // SSI_MANIFOLD_UTILS_H

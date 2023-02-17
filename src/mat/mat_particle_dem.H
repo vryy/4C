@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_DEM_H
-#define PARTICLE_MATERIAL_DEM_H
+#ifndef MAT_PARTICLE_DEM_H
+#define MAT_PARTICLE_DEM_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 07/2018 |

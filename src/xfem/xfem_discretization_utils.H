@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_DISCRETIZATION_UTILS_H_
-#define XFEM_DISCRETIZATION_UTILS_H_
+#ifndef XFEM_DISCRETIZATION_UTILS_H
+#define XFEM_DISCRETIZATION_UTILS_H
 
 #include <vector>
 #include <Teuchos_RCP.hpp>
@@ -153,4 +153,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* XFEM_DISCRETIZATION_UTILS_H_ */
+#endif  // XFEM_DISCRETIZATION_UTILS_H

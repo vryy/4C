@@ -7,8 +7,8 @@ dependent Neo Hooke material.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
-#define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
+#ifndef MATELAST_ISOVOLHUDEPENDENTNEOHOOKE_H
+#define MATELAST_ISOVOLHUDEPENDENTNEOHOOKE_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
