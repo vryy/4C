@@ -16,4 +16,4 @@ set(LIBS_LEVELSET
     linalg
     )
 
-target_link_libraries(levelset PUBLIC ${LIBS_LEVELSET})
+baci_add_dependency(levelset ${LIBS_LEVELSET})

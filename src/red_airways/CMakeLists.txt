@@ -29,4 +29,4 @@ set(LIBS_RED_AIRWAYS
     mat
     )
 
-target_link_libraries(red_airways PUBLIC ${LIBS_RED_AIRWAYS})
+baci_add_dependency(red_airways ${LIBS_RED_AIRWAYS})

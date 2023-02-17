@@ -12,4 +12,4 @@ set(LIBS_PSS_FULL
     headers
     )
 
-target_link_libraries(pss_full PUBLIC ${LIBS_PSS_FULL})
+baci_add_dependency(pss_full ${LIBS_PSS_FULL})

@@ -52,4 +52,4 @@ set(LIBS_ALG_SCATRA
     lib_poromulti_art_coupl
     )
 
-target_link_libraries(alg_scatra PUBLIC ${LIBS_ALG_SCATRA})
+baci_add_dependency(alg_scatra ${LIBS_ALG_SCATRA})

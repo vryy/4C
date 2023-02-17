@@ -13,4 +13,4 @@ set(LIBS_ELE_TO3
     lib_browniandyn
     )
 
-target_link_libraries(ele_to3 PUBLIC ${LIBS_ELE_TO3})
+baci_add_dependency(ele_to3 ${LIBS_ELE_TO3})

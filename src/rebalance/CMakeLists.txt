@@ -11,4 +11,4 @@ set(LIBS_REBALANCE
     linalg
     )
 
-target_link_libraries(rebalance PUBLIC ${LIBS_REBALANCE})
+baci_add_dependency(rebalance ${LIBS_REBALANCE})

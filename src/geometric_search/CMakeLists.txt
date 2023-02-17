@@ -13,4 +13,4 @@ set(LIBS_LIB_GEOMETRIC_SEARCH
     lib
     )
 
-target_link_libraries(lib_geometric_search PUBLIC ${LIBS_LIB_GEOMETRIC_SEARCH})
+baci_add_dependency(lib_geometric_search ${LIBS_LIB_GEOMETRIC_SEARCH})

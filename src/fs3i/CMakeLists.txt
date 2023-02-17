@@ -20,4 +20,4 @@ set(LIBS_ALG_FS3I
     inpar
     )
 
-target_link_libraries(alg_fs3i PUBLIC ${LIBS_ALG_FS3I})
+baci_add_dependency(alg_fs3i ${LIBS_ALG_FS3I})

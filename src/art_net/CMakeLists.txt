@@ -15,7 +15,7 @@ set(LIBS_ALG_ARTNET
     adapter
     ele_scatra
     )
-target_link_libraries(alg_artnet PUBLIC ${LIBS_ALG_ARTNET})
+baci_add_dependency(alg_artnet ${LIBS_ALG_ARTNET})
 
 set(OBJS_ARTNET_LIB
     # cmake-format: sortable
@@ -43,4 +43,4 @@ set(LIBS_LIB_ARTNET
     mat
     )
 
-target_link_libraries(lib_artnet PUBLIC ${LIBS_LIB_ARTNET})
+baci_add_dependency(lib_artnet ${LIBS_LIB_ARTNET})

@@ -60,4 +60,4 @@ set(LIBS_LIB_CUT
     linalg
     )
 
-target_link_libraries(lib_cut PUBLIC ${LIBS_LIB_CUT})
+baci_add_dependency(lib_cut ${LIBS_LIB_CUT})

@@ -10,4 +10,4 @@ set(LIBS_PATSPEC
     mat
     )
 
-target_link_libraries(patspec PUBLIC ${LIBS_PATSPEC})
+baci_add_dependency(patspec ${LIBS_PATSPEC})

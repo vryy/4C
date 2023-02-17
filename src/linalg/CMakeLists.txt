@@ -37,4 +37,4 @@ set(LIBS_LINALG
     inpar
     )
 
-target_link_libraries(linalg PUBLIC ${LIBS_LINALG})
+baci_add_dependency(linalg ${LIBS_LINALG})

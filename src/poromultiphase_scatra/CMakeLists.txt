@@ -15,7 +15,7 @@ set(LIBS_ALG_PROMULTIPHASE_SCATRA
     alg_poromultiphase
     )
 
-target_link_libraries(alg_poromultiphase_scatra PUBLIC ${LIBS_ALG_PROMULTIPHASE_SCATRA})
+baci_add_dependency(alg_poromultiphase_scatra ${LIBS_ALG_PROMULTIPHASE_SCATRA})
 
 set(OBJS_POROMULTIPHASE_ART_COUPL
     # cmake-format: sortable
@@ -36,4 +36,4 @@ set(LIBS_LIB_POROMULTI_ART_COUPL
     linalg
     )
 
-target_link_libraries(lib_poromulti_art_coupl PUBLIC ${LIBS_LIB_POROMULTI_ART_COUPL})
+baci_add_dependency(lib_poromulti_art_coupl ${LIBS_LIB_POROMULTI_ART_COUPL})

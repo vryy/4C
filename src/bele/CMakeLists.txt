@@ -24,4 +24,4 @@ set(LIBS_ELE_BELE
     lib
     )
 
-target_link_libraries(ele_bele PUBLIC ${LIBS_ELE_BELE})
+baci_add_dependency(ele_bele ${LIBS_ELE_BELE})

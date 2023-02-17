@@ -16,4 +16,4 @@ set(LIBS_ALG_PARTICLE_RIGIDBODY
     particleengine
     )
 
-target_link_libraries(alg_particle_rigidbody PUBLIC ${LIBS_ALG_PARTICLE_RIGIDBODY})
+baci_add_dependency(alg_particle_rigidbody ${LIBS_ALG_PARTICLE_RIGIDBODY})

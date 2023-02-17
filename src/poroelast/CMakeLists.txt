@@ -27,4 +27,4 @@ set(LIBS_ALG_POROELAST
     inpar
     )
 
-target_link_libraries(alg_poroelast PUBLIC ${LIBS_ALG_POROELAST})
+baci_add_dependency(alg_poroelast ${LIBS_ALG_POROELAST})

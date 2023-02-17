@@ -27,7 +27,7 @@ set(LIBS_LIB_MORTAR
     nlnsolver_nox
     )
 
-target_link_libraries(mortar PUBLIC ${LIBS_LIB_MORTAR})
+baci_add_dependency(mortar ${LIBS_LIB_MORTAR})
 
 set(OBJS_LIB_MORTAR
     # cmake-format: sortable
@@ -45,4 +45,4 @@ set(LIBS_LIB_MORTAR
     nlnsolver_nox
     )
 
-target_link_libraries(lib_mortar PUBLIC ${LIBS_LIB_MORTAR})
+baci_add_dependency(lib_mortar ${LIBS_LIB_MORTAR})

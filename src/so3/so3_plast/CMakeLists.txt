@@ -16,4 +16,4 @@ set(LIBS_ELE_SO_PLAST
     lib
     )
 
-target_link_libraries(ele_so_plast PUBLIC ${LIBS_ELE_SO_PLAST})
+baci_add_dependency(ele_so_plast ${LIBS_ELE_SO_PLAST})

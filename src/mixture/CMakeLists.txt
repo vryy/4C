@@ -35,4 +35,4 @@ set(LIBS_MIXTURE
     mat
     )
 
-target_link_libraries(mixture PUBLIC ${LIBS_MIXTURE})
+baci_add_dependency(mixture ${LIBS_MIXTURE})

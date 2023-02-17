@@ -70,4 +70,4 @@ set(LIBS_ALG_FSI
     solver
     )
 
-target_link_libraries(alg_fsi PUBLIC ${LIBS_ALG_FSI})
+baci_add_dependency(alg_fsi ${LIBS_ALG_FSI})

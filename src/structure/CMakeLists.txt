@@ -35,4 +35,4 @@ set(LIBS_ALG_STRUCTURE
     timestepping
     )
 
-target_link_libraries(alg_structure PUBLIC ${LIBS_ALG_STRUCTURE})
+baci_add_dependency(alg_structure ${LIBS_ALG_STRUCTURE})

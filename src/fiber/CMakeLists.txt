@@ -13,4 +13,4 @@ set(LIBS_LIB_FIBER
     linalg
     )
 
-target_link_libraries(lib_fiber PUBLIC ${LIBS_LIB_FIBER})
+baci_add_dependency(lib_fiber ${LIBS_LIB_FIBER})

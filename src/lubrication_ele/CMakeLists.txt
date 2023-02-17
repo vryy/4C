@@ -14,4 +14,4 @@ set(LIBS_ELE_LUBRICATION
     lib
     )
 
-target_link_libraries(ele_lubrication PUBLIC ${LIBS_ELE_LUBRICATION})
+baci_add_dependency(ele_lubrication ${LIBS_ELE_LUBRICATION})

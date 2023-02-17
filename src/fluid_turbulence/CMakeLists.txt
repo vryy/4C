@@ -26,4 +26,4 @@ set(LIBS_ALG_FLUID_TURBULENCE
     lib
     )
 
-target_link_libraries(alg_fluid_turbulence PUBLIC ${LIBS_ALG_FLUID_TURBULENCE})
+baci_add_dependency(alg_fluid_turbulence ${LIBS_ALG_FLUID_TURBULENCE})

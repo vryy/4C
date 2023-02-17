@@ -7,4 +7,4 @@ set(OBJS_POST_VTK
     )
 
 baci_add_library(post_vtk_lib ${OBJS_POST_VTK})
-target_link_libraries(post_vtk_lib PUBLIC post_common)
+baci_add_dependency(post_vtk_lib post_common)

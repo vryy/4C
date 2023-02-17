@@ -23,7 +23,7 @@ set(LIBS_CONSTRAINT
     linalg
     )
 
-target_link_libraries(constraint PUBLIC ${LIBS_CONSTRAINT})
+baci_add_dependency(constraint ${LIBS_CONSTRAINT})
 
 set(OBJS_LIB_CONSTRAINT
     # cmake-format: sortable
@@ -40,4 +40,4 @@ set(LIBS_LIB_CONSTRAINT
     lib
     )
 
-target_link_libraries(lib_constraint PUBLIC ${LIBS_LIB_CONSTRAINT})
+baci_add_dependency(lib_constraint ${LIBS_LIB_CONSTRAINT})

@@ -19,4 +19,4 @@ set(LIBS_LIB_BINSTRATEGY
     rebalance
     )
 
-target_link_libraries(lib_binstrategy PUBLIC ${LIBS_LIB_BINSTRATEGY})
+baci_add_dependency(lib_binstrategy ${LIBS_LIB_BINSTRATEGY})

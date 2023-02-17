@@ -18,7 +18,7 @@ set(LIBS_ALG_TUTORIAL
     linalg
     )
 
-target_link_libraries(alg_tutorial PUBLIC ${LIBS_ALG_TUTORIAL})
+baci_add_dependency(alg_tutorial ${LIBS_ALG_TUTORIAL})
 
 add_subdirectory(tutorial_ele)
 add_subdirectory(tutorial_material)

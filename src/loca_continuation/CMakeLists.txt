@@ -13,4 +13,4 @@ set(LIBS_LOCACONTINUATION
     nlnsolver_nox
     )
 
-target_link_libraries(locacontinuation PUBLIC ${LIBS_LOCACONTINUATION})
+baci_add_dependency(locacontinuation ${LIBS_LOCACONTINUATION})

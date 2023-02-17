@@ -15,4 +15,4 @@ set(LIBS_ALG_XSTRUCTURE
     alg_structure
     )
 
-target_link_libraries(alg_xstructure PUBLIC ${LIBS_ALG_XSTRUCTURE})
+baci_add_dependency(alg_xstructure ${LIBS_ALG_XSTRUCTURE})

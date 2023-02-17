@@ -10,4 +10,4 @@ set(LIBS_LIB_STURFSTRESS
     lib
     )
 
-target_link_libraries(lib_surfstress PUBLIC ${LIBS_LIB_STURFSTRESS})
+baci_add_dependency(lib_surfstress ${LIBS_LIB_STURFSTRESS})

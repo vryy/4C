@@ -18,7 +18,7 @@ set(LIBS_ALG_ALE
     inpar
     )
 
-target_link_libraries(alg_ale PUBLIC ${LIBS_ALG_ALE})
+baci_add_dependency(alg_ale ${LIBS_ALG_ALE})
 
 set(OBJS_ELE_ALE
     # cmake-format: sortable
@@ -46,4 +46,4 @@ set(LIBS_ELE_ALE
     nurbs_discret
     )
 
-target_link_libraries(ele_ale PUBLIC ${LIBS_ELE_ALE})
+baci_add_dependency(ele_ale ${LIBS_ELE_ALE})

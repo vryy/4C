@@ -67,7 +67,7 @@ set(LIBS_ALG_CONTACT
     lib_mortar
     )
 
-target_link_libraries(alg_contact PUBLIC ${LIBS_ALG_CONTACT})
+baci_add_dependency(alg_contact ${LIBS_ALG_CONTACT})
 
 set(OBJS_CONTACT_LIB
     # cmake-format: sortable
@@ -88,4 +88,4 @@ set(LIBS_LIB_CONTACT
     rebalance
     )
 
-target_link_libraries(lib_contact PUBLIC ${LIBS_LIB_CONTACT})
+baci_add_dependency(lib_contact ${LIBS_LIB_CONTACT})

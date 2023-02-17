@@ -26,4 +26,4 @@ set(LIBS_IO
     pss_full
     )
 
-target_link_libraries(io PUBLIC ${LIBS_IO})
+baci_add_dependency(io ${LIBS_IO})

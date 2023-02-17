@@ -62,4 +62,4 @@ set(LIBS_ELE_FLUID
     lib_xfem
     )
 
-target_link_libraries(ele_fluid PUBLIC ${LIBS_ELE_FLUID})
+baci_add_dependency(ele_fluid ${LIBS_ELE_FLUID})

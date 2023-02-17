@@ -3,9 +3,7 @@ set(OBJS_COMM
     comm_utils.cpp
     )
 
-add_library(comm ${OBJS_COMM})
-baci_link_default_libraries(comm)
-target_include_directories(comm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+baci_add_library(comm ${OBJS_COMM})
 
 set(LIBS_COMM
     # cmake-format: sortable
@@ -14,4 +12,4 @@ set(LIBS_COMM
     rebalance
     )
 
-target_link_libraries(comm PUBLIC ${LIBS_COMM})
+baci_add_dependency(comm ${LIBS_COMM})

@@ -13,4 +13,4 @@ set(LIBS_LIB_ERROR
     lib_error_interface
     )
 
-target_link_libraries(lib_error PUBLIC ${LIBS_LIB_ERROR})
+baci_add_dependency(lib_error ${LIBS_LIB_ERROR})

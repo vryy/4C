@@ -10,27 +10,26 @@ cmake_minimum_required(VERSION 3.17)
 project(baci CXX C Fortran)
 
 # Print CMake version to screen
-message("II Using CMake ${CMAKE_VERSION}")
+message(STATUS "Using CMake ${CMAKE_VERSION}")
 
 # The version number.
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
-# add the binary tree to the search path for include files
-# so that we will find TutorialConfig.h
-include_directories("${PROJECT_BINARY_DIR}/src/headers")
-
 # specify where our own cmake modules are located
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(FetchContent)
 
-# include our own macros
-include(BACILinkDefaultLibraries)
-include(BACIAddLibrary)
+# include our own functions and macros
+file(GLOB _function_files "cmake/functions/*.cmake")
+foreach(_file ${_function_files})
+  message(STATUS "Include ${_file}")
+  include(${_file})
+endforeach()
 
 #
 ### Build in default values

@@ -31,4 +31,4 @@ set(LIBS_ELEW1
     lib_contact
     )
 
-target_link_libraries(ele_w1 PUBLIC ${LIBS_ELEW1})
+baci_add_dependency(ele_w1 ${LIBS_ELEW1})

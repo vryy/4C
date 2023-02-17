@@ -1,5 +1,5 @@
 # temporarily disable our own finders for module lookup
-list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # This is needed on kaiser to enforce the usage of the non-system boost libraries
 option(USE_NO_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
@@ -31,4 +31,4 @@ if(Boost_FOUND)
 endif()
 
 # re-enable our own finders
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)

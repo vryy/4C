@@ -18,4 +18,4 @@ set(LIBS_GEOMETRY
     linalg
     )
 
-target_link_libraries(geometry PUBLIC ${LIBS_GEOMETRY})
+baci_add_dependency(geometry ${LIBS_GEOMETRY})

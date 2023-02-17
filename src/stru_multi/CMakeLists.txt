@@ -14,4 +14,4 @@ set(LIBS_STRU_MULTI
     lib
     )
 
-target_link_libraries(stru_multi PUBLIC ${LIBS_STRU_MULTI})
+baci_add_dependency(stru_multi ${LIBS_STRU_MULTI})

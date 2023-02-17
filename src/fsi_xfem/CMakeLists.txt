@@ -17,4 +17,4 @@ set(LIBS_ALG_FSI_XFEM
     adapter
     )
 
-target_link_libraries(alg_fsi_xfem PUBLIC ${LIBS_ALG_FSI_XFEM})
+baci_add_dependency(alg_fsi_xfem ${LIBS_ALG_FSI_XFEM})

@@ -22,4 +22,4 @@ set(LIBS_CARDIOVASCULAR0D
     solver
     )
 
-target_link_libraries(cardiovascular0d PUBLIC ${LIBS_CARDIOVASCULAR0D})
+baci_add_dependency(cardiovascular0d ${LIBS_CARDIOVASCULAR0D})
