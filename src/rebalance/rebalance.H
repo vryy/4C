@@ -42,7 +42,7 @@ namespace REBALANCE
   @param[in] rebalanceParams Parameter list with rebalancing options
   @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] initialEdgeWeights Initial weights of the graph edges
-  @param[in] initialNodeCoordinates Initial coordinates of the graph
+  @param[in] initialNodeCoordinates Coordinates of the discretization
 
   @return Node row map and node column map after rebalancing with weights
   */
@@ -67,7 +67,7 @@ namespace REBALANCE
   @param[in] rebalanceParams Parameter list with rebalancing options
   @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] initialEdgeWeights Initial weights of the graph edges
-  @param[in] initialNodeCoordinates Initial coordinates of the graph
+  @param[in] initialNodeCoordinates Coordinates of the discretization
 
   @return Rebalanced graph
   */
