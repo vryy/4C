@@ -153,7 +153,24 @@ void DRT::INPUT::MeshReader::Rebalance()
       }
       case INPAR::REBALANCE::RebalanceType::recursive_coordinate_bisection:
       {
-        dserror("Recursive coordinate bisection is not yet implemented!");
+        rebalanceParams->set("partitioning method", "RCB");
+        if (!graph_[i].is_null())
+        {
+          // here we can reuse the graph, which was calculated before, this saves us some time and
+          // in addition calculate geometric information based on the coordinates of the
+          // discretization
+          rowmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->RowMap().NumMyElements(),
+              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
+          colmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
+              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
+          element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
+          Teuchos::RCP<Epetra_MultiVector> coordinates =
+              element_readers_[i].GetDis()->BuildNodeCoordinates();
+          std::tie(rowmap, colmap) = REBALANCE::RebalanceNodeMaps(
+              graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
+        }
+        else
+          rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
         break;
       }
       default:

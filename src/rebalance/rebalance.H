@@ -42,6 +42,7 @@ namespace REBALANCE
   @param[in] rebalanceParams Parameter list with rebalancing options
   @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] initialEdgeWeights Initial weights of the graph edges
+  @param[in] initialNodeCoordinates Coordinates of the discretization
 
   @return Node row map and node column map after rebalancing with weights
   */
@@ -49,7 +50,8 @@ namespace REBALANCE
       Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null);
+      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
+      const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
 
   /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
@@ -65,13 +67,15 @@ namespace REBALANCE
   @param[in] rebalanceParams Parameter list with rebalancing options
   @param[in] initialNodeWeights Initial weights of the graph nodes
   @param[in] initialEdgeWeights Initial weights of the graph edges
+  @param[in] initialNodeCoordinates Coordinates of the discretization
 
   @return Rebalanced graph
   */
   Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null);
+      const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
+      const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
 
   /*!
   \brief Rebalance coordinates using weights based on the initial coordinates
