@@ -452,17 +452,18 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Initial fields
 
-  std::vector<Teuchos::RCP<ConditionComponent>> initfieldscomponents;
-
-  initfieldscomponents.push_back(Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
-      Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
-          "Porosity", "PoroMultiFluid", "Artery"),
-      Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
-          "Porosity", "PoroMultiFluid", "Artery"))));
+  // define initial fields that can be set
+  std::vector<Teuchos::RCP<ConditionComponent>> initial_field_components;
+  initial_field_components.emplace_back(
+      Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
+          Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
+              "Porosity", "PoroMultiFluid", "Artery"),
+          Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
+              "Porosity", "PoroMultiFluid", "Artery"))));
 
   // give function id - always one single integer
   // (for initial vector fields, use the COMPONENT option of our functions)
-  initfieldscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
+  initial_field_components.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
 
   // general initial field conditions
   Teuchos::RCP<ConditionDefinition> pointinitfields =
@@ -478,37 +479,61 @@ DRT::INPUT::ValidConditions()
       Teuchos::rcp(new ConditionDefinition("DESIGN VOL INITIAL FIELD CONDITIONS", "Initfield",
           "Volume Initfield", DRT::Condition::VolumeInitfield, false, DRT::Condition::Volume));
 
-  // initial field conditions for temperature
-  Teuchos::RCP<ConditionDefinition> pointthermoinitfields = Teuchos::rcp(
-      new ConditionDefinition("DESIGN POINT THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
-          "Point Thermo Initfield", DRT::Condition::PointInitfield, false, DRT::Condition::Point));
-  Teuchos::RCP<ConditionDefinition> linethermoinitfields = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
-          "Line Thermo Initfield", DRT::Condition::LineInitfield, false, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfthermoinitfields = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURF THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield", "Surface Thermo Initfield",
-      DRT::Condition::SurfaceInitfield, false, DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volthermoinitfields = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN VOL THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield", "Volume Thermo Initfield",
-      DRT::Condition::VolumeInitfield, false, DRT::Condition::Volume));
-
-  for (unsigned i = 0; i < initfieldscomponents.size(); ++i)
+  for (const auto& initial_field_component : initial_field_components)
   {
-    pointinitfields->AddComponent(initfieldscomponents[i]);
-    lineinitfields->AddComponent(initfieldscomponents[i]);
-    surfinitfields->AddComponent(initfieldscomponents[i]);
-    volinitfields->AddComponent(initfieldscomponents[i]);
-
-    pointthermoinitfields->AddComponent(initfieldscomponents[i]);
-    linethermoinitfields->AddComponent(initfieldscomponents[i]);
-    surfthermoinitfields->AddComponent(initfieldscomponents[i]);
-    volthermoinitfields->AddComponent(initfieldscomponents[i]);
+    pointinitfields->AddComponent(initial_field_component);
+    lineinitfields->AddComponent(initial_field_component);
+    surfinitfields->AddComponent(initial_field_component);
+    volinitfields->AddComponent(initial_field_component);
   }
 
   condlist.push_back(pointinitfields);
   condlist.push_back(lineinitfields);
   condlist.push_back(surfinitfields);
   condlist.push_back(volinitfields);
+
+  /*--------------------------------------------------------------------*/
+  // define initial field that can be set on thermo simulations that use the ScaTra discretization
+  // e.g. STI, SSTI
+  std::vector<Teuchos::RCP<ConditionComponent>> initial_field_components_thermo_on_scatra_dis;
+  initial_field_components_thermo_on_scatra_dis.emplace_back(
+      Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
+          Teuchos::tuple<std::string>("Undefined", "ScaTra"),
+          Teuchos::tuple<std::string>("Undefined", "ScaTra"))));
+
+  // give function id - always one single integer
+  initial_field_components_thermo_on_scatra_dis.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
+
+  // initial field conditions for temperature on ScaTra discretizations
+  Teuchos::RCP<ConditionDefinition> pointthermoinitfields = Teuchos::rcp(
+      new ConditionDefinition("DESIGN POINT THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
+          "Set the initial temperature field if the thermo field is solved using a ScaTra "
+          "discretization (e.g. STI, SSTI) on points",
+          DRT::Condition::PointInitfield, false, DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linethermoinitfields = Teuchos::rcp(
+      new ConditionDefinition("DESIGN LINE THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
+          "Set the initial temperature field if the thermo field is solved using a ScaTra "
+          "discretization (e.g. STI, SSTI) on lines",
+          DRT::Condition::LineInitfield, false, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfthermoinitfields = Teuchos::rcp(
+      new ConditionDefinition("DESIGN SURF THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
+          "Set the initial temperature field if the thermo field is solved using a ScaTra "
+          "discretization (e.g. STI, SSTI) on surfaces",
+          DRT::Condition::SurfaceInitfield, false, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volthermoinitfields = Teuchos::rcp(
+      new ConditionDefinition("DESIGN VOL THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
+          "Set the initial temperature field if the thermo field is solved using a ScaTra "
+          "discretization (e.g. STI, SSTI) on volumes",
+          DRT::Condition::VolumeInitfield, false, DRT::Condition::Volume));
+
+  for (const auto& component : initial_field_components_thermo_on_scatra_dis)
+  {
+    pointthermoinitfields->AddComponent(component);
+    linethermoinitfields->AddComponent(component);
+    surfthermoinitfields->AddComponent(component);
+    volthermoinitfields->AddComponent(component);
+  }
 
   condlist.push_back(pointthermoinitfields);
   condlist.push_back(linethermoinitfields);
