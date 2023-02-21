@@ -24,7 +24,7 @@
 #include "lib_elementdefinition.H"
 #include "lib_resulttest.H"
 #include "lib_dserror.H"
-#include "lib_parobjectregister.H"
+#include "module_registry_parobjectregister.H"
 #include "lib_utils_createdis.H"
 
 #include "config_revision.H"
@@ -276,15 +276,9 @@ int main(int argc, char *argv[])
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  if ((argc == 2) && (strcmp(argv[1], "-v") == 0))
-  {
-    if (lcomm->MyPID() == 0)
-    {
-      PrintParObjectList();
-      printf("\n\n");
-    }
-  }
-  else if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
+  DRT::ForceRegistrationOfParObjectTypes();
+
+  if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
     if (lcomm->MyPID() == 0)
     {

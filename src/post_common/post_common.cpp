@@ -17,7 +17,7 @@
 #include "lib_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include <Epetra_MpiComm.h>
-#include "lib_parobjectregister.H"
+#include "module_registry_parobjectregister.H"
 #include "lib_parobject.H"
 #include "lib_condition_utils.H"
 #include "lib_periodicbc.H"
@@ -45,6 +45,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 {
   MPI_Init(&argc, &argv);
 
+  DRT::ForceRegistrationOfParObjectTypes();
+
   std::string file = "xxx";
   std::string output;
   filter_ = "ensight";
@@ -52,8 +54,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   struct_mat_disp_ = "no";
   struct_rot_ = "no";
   std::string mortar_string = "no";
-
-  int printparobjecttypes = 0;
 
   CLP.throwExceptions(false);
   CLP.setOption("filter", &filter_, "filter to run [ensight, gid, vtu, vtu_node_based, vti]");
@@ -87,8 +87,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
       "structvelacc", &struct_vel_acc_, "structural velocity and acceleration output [yes]");
   CLP.setOption("rotation", &struct_rot_, "structural rotation matrix R [yes]");
   CLP.setOption("structmatdisp", &struct_mat_disp_, "material displacement output output [yes]");
-  CLP.setOption("printparobjecttypes", &printparobjecttypes,
-      "print names of parobject types (registration hack)");
   CLP.setOption("outputtype", &outputtype_,
       "binary (bin) or ascii (ascii) output, option works for vtu filter only");
   Teuchos::CommandLineProcessor::EParseCommandLineReturn parseReturn = CLP.parse(argc, argv);
@@ -96,13 +94,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     exit(1);
-  }
-
-  if (printparobjecttypes)
-  {
-    // hack so that the parobject types are registered
-    PrintParObjectList();
-    exit(0);
   }
 
   if (file == "")

@@ -12,7 +12,7 @@
 #include <string>
 #include <iostream>
 
-#include "lib_parobjectregister.H"
+#include "module_registry_parobjectregister.H"
 
 #include "nurbs_discret_control_point.H"
 #include "beam3.H"
@@ -172,7 +172,7 @@
 #include "mat_growth.H"
 #include "particle_engine_object.H"
 
-std::string DRT::ParObjectList()
+void DRT::ForceRegistrationOfParObjectTypes()
 {
   std::stringstream s;
 
@@ -369,13 +369,4 @@ std::string DRT::ParObjectList()
     << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
     << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
-
-  std::cout << s.str() << std::endl;
-  return s.str();
-}
-
-
-void PrintParObjectList()
-{
-  std::cout << "Here are all defined DRT::ParObject types: " << DRT::ParObjectList() << "\n";
 }

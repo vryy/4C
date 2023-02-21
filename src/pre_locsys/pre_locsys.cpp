@@ -6,20 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include <string>
 #include <fstream>
 
-#include <Teuchos_CommandLineProcessor.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include <cstdlib>
-
-#include <Epetra_MpiComm.h>
-
-#include "lib_globalproblem.H"
-#include "lib_inputreader.H"
-#include "lib_utils.H"
-#include "lib_parobjectregister.H"
 #include "linalg_fixedsizematrix.H"
 #include "fem_general_largerotations.H"
 
