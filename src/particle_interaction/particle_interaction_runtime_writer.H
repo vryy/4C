@@ -25,12 +25,12 @@
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 class RuntimeVtpWriter;
-class RuntimeCsvWriter;
 
 namespace IO
 {
   class DiscretizationReader;
-}
+  class RuntimeCsvWriter;
+}  // namespace IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -82,7 +82,7 @@ namespace PARTICLEINTERACTION
     }
 
     //! get specific runtime csv writer
-    inline RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
+    inline IO::RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
     {
 #ifdef DEBUG
       if (not runtime_csvwriters_.count(fieldname))
@@ -112,7 +112,7 @@ namespace PARTICLEINTERACTION
     std::unordered_map<std::string, std::shared_ptr<RuntimeVtpWriter>> runtime_vtpwriters_;
 
     //! holds all csv writer objects
-    std::unordered_map<std::string, std::shared_ptr<RuntimeCsvWriter>> runtime_csvwriters_;
+    std::unordered_map<std::string, std::shared_ptr<IO::RuntimeCsvWriter>> runtime_csvwriters_;
   };
 
 }  // namespace PARTICLEINTERACTION

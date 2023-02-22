@@ -2669,6 +2669,8 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
 
   // write evaluated data to file
   PassToCSVWriter();
+
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
   runtime_csvwriter_->ResetTimeAndTimeStep(scatratimint->Time(), scatratimint->Step());
   runtime_csvwriter_->WriteFile();
 }
@@ -2679,7 +2681,6 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
 void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatratimint)
 {
   myrank_ = scatratimint->myrank_;
-  runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(myrank_);
 
   output_mean_grad_ = DRT::INPUT::IntegralValue<bool>(
       *scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
@@ -2693,10 +2694,8 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   else
     filename = "scalarvalues";
 
-  runtime_csvwriter_->Init(filename);
+  runtime_csvwriter_.emplace(myrank_, filename);
   InitStrategySpecific(scatratimint);
-
-  runtime_csvwriter_->Setup();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2721,6 +2720,8 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
   meanscalars_[dummy_domain_id_].resize(numdofpernode_, 0.0);
   meangradients_[dummy_domain_id_].resize(numscal_, 0.0);
   domainintegral_[dummy_domain_id_] = 0.0;
+
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
   // register output in csv writer
   runtime_csvwriter_->RegisterDataVector("Integral of entire domain", 1, 16);
@@ -2774,6 +2775,8 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
  *----------------------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
 {
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
   runtime_csvwriter_->AppendDataVector(
       "Integral of entire domain", {domainintegral_[dummy_domain_id_]});
   for (int k = 0; k < numdofpernode_; ++k)
@@ -2879,6 +2882,8 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     // micro dis has only one dof
     if (output_micro_dis_) micrototalscalars_[condid].resize(1, 0.0);
 
+    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
     // register all data vectors
     runtime_csvwriter_->RegisterDataVector("Integral of domain " + std::to_string(condid), 1, 16);
     for (int k = 0; k < numdofpernodepercondition_[condid]; ++k)
@@ -2975,6 +2980,8 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
   {
     // extract condition ID
     const int condid = condition->GetInt("ConditionID");
+
+    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
     runtime_csvwriter_->AppendDataVector(
         "Integral of domain " + std::to_string(condid), {domainintegral_[condid]});

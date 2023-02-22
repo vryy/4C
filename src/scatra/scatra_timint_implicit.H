@@ -36,6 +36,8 @@
 
 #include <memory>
 
+#include "io_runtime_csv_writer.H"
+
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -52,8 +54,6 @@
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-class RuntimeCsvWriter;
-
 namespace DRT
 {
   class Discretization;
@@ -68,6 +68,7 @@ namespace IO
   class DiscretizationReader;
   class DiscretizationWriter;
   class InputControl;
+  class RuntimeCsvWriter;
 }  // namespace IO
 
 namespace LINALG
@@ -1648,7 +1649,7 @@ namespace SCATRA
     bool output_micro_dis_;
 
     //! writes evaluated data to output
-    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! total values of transported scalars
     std::map<const int, std::vector<double>> totalscalars_;

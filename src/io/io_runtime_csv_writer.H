@@ -11,79 +11,49 @@
 /* headers */
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
+#include <memory>
 
-/*!
- * \brief Write output in csv format at runtime in serial
- *
- * This object allows to write output of data in csv file format at runtime in serial, i.e., on
- * processor 0 only.
- *
- * \note In the case of a restart, the content prior to the restart step is copied from the output
- * file the restart is read from.
- *
- * \author Sebastian Fuchs \date 08/2020
- */
-class RuntimeCsvWriter
+namespace IO
 {
- public:
-  //! constructor
-  explicit RuntimeCsvWriter(unsigned int myrank);
+  class RuntimeCsvWriterImpl;
 
-  //! destructor
-  ~RuntimeCsvWriter() = default;
-
-  //! init csv writer
-  void Init(const std::string& outputname);
-
-  //! register data vector
-  void RegisterDataVector(
-      const std::string& dataname, const unsigned int numcomponents, const unsigned int precision);
-
-  //! setup csv writer
-  void Setup();
-
-  //! reset current time and time step number
-  void ResetTimeAndTimeStep(double time, unsigned int timestep)
+  /*!
+   * \brief Write output in csv format at runtime in serial
+   *
+   * Output is only written on proc 0
+   *
+   * \note In the case of a restart, the content prior to the restart step is copied from the output
+   * file the restart is read from.
+   *
+   */
+  class RuntimeCsvWriter
   {
-    time_ = time;
-    timestep_ = timestep;
-  }
+   public:
+    RuntimeCsvWriter(int myrank, std::string outputname);
 
-  //! append data vector
-  void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
+    ~RuntimeCsvWriter();
 
-  //! write csv file to filesystem
-  void WriteFile() const;
+    //! Register name of column @p dataname for a future call to AppendDataVector(). The column can
+    //! be split into @p numcomponents columns which are indicated by a post fixed identifier
+    //! (":<number of component>"). The numerical precision is @p precision.
+    void RegisterDataVector(const std::string& dataname, unsigned int numcomponents, int precision);
 
- private:
-  //! write file header
-  void WriteFileHeader() const;
+    //! set current time and time step number
+    void ResetTimeAndTimeStep(double time, unsigned int timestep);
 
-  //! global processor id of this processor
-  const unsigned int myrank_;
+    //! append data @p datavalues to column @p dataname. In case of sub columns @p datavalues must
+    //! have as many entries as the number of subcolumns
+    void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
 
-  //! current time
-  double time_;
+    //! write one line to csv file. Data must have been passed via AppendDataVector()
+    void WriteFile();
 
-  //! current time step
-  unsigned int timestep_;
-
-  //! output name
-  std::string outputname_;
-
-  //! full path to output file
-  std::string fullpathoutputfile_;
-
-  //! key: result name, entry: (data vector, precision)
-  std::map<std::string, std::pair<std::vector<double>, unsigned int>> data_vectors_;
-
-  //! flag to check if csv writer is initialized
-  bool isinit_ = false;
-
-  //! flag to check if csv writer is setup
-  bool issetup_ = false;
-};
+   private:
+    std::unique_ptr<RuntimeCsvWriterImpl> implementation_;
+  };
+}  // namespace IO
 
 #endif

@@ -113,7 +113,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       matrix_scatra_structure_(Teuchos::null),
       rhs_manifold_(Teuchos::null),
       rhs_scatra_(Teuchos::null),
-      runtime_csvwriter_(nullptr),
       scatra_(ssi_mono.ScaTraBaseAlgorithm()),
       scatra_manifold_(ssi_mono.ScaTraManifoldBaseAlgorithm()),
       scatra_manifold_couplings_(Teuchos::null),
@@ -203,9 +202,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   // Prepare runtime csv writer
   if (DoOutput())
   {
-    runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(ssi_mono.Comm().MyPID());
-
-    runtime_csvwriter_->Init("manifold_inflow");
+    runtime_csvwriter_.emplace(ssi_mono.Comm().MyPID(), "manifold_inflow");
 
     for (const auto& condition_manifold : conditions_manifold)
     {
@@ -223,8 +220,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
             "Mean flux of scalar " + std::to_string(k + 1) + " into " + manifold_string, 1, 16);
       }
     }
-
-    runtime_csvwriter_->Setup();
   }
 }
 
@@ -752,6 +747,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 {
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
   for (const auto& inflow_comp : inflow_)
   {
     const std::string manifold_string = "manifold " + std::to_string(inflow_comp.first);
