@@ -21,7 +21,8 @@ namespace POROELAST
   {
    public:
     //! create using a Epetra_Comm
-    explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
 
     //! proceed one time step (prepare, solve, update)
     void DoTimeStep() override;

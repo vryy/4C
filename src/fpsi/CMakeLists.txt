@@ -13,6 +13,8 @@ baci_add_library(alg_fpsi ${OBJS_FPSI})
 set(LIBS_ALG_FPSI
     # cmake-format: sortable
     adapter
+    alg_poroelast
+    inpar
     )
 
 baci_add_dependency(alg_fpsi ${LIBS_ALG_FPSI})

@@ -18,8 +18,9 @@
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PoroScatraPart::PoroScatraPart(
+POROELASTSCATRA::PoroScatraPart::PoroScatraPart(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraBase(comm, timeparams)
 {
+  PoroField()->SetupSolver();
 }

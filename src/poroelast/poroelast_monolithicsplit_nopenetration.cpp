@@ -37,9 +37,9 @@
 #include "linalg_matrixtransform.H"
 
 
-POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : MonolithicSplit(comm, timeparams), normrhs_nopenetration_(-1.0)
+POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)
 {
   // Initialize Transformation Objects
   k_D_transform_ = Teuchos::rcp(new LINALG::MatrixColTransform);

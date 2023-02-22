@@ -24,9 +24,9 @@
 
 #include "linalg_blocksparsematrix.H"
 
-POROELAST::MonolithicSplit::MonolithicSplit(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : Monolithic(comm, timeparams)
+POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : Monolithic(comm, timeparams, porosity_splitter)
 {
   icoupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
 

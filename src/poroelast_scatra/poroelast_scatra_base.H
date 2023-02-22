@@ -34,7 +34,7 @@ namespace ADAPTER
 /*----------------------------------------------------------------------*
  |                                                                       |
  *----------------------------------------------------------------------*/
-namespace POROELAST
+namespace POROELASTSCATRA
 {
   /// base class of algorithms for scalar transport in porous media
   class PoroScatraBase : public ADAPTER::AlgorithmBase
@@ -144,7 +144,7 @@ namespace POROELAST
     //! apply velocity fields to scatra
     void SetVelocityFields();
   };
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 
 #endif /* PORO_SCATRA_BASE_H_ */

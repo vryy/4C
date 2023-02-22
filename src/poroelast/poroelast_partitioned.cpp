@@ -17,9 +17,9 @@
 
 #include "linalg_utils_sparse_algebra_create.H"
 
-POROELAST::Partitioned::Partitioned(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : PoroBase(comm, timeparams),
+POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : PoroBase(comm, timeparams, porosity_splitter),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
 {
@@ -102,7 +102,6 @@ void POROELAST::Partitioned::Solve()
 
     // solve scalar transport equation
     DoFluidStep();
-    // ScatraEvaluateSolveIterUpdate();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall

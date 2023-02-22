@@ -33,6 +33,7 @@ baci_add_library(lib_poromulti_art_coupl ${OBJS_POROMULTIPHASE_ART_COUPL})
 set(LIBS_LIB_POROMULTI_ART_COUPL
     # cmake-format: sortable
     alg_artnet
+    alg_poroelast_scatra
     linalg
     )
 

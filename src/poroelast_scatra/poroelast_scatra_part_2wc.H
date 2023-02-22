@@ -14,7 +14,7 @@
 #include "poroelast_scatra_part.H"
 #include <Epetra_Vector.h>
 
-namespace POROELAST
+namespace POROELASTSCATRA
 {
   class PoroScatraPart2WC : public PoroScatraPart
   {
@@ -69,7 +69,7 @@ namespace POROELAST
     double ittol_;
   };
 
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 
 #endif /* PORO_SCATRA_PART_2WC_H_ */

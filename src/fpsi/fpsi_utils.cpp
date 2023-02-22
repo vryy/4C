@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                  rauch 11/12 |
  *----------------------------------------------------------------------*/
-//
+
 // FPSI includes
 #include "fpsi_utils.H"
 #include "fpsi_monolithic_plain.H"
@@ -21,6 +21,7 @@
 #include "poroelast_utils_setup.H"
 #include "poroelast_utils_clonestrategy.H"
 
+#include "poroelast_scatra_utils_setup.H"
 // FSI includes
 #include "fsi_utils.H"
 #include "ale_utils_clonestrategy.H"
@@ -32,7 +33,8 @@
 #include "lib_utils_createdis.H"
 #include "lib_globalproblem.H"
 #include "lib_condition_selector.H"
-
+#include "Teuchos_RCP.hpp"
+#include "poroelast_scatra_utils_clonestrategy.H"
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 
@@ -115,7 +117,17 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
 
    */
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+
+  // choose cloning strategy depending on poroelast or scatra poroelast problem type
+  if (problem->GetProblemType() == ProblemType::fps3i)
+  {
+    POROELAST::UTILS::SetupPoro<POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements>();
+  }
+  else
+  {
+    POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+  }
+
 
   fluiddis->FillComplete(true, true, true);
   aledis->FillComplete(true, true, true);

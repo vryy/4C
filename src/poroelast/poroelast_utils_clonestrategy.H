@@ -11,8 +11,9 @@
 #ifndef PORO_CLONESTRATEGY_H_
 #define PORO_CLONESTRATEGY_H_
 
-#include <Teuchos_RCP.hpp>
-#include "inpar_scatra.H"
+
+
+#include <Teuchos_RCPDecl.hpp>
 
 namespace DRT
 {
@@ -36,10 +37,12 @@ namespace POROELAST
       //! returns conditions names to be copied (source and target name)
       std::map<std::string, std::string> ConditionsToCopy() const;
 
-     protected:
+
       //! determine element type string and whether element is copied or not
       bool DetermineEleType(
           DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+
+     protected:
       //! set element-specific data (material etc.)
       virtual void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
           const int matid, const bool isnurbs);
@@ -56,40 +59,6 @@ namespace POROELAST
           Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
     };
 
-    //! \brief implementation of special clone strategy for automatic generation
-    //!        of scatra discretization from a given structure discretization for porous media
-    class PoroScatraCloneStrategy
-    {
-     public:
-      //! constructor
-      explicit PoroScatraCloneStrategy() = default;
-
-      //! return SCATRA::ImplType of the element
-      INPAR::SCATRA::ImplType GetImplType(
-          DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
-      );
-
-     protected:
-      //! check material of cloned element
-      //!
-      //! \param matid     material of cloned element
-      void CheckMaterialType(const int matid);
-
-      //! determine element type string and whether element is copied or not
-      bool DetermineEleType(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
-
-      //! provide cloned element with element specific data (material etc.)
-      void SetElementData(
-          Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-          DRT::Element* oldele,               //! current element on source discretization
-          const int matid,                    //! material of cloned element
-          const bool isnurbs                  //! nurbs flag
-      );
-
-      //! returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy() const;
-    };
   }  // namespace UTILS
 }  // namespace POROELAST
 

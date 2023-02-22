@@ -24,9 +24,9 @@
 #include "linalg_matrixtransform.H"
 
 
-POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : MonolithicSplit(comm, timeparams)
+POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
   sggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
   sgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);

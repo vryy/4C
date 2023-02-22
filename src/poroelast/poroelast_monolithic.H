@@ -39,7 +39,8 @@ namespace POROELAST
   {
    public:
     //! create using a Epetra_Comm
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 

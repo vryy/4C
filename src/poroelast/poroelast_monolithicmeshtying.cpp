@@ -24,9 +24,9 @@
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-POROELAST::MonolithicMeshtying::MonolithicMeshtying(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : Monolithic(comm, timeparams), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
+POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
   mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar);

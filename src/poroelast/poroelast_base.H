@@ -51,7 +51,8 @@ namespace POROELAST
   {
    public:
     //! create using a Epetra_Comm
-    explicit PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
 
     //! read restart data
     void ReadRestart(const int step) override;
@@ -227,6 +228,9 @@ namespace POROELAST
     //! Extractor used for constraint structure
     Teuchos::RCP<LINALG::MapExtractor> cond_splitter_;
 
+    //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
+    bool is_part_of_multifield_problem_;
+
     //! Extractor used for poro structure interaction
     Teuchos::RCP<LINALG::MapExtractor> psi_extractor_;
 
@@ -244,8 +248,7 @@ namespace POROELAST
 
     Teuchos::RCP<LINALG::MapExtractor> porosity_splitter_;
 
-    //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
-    bool is_part_of_multifield_problem_;
+
 
     //! @name Volume Mortar stuff
 

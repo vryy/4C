@@ -40,7 +40,7 @@ namespace LINALG
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 
-namespace POROELAST
+namespace POROELASTSCATRA
 {
   /// base class of all monolithic porous media - scalar transport - interaction algorithms
   class PoroScatraMono : public PoroScatraBase
@@ -300,6 +300,6 @@ namespace POROELAST
 
   };  // class PoroScatraMono
 
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 #endif /* PORO_SCATRA_MONOLITHIC_H_ */

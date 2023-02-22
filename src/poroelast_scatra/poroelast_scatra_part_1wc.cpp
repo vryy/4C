@@ -11,8 +11,6 @@
 
 #include "poroelast_scatra_part_1wc.H"
 
-#include "poroelast_base.H"
-
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
@@ -25,7 +23,7 @@
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::DoPoroStep()
+void POROELASTSCATRA::PoroScatraPart1WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -41,7 +39,7 @@ void POROELAST::PoroScatraPart1WC::DoPoroStep()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::DoScatraStep()
+void POROELASTSCATRA::PoroScatraPart1WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -56,7 +54,7 @@ void POROELAST::PoroScatraPart1WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::PrepareOutput()
+void POROELASTSCATRA::PoroScatraPart1WC::PrepareOutput()
 {
   constexpr bool force_prepare = false;
   PoroField()->PrepareOutput(force_prepare);
@@ -65,7 +63,7 @@ void POROELAST::PoroScatraPart1WC::PrepareOutput()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::Update()
+void POROELASTSCATRA::PoroScatraPart1WC::Update()
 {
   // -------------------------------------------------------------------
   //                         update solution
@@ -83,7 +81,7 @@ void POROELAST::PoroScatraPart1WC::Update()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::Output()
+void POROELASTSCATRA::PoroScatraPart1WC::Output()
 {
   // -------------------------------------------------------------------
   //                         output of solution
@@ -95,7 +93,7 @@ void POROELAST::PoroScatraPart1WC::Output()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
+POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
@@ -106,7 +104,7 @@ POROELAST::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
+void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Timeloop()
 {
   // InitialCalculations();
 
@@ -127,7 +125,7 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
+void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
   if (printheader) PrintHeader();
@@ -140,7 +138,7 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCPoroToScatra::Solve()
+void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Solve()
 {
   DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
   SetPoroSolution();
@@ -150,7 +148,7 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::Solve()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCPoroToScatra::ReadRestart(int restart)
+void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::ReadRestart(int restart)
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -174,7 +172,7 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::ReadRestart(int restart)
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
+POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
@@ -193,7 +191,7 @@ POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
+void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Timeloop()
 {
   // InitialCalculations();
 
@@ -214,7 +212,7 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
+void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
   if (printheader) PrintHeader();
@@ -228,7 +226,7 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCScatraToPoro::Solve()
+void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Solve()
 {
   DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
   SetScatraSolution();
@@ -238,7 +236,7 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::Solve()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCScatraToPoro::ReadRestart(int restart)
+void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::ReadRestart(int restart)
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
