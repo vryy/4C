@@ -68,7 +68,8 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
 
   // create instance of poroelast subproblem
-  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams));
+  poroelast_subproblem_ =
+      Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams, Teuchos::null));
   // ask base algorithm for the fluid time integrator
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();

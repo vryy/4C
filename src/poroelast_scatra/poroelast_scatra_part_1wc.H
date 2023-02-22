@@ -13,7 +13,7 @@
 
 #include "poroelast_scatra_part.H"
 
-namespace POROELAST
+namespace POROELASTSCATRA
 {
   class PoroScatraPart1WC : public PoroScatraPart
   {
@@ -81,7 +81,7 @@ namespace POROELAST
     //! read and set fields needed for restart
     void ReadRestart(int restart);
   };
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 
 #endif /* PORO_SCATRA_PART_1WC_H_ */

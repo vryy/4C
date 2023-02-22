@@ -47,9 +47,11 @@
 #include "structure_aux.H"
 
 
-POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
+      porosity_splitter_(porosity_splitter),
       matchinggrid_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->PoroelastDynamicParams(), "MATCHINGGRID")),
       oldstructimint_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
@@ -444,7 +446,10 @@ void POROELAST::PoroBase::SetupCoupling()
   else
   {
     porosity_dof_ = true;
-    porosity_splitter_ = POROELAST::UTILS::BuildPoroSplitter(StructureField()->Discretization());
+    if (porosity_splitter_.is_null())
+    {
+      porosity_splitter_ = POROELAST::UTILS::BuildPoroSplitter(StructureField()->Discretization());
+    }
   }
 
   coupling_fluid_structure_ = Teuchos::rcp(new ADAPTER::Coupling());

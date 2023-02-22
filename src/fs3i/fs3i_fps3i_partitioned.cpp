@@ -35,8 +35,8 @@
 #include "lib_condition_utils.H"
 
 #include "poroelast_monolithic.H"
-#include "poroelast_utils.H"
-#include "poroelast_utils_clonestrategy.H"
+#include "poroelast_scatra_utils.H"
+#include "poroelast_scatra_utils_clonestrategy.H"
 #include "adapter_fld_poro.H"
 
 #include "fluid_ele_action.H"
@@ -196,7 +196,7 @@ void FS3I::PartFPS3I::Init()
   if (structscatradis->NumGlobalNodes() == 0)
   {
     // fill poro-based scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(
+    DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
         structdis, structscatradis);
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work

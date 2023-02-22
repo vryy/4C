@@ -27,9 +27,9 @@
 #define FLUIDSPLITAMG
 
 
-POROELAST::MonolithicFluidSplit::MonolithicFluidSplit(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : MonolithicSplit(comm, timeparams)
+POROELAST::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
   fggtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);

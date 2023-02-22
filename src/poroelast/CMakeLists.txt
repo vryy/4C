@@ -9,11 +9,6 @@ set(OBJS_POROELAST
     poroelast_monolithicsplit_nopenetration.cpp
     poroelast_monolithicstructuresplit.cpp
     poroelast_partitioned.cpp
-    poroelast_scatra_base.cpp
-    poroelast_scatra_monolithic.cpp
-    poroelast_scatra_part.cpp
-    poroelast_scatra_part_1wc.cpp
-    poroelast_scatra_part_2wc.cpp
     poroelast_utils.cpp
     poroelast_utils_clonestrategy.cpp
     )

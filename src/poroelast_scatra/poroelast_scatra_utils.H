@@ -1,23 +1,23 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
- \brief utility functions for poroelasticity problems
+\brief utility functions for poroelast coupled with scatra problems
 
 \level 2
 
  *----------------------------------------------------------------------*/
 
-#ifndef POROELAST_UTILS_H_
-#define POROELAST_UTILS_H_
+#ifndef POROELASTSCATRA_UTILS_H_
+#define POROELASTSCATRA_UTILS_H_
 
 #include "Epetra_Vector.h"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "inpar_poroelast.H"
+
 #include "volmortar_utils.H"
 #include "lib_element.H"
-
-
+#include "poroelast_utils.H"
 namespace DRT
 {
   class Element;
@@ -37,23 +37,25 @@ namespace MAT
 namespace POROELAST
 {
   class PoroBase;
+}
 
-  //! coupling types of porous media problem
-  enum coupltype
-  {
-    fluidfluid,
-    fluidstructure,
-    undefined
-  };
+namespace POROELASTSCATRA
+{
+  class PoroScatraBase;
 
-  //! POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
+  //! POROELAST_SCATRA::UTILS: Random stuff that might be helpful when dealing with
+  //! poroelasticity-scatra problems
   namespace UTILS
   {
-    //! check if element is a poro-element
-    bool IsPoroElement(const DRT::Element* actele);
+    Teuchos::RCP<LINALG::MapExtractor> BuildPoroScatraSplitter(
+        Teuchos::RCP<DRT::Discretization> dis);
 
-    //! check if element is a poro-p1-element
-    bool IsPoroP1Element(const DRT::Element* actele);
+    //! check if element is a poro-scatra-element
+    bool IsPoroScatraElement(const DRT::Element* actele);
+
+    //! check if element is a poro-scatra-p1-element
+    bool IsPoroP1ScatraElement(const DRT::Element* actele);
+
 
     Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
 
@@ -61,10 +63,14 @@ namespace POROELAST
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
-        bool setup_solve = true,  //!< setup linear solver for Poroelastic problem (only required if
-                                  //!< Solve() is called) (i)
-        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter =
-            Teuchos::null  //! select porosity splitter
+        bool setup_solve = true  //!< setup linear solver for Poroelastic problem (only required if
+                                 //!< Solve() is called) (i)
+    );
+
+    //! create solution algorithm depending on input file
+    Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> CreatePoroScatraAlgorithm(
+        const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
+        const Epetra_Comm& comm                    //!< communicator(i)
     );
 
     //! reset Material pointers after redistribution
@@ -136,6 +142,6 @@ namespace POROELAST
 
   void PrintLogo();
 
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 #endif  // POROELAST_UTILS_H_

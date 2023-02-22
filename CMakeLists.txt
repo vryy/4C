@@ -176,6 +176,7 @@ set(MULTIFIELD_LIBRARIES
     alg_loma
     alg_pasi
     alg_poroelast
+    alg_poroelast_scatra
     alg_poromultiphase
     alg_poromultiphase_scatra
     alg_ssi

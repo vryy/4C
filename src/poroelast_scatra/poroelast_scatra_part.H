@@ -34,7 +34,7 @@ namespace POROELAST
 /*----------------------------------------------------------------------*
  |                                                                       |
  *----------------------------------------------------------------------*/
-namespace POROELAST
+namespace POROELASTSCATRA
 {
   /// partitioned algorithm for scalar transport in porous media
   class PoroScatraPart : public PoroScatraBase
@@ -54,6 +54,6 @@ namespace POROELAST
     //! algorithm)
     virtual void DoScatraStep() = 0;
   };
-}  // namespace POROELAST
+}  // namespace POROELASTSCATRA
 
 #endif

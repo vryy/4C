@@ -21,25 +21,15 @@
 #include "poroelast_monolithicmeshtying.H"
 #include "poroelast_utils_clonestrategy.H"
 
-#include "poroelast_scatra_base.H"
-
-#include "poroelast_scatra_part_1wc.H"
-#include "poroelast_scatra_part_2wc.H"
-#include "poroelast_scatra_monolithic.H"
-
 
 #include "lib_condition_utils.H"
 #include "lib_discret_faces.H"
 
 #include "so3_poro_eletypes.H"
-#include "so3_poro_scatra_eletypes.H"
 #include "so3_poro_p1_eletypes.H"
-#include "so3_poro_p1_scatra_eletypes.H"
 
 #include "w1_poro_eletypes.H"
-#include "w1_poro_scatra_eletypes.H"
 #include "w1_poro_p1_eletypes.H"
-#include "w1_poro_p1_scatra_eletypes.H"
 
 #include "fluid_ele_poro.H"
 #include "mat_fluidporo.H"
@@ -48,49 +38,35 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-bool POROELAST::UTILS::CheckPoro(const DRT::Element* actele)
+bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance() or
-         CheckPoroP1(actele);
+         IsPoroP1Element(actele);
 }
 
-bool POROELAST::UTILS::CheckPoroP1(const DRT::Element* actele)
+bool POROELAST::UTILS::IsPoroP1Element(const DRT::Element* actele)
 {
   // all poro-p1 elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
+         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance();
 }
 
 Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver)
+    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
+    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -109,37 +85,41 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     case INPAR::POROELAST::Monolithic:
     {
       // create an POROELAST::Monolithic instance
-      poroalgo = Teuchos::rcp(new POROELAST::Monolithic(comm, timeparams));
+      poroalgo = Teuchos::rcp(new POROELAST::Monolithic(comm, timeparams, porosity_splitter));
       break;
     }  // monolithic case
     case INPAR::POROELAST::Monolithic_structuresplit:
     {
       // create an POROELAST::MonolithicStructureSplit instance
-      poroalgo = Teuchos::rcp(new POROELAST::MonolithicStructureSplit(comm, timeparams));
+      poroalgo = Teuchos::rcp(
+          new POROELAST::MonolithicStructureSplit(comm, timeparams, porosity_splitter));
       break;
     }
     case INPAR::POROELAST::Monolithic_fluidsplit:
     {
       // create an POROELAST::MonolithicFluidSplit instance
-      poroalgo = Teuchos::rcp(new POROELAST::MonolithicFluidSplit(comm, timeparams));
+      poroalgo =
+          Teuchos::rcp(new POROELAST::MonolithicFluidSplit(comm, timeparams, porosity_splitter));
       break;
     }
     case INPAR::POROELAST::Monolithic_nopenetrationsplit:
     {
       // create an POROELAST::MonolithicSplitNoPenetration instance
-      poroalgo = Teuchos::rcp(new POROELAST::MonolithicSplitNoPenetration(comm, timeparams));
+      poroalgo = Teuchos::rcp(
+          new POROELAST::MonolithicSplitNoPenetration(comm, timeparams, porosity_splitter));
       break;
     }
     case INPAR::POROELAST::Partitioned:
     {
       // create an POROELAST::Partitioned instance
-      poroalgo = Teuchos::rcp(new POROELAST::Partitioned(comm, timeparams));
+      poroalgo = Teuchos::rcp(new POROELAST::Partitioned(comm, timeparams, porosity_splitter));
       break;
     }
     case INPAR::POROELAST::Monolithic_meshtying:
     {
       // create an POROELAST::MonolithicMeshtying instance
-      poroalgo = Teuchos::rcp(new POROELAST::MonolithicMeshtying(comm, timeparams));
+      poroalgo =
+          Teuchos::rcp(new POROELAST::MonolithicMeshtying(comm, timeparams, porosity_splitter));
       break;
     }
     default:
@@ -153,62 +133,16 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   return poroalgo;
 }
 
-Teuchos::RCP<POROELAST::PoroScatraBase> POROELAST::UTILS::CreatePoroScatraAlgorithm(
-    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
-{
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  // create an empty PoroScatraBase instance
-  Teuchos::RCP<POROELAST::PoroScatraBase> algo = Teuchos::null;
-
-  // Parameter reading
-  const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
-  const auto coupling =
-      DRT::INPUT::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
-
-  switch (coupling)
-  {
-    case INPAR::PORO_SCATRA::Monolithic:
-    {
-      algo = Teuchos::rcp(new POROELAST::PoroScatraMono(comm, timeparams));
-      break;
-    }
-    case INPAR::PORO_SCATRA::Part_ScatraToPoro:
-    {
-      algo = Teuchos::rcp(new POROELAST::PoroScatraPart1WCScatraToPoro(comm, timeparams));
-      break;
-    }
-    case INPAR::PORO_SCATRA::Part_PoroToScatra:
-    {
-      algo = Teuchos::rcp(new POROELAST::PoroScatraPart1WCPoroToScatra(comm, timeparams));
-      break;
-    }
-    case INPAR::PORO_SCATRA::Part_TwoWay:
-    {
-      algo = Teuchos::rcp(new POROELAST::PoroScatraPart2WC(comm, timeparams));
-      break;
-    }
-  }
-
-  // setup solver (if needed)
-  algo->SetupSolver();
-
-  return algo;
-}
 
 Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
     Teuchos::RCP<DRT::Discretization> dis)
 {
   Teuchos::RCP<LINALG::MapExtractor> porositysplitter = Teuchos::null;
 
-  int locporop1 = 0;
   // Loop through all elements on processor
-  for (int i = 0; i < dis->NumMyColElements(); ++i)
-  {
-    // get the actual element
+  int locporop1 = std::count_if(
+      dis->lColElements(), dis->lColElements() + dis->NumMyColElements(), IsPoroP1Element);
 
-    if (CheckPoroP1(dis->lColElement(i))) locporop1 += 1;
-  }
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
   dis->Comm().MaxAll(&locporop1, &glonumporop1, 1);

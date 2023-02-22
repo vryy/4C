@@ -26,6 +26,7 @@
 #include "particle_algorithm_sim.H"
 #include "pasi_dyn.H"
 #include "poroelast_dyn.H"
+#include "poroelast_scatra_dyn.H"
 #include "poromultiphase_dyn.H"
 #include "poromultiphase_scatra_dyn.H"
 #include "porofluidmultiphase_dyn.H"

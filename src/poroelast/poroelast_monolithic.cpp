@@ -52,8 +52,9 @@
 
 
 
-POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : PoroBase(comm, timeparams),
+POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : PoroBase(comm, timeparams, porosity_splitter),
       printscreen_(true),   // ADD INPUT PARAMETER
       printiter_(true),     // ADD INPUT PARAMETER
       printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
