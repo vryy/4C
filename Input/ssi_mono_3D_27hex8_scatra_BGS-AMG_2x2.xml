@@ -121,6 +121,7 @@
           <Parameter name="aggregation: max selected neighbors" type="int" value="0"/>
           <Parameter name="aggregation: min agg size" type="int" value="12"/>
           <Parameter name="aggregation: max agg size" type="int" value="27"/>
+          <Parameter name="aggregation: preserve Dirichlet points" type="bool" value="yes"/>
         </ParameterList>
         <ParameterList name="TentativePFactory_List">
           <Parameter name="factory" type="string" value="TentativePFactory"/>
