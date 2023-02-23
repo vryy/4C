@@ -1,5 +1,3 @@
-//
-//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -101,8 +99,6 @@ NAME                            Fluid_Solver
 SOLVER                          Belos                     
 AZOUTPUT                        50                            
 AZSOLVE                         GMRES                         
-//AZPREC                        ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-//IFPACKGFILL                   0                             // (3 for edgebased stabilization pattern) graph fill for ILU
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0

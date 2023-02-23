@@ -28,11 +28,8 @@ C2   = eps*C1 + u_0
 
 u(y) = C1*y+C2
 
-u_0 = 5     
+u_0 = 5      
 u_H = 53    
-
-See: /home/winter/mini-projects/couette-flow-NSslip/Couette_flow.m  there full formula without assumption 1) is made.
-     -> makes the Neumann condition y dependent.
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      800
 //NODES                         1722
