@@ -6,8 +6,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef SO_NSTET4_H
-#define SO_NSTET4_H
+#ifndef SO3_NSTET_H
+#define SO3_NSTET_H
 
 #include "lib_element.H"
 #include "lib_elementtype.H"
@@ -567,4 +567,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SO_NSTET_H_
+#endif  // SO3_NSTET_H

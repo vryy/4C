@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef GROWTHREMODEL_ELASTHYPER_H
-#define GROWTHREMODEL_ELASTHYPER_H
+#ifndef MAT_GROWTHREMODEL_ELASTHYPER_H
+#define MAT_GROWTHREMODEL_ELASTHYPER_H
 
 
 #include "headers_FADmatrix_utils.H"

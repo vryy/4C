@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_REMODELFIBER_H
-#define BACI_MIXTURE_REMODELFIBER_H
+#ifndef MIXTURE_REMODELFIBER_H
+#define MIXTURE_REMODELFIBER_H
 
 #include <memory>
 #include <vector>
@@ -129,4 +129,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_REMODELFIBER_H
+#endif  // MIXTURE_REMODELFIBER_H

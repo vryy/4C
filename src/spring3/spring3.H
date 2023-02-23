@@ -496,4 +496,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SPRING3_H
+#endif  // SPRING3_H

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CHOL_FACTOR_H_
-#define CHOL_FACTOR_H_
+#ifndef INV_ANALYSIS_CHOL_FACTOR_H
+#define INV_ANALYSIS_CHOL_FACTOR_H
 
 #include "inv_analysis_chol_factor_base.H"
 #include "Epetra_CrsMatrix.h"
@@ -143,4 +143,4 @@ namespace INVANA
 
 }  // namespace INVANA
 /*----------------------------------------------------------------------*/
-#endif /* CHOL_FACTOR_H_ */
+#endif  // INV_ANALYSIS_CHOL_FACTOR_H

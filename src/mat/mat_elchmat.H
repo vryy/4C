@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ELCHMAT_H
-#define ELCHMAT_H
+#ifndef MAT_ELCHMAT_H
+#define MAT_ELCHMAT_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_NOXINTERFACE_H_
-#define SRC_CONTACT_CONTACT_NOXINTERFACE_H_
+#ifndef CONTACT_NOXINTERFACE_H
+#define CONTACT_NOXINTERFACE_H
 
 #include <vector>
 
@@ -125,4 +125,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_CONTACT_NOXINTERFACE_H_ */
+#endif  // CONTACT_NOXINTERFACE_H

@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef WALL1_SCATRA_H_
-#define WALL1_SCATRA_H_
+#ifndef W1_SCATRA_H
+#define W1_SCATRA_H
 
 #include "w1.H"
 
@@ -167,4 +167,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* WALL1_SCATRA_H_ */
+#endif  // W1_SCATRA_H

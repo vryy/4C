@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef MPCONSTRAINT_H
-#define MPCONSTRAINT_H
+#ifndef CONSTRAINT_MULTIPOINTCONSTRAINT_H
+#define CONSTRAINT_MULTIPOINTCONSTRAINT_H
 
 #include "constraint.H"
 
@@ -127,4 +127,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /*MPCONSTRAINT_H*/
+#endif  // CONSTRAINT_MULTIPOINTCONSTRAINT_H

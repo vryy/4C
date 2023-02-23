@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
-#define SRC_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
+#ifndef STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
+#define STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
 
 #include <unordered_map>
 #include "structure_new_enum_lists.H"
@@ -242,4 +242,4 @@ namespace BROWNIANDYN
 }  // namespace BROWNIANDYN
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_ */
+#endif  // STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H

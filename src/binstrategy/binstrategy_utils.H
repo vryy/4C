@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BINNING_STRATEGY_UTILS_H
-#define BINNING_STRATEGY_UTILS_H
+#ifndef BINSTRATEGY_UTILS_H
+#define BINSTRATEGY_UTILS_H
 
 #include <set>
 #include <vector>

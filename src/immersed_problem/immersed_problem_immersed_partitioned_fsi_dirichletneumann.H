@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
-#define IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
+#ifndef IMMERSED_PROBLEM_IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
+#define IMMERSED_PROBLEM_IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
 
 #include "immersed_problem_immersed_base.H"
 #include "immersed_problem_fsi_partitioned_immersed.H"

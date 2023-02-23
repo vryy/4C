@@ -364,4 +364,4 @@ namespace MORTAR
   };  // class BinaryTree
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_BINARYTREE_H
+#endif  // MORTAR_BINARYTREE_H

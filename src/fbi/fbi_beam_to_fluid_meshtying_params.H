@@ -8,8 +8,8 @@
 */
 
 
-#ifndef BEAM_TO_FLUID_MESHTYING_PARAMS_H
-#define BEAM_TO_FLUID_MESHTYING_PARAMS_H
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_H
 
 #include "beaminteraction_contact_params.H"
 #include "fem_general_utils_integration.H"

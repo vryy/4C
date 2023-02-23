@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
-#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
+#ifndef MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
+#define MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
 
 #include "mixture_constituent_elasthyperbase.H"
 #include "mat_anisotropy_extension.H"
@@ -162,4 +162,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H
+#endif  // MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_H

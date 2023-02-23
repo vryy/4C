@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef AD_ALE_XFFSI_H_
-#define AD_ALE_XFFSI_H_
+#ifndef ADAPTER_ALE_XFFSI_H
+#define ADAPTER_ALE_XFFSI_H
 
 
 /*----------------------------------------------------------------------------*/
@@ -72,4 +72,4 @@ namespace ADAPTER
   };  // class AleXFFsiWrapper
 }  // namespace ADAPTER
 
-#endif /* AD_ALE_XFFSI_H_ */
+#endif  // ADAPTER_ALE_XFFSI_H

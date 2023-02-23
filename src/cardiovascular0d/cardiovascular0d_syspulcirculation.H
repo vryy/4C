@@ -39,8 +39,8 @@ Res =                                                                           
 
 *----------------------------------------------------------------------*/
 
-#ifndef CARDIOVASCULAR0DSYSPULCIRCULATION_H
-#define CARDIOVASCULAR0DSYSPULCIRCULATION_H
+#ifndef CARDIOVASCULAR0D_SYSPULCIRCULATION_H
+#define CARDIOVASCULAR0D_SYSPULCIRCULATION_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -185,4 +185,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0DSYSPULCIRCULATION_H*/
+#endif  // CARDIOVASCULAR0D_SYSPULCIRCULATION_H

@@ -10,8 +10,8 @@ interface
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUID_H
-#define XFLUID_H
+#ifndef FLUID_XFLUID_H
+#define FLUID_XFLUID_H
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12

@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_EHL_EHL_MONOLITHIC_H_
-#define SRC_EHL_EHL_MONOLITHIC_H_
+#ifndef EHL_MONOLITHIC_H
+#define EHL_MONOLITHIC_H
 
 
 /*----------------------------------------------------------------------*
@@ -476,4 +476,4 @@ namespace EHL
 }  // namespace EHL
 
 
-#endif /* SRC_EHL_EHL_MONOLITHIC_H_ */
+#endif  // EHL_MONOLITHIC_H

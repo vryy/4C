@@ -8,8 +8,8 @@
  */
 
 
-#ifndef POST_ENSIGHT_WRITER_H_
-#define POST_ENSIGHT_WRITER_H_
+#ifndef POST_ENSIGHT_WRITER_H
+#define POST_ENSIGHT_WRITER_H
 
 #include <iostream>
 #include <sstream>
@@ -438,4 +438,4 @@ class EnsightWriter : public PostWriterBase
   // static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 };
 
-#endif /*POST_ENSIGHT_WRITER_H_*/
+#endif  // POST_ENSIGHT_WRITER_H

@@ -10,8 +10,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_COUPLING_BASE_H_
-#define XFEM_COUPLING_BASE_H_
+#ifndef XFEM_COUPLING_BASE_H
+#define XFEM_COUPLING_BASE_H
 
 
 #include <vector>
@@ -603,4 +603,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_BASE_H_*/
+#endif  // XFEM_COUPLING_BASE_H

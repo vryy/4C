@@ -10,8 +10,8 @@ in the inverse analysis
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTURE_INVANA_H
-#define ADAPTER_STRUCTURE_INVANA_H
+#ifndef ADAPTER_STR_INVANA_H
+#define ADAPTER_STR_INVANA_H
 
 #include "adapter_str_timeloop.H"
 

@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DRT_MESHREADER_H
-#define DRT_MESHREADER_H
+#ifndef LIB_MESHREADER_H
+#define LIB_MESHREADER_H
 
 #include "Epetra_CrsGraph.h"
 

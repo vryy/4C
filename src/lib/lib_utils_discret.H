@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_UTILS_DISCRET_H_
-#define SRC_LIB_UTILS_DISCRET_H_
+#ifndef LIB_UTILS_DISCRET_H
+#define LIB_UTILS_DISCRET_H
 
 #include <Teuchos_RCP.hpp>
 // include due to enumerator...
@@ -389,4 +389,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_UTILS_DISCRET_H_ */
+#endif  // LIB_UTILS_DISCRET_H

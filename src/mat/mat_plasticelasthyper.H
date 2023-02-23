@@ -15,8 +15,8 @@ rY_13 0.7
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PLASTICELASTHYPER_H
-#define PLASTICELASTHYPER_H
+#ifndef MAT_PLASTICELASTHYPER_H
+#define MAT_PLASTICELASTHYPER_H
 
 
 

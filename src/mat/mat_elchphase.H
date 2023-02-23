@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ELCHPHASE_H
-#define ELCHPHASE_H
+#ifndef MAT_ELCHPHASE_H
+#define MAT_ELCHPHASE_H
 
 
 

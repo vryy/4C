@@ -9,8 +9,8 @@
 
 */
 
-#ifndef FSI_STRUCTURE_WRAPPER_IMMERSED_H
-#define FSI_STRUCTURE_WRAPPER_IMMERSED_H
+#ifndef ADAPTER_STR_FSIWRAPPER_IMMERSED_H
+#define ADAPTER_STR_FSIWRAPPER_IMMERSED_H
 
 #include "adapter_str_fpsiwrapper.H"
 #include "structure_new_dbc.H"

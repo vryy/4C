@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 09/13 |
  *----------------------------------------------------------------------*/
-#ifndef CONTACT_WEAR_LAGRANGE_STRATEGY_H_
-#define CONTACT_WEAR_LAGRANGE_STRATEGY_H_
+#ifndef CONTACT_WEAR_LAGRANGE_STRATEGY_H
+#define CONTACT_WEAR_LAGRANGE_STRATEGY_H
 
 /*----------------------------------------------------------------------*
  | header                                                   farah 09/13 |
@@ -437,4 +437,4 @@ namespace WEAR
 
 }  // namespace WEAR
 
-#endif /* CONTACT_WEAR_H_ */
+#endif  // CONTACT_WEAR_LAGRANGE_STRATEGY_H

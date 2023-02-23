@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 /************/
-#ifndef ART_NET_DYN_H
-#define ART_NET_DYN_H
+#ifndef ART_NET_DYN_DRT_H
+#define ART_NET_DYN_DRT_H
 
 
 #include "Teuchos_RCP.hpp"
@@ -24,4 +24,4 @@ void dyn_art_net_drt();
 Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
 
 
-#endif /* #ifndef ART_NET_DYN_H */
+#endif  // ART_NET_DYN_DRT_H

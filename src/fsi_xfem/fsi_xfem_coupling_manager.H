@@ -11,8 +11,8 @@ managers
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-#ifndef COUPLING_MANAGER_H
-#define COUPLING_MANAGER_H
+#ifndef FSI_XFEM_COUPLING_MANAGER_H
+#define FSI_XFEM_COUPLING_MANAGER_H
 
 // forward declarations
 namespace LINALG

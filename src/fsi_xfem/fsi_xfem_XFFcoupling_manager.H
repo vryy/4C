@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef XFFCOUPLING_MANAGER_H
-#define XFFCOUPLING_MANAGER_H
+#ifndef FSI_XFEM_XFFCOUPLING_MANAGER_H
+#define FSI_XFEM_XFFCOUPLING_MANAGER_H
 
 #include "fsi_xfem_coupling_manager.H"
 #include "fsi_xfem_coupling_comm_manager.H"

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_
-#define SRC_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_H
+#define POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_H
 
 #include "porofluidmultiphase_ele_action.H"
 #include "mat_scatra_mat_multiporo.H"
@@ -1647,4 +1647,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_H

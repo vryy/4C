@@ -4,8 +4,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef INVERSEDESIGN_H
-#define INVERSEDESIGN_H
+#ifndef SO3_INVERSEDESIGN_H
+#define SO3_INVERSEDESIGN_H
 
 #include "lib_parobject.H"
 #include "lib_parobjectfactory.H"
@@ -195,4 +195,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef INVERSEDESIGN_H
+#endif  // SO3_INVERSEDESIGN_H

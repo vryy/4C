@@ -18,8 +18,8 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
 
 *----------------------------------------------------------------------*/
-#ifndef AAARAGHAVANVORP_DAMAGE_H
-#define AAARAGHAVANVORP_DAMAGE_H
+#ifndef MAT_AAARAGHAVANVORP_DAMAGE_H
+#define MAT_AAARAGHAVANVORP_DAMAGE_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -213,4 +213,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // AAARAGHAVANVORP_DAMAGE_H
+#endif  // MAT_AAARAGHAVANVORP_DAMAGE_H

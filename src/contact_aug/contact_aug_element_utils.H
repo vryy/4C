@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_ELEMENT_UTILS_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_ELEMENT_UTILS_H_
+#ifndef CONTACT_AUG_ELEMENT_UTILS_H
+#define CONTACT_AUG_ELEMENT_UTILS_H
 
 
 #include "fem_general_utils_fem_shapefunctions.H"
@@ -274,4 +274,4 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_ELEMENT_UTILS_H_ */
+#endif  // CONTACT_AUG_ELEMENT_UTILS_H

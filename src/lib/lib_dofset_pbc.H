@@ -15,8 +15,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef PBCDOFSET_H
-#define PBCDOFSET_H
+#ifndef LIB_DOFSET_PBC_H
+#define LIB_DOFSET_PBC_H
 
 #include <vector>
 #include <map>
@@ -129,4 +129,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef PBCDOFSET_H
+#endif  // LIB_DOFSET_PBC_H

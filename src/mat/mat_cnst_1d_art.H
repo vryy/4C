@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef CNST_1D_ART_H
-#define CNST_1D_ART_H
+#ifndef MAT_CNST_1D_ART_H
+#define MAT_CNST_1D_ART_H
 
 
 

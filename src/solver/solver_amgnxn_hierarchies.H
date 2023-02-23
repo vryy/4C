@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AMGNXN_HIERARCHIES_H
-#define AMGNXN_HIERARCHIES_H
+#ifndef SOLVER_AMGNXN_HIERARCHIES_H
+#define SOLVER_AMGNXN_HIERARCHIES_H
 
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
@@ -124,4 +124,4 @@ namespace LINALG::SOLVER::AMGNXN
   };
 }  // namespace LINALG::SOLVER::AMGNXN
 
-#endif  // AMGNXN_HIERARCHIES_H
+#endif  // SOLVER_AMGNXN_HIERARCHIES_H

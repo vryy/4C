@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MEMBRANE_ELASTHYPER_SERVICE_H
-#define MEMBRANE_ELASTHYPER_SERVICE_H
+#ifndef MAT_MEMBRANE_ELASTHYPER_SERVICE_H
+#define MAT_MEMBRANE_ELASTHYPER_SERVICE_H
 
 #include "linalg_fixedsizematrix.H"
 #include "matelast_summand.H"
@@ -90,4 +90,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // MEMBRANE_ELASTHYPER_SERVICE_H
+#endif  // MAT_MEMBRANE_ELASTHYPER_SERVICE_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_H_GID_VECTOR
-#define UTILS_H_GID_VECTOR
+#ifndef LIB_UTILS_GID_VECTOR_H
+#define LIB_UTILS_GID_VECTOR_H
 
 #include "lib_dserror.H"
 #include <Epetra_Comm.h>
@@ -189,4 +189,4 @@ std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const E
   return vec_out;
 }
 
-#endif  // #ifndef UTILS_H_VECTOR
+#endif  // LIB_UTILS_GID_VECTOR_H

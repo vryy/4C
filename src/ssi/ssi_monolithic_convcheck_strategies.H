@@ -202,4 +202,4 @@ namespace SSI
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H
+#endif  // SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H

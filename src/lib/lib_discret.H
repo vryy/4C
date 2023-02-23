@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DISCRET_H
-#define DISCRET_H
+#ifndef LIB_DISCRET_H
+#define LIB_DISCRET_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
@@ -2119,4 +2119,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 
 
-#endif  // #ifndef DISCRET_H
+#endif  // LIB_DISCRET_H

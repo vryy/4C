@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AD_FLD_FBI_WRAPPER_H
-#define AD_FLD_FBI_WRAPPER_H
+#ifndef ADAPTER_FLD_FBI_WRAPPER_H
+#define ADAPTER_FLD_FBI_WRAPPER_H
 
 #include <Teuchos_RCP.hpp>
 

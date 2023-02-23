@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_INTEGRATOR_POLICY_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_INTEGRATOR_POLICY_H_
+#ifndef CONTACT_AUG_INTEGRATOR_POLICY_H
+#define CONTACT_AUG_INTEGRATOR_POLICY_H
 
 //#define SWITCH_2ND_DERIV_NORMAL_OFF
 
@@ -527,4 +527,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_INTEGRATOR_POLICY_H_ */
+#endif  // CONTACT_AUG_INTEGRATOR_POLICY_H

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OPTIMIZER_SMC_H_
-#define OPTIMIZER_SMC_H_
+#ifndef INV_ANALYSIS_OPTIMIZER_SMC_H
+#define INV_ANALYSIS_OPTIMIZER_SMC_H
 
 #include "inv_analysis_optimizer_base.H"  // base class
 #include "io.H"
@@ -173,4 +173,4 @@ namespace INVANA
 
 
 
-#endif /* OPTIMIZER_SMC_H_ */
+#endif  // INV_ANALYSIS_OPTIMIZER_SMC_H

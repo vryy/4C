@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_H
 
 
 #include <Teuchos_RCP.hpp>

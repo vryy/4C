@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_NLN_SOLVER_PTC_H_
-#define STR_NLN_SOLVER_PTC_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_PTC_H
+#define STRUCTURE_NEW_NLN_SOLVER_PTC_H
 
 #include "structure_new_nln_solver_nox.H"  // base class
 
@@ -63,4 +63,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_NLN_SOLVER_PTC_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_PTC_H

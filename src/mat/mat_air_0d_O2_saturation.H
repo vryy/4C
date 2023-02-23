@@ -8,8 +8,8 @@ airway elements framework (transport in elements and between air and blood)
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef AIR_0D_O2_SATURATION_H
-#define AIR_0D_O2_SATURATION_H
+#ifndef MAT_AIR_0D_O2_SATURATION_H
+#define MAT_AIR_0D_O2_SATURATION_H
 
 
 

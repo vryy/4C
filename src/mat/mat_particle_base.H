@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_BASE_H
-#define PARTICLE_MATERIAL_BASE_H
+#ifndef MAT_PARTICLE_BASE_H
+#define MAT_PARTICLE_BASE_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |

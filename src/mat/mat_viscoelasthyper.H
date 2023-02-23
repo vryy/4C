@@ -15,8 +15,8 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef VISCOELASTHYPER_H
-#define VISCOELASTHYPER_H
+#ifndef MAT_VISCOELASTHYPER_H
+#define MAT_VISCOELASTHYPER_H
 
 
 

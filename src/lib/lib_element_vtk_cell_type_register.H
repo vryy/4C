@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELEMENT_VTK_CELL_TYPE_H
-#define ELEMENT_VTK_CELL_TYPE_H
+#ifndef LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_H
+#define LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_H
 
 /* headers */
 #include "lib_element.H"

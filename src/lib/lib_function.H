@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FUNCTION_H
-#define FUNCTION_H
+#ifndef LIB_FUNCTION_H
+#define LIB_FUNCTION_H
 
 
 #include <iostream>

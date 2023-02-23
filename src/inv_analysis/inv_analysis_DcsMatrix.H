@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DCSMATRIX_H_
-#define DCSMATRIX_H_
+#ifndef INV_ANALYSIS_DCSMATRIX_H
+#define INV_ANALYSIS_DCSMATRIX_H
 
 #include "Teuchos_RCP.hpp"
 
@@ -133,4 +133,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /* DCSMATRIX_H_ */
+#endif  // INV_ANALYSIS_DCSMATRIX_H

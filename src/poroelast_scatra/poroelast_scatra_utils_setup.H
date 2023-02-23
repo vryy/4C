@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef POROELAST_SCATRA_UTILS_SETUP_H_
-#define POROELAST_SCATRA_UTILS_SETUP_H_
+#ifndef POROELAST_SCATRA_UTILS_SETUP_H
+#define POROELAST_SCATRA_UTILS_SETUP_H
 
 #include "lib_dofset_gidbased_wrapper.H"
 #include "lib_dofset_predefineddofnumber.H"
@@ -138,4 +138,4 @@ namespace POROELASTSCATRA
   }  // namespace UTILS
 }  // namespace POROELASTSCATRA
 
-#endif /* POROELAST_UTILS_SETUP_H_ */
+#endif

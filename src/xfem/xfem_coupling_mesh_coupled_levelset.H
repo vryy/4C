@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_COUPLING_MESH_COUPLED_LEVELSET_H_
-#define XFEM_COUPLING_MESH_COUPLED_LEVELSET_H_
+#ifndef XFEM_COUPLING_MESH_COUPLED_LEVELSET_H
+#define XFEM_COUPLING_MESH_COUPLED_LEVELSET_H
 
 #include "xfem_coupling_base.H"
 #include "xfem_coupling_levelset.H"
@@ -282,4 +282,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_MESH_COUPLED_LEVELSET_H_*/
+#endif  // XFEM_COUPLING_MESH_COUPLED_LEVELSET_H

@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_REMODELFIBER_H_
-#define ELAST_REMODELFIBER_H_
+#ifndef MATELAST_REMODELFIBER_H
+#define MATELAST_REMODELFIBER_H
 
 #include <utility>
 
@@ -825,4 +825,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_REMODELFIBER_H_
+#endif  // MATELAST_REMODELFIBER_H

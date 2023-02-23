@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_PREDICT_TANGDIS_H_
-#define STR_PREDICT_TANGDIS_H_
+#ifndef STRUCTURE_NEW_PREDICT_TANGDIS_H
+#define STRUCTURE_NEW_PREDICT_TANGDIS_H
 
 #include "structure_new_predict_generic.H"
 #include "solver_nonlin_nox_abstract_prepostoperator.H"
@@ -96,4 +96,4 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
-#endif /* STR_PREDICT_TANGDIS_H_ */
+#endif  // STRUCTURE_NEW_PREDICT_TANGDIS_H

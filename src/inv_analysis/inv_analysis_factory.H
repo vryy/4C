@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef INVANA_FACTORY_H
-#define INVANA_FACTORY_H
+#ifndef INV_ANALYSIS_FACTORY_H
+#define INV_ANALYSIS_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -44,4 +44,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*INVANA_FACTORY_H_*/
+#endif  // INV_ANALYSIS_FACTORY_H

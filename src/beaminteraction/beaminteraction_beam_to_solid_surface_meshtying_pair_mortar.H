@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_H_
-#define BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_H_
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_H
 
 
 #include "beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.H"

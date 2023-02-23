@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ELASTHYPER_EVALUATE_H
-#define BACI_ELASTHYPER_EVALUATE_H
+#ifndef MAT_ELASTHYPER_SERVICE_H
+#define MAT_ELASTHYPER_SERVICE_H
 
 #include <NOX.H>
 #include "linalg_fixedsizematrix.H"
@@ -463,4 +463,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // BACI_ELASTHYPER_EVALUATE_H
+#endif  // MAT_ELASTHYPER_SERVICE_H

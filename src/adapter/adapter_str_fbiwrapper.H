@@ -7,8 +7,8 @@
 \level 2
 */
 
-#ifndef FBI_STRUCTURE_WRAPPER_H
-#define FBI_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_FBIWRAPPER_H
+#define ADAPTER_STR_FBIWRAPPER_H
 
 #include "adapter_str_fsiwrapper.H"
 

@@ -29,8 +29,8 @@ Reference:
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DYN_VREMAN_H
-#define DYN_VREMAN_H
+#ifndef FLUID_TURBULENCE_DYN_VREMAN_H
+#define FLUID_TURBULENCE_DYN_VREMAN_H
 
 
 #include "lib_discret.H"
@@ -135,4 +135,4 @@ namespace FLD
 
 }  // end namespace FLD
 
-#endif  // not DYN_VREMAN_H
+#endif  // FLUID_TURBULENCE_DYN_VREMAN_H

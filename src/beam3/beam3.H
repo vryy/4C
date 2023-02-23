@@ -980,4 +980,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef BEAM_H
+#endif  // BEAM3_H

@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_VOLUME_CHANGE_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_VOLUME_CHANGE_H_
+#ifndef SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H
+#define SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H
 
 #include "solver_nonlin_nox_inner_statustest_generic.H"
 #include <NOX_Abstract_Group.H>
@@ -128,4 +128,4 @@ namespace NOX
 
 
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_VOLUME_CHANGE_H_ */
+#endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H

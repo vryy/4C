@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
+#define STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 
 #include "lib_dserror.H"
 #include "inpar_structure.H"
@@ -1099,4 +1099,4 @@ namespace NOX
   }           // namespace NLN
 }  // namespace NOX
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAGLOBALSTATE_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H

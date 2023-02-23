@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ART_TERMINAL_BC_H_
-#define ART_TERMINAL_BC_H_
+#ifndef ART_NET_ART_TERMINAL_BC_H
+#define ART_NET_ART_TERMINAL_BC_H
 
 #include "Epetra_MpiComm.h"
 
@@ -54,4 +54,4 @@ namespace ART
   }  // namespace UTILS
 }  // namespace ART
 
-#endif /* ART_TERMINAL_H_ */
+#endif  // ART_NET_ART_TERMINAL_BC_H

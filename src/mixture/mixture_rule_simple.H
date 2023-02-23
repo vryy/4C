@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_RULE_SIMPLE_H
-#define BACI_MIXTURE_RULE_SIMPLE_H
+#ifndef MIXTURE_RULE_SIMPLE_H
+#define MIXTURE_RULE_SIMPLE_H
 
 #include "mixture_rule.H"
 #include <Teuchos_RCPDecl.hpp>
@@ -81,4 +81,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_RULE_SIMPLE_H
+#endif  // MIXTURE_RULE_SIMPLE_H

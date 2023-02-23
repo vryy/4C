@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef MESHTYING_PENALTY_STRATEGY_H
-#define MESHTYING_PENALTY_STRATEGY_H
+#ifndef CONTACT_MESHTYING_PENALTY_STRATEGY_H
+#define CONTACT_MESHTYING_PENALTY_STRATEGY_H
 
 #include "contact_meshtying_abstract_strategy.H"
 
@@ -265,4 +265,4 @@ namespace CONTACT
   };  // class MtPenaltyStrategy
 }  // namespace CONTACT
 
-#endif  // #ifndef MESHTYING_PENALTY_STRATEGY_H
+#endif  // CONTACT_MESHTYING_PENALTY_STRATEGY_H

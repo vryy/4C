@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ASSEMBLESTRATEGY_H
-#define ASSEMBLESTRATEGY_H
+#ifndef LIB_ASSEMBLESTRATEGY_H
+#define LIB_ASSEMBLESTRATEGY_H
 
 #include <vector>
 

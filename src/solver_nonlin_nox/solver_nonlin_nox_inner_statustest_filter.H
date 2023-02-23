@@ -16,8 +16,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_FILTER_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_FILTER_H_
+#ifndef SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H
+#define SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H
 
 #include <set>
 #include <vector>
@@ -798,4 +798,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_INNER_STATUSTEST_FILTER_H_ */
+#endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H

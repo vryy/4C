@@ -9,8 +9,8 @@
 
 
 
-#ifndef FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
-#define FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
+#ifndef FSI_LUNGMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_LUNGMONOLITHIC_STRUCTURESPLIT_H
 
 #include "fsi_lungmonolithic.H"
 #include "linalg_matrixtransform.H"

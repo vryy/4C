@@ -325,4 +325,4 @@ namespace SCATRA
     std::vector<LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
   };  // class MortarCellCalcSTIElch
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

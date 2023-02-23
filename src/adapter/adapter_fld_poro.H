@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUID_PORO_H
-#define ADAPTER_FLUID_PORO_H
+#ifndef ADAPTER_FLD_PORO_H
+#define ADAPTER_FLD_PORO_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

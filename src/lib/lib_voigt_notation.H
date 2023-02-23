@@ -3,8 +3,8 @@
 \brief Voigt notation definition and utilities
 */
 
-#ifndef VOIGT_NOTATION_H
-#define VOIGT_NOTATION_H
+#ifndef LIB_VOIGT_NOTATION_H
+#define LIB_VOIGT_NOTATION_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -341,4 +341,4 @@ namespace UTILS
   }  // namespace VOIGT
 }  // namespace UTILS
 
-#endif  // VOIGT_NOTATION_H
+#endif  // LIB_VOIGT_NOTATION_H

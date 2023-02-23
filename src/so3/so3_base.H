@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SO_BASE_H_
-#define SO_BASE_H_
+#ifndef SO3_BASE_H
+#define SO3_BASE_H
 
 #include "inpar_structure.H"
 #include "lib_element.H"
@@ -326,4 +326,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SO_BASE_H_ */
+#endif  // SO3_BASE_H

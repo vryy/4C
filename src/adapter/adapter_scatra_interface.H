@@ -6,8 +6,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef AD_SCATRA_INTERFACE_
-#define AD_SCATRA_INTERFACE_
+#ifndef ADAPTER_SCATRA_INTERFACE_H
+#define ADAPTER_SCATRA_INTERFACE_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -69,4 +69,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* AD_SCATRA_INTERFACE_ */
+#endif  // ADAPTER_SCATRA_INTERFACE_H

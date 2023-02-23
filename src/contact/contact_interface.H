@@ -1665,4 +1665,4 @@ namespace CONTACT
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoInterface& interface);
 
 
-#endif  // #ifndef CONTACT_INTERFACE_H
+#endif  // CONTACT_INTERFACE_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef PACK_BUFFER_H
-#define PACK_BUFFER_H
+#ifndef LIB_PACK_BUFFER_H
+#define LIB_PACK_BUFFER_H
 
 #include <vector>
 

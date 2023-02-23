@@ -8,6 +8,8 @@
 
 */
 /*-----------------------------------------------------------*/
+#ifndef STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
+#define STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 
 #include <NOX_Epetra_Scaling.H>
 #include "Epetra_Map.h"
@@ -73,3 +75,5 @@ namespace STR
     }  // namespace LinSystem
   }    // namespace NLN
 }  // namespace STR
+
+#endif

@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_SCATRA_BASE_H_
-#define PORO_SCATRA_BASE_H_
+#ifndef POROELAST_SCATRA_BASE_H
+#define POROELAST_SCATRA_BASE_H
 
 #include "adapter_algorithmbase.H"
 #include "scatra_algorithm.H"
@@ -147,4 +147,4 @@ namespace POROELASTSCATRA
 }  // namespace POROELASTSCATRA
 
 
-#endif /* PORO_SCATRA_BASE_H_ */
+#endif  // POROELAST_SCATRA_BASE_H

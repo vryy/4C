@@ -20,8 +20,8 @@ functionality
 *----------------------------------------------------------------------*/
 
 
-#ifndef WALL1_PORO_P1_SCATRA_H_
-#define WALL1_PORO_P1_SCATRA_H_
+#ifndef W1_PORO_P1_SCATRA_H
+#define W1_PORO_P1_SCATRA_H
 
 #include "w1_poro_p1.H"
 
@@ -140,4 +140,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* WALL1_PORO_P1_SCATRA_H_ */
+#endif  // W1_PORO_P1_SCATRA_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLUIDIMPEDANCECONDITION_H
-#define FLUIDIMPEDANCECONDITION_H
+#ifndef FLUID_IMPEDANCECONDITION_H
+#define FLUID_IMPEDANCECONDITION_H
 
 #include <set>
 
@@ -224,4 +224,4 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-#endif /* FLUIDIMPEDANCECONDITION_H */
+#endif  // FLUID_IMPEDANCECONDITION_H

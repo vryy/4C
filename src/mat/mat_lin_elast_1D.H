@@ -8,8 +8,8 @@ quantity (e.g. concentration)
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINELAST1D_H_
-#define LINELAST1D_H_
+#ifndef MAT_LIN_ELAST_1D_H
+#define MAT_LIN_ELAST_1D_H
 
 
 #include "mat_par_parameter.H"
@@ -182,4 +182,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif /*LINELAST1D_H_*/
+#endif  // MAT_LIN_ELAST_1D_H

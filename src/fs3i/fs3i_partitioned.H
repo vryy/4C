@@ -13,8 +13,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef PARTFS3I_H
-#define PARTFS3I_H
+#ifndef FS3I_PARTITIONED_H
+#define FS3I_PARTITIONED_H
 
 
 #include "fs3i.H"

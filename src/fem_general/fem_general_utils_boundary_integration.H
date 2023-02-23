@@ -12,8 +12,8 @@
 \level 0
 */
 
-#ifndef UTILS_BOUNDARY_INTEGRATION_H
-#define UTILS_BOUNDARY_INTEGRATION_H
+#ifndef FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H
+#define FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H
 
 
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -1710,4 +1710,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef UTILS_BOUNDARY_INTEGRATION_H
+#endif  // FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H

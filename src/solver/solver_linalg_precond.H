@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LINALG_PRECOND_H
-#define LINALG_PRECOND_H
+#ifndef SOLVER_LINALG_PRECOND_H
+#define SOLVER_LINALG_PRECOND_H
 
 #include "linalg_sparsematrix.H"
 

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_NLN_SOLVER_GENERIC_H_
-#define STR_NLN_SOLVER_GENERIC_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
+#define STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 
 #include <Teuchos_RCP.hpp>
 #include "lib_dserror.H"
@@ -222,4 +222,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_NLN_SOLVER_GENERIC_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_GENERIC_H

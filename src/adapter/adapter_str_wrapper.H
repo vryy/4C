@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTURE_WRAPPER_H
-#define ADAPTER_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_WRAPPER_H
+#define ADAPTER_STR_WRAPPER_H
 
 #include "adapter_str_structure.H"
 

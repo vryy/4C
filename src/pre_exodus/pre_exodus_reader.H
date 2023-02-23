@@ -10,8 +10,8 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_READER_H_
-#define PRE_EXODUS_READER_H_
+#ifndef PRE_EXODUS_READER_H
+#define PRE_EXODUS_READER_H
 
 #include <string>
 #include <iostream>
@@ -534,4 +534,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif /*PRE_EXODUS_READER_H_*/
+#endif  // PRE_EXODUS_READER_H

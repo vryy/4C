@@ -300,4 +300,4 @@ namespace DRT
   }     // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* ELEMAG_DIFF_ELE_CALC_H */
+#endif  // ELEMAG_DIFF_ELE_CALC_H

@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H_
-#define SRC_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H_
+#ifndef XFEM_XFIELD_FIELD_COUPLING_DOFSET_H
+#define XFEM_XFIELD_FIELD_COUPLING_DOFSET_H
 
 #include "lib_dofset_fixed_size.H"
 
@@ -95,4 +95,4 @@ namespace XFEM
 
 
 
-#endif /* SRC_XFEM_XFIELD_FIELD_COUPLING_DOFSET_H_ */
+#endif  // XFEM_XFIELD_FIELD_COUPLING_DOFSET_H

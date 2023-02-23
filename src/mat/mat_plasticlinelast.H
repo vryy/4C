@@ -24,8 +24,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 04/11 |
  *----------------------------------------------------------------------*/
-#ifndef PLASTICLINELAST_H_
-#define PLASTICLINELAST_H_
+#ifndef MAT_PLASTICLINELAST_H
+#define MAT_PLASTICLINELAST_H
 
 
 /*----------------------------------------------------------------------*
@@ -291,4 +291,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // PLASTICLINELAST_H_
+#endif  // MAT_PLASTICLINELAST_H

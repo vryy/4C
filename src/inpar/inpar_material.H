@@ -336,4 +336,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_MATERIAL_H
+#endif  // INPAR_MATERIAL_H

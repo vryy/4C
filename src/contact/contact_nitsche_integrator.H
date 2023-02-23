@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_H
-#define CONTACT_INTEGRATOR_NITSCHE_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_H
+#define CONTACT_NITSCHE_INTEGRATOR_H
 
 #include "contact_integrator.H"
 
@@ -266,4 +266,4 @@ namespace CONTACT
         double& pet);
   }  // namespace UTILS
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_H

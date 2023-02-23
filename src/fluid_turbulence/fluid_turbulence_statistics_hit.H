@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_STATISTICS_HIT_H
-#define TURBULENCE_STATISTICS_HIT_H
+#ifndef FLUID_TURBULENCE_STATISTICS_HIT_H
+#define FLUID_TURBULENCE_STATISTICS_HIT_H
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_RCP.hpp"

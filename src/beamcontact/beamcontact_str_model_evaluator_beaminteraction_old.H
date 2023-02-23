@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_MODEL_EVALUATOR_BEAMINTERACTIONOLD_H
-#define STR_MODEL_EVALUATOR_BEAMINTERACTIONOLD_H
+#ifndef BEAMCONTACT_STR_MODEL_EVALUATOR_BEAMINTERACTION_OLD_H
+#define BEAMCONTACT_STR_MODEL_EVALUATOR_BEAMINTERACTION_OLD_H
 
 #include "structure_new_model_evaluator_generic.H"
 
@@ -143,4 +143,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* STR_MODEL_EVALUATOR_BEAMINTERACTION_H */
+#endif  // BEAMCONTACT_STR_MODEL_EVALUATOR_BEAMINTERACTION_OLD_H

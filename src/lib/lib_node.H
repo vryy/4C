@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef NODE_H
-#define NODE_H
+#ifndef LIB_NODE_H
+#define LIB_NODE_H
 
 
 #include "Teuchos_RCP.hpp"
@@ -358,4 +358,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Node& node);
 
 
 
-#endif  // #ifndef NODE_H
+#endif  // LIB_NODE_H

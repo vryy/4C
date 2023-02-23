@@ -92,4 +92,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_LOMA_BDF2_H
+#endif  // SCATRA_TIMINT_LOMA_BDF2_H

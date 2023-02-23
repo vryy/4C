@@ -6,8 +6,8 @@
 Created on: Feb 27, 2014
 */
 /*----------------------------------------------------------------------*/
-#ifndef AMGNXN_SMOOTHERS_H
-#define AMGNXN_SMOOTHERS_H
+#ifndef SOLVER_AMGNXN_SMOOTHERS_H
+#define SOLVER_AMGNXN_SMOOTHERS_H
 
 // Trilinos includes
 #include <Ifpack.h>
@@ -491,4 +491,4 @@ namespace LINALG::SOLVER::AMGNXN
   };
 }  // namespace LINALG::SOLVER::AMGNXN
 
-#endif  // AMGNXN_OPERATOR_H
+#endif  // SOLVER_AMGNXN_SMOOTHERS_H

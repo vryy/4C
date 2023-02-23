@@ -320,4 +320,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_PORO_LAGRANGE_STRATEGY_H

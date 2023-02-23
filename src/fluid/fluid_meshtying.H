@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLUID_MESHTYING_H_
-#define FLUID_MESHTYING_H_
+#ifndef FLUID_MESHTYING_H
+#define FLUID_MESHTYING_H
 
 #include "inpar_fluid.H"
 
@@ -347,4 +347,4 @@ namespace FLD
   };  // end  class Meshtying
 }  // end namespace FLD
 
-#endif /* FLUID_MESHTYING_H_ */
+#endif  // FLUID_MESHTYING_H

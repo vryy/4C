@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H_
-#define SRC_SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H_
+#ifndef SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H
+#define SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H
 
 
 #include "solver_nonlin_nox_linearsystem.H"
@@ -81,4 +81,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* SRC_SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H_ */
+#endif  // SCATRA_NOX_NLN_SCATRA_LINEARSYSTEM_H

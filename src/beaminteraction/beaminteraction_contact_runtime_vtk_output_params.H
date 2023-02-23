@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMCONTACTVTKPARAMS_H
-#define BEAMCONTACTVTKPARAMS_H
+#ifndef BEAMINTERACTION_CONTACT_RUNTIME_VTK_OUTPUT_PARAMS_H
+#define BEAMINTERACTION_CONTACT_RUNTIME_VTK_OUTPUT_PARAMS_H
 
 #include "inpar_beamcontact.H"
 

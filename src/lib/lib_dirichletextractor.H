@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DIRICHLETEXTRACTOR_H
-#define DIRICHLETEXTRACTOR_H
+#ifndef LIB_DIRICHLETEXTRACTOR_H
+#define LIB_DIRICHLETEXTRACTOR_H
 
 #include "linalg_mapextractor.H"
 

@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef INPUTREADER_H
-#define INPUTREADER_H
+#ifndef LIB_INPUTREADER_H
+#define LIB_INPUTREADER_H
 
 #include <fstream>
 #include <iostream>

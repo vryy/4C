@@ -11,8 +11,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_PORO_MORTAR_H_
-#define ADAPTER_COUPLING_PORO_MORTAR_H_
+#ifndef ADAPTER_COUPLING_PORO_MORTAR_H
+#define ADAPTER_COUPLING_PORO_MORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                  ager 10/15 |
@@ -128,4 +128,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_PORO_MORTAR_H_ */
+#endif  // ADAPTER_COUPLING_PORO_MORTAR_H

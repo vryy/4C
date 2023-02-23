@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_COND_AND_MAT_DEFINITION_H
-#define UTILS_COND_AND_MAT_DEFINITION_H
+#ifndef LIB_UTILS_COND_AND_MAT_DEFINITION_H
+#define LIB_UTILS_COND_AND_MAT_DEFINITION_H
 
 
 #include <memory>
@@ -90,4 +90,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef  UTILS_COND_AND_MAT_DEFINITION_H
+#endif  // LIB_UTILS_COND_AND_MAT_DEFINITION_H

@@ -11,8 +11,8 @@
 
 
 
-#ifndef INTER_ACINAR_DEP_IMPL_H
-#define INTER_ACINAR_DEP_IMPL_H
+#ifndef RED_AIRWAYS_INTERACINARDEP_IMPL_H
+#define RED_AIRWAYS_INTERACINARDEP_IMPL_H
 
 #include "red_airways_elementbase.H"
 #include "fem_general_utils_local_connectivity_matrices.H"

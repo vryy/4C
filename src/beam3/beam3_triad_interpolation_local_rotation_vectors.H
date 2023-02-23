@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef TRIAD_INTERPOLATION_LOCAL_ROTVECS
-#define TRIAD_INTERPOLATION_LOCAL_ROTVECS
+#ifndef BEAM3_TRIAD_INTERPOLATION_LOCAL_ROTATION_VECTORS_H
+#define BEAM3_TRIAD_INTERPOLATION_LOCAL_ROTATION_VECTORS_H
 
 #include "beam3_triad_interpolation.H"
 

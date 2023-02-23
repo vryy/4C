@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_CONSTR_MONOLITHIC_STRUCTURESPLIT_H
-#define FSI_CONSTR_MONOLITHIC_STRUCTURESPLIT_H
+#ifndef FSI_CONSTRMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_CONSTRMONOLITHIC_STRUCTURESPLIT_H
 
 #include "fsi_constrmonolithic.H"
 

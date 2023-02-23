@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef DIRECT_DIVERGENCE_H
-#define DIRECT_DIVERGENCE_H
+#ifndef CUT_DIRECT_DIVERGENCE_H
+#define CUT_DIRECT_DIVERGENCE_H
 
 #include "cut_element.H"
 #include "cut_volumecell.H"

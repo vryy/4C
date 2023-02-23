@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef NEWMAN_MULTISCALE_H
-#define NEWMAN_MULTISCALE_H
+#ifndef MAT_NEWMAN_MULTISCALE_H
+#define MAT_NEWMAN_MULTISCALE_H
 
 #include "mat_newman.H"
 #include "mat_scatra_multiscale.H"

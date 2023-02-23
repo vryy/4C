@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef POROELASTSCATRA_CLONESTRATEGY_H_
-#define POROELASTSCATRA_CLONESTRATEGY_H_
+#ifndef POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
+#define POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
 
 #include "poroelast_utils_clonestrategy.H"
 
@@ -75,4 +75,4 @@ namespace POROELASTSCATRA
   }  // namespace UTILS
 }  // namespace POROELASTSCATRA
 
-#endif /* POROELASTSCATRA_CLONESTRATEGY_H_ */
+#endif

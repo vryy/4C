@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_H
-#define BACI_MIXTURE_H
+#ifndef MAT_MIXTURE_H
+#define MAT_MIXTURE_H
 
 
 #include "mat_par_parameter.H"
@@ -236,4 +236,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // BACI_MIXTURE_H
+#endif  // MAT_MIXTURE_H

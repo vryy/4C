@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_DATA_COLLECTOR_H_
-#define SRC_LIB_DATA_COLLECTOR_H_
+#ifndef LIB_DATA_COLLECTOR_H
+#define LIB_DATA_COLLECTOR_H
 
 #include "lib_exporter.H"
 
@@ -199,4 +199,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif /* SRC_LIB_DATA_COLLECTOR_H_ */
+#endif  // LIB_DATA_COLLECTOR_H

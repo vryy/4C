@@ -6,8 +6,8 @@
 */
 
 /*----------------------------------------------------------------------------*/
-#ifndef STRTIMINT_NOXGROUP_H
-#define STRTIMINT_NOXGROUP_H
+#ifndef STRUCTURE_TIMINT_NOXGROUP_H
+#define STRUCTURE_TIMINT_NOXGROUP_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -66,4 +66,4 @@ namespace NOX
 }  // namespace NOX
 
 /*----------------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_NOXGROUP_H
+#endif  // STRUCTURE_TIMINT_NOXGROUP_H

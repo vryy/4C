@@ -12,8 +12,8 @@
 /* definitions */
 
 
-#ifndef VALIDCONSTITUTIVELAWS_H
-#define VALIDCONSTITUTIVELAWS_H
+#ifndef INPAR_VALIDCONTACTCONSTITUTIVELAW_H
+#define INPAR_VALIDCONTACTCONSTITUTIVELAW_H
 
 /*----------------------------------------------------------------------*/
 #include <vector>

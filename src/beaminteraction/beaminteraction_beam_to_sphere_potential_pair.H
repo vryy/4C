@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMTOSPHEREPOTENTIALPAIR_H
-#define BEAMTOSPHEREPOTENTIALPAIR_H
+#ifndef BEAMINTERACTION_BEAM_TO_SPHERE_POTENTIAL_PAIR_H
+#define BEAMINTERACTION_BEAM_TO_SPHERE_POTENTIAL_PAIR_H
 
 #include "beaminteraction_potential_pair.H"
 

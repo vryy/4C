@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef Cubic_ConstitutiveLaw_H_
-#define Cubic_ConstitutiveLaw_H_
+#ifndef CONTACT_CONSTITUTIVELAW_CUBIC_CONTACTCONSTITUTIVELAW_H
+#define CONTACT_CONSTITUTIVELAW_CUBIC_CONTACTCONSTITUTIVELAW_H
 
 
 #include "contact_constitutivelaw_contactconstitutivelaw.H"
@@ -99,4 +99,4 @@ namespace CONTACT
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
 
-#endif /*CUBIC_ConstitutiveLaw_H_*/
+#endif  // CONTACT_CONSTITUTIVELAW_CUBIC_CONTACTCONSTITUTIVELAW_H

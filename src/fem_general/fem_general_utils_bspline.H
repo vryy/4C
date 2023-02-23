@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BSPLINE_H
-#define BSPLINE_H
+#ifndef FEM_GENERAL_UTILS_BSPLINE_H
+#define FEM_GENERAL_UTILS_BSPLINE_H
 
 #include <string>
 #include <vector>

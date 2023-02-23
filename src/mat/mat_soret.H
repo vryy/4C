@@ -6,8 +6,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef SORET_H
-#define SORET_H
+#ifndef MAT_SORET_H
+#define MAT_SORET_H
 
 #include "mat_fourieriso.H"
 

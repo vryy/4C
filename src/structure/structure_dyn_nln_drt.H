@@ -7,12 +7,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STRU_DYN_NLN_H
-#define STRU_DYN_NLN_H
+#ifndef STRUCTURE_DYN_NLN_DRT_H
+#define STRUCTURE_DYN_NLN_DRT_H
 
 
 void dyn_nlnstructural_drt();
 void caldyn_drt();
 
 
-#endif /* #ifndef STRU_DYN_NLN_H */
+#endif  // STRUCTURE_DYN_NLN_DRT_H

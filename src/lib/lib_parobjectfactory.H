@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef PAROBJECTFACTORY_H
-#define PAROBJECTFACTORY_H
+#ifndef LIB_PAROBJECTFACTORY_H
+#define LIB_PAROBJECTFACTORY_H
 
 #include <vector>
 #include <map>

@@ -1,3 +1,6 @@
+#ifndef SO3_SO3_PORO_P1_FWD_HPP
+#define SO3_SO3_PORO_P1_FWD_HPP
+
 /*----------------------------------------------------------------------*/
 /*! \file
 
@@ -9,3 +12,5 @@
 
 template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
 template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
+
+#endif

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef CONDITIONDEFINITION_H
-#define CONDITIONDEFINITION_H
+#ifndef LIB_CONDITIONDEFINITION_H
+#define LIB_CONDITIONDEFINITION_H
 
 #include <string>
 #include <vector>

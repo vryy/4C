@@ -13,8 +13,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef CONTROL_POINT_H
-#define CONTROL_POINT_H
+#ifndef NURBS_DISCRET_CONTROL_POINT_H
+#define NURBS_DISCRET_CONTROL_POINT_H
 
 #include "lib_node.H"
 #include "lib_parobjectfactory.H"
@@ -160,4 +160,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef CONTROL_POINT_H
+#endif  // NURBS_DISCRET_CONTROL_POINT_H

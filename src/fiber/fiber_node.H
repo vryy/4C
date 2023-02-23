@@ -159,4 +159,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef FIBER_NODE_H
+#endif  // FIBER_NODE_H

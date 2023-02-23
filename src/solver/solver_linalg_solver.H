@@ -6,8 +6,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef LINALG_SOLVER_H
-#define LINALG_SOLVER_H
+#ifndef SOLVER_LINALG_SOLVER_H
+#define SOLVER_LINALG_SOLVER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -315,4 +315,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // #ifndef LINALG_SOLVER_H
+#endif  // SOLVER_LINALG_SOLVER_H

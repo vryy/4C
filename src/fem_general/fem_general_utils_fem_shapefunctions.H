@@ -9,8 +9,8 @@ the Baci guide in the Convention chapter.
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef UTILS_FEM_SHAPEFUNCTION
-#define UTILS_FEM_SHAPEFUNCTION
+#ifndef FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
+#define FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 
 #include <type_traits>
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -3155,4 +3155,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifdef UTILS_FEM_SHAPEFUNCTION
+#endif  // FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H

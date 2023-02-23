@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFLUID_TIMEINTEGRATION_H_
-#define XFLUID_TIMEINTEGRATION_H_
+#ifndef XFEM_XFLUID_TIMEINT_H
+#define XFEM_XFLUID_TIMEINT_H
 
 
 #include "linalg_fixedsizematrix.H"
@@ -311,4 +311,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFLUID_TIMEINTEGRATION_H_*/
+#endif  // XFEM_XFLUID_TIMEINT_H

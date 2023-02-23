@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_GROUP_H_
-#define SRC_LOCA_CONTINUATION_LOCA_NLN_GROUP_H_
+#ifndef LOCA_CONTINUATION_NLN_GROUP_H
+#define LOCA_CONTINUATION_NLN_GROUP_H
 
 #include <LOCA_Epetra_Group.H>
 #include "solver_nonlin_nox_group.H"
@@ -72,4 +72,4 @@ namespace LOCA
 }  // namespace LOCA
 
 
-#endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_GROUP_H_ */
+#endif  // LOCA_CONTINUATION_NLN_GROUP_H

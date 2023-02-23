@@ -4,8 +4,8 @@
 \level 1
 */
 
-#ifndef STRTIMINT_CREATE_H
-#define STRTIMINT_CREATE_H
+#ifndef STRUCTURE_TIMINT_CREATE_H
+#define STRUCTURE_TIMINT_CREATE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -87,4 +87,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef STRTIMINT_CREATE_H */
+#endif  // STRUCTURE_TIMINT_CREATE_H

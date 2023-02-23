@@ -7,8 +7,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef LINALG_SPARSEOPERATOR_H_
-#define LINALG_SPARSEOPERATOR_H_
+#ifndef LINALG_SPARSEOPERATOR_H
+#define LINALG_SPARSEOPERATOR_H
 
 #include <vector>
 

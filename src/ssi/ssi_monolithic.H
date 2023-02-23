@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SSI_MONOLITHIC_H_
-#define SSI_MONOLITHIC_H_
+#ifndef SSI_MONOLITHIC_H
+#define SSI_MONOLITHIC_H
 
 #include <Teuchos_Time.hpp>
 #include "ssi_base.H"

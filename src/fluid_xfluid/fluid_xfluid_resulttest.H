@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUIDRESULTTEST_H_
-#define XFLUIDRESULTTEST_H_
+#ifndef FLUID_XFLUID_RESULTTEST_H
+#define FLUID_XFLUID_RESULTTEST_H
 
 
 #include "lib_resulttest.H"
@@ -70,4 +70,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif /* XFLUIDRESULTTEST_H_ */
+#endif  // FLUID_XFLUID_RESULTTEST_H

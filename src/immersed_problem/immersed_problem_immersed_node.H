@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef IMMERSED_NODE_H
-#define IMMERSED_NODE_H
+#ifndef IMMERSED_PROBLEM_IMMERSED_NODE_H
+#define IMMERSED_PROBLEM_IMMERSED_NODE_H
 
 
 #include "lib_node.H"
@@ -172,4 +172,4 @@ std::ostream& operator<<(std::ostream& os, const IMMERSED::ImmersedNode& immerse
 
 
 
-#endif  // #ifndef NODE_IMMERSED_H
+#endif  // IMMERSED_PROBLEM_IMMERSED_NODE_H

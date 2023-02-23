@@ -153,8 +153,8 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 /*----------------------------------------------------------------------*
  | definitions															|
  *----------------------------------------------------------------------*/
-#ifndef CRYSTALPLASTICITY_H
-#define CRYSTALPLASTICITY_H
+#ifndef MAT_CRYSTAL_PLASTICITY_H
+#define MAT_CRYSTAL_PLASTICITY_H
 
 /*----------------------------------------------------------------------*
  | headers                                                  			|
@@ -641,4 +641,4 @@ namespace MAT
 
 /*----------------------------------------------------------------------*/
 
-#endif  // CRYSTALPLASTICITY_H
+#endif  // MAT_CRYSTAL_PLASTICITY_H

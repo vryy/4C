@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLUIDRESULTTEST_H
-#define FLUIDRESULTTEST_H
+#ifndef FLUID_RESULT_TEST_H
+#define FLUID_RESULT_TEST_H
 
 
 #include "lib_resulttest.H"

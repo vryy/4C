@@ -6,8 +6,8 @@
 \level 3
 */
 /*-----------------------------------------------------------------------*/
-#ifndef CONTACT_TSI_INTERFACE_H_
-#define CONTACT_TSI_INTERFACE_H_
+#ifndef CONTACT_TSI_INTERFACE_H
+#define CONTACT_TSI_INTERFACE_H
 
 #include "inpar_contact.H"
 #include "contact_interface.H"
@@ -156,4 +156,4 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
-#endif /* CONTACT_TSI_INTERFACE_H_ */
+#endif  // CONTACT_TSI_INTERFACE_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef MATCHINGOCTREE_H
-#define MATCHINGOCTREE_H
+#ifndef LIB_MATCHINGOCTREE_H
+#define LIB_MATCHINGOCTREE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -572,4 +572,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // not MATCHINGOCTREE_H
+#endif  // LIB_MATCHINGOCTREE_H

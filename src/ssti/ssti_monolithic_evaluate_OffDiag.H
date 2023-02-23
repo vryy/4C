@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SSTI_MONOLITHIC_EVALUATE_OffDiag_H
-#define SSTI_MONOLITHIC_EVALUATE_OffDiag_H
+#ifndef SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H
+#define SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
@@ -99,4 +99,4 @@ namespace SSTI
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
   };
 }  // namespace SSTI
-#endif  // #ifndef SSTI_MONOLITHIC_EVALUATE_OffDiag_H
+#endif  // SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H

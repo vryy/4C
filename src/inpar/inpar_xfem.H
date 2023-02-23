@@ -328,4 +328,4 @@ namespace INPAR
 
 }  // namespace INPAR
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_XFEM_H
+#endif  // INPAR_XFEM_H

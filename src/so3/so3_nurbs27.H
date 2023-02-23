@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SONURBS27_H
-#define SONURBS27_H
+#ifndef SO3_NURBS27_H
+#define SO3_NURBS27_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -390,4 +390,4 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SONURBS27_H
+#endif  // SO3_NURBS27_H

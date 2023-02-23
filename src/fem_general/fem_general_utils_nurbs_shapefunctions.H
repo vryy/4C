@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef UTILS_NURBS_SHAPEFUNCTION
-#define UTILS_NURBS_SHAPEFUNCTION
+#ifndef FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_H
+#define FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_H
 
 #include "fem_general_utils_bspline.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -3909,4 +3909,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // UTILS_NURBS_SHAPEFUNCTION
+#endif  // FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_H

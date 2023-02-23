@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTURE_TIMINT_ADAPT_H
-#define ADAPTER_STRUCTURE_TIMINT_ADAPT_H
+#ifndef ADAPTER_STR_TIMINT_ADAPTIVE_H
+#define ADAPTER_STR_TIMINT_ADAPTIVE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

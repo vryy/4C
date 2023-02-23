@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUPANISOEXPO_H_
-#define ELAST_COUPANISOEXPO_H_
+#ifndef MATELAST_COUPANISOEXPO_H
+#define MATELAST_COUPANISOEXPO_H
 
 #include "matelast_coupanisoexpobase.H"
 #include "mat_anisotropy_extension_default.H"
@@ -188,4 +188,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_COUPANISOEXPO_H_
+#endif  // MATELAST_COUPANISOEXPO_H

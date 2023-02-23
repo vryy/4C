@@ -58,4 +58,4 @@ namespace ALE
 
 }  // namespace ALE
 
-#endif /* ALE_RESULTTEST_H */
+#endif  // ALE_RESULTTEST_H

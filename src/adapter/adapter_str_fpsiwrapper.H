@@ -9,8 +9,8 @@
 
 */
 
-#ifndef FPSI_STRUCTURE_WRAPPER_H
-#define FPSI_STRUCTURE_WRAPPER_H
+#ifndef ADAPTER_STR_FPSIWRAPPER_H
+#define ADAPTER_STR_FPSIWRAPPER_H
 
 #include "adapter_str_fsiwrapper.H"
 

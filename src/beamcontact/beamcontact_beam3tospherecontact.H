@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BEAMTOSPHEREC_H
-#define BEAMTOSPHEREC_H
+#ifndef BEAMCONTACT_BEAM3TOSPHERECONTACT_H
+#define BEAMCONTACT_BEAM3TOSPHERECONTACT_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -427,4 +427,4 @@ namespace CONTACT
   };  // class Beam3tospherecontact
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAMTOSPHEREC_H
+#endif  // BEAMCONTACT_BEAM3TOSPHERECONTACT_H

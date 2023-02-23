@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_
-#define SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_
+#ifndef SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
+#define SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
 
 #include "scatra_ele_calc.H"
 #include "scatra_ele_calc_aniso.H"
@@ -96,4 +96,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_ */
+#endif  // SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H

@@ -1114,4 +1114,4 @@ namespace MORTAR
 // << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarElement& ele);
 
-#endif  // #ifndef MORTAR_ELEMENT_H
+#endif  // MORTAR_ELEMENT_H

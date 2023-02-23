@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef CROSSLINKINGPARAMS_H
-#define CROSSLINKINGPARAMS_H
+#ifndef BEAMINTERACTION_CROSSLINKING_PARAMS_H
+#define BEAMINTERACTION_CROSSLINKING_PARAMS_H
 
 #include "lib_dserror.H"
 #include "inpar_beaminteraction.H"

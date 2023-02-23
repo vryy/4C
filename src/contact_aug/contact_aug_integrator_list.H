@@ -6,6 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
+#ifndef CONTACT_AUG_INTEGRATOR_LIST_H
+#define CONTACT_AUG_INTEGRATOR_LIST_H
 
 #include "contact_aug_integrator_policy.H"
 
@@ -115,3 +117,5 @@ template class CONTACT::AUG::Integrator<3, DRT::Element::nurbs9, DRT::Element::n
     CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::nurbs4>>;
 template class CONTACT::AUG::Integrator<3, DRT::Element::nurbs9, DRT::Element::nurbs4,
     CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::nurbs4>>;
+
+#endif

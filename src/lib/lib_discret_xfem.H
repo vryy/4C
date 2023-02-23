@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DISCRET_XFEM_H
-#define DISCRET_XFEM_H
+#ifndef LIB_DISCRET_XFEM_H
+#define LIB_DISCRET_XFEM_H
 
 #include "lib_discret_faces.H"
 #include "lib_dofset.H"
@@ -279,4 +279,4 @@ namespace DRT
   };  // class DiscretizationXFEM
 }  // namespace DRT
 
-#endif  // #ifndef DISCRET_XFEM_H
+#endif  // LIB_DISCRET_XFEM_H

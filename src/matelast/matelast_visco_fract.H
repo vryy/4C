@@ -7,8 +7,8 @@ FSLS-model
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef VISCO_FRACT_H_
-#define VISCO_FRACT_H_
+#ifndef MATELAST_VISCO_FRACT_H
+#define MATELAST_VISCO_FRACT_H
 
 #include "mat_par_parameter.H"
 #include "matelast_summand.H"
@@ -127,4 +127,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // FRACT_H_
+#endif  // MATELAST_VISCO_FRACT_H

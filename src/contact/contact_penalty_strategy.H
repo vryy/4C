@@ -354,4 +354,4 @@ namespace CONTACT
   };  // class CoPenaltyStrategy
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_PENALTY_STRATEGY_H
+#endif  // CONTACT_PENALTY_STRATEGY_H

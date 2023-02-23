@@ -17,8 +17,8 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-#ifndef CCARAT_DATATYPES_H
-#define CCARAT_DATATYPES_H
+#ifndef PSS_FULL_CCARAT_DATATYPES_H
+#define PSS_FULL_CCARAT_DATATYPES_H
 
 /*----------------------------------------------------------------------*
  | basic data types, do not use INT, DOUBLE or CHAR in baci !           |
@@ -38,4 +38,4 @@ typedef double DOUBLE;
 typedef char CHAR;
 
 
-#endif /* CCARAT_DATATYPES_H */
+#endif  // PSS_FULL_PSS_FULL_CCARAT_DATATYPES_H

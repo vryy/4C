@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef GLOBAL_INP_CONTROL_H
-#define GLOBAL_INP_CONTROL_H
+#ifndef GLOBAL_FULL_INP_CONTROL_H
+#define GLOBAL_FULL_INP_CONTROL_H
 
 #include <string>
 #include <Epetra_Comm.h>
@@ -25,4 +25,4 @@ void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
 void SetupParallelOutput(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
 
-#endif  // #ifndef GLOBAL_INP_CONTROL2_H
+#endif  // GLOBAL_FULL_INP_CONTROL_H

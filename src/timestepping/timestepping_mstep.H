@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef TIMINTMSTEP_H
-#define TIMINTMSTEP_H
+#ifndef TIMESTEPPING_MSTEP_H
+#define TIMESTEPPING_MSTEP_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -383,4 +383,4 @@ namespace TIMINT
 }  // namespace TIMINT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef TIMINTMSTEP_H
+#endif  // TIMESTEPPING_MSTEP_H

@@ -3,8 +3,8 @@
 \level 0
 */
 
-#ifndef SRC_LIB_FUNCTION_OF_SCALAR_H
-#define SRC_LIB_FUNCTION_OF_SCALAR_H
+#ifndef LIB_FUNCTION_OF_SCALAR_H
+#define LIB_FUNCTION_OF_SCALAR_H
 
 namespace DRT::UTILS
 {

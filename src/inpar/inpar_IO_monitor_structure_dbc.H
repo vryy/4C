@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef INPAR_IO_MONITOR_STRUCTURE_DBC
-#define INPAR_IO_MONITOR_STRUCTURE_DBC
+#ifndef INPAR_IO_MONITOR_STRUCTURE_DBC_H
+#define INPAR_IO_MONITOR_STRUCTURE_DBC_H
 
 
 /*----------------------------------------------------------------------*/

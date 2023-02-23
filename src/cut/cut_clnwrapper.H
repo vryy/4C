@@ -743,4 +743,4 @@ inline GEO::CUT::ClnWrapper pow(const GEO::CUT::ClnWrapper& base, int exponent)
 }
 #endif
 
-#endif /* CUT_CLNWRAPPER_H */
+#endif  // CUT_CLNWRAPPER_H

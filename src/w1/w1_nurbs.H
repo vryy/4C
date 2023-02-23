@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef WALL1_NURBS_H
-#define WALL1_NURBS_H
+#ifndef W1_NURBS_H
+#define W1_NURBS_H
 
 #include "w1.H"
 
@@ -144,4 +144,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef WALL1_NURBS_H
+#endif  // W1_NURBS_H

@@ -3,8 +3,8 @@
 \brief Util functions for tensor transformations
 */
 
-#ifndef TENSOR_UTILS_H
-#define TENSOR_UTILS_H
+#ifndef LIB_TENSOR_TRANSFORMATION_H
+#define LIB_TENSOR_TRANSFORMATION_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -122,4 +122,4 @@ namespace UTILS
   }  // namespace TENSOR
 }  // namespace UTILS
 
-#endif  // TENSOR_UTILS_H
+#endif  // LIB_TENSOR_TRANSFORMATION_H

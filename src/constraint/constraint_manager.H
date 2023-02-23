@@ -361,4 +361,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /*CONSTRAINTMANAGER_H*/
+#endif  // CONSTRAINT_MANAGER_H

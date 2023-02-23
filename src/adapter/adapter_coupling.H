@@ -755,4 +755,4 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_H */
+#endif  // ADAPTER_COUPLING_H

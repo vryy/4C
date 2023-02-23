@@ -6,8 +6,8 @@
 
 *--------------------------------------------------------------------------*/
 
-#ifndef SSTI_MONOLITHIC_H_
-#define SSTI_MONOLITHIC_H_
+#ifndef SSTI_MONOLITHIC_H
+#define SSTI_MONOLITHIC_H
 
 #include "ssti_algorithm.H"
 

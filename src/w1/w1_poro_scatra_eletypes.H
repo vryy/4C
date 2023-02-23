@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef WALL1_PORO_SCATRA_ELETYPES_H_
-#define WALL1_PORO_SCATRA_ELETYPES_H_
+#ifndef W1_PORO_SCATRA_ELETYPES_H
+#define W1_PORO_SCATRA_ELETYPES_H
 
 #include "w1_poro.H"
 
@@ -143,4 +143,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* WALL1_PORO_SCATRA_ELETYPES_H_ */
+#endif  // W1_PORO_SCATRA_ELETYPES_H

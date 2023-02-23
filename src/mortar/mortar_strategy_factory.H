@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef SRC_MORTAR_MORTAR_STRATEGY_FACTORY_H_
-#define SRC_MORTAR_MORTAR_STRATEGY_FACTORY_H_
+#ifndef MORTAR_STRATEGY_FACTORY_H
+#define MORTAR_STRATEGY_FACTORY_H
 
 #include "inpar_contact.H"
 
@@ -175,4 +175,4 @@ namespace MORTAR
   }     // namespace STRATEGY
 }  // namespace MORTAR
 
-#endif /* SRC_MORTAR_MORTAR_STRATEGY_FACTORY_H_ */
+#endif  // MORTAR_STRATEGY_FACTORY_H

@@ -16,4 +16,4 @@
 
 //#define MATERIALFDCHECK /* check constitutive matrix via finite differences */
 
-#endif  // #ifndef SO3_DEFINES_H
+#endif  // SO3_DEFINES_H

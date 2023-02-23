@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_EXPL_GENERIC_H_
-#define STR_EXPL_GENERIC_H_
+#ifndef STRUCTURE_NEW_EXPL_GENERIC_H
+#define STRUCTURE_NEW_EXPL_GENERIC_H
 
 #include "structure_new_integrator.H"
 
@@ -64,4 +64,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_EXPL_GENERIC_H_ */
+#endif  // STRUCTURE_NEW_EXPL_GENERIC_H

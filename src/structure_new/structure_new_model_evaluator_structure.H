@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_MODEL_EVALUATOR_STRUCTURE_H_
-#define STR_MODEL_EVALUATOR_STRUCTURE_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H
 
 #include "structure_new_model_evaluator_generic.H"  // base class
 
@@ -519,4 +519,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* STR_MODEL_EVALUATOR_STRUCTURE_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H

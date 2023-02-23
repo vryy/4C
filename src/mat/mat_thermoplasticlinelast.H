@@ -36,8 +36,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/11 |
  *----------------------------------------------------------------------*/
-#ifndef THERMOPLASTICLINELAST_H_
-#define THERMOPLASTICLINELAST_H_
+#ifndef MAT_THERMOPLASTICLINELAST_H
+#define MAT_THERMOPLASTICLINELAST_H
 
 
 /*----------------------------------------------------------------------*
@@ -409,4 +409,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // THERMOPLASTICLINELAST_H_
+#endif  // MAT_THERMOPLASTICLINELAST_H

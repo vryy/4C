@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_INTERFACE_UTILS_H_
-#define XFEM_INTERFACE_UTILS_H_
+#ifndef XFEM_INTERFACE_UTILS_H
+#define XFEM_INTERFACE_UTILS_H
 
 // forward declaration of enums not possible
 #include "inpar_xfem.H"
@@ -192,4 +192,4 @@ namespace XFEM
   }  // namespace UTILS
 }  // namespace XFEM
 
-#endif /* XFEM_INTERFACE_UTILS_H_ */
+#endif  // XFEM_INTERFACE_UTILS_H

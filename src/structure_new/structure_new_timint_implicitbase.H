@@ -12,8 +12,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_IMPLICITBASE_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_IMPLICITBASE_H_
+#ifndef STRUCTURE_NEW_TIMINT_IMPLICITBASE_H
+#define STRUCTURE_NEW_TIMINT_IMPLICITBASE_H
 
 #include "structure_new_timint_base.H"
 
@@ -100,4 +100,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_IMPLICITBASE_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_IMPLICITBASE_H

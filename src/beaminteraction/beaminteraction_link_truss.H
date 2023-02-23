@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BeamLinkTruss_H
-#define BeamLinkTruss_H
+#ifndef BEAMINTERACTION_LINK_TRUSS_H
+#define BEAMINTERACTION_LINK_TRUSS_H
 
 #include "linalg_fixedsizematrix.H"
 #include "beaminteraction_link_pinjointed.H"

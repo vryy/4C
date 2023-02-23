@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
-#define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
+#ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H
+#define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H
 
 #include <Epetra_Operator.h>
 #include <Epetra_MultiVector.h>

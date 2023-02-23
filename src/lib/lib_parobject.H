@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef PAROBJECT_H
-#define PAROBJECT_H
+#ifndef LIB_PAROBJECT_H
+#define LIB_PAROBJECT_H
 
 #include <vector>
 #include <map>
@@ -1001,4 +1001,4 @@ namespace DRT
   // class ParObject
 }  // namespace DRT
 
-#endif  // #ifndef PAROBJECT_H
+#endif  // LIB_PAROBJECT_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_DISCRET_INTERFACE_H_
-#define SRC_LIB_DISCRET_INTERFACE_H_
+#ifndef LIB_DISCRET_INTERFACE_H
+#define LIB_DISCRET_INTERFACE_H
 
 #include <vector>
 
@@ -632,4 +632,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_DISCRET_INTERFACE_H_ */
+#endif  // LIB_DISCRET_INTERFACE_H

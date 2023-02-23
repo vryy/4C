@@ -6,8 +6,8 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef ELAST_COUPANISOEXPOTWOCOUP_H_
-#define ELAST_COUPANISOEXPOTWOCOUP_H_
+#ifndef MATELAST_COUPANISOEXPOTWOCOUP_H
+#define MATELAST_COUPANISOEXPOTWOCOUP_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -223,4 +223,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPANISOEXPOTWOCOUP_H_
+#endif  // MATELAST_COUPANISOEXPOTWOCOUP_H

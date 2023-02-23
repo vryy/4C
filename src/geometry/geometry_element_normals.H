@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef ELEMENT_NORMALS_H_
-#define ELEMENT_NORMALS_H_
+#ifndef GEOMETRY_ELEMENT_NORMALS_H
+#define GEOMETRY_ELEMENT_NORMALS_H
 
 
 #include "fem_general_utils_fem_shapefunctions.H"
@@ -238,4 +238,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /*ELEMENT_NORMALS_H_NORMALS_H_*/
+#endif  // GEOMETRY_ELEMENT_NORMALS_H

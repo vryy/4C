@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef EXPORTER_H
-#define EXPORTER_H
+#ifndef LIB_EXPORTER_H
+#define LIB_EXPORTER_H
 
 #include <vector>
 #include <map>
@@ -847,4 +847,4 @@ void DRT::Exporter::Export(std::map<int, std::map<T, U>>& data)
   GenericExport(helper);
 }
 
-#endif  // #ifndef EXPORTER_H
+#endif  // LIB_EXPORTER_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SPHEREBEAMLINKING_PARAMS_H
-#define SPHEREBEAMLINKING_PARAMS_H
+#ifndef BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
+#define BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
 
 #include "lib_dserror.H"
 #include "inpar_beaminteraction.H"

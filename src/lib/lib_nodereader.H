@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef NODEREADER_H
-#define NODEREADER_H
+#ifndef LIB_NODEREADER_H
+#define LIB_NODEREADER_H
 
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"

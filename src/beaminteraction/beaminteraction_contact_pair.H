@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BEAMCONTACTPAIR_H
-#define BEAMCONTACTPAIR_H
+#ifndef BEAMINTERACTION_CONTACT_PAIR_H
+#define BEAMINTERACTION_CONTACT_PAIR_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

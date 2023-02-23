@@ -166,4 +166,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_TSI_H
+#endif  // INPAR_TSI_H

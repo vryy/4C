@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELEMAG_TIMINT_H
-#define ELEMAG_TIMINT_H
+#ifndef ELEMAG_TIMEINT_H
+#define ELEMAG_TIMEINT_H
 
 /*----------------------------------------------------------------------*
  | headers                                             gravemeier 06/17 |
@@ -364,4 +364,4 @@ namespace ELEMAG
 
 }  // namespace ELEMAG
 
-#endif /* ELEMAG_TIMINT_H */
+#endif  // ELEMAG_TIMEINT_H

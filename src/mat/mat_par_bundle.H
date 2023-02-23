@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef MATPAR_BUNDLE_H
-#define MATPAR_BUNDLE_H
+#ifndef MAT_PAR_BUNDLE_H
+#define MAT_PAR_BUNDLE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -127,4 +127,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif  // #ifndef MATPAR_BUNDLE_H
+#endif  // MAT_PAR_BUNDLE_H

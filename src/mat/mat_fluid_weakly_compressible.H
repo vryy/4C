@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef WEAKLYCOMPRESSIBLEFLUID_H
-#define WEAKLYCOMPRESSIBLEFLUID_H
+#ifndef MAT_FLUID_WEAKLY_COMPRESSIBLE_H
+#define MAT_FLUID_WEAKLY_COMPRESSIBLE_H
 
 
 

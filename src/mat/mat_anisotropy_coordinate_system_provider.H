@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H
-#define BACI_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H
+#ifndef MAT_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H
+#define MAT_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H
 
 #include <Teuchos_RCPDecl.hpp>
 
@@ -57,4 +57,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H
+#endif  // MAT_ANISOTROPY_COORDINATE_SYSTEM_PROVIDER_H

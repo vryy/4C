@@ -284,4 +284,4 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-#endif  // #ifndef ADAPTER_ALE_H
+#endif  // ADAPTER_ALE_H

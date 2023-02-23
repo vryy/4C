@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_PORO_OST_H
-#define FLD_TIMINT_PORO_OST_H
+#ifndef FLUID_TIMINT_PORO_OST_H
+#define FLUID_TIMINT_PORO_OST_H
 
 
 #include "fluid_timint_poro.H"
@@ -49,4 +49,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_PORO_OST_H
+#endif  // FLUID_TIMINT_PORO_OST_H

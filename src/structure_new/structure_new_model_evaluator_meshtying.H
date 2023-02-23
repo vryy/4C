@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_MESHTYING_H_
-#define SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_MESHTYING_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H
 
 #include "structure_new_model_evaluator_generic.H"
 #include "lib_utils_matrix_vector_enums.H"
@@ -233,4 +233,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* SRC_STRUCTURE_NEW_STR_MODEL_EVALUATOR_MESHTYING_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H

@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_CARDIOVASCULAR0D_LINEARSYSTEM_H_
-#define NOX_CARDIOVASCULAR0D_LINEARSYSTEM_H_
+#ifndef CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_H
+#define CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_H
 
 #include "solver_nonlin_nox_linearsystem.H"
 
@@ -86,4 +86,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_STR_LINEARSYSTEM_H_ */
+#endif  // CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_H

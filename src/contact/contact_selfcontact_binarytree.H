@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef SELFCONTACT_BINARYTREE_SELF_H
-#define SELFCONTACT_BINARYTREE_SELF_H
+#ifndef CONTACT_SELFCONTACT_BINARYTREE_H
+#define CONTACT_SELFCONTACT_BINARYTREE_H
 
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Map.h"
@@ -854,4 +854,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef DSELFCONTACT_BINARYTREE_H
+#endif  // CONTACT_SELFCONTACT_BINARYTREE_H

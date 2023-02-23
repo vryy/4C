@@ -51,4 +51,4 @@ extern "C"
 
 #endif
 
-#endif /* FORTRAN_DEFINITIONS_H */
+#endif  // FORTRAN_FORTRAN_DEFINITIONS_H

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_POINTPRECONDITIONER_H_
-#define SOLVER_POINTPRECONDITIONER_H_
+#ifndef SOLVER_POINTPRECONDITIONER_H
+#define SOLVER_POINTPRECONDITIONER_H
 
 #include "linalg_downwindmatrix.H"
 #include "linalg_none_operator.H"

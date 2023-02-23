@@ -5,6 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
+#ifndef SO3_SHW6_H
+#define SO3_SHW6_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "so3_weg6.H"
@@ -285,3 +287,5 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+#endif

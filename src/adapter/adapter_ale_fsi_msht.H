@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ADAPTER_AD_ALE_FSI_MSHT_H_
-#define SRC_ADAPTER_AD_ALE_FSI_MSHT_H_
+#ifndef ADAPTER_ALE_FSI_MSHT_H
+#define ADAPTER_ALE_FSI_MSHT_H
 
 
 
@@ -63,4 +63,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_ALE_FSI_MSHT_H_ */
+#endif  // ADAPTER_ALE_FSI_MSHT_H

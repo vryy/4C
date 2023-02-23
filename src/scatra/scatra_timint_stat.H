@@ -137,4 +137,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_STAT_H
+#endif  // SCATRA_TIMINT_STAT_H

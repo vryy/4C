@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_AUGMENTED_INTERFACE_H_
-#define CONTACT_AUGMENTED_INTERFACE_H_
+#ifndef CONTACT_AUG_INTERFACE_H
+#define CONTACT_AUG_INTERFACE_H
 
 #include "contact_interface.H"
 #include "contact_aug_utils.H"
@@ -1065,4 +1065,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* CONTACT_AUGMENTED_INTERFACE_H_ */
+#endif  // CONTACT_AUG_INTERFACE_H

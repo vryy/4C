@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_GROWTH_EVOLUTION_H
-#define BACI_GROWTH_EVOLUTION_H
+#ifndef MIXTURE_GROWTH_EVOLUTION_H
+#define MIXTURE_GROWTH_EVOLUTION_H
 namespace MIXTURE
 {
   /*!
@@ -53,4 +53,4 @@ namespace MIXTURE
     [[nodiscard]] virtual T EvaluateRHSdsig(T delta_sig) const = 0;
   };
 }  // namespace MIXTURE
-#endif  // BACI_GROWTH_EVOLUTION_H
+#endif  // MIXTURE_GROWTH_EVOLUTION_H

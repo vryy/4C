@@ -8,8 +8,8 @@ function)
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef MAT_BEAM_ELASTHYPER_H_
-#define MAT_BEAM_ELASTHYPER_H_
+#ifndef MAT_BEAM_ELASTHYPER_H
+#define MAT_BEAM_ELASTHYPER_H
 
 #include "inpar_material.H"
 

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_H
+#define POROFLUIDMULTIPHASE_ELE_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -606,4 +606,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_H

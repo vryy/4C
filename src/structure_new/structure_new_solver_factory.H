@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_SOLVER_FACTORY_H_
-#define STR_SOLVER_FACTORY_H_
+#ifndef STRUCTURE_NEW_SOLVER_FACTORY_H
+#define STRUCTURE_NEW_SOLVER_FACTORY_H
 
 #include <set>
 
@@ -99,4 +99,4 @@ namespace STR
   }  // namespace SOLVER
 }  // namespace STR
 
-#endif /* STR_SOLVER_FACTORY_H_ */
+#endif  // STRUCTURE_NEW_SOLVER_FACTORY_H

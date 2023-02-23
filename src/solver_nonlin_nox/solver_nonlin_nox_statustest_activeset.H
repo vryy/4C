@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_
+#ifndef SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H
+#define SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H
 
 #include <deque>
 
@@ -73,4 +73,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_ */
+#endif  // SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H

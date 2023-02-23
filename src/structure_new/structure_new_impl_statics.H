@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_IMPL_STATICS_H_
-#define STR_IMPL_STATICS_H_
+#ifndef STRUCTURE_NEW_IMPL_STATICS_H
+#define STRUCTURE_NEW_IMPL_STATICS_H
 
 #include "structure_new_impl_generic.H"
 // necessary due to enum usage
@@ -112,4 +112,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_IMPL_STATICS_H_ */
+#endif  // STRUCTURE_NEW_IMPL_STATICS_H

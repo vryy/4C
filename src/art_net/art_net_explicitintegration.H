@@ -13,8 +13,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ARTNETEXPLICITINTEGRATION_H
-#define ARTNETEXPLICITINTEGRATION_H
+#ifndef ART_NET_EXPLICITINTEGRATION_H
+#define ART_NET_EXPLICITINTEGRATION_H
 
 #include "Epetra_MpiComm.h"
 
@@ -289,4 +289,4 @@ namespace ART
 }  // namespace ART
 
 
-#endif  // #ifndef ARTNETEXPLICITINTEGRATION_H
+#endif  // ART_NET_EXPLICITINTEGRATION_H

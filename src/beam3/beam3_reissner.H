@@ -17,8 +17,8 @@
  * For 2D rotations, multiplicative and additive increments are identical and
  * rotations can be prescribed without problems. */
 
-#ifndef BEAM3R_H
-#define BEAM3R_H
+#ifndef BEAM3_REISSNER_H
+#define BEAM3_REISSNER_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>

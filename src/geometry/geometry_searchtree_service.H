@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SEARCHTREE_GEOMETRY_SERVICE_H_
-#define SEARCHTREE_GEOMETRY_SERVICE_H_
+#ifndef GEOMETRY_SEARCHTREE_SERVICE_H
+#define GEOMETRY_SEARCHTREE_SERVICE_H
 
 #include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"

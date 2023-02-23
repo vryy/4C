@@ -14,8 +14,8 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_H_
-#define PRE_EXODUS_H_
+#ifndef PRE_EXODUS_H
+#define PRE_EXODUS_H
 
 namespace EXODUS
 {
@@ -27,4 +27,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif /*PRE_EXODUS_H_*/
+#endif  // PRE_EXODUS_H

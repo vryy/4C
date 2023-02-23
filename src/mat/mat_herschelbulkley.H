@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef HERSCHELBULKLEY_H
-#define HERSCHELBULKLEY_H
+#ifndef MAT_HERSCHELBULKLEY_H
+#define MAT_HERSCHELBULKLEY_H
 
 
 

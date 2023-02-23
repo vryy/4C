@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 /* macros */
 
-#ifndef STRTIMINT_NOXLINSYS_H
-#define STRTIMINT_NOXLINSYS_H
+#ifndef STRUCTURE_TIMINT_NOXLINSYS_H
+#define STRUCTURE_TIMINT_NOXLINSYS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -188,4 +188,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif  //#ifndef STRTIMINT_NOXLINSYS_H
+#endif  // STRUCTURE_TIMINT_NOXLINSYS_H

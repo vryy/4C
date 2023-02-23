@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_LOMA_H
-#define FLD_TIMINT_LOMA_H
+#ifndef FLUID_TIMINT_LOMA_H
+#define FLUID_TIMINT_LOMA_H
 
 
 #include "fluid_implicit_integration.H"
@@ -117,4 +117,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_LOMA_H
+#endif  // FLUID_TIMINT_LOMA_H

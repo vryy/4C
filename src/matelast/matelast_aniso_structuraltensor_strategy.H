@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_STRUCTURALTENSOR_STRATEGY_
-#define ELAST_STRUCTURALTENSOR_STRATEGY_
+#ifndef MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_H
+#define MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_H
 
 #define numbgp 50
 #define twice 100
@@ -355,4 +355,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_STRUCTURALTENSOR_STRATEGY_
+#endif  // MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_H

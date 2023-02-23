@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_TIMINT_EXPLICIT_H_
-#define STR_TIMINT_EXPLICIT_H_
+#ifndef STRUCTURE_NEW_TIMINT_EXPLICIT_H
+#define STRUCTURE_NEW_TIMINT_EXPLICIT_H
 
 
 #include "structure_new_timint_base.H"
@@ -108,4 +108,4 @@ namespace STR
   }  // namespace TIMINT
 }  // namespace STR
 
-#endif /* STR_TIMINT_EXPLICIT_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_EXPLICIT_H

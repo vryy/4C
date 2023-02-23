@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef CONDITION_H
-#define CONDITION_H
+#ifndef LIB_CONDITION_H
+#define LIB_CONDITION_H
 
 
 #include "Epetra_Comm.h"
@@ -566,4 +566,4 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Condition& node);
 
 
-#endif  // #ifndef CONDITION_H
+#endif  // LIB_CONDITION_H

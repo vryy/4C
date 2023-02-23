@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFIELD_STATE_UTILS_H_
-#define XFIELD_STATE_UTILS_H_
+#ifndef XFEM_XFIELD_STATE_UTILS_H
+#define XFEM_XFIELD_STATE_UTILS_H
 
 
 #include "linalg_blocksparsematrix.H"
@@ -204,4 +204,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /* XFIELD_STATE_UTILS_H_ */
+#endif  // XFEM_XFIELD_STATE_UTILS_H

@@ -23,8 +23,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-#ifndef PLASTICNLNLOGNEOHOOKE_H_
-#define PLASTICNLNLOGNEOHOOKE_H_
+#ifndef MAT_PLASTICNLNLOGNEOHOOKE_H
+#define MAT_PLASTICNLNLOGNEOHOOKE_H
 
 /*----------------------------------------------------------------------*
  | headers                                                              |
@@ -235,4 +235,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // PLASTICNLNLOGNEOHOOKE_H_
+#endif  // MAT_PLASTICNLNLOGNEOHOOKE_H

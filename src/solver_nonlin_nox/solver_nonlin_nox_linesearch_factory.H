@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_LINESEARCH_FACTORY_H_
-#define NOX_NLN_LINESEARCH_FACTORY_H_
+#ifndef SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H
+#define SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 #include <NOX_Common.H>
@@ -92,4 +92,4 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
-#endif /* NOX_NLN_LINESEARCH_FACTORY_H_ */
+#endif  // SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_H

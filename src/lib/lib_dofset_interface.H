@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef DOFSET_INTERFACE_H
-#define DOFSET_INTERFACE_H
+#ifndef LIB_DOFSET_INTERFACE_H
+#define LIB_DOFSET_INTERFACE_H
 
 #include <vector>
 #include <Epetra_Comm.h>
@@ -185,4 +185,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef DOFSET_INTERFACE_H
+#endif  // LIB_DOFSET_INTERFACE_H

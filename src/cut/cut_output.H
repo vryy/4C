@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef CUTOUTPUT_H_
-#define CUTOUTPUT_H_
+#ifndef CUT_OUTPUT_H
+#define CUT_OUTPUT_H
 
 #include "cut_point.H"
 #include "cut_boundarycell.H"
@@ -493,4 +493,4 @@ namespace GEO
 
   } /* namespace CUT */
 } /* namespace GEO */
-#endif /* CUTOUTPUT_H_ */
+#endif  // CUT_OUTPUT_H

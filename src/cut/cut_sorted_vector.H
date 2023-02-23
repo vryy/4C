@@ -30,8 +30,8 @@
 
  */
 
-#ifndef SORTED_VECTOR_H
-#define SORTED_VECTOR_H
+#ifndef CUT_SORTED_VECTOR_H
+#define CUT_SORTED_VECTOR_H
 
 #include <algorithm>
 #include <vector>

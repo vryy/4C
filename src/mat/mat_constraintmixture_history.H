@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef CONSTRAINTMIXTURE_HISTORY_H_
-#define CONSTRAINTMIXTURE_HISTORY_H_
+#ifndef MAT_CONSTRAINTMIXTURE_HISTORY_H
+#define MAT_CONSTRAINTMIXTURE_HISTORY_H
 
 #include "lib_parobjectfactory.H"
 #include "lib_parobject.H"
@@ -123,4 +123,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /* CONSTRAINTMIXTURE_HISTORY_H_ */
+#endif  // MAT_CONSTRAINTMIXTURE_HISTORY_H

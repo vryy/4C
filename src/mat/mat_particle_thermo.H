@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_THERMO_H
-#define PARTICLE_MATERIAL_THERMO_H
+#ifndef MAT_PARTICLE_THERMO_H
+#define MAT_PARTICLE_THERMO_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |

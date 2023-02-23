@@ -5,8 +5,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef MAT_BEAM_TEMPLATED_H_
-#define MAT_BEAM_TEMPLATED_H_
+#ifndef MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_H
+#define MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_H
 
 #include "mat_beam_material_generic.H"
 

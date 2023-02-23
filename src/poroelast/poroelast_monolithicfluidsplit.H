@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef PORO_MONOLITHICFLUIDSPLIT_H_
-#define PORO_MONOLITHICFLUIDSPLIT_H_
+#ifndef POROELAST_MONOLITHICFLUIDSPLIT_H
+#define POROELAST_MONOLITHICFLUIDSPLIT_H
 
 
 #include "poroelast_monolithicsplit.H"
@@ -105,4 +105,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-#endif /* PORO_MONOLITHICFLUIDSPLIT_H_ */
+#endif  // POROELAST_MONOLITHICFLUIDSPLIT_H

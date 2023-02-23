@@ -5,8 +5,8 @@
 
 */
 
-#ifndef TRAIT_THERMO_H
-#define TRAIT_THERMO_H
+#ifndef MAT_TRAIT_THERMO_H
+#define MAT_TRAIT_THERMO_H
 
 namespace MAT
 {

@@ -1,3 +1,6 @@
+#ifndef SCATRA_ELE_SCATRA_ELE_CALC_FWD_HPP
+#define SCATRA_ELE_SCATRA_ELE_CALC_FWD_HPP
+
 /*----------------------------------------------------------------------*/
 /*! \file
 
@@ -37,3 +40,5 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+
+#endif

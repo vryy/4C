@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_EHL_EHL_UTILS_H_
-#define SRC_EHL_EHL_UTILS_H_
+#ifndef EHL_UTILS_H
+#define EHL_UTILS_H
 
 
 #include <Epetra_Comm.h>
@@ -35,4 +35,4 @@ namespace EHL
 }  // namespace EHL
 
 
-#endif /* SRC_EHL_EHL_UTILS_H_ */
+#endif  // EHL_UTILS_H

@@ -14,8 +14,8 @@
 #include "mat_fluid_weakly_compressible.H"
 #include "mat_stvenantkirchhoff.H"
 
-#ifndef FLUID_FUNCTION_H
-#define FLUID_FUNCTION_H
+#ifndef FLUID_FUNCTIONS_H
+#define FLUID_FUNCTIONS_H
 
 namespace DRT
 {

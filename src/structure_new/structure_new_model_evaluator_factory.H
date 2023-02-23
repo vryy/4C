@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_MODEL_EVALUATOR_FACTORY_H_
-#define STR_MODEL_EVALUATOR_FACTORY_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
 
 #include <set>
 
@@ -58,4 +58,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* STR_MODEL_EVALUATOR_FACTORY_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H

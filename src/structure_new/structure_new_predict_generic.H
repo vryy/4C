@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_PREDICT_GENERIC_H_
-#define STR_PREDICT_GENERIC_H_
+#ifndef STRUCTURE_NEW_PREDICT_GENERIC_H
+#define STRUCTURE_NEW_PREDICT_GENERIC_H
 
 #include <Teuchos_RCP.hpp>
 // necessary due to enums
@@ -142,4 +142,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_PREDICT_GENERIC_H_ */
+#endif  // STRUCTURE_NEW_PREDICT_GENERIC_H

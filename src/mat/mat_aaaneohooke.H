@@ -13,8 +13,8 @@ the input line should read
 
 
 *----------------------------------------------------------------------*/
-#ifndef AAANEOHOOKE_H_
-#define AAANEOHOOKE_H_
+#ifndef MAT_AAANEOHOOKE_H
+#define MAT_AAANEOHOOKE_H
 
 #include "mat_par_parameter.H"
 #include "mat_so3_material.H"
@@ -176,4 +176,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // AAANEOHOOKE_H_
+#endif  // MAT_AAANEOHOOKE_H

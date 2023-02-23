@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ALE_ALE_MESHTYING_H_
-#define SRC_ALE_ALE_MESHTYING_H_
+#ifndef ALE_MESHTYING_H
+#define ALE_MESHTYING_H
 
 
 #include "inpar_ale.H"
@@ -213,4 +213,4 @@ namespace ALE
 }  // end namespace ALE
 
 
-#endif /* SRC_ALE_ALE_MESHTYING_H_ */
+#endif  // ALE_MESHTYING_H

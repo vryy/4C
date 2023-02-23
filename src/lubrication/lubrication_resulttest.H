@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_
-#define SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_
+#ifndef LUBRICATION_RESULTTEST_H
+#define LUBRICATION_RESULTTEST_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -75,4 +75,4 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
-#endif /* SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_ */
+#endif  // LUBRICATION_RESULTTEST_H

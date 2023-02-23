@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLUID_ASSEMBLY_STRATEGY_H_
-#define FLUID_ASSEMBLY_STRATEGY_H_
+#ifndef FBI_FLUID_ASSEMBLY_STRATEGY_H
+#define FBI_FLUID_ASSEMBLY_STRATEGY_H
 
 #include <vector>
 

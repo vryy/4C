@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SCATRA_MAT_MULTISCALE_H
-#define SCATRA_MAT_MULTISCALE_H
+#ifndef MAT_SCATRA_MAT_MULTISCALE_H
+#define MAT_SCATRA_MAT_MULTISCALE_H
 
 #include "mat_scatra_mat.H"
 #include "mat_scatra_multiscale.H"

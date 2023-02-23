@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef PAIREDVECTOR_H_
-#define PAIREDVECTOR_H_
+#ifndef HEADERS_PAIREDVECTOR_H
+#define HEADERS_PAIREDVECTOR_H
 
 #include <vector>
 #include <utility>
@@ -481,4 +481,4 @@ namespace GEN
 
 }  // namespace GEN
 
-#endif /* PAIREDVECTOR_H_ */
+#endif  // HEADERS_PAIREDVECTOR_H

@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef POROELAST_UTILS_SETUP_H_
-#define POROELAST_UTILS_SETUP_H_
+#ifndef POROELAST_UTILS_SETUP_H
+#define POROELAST_UTILS_SETUP_H
 
 
 #include "lib_globalproblem.H"
@@ -149,4 +149,4 @@ namespace POROELAST
   }  // namespace UTILS
 }  // namespace POROELAST
 
-#endif /* POROELAST_UTILS_SETUP_H_ */
+#endif  // POROELAST_UTILS_SETUP_H

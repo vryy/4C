@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SEARCHTREE_H
-#define SEARCHTREE_H
+#ifndef GEOMETRY_SEARCHTREE_H
+#define GEOMETRY_SEARCHTREE_H
 
 #include <set>
 

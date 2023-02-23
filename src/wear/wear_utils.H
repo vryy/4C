@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 12/13 |
  *----------------------------------------------------------------------*/
-#ifndef WEAR_UTILS_H_
-#define WEAR_UTILS_H_
+#ifndef WEAR_UTILS_H
+#define WEAR_UTILS_H
 
 /*----------------------------------------------------------------------*
  | headers                                                  farah 12/13 |
@@ -180,4 +180,4 @@ namespace WEAR
 
 }  // namespace WEAR
 
-#endif /* WEAR_UTILS_H_ */
+#endif  // WEAR_UTILS_H

@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_ADAPTER_AD_STR_LOCA_H_
-#define SRC_ADAPTER_AD_STR_LOCA_H_
+#ifndef ADAPTER_STR_LOCA_H
+#define ADAPTER_STR_LOCA_H
 
 #include "adapter_str_structure_new.H"
 
@@ -44,4 +44,4 @@ namespace ADAPTER
 
 
 
-#endif /* SRC_ADAPTER_AD_STR_LOCA_H_ */
+#endif  // ADAPTER_STR_LOCA_H

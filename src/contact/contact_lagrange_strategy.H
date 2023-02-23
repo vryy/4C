@@ -592,4 +592,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_LAGRANGE_STRATEGY_H

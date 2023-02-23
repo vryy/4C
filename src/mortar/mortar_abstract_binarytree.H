@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef ABSTRACT_BINARYTREE_H
-#define ABSTRACT_BINARYTREE_H
+#ifndef MORTAR_ABSTRACT_BINARYTREE_H
+#define MORTAR_ABSTRACT_BINARYTREE_H
 
 #include "Epetra_SerialDenseMatrix.h"
 
@@ -89,4 +89,4 @@ namespace MORTAR
   };  // class AbstractBinaryTree
 }  // namespace MORTAR
 
-#endif  // #ifndef ABSTRACT_BINARYTREE_H
+#endif  // MORTAR_ABSTRACT_BINARYTREE_H

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_PRECONDITIONERTYPE_H_
-#define SOLVER_PRECONDITIONERTYPE_H_
+#ifndef SOLVER_PRECONDITIONERTYPE_H
+#define SOLVER_PRECONDITIONERTYPE_H
 
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"

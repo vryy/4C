@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUIDFLUID_H_
-#define XFLUIDFLUID_H_
+#ifndef FLUID_XFLUID_FLUID_H
+#define FLUID_XFLUID_FLUID_H
 
 
 #include "fluid_xfluid.H"
@@ -273,4 +273,4 @@ namespace FLD
   };
 
 } /* namespace FLD */
-#endif /* XFLUIDFLUID_H_ */
+#endif  // FLUID_XFLUID_FLUID_H

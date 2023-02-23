@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLUIDWOMERSLEYCONDITION_H
-#define FLUIDWOMERSLEYCONDITION_H
+#ifndef FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H
+#define FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H
 
 
 #include "Epetra_MpiComm.h"
@@ -425,4 +425,4 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-#endif /* FLUIDWOMERSLEYCONDITION_H */
+#endif  // FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H

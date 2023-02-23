@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ADAPTER_ADAPTER_LUBRICATION_H_
-#define SRC_ADAPTER_ADAPTER_LUBRICATION_H_
+#ifndef ADAPTER_LUBRICATION_H
+#define ADAPTER_LUBRICATION_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -76,4 +76,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_ADAPTER_LUBRICATION_H_ */
+#endif  // ADAPTER_LUBRICATION_H

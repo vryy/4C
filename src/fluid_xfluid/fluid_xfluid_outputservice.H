@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUID_OUTPUTSERVICE_H_
-#define XFLUID_OUTPUTSERVICE_H_
+#ifndef FLUID_XFLUID_OUTPUTSERVICE_H
+#define FLUID_XFLUID_OUTPUTSERVICE_H
 
 
 /*! header inclusions */

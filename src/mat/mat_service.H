@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MATERIAL_SERVICE_H
-#define MATERIAL_SERVICE_H
+#ifndef MAT_SERVICE_H
+#define MAT_SERVICE_H
 
 
 #include <Teuchos_RCP.hpp>

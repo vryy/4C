@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_GRAVITY_H
-#define PARTICLE_GRAVITY_H
+#ifndef PARTICLE_ALGORITHM_GRAVITY_H
+#define PARTICLE_ALGORITHM_GRAVITY_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

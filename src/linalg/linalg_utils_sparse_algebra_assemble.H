@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H_
-#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H_
+#ifndef LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H
+#define LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H
 
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -335,4 +335,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H_ */
+#endif  // LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H

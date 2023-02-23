@@ -25,8 +25,8 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 
 *----------------------------------------------------------------------*/
 
-#ifndef ACTIVEFIBER_H_
-#define ACTIVEFIBER_H_
+#ifndef MAT_ACTIVEFIBER_H
+#define MAT_ACTIVEFIBER_H
 
 
 #include "mat_so3_material.H"
@@ -297,4 +297,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /*ACTIVEFIBER_*/
+#endif  // MAT_ACTIVEFIBER_H

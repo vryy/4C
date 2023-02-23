@@ -7,8 +7,8 @@ dimensional airway elements framework (transport in elements and between air and
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef HEMOGLOBIN_0D_O2_SATURATION_H
-#define HEMOGLOBIN_0D_O2_SATURATION_H
+#ifndef MAT_HEMOGLOBIN_0D_O2_SATURATION_H
+#define MAT_HEMOGLOBIN_0D_O2_SATURATION_H
 
 
 

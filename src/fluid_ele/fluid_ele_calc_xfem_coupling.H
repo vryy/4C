@@ -508,4 +508,4 @@ namespace DRT
   }    // end namespace ELEMENTS
 }  // end namespace DRT
 
-#endif /* FLUID_ELE_CALC_XFEM_COUPLING_H_ */
+#endif  // FLUID_ELE_CALC_XFEM_COUPLING_H

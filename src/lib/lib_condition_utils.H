@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef CONDITION_UTILS_H
-#define CONDITION_UTILS_H
+#ifndef LIB_CONDITION_UTILS_H
+#define LIB_CONDITION_UTILS_H
 
 #include <set>
 #include <vector>

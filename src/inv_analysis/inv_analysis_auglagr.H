@@ -6,8 +6,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef INVANA_AUGLAGR_H
-#define INVANA_AUGLAGR_H
+#ifndef INV_ANALYSIS_AUGLAGR_H
+#define INV_ANALYSIS_AUGLAGR_H
 
 #include "inv_analysis_base.H"
 
@@ -147,4 +147,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*INVANA_AUGLAGR_H_*/
+#endif  // INV_ANALYSIS_AUGLAGR_H

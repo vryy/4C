@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ARRHENIUS_TEMP_H
-#define ARRHENIUS_TEMP_H
+#ifndef MAT_ARRHENIUS_TEMP_H
+#define MAT_ARRHENIUS_TEMP_H
 
 
 

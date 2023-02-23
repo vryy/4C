@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef TRIAD_INTERPOLATION
-#define TRIAD_INTERPOLATION
+#ifndef BEAM3_TRIAD_INTERPOLATION_H
+#define BEAM3_TRIAD_INTERPOLATION_H
 
 #include "linalg_fixedsizematrix.H"
 

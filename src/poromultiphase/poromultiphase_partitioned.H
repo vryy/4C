@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_PARTITIONED_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_PARTITIONED_H_
+#ifndef POROMULTIPHASE_PARTITIONED_H
+#define POROMULTIPHASE_PARTITIONED_H
 
 #include "poromultiphase_base.H"
 
@@ -31,4 +31,4 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_PARTITIONED_H_ */
+#endif  // POROMULTIPHASE_PARTITIONED_H

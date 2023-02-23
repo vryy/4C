@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef STRURESULTTEST_H
-#define STRURESULTTEST_H
+#ifndef STRUCTURE_RESULTTEST_H
+#define STRUCTURE_RESULTTEST_H
 
 #include "lib_resulttest.H"
 
@@ -82,4 +82,4 @@ class StruResultTest : public DRT::ResultTest
   //!@}
 };
 
-#endif /* #ifndef STRURESULTTEST_H */
+#endif  // STRUCTURE_RESULTTEST_H

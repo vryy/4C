@@ -38,4 +38,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_INVANALYSIS_H
+#endif  // INPAR_INVANALYSIS_H

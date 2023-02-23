@@ -11,8 +11,8 @@
 /* macros */
 
 
-#ifndef ADAPTER_STRUCTURE_CONSTR_MERGED_H
-#define ADAPTER_STRUCTURE_CONSTR_MERGED_H
+#ifndef ADAPTER_STR_CONSTR_MERGED_H
+#define ADAPTER_STR_CONSTR_MERGED_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_IO_EVERY_ITERATION_WRITER_H_
-#define SRC_IO_EVERY_ITERATION_WRITER_H_
+#ifndef IO_EVERY_ITERATION_WRITER_H
+#define IO_EVERY_ITERATION_WRITER_H
 
 #include "lib_dserror.H"
 #include <Teuchos_RCP.hpp>
@@ -253,4 +253,4 @@ namespace IO
 }  // namespace IO
 
 
-#endif /* SRC_IO_EVERY_ITERATION_WRITER_H_ */
+#endif  // IO_EVERY_ITERATION_WRITER_H

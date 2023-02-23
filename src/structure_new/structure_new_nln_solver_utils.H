@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_
-#define SRC_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_UTILS_H
+#define STRUCTURE_NEW_NLN_SOLVER_UTILS_H
 
 #include <set>
 
@@ -166,4 +166,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_UTILS_H

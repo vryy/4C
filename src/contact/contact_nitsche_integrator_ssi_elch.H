@@ -7,8 +7,8 @@ electrochemistry
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_SSI_ELCH_H
-#define CONTACT_INTEGRATOR_NITSCHE_SSI_ELCH_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
+#define CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
 
 #include "contact_nitsche_integrator_ssi.H"
 
@@ -244,4 +244,4 @@ namespace CONTACT
     static const int numdofpernode_ = 2;
   };
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_SSI_ELCH_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H

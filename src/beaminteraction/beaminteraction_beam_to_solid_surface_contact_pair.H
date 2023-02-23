@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_SURFACE_CONTACT_PAIR_H_
-#define BEAM_TO_SOLID_SURFACE_CONTACT_PAIR_H_
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_CONTACT_PAIR_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_CONTACT_PAIR_H
 
 
 #include "beaminteraction_beam_to_solid_surface_contact_pair_base.H"

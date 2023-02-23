@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 05/13 |
  *----------------------------------------------------------------------*/
-#ifndef THRTIMINT_GENALPHA_H
-#define THRTIMINT_GENALPHA_H
+#ifndef THERMO_TIMINT_GENALPHA_H
+#define THERMO_TIMINT_GENALPHA_H
 
 
 /*----------------------------------------------------------------------*
@@ -255,4 +255,4 @@ namespace THR
 }  // namespace THR
 
 
-#endif  // #ifndef THRTIMINT_GENALPHA_H
+#endif  // THERMO_TIMINT_GENALPHA_H

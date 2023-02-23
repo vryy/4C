@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ART_NET_RESULTTEST_H
-#define ART_NET_RESULTTEST_H
+#ifndef ART_NET_ARTERY_RESULTTEST_H
+#define ART_NET_ARTERY_RESULTTEST_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -70,4 +70,4 @@ namespace ART
 
 }  // namespace ART
 
-#endif  // ART_NET_RESULTTEST_H
+#endif  // ART_NET_ARTERY_RESULTTEST_H

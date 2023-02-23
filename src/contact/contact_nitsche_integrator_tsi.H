@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_TSI_H
-#define CONTACT_INTEGRATOR_NITSCHE_TSI_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_TSI_H
+#define CONTACT_NITSCHE_INTEGRATOR_TSI_H
 
 #include "contact_nitsche_integrator.H"
 
@@ -196,4 +196,4 @@ namespace CONTACT
     double gamma_master_;
   };
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_TSI_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_TSI_H

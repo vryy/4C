@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_CONNECTIVITY_H_
-#define SRC_LIB_CONNECTIVITY_H_
+#ifndef LIB_CONNECTIVITY_H
+#define LIB_CONNECTIVITY_H
 
 #include <set>
 #include <unordered_map>
@@ -141,4 +141,4 @@ namespace DRT
 
 
 
-#endif /* SRC_LIB_CONNECTIVITY_H_ */
+#endif  // LIB_CONNECTIVITY_H

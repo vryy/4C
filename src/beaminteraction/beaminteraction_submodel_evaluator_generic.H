@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_H
 
 #include "inpar_beaminteraction.H"
 #include "beaminteraction_str_model_evaluator.H"

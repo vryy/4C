@@ -8,8 +8,8 @@ with condensed fluid interface velocities
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_FSI_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H_
-#define SRC_FSI_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H_
+#ifndef FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H
+#define FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H
 
 
 #include "fsi_monolithic.H"
@@ -435,4 +435,4 @@ namespace FSI
 }  // namespace FSI
 
 
-#endif /* SRC_FSI_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H_ */
+#endif  // FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H

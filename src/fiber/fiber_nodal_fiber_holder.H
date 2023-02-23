@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_NODAL_FIBER_HOLDER_H
-#define BACI_NODAL_FIBER_HOLDER_H
+#ifndef FIBER_NODAL_FIBER_HOLDER_H
+#define FIBER_NODAL_FIBER_HOLDER_H
 
 #include <vector>
 #include <unordered_map>
@@ -175,4 +175,4 @@ namespace DRT
     };
   }  // namespace FIBER
 }  // namespace DRT
-#endif  // BACI_NODAL_FIBER_HOLDER_H
+#endif  // FIBER_NODAL_FIBER_HOLDER_H

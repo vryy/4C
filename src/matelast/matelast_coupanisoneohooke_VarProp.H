@@ -6,8 +6,8 @@ with space-time varying coefficients
 \level 3
 */
 /*---------------------------------------------------------------------*/
-#ifndef ELAST_COUPANISONEOHOOKE_VARPROP_H_
-#define ELAST_COUPANISONEOHOOKE_VARPROP_H_
+#ifndef MATELAST_COUPANISONEOHOOKE_VARPROP_H
+#define MATELAST_COUPANISONEOHOOKE_VARPROP_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -162,4 +162,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPANISONEOHOOKE_VARPROP_H_
+#endif  // MATELAST_COUPANISONEOHOOKE_VARPROP_H

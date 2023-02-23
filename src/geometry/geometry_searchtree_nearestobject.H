@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef SEARCHTREE_NEARESTOBJECT_H_
-#define SEARCHTREE_NEARESTOBJECT_H_
+#ifndef GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
+#define GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
 
 
 #include "linalg_fixedsizematrix.H"
@@ -157,4 +157,4 @@ namespace GEO
 
 }  // namespace GEO
 
-#endif /*OCTTREE_NEARESTOBJECT_H_*/
+#endif  // GEOMETRY_SEARCHTREE_NEARESTOBJECT_H

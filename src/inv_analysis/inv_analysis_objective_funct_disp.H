@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef OBJECTIVE_FUNCT_DISP_H
-#define OBJECTIVE_FUNCT_DISP_H
+#ifndef INV_ANALYSIS_OBJECTIVE_FUNCT_DISP_H
+#define INV_ANALYSIS_OBJECTIVE_FUNCT_DISP_H
 
 #include "inv_analysis_objective_funct.H"
 #include "linalg_mapextractor.H"
@@ -107,4 +107,4 @@ namespace INVANA
   };  // class ObjectiveFunctDisp
 }  // namespace INVANA
 
-#endif  // OBJECTIVE_FUNCT_DISP_H
+#endif  // INV_ANALYSIS_OBJECTIVE_FUNCT_DISP_H

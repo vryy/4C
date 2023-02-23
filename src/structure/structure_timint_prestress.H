@@ -6,8 +6,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_PRESTRESS_H
-#define STRTIMINT_PRESTRESS_H
+#ifndef STRUCTURE_TIMINT_PRESTRESS_H
+#define STRUCTURE_TIMINT_PRESTRESS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -56,4 +56,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_STATICS_H
+#endif  // STRUCTURE_TIMINT_PRESTRESS_H

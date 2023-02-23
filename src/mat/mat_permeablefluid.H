@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef PERMEABLEFLUID_H
-#define PERMEABLEFLUID_H
+#ifndef MAT_PERMEABLEFLUID_H
+#define MAT_PERMEABLEFLUID_H
 
 
 

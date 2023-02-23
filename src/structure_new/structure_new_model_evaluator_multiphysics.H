@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef STR_MODEL_EVALUATOR_MULTIPHYSICS_H_
-#define STR_MODEL_EVALUATOR_MULTIPHYSICS_H_
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_MULTIPHYSICS_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_MULTIPHYSICS_H
 
 
 #include "structure_new_model_evaluator_generic.H"
@@ -237,4 +237,4 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-#endif /* STR_MODEL_EVALUATOR_MULTIPHYSICS_H_ */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_MULTIPHYSICS_H

@@ -8,8 +8,8 @@ Mechanics, 2000"
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_VOLOGDEN_H_
-#define ELAST_VOLOGDEN_H_
+#ifndef MATELAST_VOLOGDEN_H
+#define MATELAST_VOLOGDEN_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -124,4 +124,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // VOLOGDEN_H_
+#endif  // MATELAST_VOLOGDEN_H

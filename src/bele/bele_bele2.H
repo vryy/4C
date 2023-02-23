@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BELE2_H
-#define BELE2_H
+#ifndef BELE_BELE2_H
+#define BELE_BELE2_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>

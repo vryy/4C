@@ -5,8 +5,8 @@
 
 \level 1
 */
-#ifndef UTILS_GDER2_H
-#define UTILS_GDER2_H
+#ifndef FEM_GENERAL_UTILS_GDER2_H
+#define FEM_GENERAL_UTILS_GDER2_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -146,4 +146,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef UTILS_GDER2_H
+#endif  // FEM_GENERAL_UTILS_GDER2_H

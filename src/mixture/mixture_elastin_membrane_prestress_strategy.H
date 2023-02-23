@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
-#define BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
+#ifndef MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
+#define MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -73,4 +73,4 @@ namespace MIXTURE
         LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
-#endif  // BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H
+#endif  // MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H

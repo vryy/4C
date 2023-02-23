@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_IMPL_GENALPHA_LIEGROUP_H_
-#define STR_IMPL_GENALPHA_LIEGROUP_H_
+#ifndef STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H
+#define STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H
 
 #include "structure_new_impl_genalpha.H"
 
@@ -220,4 +220,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_IMPL_GENALPHA__LIEGROUP_H_ */
+#endif  // STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H

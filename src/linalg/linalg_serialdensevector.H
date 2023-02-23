@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SERIALDENSEVECTOR_H
-#define SERIALDENSEVECTOR_H
+#ifndef LINALG_SERIALDENSEVECTOR_H
+#define LINALG_SERIALDENSEVECTOR_H
 
 
 #include "Epetra_SerialDenseVector.h"
@@ -160,4 +160,4 @@ namespace LINALG
 
 
 
-#endif  // #ifndef SERIALDENSEVECTOR_H
+#endif  // LINALG_SERIALDENSEVECTOR_H

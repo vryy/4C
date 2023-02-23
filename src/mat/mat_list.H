@@ -9,8 +9,8 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef MATLIST_H
-#define MATLIST_H
+#ifndef MAT_LIST_H
+#define MAT_LIST_H
 
 
 

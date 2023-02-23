@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BEAM3TSC_H
-#define BEAM3TSC_H
+#ifndef BEAMCONTACT_BEAM3TOSOLIDCONTACT_H
+#define BEAMCONTACT_BEAM3TOSOLIDCONTACT_H
 
 #include "beaminteraction_beam3contact_utils.H"
 #include "linalg_fixedsizematrix.H"
@@ -753,4 +753,4 @@ namespace CONTACT
   };  // class Beam3tosolidcontact
 }  // namespace CONTACT
 
-#endif  // #ifndef BEAM3TSC_H
+#endif  // BEAMCONTACT_BEAM3TOSOLIDCONTACT_H

@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DOFSET_INDEPENDENT_PBC_H
-#define DOFSET_INDEPENDENT_PBC_H
+#ifndef LIB_DOFSET_INDEPENDENT_PBC_H
+#define LIB_DOFSET_INDEPENDENT_PBC_H
 
 #include <vector>
 #include <map>
@@ -70,4 +70,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef DOFSET_INDEPENDENT_H
+#endif  // LIB_DOFSET_INDEPENDENT_PBC_H

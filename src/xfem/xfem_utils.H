@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_UTILS_H_
-#define XFEM_UTILS_H_
+#ifndef XFEM_UTILS_H
+#define XFEM_UTILS_H
 
 #include "lib_discret.H"
 #include "cut_point.H"
@@ -70,4 +70,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* XFEM_UTILS_H_ */
+#endif  // XFEM_UTILS_H

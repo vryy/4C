@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ARTERY_ELE_CALC_H_
-#define SRC_ART_NET_ARTERY_ELE_CALC_H_
+#ifndef ART_NET_ARTERY_ELE_CALC_H
+#define ART_NET_ARTERY_ELE_CALC_H
 
 #include "art_net_artery.H"
 #include "art_net_artery_ele_action.H"
@@ -98,4 +98,4 @@ namespace DRT
 
 
 
-#endif /* SRC_ART_NET_ARTERY_ELE_CALC_H_ */
+#endif  // ART_NET_ARTERY_ELE_CALC_H

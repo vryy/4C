@@ -3,8 +3,8 @@
 \brief so3_plast element types
 \level 2
 *----------------------------------------------------------------------*/
-#ifndef SO3_SSN_PLAST_ELETYPES_H_
-#define SO3_SSN_PLAST_ELETYPES_H_
+#ifndef SO3_PLAST_SSN_ELETYPES_H
+#define SO3_PLAST_SSN_ELETYPES_H
 
 #include "so3_tet4.H"
 #include "so3_hex8.H"

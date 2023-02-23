@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_SCATRA_MONOLITHIC_H_
-#define PORO_SCATRA_MONOLITHIC_H_
+#ifndef POROELAST_SCATRA_MONOLITHIC_H
+#define POROELAST_SCATRA_MONOLITHIC_H
 
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
@@ -302,4 +302,4 @@ namespace POROELASTSCATRA
 
 }  // namespace POROELASTSCATRA
 
-#endif /* PORO_SCATRA_MONOLITHIC_H_ */
+#endif  // POROELAST_SCATRA_MONOLITHIC_H

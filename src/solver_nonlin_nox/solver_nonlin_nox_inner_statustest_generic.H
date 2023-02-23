@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_INNER_STATUSTEST_GENERIC_H_
-#define NOX_NLN_INNER_STATUSTEST_GENERIC_H_
+#ifndef SOLVER_NONLIN_NOX_INNER_STATUSTEST_GENERIC_H
+#define SOLVER_NONLIN_NOX_INNER_STATUSTEST_GENERIC_H
 
 #include <NOX_StatusTest_Generic.H>
 
@@ -105,4 +105,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_INNER_STATUSTEST_GENERIC_H_ */
+#endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_GENERIC_H

@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
+#ifndef POROMULTIPHASE_MONOLITHIC_TWOWAY_H
+#define POROMULTIPHASE_MONOLITHIC_TWOWAY_H
 
 #include "poromultiphase_monolithic.H"
 #include <Teuchos_Time.hpp>
@@ -335,4 +335,4 @@ namespace POROMULTIPHASE
 
 }  // namespace POROMULTIPHASE
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_ */
+#endif  // POROMULTIPHASE_MONOLITHIC_TWOWAY_H

@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASEDATAIO_H
+#define STRUCTURE_NEW_TIMINT_BASEDATAIO_H
 
 #include <fstream>
 
@@ -483,4 +483,4 @@ namespace NOX
 
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_BASEDATAIO_H

@@ -256,4 +256,4 @@ namespace DRT
   }     // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifndef NURBS_DISCRET_H
+#endif  // NURBS_DISCRET_H

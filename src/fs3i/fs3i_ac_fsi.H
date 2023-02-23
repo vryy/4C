@@ -12,8 +12,8 @@
 ----------------------------------------------------------------------*/
 
 
-#ifndef AC_FSI_H
-#define AC_FSI_H
+#ifndef FS3I_AC_FSI_H
+#define FS3I_AC_FSI_H
 
 #include "fs3i_partitioned_1wc.H"
 #include "lib_dserror.H"

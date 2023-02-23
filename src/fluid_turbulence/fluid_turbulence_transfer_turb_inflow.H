@@ -13,8 +13,8 @@ to)
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TRANSFERTURBINF_H
-#define TRANSFERTURBINF_H
+#ifndef FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
+#define FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
 #include "Teuchos_RCP.hpp"
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -180,4 +180,4 @@ namespace FLD
 
 }  // end namespace FLD
 
-#endif  // #ifndef TRANSFERTURBINF_H
+#endif  // FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H

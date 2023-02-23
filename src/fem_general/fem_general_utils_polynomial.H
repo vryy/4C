@@ -7,8 +7,8 @@
 
  */
 
-#ifndef UTILS_POLYNOMIAL
-#define UTILS_POLYNOMIAL
+#ifndef FEM_GENERAL_UTILS_POLYNOMIAL_H
+#define FEM_GENERAL_UTILS_POLYNOMIAL_H
 
 #include <numeric>
 #include <utility>
@@ -760,4 +760,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifdef UTILS_POLYNOMIAL
+#endif  // FEM_GENERAL_UTILS_POLYNOMIAL_H

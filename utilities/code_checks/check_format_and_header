@@ -69,6 +69,21 @@ else
 fi
 
 
+### Check for header guards ####################################
+echo "Start test for header guards ..."
+python ./utilities/code_checks/check_header_guards.py --out wrong_header_guards.txt | tee wrong_header_guards.txt
+
+if [ -s wrong_header_guards.txt ]
+then
+  echo "Failed. Non-compliant files have been reported in wrong_header_guards.txt."
+  cat wrong_header_guards.txt
+  exit 1
+else
+  rm wrong_header_guards.txt
+  echo "Passed."
+fi
+
+
 ### Style Format check #########################################
 #   1) Check for non-ascii characters
 #   2) Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks) 

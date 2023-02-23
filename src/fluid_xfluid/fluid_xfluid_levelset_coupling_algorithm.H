@@ -9,8 +9,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUID_LEVELSET_ALGORITHM_H
-#define XFLUID_LEVELSET_ALGORITHM_H
+#ifndef FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H
+#define FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "linalg_mapextractor.H"
@@ -206,4 +206,4 @@ namespace XFLUIDLEVELSET
 
 }  // namespace XFLUIDLEVELSET
 
-#endif  // XFLUID_LEVELSET_ALGORITHM_H
+#endif  // FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H

@@ -65,4 +65,4 @@ namespace DRT::UTILS
       const GaussIntegration& integration);
 }  // namespace DRT::UTILS
 
-#endif  // #ifdef FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_H
+#endif  // FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_H

@@ -7,8 +7,8 @@ corresponding volumetric contribution.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOVOLAAAGASSER_H_
-#define ELAST_ISOVOLAAAGASSER_H_
+#ifndef MATELAST_ISOVOLAAAGASSER_H
+#define MATELAST_ISOVOLAAAGASSER_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"

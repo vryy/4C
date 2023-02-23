@@ -11,8 +11,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_MONOLITHICMESHTYING_H_
-#define PORO_MONOLITHICMESHTYING_H_
+#ifndef POROELAST_MONOLITHICMESHTYING_H
+#define POROELAST_MONOLITHICMESHTYING_H
 
 
 #include "poroelast_monolithic.H"
@@ -84,4 +84,4 @@ namespace POROELAST
   };
 }  // namespace POROELAST
 
-#endif /* PORO_MONOLITHICMESHTYING_H_ */
+#endif  // POROELAST_MONOLITHICMESHTYING_H

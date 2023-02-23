@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_TEMPERATURE_BC_H
-#define PARTICLE_TEMPERATURE_BC_H
+#ifndef PARTICLE_ALGORITHM_TEMPERATURE_BC_H
+#define PARTICLE_ALGORITHM_TEMPERATURE_BC_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

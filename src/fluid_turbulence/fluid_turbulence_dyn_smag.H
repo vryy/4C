@@ -27,8 +27,8 @@ References are
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef DYN_SMAG_H
-#define DYN_SMAG_H
+#ifndef FLUID_TURBULENCE_DYN_SMAG_H
+#define FLUID_TURBULENCE_DYN_SMAG_H
 
 
 #include "lib_discret.H"
@@ -215,4 +215,4 @@ namespace FLD
 
 }  // end namespace FLD
 
-#endif  // not DYN_SMAG_H
+#endif  // FLUID_TURBULENCE_DYN_SMAG_H

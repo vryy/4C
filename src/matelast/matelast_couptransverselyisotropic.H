@@ -7,8 +7,8 @@ strain computations
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_MATELAST_ELAST_COUPTRANSVERSELYISOTROPIC_H_
-#define SRC_MATELAST_ELAST_COUPTRANSVERSELYISOTROPIC_H_
+#ifndef MATELAST_COUPTRANSVERSELYISOTROPIC_H
+#define MATELAST_COUPTRANSVERSELYISOTROPIC_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -316,4 +316,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // SRC_MATELAST_ELAST_COUPTRANSVERSELYISOTROPIC_H_
+#endif  // MATELAST_COUPTRANSVERSELYISOTROPIC_H

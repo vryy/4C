@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_SOLVERPARAMETERS_H_
-#define SOLVER_SOLVERPARAMETERS_H_
+#ifndef SOLVER_SOLVERPARAMETERS_H
+#define SOLVER_SOLVERPARAMETERS_H
 
 #include "lib_discret.H"
 #include "lib_dserror.H"

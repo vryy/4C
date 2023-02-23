@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_ANISO_H_
-#define SCATRA_ELE_CALC_ANISO_H_
+#ifndef SCATRA_ELE_CALC_ANISO_H
+#define SCATRA_ELE_CALC_ANISO_H
 
 #include "scatra_ele_calc.H"
 
@@ -175,4 +175,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_ANISO_H_ */
+#endif  // SCATRA_ELE_CALC_ANISO_H

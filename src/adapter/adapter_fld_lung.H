@@ -11,8 +11,8 @@ parenchyma balloon
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUID_LUNG_H
-#define ADAPTER_FLUID_LUNG_H
+#ifndef ADAPTER_FLD_LUNG_H
+#define ADAPTER_FLD_LUNG_H
 
 #include <set>
 

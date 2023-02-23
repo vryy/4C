@@ -9,8 +9,8 @@ approach
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
-#define BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_PAIR_FACTORY_H
 
 #include <vector>
 

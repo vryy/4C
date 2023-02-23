@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_COCONSTLAW_DEFINITION_H
-#define CONTACT_COCONSTLAW_DEFINITION_H
+#ifndef CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
+#define CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 
 #include <Teuchos_RCP.hpp>
 #include <iostream>
@@ -336,4 +336,4 @@ namespace CONTACT
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_COCONSTLAW_INTERFACE_H
+#endif  // CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H

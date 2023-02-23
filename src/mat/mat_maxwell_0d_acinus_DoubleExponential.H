@@ -12,8 +12,8 @@ chapter 3.4)
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_H
-#define MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_H
+#ifndef MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_H
+#define MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_H
 
 
 #include "mat_maxwell_0d_acinus.H"

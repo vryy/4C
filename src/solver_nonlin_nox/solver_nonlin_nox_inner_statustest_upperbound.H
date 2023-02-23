@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_INNER_STATUSTEST_UPPERBOUND_H_
-#define NOX_NLN_INNER_STATUSTEST_UPPERBOUND_H_
+#ifndef SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H
+#define SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H
 
 #include "solver_nonlin_nox_inner_statustest_generic.H"  // base class
 #include <NOX_StatusTest_Generic.H>
@@ -89,4 +89,4 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
-#endif /* NOX_NLN_INNER_STATUSTEST_UPPERBOUND_H_ */
+#endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_H

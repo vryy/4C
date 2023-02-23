@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef ADAPTER_FLUID_FSI_H
-#define ADAPTER_FLUID_FSI_H
+#ifndef ADAPTER_FLD_FLUID_FSI_H
+#define ADAPTER_FLD_FLUID_FSI_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

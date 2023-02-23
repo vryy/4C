@@ -7,8 +7,8 @@ projection.
 \level 1
 */
 
-#ifndef BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H_
-#define BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H_
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H
 
 
 #include "fbi_beam_to_fluid_meshtying_pair_base.H"

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINALG_SPARSEMATRIX_H_
-#define LINALG_SPARSEMATRIX_H_
+#ifndef LINALG_SPARSEMATRIX_H
+#define LINALG_SPARSEMATRIX_H
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>

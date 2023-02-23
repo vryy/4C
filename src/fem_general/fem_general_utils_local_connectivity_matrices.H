@@ -18,8 +18,8 @@ in the Baci guide in the Convention chapter.
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef UTILS_LOCAL_CONNECTIVITY_MATRICES_H
-#define UTILS_LOCAL_CONNECTIVITY_MATRICES_H
+#ifndef FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
+#define FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
 #include "lib_element.H"
 
@@ -1713,4 +1713,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifdef UTILS_LOCAL_CONNECTIVITY_MATRICES_H
+#endif  // FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H

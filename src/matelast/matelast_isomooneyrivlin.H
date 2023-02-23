@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOMOONEYRIVLIN_H_
-#define ELAST_ISOMOONEYRIVLIN_H_
+#ifndef MATELAST_ISOMOONEYRIVLIN_H
+#define MATELAST_ISOMOONEYRIVLIN_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"

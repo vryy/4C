@@ -59,8 +59,8 @@
 
 
 // header file only included if not yet included!
-#ifndef BEAM3EB_H
-#define BEAM3EB_H
+#ifndef BEAM3_EULER_BERNOULLI_H
+#define BEAM3_EULER_BERNOULLI_H
 
 
 #include "lib_node.H"
@@ -805,4 +805,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef BEAM3EB_H
+#endif  // BEAM3_EULER_BERNOULLI_H

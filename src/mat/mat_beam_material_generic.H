@@ -7,8 +7,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef MAT_BEAM_H_
-#define MAT_BEAM_H_
+#ifndef MAT_BEAM_MATERIAL_GENERIC_H
+#define MAT_BEAM_MATERIAL_GENERIC_H
 
 #include "mat_material.H"
 #include "inpar_material.H"

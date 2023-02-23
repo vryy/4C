@@ -11,8 +11,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_
-#define SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_
+#ifndef HEADERS_PAIREDOBJ_INSERT_POLICY_H
+#define HEADERS_PAIREDOBJ_INSERT_POLICY_H
 
 // #define DEBUG_INSERT_POLICY
 
@@ -1051,4 +1051,4 @@ size_t GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
 
 
 
-#endif /* SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_ */
+#endif  // HEADERS_PAIREDOBJ_INSERT_POLICY_H

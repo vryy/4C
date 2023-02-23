@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef CROSSLINKER_H_
-#define CROSSLINKER_H_
+#ifndef MAT_CROSSLINKERMAT_H
+#define MAT_CROSSLINKERMAT_H
 
 #include "mat_par_parameter.H"
 #include "inpar_beaminteraction.H"
@@ -198,4 +198,4 @@ namespace MAT
 
 
 
-#endif /* CROSSLINKER_H_ */
+#endif  // MAT_CROSSLINKERMAT_H

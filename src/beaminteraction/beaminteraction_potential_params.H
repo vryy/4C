@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BEAMPOTENTIALPARAMS_H
-#define BEAMPOTENTIALPARAMS_H
+#ifndef BEAMINTERACTION_POTENTIAL_PARAMS_H
+#define BEAMINTERACTION_POTENTIAL_PARAMS_H
 
 #include "inpar_beampotential.H"
 

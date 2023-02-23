@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_EHL_MORTAR_H_
-#define ADAPTER_COUPLING_EHL_MORTAR_H_
+#ifndef ADAPTER_COUPLING_EHL_MORTAR_H
+#define ADAPTER_COUPLING_EHL_MORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                             |
@@ -237,4 +237,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_EHL_MORTAR_H_ */
+#endif  // ADAPTER_COUPLING_EHL_MORTAR_H

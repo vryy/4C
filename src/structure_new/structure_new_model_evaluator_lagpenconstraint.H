@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
-#define STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
+#ifndef STRUCTURE_NEW_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
+#define STRUCTURE_NEW_MODEL_EVALUATOR_LAGPENCONSTRAINT_H
 
 #include "structure_new_model_evaluator_generic.H"
 #include <Teuchos_RCP.hpp>
@@ -164,4 +164,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_MODEL_EVALUATOR_LAGPENCONSTRAINT_H */
+#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_LAGPENCONSTRAINT_H

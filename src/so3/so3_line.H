@@ -6,8 +6,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SO_LINE_H
-#define SO_LINE_H
+#ifndef SO3_LINE_H
+#define SO3_LINE_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -220,4 +220,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SO_LINE_H
+#endif  // SO3_LINE_H

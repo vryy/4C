@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BOUNDING_VOLUME_H
-#define BOUNDING_VOLUME_H
+#ifndef GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
+#define GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
 #ifdef HAVE_ARBORX
 #include <ArborX.hpp>

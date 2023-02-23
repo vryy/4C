@@ -114,4 +114,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef TRUSS3_SCATRA_H
+#endif  // TRUSS3_SCATRA_H

@@ -717,4 +717,4 @@ namespace MORTAR
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& cnode);
 
 
-#endif  // #ifndef MORTAR_NODE_H
+#endif  // MORTAR_NODE_H

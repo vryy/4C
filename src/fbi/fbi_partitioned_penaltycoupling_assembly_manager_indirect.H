@@ -12,8 +12,8 @@ global coupling matrices M and D first.
 /*-----------------------------------------------------------*/
 
 
-#ifndef PARTITIONED_PENALTYCOUPLING_ASSEMBLY_INDIRECT_H
-#define PARTITIONED_PENALTYCOUPLING_ASSEMBLY_INDIRECT_H
+#ifndef FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_INDIRECT_H
+#define FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_INDIRECT_H
 
 
 #include "fbi_partitioned_penaltycoupling_assembly_manager.H"

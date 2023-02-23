@@ -9,8 +9,8 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_PARAMS_UTILS_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_PARAMS_UTILS_H_
+#ifndef SOLVER_NONLIN_NOX_PARAMS_UTILS_H
+#define SOLVER_NONLIN_NOX_PARAMS_UTILS_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -51,4 +51,4 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_PARAMS_UTILS_H_ */
+#endif  // SOLVER_NONLIN_NOX_PARAMS_UTILS_H

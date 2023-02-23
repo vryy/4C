@@ -32,8 +32,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                            hemmler 09/16 |
  *----------------------------------------------------------------------*/
-#ifndef SUPERELASTIC_SMA_H_
-#define SUPERELASTIC_SMA_H_
+#ifndef MAT_SUPERELASTIC_SMA_H
+#define MAT_SUPERELASTIC_SMA_H
 
 /*----------------------------------------------------------------------*
  | headers                                                 hemmler 09/16 |
@@ -286,4 +286,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // SuperElasticSMA_H_
+#endif  // MAT_SUPERELASTIC_SMA_H

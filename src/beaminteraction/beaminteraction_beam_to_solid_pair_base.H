@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_PAIR_BASE_H_
-#define BEAM_TO_SOLID_PAIR_BASE_H_
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_H
 
 
 #include "beaminteraction_contact_pair.H"

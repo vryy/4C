@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELEMENT_INTEGRATION_SELECT_H
-#define ELEMENT_INTEGRATION_SELECT_H
+#ifndef LIB_ELEMENT_INTEGRATION_SELECT_H
+#define LIB_ELEMENT_INTEGRATION_SELECT_H
 
 
 #include "lib_element.H"

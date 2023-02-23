@@ -52,4 +52,4 @@ namespace ELEMAG
 
 }  // namespace ELEMAG
 
-#endif /* ELEMAG_RESULTTEST_H */
+#endif  // ELEMAG_RESULTTEST_H

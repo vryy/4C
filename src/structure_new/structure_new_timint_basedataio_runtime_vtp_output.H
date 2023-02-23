@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef STR_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H_
-#define STR_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H
+#define STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_H
 
 
 #include "inpar_IO_runtime_vtp_output_structure.H"

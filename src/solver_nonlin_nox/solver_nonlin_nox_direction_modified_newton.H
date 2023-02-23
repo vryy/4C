@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_DIRECTION_MODIFIED_NEWTON_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_DIRECTION_MODIFIED_NEWTON_H_
+#ifndef SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H
+#define SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H
 
 #include "solver_nonlin_nox_direction_newton.H"
 #include "solver_nonlin_nox_floating_point_exception.H"
@@ -188,4 +188,4 @@ namespace NOX
 
 
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_DIRECTION_MODIFIED_NEWTON_H_ */
+#endif  // SOLVER_NONLIN_NOX_DIRECTION_MODIFIED_NEWTON_H

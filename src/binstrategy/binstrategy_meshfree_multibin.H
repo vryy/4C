@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef MESHFREE_MESHFREEMULTIBIN_H
-#define MESHFREE_MESHFREEMULTIBIN_H
+#ifndef BINSTRATEGY_MESHFREE_MULTIBIN_H
+#define BINSTRATEGY_MESHFREE_MULTIBIN_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "binstrategy_utils.H"
@@ -326,4 +326,4 @@ namespace DRT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& ele);
 
-#endif  // #ifndef MESHFREE_MESHFREEMULTIBIN_H
+#endif  // BINSTRATEGY_MESHFREE_MULTIBIN_H

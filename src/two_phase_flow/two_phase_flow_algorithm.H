@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TWO_PHASE_ALGORITHM_H
-#define TWO_PHASE_ALGORITHM_H
+#ifndef TWO_PHASE_FLOW_ALGORITHM_H
+#define TWO_PHASE_FLOW_ALGORITHM_H
 
 #include <Epetra_Comm.h>
 #include "adapter_scatra_fluid_coupling_algorithm.H"
@@ -184,4 +184,4 @@ namespace TWOPHASEFLOW
 
 }  // namespace TWOPHASEFLOW
 
-#endif  // TWO_PHASE_ALGORITHM_H
+#endif  // TWO_PHASE_FLOW_ALGORITHM_H

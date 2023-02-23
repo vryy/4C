@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef Myocard_SAN_Garny_H
-#define Myocard_SAN_Garny_H
+#ifndef MAT_MYOCARD_SAN_GARNY_H
+#define MAT_MYOCARD_SAN_GARNY_H
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

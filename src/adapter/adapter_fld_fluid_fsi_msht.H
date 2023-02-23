@@ -7,8 +7,8 @@
 \level 3
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ADAPTER_AD_FLD_FLUID_FSI_MSHT_H_
-#define SRC_ADAPTER_AD_FLD_FLUID_FSI_MSHT_H_
+#ifndef ADAPTER_FLD_FLUID_FSI_MSHT_H
+#define ADAPTER_FLD_FLUID_FSI_MSHT_H
 
 
 #include "adapter_fld_fluid_fsi.H"
@@ -58,4 +58,4 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
-#endif /* SRC_ADAPTER_AD_FLD_FLUID_FSI_MSHT_H_ */
+#endif  // ADAPTER_FLD_FLUID_FSI_MSHT_H

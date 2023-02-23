@@ -11,8 +11,8 @@
 
 
 
-#ifndef RED_AIR_BLOOD_SCATRA_LINE3_IMPL_H_
-#define RED_AIR_BLOOD_SCATRA_LINE3_IMPL_H_
+#ifndef RED_AIRWAYS_AIR_BLOOD_SCATRALINE3_IMPL_H
+#define RED_AIRWAYS_AIR_BLOOD_SCATRALINE3_IMPL_H
 
 #include "red_airways_elementbase.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -172,4 +172,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // RED_AIR_BLOOD_SCATRA_IMPL_H_
+#endif  // RED_AIRWAYS_AIR_BLOOD_SCATRALINE3_IMPL_H

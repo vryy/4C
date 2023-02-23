@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_REMODELFIBER_IMPLEMENTATION_H
-#define BACI_MIXTURE_REMODELFIBER_IMPLEMENTATION_H
+#ifndef MIXTURE_REMODELFIBER_INTERNAL_H
+#define MIXTURE_REMODELFIBER_INTERNAL_H
 
 #include <Sacado_tradvec.hpp>
 #include <memory>
@@ -183,4 +183,4 @@ namespace MIXTURE
   }  // namespace IMPLEMENTATION
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_REMODELFIBER_IMPLEMENTATION_H
+#endif  // MIXTURE_REMODELFIBER_INTERNAL_H

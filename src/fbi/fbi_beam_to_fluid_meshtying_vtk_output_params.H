@@ -9,8 +9,8 @@
 
 
 
-#ifndef BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
-#define BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
+#ifndef FBI_BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
+#define FBI_BEAM_TO_FLUID_MESHTYING_VTK_OUTPUT_PARAMS_H
 
 #include "beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
 

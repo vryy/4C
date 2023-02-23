@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef THERMO_ELE_ACTION_H_
-#define THERMO_ELE_ACTION_H_
+#ifndef THERMO_ELE_ACTION_H
+#define THERMO_ELE_ACTION_H
 
 namespace THR
 {
@@ -127,4 +127,4 @@ namespace THR
 }  // namespace THR
 
 
-#endif /* THERMO_ELE_ACTION_H_ */
+#endif  // THERMO_ELE_ACTION_H

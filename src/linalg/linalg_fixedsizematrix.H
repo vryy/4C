@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef FIXED_SIZE_SERIAL_DENSE_MATRIX_H
-#define FIXED_SIZE_SERIAL_DENSE_MATRIX_H
+#ifndef LINALG_FIXEDSIZEMATRIX_H
+#define LINALG_FIXEDSIZEMATRIX_H
 
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_BLAS.hpp>
@@ -4879,4 +4879,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // FIXED_SIZE_SERIAL_DENSE_MATRIX_H
+#endif  // LINALG_FIXEDSIZEMATRIX_H

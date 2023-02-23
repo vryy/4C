@@ -14,8 +14,8 @@ overhead as possible from the time integration method.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_STATISTIC_MANAGER_H
-#define TURBULENCE_STATISTIC_MANAGER_H
+#ifndef FLUID_TURBULENCE_STATISTIC_MANAGER_H
+#define FLUID_TURBULENCE_STATISTIC_MANAGER_H
 
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
@@ -334,4 +334,4 @@ namespace FLD
 
 }  // end namespace FLD
 
-#endif  // #ifndef TURBULENCE_STATISTIC_MANAGER_H
+#endif  // FLUID_TURBULENCE_STATISTIC_MANAGER_H

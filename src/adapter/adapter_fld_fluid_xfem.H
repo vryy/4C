@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUID_XFEM_H
-#define ADAPTER_FLUID_XFEM_H
+#ifndef ADAPTER_FLD_FLUID_XFEM_H
+#define ADAPTER_FLD_FLUID_XFEM_H
 
 #include "adapter_fld_moving_boundary.H"
 #include "adapter_fld_base_algorithm.H"

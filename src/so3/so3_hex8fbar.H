@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOH8FBAR_H
-#define SOH8FBAR_H
+#ifndef SO3_HEX8FBAR_H
+#define SO3_HEX8FBAR_H
 
 #include "so3_hex8.H"
 
@@ -248,4 +248,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SOH8FBAR_H
+#endif  // SO3_HEX8FBAR_H

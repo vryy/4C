@@ -5,8 +5,8 @@
 
 */
 
-#ifndef TRAIT_SOLID_H
-#define TRAIT_SOLID_H
+#ifndef MAT_TRAIT_SOLID_H
+#define MAT_TRAIT_SOLID_H
 namespace MAT
 {
   namespace TRAIT

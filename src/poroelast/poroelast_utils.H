@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef POROELAST_UTILS_H_
-#define POROELAST_UTILS_H_
+#ifndef POROELAST_UTILS_H
+#define POROELAST_UTILS_H
 
 #include "Epetra_Vector.h"
 #include <Teuchos_RCP.hpp>
@@ -138,4 +138,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-#endif  // POROELAST_UTILS_H_
+#endif  // POROELAST_UTILS_H

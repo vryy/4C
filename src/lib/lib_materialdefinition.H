@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MATERIALDEFINITION_H
-#define MATERIALDEFINITION_H
+#ifndef LIB_MATERIALDEFINITION_H
+#define LIB_MATERIALDEFINITION_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

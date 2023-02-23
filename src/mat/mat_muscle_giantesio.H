@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MUSCLE_GIANTESIO_H_
-#define BACI_MUSCLE_GIANTESIO_H_
+#ifndef MAT_MUSCLE_GIANTESIO_H
+#define MAT_MUSCLE_GIANTESIO_H
 
 #include "lib_parobjectfactory.H"
 #include "mat_so3_material.H"
@@ -322,4 +322,4 @@ namespace MAT
 
 }  // end namespace MAT
 
-#endif  // BACI_MUSCLE_GIANTESIO_H_
+#endif  // MAT_MUSCLE_GIANTESIO_H

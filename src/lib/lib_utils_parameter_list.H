@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_PARAMETER_LIST_H
-#define UTILS_PARAMETER_LIST_H
+#ifndef LIB_UTILS_PARAMETER_LIST_H
+#define LIB_UTILS_PARAMETER_LIST_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -32,4 +32,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_PARAMETER_LIST_H
+#endif  // LIB_UTILS_PARAMETER_LIST_H

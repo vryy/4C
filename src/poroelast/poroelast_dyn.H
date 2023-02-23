@@ -8,11 +8,11 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef PORO_DYN_H_
-#define PORO_DYN_H_
+#ifndef POROELAST_DYN_H
+#define POROELAST_DYN_H
 
 //! global control routine for standard porous media problem
 void poroelast_drt();
 
 
-#endif /* PORO_DYN_H_ */
+#endif  // POROELAST_DYN_H

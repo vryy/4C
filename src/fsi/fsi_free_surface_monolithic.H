@@ -7,8 +7,8 @@
  \level 3
  */
 
-#ifndef FS_MONOLITHIC_H
-#define FS_MONOLITHIC_H
+#ifndef FSI_FREE_SURFACE_MONOLITHIC_H
+#define FSI_FREE_SURFACE_MONOLITHIC_H
 
 #include "fsi_overlapprec.H"
 

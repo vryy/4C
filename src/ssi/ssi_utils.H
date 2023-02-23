@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_UTILS_H_
-#define SSI_UTILS_H_
+#ifndef SSI_UTILS_H
+#define SSI_UTILS_H
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -506,4 +506,4 @@ namespace SSI
   }  // namespace UTILS
 }  // namespace SSI
 
-#endif /* SSI_UTILS_H_ */
+#endif  // SSI_UTILS_H

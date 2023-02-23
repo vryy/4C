@@ -349,4 +349,4 @@ namespace SCATRA
         const ConvCheckStrategyPoroMultiphaseScatra& old);
   };  // class ConvCheckStrategyPoroMultiphaseScatra
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+#endif  // SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

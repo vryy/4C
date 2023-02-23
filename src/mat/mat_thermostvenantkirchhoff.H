@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 02/10 |
  *----------------------------------------------------------------------*/
-#ifndef THERMOSTVENANTKIRCHHOFF_H_
-#define THERMOSTVENANTKIRCHHOFF_H_
+#ifndef MAT_THERMOSTVENANTKIRCHHOFF_H
+#define MAT_THERMOSTVENANTKIRCHHOFF_H
 
 
 /*----------------------------------------------------------------------*
@@ -276,4 +276,4 @@ namespace MAT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // THERMOSTVENANTKIRCHHOFF_H
+#endif  // MAT_THERMOSTVENANTKIRCHHOFF_H

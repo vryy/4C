@@ -298,4 +298,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif  // #ifndef ADAPTER_ALE_WRAPPER_H
+#endif  // ADAPTER_ALE_WRAPPER_H

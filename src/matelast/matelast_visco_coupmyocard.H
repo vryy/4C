@@ -6,8 +6,8 @@ representing the collagen and elastin matrix surrounding the myocardial fiber (c
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef VISCO_COUPMYOCARD_H_
-#define VISCO_COUPMYOCARD_H_
+#ifndef MATELAST_VISCO_COUPMYOCARD_H
+#define MATELAST_VISCO_COUPMYOCARD_H
 
 #include "mat_par_parameter.H"
 #include "matelast_summand.H"
@@ -132,4 +132,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPMYOCARD_H_
+#endif  // MATELAST_VISCO_COUPMYOCARD_H

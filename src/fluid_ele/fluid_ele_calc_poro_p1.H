@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FLUID_ELE_CALC_PORO_P1_H_
-#define FLUID_ELE_CALC_PORO_P1_H_
+#ifndef FLUID_ELE_CALC_PORO_P1_H
+#define FLUID_ELE_CALC_PORO_P1_H
 
 #include "fluid_ele_calc_poro.H"
 
@@ -367,4 +367,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* FLUID_ELE_CALC_PORO_P1_H_ */
+#endif  // FLUID_ELE_CALC_PORO_P1_H

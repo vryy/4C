@@ -7,8 +7,8 @@ interaction.
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef CONSTRAINTENFORCER_FBI_H
-#define CONSTRAINTENFORCER_FBI_H
+#ifndef FBI_CONSTRAINTENFORCER_H
+#define FBI_CONSTRAINTENFORCER_H
 
 #include "lib_dserror.H"
 

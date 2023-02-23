@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BEAM3CONTACT_DEFINES_H
-#define BEAM3CONTACT_DEFINES_H
+#ifndef BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
+#define BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
 
 #include "Sacado.hpp"
 
@@ -262,4 +262,4 @@ typedef double TYPEBTS;
 #endif
 // -----------------------------------------------------------------
 
-#endif /* BEAM3CONTACT_DEFINES_H */
+#endif  // BEAMINTERACTION_BEAM3CONTACT_DEFINES_H

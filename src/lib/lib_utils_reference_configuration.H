@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef UTILS_REFERENCE_CONFIGURATION
-#define UTILS_REFERENCE_CONFIGURATION
+#ifndef LIB_UTILS_REFERENCE_CONFIGURATION_H
+#define LIB_UTILS_REFERENCE_CONFIGURATION_H
 
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "linalg_fixedsizematrix.H"
@@ -128,4 +128,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // #ifdef UTILS_REFERENCE_CONFIGURATION
+#endif  // LIB_UTILS_REFERENCE_CONFIGURATION_H

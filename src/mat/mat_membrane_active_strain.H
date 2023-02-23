@@ -14,8 +14,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                     brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-#ifndef MEMBRANE_ACTIVE_STRAIN_H
-#define MEMBRANE_ACTIVE_STRAIN_H
+#ifndef MAT_MEMBRANE_ACTIVE_STRAIN_H
+#define MAT_MEMBRANE_ACTIVE_STRAIN_H
 
 /*----------------------------------------------------------------------*
  | headers                                         brandstaeter 05/2018 |
@@ -257,4 +257,4 @@ namespace MAT
 
 }  // namespace MAT
 // namespace MAT
-#endif /* MEMBRANE_ACTIVE_STRAIN_H */
+#endif  // MAT_MEMBRANE_ACTIVE_STRAIN_H

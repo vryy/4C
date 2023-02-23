@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_BELOSSOLVER_H_
-#define SOLVER_BELOSSOLVER_H_
+#ifndef SOLVER_BELOSSOLVER_H
+#define SOLVER_BELOSSOLVER_H
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

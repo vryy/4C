@@ -10,8 +10,8 @@ means are computed as time averages
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
-#define TURBULENCE_STATISTICS_MEAN_GENERAL_H
+#ifndef FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
+#define FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
@@ -231,4 +231,4 @@ namespace FLD
 
 }  // end namespace FLD
 
-#endif  // #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
+#endif  // FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H

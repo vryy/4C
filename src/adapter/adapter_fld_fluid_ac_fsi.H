@@ -8,8 +8,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef ADAPTER_FLUID_AC_FSI_H
-#define ADAPTER_FLUID_AC_FSI_H
+#ifndef ADAPTER_FLD_FLUID_AC_FSI_H
+#define ADAPTER_FLD_FLUID_AC_FSI_H
 
 #include "adapter_fld_fluid_fsi.H"
 

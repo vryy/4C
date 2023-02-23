@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BOUNDARYCELL_INTEGRATION_H
-#define BOUNDARYCELL_INTEGRATION_H
+#ifndef CUT_BOUNDARYCELL_INTEGRATION_H
+#define CUT_BOUNDARYCELL_INTEGRATION_H
 
 #include "cut_facet_integration.H"
 

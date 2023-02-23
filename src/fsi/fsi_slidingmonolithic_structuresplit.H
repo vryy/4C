@@ -8,8 +8,8 @@ with condensed structure interface displacements
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_FSI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H_
-#define SRC_FSI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H_
+#ifndef FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H
 
 
 #include "fsi_monolithic.H"
@@ -405,4 +405,4 @@ namespace FSI
 }  // namespace FSI
 
 
-#endif /* SRC_FSI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H_ */
+#endif  // FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H

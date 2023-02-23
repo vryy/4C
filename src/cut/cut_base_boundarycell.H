@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BASE_BOUNDARYCELL_H
-#define BASE_BOUNDARYCELL_H
+#ifndef CUT_BASE_BOUNDARYCELL_H
+#define CUT_BASE_BOUNDARYCELL_H
 
 #include <vector>
 #include <cmath>

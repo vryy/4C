@@ -6,8 +6,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_MAT_LUBRICATION_MAT_H_
-#define SRC_MAT_LUBRICATION_MAT_H_
+#ifndef MAT_LUBRICATION_MAT_H
+#define MAT_LUBRICATION_MAT_H
 
 
 #include "mat_par_parameter.H"
@@ -141,4 +141,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* SRC_MAT_LUBRICATION_MAT_H_ */
+#endif  // MAT_LUBRICATION_MAT_H

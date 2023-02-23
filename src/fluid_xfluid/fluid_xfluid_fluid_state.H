@@ -9,8 +9,8 @@ fluid meshes
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUIDFLUID_STATE_H_
-#define XFLUIDFLUID_STATE_H_
+#ifndef FLUID_XFLUID_FLUID_STATE_H
+#define FLUID_XFLUID_FLUID_STATE_H
 
 #include "fluid_xfluid_state.H"
 

@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
+#ifndef LUBRICATION_ELE_INTERFACE_H
+#define LUBRICATION_ELE_INTERFACE_H
 
 #include <vector>
 #include "Teuchos_ParameterList.hpp"
@@ -72,4 +72,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_ */
+#endif  // LUBRICATION_ELE_INTERFACE_H

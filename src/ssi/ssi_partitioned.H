@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_PARTITIONED_H_
-#define SSI_PARTITIONED_H_
+#ifndef SSI_PARTITIONED_H
+#define SSI_PARTITIONED_H
 
 #include "ssi_base.H"
 
@@ -78,4 +78,4 @@ namespace SSI
 
 }  // namespace SSI
 
-#endif /* SSI_PARTITIONED_H_ */
+#endif  // SSI_PARTITIONED_H

@@ -106,4 +106,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_HDG_BOUNDARY_CALC_H */
+#endif  // SCATRA_ELE_HDG_BOUNDARY_CALC_H

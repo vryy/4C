@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ART_NET_UTILS_H_
-#define SRC_ART_NET_ART_NET_UTILS_H_
+#ifndef ART_NET_UTILS_H
+#define ART_NET_UTILS_H
 
 #include "io.H"
 #include "inpar_bio.H"
@@ -80,4 +80,4 @@ namespace ART
 
 
 
-#endif /* SRC_ART_NET_ART_NET_UTILS_H_ */
+#endif  // ART_NET_UTILS_H

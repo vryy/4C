@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_PARAMSINTERFACE_H_
-#define SRC_CONTACT_CONTACT_PARAMSINTERFACE_H_
+#ifndef CONTACT_PARAMSINTERFACE_H
+#define CONTACT_PARAMSINTERFACE_H
 
 #include "mortar_paramsinterface.H"
 
@@ -92,4 +92,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_CONTACT_PARAMSINTERFACE_H_ */
+#endif  // CONTACT_PARAMSINTERFACE_H

@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOVARGA_H_
-#define ELAST_ISOVARGA_H_
+#ifndef MATELAST_ISOVARGA_H
+#define MATELAST_ISOVARGA_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -128,4 +128,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_ISOVARGA_H_
+#endif  // MATELAST_ISOVARGA_H

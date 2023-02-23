@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BeamLink_H
-#define BeamLink_H
+#ifndef BEAMINTERACTION_LINK_H
+#define BEAMINTERACTION_LINK_H
 
 #include "linalg_fixedsizematrix.H"
 #include "lib_parobject.H"

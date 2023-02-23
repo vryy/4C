@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_FLUIDPORO_SINGLEPHASE_H_
-#define SRC_MAT_FLUIDPORO_SINGLEPHASE_H_
+#ifndef MAT_FLUIDPORO_SINGLEPHASE_H
+#define MAT_FLUIDPORO_SINGLEPHASE_H
 
 
 
@@ -558,4 +558,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif /* SRC_MAT_FLUIDPORO_SINGLEPHASE_H_ */
+#endif  // MAT_FLUIDPORO_SINGLEPHASE_H

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef PARTICLE_DATA_H_
-#define PARTICLE_DATA_H_
+#ifndef INV_ANALYSIS_PARTICLE_DATA_H
+#define INV_ANALYSIS_PARTICLE_DATA_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
@@ -156,4 +156,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /* PARTICLE_DATA_H_ */
+#endif  // INV_ANALYSIS_PARTICLE_DATA_H

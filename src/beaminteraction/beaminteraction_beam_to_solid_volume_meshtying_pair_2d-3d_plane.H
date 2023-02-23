@@ -9,8 +9,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H_
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_PLANE_H
 
 
 #include "beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.H"

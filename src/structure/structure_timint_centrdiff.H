@@ -5,8 +5,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_CENTRDIFF_H
-#define STRTIMINT_CENTRDIFF_H
+#ifndef STRUCTURE_TIMINT_CENTRDIFF_H
+#define STRUCTURE_TIMINT_CENTRDIFF_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -210,4 +210,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_CENTRDIFF_H
+#endif  // STRUCTURE_TIMINT_CENTRDIFF_H

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef RED_AIRWAY_RESULTTEST_H
-#define RED_AIRWAY_RESULTTEST_H
+#ifndef RED_AIRWAYS_RESULTTEST_H
+#define RED_AIRWAYS_RESULTTEST_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -72,4 +72,4 @@ namespace AIRWAY
 
 }  // namespace AIRWAY
 
-#endif  // RED_AIRWAY_RESULTTEST_H
+#endif  // RED_AIRWAYS_RESULTTEST_H

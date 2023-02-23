@@ -4,8 +4,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef FRICTION_NODE_H
-#define FRICTION_NODE_H
+#ifndef CONTACT_FRICTION_NODE_H
+#define CONTACT_FRICTION_NODE_H
 
 #include "contact_node.H"
 
@@ -623,4 +623,4 @@ namespace CONTACT
 //// << operator
 // std::ostream& operator << (std::ostream& os, const CONTACT::FriNode& cnode);
 
-#endif  // #ifndef FRICTION_NODE_H
+#endif  // CONTACT_FRICTION_NODE_H

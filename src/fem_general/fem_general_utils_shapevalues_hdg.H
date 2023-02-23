@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef UTILS_SHAPEVALUES_HDG_H
-#define UTILS_SHAPEVALUES_HDG_H
+#ifndef FEM_GENERAL_UTILS_SHAPEVALUES_HDG_H
+#define FEM_GENERAL_UTILS_SHAPEVALUES_HDG_H
 
 #include "fem_general_utils_polynomial.H"
 #include "fem_general_utils_gausspoints.H"

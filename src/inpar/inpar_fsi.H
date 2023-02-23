@@ -183,4 +183,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_FSI_H
+#endif  // INPAR_FSI_H

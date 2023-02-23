@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef PERIODICBC_H
-#define PERIODICBC_H
+#ifndef LIB_PERIODICBC_H
+#define LIB_PERIODICBC_H
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_RCP.hpp>
@@ -365,4 +365,4 @@ class PeriodicBoundaryConditions
   Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
 };
 
-#endif  // #ifndef PERIODICBC_H
+#endif  // LIB_PERIODICBC_H

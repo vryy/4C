@@ -122,4 +122,4 @@ namespace CONTACT
     Teuchos::RCP<LINALG::SparseMatrix> kdt_;
   };
 }  // namespace CONTACT
-#endif  //  CONTACT_NITSCHE_STRATEGY_TSI_H
+#endif  // CONTACT_NITSCHE_STRATEGY_TSI_H

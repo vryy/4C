@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEM_MESH_PROJECTOR_H_
-#define XFEM_MESH_PROJECTOR_H_
+#ifndef XFEM_MESH_PROJECTOR_H
+#define XFEM_MESH_PROJECTOR_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -127,4 +127,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* XFEM_MESH_PROJECTOR_H_ */
+#endif  // XFEM_MESH_PROJECTOR_H

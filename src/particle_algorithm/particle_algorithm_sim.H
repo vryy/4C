@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_SIM_H
-#define PARTICLE_SIM_H
+#ifndef PARTICLE_ALGORITHM_SIM_H
+#define PARTICLE_ALGORITHM_SIM_H
 
 /*!
  * \brief main control routine for particle simulations

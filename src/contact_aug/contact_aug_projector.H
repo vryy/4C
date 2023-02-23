@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_
+#ifndef CONTACT_AUG_PROJECTOR_H
+#define CONTACT_AUG_PROJECTOR_H
 
 #include "lib_element.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
@@ -235,4 +235,4 @@ namespace CONTACT
 
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_PROJECTOR_H_ */
+#endif  // CONTACT_AUG_PROJECTOR_H

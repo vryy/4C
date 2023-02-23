@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_INTERFACE_REQUIRED_H_
-#define NOX_NLN_INTERFACE_REQUIRED_H_
+#ifndef SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H
+#define SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H
 
 #include <set>
 #include <vector>
@@ -122,4 +122,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_INTERFACE_REQUIRED_H_ */
+#endif  // SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H

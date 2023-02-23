@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifndef FOURIERISO_H_
-#define FOURIERISO_H_
+#ifndef MAT_FOURIERISO_H
+#define MAT_FOURIERISO_H
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
@@ -183,4 +183,4 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // FOURIERISO_H_
+#endif  // MAT_FOURIERISO_H

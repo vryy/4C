@@ -10,8 +10,8 @@ gradient.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
-#define BACI_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
+#ifndef MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
+#define MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 #include "linalg_fixedsizematrix.H"
 #include "lib_voigt_notation.H"
 #include "mat_service.H"
@@ -116,4 +116,4 @@ namespace MAT
   }
 
 }  // namespace MAT
-#endif  // BACI_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
+#endif  // MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H

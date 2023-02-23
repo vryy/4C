@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef FPSI_MONOLITHICPLAIN_H
-#define FPSI_MONOLITHICPLAIN_H
+#ifndef FPSI_MONOLITHIC_PLAIN_H
+#define FPSI_MONOLITHIC_PLAIN_H
 
 #include "fpsi_monolithic.H"
 #include "inpar_fpsi.H"

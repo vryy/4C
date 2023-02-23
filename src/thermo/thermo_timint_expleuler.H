@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-#ifndef THRTIMINT_EXPLEULER_H
-#define THRTIMINT_EXPLEULER_H
+#ifndef THERMO_TIMINT_EXPLEULER_H
+#define THERMO_TIMINT_EXPLEULER_H
 
 
 /*----------------------------------------------------------------------*
@@ -132,4 +132,4 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef THRTIMINT_ExplEuler_H
+#endif  // THERMO_TIMINT_EXPLEULER_H

@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SPRINGDASHPOT_NEW_H
-#define SPRINGDASHPOT_NEW_H
+#ifndef CONSTRAINT_SPRINGDASHPOT_H
+#define CONSTRAINT_SPRINGDASHPOT_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -227,4 +227,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /* SPRINGDASHPOT_NEW_H */
+#endif  // CONSTRAINT_SPRINGDASHPOT_H

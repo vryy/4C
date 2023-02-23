@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef INTERSECTION_SERVICE_TEMPLATES_H_
-#define INTERSECTION_SERVICE_TEMPLATES_H_
+#ifndef GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
+#define GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
 
 
 #include "geometry_intersection_math.H"
@@ -307,4 +307,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /*INTERSECTION_SERVICE_TEMPLATES_H_*/
+#endif  // GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_
+#ifndef LINALG_UTILS_DENSEMATRIX_EIGEN_H
+#define LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -108,4 +108,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_ */
+#endif  // LINALG_UTILS_DENSEMATRIX_EIGEN_H

@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef AD_ALE_FPSI_H_
-#define AD_ALE_FPSI_H_
+#ifndef ADAPTER_ALE_FPSI_H
+#define ADAPTER_ALE_FPSI_H
 
 
 /*----------------------------------------------------------------------------*/
@@ -53,4 +53,4 @@ namespace ADAPTER
   };  // class AleFpsiWrapper
 }  // namespace ADAPTER
 
-#endif /* AD_ALE_FPSI_H_ */
+#endif  // ADAPTER_ALE_FPSI_H

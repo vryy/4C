@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef OPTIMIZER_BASE_H
-#define OPTIMIZER_BASE_H
+#ifndef INV_ANALYSIS_OPTIMIZER_BASE_H
+#define INV_ANALYSIS_OPTIMIZER_BASE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
@@ -268,4 +268,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*OPTIMIZER_BASE_H_*/
+#endif  // INV_ANALYSIS_OPTIMIZER_BASE_H

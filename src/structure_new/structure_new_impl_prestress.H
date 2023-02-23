@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_IMPL_PRESTRESS_H_
-#define STR_IMPL_PRESTRESS_H_
+#ifndef STRUCTURE_NEW_IMPL_PRESTRESS_H
+#define STRUCTURE_NEW_IMPL_PRESTRESS_H
 
 #include "structure_new_impl_statics.H"
 
@@ -65,4 +65,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_IMPL_PRESTRESS_H_ */
+#endif  // STRUCTURE_NEW_IMPL_PRESTRESS_H

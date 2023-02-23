@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_ELEMENT_H_
-#define GEOMETRY_PAIR_ELEMENT_H_
+#ifndef GEOMETRY_PAIR_ELEMENT_H
+#define GEOMETRY_PAIR_ELEMENT_H
 
 
 #include "geometry_pair_element_classes.H"

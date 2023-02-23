@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef dofset_predefineddofnumber_H_
-#define dofset_predefineddofnumber_H_
+#ifndef LIB_DOFSET_PREDEFINEDDOFNUMBER_H
+#define LIB_DOFSET_PREDEFINEDDOFNUMBER_H
 
 #include "lib_dofset.H"
 
@@ -191,4 +191,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* dofset_predefineddofnumber_H_ */
+#endif  // LIB_DOFSET_PREDEFINEDDOFNUMBER_H

@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef REGULARIZATION_BASE_H
-#define REGULARIZATION_BASE_H
+#ifndef INV_ANALYSIS_REGULARIZATION_BASE_H
+#define INV_ANALYSIS_REGULARIZATION_BASE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

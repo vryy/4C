@@ -334,4 +334,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef TRUSS3_H
+#endif  // TRUSS3_H

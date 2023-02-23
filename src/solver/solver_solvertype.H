@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_SOLVERTYPE_H_
-#define SOLVER_SOLVERTYPE_H_
+#ifndef SOLVER_SOLVERTYPE_H
+#define SOLVER_SOLVERTYPE_H
 
 #include "lib_dserror.H"
 #include "linalg_krylov_projector.H"

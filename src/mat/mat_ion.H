@@ -9,8 +9,8 @@ Bauer
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef IONIC_H
-#define IONIC_H
+#ifndef MAT_ION_H
+#define MAT_ION_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"

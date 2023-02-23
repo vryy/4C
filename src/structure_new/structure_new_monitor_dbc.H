@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_STRUCTURE_NEW_STR_MONITOR_DBC_H_
-#define SRC_STRUCTURE_NEW_STR_MONITOR_DBC_H_
+#ifndef STRUCTURE_NEW_MONITOR_DBC_H
+#define STRUCTURE_NEW_MONITOR_DBC_H
 
 #include "lib_condition.H"
 
@@ -156,4 +156,4 @@ namespace STR
 
 }  // namespace STR
 
-#endif /* SRC_STRUCTURE_NEW_STR_MONITOR_DBC_H_ */
+#endif  // STRUCTURE_NEW_MONITOR_DBC_H

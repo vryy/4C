@@ -9,8 +9,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef CUT_PARALLEL_H_
-#define CUT_PARALLEL_H_
+#ifndef CUT_PARALLEL_H
+#define CUT_PARALLEL_H
 
 #include "cut_meshintersection.H"
 
@@ -185,4 +185,4 @@ namespace GEO
 
 
 
-#endif /* CUT_PARALLEL_H_ */
+#endif  // CUT_PARALLEL_H

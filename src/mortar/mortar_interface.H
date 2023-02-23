@@ -1771,4 +1771,4 @@ namespace MORTAR
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarInterface& interface);
 
 
-#endif  // #ifndef MORTAR_INTERFACE_H
+#endif  // MORTAR_INTERFACE_H

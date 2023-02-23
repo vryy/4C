@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef MURNAGHANTAITFLUID_H
-#define MURNAGHANTAITFLUID_H
+#ifndef MAT_FLUID_MURNAGHANTAIT_H
+#define MAT_FLUID_MURNAGHANTAIT_H
 
 
 

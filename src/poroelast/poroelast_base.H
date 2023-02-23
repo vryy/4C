@@ -6,8 +6,8 @@
  \level 2
 
  *-----------------------------------------------------------------------*/
-#ifndef PORO_BASE_H_
-#define PORO_BASE_H_
+#ifndef POROELAST_BASE_H
+#define POROELAST_BASE_H
 
 #include <Teuchos_Time.hpp>
 
@@ -377,4 +377,4 @@ namespace POROELAST
   };
 }  // namespace POROELAST
 
-#endif /* PORO_BASE_H_ */
+#endif  // POROELAST_BASE_H

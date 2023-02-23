@@ -77,4 +77,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef LEVELSET_TIMINT_OST_H
+#endif  // LEVELSET_TIMINT_OST_H

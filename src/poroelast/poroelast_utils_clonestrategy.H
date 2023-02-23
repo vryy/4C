@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_CLONESTRATEGY_H_
-#define PORO_CLONESTRATEGY_H_
+#ifndef POROELAST_UTILS_CLONESTRATEGY_H
+#define POROELAST_UTILS_CLONESTRATEGY_H
 
 
 
@@ -62,4 +62,4 @@ namespace POROELAST
   }  // namespace UTILS
 }  // namespace POROELAST
 
-#endif /* PORO_CLONESTRATEGY_H_ */
+#endif  // POROELAST_UTILS_CLONESTRATEGY_H

@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef INVANA_BASE_H
-#define INVANA_BASE_H
+#ifndef INV_ANALYSIS_BASE_H
+#define INV_ANALYSIS_BASE_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
@@ -183,4 +183,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*INVANA_BASE_H_*/
+#endif  // INV_ANALYSIS_BASE_H

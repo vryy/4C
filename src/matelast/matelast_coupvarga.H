@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUPVARGA_H_
-#define ELAST_COUPVARGA_H_
+#ifndef MATELAST_COUPVARGA_H
+#define MATELAST_COUPVARGA_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -136,4 +136,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ELAST_COUPVARGA_H_
+#endif  // MATELAST_COUPVARGA_H

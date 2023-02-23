@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FADMATRIX_UTILS_H_
-#define FADMATRIX_UTILS_H_
+#ifndef HEADERS_FADMATRIX_UTILS_H
+#define HEADERS_FADMATRIX_UTILS_H
 
 #include "linalg_utils_densematrix_inverse.H"
 #include <Sacado.hpp>
@@ -109,4 +109,4 @@ inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
   out(2, 0) = r_fad.dx(8);
 };
 
-#endif  // FADMATRIX_UTILS_H_
+#endif  // HEADERS_FADMATRIX_UTILS_H

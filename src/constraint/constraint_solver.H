@@ -4,8 +4,8 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#ifndef CONSTRAINTSOLVER_H
-#define CONSTRAINTSOLVER_H
+#ifndef CONSTRAINT_SOLVER_H
+#define CONSTRAINT_SOLVER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -160,4 +160,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /*CONSTRAINTMANAGER_H*/
+#endif  // CONSTRAINT_SOLVER_H

@@ -9,8 +9,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef PRE_EXODUS_CENTERLINE_H_
-#define PRE_EXODUS_CENTERLINE_H_
+#ifndef PRE_EXODUS_CENTERLINE_H
+#define PRE_EXODUS_CENTERLINE_H
 
 
 #include <map>
@@ -92,4 +92,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif /*PRE_EXODUS_CENTERLINE_H_*/
+#endif  // PRE_EXODUS_CENTERLINE_H

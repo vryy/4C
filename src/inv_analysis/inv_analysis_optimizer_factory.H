@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef OPTIMIZER_FACTORY_H
-#define OPTIMIZER_FACTORY_H
+#ifndef INV_ANALYSIS_OPTIMIZER_FACTORY_H
+#define INV_ANALYSIS_OPTIMIZER_FACTORY_H
 
 #include "inv_analysis_optimizer_base.H"
 
@@ -44,4 +44,4 @@ namespace INVANA
   };
 }  // namespace INVANA
 
-#endif /*OPTIMIZER_FACTORY_H_*/
+#endif  // INV_ANALYSIS_OPTIMIZER_FACTORY_H

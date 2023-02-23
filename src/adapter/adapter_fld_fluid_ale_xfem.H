@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUID_ALE_XFEM_H
-#define ADAPTER_FLUID_ALE_XFEM_H
+#ifndef ADAPTER_FLD_FLUID_ALE_XFEM_H
+#define ADAPTER_FLD_FLUID_ALE_XFEM_H
 
 #include "adapter_fld_fluid_ale.H"
 

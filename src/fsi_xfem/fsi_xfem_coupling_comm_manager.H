@@ -36,8 +36,8 @@ namespace ADAPTER
   class CouplingConverter;
 }  // namespace ADAPTER
 
-#ifndef COUPLING_COMM_MANAGER_H
-#define COUPLING_COMM_MANAGER_H
+#ifndef FSI_XFEM_COUPLING_COMM_MANAGER_H
+#define FSI_XFEM_COUPLING_COMM_MANAGER_H
 
 
 namespace XFEM

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#ifndef MAT_MATERIAL_H
+#define MAT_MATERIAL_H
 
 
 

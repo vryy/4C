@@ -16,8 +16,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef TURBULENCE_STATISTICS_BFDA_H
-#define TURBULENCE_STATISTICS_BFDA_H
+#ifndef FLUID_TURBULENCE_STATISTICS_BFDA_H
+#define FLUID_TURBULENCE_STATISTICS_BFDA_H
 
 #include "Epetra_MpiComm.h"
 
@@ -130,4 +130,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // not TURBULENCE_STATISTICS_BFS_H
+#endif  // FLUID_TURBULENCE_STATISTICS_BFDA_H

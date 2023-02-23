@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_NLN_SOLVER_FACTORY_H_
-#define STR_NLN_SOLVER_FACTORY_H_
+#ifndef STRUCTURE_NEW_NLN_SOLVER_FACTORY_H
+#define STRUCTURE_NEW_NLN_SOLVER_FACTORY_H
 
 #include "inpar_structure.H"
 
@@ -47,4 +47,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* STR_NLN_SOLVER_FACTORY_H_ */
+#endif  // STRUCTURE_NEW_NLN_SOLVER_FACTORY_H

@@ -7,8 +7,8 @@
 
 ---------------------------------------------------------------------*/
 
-#ifndef PSS_TABLE_ITER_H
-#define PSS_TABLE_ITER_H
+#ifndef PSS_FULL_TABLE_ITER_H
+#define PSS_FULL_TABLE_ITER_H
 
 #include "pss_full_table.h"
 

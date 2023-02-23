@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef SRC_SO3_SO_HEX8_DETERMINANT_ANALYSIS_H_
-#define SRC_SO3_SO_HEX8_DETERMINANT_ANALYSIS_H_
+#ifndef SO3_HEX8_DETERMINANT_ANALYSIS_H
+#define SO3_HEX8_DETERMINANT_ANALYSIS_H
 
 #include "so3_hex8.H"
 #include <functional>
@@ -329,4 +329,4 @@ namespace DRT
 
 
 
-#endif /* SRC_SO3_SO_HEX8_DETERMINANT_ANALYSIS_H_ */
+#endif  // SO3_HEX8_DETERMINANT_ANALYSIS_H

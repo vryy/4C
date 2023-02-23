@@ -95,4 +95,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_WEAR_H
+#endif  // INPAR_WEAR_H

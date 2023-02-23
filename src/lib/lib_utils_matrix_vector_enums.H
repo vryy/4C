@@ -11,8 +11,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_LIB_UTILS_MATRIX_VECTOR_ENUMS_H_
-#define SRC_LIB_UTILS_MATRIX_VECTOR_ENUMS_H_
+#ifndef LIB_UTILS_MATRIX_VECTOR_ENUMS_H
+#define LIB_UTILS_MATRIX_VECTOR_ENUMS_H
 
 namespace DRT
 {
@@ -125,4 +125,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LIB_UTILS_MATRIX_VECTOR_ENUMS_H_ */
+#endif  // LIB_UTILS_MATRIX_VECTOR_ENUMS_H

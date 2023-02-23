@@ -9,8 +9,8 @@
 /*--------------------------------------------------------------------------*/
 
 
-#ifndef SRC_ART_NET_ARTERY_ELE_FACTORY_H_
-#define SRC_ART_NET_ARTERY_ELE_FACTORY_H_
+#ifndef ART_NET_ARTERY_ELE_FACTORY_H
+#define ART_NET_ARTERY_ELE_FACTORY_H
 
 #include "inpar_bio.H"
 
@@ -53,4 +53,4 @@ namespace DRT
 
 
 
-#endif /* SRC_ART_NET_ARTERY_ELE_FACTORY_H_ */
+#endif  // ART_NET_ARTERY_ELE_FACTORY_H

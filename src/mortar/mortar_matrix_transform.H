@@ -8,8 +8,8 @@ distributions
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
-#define SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
+#ifndef MORTAR_MATRIX_TRANSFORM_H
+#define MORTAR_MATRIX_TRANSFORM_H
 
 #include "lib_dserror.H"
 #include "headers_pairedvector.H"
@@ -102,4 +102,4 @@ namespace MORTAR
 
 
 
-#endif /* SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_ */
+#endif  // MORTAR_MATRIX_TRANSFORM_H

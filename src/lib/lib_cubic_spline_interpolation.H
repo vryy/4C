@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef CUBIC_SPLINE_INTERPOLATION_H
-#define CUBIC_SPLINE_INTERPOLATION_H
+#ifndef LIB_CUBIC_SPLINE_INTERPOLATION_H
+#define LIB_CUBIC_SPLINE_INTERPOLATION_H
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>

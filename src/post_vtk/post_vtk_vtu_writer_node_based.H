@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_VTU_NODE_H
-#define POST_VTU_NODE_H
+#ifndef POST_VTK_VTU_WRITER_NODE_BASED_H
+#define POST_VTK_VTU_WRITER_NODE_BASED_H
 
 
 #include "post_vtk_vtu_writer.H"

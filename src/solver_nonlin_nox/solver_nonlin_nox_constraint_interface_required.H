@@ -13,8 +13,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_CONSTRAINT_INTERFACE_REQUIRED_H_
-#define NOX_NLN_CONSTRAINT_INTERFACE_REQUIRED_H_
+#ifndef SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H
+#define SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H
 
 #include "solver_nonlin_nox_enum_lists.H"
 #include "lib_dserror.H"
@@ -161,4 +161,4 @@ namespace NOX
 }  // end namespace NOX
 
 
-#endif /* NOX_NLN_CONSTRAINT_INTERFACE_REQUIRED_H_ */
+#endif  // SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H

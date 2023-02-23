@@ -5,8 +5,8 @@
 */
 /*--------------------------------------------------------------------*/
 
-#ifndef GLOBALPROBLEM_ENUMS_H
-#define GLOBALPROBLEM_ENUMS_H
+#ifndef LIB_GLOBALPROBLEM_ENUMS_H
+#define LIB_GLOBALPROBLEM_ENUMS_H
 
 /**
  * A global definition of available problem types.

@@ -11,8 +11,8 @@
 
 
 
-#ifndef ADAPTER_FLUID_BASE_ALGORITHM_H
-#define ADAPTER_FLUID_BASE_ALGORITHM_H
+#ifndef ADAPTER_FLD_BASE_ALGORITHM_H
+#define ADAPTER_FLD_BASE_ALGORITHM_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

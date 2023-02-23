@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef UTILS_REBALANCING_H
-#define UTILS_REBALANCING_H
+#ifndef REBALANCE_H
+#define REBALANCE_H
 
 #include "Epetra_Comm.h"
 #include "Epetra_CrsGraph.h"

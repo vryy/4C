@@ -40,4 +40,4 @@
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 
-#endif  // #ifndef MORTAR_DEFINES_H
+#endif  // MORTAR_DEFINES_H

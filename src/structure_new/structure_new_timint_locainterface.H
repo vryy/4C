@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_LOCAINTERFACE_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_LOCAINTERFACE_H_
+#ifndef STRUCTURE_NEW_TIMINT_LOCAINTERFACE_H
+#define STRUCTURE_NEW_TIMINT_LOCAINTERFACE_H
 
 #include "structure_new_timint_noxinterface.H"
 #include "loca_continuation_nln_interface_required.H"
@@ -57,4 +57,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_LOCAINTERFACE_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_LOCAINTERFACE_H

@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_BASE_ANISOTROPY_EXTENSION_H
-#define BACI_BASE_ANISOTROPY_EXTENSION_H
+#ifndef MAT_ANISOTROPY_EXTENSION_BASE_H
+#define MAT_ANISOTROPY_EXTENSION_BASE_H
 
 #include <Teuchos_RCPDecl.hpp>
 
@@ -104,4 +104,4 @@ namespace MAT
     Teuchos::RCP<Anisotropy> anisotropy_;
   };
 }  // namespace MAT
-#endif  // BACI_BASE_ANISOTROPY_EXTENSION_H
+#endif  // MAT_ANISOTROPY_EXTENSION_BASE_H

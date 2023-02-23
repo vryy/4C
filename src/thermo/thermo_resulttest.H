@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef THR_RESULTTEST_H
-#define THR_RESULTTEST_H
+#ifndef THERMO_RESULTTEST_H
+#define THERMO_RESULTTEST_H
 
 
 /*----------------------------------------------------------------------*
@@ -63,4 +63,4 @@ namespace THR
 
 
 /*----------------------------------------------------------------------*/
-#endif  // THR_RESULTTEST_H
+#endif  // THERMO_RESULTTEST_H

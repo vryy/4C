@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BEAM_TO_FLUID_MORTAR_MANAGER_H
-#define BEAM_TO_FLUID_MORTAR_MANAGER_H
+#ifndef FBI_BEAM_TO_FLUID_MORTAR_MANAGER_H
+#define FBI_BEAM_TO_FLUID_MORTAR_MANAGER_H
 
 
 #include <Teuchos_RCP.hpp>

@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef INTEGRATIONCELL_H
-#define INTEGRATIONCELL_H
+#ifndef GEOMETRY_INTEGRATIONCELL_H
+#define GEOMETRY_INTEGRATIONCELL_H
 
 
 #include "lib_element.H"
@@ -339,4 +339,4 @@ namespace GEO
       const unsigned& probDim);
 }  // namespace GEO
 
-#endif  // #ifndef INTEGRATIONCELL_H
+#endif  // GEOMETRY_INTEGRATIONCELL_H

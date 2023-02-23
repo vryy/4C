@@ -11,8 +11,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
-#define SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
+#ifndef STRUCTURE_NEW_TIMINT_BASEDATASDYN_H
+#define STRUCTURE_NEW_TIMINT_BASEDATASDYN_H
 
 #include <set>
 
@@ -1087,4 +1087,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* SRC_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_ */
+#endif  // STRUCTURE_NEW_TIMINT_BASEDATASDYN_H

@@ -12,8 +12,8 @@
 /* macros */
 
 
-#ifndef AD_STR_REDAIRWAY_H
-#define AD_STR_REDAIRWAY_H
+#ifndef ADAPTER_STR_REDAIRWAY_H
+#define ADAPTER_STR_REDAIRWAY_H
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>

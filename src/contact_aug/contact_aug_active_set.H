@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_ACTIVE_SET_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_ACTIVE_SET_H_
+#ifndef CONTACT_AUG_ACTIVE_SET_H
+#define CONTACT_AUG_ACTIVE_SET_H
 
 #include <string>
 #include <vector>
@@ -117,4 +117,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_ACTIVE_SET_H_ */
+#endif  // CONTACT_AUG_ACTIVE_SET_H

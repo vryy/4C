@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SCATRA_TIMINT_HDG_H_
-#define SCATRA_TIMINT_HDG_H_
+#ifndef SCATRA_TIMINT_HDG_H
+#define SCATRA_TIMINT_HDG_H
 
 #include "scatra_timint_genalpha.H"
 
@@ -200,4 +200,4 @@ namespace SCATRA
   };  // class TimIntHDG
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_HDG_H
+#endif  // SCATRA_TIMINT_HDG_H

@@ -252,4 +252,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_CALC_H */
+#endif  // ELEMAG_ELE_CALC_H

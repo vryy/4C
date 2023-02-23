@@ -37,8 +37,8 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#ifndef PSS_TYPES_H
-#define PSS_TYPES_H
+#ifndef PSS_FULL_TYPES_H
+#define PSS_FULL_TYPES_H
 
 #include "pss_full_am.h"
 

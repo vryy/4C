@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_KRYLOVSOLVER_H_
-#define SOLVER_KRYLOVSOLVER_H_
+#ifndef SOLVER_KRYLOVSOLVER_H
+#define SOLVER_KRYLOVSOLVER_H
 
 #include "lib_dserror.H"
 

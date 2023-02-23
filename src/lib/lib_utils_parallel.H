@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef UTILS_PARALLEL_H
-#define UTILS_PARALLEL_H
+#ifndef LIB_UTILS_PARALLEL_H
+#define LIB_UTILS_PARALLEL_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Map.h"
@@ -169,4 +169,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef UTILS_PARALLEL_H
+#endif  // LIB_UTILS_PARALLEL_H

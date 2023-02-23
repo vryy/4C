@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_PARAMS_BASE_H
-#define BEAM_TO_SOLID_PARAMS_BASE_H
+#ifndef BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_H
+#define BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_H
 
 
 #include "fem_general_utils_integration.H"

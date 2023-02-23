@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SPRINGDASHPOT_MANAGER_H
-#define SPRINGDASHPOT_MANAGER_H
+#ifndef CONSTRAINT_SPRINGDASHPOT_MANAGER_H
+#define CONSTRAINT_SPRINGDASHPOT_MANAGER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -83,4 +83,4 @@ namespace UTILS
     int n_conds_;             ///< number of spring dashpot conditions
   };                          // class
 }  // namespace UTILS
-#endif /*SPRINGDASHPOT_MANAGER_H*/
+#endif  // CONSTRAINT_SPRINGDASHPOT_MANAGER_H

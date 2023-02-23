@@ -97,4 +97,4 @@ namespace UTILS
 std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
 
 
-#endif  // #ifndef DOFSET_H
+#endif  // CARDIOVASCULAR0D_DOFSET_H

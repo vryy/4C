@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_MAT_FLUIDPORO_SINGLEPHASEDOF_H_
-#define SRC_MAT_FLUIDPORO_SINGLEPHASEDOF_H_
+#ifndef MAT_FLUIDPORO_SINGLEPHASEDOF_H
+#define MAT_FLUIDPORO_SINGLEPHASEDOF_H
 
 
 #include "mat_par_parameter.H"
@@ -206,4 +206,4 @@ namespace MAT
   }  // namespace PAR
 }  // namespace MAT
 
-#endif /* SRC_MAT_FLUIDPORO_SINGLEPHASEDOF_H_ */
+#endif  // MAT_FLUIDPORO_SINGLEPHASEDOF_H

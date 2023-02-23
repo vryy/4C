@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef INVANA_CONTROL_H
-#define INVANA_CONTROL_H
+#ifndef INV_ANALYSIS_CONTROL_H
+#define INV_ANALYSIS_CONTROL_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -163,4 +163,4 @@ namespace INVANA
   };  // class InvanaControl
 }  // namespace INVANA
 
-#endif /* INVANA_CONTROL_H */
+#endif  // INV_ANALYSIS_CONTROL_H

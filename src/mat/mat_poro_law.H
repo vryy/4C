@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef PORO_LAW_H_
-#define PORO_LAW_H_
+#ifndef MAT_PORO_LAW_H
+#define MAT_PORO_LAW_H
 
 #include "mat_par_parameter.H"
 
@@ -369,4 +369,4 @@ namespace MAT
   }  // namespace PAR
 }  // namespace MAT
 
-#endif /* PORO_LAW_H_ */
+#endif  // MAT_PORO_LAW_H

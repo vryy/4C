@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef REGULARIZATIONBASE_TIKHONOV_H
-#define REGULARIZATIONBASE_TIKHONOV_H
+#ifndef INV_ANALYSIS_REGULARIZATION_TIKHONOV_H
+#define INV_ANALYSIS_REGULARIZATION_TIKHONOV_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

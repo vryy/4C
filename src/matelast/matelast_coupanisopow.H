@@ -5,8 +5,8 @@
 \level 3
 */
 /*---------------------------------------------------------------------*/
-#ifndef ELAST_COUPANISOPOW_H_
-#define ELAST_COUPANISOPOW_H_
+#ifndef MATELAST_COUPANISOPOW_H
+#define MATELAST_COUPANISOPOW_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -162,4 +162,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPANISOPOW_H_
+#endif  // MATELAST_COUPANISOPOW_H

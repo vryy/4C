@@ -234,4 +234,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif  // #ifndef MORTAR_INTEGRATOR_H
+#endif  // MORTAR_INTEGRATOR_H

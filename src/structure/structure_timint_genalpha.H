@@ -7,8 +7,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_GENALPHA_H
-#define STRTIMINT_GENALPHA_H
+#ifndef STRUCTURE_TIMINT_GENALPHA_H
+#define STRUCTURE_TIMINT_GENALPHA_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -378,4 +378,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_GENALPHA_H
+#endif  // STRUCTURE_TIMINT_GENALPHA_H

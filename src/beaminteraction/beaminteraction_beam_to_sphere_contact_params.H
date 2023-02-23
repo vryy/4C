@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BEAMTOSPHERECONTACTPARAMS_H
-#define BEAMTOSPHERECONTACTPARAMS_H
+#ifndef BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_H
+#define BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_H
 
 #include "lib_dserror.H"
 

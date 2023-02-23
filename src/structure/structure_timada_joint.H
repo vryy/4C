@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef STRTIMADA_JOINT_H
-#define STRTIMADA_JOINT_H
+#ifndef STRUCTURE_TIMADA_JOINT_H
+#define STRUCTURE_TIMADA_JOINT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -228,4 +228,4 @@ namespace STR
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMADA_JOINT_H
+#endif  // STRUCTURE_TIMADA_JOINT_H

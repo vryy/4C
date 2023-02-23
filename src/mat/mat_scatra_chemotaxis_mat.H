@@ -7,8 +7,8 @@ This file contains the base material for chemotactic scalars.
 
 *----------------------------------------------------------------------*/
 
-#ifndef SCATRA_CHEMOTAXIS_MAT_H_
-#define SCATRA_CHEMOTAXIS_MAT_H_
+#ifndef MAT_SCATRA_CHEMOTAXIS_MAT_H
+#define MAT_SCATRA_CHEMOTAXIS_MAT_H
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"
@@ -141,4 +141,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /* SCATRA_CHEMOTAXIS_MAT_H_ */
+#endif  // MAT_SCATRA_CHEMOTAXIS_MAT_H

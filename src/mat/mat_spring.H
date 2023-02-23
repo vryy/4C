@@ -5,8 +5,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef SPRING_H
-#define SPRING_H
+#ifndef MAT_SPRING_H
+#define MAT_SPRING_H
 
 
 

@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef FLD_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H_
-#define FLD_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H_
+#ifndef FLUID_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
+#define FLUID_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
 
 namespace Teuchos
 {

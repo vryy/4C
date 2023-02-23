@@ -7,8 +7,8 @@ term
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_COUPSIMOPISTER_H_
-#define ELAST_COUPSIMOPISTER_H_
+#ifndef MATELAST_COUPSIMOPISTER_H
+#define MATELAST_COUPSIMOPISTER_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -133,4 +133,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // COUPSIMOPISTER_H_
+#endif  // MATELAST_COUPSIMOPISTER_H

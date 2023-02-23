@@ -12,8 +12,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 04/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLEREADER_H
-#define PARTICLEREADER_H
+#ifndef LIB_PARTICLEREADER_H
+#define LIB_PARTICLEREADER_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 04/2018 |
@@ -58,4 +58,4 @@ namespace DRT
 }  // namespace DRT
 
 /*---------------------------------------------------------------------------*/
-#endif  // PARTICLEREADER_H
+#endif  // LIB_PARTICLEREADER_H

@@ -7,8 +7,8 @@ Definition of classes for the isochoric contribution of a Yeoh-type material
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELAST_ISOYEOH_H_
-#define ELAST_ISOYEOH_H_
+#ifndef MATELAST_ISOYEOH_H
+#define MATELAST_ISOYEOH_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -124,4 +124,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ISOYEOH_H_
+#endif  // MATELAST_ISOYEOH_H

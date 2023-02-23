@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifndef SHELL8_H
-#define SHELL8_H
+#ifndef S8_H
+#define S8_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -752,4 +752,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SHELL8_H
+#endif  // S8_H

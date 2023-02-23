@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_TWO_PHASE_H
-#define FLD_TIMINT_TWO_PHASE_H
+#ifndef FLUID_TIMINT_TWO_PHASE_H
+#define FLUID_TIMINT_TWO_PHASE_H
 
 
 #include "fluid_implicit_integration.H"
@@ -82,4 +82,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_TWO_PHASE_H
+#endif  // FLUID_TIMINT_TWO_PHASE_H

@@ -6,8 +6,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef ARTERY_H
-#define ARTERY_H
+#ifndef ART_NET_ARTERY_H
+#define ART_NET_ARTERY_H
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
@@ -372,4 +372,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef ARTERY_H
+#endif  // ART_NET_ARTERY_H

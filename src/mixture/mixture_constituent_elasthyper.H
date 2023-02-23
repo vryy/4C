@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
-#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
+#ifndef MIXTURE_CONSTITUENT_ELASTHYPER_H
+#define MIXTURE_CONSTITUENT_ELASTHYPER_H
 
 #include "mat_par_parameter.H"
 #include "mixture_constituent_elasthyperbase.H"
@@ -98,4 +98,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
+#endif  // MIXTURE_CONSTITUENT_ELASTHYPER_H

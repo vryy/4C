@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFEMTRANSPARENTINDEPENDENTDOFSET_H
-#define XFEMTRANSPARENTINDEPENDENTDOFSET_H
+#ifndef XFEM_DOFSET_TRANSPARENT_INDEPENDENT_H
+#define XFEM_DOFSET_TRANSPARENT_INDEPENDENT_H
 
 #include "lib_dofset_transparent_independent.H"
 

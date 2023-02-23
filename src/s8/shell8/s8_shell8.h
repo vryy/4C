@@ -7,6 +7,9 @@
 
 */
 /*---------------------------------------------------------------------------*/
+#ifndef S8_SHELL8_H
+#define S8_SHELL8_H
+
 #include "pss_full_am.h"
 #include "s8_materials.h"
 
@@ -103,3 +106,5 @@ void s8_kov_cacu(double *t, const double **gkov);
 void s8_4kon_cacu(double Ccart[][3][3][3], double **gkon);
 void s8_c4_to_C2(double C[][3][3][3], double **CC);
 void s8_mat_linel_cart(STVENANT *mat, double C[][3][3][3], double **CC, double *strain);
+
+#endif

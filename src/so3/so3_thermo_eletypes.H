@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SO3_THERMO_ELETYPES_H_
-#define SO3_THERMO_ELETYPES_H_
+#ifndef SO3_THERMO_ELETYPES_H
+#define SO3_THERMO_ELETYPES_H
 
 #include "so3_hex8.H"
 #include "so3_hex8fbar.H"
@@ -233,4 +233,4 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // SO3_THERMO_ELETYPES_H_
+#endif  // SO3_THERMO_ELETYPES_H

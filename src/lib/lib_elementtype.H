@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ELEMENTTPYE_H
-#define ELEMENTTPYE_H
+#ifndef LIB_ELEMENTTYPE_H
+#define LIB_ELEMENTTYPE_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

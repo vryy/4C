@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_LINEARSYSTEM_H_
-#define NOX_NLN_LINEARSYSTEM_H_
+#ifndef SOLVER_NONLIN_NOX_LINEARSYSTEM_H
+#define SOLVER_NONLIN_NOX_LINEARSYSTEM_H
 
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -414,4 +414,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_LINEARSYSTEM_H_ */
+#endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_H

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_XWALL_H
-#define FLD_XWALL_H
+#ifndef FLUID_XWALL_H
+#define FLUID_XWALL_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -320,4 +320,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_XWALL_H
+#endif  // FLUID_XWALL_H

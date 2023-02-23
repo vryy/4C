@@ -10,8 +10,8 @@ materials with @MAT::Anisotropy
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CYLINDER_COSY_ANISOTROPY_EXTENSION_H
-#define BACI_CYLINDER_COSY_ANISOTROPY_EXTENSION_H
+#ifndef MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
+#define MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
 
 #include <Teuchos_RCPDecl.hpp>
 #include "mat_anisotropy_extension_base.H"
@@ -106,4 +106,4 @@ namespace MAT
     CosyLocation cosyLocation_;
   };
 }  // namespace MAT
-#endif  // BACI_CYLINDER_COSY_ANISOTROPY_EXTENSION_H
+#endif  // MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H

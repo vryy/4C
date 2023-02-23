@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_H
-#define BACI_ANISOTROPY_H
+#ifndef MAT_ANISOTROPY_H
+#define MAT_ANISOTROPY_H
 
 #include <optional>
 #include <Teuchos_RCPDecl.hpp>
@@ -255,4 +255,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_H
+#endif  // MAT_ANISOTROPY_H

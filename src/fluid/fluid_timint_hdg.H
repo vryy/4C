@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLD_TIMINT_HDG_H
-#define FLD_TIMINT_HDG_H
+#ifndef FLUID_TIMINT_HDG_H
+#define FLUID_TIMINT_HDG_H
 
 
 #include "fluid_timint_genalpha.H"
@@ -204,4 +204,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_HDG_H
+#endif  // FLUID_TIMINT_HDG_H

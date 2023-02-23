@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef STRUCTURE_UTILS_MAPEXTRACTOR_H
-#define STRUCTURE_UTILS_MAPEXTRACTOR_H
+#ifndef STRUCTURE_AUX_H
+#define STRUCTURE_AUX_H
 
 #include "linalg_mapextractor.H"
 #include "inpar_structure.H"

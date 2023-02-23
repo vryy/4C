@@ -5,8 +5,8 @@
 \level 2
 *--------------------------------------------------------------------------*/
 
-#ifndef VISCOPLASTIC_NO_YIELD_SURFACE_H
-#define VISCOPLASTIC_NO_YIELD_SURFACE_H
+#ifndef MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
+#define MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -327,4 +327,4 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // VISCOPLASTIC_NO_YIELD_SURFACE_H
+#endif  // MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H

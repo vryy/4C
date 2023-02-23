@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_REACTION_MAT_H
-#define SCATRA_REACTION_MAT_H
+#ifndef MAT_SCATRA_REACTION_MAT_H
+#define MAT_SCATRA_REACTION_MAT_H
 
 
 

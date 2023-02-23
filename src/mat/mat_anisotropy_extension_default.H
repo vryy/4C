@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ANISOTROPY_DEFAULT_EXTENSION_H
-#define BACI_ANISOTROPY_DEFAULT_EXTENSION_H
+#ifndef MAT_ANISOTROPY_EXTENSION_DEFAULT_H
+#define MAT_ANISOTROPY_EXTENSION_DEFAULT_H
 
 #include "mat_anisotropy_extension.H"
 namespace MAT
@@ -142,4 +142,4 @@ namespace MAT
   };
 }  // namespace MAT
 
-#endif  // BACI_ANISOTROPY_DEFAULT_EXTENSION_H
+#endif  // MAT_ANISOTROPY_EXTENSION_DEFAULT_H

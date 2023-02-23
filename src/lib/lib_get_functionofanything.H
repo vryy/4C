@@ -5,8 +5,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef LIBGETFUNCTIONOFANYTHING_H
-#define LIBGETFUNCTIONOFANYTHING_H
+#ifndef LIB_GET_FUNCTIONOFANYTHING_H
+#define LIB_GET_FUNCTIONOFANYTHING_H
 
 #include "lib_function.H"
 #include "lib_globalproblem.H"

@@ -11,8 +11,8 @@
 
 
 
-#ifndef DOMAINREADER_H
-#define DOMAINREADER_H
+#ifndef LIB_DOMAINREADER_H
+#define LIB_DOMAINREADER_H
 
 #include <set>
 #include <memory>

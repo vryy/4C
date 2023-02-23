@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef MATPAR_PARAMETER_H
-#define MATPAR_PARAMETER_H
+#ifndef MAT_PAR_PARAMETER_H
+#define MAT_PAR_PARAMETER_H
 
 
 /*----------------------------------------------------------------------*/
@@ -150,4 +150,4 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef MATPAR_PARAMETER_H
+#endif  // MAT_PAR_PARAMETER_H

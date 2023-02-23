@@ -7,8 +7,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef GLOBAL_INIT_CONTROL_H
-#define GLOBAL_INIT_CONTROL_H
+#ifndef GLOBAL_FULL_INIT_CONTROL_H
+#define GLOBAL_FULL_INIT_CONTROL_H
 
 
 #include <string>

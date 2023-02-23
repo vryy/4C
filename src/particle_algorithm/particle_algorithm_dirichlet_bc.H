@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_DIRICHLET_BC_H
-#define PARTICLE_DIRICHLET_BC_H
+#ifndef PARTICLE_ALGORITHM_DIRICHLET_BC_H
+#define PARTICLE_ALGORITHM_DIRICHLET_BC_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_VISCOUS_DAMPING_H
-#define PARTICLE_VISCOUS_DAMPING_H
+#ifndef PARTICLE_ALGORITHM_VISCOUS_DAMPING_H
+#define PARTICLE_ALGORITHM_VISCOUS_DAMPING_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

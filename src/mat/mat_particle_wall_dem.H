@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_WALL_MATERIAL_BASE_H
-#define PARTICLE_WALL_MATERIAL_BASE_H
+#ifndef MAT_PARTICLE_WALL_DEM_H
+#define MAT_PARTICLE_WALL_DEM_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2019 |

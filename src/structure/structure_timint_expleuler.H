@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_EXPLEULER_H
-#define STRTIMINT_EXPLEULER_H
+#ifndef STRUCTURE_TIMINT_EXPLEULER_H
+#define STRUCTURE_TIMINT_EXPLEULER_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -199,4 +199,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_EXPLEULER_H
+#endif  // STRUCTURE_TIMINT_EXPLEULER_H

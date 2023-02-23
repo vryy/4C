@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_STRUCTURE_H
-#define ADAPTER_STRUCTURE_H
+#ifndef ADAPTER_STR_STRUCTURE_H
+#define ADAPTER_STR_STRUCTURE_H
 
 
 #include <Teuchos_ParameterList.hpp>

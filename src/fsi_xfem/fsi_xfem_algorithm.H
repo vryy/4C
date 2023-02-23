@@ -9,8 +9,8 @@
 */
 
 
-#ifndef FSI_ALGORITHMXFEM_H
-#define FSI_ALGORITHMXFEM_H
+#ifndef FSI_XFEM_ALGORITHM_H
+#define FSI_XFEM_ALGORITHM_H
 
 
 #include "adapter_algorithmbase.H"
@@ -136,4 +136,4 @@ namespace FSI
 
 
 /*----------------------------------------------------------------------*/
-#endif  // FSI_ALGORITHMXFEM_H
+#endif  // FSI_XFEM_ALGORITHM_H

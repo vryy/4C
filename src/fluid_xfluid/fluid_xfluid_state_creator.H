@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef XFLUID_STATE_CREATOR_H_
-#define XFLUID_STATE_CREATOR_H_
+#ifndef FLUID_XFLUID_STATE_CREATOR_H
+#define FLUID_XFLUID_STATE_CREATOR_H
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

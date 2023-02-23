@@ -3,8 +3,8 @@
 \brief Solid Tet4 Element
 \level 3
 *----------------------------------------------------------------------*/
-#ifndef SO_TET4_H
-#define SO_TET4_H
+#ifndef SO3_TET4_H
+#define SO3_TET4_H
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
@@ -491,4 +491,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SO_TET4_H_
+#endif  // SO3_TET4_H

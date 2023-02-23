@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef RESULTTEST_H
-#define RESULTTEST_H
+#ifndef LIB_RESULTTEST_H
+#define LIB_RESULTTEST_H
 
 
 #include <Epetra_Comm.h>

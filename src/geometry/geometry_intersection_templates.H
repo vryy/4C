@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef INTERSECTION_TEMPLATES_H_
-#define INTERSECTION_TEMPLATES_H_
+#ifndef GEOMETRY_INTERSECTION_TEMPLATES_H
+#define GEOMETRY_INTERSECTION_TEMPLATES_H
 
 
 #include "fem_general_utils_fem_shapefunctions.H"
@@ -465,4 +465,4 @@ namespace GEO
 
 
 
-#endif /*INTERSECTION_TEMPLATES_H_*/
+#endif  // GEOMETRY_INTERSECTION_TEMPLATES_H

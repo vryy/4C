@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 /* definitions */
 
-#ifndef BOOLIFYPARAMETERS_H
-#define BOOLIFYPARAMETERS_H
+#ifndef INPAR_BOOLIFYPARAMETERS_H
+#define INPAR_BOOLIFYPARAMETERS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -36,4 +36,4 @@ namespace DRT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef BOOLIFYPARAMETERS_H
+#endif  // INPAR_BOOLIFYPARAMETERS_H

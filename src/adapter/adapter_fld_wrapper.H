@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef ADAPTER_FLUID_WRAPPER_H
-#define ADAPTER_FLUID_WRAPPER_H
+#ifndef ADAPTER_FLD_WRAPPER_H
+#define ADAPTER_FLD_WRAPPER_H
 
 #include "adapter_fld_fluid.H"
 

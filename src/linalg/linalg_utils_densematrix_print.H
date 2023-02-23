@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_
+#ifndef LINALG_UTILS_DENSEMATRIX_PRINT_H
+#define LINALG_UTILS_DENSEMATRIX_PRINT_H
 
 #include <string>
 
@@ -28,4 +28,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_PRINT_H_ */
+#endif  // LINALG_UTILS_DENSEMATRIX_PRINT_H

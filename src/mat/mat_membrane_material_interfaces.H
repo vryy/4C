@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MEMBRANE_MATERIAL_INTERFACES_H
-#define MEMBRANE_MATERIAL_INTERFACES_H
+#ifndef MAT_MEMBRANE_MATERIAL_INTERFACES_H
+#define MAT_MEMBRANE_MATERIAL_INTERFACES_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>

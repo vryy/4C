@@ -6,8 +6,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
-#define ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
+#ifndef MATELAST_ANISOACTIVESTRESS_EVOLUTION_H
+#define MATELAST_ANISOACTIVESTRESS_EVOLUTION_H
 
 #include "matelast_summand.H"
 #include "mat_par_parameter.H"
@@ -211,4 +211,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-#endif  // ANISOACTIVESTRESS_EVOLUTION_H_
+#endif  // MATELAST_ANISOACTIVESTRESS_EVOLUTION_H

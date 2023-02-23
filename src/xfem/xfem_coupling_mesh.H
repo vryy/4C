@@ -10,8 +10,8 @@ between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_COUPLING_MESH_H_
-#define XFEM_COUPLING_MESH_H_
+#ifndef XFEM_COUPLING_MESH_H
+#define XFEM_COUPLING_MESH_H
 
 #include "xfem_coupling_base.H"
 
@@ -839,4 +839,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_MESH_H_*/
+#endif  // XFEM_COUPLING_MESH_H

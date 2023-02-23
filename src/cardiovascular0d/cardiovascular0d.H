@@ -161,4 +161,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0D_H*/
+#endif  // CARDIOVASCULAR0D_H

@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_LINESEARCH_GENERIC_H_
-#define NOX_NLN_LINESEARCH_GENERIC_H_
+#ifndef SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H
+#define SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H
 
 #include <NOX_LineSearch_Generic.H>
 #include "solver_nonlin_nox_inner_statustest_interface_required.H"
@@ -70,4 +70,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* NOX_NLN_LINESEARCH_GENERIC_H_ */
+#endif  // SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H

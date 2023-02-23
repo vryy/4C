@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
-#define XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
+#ifndef XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H
+#define XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H
 
 #include "xfem_xfluid_timeInt_base.H"
 
@@ -195,4 +195,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /*XFLUID_TIMEINT_SEMILAGRANGE_H_*/
+#endif  // XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H

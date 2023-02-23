@@ -6,8 +6,8 @@
 
 */
 
-#ifndef INELASTIC_DEFGRAD_FACTORS_H
-#define INELASTIC_DEFGRAD_FACTORS_H
+#ifndef MAT_INELASTIC_DEFGRAD_FACTORS_H
+#define MAT_INELASTIC_DEFGRAD_FACTORS_H
 
 #include "mat_par_parameter.H"
 #include "linalg_fixedsizematrix.H"
