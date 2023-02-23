@@ -2,7 +2,7 @@
 
 CMAKE_COMMAND=/imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
 
-TRILINOS_HOME=/imcs/public/compsim/lib/trilinos_for_baci
+TRILINOS_HOME="$CI_PROJECT_DIR/../Trilinos"
 EXTRA_ARGS=$@
 
 $CMAKE_COMMAND \
