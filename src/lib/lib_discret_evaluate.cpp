@@ -355,7 +355,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-    Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
+    Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
   DRT::UTILS::EvaluateDirichlet(

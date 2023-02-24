@@ -18,12 +18,21 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, co
   if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
+
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_IntVector> LINALG::CreateIntVector(
+    const Epetra_BlockMap& rowmap, const bool init)
+{
+  return Teuchos::rcp(new Epetra_IntVector(rowmap, init));
 }
 
 /*----------------------------------------------------------------------*

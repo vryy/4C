@@ -75,7 +75,7 @@ STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret)
   disn_ = LINALG::CreateVector(*(dofrowmap_), true);
   rhsn_ = LINALG::CreateVector(*(dofrowmap_), true);
 
-  dbctoggle_ = LINALG::CreateVector(*(dofrowmap_), true);
+  dbctoggle_ = LINALG::CreateIntVector(*(dofrowmap_), true);
 
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_, msteps_, true));
 

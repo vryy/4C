@@ -14,6 +14,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "Teuchos_RCP.hpp"
+#include "Epetra_IntVector.h"
 #include "Epetra_MultiVector.h"
 #include "Teuchos_ParameterList.hpp"
 
@@ -140,7 +141,7 @@ namespace STR
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
     //! DBC toggle
-    Teuchos::RCP<Epetra_Vector> dbctoggle_;
+    Teuchos::RCP<Epetra_IntVector> dbctoggle_;
 
     //! primal variables (displacements)
     Teuchos::RCP<Epetra_MultiVector> dis_;

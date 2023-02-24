@@ -23,7 +23,7 @@
 void DRT::UTILS::EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
-    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_Vector>& toggle,
+    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor)
 {
   // create const version
@@ -53,7 +53,7 @@ Teuchos::RCP<const DRT::UTILS::Dbc> DRT::UTILS::BuildDbc(
 void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
-    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_Vector>& toggle,
+    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const
 {
   if (!discret.Filled()) dserror("FillComplete() was not called");
@@ -83,12 +83,13 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
    * a certain dof in the input file overwrites the corresponding entry
    * in the toggle vector. The entity hierarchy is:
    * point>line>surface>volume */
-  Teuchos::RCP<Epetra_Vector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
+  Teuchos::RCP<Epetra_IntVector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
 
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
   // --------------------------------------------------------------------------
-  Evaluate(discret, time, systemvectors.data(), *toggleaux, dbcgids.data());
+  DbcInfo info(*toggleaux);
+  Evaluate(discret, time, systemvectors.data(), info, dbcgids.data());
 
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
@@ -100,11 +101,11 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> DRT::UTILS::Dbc::CreateToggleVector(
-    const Teuchos::RCP<Epetra_Vector> toggle_input,
+Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::CreateToggleVector(
+    const Teuchos::RCP<Epetra_IntVector> toggle_input,
     const Teuchos::RCP<Epetra_Vector>* systemvectors) const
 {
-  Teuchos::RCP<Epetra_Vector> toggleaux = Teuchos::null;
+  Teuchos::RCP<Epetra_IntVector> toggleaux = Teuchos::null;
 
   if (not toggle_input.is_null())
     toggleaux = toggle_input;
@@ -112,15 +113,15 @@ Teuchos::RCP<Epetra_Vector> DRT::UTILS::Dbc::CreateToggleVector(
   {
     if (not systemvectors[0].is_null())
     {
-      toggleaux = Teuchos::rcp(new Epetra_Vector(systemvectors[0]->Map()));
+      toggleaux = Teuchos::rcp(new Epetra_IntVector(systemvectors[0]->Map()));
     }
     else if (not systemvectors[1].is_null())
     {
-      toggleaux = Teuchos::rcp(new Epetra_Vector(systemvectors[1]->Map()));
+      toggleaux = Teuchos::rcp(new Epetra_IntVector(systemvectors[1]->Map()));
     }
     else if (not systemvectors[2].is_null())
     {
-      toggleaux = Teuchos::rcp(new Epetra_Vector(systemvectors[2]->Map()));
+      toggleaux = Teuchos::rcp(new Epetra_IntVector(systemvectors[2]->Map()));
     }
     else if (systemvectors[0].is_null() and systemvectors[1].is_null() and
              systemvectors[2].is_null())
@@ -136,8 +137,8 @@ Teuchos::RCP<Epetra_Vector> DRT::UTILS::Dbc::CreateToggleVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------------------------------------------------------
@@ -145,50 +146,73 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, cons
   // --------------------------------------------------------------------------
   std::vector<Teuchos::RCP<DRT::Condition>> conds(0);
   discret.GetCondition("Dirichlet", conds);
-  ReadDirichletCondition(discret, conds, toggle, dbcgids);
-
+  ReadDirichletCondition(discret, conds, time, info, dbcgids);
   // --------------------------------------------------------------------------
   // Now, as we know from the toggle vector which dofs actually have
   // Dirichlet BCs, we can assign the values to the system vectors.
   // --------------------------------------------------------------------------
-  DoDirichletCondition(discret, conds, time, systemvectors, toggle, dbcgids);
+  DoDirichletCondition(discret, conds, time, systemvectors, info.toggle, dbcgids);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, Epetra_Vector& toggle,
+    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
-  ReadDirichletCondition(discret, conds, toggle, dbcgids, DRT::Condition::VolumeDirichlet);
-  ReadDirichletCondition(discret, conds, toggle, dbcgids, DRT::Condition::SurfaceDirichlet);
-  ReadDirichletCondition(discret, conds, toggle, dbcgids, DRT::Condition::LineDirichlet);
-  ReadDirichletCondition(discret, conds, toggle, dbcgids, DRT::Condition::PointDirichlet);
+  // read the DBC in descending order of the geometrical hierarchy.
+  // Since lower geometry DBC can override the higher one, the order is important for inconsistency
+  // check. This logic can be understood by contraposition: if, for example, Point DBC is read
+  // first, the dof values will not be altered by Line/Surface/Volume DBC. Hence inconsistency in
+  // Line/Surface/Volume DBC cannot be detected.
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::VolumeDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::SurfaceDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::LineDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::PointDirichlet);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, Epetra_Vector& toggle,
+    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum DRT::Condition::ConditionType& type) const
 {
-  std::vector<Teuchos::RCP<Condition>>::const_iterator fool;
+  int hierarchical_order;
+  switch (type)
+  {
+    case DRT::Condition::PointDirichlet:
+      hierarchical_order = 0;
+      break;
+    case DRT::Condition::LineDirichlet:
+      hierarchical_order = 1;
+      break;
+    case DRT::Condition::SurfaceDirichlet:
+      hierarchical_order = 2;
+      break;
+    case DRT::Condition::VolumeDirichlet:
+      hierarchical_order = 3;
+      break;
+    default:
+      dserror("Unknown condition type");
+      break;
+  }
+
   // Gather dbcgids of given type
-  for (fool = conds.begin(); fool != conds.end(); ++fool)
+  for (const auto& cond : conds)
   {
     // skip conditions of different type
-    if ((*fool)->Type() != type) continue;
+    if (cond->Type() != type) continue;
 
-    ReadDirichletCondition(discret, **fool, toggle, dbcgids);
+    ReadDirichletCondition(discret, *cond, time, info, dbcgids, hierarchical_order);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, Epetra_Vector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const DRT::Condition& cond, double time, DbcInfo& info,
+    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.Nodes();
@@ -197,6 +221,10 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
   const unsigned nnode = (*nodeids).size();
   // get onoff toggles from condition
   const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
+  // get val from condition
+  const std::vector<double>* val = cond.Get<std::vector<double>>("val");
+  // get funct from condition
+  const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
 
   // loop nodes to identify spatial distributions of Dirichlet boundary conditions
   for (unsigned i = 0; i < nnode; ++i)
@@ -256,7 +284,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
       const int gid = dofs[j];
 
       // get corresponding lid
-      const int lid = toggle.Map().LID(gid);
+      const int lid = info.toggle.Map().LID(gid);
       if (lid < 0)
         dserror(
             "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
@@ -264,21 +292,92 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
       // get position of label for this dof in condition line ( e.g. for XFEM )
       int onesetj = j % numdf;
 
+      // get the current hierarchical order this dof is currently applying to
+      const int current_order = info.hierarchy[lid];
+
       if ((*onoff)[onesetj] == 0)
       {
-        // no DBC on this dof, set toggle zero
-        toggle[lid] = 0.0;
+        // the dof at geometry of lower hierarchical order can reset the toggle value
+        // Note: this check is crucial to avoid DBC at the same geometrical level to not override
+        // each other, so the 3D patch test can pass without additional DBC on line
+        if (hierarchical_order < current_order)
+        {
+          // no DBC on this dof, set toggle zero
+          info.toggle[lid] = 0;
 
-        // get rid of entry in row DBC map - if it exists
-        if (isrow and (not dbcgids[set_row].is_null())) (*dbcgids[set_row]).erase(gid);
+          // get rid of entry in row DBC map - if it exists
+          if (isrow and (not dbcgids[set_row].is_null())) (*dbcgids[set_row]).erase(gid);
 
-        // get rid of entry in column DBC map - if it exists
-        if (not dbcgids[set_col].is_null()) (*dbcgids[set_col]).erase(gid);
+          // get rid of entry in column DBC map - if it exists
+          if (not dbcgids[set_col].is_null()) (*dbcgids[set_col]).erase(gid);
+
+          // record the current hierarchical order of the DBC dof
+          info.hierarchy[lid] = hierarchical_order;
+        }
       }
       else  // if ((*onoff)[onesetj]==1)
       {
+        // evaluate the DBC prescribed value based on time curve
+        // here we only compute based on time curve and not the derivative, hence degree = 0
+        int funct_num = -1;
+        double functfac = 1.0;
+        if (funct)
+        {
+          funct_num = (*funct)[onesetj];
+          if (funct_num > 0)
+            functfac = DRT::Problem::Instance()
+                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                           .Evaluate(actnode->X(), time, onesetj);
+        }
+
+        const double value = (*val)[onesetj] * functfac;
+
+        // check: if the dof has been fixed before and the DBC set it to a different value, then an
+        // inconsistency is detected.
+        if ((hierarchical_order == current_order) && (info.toggle[lid] == 1))
+        {
+          // get the current prescribed value of dof
+          const double current_val = info.values[lid];
+
+          // get the current condition that prescribed value of dof
+          const int current_cond = info.condition[lid];
+
+          // if the current condition set the dof value to other value, then we found an
+          // inconsistency. The basis for this is: Overwriting should be allowed over hierarchies
+          // (line overwrites surface, and so on) which is one of the main features of our DBC
+          // application work flow. And in such a case it is fully okay if the line prescribes also
+          // an inconsistent value (regarding the surface value). Of course, an error/warning is
+          // given if different values are prescribed on the same hierarchy level. Here,
+          // inconsistency matters.
+          const double dbc_tol = 1.0e-13;
+          if (std::abs(current_val - value) > dbc_tol)
+          {
+            std::string geom_name;
+            if (hierarchical_order == 0)
+              geom_name = "POINT";
+            else if (hierarchical_order == 1)
+              geom_name = "LINE";
+            else if (hierarchical_order == 2)
+              geom_name = "SURF";
+            else if (hierarchical_order == 3)
+              geom_name = "VOL";
+            std::stringstream ss;
+            ss << "Error!!! Inconsistency is detected at " << geom_name << " DBC " << cond.Id() + 1
+               << " (node " << actnode->Id() + 1 << ", dof " << j
+               << ").\nIt tried to override the previous fixed value of " << current_val
+               << " prescribed by " << geom_name << " DBC " << current_cond + 1
+               << " with new value of " << value << " at time " << time << ".\nThe difference is "
+               << std::setprecision(13) << std::abs(current_val - value) << " > " << dbc_tol
+               << ".\nPlease try to adjust the input.";
+            dserror(ss.str());
+          }
+        }
+
+        if (hierarchical_order > current_order)
+          dserror("This couldn't happen, except if you try to read DBC not in descending order.");
+
         // dof has DBC, set toggle vector one
-        toggle[lid] = 1.0;
+        info.toggle[lid] = 1;
 
         // amend set of row DOF-IDs which are dirichlet BCs
         if (isrow and (not dbcgids[set_row].is_null())) (*dbcgids[set_row]).insert(gid);
@@ -288,6 +387,15 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
         {
           (*dbcgids[set_col]).insert(gid);
         }
+
+        // record the lowest hierarchical order of the DBC dof
+        if (hierarchical_order < current_order) info.hierarchy[lid] = hierarchical_order;
+
+        // record the prescribed value of dof if it is fixed
+        info.values[lid] = value;
+
+        // record the condition that assign the value
+        info.condition[lid] = cond.Id();
       }
     }  // loop over nodal DOFs
   }    // loop over nodes
@@ -298,8 +406,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   DoDirichletCondition(
@@ -315,27 +423,25 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
+    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum DRT::Condition::ConditionType& type) const
 {
-  std::vector<Teuchos::RCP<Condition>>::const_iterator fool;
-  for (fool = conds.begin(); fool != conds.end(); ++fool)
+  for (const auto& cond : conds)
   {
     // skip conditions of different type
-    if ((*fool)->Type() != type) continue;
+    if (cond->Type() != type) continue;
 
-    DoDirichletCondition(discret, **fool, time, systemvectors, toggle, dbcgids);
+    DoDirichletCondition(discret, *cond, time, systemvectors, toggle, dbcgids);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   if (systemvectors[0].is_null() and systemvectors[1].is_null() and systemvectors[2].is_null())
     dserror(
@@ -347,7 +453,8 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
-  // get funct, and val from condition
+  // get onoff, funct, and val from condition
+  const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
   const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
   const std::vector<double>* val = cond.Get<std::vector<double>>("val");
 
@@ -401,8 +508,13 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
       // get position of label for this dof in condition line
       const int onesetj = j % numdf;
 
-      // check whether dof gid is a dbc gid
-      if (std::abs(toggle[lid] - 1.0) > 1e-13) continue;
+      // check whether dof gid is a dbc gid and is prescribed only by the current condition
+      const bool dbc_on_dof_is_off =
+          ((*onoff)[onesetj] == 0);  // dof is not DBC by current condition
+      const bool dbc_toggle_is_off =
+          (toggle[lid] == 0);  // dof is not prescribed by current condition or
+                               // is unprescribed by lower hierarchy condition
+      if (dbc_on_dof_is_off || dbc_toggle_is_off) continue;
 
       std::vector<double> value(deg + 1, (*val)[onesetj]);
 
