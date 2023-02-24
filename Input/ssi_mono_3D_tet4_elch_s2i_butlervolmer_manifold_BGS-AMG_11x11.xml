@@ -22,8 +22,8 @@
     <Parameter name="type" type="string" value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
       <ParameterList name="Hierarchy">
-        <Parameter name="max levels" type="int" value="2"/>
-        <Parameter name="coarse: max size" type="int" value="1"/>
+        <Parameter name="max levels" type="int" value="5"/>
+        <Parameter name="coarse: max size" type="int" value="5000"/>
         <Parameter name="verbosity" type="string" value="None"/>
         <ParameterList name="All">
           <Parameter name="startLevel" type="int" value="0"/>
@@ -52,7 +52,6 @@
           <Parameter name="aggregation: max selected neighbors" type="int" value="0"/>
           <Parameter name="aggregation: min agg size" type="int" value="12"/>
           <Parameter name="aggregation: max agg size" type="int" value="27"/>
-          <Parameter name="aggregation: preserve Dirichlet points" type="bool" value="yes"/>
         </ParameterList>
         <ParameterList name="TentativePFactory_List">
           <Parameter name="factory" type="string" value="TentativePFactory"/>
@@ -92,8 +91,8 @@
     <Parameter name="type" type="string" value="NEW_MUELU_AMG"/>
     <ParameterList name="parameters">
       <ParameterList name="Hierarchy">
-        <Parameter name="max levels" type="int" value="2"/>
-        <Parameter name="coarse: max size" type="int" value="1"/>
+        <Parameter name="max levels" type="int" value="5"/>
+        <Parameter name="coarse: max size" type="int" value="5000"/>
         <Parameter name="verbosity" type="string" value="None"/>
         <ParameterList name="All">
           <Parameter name="startLevel" type="int" value="0"/>
@@ -122,7 +121,6 @@
           <Parameter name="aggregation: max selected neighbors" type="int" value="0"/>
           <Parameter name="aggregation: min agg size" type="int" value="12"/>
           <Parameter name="aggregation: max agg size" type="int" value="27"/>
-          <Parameter name="aggregation: preserve Dirichlet points" type="bool" value="yes"/>
         </ParameterList>
         <ParameterList name="TentativePFactory_List">
           <Parameter name="factory" type="string" value="TentativePFactory"/>
