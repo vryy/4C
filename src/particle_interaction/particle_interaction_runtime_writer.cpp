@@ -89,14 +89,8 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
   if (runtime_csvwriters_.count(fieldname))
     dserror("a runtime csv writer for field '%s' is already stored!", fieldname.c_str());
 
-  // construct and init the csv writer object
-  std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter =
-      std::make_shared<RuntimeCsvWriter>(comm_.MyPID());
-
-  runtime_csvwriter->Init(fieldname);
-
   // set the csv writer object
-  runtime_csvwriters_[fieldname] = runtime_csvwriter;
+  runtime_csvwriters_[fieldname] = std::make_shared<IO::RuntimeCsvWriter>(comm_.MyPID(), fieldname);
 }
 
 void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutput(
@@ -122,7 +116,7 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
   // iterate over csv writer objects
   for (auto& writerIt : runtime_csvwriters_)
   {
-    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter = writerIt.second;
+    std::shared_ptr<IO::RuntimeCsvWriter> runtime_csvwriter = writerIt.second;
 
     // reset time and time step of the writer object
     runtime_csvwriter->ResetTimeAndTimeStep(time, step);

@@ -263,16 +263,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetupParticleInteractionWriter
     particleinteractionwriter_->RegisterSpecificRuntimeCsvWriter("particle-energy");
 
     // get specific runtime csv writer
-    RuntimeCsvWriter* runtime_csv_writer =
+    IO::RuntimeCsvWriter* runtime_csv_writer =
         particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
 
     // register all data vectors
     runtime_csv_writer->RegisterDataVector("kin_energy", 1, 10);
     runtime_csv_writer->RegisterDataVector("grav_pot_energy", 1, 10);
     runtime_csv_writer->RegisterDataVector("elast_pot_energy", 1, 10);
-
-    // setup the csv writer object
-    runtime_csv_writer->Setup();
   }
 }
 
@@ -572,7 +569,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   }
 
   // get specific runtime csv writer
-  RuntimeCsvWriter* runtime_csv_writer =
+  IO::RuntimeCsvWriter* runtime_csv_writer =
       particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
 
   // append data vector

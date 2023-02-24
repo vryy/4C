@@ -15,8 +15,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <set>
 #include "memory"
-
-class RuntimeCsvWriter;
+#include "io_runtime_csv_writer.H"
 
 namespace ADAPTER
 {
@@ -278,7 +277,7 @@ namespace SSI
     //@}
 
     // writes evaluated data to output
-    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
