@@ -206,6 +206,8 @@ namespace STR
     Teuchos::RCP<const Epetra_Vector> veln_;
     //! global acceleration DOFs
     Teuchos::RCP<const Epetra_Vector> accn_;
+    //! global reaction DOFs
+    Teuchos::RCP<const Epetra_Vector> reactn_;
     /* NOTE: these have to be present explicitly
      * as they are not part of the problem instance like in fluid3
      */

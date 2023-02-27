@@ -18,9 +18,92 @@
 
 namespace GEO
 {
+  //! calculates the length of an element in given configuration          buih
+  template <DRT::Element::DiscretizationType distype, class MatrixType>
+  double ElementLengthT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  {
+    // gaussian points
+    const auto gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+    static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+
+    LINALG::Matrix<1, 1> eleCoord;
+    LINALG::Matrix<1, numnode> deriv;
+    LINALG::Matrix<1, 3> xjm;
+
+    double length = 0.0;
+
+    // integration loop
+    for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in element coordinates \xi
+      eleCoord(0) = intpoints.qxg[iquad][0];
+
+      // shape functions and their first derivatives
+      DRT::UTILS::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
+
+      // get transposed of the jacobian matrix d x / d \xi
+      xjm = 0;
+
+      for (int inode = 0; inode < numnode; ++inode)
+        for (int i = 0; i < 1; ++i)
+          for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
+
+      const double fac = intpoints.qwgt[iquad] * xjm.Norm2();
+
+      length += fac;
+    }  // end loop over gauss points
+
+    return length;
+  }
+
+  //! calculates the area of an element in given configuration          buih
+  template <DRT::Element::DiscretizationType distype, class MatrixType>
+  double ElementAreaT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  {
+    // gaussian points
+    const auto gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+    static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+
+    LINALG::Matrix<2, 1> eleCoord;
+    LINALG::Matrix<2, numnode> deriv;
+    LINALG::Matrix<2, 3> xjm;
+    LINALG::Matrix<2, 2> xjm_xjmt;
+
+    double area = 0.0;
+
+    // integration loop
+    for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in element coordinates \xi
+      eleCoord(0) = intpoints.qxg[iquad][0];
+      eleCoord(1) = intpoints.qxg[iquad][1];
+
+      // shape functions and their first derivatives
+      DRT::UTILS::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
+
+      // get transposed of the jacobian matrix d x / d \xi
+      xjm = 0;
+
+      for (int inode = 0; inode < numnode; ++inode)
+        for (int i = 0; i < 2; ++i)
+          for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
+
+      xjm_xjmt.MultiplyNT<3>(xjm, xjm);
+
+      const double det = xjm_xjmt.Determinant();
+      const double fac = intpoints.qwgt[iquad] * std::sqrt(det);
+
+      area += fac;
+    }  // end loop over gauss points
+
+    return area;
+  }
+
   //! calculates the volume of an element in given configuration          u.may
-  template <DRT::Element::DiscretizationType DISTYPE, class M1>
-  double ElementVolumeT(const M1& xyze  ///> xyze nsd = 3 coords, number of nodes)
+  template <DRT::Element::DiscretizationType DISTYPE, class MatrixType>
+  double ElementVolumeT(const MatrixType& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
     // number of nodes for element
@@ -102,8 +185,8 @@ namespace GEO
    *                         (row = dim, col = number of nodes)
    *
    *  \author hiermeier \date 11/16 */
-  template <class M1>
-  double ElementLength(const DRT::Element::DiscretizationType& distype, const M1& xyze)
+  template <class MatrixType>
+  double ElementLength(const DRT::Element::DiscretizationType& distype, const MatrixType& xyze)
   {
     if (distype != DRT::Element::line2 or xyze.N() != 2)
       run_time_error("Currently only line2 elements are supported!");
@@ -121,30 +204,27 @@ namespace GEO
   /** \brief calculates the area of a surface element in given configuration
    *
    *  \author hiermeier \date 11/16 */
-  template <class M1>
-  double ElementArea(const DRT::Element::DiscretizationType distype, const M1& xyze)
+  template <class MatrixType>
+  double ElementArea(const DRT::Element::DiscretizationType distype, const MatrixType& xyze)
   {
     switch (distype)
     {
       // --- 2-D boundary elements
       case DRT::Element::line2:
         return ElementLength(distype, xyze);
+      case DRT::Element::line3:
+        return ElementLengthT<DRT::Element::line3>(xyze);
       // --- 3-D boundary elements
-      case DRT::Element::quad4:
-      {
-        LINALG::Matrix<3, 3> xyze_tri3;
-        double area = 0.0;
-        for (unsigned id = 0; id < 2; ++id)
-        {
-          CUT::KERNEL::SplitQuad4IntoTri3(xyze, id, xyze_tri3);
-          area += CUT::KERNEL::getAreaTri(xyze_tri3);
-        }
-        return area;
-      }
       case DRT::Element::tri3:
-      {
-        return CUT::KERNEL::getAreaTri(xyze);
-      }
+        return ElementAreaT<DRT::Element::tri3>(xyze);
+      case DRT::Element::tri6:
+        return ElementAreaT<DRT::Element::tri6>(xyze);
+      case DRT::Element::quad4:
+        return ElementAreaT<DRT::Element::quad4>(xyze);
+      case DRT::Element::quad8:
+        return ElementAreaT<DRT::Element::quad8>(xyze);
+      case DRT::Element::quad9:
+        return ElementAreaT<DRT::Element::quad9>(xyze);
       default:
         dserror("Unsupported surface element type!");
         exit(EXIT_FAILURE);
@@ -154,9 +234,9 @@ namespace GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <class M1>
+  template <class MatrixType>
   double ElementVolume(const DRT::Element::DiscretizationType distype,
-      const M1& xyze  ///> xyze nsd = 3 coords, number of nodes
+      const MatrixType& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)

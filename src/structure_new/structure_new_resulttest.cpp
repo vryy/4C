@@ -30,6 +30,7 @@ STR::ResultTest::ResultTest()
       dismatn_(Teuchos::null),
       veln_(Teuchos::null),
       accn_(Teuchos::null),
+      reactn_(Teuchos::null),
       gstate_(Teuchos::null)
 {
   // empty constructor
@@ -45,6 +46,7 @@ void STR::ResultTest::Init(
   disn_ = gstate.GetDisN();
   veln_ = gstate.GetVelN();
   accn_ = gstate.GetAccN();
+  reactn_ = gstate.GetFreactNp();
   gstate_ = Teuchos::rcpFromRef(gstate);
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.GetDiscret();
@@ -203,6 +205,29 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
       {
         result = GetNodalStressComponent(position, node);
         unknownpos = false;
+      }
+
+      // test reaction
+      if (reactn_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& reactmap = reactn_->Map();
+        int idx = -1;
+        if (position == "reactx")
+          idx = 0;
+        else if (position == "reacty")
+          idx = 1;
+        else if (position == "reactz")
+          idx = 2;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          int lid = reactmap.LID(strudisc_->Dof(0, actnode, idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
+          result = (*reactn_)[lid];
+        }
       }
 
       // catch position std::strings, which are not handled by structure result test
