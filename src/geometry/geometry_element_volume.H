@@ -19,11 +19,11 @@
 namespace GEO
 {
   //! calculates the length of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class MatrixType>
-  double ElementLengthT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  template <DRT::Element::DiscretizationType distype, class matrixtype,
+      DRT::UTILS::GaussRule1D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule>
+  double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    const auto gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
     static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
@@ -58,11 +58,11 @@ namespace GEO
   }
 
   //! calculates the area of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class MatrixType>
-  double ElementAreaT(const MatrixType& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  template <DRT::Element::DiscretizationType distype, class matrixtype,
+      DRT::UTILS::GaussRule2D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule>
+  double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    const auto gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
     static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
@@ -102,16 +102,16 @@ namespace GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <DRT::Element::DiscretizationType DISTYPE, class MatrixType>
-  double ElementVolumeT(const MatrixType& xyze  ///> xyze nsd = 3 coords, number of nodes)
+  template <DRT::Element::DiscretizationType distype, class matrixtype>
+  double ElementVolumeT(const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
     // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::undefined;
 
-    switch (DISTYPE)
+    switch (distype)
     {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
@@ -159,7 +159,7 @@ namespace GEO
       eleCoord(2) = intpoints.qxg[iquad][2];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -185,8 +185,8 @@ namespace GEO
    *                         (row = dim, col = number of nodes)
    *
    *  \author hiermeier \date 11/16 */
-  template <class MatrixType>
-  double ElementLength(const DRT::Element::DiscretizationType& distype, const MatrixType& xyze)
+  template <class matrixtype>
+  double ElementLength(const DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
     if (distype != DRT::Element::line2 or xyze.N() != 2)
       run_time_error("Currently only line2 elements are supported!");
@@ -204,8 +204,8 @@ namespace GEO
   /** \brief calculates the area of a surface element in given configuration
    *
    *  \author hiermeier \date 11/16 */
-  template <class MatrixType>
-  double ElementArea(const DRT::Element::DiscretizationType distype, const MatrixType& xyze)
+  template <class matrixtype>
+  double ElementArea(const DRT::Element::DiscretizationType distype, const matrixtype& xyze)
   {
     switch (distype)
     {
@@ -234,9 +234,9 @@ namespace GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <class MatrixType>
+  template <class matrixtype>
   double ElementVolume(const DRT::Element::DiscretizationType distype,
-      const MatrixType& xyze  ///> xyze nsd = 3 coords, number of nodes
+      const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)
