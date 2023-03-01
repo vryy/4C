@@ -1,0 +1,9 @@
+macro_slave_node_gid,macro_master_node_gid,micro_slave_node_gid,micro_master_node_gid
+8,12,36,335
+9,13,336,635
+10,14,636,935
+11,15,936,1235
+24,20,1236,1535
+25,21,1536,1835
+26,22,1836,2135
+27,23,2136,2435

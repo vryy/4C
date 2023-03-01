@@ -194,6 +194,7 @@ namespace INPAR
                                        ///< porous ECM
       m_scatra_reaction,               ///< reaction definition and parameters
       m_scatra_chemotaxis,             ///< chemotaxis definition parameters
+      m_scl,     ///< material for modeling space charge layers in solid electrolytes
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
       m_spring,  ///< elastic spring (translational or rotational)

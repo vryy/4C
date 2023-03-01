@@ -577,6 +577,7 @@ void runEnsightVtuFilter(PostProblem& problem)
     {
       std::string basename = problem.outname();
       int numfield = problem.num_discr();
+
       if (numfield == 3)
       {
         // Fluid, ScaTra and ALE fields are present
@@ -594,14 +595,30 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       else if (numfield == 2)
       {
-        // Fluid and ScaTra fields are present
-        PostField* fluidfield = problem.get_discretization(0);
-        FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        auto* const dis0 = problem.get_discretization(0);
+        auto* const dis1 = problem.get_discretization(1);
 
-        PostField* scatrafield = problem.get_discretization(1);
-        ElchFilter elchwriter(scatrafield, basename);
-        elchwriter.WriteFiles();
+        if (dis0->name() == "scatra" and dis1->name() == "scatra_micro")
+        {
+          PostField* scatrafield = dis0;
+          ElchFilter elchwriter(scatrafield, basename);
+          elchwriter.WriteFiles();
+
+          PostField* scatrafield_micro = dis1;
+          ElchFilter elchwriter_micro(scatrafield_micro, basename);
+          elchwriter_micro.WriteFiles();
+        }
+        else
+        {
+          // Fluid and ScaTra fields are present
+          PostField* fluidfield = dis0;
+          FluidFilter fluidwriter(fluidfield, basename);
+          fluidwriter.WriteFiles();
+
+          PostField* scatrafield = dis1;
+          ElchFilter elchwriter(scatrafield, basename);
+          elchwriter.WriteFiles();
+        }
         break;
       }
       else if (numfield == 1)

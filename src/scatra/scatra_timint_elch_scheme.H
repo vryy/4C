@@ -17,6 +17,7 @@
 #include "scatra_timint_genalpha.H"
 #include "scatra_timint_stat.H"
 #include "scatra_timint_elch.H"
+#include "scatra_timint_elch_scl.H"
 
 namespace SCATRA
 {
@@ -52,6 +53,42 @@ namespace SCATRA
     void ComputeTimeDerivPot0(const bool init) override;
 
     void SetOldPartOfRighthandside() override;
+  };
+
+  class ScaTraTimIntElchSCLOST : public ScaTraTimIntElchSCL, public TimIntOneStepTheta
+  {
+   public:
+    //! Standard Constructor
+    ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
+
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+
+    void Init() override;
+
+    void PostCalcInitialPotentialField() override;
+
+    void PreCalcInitialPotentialField() override;
+
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+
+    void Setup() override;
+
+    void Update(const int num = 0) override;
+
+   protected:
+    void ComputeTimeDerivPot0(const bool init) override{};
+
+    void ElectrodeKineticsTimeUpdate() override{};
+
+    void ExplicitPredictor() const override;
+
+    void SetOldPartOfRighthandside() override;
+
+    void OutputRestart() const override;
   };
 
 

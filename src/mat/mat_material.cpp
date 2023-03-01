@@ -117,6 +117,7 @@
 #include "mat_superelastic_sma.H"
 #include "mat_mixture.H"
 #include "mat_lin_elast_1D.H"
+#include "mat_scl.H"
 
 
 /*----------------------------------------------------------------------*
@@ -722,6 +723,12 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::NewmanMultiScale(curmat));
       auto* params = static_cast<MAT::PAR::NewmanMultiScale*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scl:
+    {
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Scl(curmat));
+      auto* params = static_cast<MAT::PAR::Scl*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_elasthyper:

@@ -69,7 +69,7 @@ namespace DRT
       );
 
       //! calculate contributions to matrix and rhs (outside of loop over all scalars)
-      void CalcMatAndRhsOutsideScalarLoop(
+      virtual void CalcMatAndRhsOutsideScalarLoop(
           Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
           Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                //!< domain-integration factor
@@ -89,12 +89,12 @@ namespace DRT
       /*========================================================================*/
 
       //! get material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< ID of current integration point
+      virtual void GetMaterialParams(const DRT::Element* ele,  //!< current element
+          std::vector<double>& densn,                          //!< density at t_(n)
+          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
+          double& visc,                 //!< fluid viscosity
+          const int iquad = -1          //!< ID of current integration point
       );
 
       /*========================================================================*/
@@ -102,8 +102,8 @@ namespace DRT
       /*========================================================================*/
 
       //! CalcMat: Conduction term with inserted current - ohmic overpotential
-      void CalcMatCondOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                     //!< index of current scalar
+      virtual void CalcMatCondOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                             //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invfval,     //!< 1/(F z_k)
           const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
@@ -121,8 +121,8 @@ namespace DRT
       );
 
       //! CalcMat: Conduction term without inserted current
-      void CalcMatCond(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                  //!< index of current scalar
+      virtual void CalcMatCond(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invfval,     //!< 1/(F z_k)
           const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
@@ -156,13 +156,15 @@ namespace DRT
       );
 
       //! CalcMat: Current equation current
-      void CalcMatCurEquCur(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+      virtual void CalcMatCurEquCur(
+          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf         //!< 1/F
       );
 
       //! CalcMat: Current equation ohmic overpotential
-      void CalcMatCurEquOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+      virtual void CalcMatCurEquOhm(
+          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
           const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
@@ -181,8 +183,8 @@ namespace DRT
       );
 
       //! CalcRhs: Conduction term with inserted current - ohmic overpotential
-      void CalcRhsCondOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                     //!< index of current scalar
+      virtual void CalcRhsCondOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                             //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invfval,                   //!< 1/(F z_k)
           const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
@@ -200,8 +202,8 @@ namespace DRT
       );
 
       //! CalcRhs: Conduction term without inserted current
-      void CalcRhsCond(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                  //!< index of current scalar
+      virtual void CalcRhsCond(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                          //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invfval,                  //!< 1/(F z_k)
           const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
@@ -235,14 +237,16 @@ namespace DRT
       );
 
       //! CalcRhs: Current equation - current
-      void CalcRhsCurEquCur(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+      virtual void CalcRhsCurEquCur(
+          Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
           const LINALG::Matrix<nsd_, 1>& curint  //!< current at GP
       );
 
       //! CalcRhs: Current equation - ohmic overpotential
-      void CalcRhsCurEquOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+      virtual void CalcRhsCurEquOhm(
+          Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1/F
           const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potenial at GP
@@ -443,13 +447,13 @@ namespace DRT
       };
 
       //! Set transference numbers with respect to single ionic species
-      void SetTransNum(const double transnum, const int k) { transnum_[k] = transnum; };
+      virtual void SetTransNum(const double transnum, const int k) { transnum_[k] = transnum; };
 
       //! Access routine for transference numbers with respect to single ionic species
       double GetTransNum(const int k) { return transnum_[k]; };
 
       //! Set derivative of transference numbers with respect to concentrations
-      void SetDerivTransNum(const double derivtransnum, const int k, const int iscal)
+      virtual void SetDerivTransNum(const double derivtransnum, const int k, const int iscal)
       {
         (derivtransnum_[k])[iscal] = derivtransnum;
       };
@@ -529,12 +533,12 @@ namespace DRT
       /*========================================================================*/
 
       //! Set transference numbers with respect to single ionic species
-      void SetPhasePoro(const double eps, const int phase) { eps_[phase] = eps; }
+      virtual void SetPhasePoro(const double eps, const int phase) { eps_[phase] = eps; }
 
       double GetPhasePoro(const int phase) const { return eps_[phase]; };
 
       //! Set transference numbers with respect to single ionic species
-      void SetPhaseTort(const double tort, const int phase) { tort_[phase] = tort; }
+      virtual void SetPhaseTort(const double tort, const int phase) { tort_[phase] = tort; }
 
       // get geometrical parameter: porosity*tortuosity
       double GetPhasePoroTort(const int phase) const
@@ -584,7 +588,7 @@ namespace DRT
         std::cout << std::endl;
       };
 
-     private:
+     protected:
       /*========================================================================*/
       //! @name transport parameter
       /*========================================================================*/
@@ -686,7 +690,7 @@ namespace DRT
       //! return current density at GP
       const LINALG::Matrix<NSD, 1>& CurInt() { return curint_; };
 
-     private:
+     protected:
       //! parameter class for diffusion-conduction formulation
       const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams_;
 

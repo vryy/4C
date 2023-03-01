@@ -37,10 +37,10 @@ namespace DRT
 
 
       //! evaluate electrode material
-      void MatElectrode(const Teuchos::RCP<const MAT::Material> material,  //!< electrode material
-          double concentration,                                            //!< concentration
-          double temperature,                                              //!< temperature
-          const Teuchos::RCP<ScaTraEleDiffManagerElchElectrode>& diffmanager  //!< diffusion manager
+      void MatElectrode(Teuchos::RCP<const MAT::Material> material,    //!< electrode material
+          double concentration,                                        //!< concentration
+          double temperature,                                          //!< temperature
+          Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager  //!< diffusion manager
       );
 
      protected:

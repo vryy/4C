@@ -11,7 +11,11 @@
 
 #include "inpar_validparameters.H"
 
+#include "inpar_scatra.H"
+
 #include "lib_conditiondefinition.H"
+
+#include "linalg_sparseoperator.H"
 
 void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -125,6 +129,38 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAT_NEWMAN_CONST_C", -1.0,
       "Constant C for the Newman model(term for the concentration overpotential)",
       &elchdiffcondcontrol);
+  DoubleParameter(
+      "PERMITTIVITY_VACUUM", 8.8541878128e-12, "Vacuum permittivity", &elchdiffcondcontrol);
+
+  /*----------------------------------------------------------------------*/
+  // sublist for space-charge layers
+  auto& sclcontrol = elchcontrol.sublist(
+      "SCL", false, "control parameters for coupled probelms with space-charge layer formation\n");
+
+  BoolParameter(
+      "ADD_MICRO_MACRO_COUPLING", "No", "flag for micro macro coupling with scls", &sclcontrol);
+  BoolParameter("COUPLING_OUTPUT", "No", "write coupled node gids and node coordinates to csv file",
+      &sclcontrol);
+  BoolParameter("INITPOTCALC", "No", "calculate initial potential field?", &sclcontrol);
+  IntParameter("SOLVER", -1, "solver for coupled SCL problem", &sclcontrol);
+  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "undefined",
+      "type of global system matrix in global system of equations",
+      tuple<std::string>("undefined", "block", "sparse"),
+      tuple<LINALG::MatrixType>(LINALG::MatrixType::undefined, LINALG::MatrixType::block_field,
+          LINALG::MatrixType::sparse),
+      &sclcontrol);
+  IntParameter("ADAPT_TIME_STEP", -1,
+      "time step when time step size should be updated to 'ADAPTED_TIME_STEP_SIZE'.", &sclcontrol);
+  DoubleParameter("ADAPTED_TIME_STEP_SIZE", -1.0, "new time step size.", &sclcontrol);
+
+  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+      "Initial Field for scalar transport problem",
+      tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
+      tuple<int>(SCATRA::initfield_zero_field, SCATRA::initfield_field_by_function,
+          SCATRA::initfield_field_by_condition),
+      &sclcontrol);
+
+  IntParameter("INITFUNCNO", -1, "function number for scalar transport initial field", &sclcontrol);
 }
 
 

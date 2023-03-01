@@ -234,6 +234,7 @@ namespace DRT
       S2IKinetics,
       S2IMeshtying,
       S2ICouplingGrowth,
+      S2ISCLCoupling,
       ElectrodeSOC,
       CCCVCycling,
       CCCVHalfCycle,

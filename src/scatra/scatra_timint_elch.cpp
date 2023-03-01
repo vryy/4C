@@ -6,8 +6,6 @@
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#include "fluid_utils.H"  // for splitter
-
 #include "io_control.H"
 #include "io.H"
 
@@ -32,9 +30,16 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
+#include "linalg_matrixtransform.H"
+#include "linalg_equilibrate.H"
+
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
 #include "scatra_resulttest_elch.H"
+
+#include "adapter_coupling.H"
+
+#include "lib_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

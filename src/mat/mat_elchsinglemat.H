@@ -117,13 +117,13 @@ namespace MAT
     //@}
 
     //! compute diffusion coefficient accounting for concentration and temperature dependence
-    double ComputeDiffusionCoefficient(double concentration, double temperature) const;
+    virtual double ComputeDiffusionCoefficient(double concentration, double temperature) const;
 
     //! compute concentration dependent diffusion coefficient according to function number
     double ComputeDiffusionCoefficientConcentrationDependent(double concentration) const;
 
     //! compute first derivative of diffusion coefficient w.r.t. concentration
-    double ComputeConcentrationDerivativeOfDiffusionCoefficient(
+    virtual double ComputeConcentrationDerivativeOfDiffusionCoefficient(
         double concentration, double temperature) const;
 
     //! compute first derivative of diffusion coefficient w.r.t. temperature

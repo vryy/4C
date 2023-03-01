@@ -122,6 +122,7 @@ set(OBJS_MAT
     mat_scatra_multiscale_gp.cpp
     mat_scatra_reaction_coupling.cpp
     mat_scatra_reaction_mat.cpp
+    mat_scl.cpp
     mat_service.cpp
     mat_soret.cpp
     mat_spring.cpp

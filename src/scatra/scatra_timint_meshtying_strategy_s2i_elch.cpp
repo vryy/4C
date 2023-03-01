@@ -33,6 +33,9 @@
 #include "solver_linalg_solver.H"
 #include "headers_singleton_owner.H"
 
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -1188,6 +1191,74 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::ExtractNodeValues(
   my::ExtractNodeValues(
       eelchnp_slave_, eelchnp_master_, idiscret, la_slave, la_master, "scatra", 1);
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SCATRA::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
+    SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
+    : MeshtyingStrategyS2IElch(elchtimint, parameters)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
+{
+  // extract scatra-scatra coupling conditions from discretization
+  std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+
+  std::vector<int> islavenodegidvec;
+  std::vector<int> imasternodegidvec;
+
+  for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
+  {
+    if (s2imeshtying_condition->GetInt("S2IKineticsID") != -1)
+      dserror("No kinetics condition is allowed for the coupled space-charge layer problem.");
+
+    switch (s2imeshtying_condition->GetInt("interface side"))
+    {
+      case INPAR::S2I::side_slave:
+      {
+        DRT::UTILS::AddOwnedNodeGIDVector(
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidvec);
+        break;
+      }
+      case INPAR::S2I::side_master:
+      {
+        DRT::UTILS::AddOwnedNodeGIDVector(
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidvec);
+        break;
+      }
+      default:
+      {
+        dserror("interface side must bee slave or master");
+        break;
+      }
+    }
+  }
+
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+
+  icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
+      imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
+}
+
+/*------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<LINALG::Solver>& solver,
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
+    const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
+    const Teuchos::RCP<LINALG::KrylovProjector>& projector) const
+{
+  solver->Solve(
+      systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
+}
+
 
 
 // forward declarations

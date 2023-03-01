@@ -703,4 +703,20 @@ void INPAR::S2I::SetValidConditions(
     condlist.emplace_back(s2igrowthline);
     condlist.emplace_back(s2igrowthsurf);
   }
+
+  /*--------------------------------------------------------------------*/
+  // scatra-scatra interface with micro-macro coupling for space-charge layers
+  {
+    auto s2isclcond =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I SCL COUPLING SURF CONDITIONS",
+            "S2ISCLCoupling", "Scatra-scatra surface with SCL micro-macro coupling between",
+            DRT::Condition::S2ISCLCoupling, true, DRT::Condition::Surface));
+
+    s2isclcond->AddComponent(Teuchos::rcp(new StringConditionComponent("interface side",
+        "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+        Teuchos::tuple<int>(
+            INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
+
+    condlist.emplace_back(s2isclcond);
+  }
 }

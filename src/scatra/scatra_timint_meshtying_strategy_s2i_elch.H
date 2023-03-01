@@ -77,6 +77,24 @@ namespace SCATRA
     bool intlayergrowth_timestep_active_;
   };  // class MeshtyingStrategyS2IElch
 
+  class MeshtyingStrategyS2IElchSCL : public MeshtyingStrategyS2IElch
+  {
+   public:
+    explicit MeshtyingStrategyS2IElchSCL(
+        SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters);
+
+    void AddTimeIntegrationSpecificVectors() const override{};
+
+    void EvaluateMeshtying() override{};
+
+    void SetupMeshtying() override;
+
+    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
+        const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
+        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const override;
+  };
 
   template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
   class MortarCellCalcElch : public MortarCellCalc<distypeS, distypeM>

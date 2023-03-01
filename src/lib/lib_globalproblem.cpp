@@ -299,6 +299,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL/DIFFCOND", *list);
+  reader.ReadGidSection("--ELCH CONTROL/SCL", *list);
   reader.ReadGidSection("--BIOFILM CONTROL", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
@@ -947,6 +948,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> lubricationdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> scatra_micro_dis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> cellscatradis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluidscatradis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
@@ -1568,6 +1570,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
           scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm()));
           aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
+          scatra_micro_dis =
+              Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra_micro", reader.Comm()));
           break;
         }
         default:
@@ -1575,6 +1579,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
           scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
           aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
+          scatra_micro_dis = Teuchos::rcp(new DRT::Discretization("scatra_micro", reader.Comm()));
           break;
         }
       }
@@ -1583,15 +1588,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
       aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      scatra_micro_dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatra_micro_dis)));
 
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
       AddDis("ale", aledis);
+      AddDis("scatra_micro", scatra_micro_dis);
 
       meshreader.AddElementReader(DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
           DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       meshreader.AddElementReader(DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(
+          DRT::INPUT::ElementReader(scatra_micro_dis, reader, "--TRANSPORT2 ELEMENTS"));
 
       break;
     }

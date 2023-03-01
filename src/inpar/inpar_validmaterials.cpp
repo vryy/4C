@@ -63,6 +63,8 @@ void PrintMaterialDatHeader()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INPUT::ValidMaterials()
 {
+  using Teuchos::tuple;
+
   // a list containing all valid materials
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> vm =
       Teuchos::rcp(new std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>());
@@ -799,6 +801,55 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_scl", "material parameters for space charge layers", INPAR::MAT::m_scl));
+
+    AddNamedReal(m, "VALENCE", "valence/charge number");
+    AddNamedInt(m, "DIFF_COEF_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of diffusion coefficient",
+        0);
+    AddNamedInt(m, "DIFF_COEF_TEMP_SCALE_FUNCT",
+        "function number describing temperature scaling of diffusion coefficient", 0);
+    AddNamedInt(m, "TRANSNR", "curve number for transference number");
+    AddNamedInt(m, "COND_CONC_DEP_FUNCT",
+        "function number of function describing concentration dependence of conductivity", 0);
+    AddNamedInt(m, "COND_TEMP_SCALE_FUNCT",
+        "function number describing temperature scaling of conductivity", 0);
+    AddNamedInt(m, "DIFF_PARA_NUM", "number of parameters for diffusion coefficient", 0, true);
+    AddNamedRealVector(
+        m, "DIFF_PARA", "parameters for diffusion coefficient", "DIFF_PARA_NUM", 0.0, true);
+    AddNamedInt(m, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
+        "number of parameters for scaling function describing temperature dependence of diffusion "
+        "coefficient",
+        0, true);
+    AddNamedRealVector(m, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
+        "parameters for function describing temperature dependence of diffusion coefficient",
+        "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0.0, true);
+    AddNamedInt(m, "TRANS_PARA_NUM", "number of parameters for transference number", 0, true);
+    AddNamedRealVector(
+        m, "TRANS_PARA", "parameters for transference number", "TRANS_PARA_NUM", 0.0, true);
+    AddNamedInt(m, "COND_PARA_NUM", "number of parameters for conductivity", 0, true);
+    AddNamedRealVector(m, "COND_PARA", "parameters for conductivity", "COND_PARA_NUM", 0.0, true);
+    AddNamedInt(m, "COND_TEMP_SCALE_FUNCT_PARA_NUM",
+        "number of parameters for temperature scaling of conductivity", 0, true);
+    AddNamedRealVector(m, "COND_TEMP_SCALE_FUNCT_PARA",
+        "parameters for temperature scaling of conductivity", "COND_TEMP_SCALE_FUNCT_PARA_NUM", 0.0,
+        true);
+    AddNamedReal(m, "MAX_CONC", "maximum cation concentration", 1.0);
+    AddNamedInt(m, "EXTRAPOL_DIFF",
+        "strategy for extrapolation of diffusion coefficient below 0 and above MAX_CONC (-1: "
+        "disabled, 0: constant)",
+        0);
+    AddNamedReal(m, "LIM_CONC", "limiting concentration for extrapolation", 1.0, true);
+    AddNamedReal(m, "BULK_CONC", "bulk ion concentration", 1.0);
+    AddNamedReal(m, "SUSCEPT", "susceptibility", 1.0);
+    AddNamedReal(m, "DELTA_NU", "difference of partial molar volumes (vacancy & cation)", 0.0);
+    AddNamedSeparator(m, "END", "indicating end of line");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
 
   /*----------------------------------------------------------------------*/
   // electrode material (fang 02/15)

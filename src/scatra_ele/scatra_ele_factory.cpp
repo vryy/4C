@@ -15,6 +15,7 @@
 #include "scatra_ele_calc_elch_NP.H"
 #include "scatra_ele_calc_elch_diffcond.H"
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
+#include "scatra_ele_calc_elch_scl.H"
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
@@ -50,9 +51,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   // number of space dimensions
-  const int ndim =
-      DRT::Problem::Instance(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
-          ->NDim();
+  const int ndim = disname != "scatra_micro"
+                       ? DRT::Problem::Instance(
+                             DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
+                             ->NDim()
+                       : 1;
 
   switch (distype)
   {
@@ -349,6 +352,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
     {
       return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
+          numdofpernode, numscal, disname);
+    }
+    case INPAR::SCATRA::impltype_elch_scl:
+    {
+      return DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
     case INPAR::SCATRA::impltype_poro:

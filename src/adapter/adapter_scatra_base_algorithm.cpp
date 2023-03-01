@@ -261,9 +261,27 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     {
       case INPAR::SCATRA::timeint_one_step_theta:
       {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchOST(
-            discret, solver, elchparams, scatratimeparams, extraparams, output));
+        if (DRT::INPUT::IntegralValue<bool>(elchparams->sublist("SCL"), "ADD_MICRO_MACRO_COUPLING"))
+        {
+          if (disname == "scatra")
+          {
+            scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchSCLOST(
+                discret, solver, elchparams, scatratimeparams, extraparams, output));
+          }
+          else if (disname == "scatra_micro")
+          {
+            scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchOST(
+                discret, solver, elchparams, scatratimeparams, extraparams, output));
+          }
+          else
+            dserror("not identified");
+        }
+        else
+        {
+          scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchOST(
+              discret, solver, elchparams, scatratimeparams, extraparams, output));
+        }
+
         break;
       }
       case INPAR::SCATRA::timeint_bdf2:
