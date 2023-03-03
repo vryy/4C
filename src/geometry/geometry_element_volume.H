@@ -12,20 +12,19 @@
 #define GEOMETRY_ELEMENT_VOLUME_H
 
 
-#include "fem_general_utils_integration.H"
+#include "fem_general_utils_gausspoints.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "cut_kernel.H"
 
 namespace GEO
 {
   //! calculates the length of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class matrixtype,
-      DRT::UTILS::GaussRule1D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule>
+  template <DRT::Element::DiscretizationType distype, class matrixtype>
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
     static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+    const DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<1, 1> eleCoord;
     LINALG::Matrix<1, numnode> deriv;
@@ -34,10 +33,10 @@ namespace GEO
     double length = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.qxg[iquad][0];
+      eleCoord(0) = intpoints.Point(iquad)[0];
 
       // shape functions and their first derivatives
       DRT::UTILS::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
@@ -49,7 +48,7 @@ namespace GEO
         for (int i = 0; i < 1; ++i)
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
-      const double fac = intpoints.qwgt[iquad] * xjm.Norm2();
+      const double fac = intpoints.Weight(iquad) * xjm.Norm2();
 
       length += fac;
     }  // end loop over gauss points
@@ -58,13 +57,12 @@ namespace GEO
   }
 
   //! calculates the area of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class matrixtype,
-      DRT::UTILS::GaussRule2D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule>
+  template <DRT::Element::DiscretizationType distype, class matrixtype>
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
     static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+    const DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<2, 1> eleCoord;
     LINALG::Matrix<2, numnode> deriv;
@@ -74,11 +72,11 @@ namespace GEO
     double area = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.qxg[iquad][0];
-      eleCoord(1) = intpoints.qxg[iquad][1];
+      eleCoord(0) = intpoints.Point(iquad)[0];
+      eleCoord(1) = intpoints.Point(iquad)[1];
 
       // shape functions and their first derivatives
       DRT::UTILS::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
@@ -93,7 +91,7 @@ namespace GEO
       xjm_xjmt.MultiplyNT<3>(xjm, xjm);
 
       const double det = xjm_xjmt.Determinant();
-      const double fac = intpoints.qwgt[iquad] * std::sqrt(det);
+      const double fac = intpoints.Weight(iquad) * std::sqrt(det);
 
       area += fac;
     }  // end loop over gauss points
@@ -108,41 +106,8 @@ namespace GEO
   {
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::undefined;
-
-    switch (distype)
-    {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      {
-        gaussrule = DRT::UTILS::GaussRule3D::hex_8point;
-        break;
-      }
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
-      {
-        gaussrule = DRT::UTILS::GaussRule3D::tet_4point;
-        break;
-      }
-      case DRT::Element::wedge6:
-      case DRT::Element::wedge15:
-      {
-        gaussrule = DRT::UTILS::GaussRule3D::wedge_6point;
-        break;
-      }
-      case DRT::Element::pyramid5:
-      {
-        gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
-        break;
-      }
-      default:
-        dserror("add your element type here");
-    }
-
     // gaussian points
-    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+    const DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<3, 1> eleCoord;
     LINALG::Matrix<3, numnode> deriv;
@@ -151,12 +116,12 @@ namespace GEO
     double vol = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.qxg[iquad][0];
-      eleCoord(1) = intpoints.qxg[iquad][1];
-      eleCoord(2) = intpoints.qxg[iquad][2];
+      eleCoord(0) = intpoints.Point(iquad)[0];
+      eleCoord(1) = intpoints.Point(iquad)[1];
+      eleCoord(2) = intpoints.Point(iquad)[2];
 
       // shape functions and their first derivatives
       DRT::UTILS::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
@@ -169,7 +134,7 @@ namespace GEO
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
       const double det = xjm.Determinant();
-      const double fac = intpoints.qwgt[iquad] * det;
+      const double fac = intpoints.Weight(iquad) * det;
 
       if (det <= 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT: %g", det);
 
