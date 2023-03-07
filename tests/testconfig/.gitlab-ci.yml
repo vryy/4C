@@ -713,7 +713,7 @@ lnm-buildtest_daily_bruteforce:
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
   before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
+  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
   tags:
   - lnm-release-nightly-build-bruteforce
   rules:
@@ -732,7 +732,7 @@ lnm-buildtest-bruteforce_interactive:
     CTEST_DROP_SITE_CDASH_GITLAB: '1'
     GIT_STRATEGY: fetch
   before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
+  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
   tags:
   - lnm-bruteforce-interactive
   rules:
