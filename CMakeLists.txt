@@ -97,11 +97,6 @@ if(TRAP_FE)
   add_definitions("-DTRAP_FE")
 endif(TRAP_FE)
 
-option(THROWELEMENTERRORS "throw errors at element level so all element error can be found" OFF)
-if(THROWELEMENTERRORS)
-  add_definitions("-DTHROWELEMENTERRORS")
-endif(THROWELEMENTERRORS)
-
 # Run some system checks
 file(GLOB _check_files "cmake/checks/*.cmake")
 foreach(_file ${_check_files})
