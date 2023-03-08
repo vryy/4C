@@ -139,7 +139,7 @@ Zero Initial Guess              = Yes
 Computing Scaling Manually      = No
 Output Solver Details           = Yes
 ---------------------------------------------STRUCT NOX/Line Search
-Method                          = Backtrack 
+Method                          = Backtrack
 -----------------------------------STRUCT NOX/Line Search/Full Step
 Full Step                       = 1
 -----------------------------------STRUCT NOX/Line Search/Backtrack
@@ -163,7 +163,7 @@ Debug                           = No
 ---------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact.xml
 ------------------------------------------STRUCT NOX/Solver Options
-Merit Function                  = Lagrangian 
+Merit Function                  = Lagrangian
 Status Test Check Type          = Complete
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1

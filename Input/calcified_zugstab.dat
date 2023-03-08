@@ -21,8 +21,8 @@ NUMALEDIS                       0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        
-STRUCT_STRAIN                   gl                            
+STRUCT_STRESS                   Cauchy
+STRUCT_STRAIN                   gl
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -35,16 +35,16 @@ PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-RESULTSEVRY                     10                            
-RESTARTEVRY                     0                             
-NLNSOL                          fullnewton                    
-TIMESTEP                        0.05                          
+RESULTSEVRY                     10
+RESTARTEVRY                     0
+NLNSOL                          fullnewton
+TIMESTEP                        0.05
 NUMSTEP                         20
 MAXTIME                         100000
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.0001
-PREDICT                         ConstDisVelAcc                
+PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -56,7 +56,7 @@ MAXITER                         100
 UZAWAPARAM                      1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK 
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0

@@ -33,7 +33,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     20
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         100
 MAXTIME                         100.0

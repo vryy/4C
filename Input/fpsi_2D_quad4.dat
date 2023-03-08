@@ -126,13 +126,13 @@ MAXTIME                         5000
 CONVTOL                         1e-10
 ALPHABJ                         10
 -----------------------------------------------------------SOLVER 1
-SOLVER                         UMFPACK 
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 2
-SOLVER                         UMFPACK 
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 3
-SOLVER                         UMFPACK 
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 4
-SOLVER                         UMFPACK 
+SOLVER                         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 6 POROLAWID 10 INITPOROSITY 0.9 //SPoro
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e4 PENALTYPARAMETER 0.0

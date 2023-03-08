@@ -105,7 +105,7 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 CONV_STAB_SCALING               inflow
 MASS_CONSERVATION_COMBO         max
-MASS_CONSERVATION_SCALING       full                          
+MASS_CONSERVATION_SCALING       full
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes

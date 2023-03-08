@@ -58,7 +58,7 @@ PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
 RESEVRYERGY                     0
-RESTARTEVRY                     0                             
+RESTARTEVRY                     0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
@@ -79,14 +79,14 @@ TIMESTEP                        0.01
 NUMSTEP                         2
 RESULTSEVRY                     1
 RESTARTEVRY                     0
-COUPALGO                        iter_xfem_monolithic          
-SECONDORDER                     No                            
+COUPALGO                        iter_xfem_monolithic
+SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          4
 INFNORMSCALING                  no
 CONVTOL                         1.0E-8
-NORM_INC                        Rel                           
-NORM_RESF                       Rel                           
+NORM_INC                        Rel
+NORM_RESF                       Rel
 TOL_DIS_RES_L2                  1.0E-8
 TOL_DIS_RES_INF                 1.0E-8
 TOL_DIS_INC_L2                  1.0E-8
@@ -104,13 +104,13 @@ CONVTOL                         1.0E-9
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 ITEMAX                          20
-MAXOMEGA                        0.5                           
+MAXOMEGA                        0.5
 PARTITIONED                     DirichletNeumann
-PREDICTOR                       d(n)+dt*v(n)                  
+PREDICTOR                       d(n)+dt*v(n)
 RELAX                           0.825
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-RESTARTEVRY                     0                             
+RESTARTEVRY                     0
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
@@ -136,20 +136,20 @@ TOL_PRES_INC	  1e-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt
-CHARELELENGTH_PC                volume_equivalent_diameter    
+CHARELELENGTH_PC                volume_equivalent_diameter
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes                           
-SUPG                            yes                           
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
 GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       
-EOS_CONV_STREAM                 xfem_gp                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         none                          
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
@@ -167,7 +167,7 @@ GMSH_SOL_OUT                    no
 GMSH_EOS_OUT                    No
 GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
-VOLUME_GAUSS_POINTS_BY          DirectDivergence              
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE double
@@ -183,11 +183,11 @@ VISC_STAB_TRACE_ESTIMATE           eigenvalue
 UPDATE_EIGENVALUE_TRACE_ESTIMATE   every_timestep
 VISC_STAB_HK                       ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                       yes
-CONV_STAB_SCALING                  none                    
+CONV_STAB_SCALING                  none
 GHOST_PENALTY_STAB                 Yes
-GHOST_PENALTY_FAC                  0.05                          
+GHOST_PENALTY_FAC                  0.05
 GHOST_PENALTY_TRANSIENT_STAB       no
-GHOST_PENALTY_TRANSIENT_FAC        0.005                         
+GHOST_PENALTY_TRANSIENT_FAC        0.005
 GHOST_PENALTY_2nd_STAB             no
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

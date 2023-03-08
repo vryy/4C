@@ -65,7 +65,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 //LM_DUAL_CONSISTENT              no
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 static 
+PARALLEL_REDIST                 static
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        is

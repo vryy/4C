@@ -13,7 +13,7 @@ test case with analytical solution
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Level_Set
-RANDSEED                        1 
+RANDSEED                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -35,8 +35,8 @@ DIFF_FUNC                       hyperbolic
 NUMSTEPSREINIT                  20
 CONVTOL_REINIT                  1.0e-10
 DIMENSION                       2Dz
-PROJECTION                      no 
-LUMPING                         no 
+PROJECTION                      no
+LUMPING                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -60,7 +60,7 @@ CONVTOL                         1e-8
 ITEMAX                          2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-EXPLPREDICT                     no 
+EXPLPREDICT                     no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

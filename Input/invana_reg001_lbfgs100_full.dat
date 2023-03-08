@@ -22,8 +22,8 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        
-STRUCT_STRAIN                   ea                            
+STRUCT_STRESS                   Cauchy
+STRUCT_STRAIN                   ea
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -33,7 +33,7 @@ FILESTEPS                       1000
 WRITE_TO_SCREEN                 no
 STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
-STAT_INV_ANALYSIS               LBFGS 
+STAT_INV_ANALYSIS               LBFGS
 LBFGSINITSCAL                   yes
 ITERTOPC                        100
 RESTARTEVRY                     50
@@ -56,14 +56,14 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     0
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 TIMESTEP                        0.02
 NUMSTEP                         25
-MAXTIME                         0.5                           
+MAXTIME                         0.5
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.001
-PREDICT                         ConstDisVelAcc                
+PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -78,7 +78,7 @@ INT_STRATEGY                    Standard
 ------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = No
-Outer Iteration                 = No 
+Outer Iteration                 = No
 Inner Iteration                 = No
 Parameters                      = No
 Details                         = No

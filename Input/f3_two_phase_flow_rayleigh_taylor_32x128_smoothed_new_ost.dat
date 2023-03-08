@@ -25,7 +25,7 @@ TIMESTEP                        0.02
 RESULTSEVRY                           1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
-INTERFACE_THICKNESS             0.09375  
+INTERFACE_THICKNESS             0.09375
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function
 REINITINTERVAL                  10
@@ -35,7 +35,7 @@ PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 NEW_OST                         yes
 NONLINITER                      fixed_point_like
 ITEMAX                          15
@@ -86,16 +86,16 @@ MAXTIME                         9
 NUMSTEP                         450
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.02
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 RESULTSEVRY                           1
-ALPHA_F                         1.0 
-ALPHA_M                         1.0 
+ALPHA_F                         1.0
+ALPHA_M                         1.0
 CALCERROR                       No
 CONVFORM                        convective
-GAMMA                           0.5 
+GAMMA                           0.5
 MATID                           2
 OUTPUT_GMSH                     yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -118,9 +118,9 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
-MAT 2 MAT_scatra DIFFUSIVITY 0.0000000001 
-MAT 3 MAT_fluid DYNVISCOSITY 0.0033 DENSITY 1.5  
-MAT 4 MAT_fluid DYNVISCOSITY 0.0022 DENSITY 1.0  
+MAT 2 MAT_scatra DIFFUSIVITY 0.0000000001
+MAT 3 MAT_fluid DYNVISCOSITY 0.0033 DENSITY 1.5
+MAT 4 MAT_fluid DYNVISCOSITY 0.0022 DENSITY 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
@@ -168,7 +168,7 @@ E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           8 
+DLINE                           8
 // line top front
 //E 9 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
@@ -196,7 +196,7 @@ E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // line right back
 E 12 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           5  
+DSURF                           5
 // surface top
 //E 1 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0

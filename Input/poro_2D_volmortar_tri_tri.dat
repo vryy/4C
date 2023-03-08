@@ -47,7 +47,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics                       
+DYNAMICTYP                      Statics
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
@@ -75,7 +75,7 @@ MESH_INIT                       no
 KEEP_EXTENDEDGHOSTING           no
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      Stationary                    
+TIMEINTEGR                      Stationary
 PREDICTOR                       steady_state
 CONVFORM                        convective
 GRIDVEL                         BE
@@ -100,7 +100,7 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.5
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 1 PENALTYPARAMETER 0.0

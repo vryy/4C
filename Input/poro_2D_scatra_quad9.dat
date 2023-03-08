@@ -20,7 +20,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -96,8 +96,8 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                     
-AZTOL                           1.0E-11                       
+SOLVER                          Belos
+AZTOL                           1.0E-11
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
@@ -111,7 +111,7 @@ RESTARTEVRY                     10
 NUMSTEP                         100
 MAXTIME                         8.0
 TIMESTEP                        0.01
-COUPALGO                        two_way 
+COUPALGO                        two_way
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 --------------------------------------------------------CLONING MATERIAL MAP

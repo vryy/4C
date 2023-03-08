@@ -32,7 +32,7 @@ PREDICTOR                       steady_state
 TIMEINTEGR                      Stationary
 LINEAR_SOLVER                   3
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic 
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -105,11 +105,11 @@ FLUID DIS porofluid NODE 8 QUANTITY velx VALUE 6.97693503418498722e+01 TOLERANCE
 FLUID DIS porofluid NODE 16 QUANTITY velx VALUE 6.97693503418501564e+01 TOLERANCE 1e-7
 FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE 8.12969944763519266e+02 TOLERANCE 1e-7
 FLUID DIS porofluid NODE 13 QUANTITY pressure VALUE 6.90542849543296143e+02 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION                        
-NDPOINT 0                                                                                 
-NDLINE  0                                                                                 
-NDSURF  6                                                                                 
-NDVOL   1                                                                                 
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  6
+NDVOL   1
 -------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF  1
 E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1000.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
@@ -118,18 +118,18 @@ DVOL  1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL 1
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL  1
-E 1 - 
+E 1 -
 ------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
 DSURF  6
-E 1 - 
-E 2 - 
-E 3 - 
-E 4 - 
-E 5 - 
-E 6 - 
+E 1 -
+E 2 -
+E 3 -
+E 4 -
+E 5 -
+E 6 -
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1  DSURFACE 1
 NODE 2  DSURFACE 1
@@ -189,7 +189,7 @@ NODE 14 DVOL 1
 NODE 15 DVOL 1
 NODE 16 DVOL 1
 -------------------------------------------------------NODE COORDS
-NODE 1  COORD 0.0 0.0 0.0 
+NODE 1  COORD 0.0 0.0 0.0
 NODE 2  COORD 0.5 0.0 0.0
 NODE 3  COORD 1.0 0.0 0.0
 NODE 4  COORD 1.0 0.5 0.0
@@ -197,7 +197,7 @@ NODE 5  COORD 0.5 0.5 0.0
 NODE 6  COORD 0.0 0.5 0.0
 NODE 7  COORD 1.5 0.0 0.0
 NODE 8  COORD 1.5 0.5 0.0
-NODE 9  COORD 0.0 0.0 0.1 
+NODE 9  COORD 0.0 0.0 0.1
 NODE 10 COORD 0.5 0.0 0.1
 NODE 11 COORD 1.0 0.0 0.1
 NODE 12 COORD 1.0 0.5 0.1

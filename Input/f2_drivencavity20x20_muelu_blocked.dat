@@ -51,7 +51,7 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                       
+SOLVER                          Belos
 AZSOLVE                         BiCGSTAB
 AZSUB                           25
 AZCONV                          AZ_r0

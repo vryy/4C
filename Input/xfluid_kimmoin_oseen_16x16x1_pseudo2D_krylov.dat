@@ -58,7 +58,7 @@ TOL_PRES_RES	  1.0E-12
 TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -68,12 +68,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 PRES_KRYLOV_2Dz                 yes
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
@@ -82,8 +82,8 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          DirectDivergence              
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 NIT_STAB_FAC                    30.0
@@ -91,7 +91,7 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 CONV_STAB_SCALING               inflow
 MASS_CONSERVATION_COMBO         max
-MASS_CONSERVATION_SCALING       only_visc                     
+MASS_CONSERVATION_SCALING       only_visc
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes
@@ -102,9 +102,9 @@ GHOST_PENALTY_TRANSIENT_FAC     0.001
 IS_PSEUDO_2D                    yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                     
-AZOUTPUT                        50                            
-AZSOLVE                         GMRES                         
+SOLVER                          Belos
+AZOUTPUT                        50
+AZSOLVE                         GMRES
 AZTOL                           1e-13
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

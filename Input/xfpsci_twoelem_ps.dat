@@ -85,9 +85,9 @@ COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          100
-INFNORMSCALING                  No                            
-NORM_INC                        Abs                           
-NORM_RESF                       Rel                           
+INFNORMSCALING                  No
+NORM_INC                        Abs
+NORM_RESF                       Rel
 TOL_DIS_INC_INF                 1e-5
 TOL_DIS_INC_L2                  1e5
 TOL_DIS_RES_INF                 1e5
@@ -140,7 +140,7 @@ NIT_STAB_FAC_TANG               35
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none 
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.5
 GHOST_PENALTY_TRANSIENT_STAB    yes
@@ -158,7 +158,7 @@ POROCONTACTFPSI_FULLPCFRACTION         0
 ------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE                 cln
 KERNEL_DISTANCE_FLOATTYPE                     cln
-SELFCUT_MESHCORRECTION_MULTIPLICATOR          2 
+SELFCUT_MESHCORRECTION_MULTIPLICATOR          2
 SELFCUT_DO_MESHCORRECTION                     yes
 DO_SELFCUT                                    yes
 BOUNDARYCELL_CUBATURDEGREE                    10
@@ -371,7 +371,7 @@ NODE 38    COORD  1.9000000000000000e+00  1.9000000000000000e+00  2.100000000000
 7 SOLIDH8 HEX8  24 23 34 33 28 27 36 35 MAT 5 KINEM nonlinear EAS none
 8 SOLIDH8 HEX8  23 30 37 34 27 32 38 36 MAT 5 KINEM nonlinear EAS none
 ----------------------------------------------------------RESULT DESCRIPTION
-//These tolerance are specified not very strict due to the critical problem setup 
+//These tolerance are specified not very strict due to the critical problem setup
 // (physic is not really resolved and a low number of integration points on the interface)
 STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 8.54038680748831760e-04 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -2.69708955662093408e-11 TOLERANCE 1e-4

@@ -43,7 +43,7 @@ ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 GAMMA                           0.666666
 CONVCHECK                       L_2_norm
-CONVFORM convective 
+CONVFORM convective
 GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
@@ -105,7 +105,7 @@ CONVTOL                         1e-5
 ITEMAX                          20
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-EXPLPREDICT   no 
+EXPLPREDICT   no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins

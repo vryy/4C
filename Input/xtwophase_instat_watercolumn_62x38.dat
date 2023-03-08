@@ -31,14 +31,14 @@ FILESTEPS                       1000
 CONVTOL                         1e-05
 MAXTIME                         2.0
 ITEMAX                          2
-NUMSTEP                         5 
+NUMSTEP                         5
 RESTARTEVRY                     1
-TIMESTEP                        8.0e-04  
+TIMESTEP                        8.0e-04
 RESULTSEVRY                           30
 ------------------------------------------------------FLUID DYNAMIC
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-INITIALFIELD                    zero_field 
+INITIALFIELD                    zero_field
 //STARTFUNCNO  2
 ITEMAX                          20
 LINEAR_SOLVER                   2
@@ -49,7 +49,7 @@ PHYSICAL_TYPE                   Incompressible
 RESTARTEVRY                     10
 START_THETA                     1.0
 THETA                           1.0
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           0.5
@@ -71,22 +71,22 @@ SUPG                            yes
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp 
-EOS_CONV_STREAM                 xfem_gp 
-EOS_CONV_CROSS                  none 
-EOS_DIV                         vel_jump_xfem_gp 
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No 
+GMSH_DEBUG_OUT                  No
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_SOL_OUT                    no
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no
-GMSH_CUT_OUT                    no 
+GMSH_CUT_OUT                    no
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation 
-BOUNDARY_GAUSS_POINTS_BY        Tessellation 
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -94,14 +94,14 @@ COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    75.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
-MASS_CONSERVATION_SCALING       full 
+MASS_CONSERVATION_SCALING       full
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none 
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_STAB    yes
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         
+GHOST_PENALTY_TRANSIENT_FAC     0.005
 GHOST_PENALTY_2nd_STAB          no
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        convective
@@ -113,7 +113,7 @@ MAXTIME                         2.00
 NUMSTEP                         6400
 OUTPUT_GMSH                     yes
 RESTARTEVRY                     10
-SOLVERTYPE                      linear_full 
+SOLVERTYPE                      linear_full
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        3.0e-4
@@ -123,7 +123,7 @@ VELOCITYFIELD                   Navier_Stokes
 //ABSTOLRES                       1e-5
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONVTOL                         1e-07  
+CONVTOL                         1e-07
 EXPLPREDICT                     no
 ITEMAX                          10
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -132,19 +132,19 @@ DEFINITION_TAU                  Taylor_Hughes_Zarins
 // EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-REINITIALIZATION                Signed_Distance_Function 
-REINITINTERVAL                  5 
+REINITIALIZATION                Signed_Distance_Function
+REINITINTERVAL                  5
 REINIT_INITIAL                  no
 -----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos 
+SOLVER                          Belos
 AZPREC                          ILU
 AZTOL                           1.0e-6
 -----------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK 
+SOLVER                          UMFPACK
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2 
+AZPREC                          MLFLUID2
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
 IFPACKCOMBINE                   Add
@@ -160,14 +160,14 @@ AZSCAL                          none
 AZOUTPUT                        50
 -----------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos 
+SOLVER                          Belos
 AZPREC                          ILU
 AZTOL                           1.0e-10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_fluid DYNVISCOSITY 0.00001 DENSITY 1.0 GAMMA 0.0 
-MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0 
+MAT 3 MAT_fluid DYNVISCOSITY 0.00001 DENSITY 1.0 GAMMA 0.0
+MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------FUNCT1

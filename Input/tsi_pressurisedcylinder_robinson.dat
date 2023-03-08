@@ -27,13 +27,13 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes  
-STRUCT_STRAIN                   GL  
-STRUCT_STRESS                   2PK  
-STRUCT_COUPLING_STRESS          2PK  
-THERM_HEATFLUX                  Initial  
-THERM_TEMPERATURE               Yes  
-THERM_TEMPGRAD                  Initial  
+STRUCT_DISP                     Yes
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   2PK
+STRUCT_COUPLING_STRESS          2PK
+THERM_HEATFLUX                  Initial
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -42,19 +42,19 @@ SHAPEFCT                        Polynomial
 INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop  
-DYNAMICTYP                      OneStepTheta  
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  
+PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
@@ -67,16 +67,16 @@ THETA                           0.5
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 LUMPCAPA                        No
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
@@ -90,28 +90,28 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic  
+COUPALGO                        tsi_monolithic
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         1980.0  
+MAXTIME                         1980.0
 NORM_INC                        Abs
-NUMSTEP                         6  
+NUMSTEP                         6
 RESTARTEVRY                     20
 TIMESTEP                        0.5
 RESULTSEVRY                           2
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06
-ITERNORM                        L2  
+ITERNORM                        L2
 LINEAR_SOLVER                   3
 NORMCOMBI_RESFINC               And
-NORM_RESF                       Rel  
+NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structural Solver
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermal Solver
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI Monolithic Solver
 AZBDIAG                         0
@@ -119,8 +119,8 @@ AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZOUTPUT                        0  
-AZPREC                          BGS2x2  
+AZOUTPUT                        0
+AZPREC                          BGS2x2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -145,7 +145,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Belos 
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Robinson KIND arya_narloyz YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 INITTEMP 699.81667 HRDN_FACT 2.468e-13 HRDN_EXPO 4 SHRTHRSHLDNUM 1 SHRTHRSHLD 3.196e7 RCVRY 6.37e-11 ACTV_ERGY 0 ACTV_TMPR 0 G0 0.14 M_EXPO 7.73 BETANUM 1 BETA 1.5 H_FACT 6.82e7
 MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4

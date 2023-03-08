@@ -35,7 +35,7 @@ RESTARTEVRY                     5
 CONVTOL                         1e-09
 ABSTOLRES                       1e-14
 ITEMAX                          2
-EXPLPREDICT                     no 
+EXPLPREDICT                     no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -64,33 +64,33 @@ MAT_NEWMAN_CONST_C              -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Belos
-AZOUTPUT                        10                              
-AZSOLVE                         GMRES                           
-AZPREC                          ML                              
-AZREUSE                         5                               
-IFPACKGFILL                     0                               
-AZTOL                           1.0E-10                         
-AZITER                          1000                            
-AZSUB                           100                             
-AZOMEGA                         1.0                             
-AZGRAPH                         1                               
-IFPACKOVERLAP                   0                               
-AZSCAL                          none                            
-AZCONV                          AZ_r0                           
-ML_PRINT                        0                               
-ML_MAXCOARSESIZE                5000                            
-ML_MAXLEVEL                     2                               
-ML_COARSEN                      UC                              
-ML_AGG_SIZE                     9                               
-ML_PROLONG_SMO                  0.0                             
-ML_PROLONG_THRES                0.0                             
-ML_SMOOTHERFINE                 SGS                             
-ML_SMOOTHERMED                  SGS                             
-ML_SMOOTHERCOARSE               Umfpack                             
-ML_SMOTIMES                     1 1 0 
-ML_DAMPFINE                     0.6                            
-ML_DAMPMED                      0.8                             
-ML_DAMPCOARSE                   0.9                             
+AZOUTPUT                        10
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         5
+IFPACKGFILL                     0
+AZTOL                           1.0E-10
+AZITER                          1000
+AZSUB                           100
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+AZCONV                          AZ_r0
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     2
+ML_COARSEN                      UC
+ML_AGG_SIZE                     9
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     1 1 0
+ML_DAMPFINE                     0.6
+ML_DAMPMED                      0.8
+ML_DAMPCOARSE                   0.9
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END

@@ -32,7 +32,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 NUMSTEP                         200000
-MAXTIME                         0.3  
+MAXTIME                         0.3
 TOLDISP                         1.0e-8
 TOLRES                          1.0e5
 NORMCOMBI_DISPPRES              Or

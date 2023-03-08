@@ -39,7 +39,7 @@ SHAPEFCT                        Polynomial
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM conservative 
+CONVFORM conservative
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -84,7 +84,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta 
+DYNAMICTYP                      OneStepTheta
 MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -120,7 +120,7 @@ UZAWATOL                        1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------SSI CONTROL
-COUPALGO                        ssi_IterStagg 
+COUPALGO                        ssi_IterStagg
 ITEMAX                          40
 MAXTIME                         100.0
 NUMSTEP                         2
@@ -135,44 +135,44 @@ MAXOMEGA                        1.2
 MINOMEGA                        0.7
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos                      
-AZOUTPUT                        0                              
-AZSOLVE                         GMRES                           
-AZPREC                          ML                        
-AZREUSE                         50                               
-AZTOL                           1.0E-5                          
-AZCONV                          AZ_r0                           
-AZITER                          250                             
-AZSUB                           50                              
-AZOMEGA                         1.0                             
-AZGRAPH                         1                               
-AZSCAL                          none                            
-IFPACKGFILL                     0                               
-IFPACKOVERLAP                   1                               
-IFPACKCOMBINE                   Zero                            
-ML_PRINT                        0                               
-ML_MAXCOARSESIZE                20000                           
-ML_MAXLEVEL                     5                               
-ML_COARSEN                      UC                              
-ML_AGG_SIZE                     27                              
-ML_PROLONG_SMO                  1.33                            
-ML_PROLONG_THRES                0.0                             
-ML_SMOOTHERFINE                 ILU                       
-ML_SMOOTHERMED                  ILU                       
-ML_SMOOTHERCOARSE               Umfpack                         
-ML_SMOTIMES                     9 12 12 12 1                    
-ML_DAMPFINE                     0.59                            
-ML_DAMPMED                      0.69                            
-ML_DAMPCOARSE                   1.0                             
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         50
+AZTOL                           1.0E-5
+AZCONV                          AZ_r0
+AZITER                          250
+AZSUB                           50
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZSCAL                          none
+IFPACKGFILL                     0
+IFPACKOVERLAP                   1
+IFPACKCOMBINE                   Zero
+ML_PRINT                        0
+ML_MAXCOARSESIZE                20000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     9 12 12 12 1
+ML_DAMPFINE                     0.59
+ML_DAMPMED                      0.69
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
 MAT 2 MAT_ScDepInterp IDMATZEROSC 4 IDMATUNITSC 3
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0
-MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0 
-MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0 
+MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0
+MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0
 MAT 4 MAT_ElastHyper NUMMAT 2 MATIDS 41 42 DENS 1.0
-MAT 41 ELAST_IsoYeoh C1 1.0e2 C2 0 C3 0 
-MAT 42 ELAST_VolOgden KAPPA 1.0e0 BETA -2.0 
+MAT 41 ELAST_IsoYeoh C1 1.0e2 C2 0 C3 0
+MAT 42 ELAST_VolOgden KAPPA 1.0e0 BETA -2.0
 MAT 5 MAT_GrowthAC SCALAR1 2 ALPHA 5.0
 MAT 10 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 101 102 NUMREAC 2 REACIDS 103 104 END
 MAT 101 MAT_scatra DIFFUSIVITY 0.1

@@ -24,7 +24,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -42,7 +42,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic 
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 RESULTSEVRY                           1
 LINEAR_SOLVER                   1
@@ -73,19 +73,19 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Belos 
+SOLVER                          Belos
 AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Belos 
+SOLVER                          Belos
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          Belos 
+SOLVER                          Belos
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                     
-AZTOL                           1.0E-11                       
+SOLVER                          Belos
+AZTOL                           1.0E-11
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta

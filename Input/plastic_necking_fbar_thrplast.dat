@@ -27,8 +27,8 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy  
-STRUCT_STRAIN                   Yes  
+STRUCT_STRESS                   Cauchy
+STRUCT_STRAIN                   Yes
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No

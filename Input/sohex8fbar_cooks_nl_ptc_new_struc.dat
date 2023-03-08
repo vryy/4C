@@ -41,13 +41,13 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     200
-NLNSOL                          noxnln              
+NLNSOL                          noxnln
 TIMESTEP                        10.0
 NUMSTEP                         60
 MAXTIME                         300.0
 PREDICT                         TangDis
 ---------------------------------------------------------STRUCT NOX
-Nonlinear Solver                = Pseudo Transient 
+Nonlinear Solver                = Pseudo Transient
 -----------------------------------------STRUCT NOX/Solver Options
 Merit Function                  = Sum of Squares
 Status Test Check Type          = Complete

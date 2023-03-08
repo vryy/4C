@@ -182,7 +182,7 @@ POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_
 ----------------------------------------------------------------------FUNCT10
 VARFUNCTION 1.0e-16*heaviside(4.0e-6-phi1)*(0.5+0.5*cos(pi*phi1/4.0e-6))*(1-phi2)*S2*porosity//-nu_taf*phi3*VF1-beta_taf*phi3 NUMCONSTANTS 2 CONSTANTS nu_taf 1e-15 beta_taf 8e-13
 ----------------------------------------------------------------------FUNCT11
-VARFUNCTION ((4.0e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity 
+VARFUNCTION ((4.0e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity
 ----------------------------------------------------------------------FUNCT12
 VARFUNCTION phi3*4.2e-10*(VFP1-p3-1333.0)*VF1
 

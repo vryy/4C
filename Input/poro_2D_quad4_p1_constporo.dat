@@ -20,7 +20,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -29,10 +29,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes 
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls 
-STABTYPE                        residual_based 
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -54,7 +54,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic 
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro_P1
 ITEMAX                          20
 ITEMIN                          1
@@ -83,7 +83,7 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
@@ -95,7 +95,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 THETA                           0.66
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.4
-MAT 10 MAT_PoroLawConstant 
+MAT 10 MAT_PoroLawConstant
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 //MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.0e3 NUE 0.3 DENS 0.5

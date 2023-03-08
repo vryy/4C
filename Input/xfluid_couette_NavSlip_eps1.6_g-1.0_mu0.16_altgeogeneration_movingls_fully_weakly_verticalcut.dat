@@ -14,7 +14,7 @@ Assumption 1): dp/dx = f_x ---> Linear profile
 //Parmeters
 H     = 1.6
 mu    = 0.1
-eps   = 1.6e10-1.6 
+eps   = 1.6e10-1.6
 f_x   = 10
 dp/dx = 1.0
 
@@ -28,8 +28,8 @@ C2   = eps*C1 + u_0
 
 u(y) = C1*y+C2
 
-u_0 = 5      
-u_H = 53    
+u_0 = 5
+u_H = 53
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      800
 //NODES                         1722
@@ -74,10 +74,10 @@ LIMIT_OUTP_TO_PROC              -1
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   2
 TIMEINTEGR                      One_Step_Theta
-NONLINITER                      Newton 
+NONLINITER                      Newton
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function 
+INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
 CONVFORM                        convective
 ALLDOFCOUPLED                   Yes
@@ -101,13 +101,13 @@ TOL_VEL_INC	  1e-12
 TOL_PRES_RES	  1e-12
 TOL_PRES_INC	  1e-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based 
+STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes 
-SUPG                            Yes 
-GRAD_DIV                        Yes 
+PSPG                            Yes
+SUPG                            Yes
+GRAD_DIV                        Yes
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
@@ -118,22 +118,22 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp 
-EOS_CONV_STREAM                 xfem_gp 
-EOS_CONV_CROSS                  none 
-EOS_DIV                         none 
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No 
+GMSH_DEBUG_OUT                  No
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_SOL_OUT                    No
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                No
-GMSH_CUT_OUT                    No 
+GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          DirectDivergence 
-BOUNDARY_GAUSS_POINTS_BY        Tessellation 
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -142,24 +142,24 @@ NIT_STAB_FAC_TANG               35.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none 
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_STAB    no
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         
+GHOST_PENALTY_TRANSIENT_FAC     0.005
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           0.05
 GHOST_PENALTY_PRESSURE_2nd_FAC  0.05
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      linear_full                   
+SOLVERTYPE                      linear_full
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1
 NUMSTEP                         1
 RESTARTEVRY                     20
-THETA                           0.5                           
-TIMEINTEGR                      Stationary                    
+THETA                           0.5
+TIMEINTEGR                      Stationary
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -170,7 +170,7 @@ CONVFORM                        convective
 MATID                           3
 OUTPUT_GMSH                     no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        SUPG                          
+STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

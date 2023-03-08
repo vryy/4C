@@ -34,7 +34,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    field_by_function             
+INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
@@ -60,7 +60,7 @@ TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -70,12 +70,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
@@ -85,19 +85,19 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
-NIT_STAB_FAC                    31.38594035                   
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    vol_equivalent                
-CONV_STAB_SCALING               abs_inflow                    
+COUPLING_METHOD                 Nitsche
+NIT_STAB_FAC                    31.38594035
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
+CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           1.0
 GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
-GHOST_PENALTY_FAC               0.1                           
+GHOST_PENALTY_FAC               0.1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

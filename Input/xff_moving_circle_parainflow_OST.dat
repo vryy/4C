@@ -52,7 +52,7 @@ RESTARTEVRY                     1
 SIMPLER                         no
 STARTFUNCNO                     1
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta                
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
 RESULTSEVRY                           1
 NONLINEARBC                     no
@@ -74,12 +74,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       
-EOS_CONV_STREAM                 xfem_gp                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         none                          
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        springs_spatial

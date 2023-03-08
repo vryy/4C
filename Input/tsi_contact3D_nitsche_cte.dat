@@ -10,7 +10,7 @@ created by pre_exodus
 //NODES       150
 DIM           3
 --------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Thermo_Structure_Interaction 
+PROBLEMTYP   Thermo_Structure_Interaction
 RESTART      0
 SHAPEFCT     Polynomial
 ----------------------------------------------------DISCRETISATION
@@ -26,7 +26,7 @@ LINEAR_SOLVER 1
 DYNAMICTYP   OneStepTheta
 RESULTSEVRY  1
 RESTARTEVRY  1
-NLNSOL       fullnewton 
+NLNSOL       fullnewton
 TIMESTEP     0.25
 NUMSTEP      3
 MAXTIME      0.75
@@ -53,7 +53,7 @@ ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      2
-INITIALFIELD                    field_by_function 
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
@@ -63,7 +63,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
-PREDICT               ConstTempRate 
+PREDICT               ConstTempRate
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        999999.0
@@ -78,15 +78,15 @@ NUMSTEP                         6
 RESTARTEVRY                     1
 TIMESTEP                        0.125
 RESULTSEVRY                           1
-ITEMAX                          100 
+ITEMAX                          100
 COUPALGO                        tsi_monolithic
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-8
 TOLINC                          1e-8
-ITERNORM                        Rms                
+ITERNORM                        Rms
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               Coupl_Or_Singl    
-NORM_RESF                       Abs                
+NORMCOMBI_RESFINC               Coupl_Or_Singl
+NORM_RESF                       Abs
 MERGE_TSI_BLOCK_MATRIX          yes
 ------------------------------------------------CONTACT DYNAMIC
 FRICTION                        Coulomb
@@ -114,7 +114,7 @@ NITSCHE_THETA_TSI               1.0
 NITSCHE_WEIGHTING_TSI           harmonic
 NITSCHE_PENALTY_ADAPTIVE_TSI    yes
 PENALTYPARAM_THERMO             5.0
-NITSCHE_METHOD_TSI              nitsche 
+NITSCHE_METHOD_TSI              nitsche
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
 AZPREC  ML

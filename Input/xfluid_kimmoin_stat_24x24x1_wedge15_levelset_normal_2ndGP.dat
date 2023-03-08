@@ -71,7 +71,7 @@ PRES_KRYLOV_2Dz                 yes
 EOS_PRES                        std_eos
 EOS_CONV_STREAM                 std_eos
 EOS_CONV_CROSS                  none
-EOS_DIV                         vel_jump_std_eos 
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Schott_Massing_Burman_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_surf_diameter
 -----------------------------------------------------------------FSI DYNAMIC
@@ -91,7 +91,7 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 CONV_STAB_SCALING               inflow
 MASS_CONSERVATION_COMBO         sum
-MASS_CONSERVATION_SCALING       full 
+MASS_CONSERVATION_SCALING       full
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_2nd_STAB          yes

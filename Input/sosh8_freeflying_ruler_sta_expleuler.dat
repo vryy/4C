@@ -52,7 +52,7 @@ NUMSTEP                         200
 PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     100
-TIMESTEP                        5e-5                          
+TIMESTEP                        5e-5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9

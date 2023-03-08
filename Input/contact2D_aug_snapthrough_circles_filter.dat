@@ -136,7 +136,7 @@ Zero Initial Guess              = Yes
 Computing Scaling Manually      = No
 Output Solver Details           = Yes
 ---------------------------------------------STRUCT NOX/Line Search
-Method                          = Backtrack 
+Method                          = Backtrack
 Inner Status Test Check Type    = Minimal
 -----------------------------------STRUCT NOX/Line Search/Full Step
 Full Step                       = 1
@@ -157,7 +157,7 @@ Details                         = Yes
 Outer Iteration StatusTest      = Yes
 Linear Solver Details           = No
 Test Details                    = No
-Debug                           = Yes 
+Debug                           = Yes
 ---------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact_filter.xml
 ------------------------------------------STRUCT NOX/Solver Options

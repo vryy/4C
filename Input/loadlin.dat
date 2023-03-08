@@ -36,7 +36,7 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton
-LOADLIN                         yes                           
+LOADLIN                         yes
 TIMESTEP                        0.01
 NUMSTEP                         10
 MAXTIME                         3.0

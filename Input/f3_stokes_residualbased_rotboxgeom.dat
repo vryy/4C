@@ -23,7 +23,7 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary
-PHYSICAL_TYPE                   Stokes                       
+PHYSICAL_TYPE                   Stokes
 RESULTSEVRY                           1
 MAXTIME                         1000.0
 NUMSTEP                         1
@@ -46,7 +46,7 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------RESULT DESCRIPTION

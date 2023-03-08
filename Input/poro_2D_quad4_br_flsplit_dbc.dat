@@ -18,7 +18,7 @@ NUMSTRUCDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-PREDICTOR                       explicit_second_order_midpoint 
+PREDICTOR                       explicit_second_order_midpoint
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 LINEAR_SOLVER                   3
@@ -28,10 +28,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes 
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls 
-STABTYPE                        residual_based 
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -66,7 +66,7 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop

@@ -20,7 +20,7 @@ NUMARTNETDIS                    0
 NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
 --------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Atherosclerosis_Fluid_Structure_Interaction 
+PROBLEMTYP                      Atherosclerosis_Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
@@ -29,14 +29,14 @@ OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
 STRUCT_SE                       No
-STRUCT_STRESS                   Cauchy 
+STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   gl  
+STRUCT_STRAIN                   gl
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_SOL                       Yes
-FLUID_STRESS                    Yes 
-FLUID_WALL_SHEAR_STRESS         Yes 
+FLUID_STRESS                    Yes
+FLUID_WALL_SHEAR_STRESS         Yes
 FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25
@@ -46,15 +46,15 @@ WRITE_TO_SCREEN                 Yes
 // LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         100000000.0
-TIMESTEP                        0.01 
+TIMESTEP                        0.01
 NUMSTEP                         3
 RESTARTEVRY                     1
 RESULTSEVRY                           1
-INF_PERM                        no 
-SCATRA_SOLVERTYPE               nonlinear 
-COUPLED_LINEAR_SOLVER           4                             
-LINEAR_SOLVER1                  5                             
-LINEAR_SOLVER2                  6                             
+INF_PERM                        no
+SCATRA_SOLVERTYPE               nonlinear
+COUPLED_LINEAR_SOLVER           4
+LINEAR_SOLVER1                  5
+LINEAR_SOLVER2                  6
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           3
 RESTART_FROM_PART_FSI           yes
@@ -63,12 +63,12 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point 
-EVALUATION_TAU                  integration_point 
-STABTYPE                        no_stabilization 
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------------------FS3I DYNAMIC/PARTITIONED
-COUPALGO                        fs3i_SequStagg 
+COUPALGO                        fs3i_SequStagg
 CONVTOL                         1e-01
 ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
@@ -84,13 +84,13 @@ CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      2
-INITIALFIELD                    field_by_function 
+INITIALFIELD                    field_by_function
 MAXTIME                         10000
 NUMSTEP                         10
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SKIPINITDER                     no 
-SOLVERTYPE                      nonlinear 
+SKIPINITDER                     no
+SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
@@ -107,32 +107,32 @@ CONVTOL                         1e-08
 EXPLPREDICT                     no
 ITEMAX                          10
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        GLS 
-DEFINITION_TAU                  Codina 
-CHARELELENGTH                   volume_equivalent_diameter 
-ASSUGRDIFF                      no 
-DEFINITION_ASSGD                Codina_nonlinear 
-CONSISTENCY                     no 
-EVALUATION_MAT                  integration_point 
-EVALUATION_TAU                  integration_point 
+STABTYPE                        GLS
+DEFINITION_TAU                  Codina
+CHARELELENGTH                   volume_equivalent_diameter
+ASSUGRDIFF                      no
+DEFINITION_ASSGD                Codina_nonlinear
+CONSISTENCY                     no
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
 NUMSTEP                         3000
 TIMESTEP                        0.001
 MAXTIME                         3
-ADAPTCONV                       yes 
-ADAPTCONV_BETTER                0.1 
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
-DYNAMICTYP                      OneStepTheta 
+DYNAMICTYP                      OneStepTheta
 K_DAMP                          0.001
 MAXITER                         50
 M_DAMP                          0.001
 NLNSOL                          fullnewton
-PREDICT                         ConstDisVelAcc 
+PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     500
 TOLDISP                         1e-06
@@ -149,8 +149,8 @@ NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFINCO              And
 NORM_INCO                       Abs
 NORM_PRES                       Abs
-PRESTRESS                       none 
-PRESTRESSTIME                   0.030000001 
+PRESTRESS                       none
+PRESTRESSTIME                   0.030000001
 PTCDT                           1.000e-01
 RESEVRYERGY                     0
 STC_LAYER                       1
@@ -171,25 +171,25 @@ SIMPLER_SOLVER                  -1
 WSS_ML_AGR_SOLVER               -1
 WSS_TYPE                        Standard
 TIMEINTEGR                      One_Step_Theta
-NONLINITER                      Newton 
+NONLINITER                      Newton
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           No
 INITIALFIELD                    zero_field
 LIFTDRAG                        No
 CONVFORM                        convective
-NONLINEARBC                     yes 
+NONLINEARBC                     yes
 MESHTYING                       no
-GRIDVEL                         BDF2 
+GRIDVEL                         BDF2
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 SIMPLER                         no
-ADAPTCONV                       yes 
-ADAPTCONV_BETTER                0.1 
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1 
+RESULTSEVRY                           1
 RESTARTEVRY                     500
 NUMSTEP                         3000
 STEADYSTEP                      -1
@@ -227,8 +227,8 @@ REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_U                 streamlength
 CHARELELENGTH_PC                volume_equivalent_diameter
-EVALUATION_TAU                  integration_point 
-EVALUATION_MAT                  integration_point 
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
 LOMA_CONTI_SUPG                 No
 LOMA_CONTI_CROSS_STRESS         no_cross
 LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
@@ -241,29 +241,29 @@ NUM_INITSTEP                    0
 RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 --------------------------------------------------------FSI DYNAMIC
-COUPALGO                        iter_monolithicfluidsplit 
+COUPALGO                        iter_monolithicfluidsplit
 DEBUGOUTPUT                     No
-SECONDORDER                     No 
+SECONDORDER                     No
 NUMSTEP                         1
 RESULTSEVRY                           1
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 MAXTIME                         1.000000001
 SLIDEALEPROJ                    None
-VERBOSITY                       medium 
+VERBOSITY                       medium
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
 ITEMAX                          30
-COUPVARIABLE                    Force 
+COUPVARIABLE                    Force
 //PREDICTOR                       d(n)
 //RELAX                           0.825
 --------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-SHAPEDERIVATIVES                No 
+SHAPEDERIVATIVES                No
 ITEMAX                          100
 INFNORMSCALING                  Yes
 SYMMETRICPRECOND                No
 REBUILDPRECEVERYSTEP            No
-PRECONDREUSE                    100 
+PRECONDREUSE                    100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
 STRUCTPCITER                    1 1 1 1
@@ -271,11 +271,11 @@ FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
 FLUIDPCITER                     1 1 1 1
 ALEPCOMEGA                      1.0 1.0 1.0 1.0
 ALEPCITER                       1 1 1 1
-PCOMEGA                         0.9 0.9 1.0 
+PCOMEGA                         0.9 0.9 1.0
 PCITER                          1 1 1
 BLOCKSMOOTHER                   BGS BGS BGS
 SCHUROMEGA                      0.001 0.01 0.1
-ADAPTIVEDIST                    0.01 
+ADAPTIVEDIST                    0.01
 BASETOL                         0.001
 CONVTOL                         1e-06
 NORM_INC                        Abs
@@ -302,9 +302,9 @@ FSIAMGANALYZE                   No
 NAME                            Fluid_Solver
 //SOLVER                          UMFPACK
 SOLVER                          Belos
-AZOUTPUT                        0 
+AZOUTPUT                        0
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2 
+AZPREC                          MLFLUID2
 AZREUSE                         0
 IFPACKGFILL                     0
 AZTOL                           1.0E-4
@@ -324,43 +324,43 @@ ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack 
-ML_SMOTIMES                     1 0 0 0 0              
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     1 0 0 0 0
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 //SOLVER                          UMFPACK
-SOLVER                          Belos                      
-AZOUTPUT                        0                              
-AZSOLVE                         GMRES                           
-AZPREC                          ML                        
-AZREUSE                         4                               
-AZTOL                           1.0E-6                          
-AZCONV                          AZ_r0                           
-AZITER                          1000                             
-AZSUB                           50                              
-AZOMEGA                         1.0                             
-AZGRAPH                         1                               
-AZSCAL                          none                            
-IFPACKGFILL                     0                               
-IFPACKOVERLAP                   1                               
-IFPACKCOMBINE                   Zero                            
-ML_PRINT                        0                               
-ML_MAXCOARSESIZE                10000                           
-ML_MAXLEVEL                     3                               
-ML_COARSEN                      UC                              
-ML_AGG_SIZE                     27                              
-ML_PROLONG_SMO                  1.33                            
-ML_PROLONG_THRES                0.0                             
-ML_SMOOTHERFINE                 ILU                       
-ML_SMOOTHERMED                  ILU                       
-ML_SMOOTHERCOARSE               Umfpack                         
-ML_SMOTIMES                     5 5 5 5 1                    
-ML_DAMPFINE                     0.79                            
-ML_DAMPMED                      0.79                            
-ML_DAMPCOARSE                   1.0                             
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         4
+AZTOL                           1.0E-6
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           50
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZSCAL                          none
+IFPACKGFILL                     0
+IFPACKOVERLAP                   1
+IFPACKCOMBINE                   Zero
+ML_PRINT                        0
+ML_MAXCOARSESIZE                10000
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     5 5 5 5 1
+ML_DAMPFINE                     0.79
+ML_DAMPMED                      0.79
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 3
 NAME                            Ale_Solver
 //SOLVER                          UMFPACK
@@ -387,7 +387,7 @@ ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack 
+ML_SMOOTHERCOARSE               Umfpack
 ML_SMOTIMES                     5 5 5 5 1
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
@@ -395,20 +395,20 @@ ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 4
 NAME                            COUPLED_FS3I_SOLVER
 //SOLVER                          UMFPACK
-SOLVER                          Belos                     
-AZOUTPUT                        0                             
-AZSOLVE                         GMRES                         
-AZPREC                          BGS2x2                        
-AZREUSE                         0                             
-IFPACKGFILL                     2                             
-AZTOL                           1.0E-07                       
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           25                            
-AZOMEGA                         1.0                           
-AZGRAPH                         1                             
-IFPACKOVERLAP                   0                             
-AZSCAL                          infnorm                       
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          BGS2x2
+AZREUSE                         0
+IFPACKGFILL                     2
+AZTOL                           1.0E-07
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                10000
 ML_MAXLEVEL                     5
@@ -418,7 +418,7 @@ ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack 
+ML_SMOOTHERCOARSE               Umfpack
 ML_SMOTIMES                     9 12 12 12 1
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
@@ -426,65 +426,65 @@ ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 5
 NAME                            SCAT_FLUID
 //SOLVER                          UMFPACK
-SOLVER                          Belos                     
-AZOUTPUT                        0                             
-AZSOLVE                         GMRES                         
-AZPREC                          ILU                           
-AZREUSE                         0                             
-IFPACKGFILL                     0                             
-AZTOL                           1.0E-7                        
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           25                            
-AZOMEGA                         1.0                           
-AZGRAPH                         1                             
-IFPACKOVERLAP                   0                             
-AZSCAL                          none                          
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                5000                          
-ML_MAXLEVEL                     5                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  0.0                           
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 ILU                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               Umfpack                           
-ML_SMOTIMES                     2 0 0 0 1                     
-ML_DAMPFINE                     0.67                          
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-7
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 6
 NAME                            SCAT_STRUCT
 //SOLVER                          UMFPACK
-SOLVER                          Belos                     
-AZOUTPUT                        0                             
-AZSOLVE                         GMRES                         
-AZPREC                          ILU                           
-AZREUSE                         0                             
-IFPACKGFILL                     0                             
-AZTOL                           1.0E-7                        
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           25                            
-AZOMEGA                         1.0                           
-AZGRAPH                         1                             
-IFPACKOVERLAP                   0                             
-AZSCAL                          none                          
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                5000                          
-ML_MAXLEVEL                     5                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  0.0                           
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 ILU                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               Umfpack                           
-ML_SMOTIMES                     2 0 0 0 1                     
-ML_DAMPFINE                     0.67                          
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-7
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------MATERIALS
 //Units [mm, s, g -> Pa]
 MAT 1 MAT_fluid DYNVISCOSITY 3.5e-03 DENSITY 1.05e-03
@@ -494,11 +494,11 @@ MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
 MAT 32 ELAST_VolOgden KAPPA 2.2116e6 BETA -2.0
 MAT 4 MAT_GrowthAC SCALAR1 2 ALPHA 1000.0
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
-MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 112 END 
+MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 112 END
 MAT 111 MAT_scatra DIFFUSIVITY 1.0
 MAT 112 MAT_scatra DIFFUSIVITY 0.00001
 //MAT 12 MAT_matlist LOCAL No NUMMAT 2 MATIDS 121 122 END //structure_scatra
-MAT 12 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 121 122 NUMREAC 1 REACIDS 131 END 
+MAT 12 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 121 122 NUMREAC 1 REACIDS 131 END
 MAT 121 MAT_scatra DIFFUSIVITY 0.1
 MAT 122 MAT_scatra DIFFUSIVITY 0.00001
 MAT 131 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 0.001 COUPLING simple_multiplicative ROLE 1 0

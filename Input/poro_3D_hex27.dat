@@ -10,7 +10,7 @@ Test for hex 27 poro elements
 //NODES                         343
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity 
+PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION

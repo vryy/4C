@@ -74,13 +74,13 @@ TOL_VEL_INC	  1.0E-12
 TOL_PRES_RES	  1.0E-12
 TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based 
+STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes 
-SUPG                            Yes 
-GRAD_DIV                        Yes 
+PSPG                            Yes
+SUPG                            Yes
+GRAD_DIV                        Yes
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
@@ -91,10 +91,10 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp 
-EOS_CONV_STREAM                 xfem_gp 
-EOS_CONV_CROSS                  none 
-EOS_DIV                         vel_jump_xfem_gp 
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
@@ -105,21 +105,21 @@ GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation 
-BOUNDARY_GAUSS_POINTS_BY        Tessellation 
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    75.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
-MASS_CONSERVATION_SCALING       full 
+MASS_CONSERVATION_SCALING       full
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none 
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_STAB    yes
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         
+GHOST_PENALTY_TRANSIENT_FAC     0.005
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           1.0
 GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
@@ -154,7 +154,7 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
-MAT 2 MAT_scatra DIFFUSIVITY 0.0 
+MAT 2 MAT_scatra DIFFUSIVITY 0.0
 MAT 3 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0
 MAT 4 MAT_fluid DYNVISCOSITY 0.02 DENSITY 1.0
 --------------------------------------------------------CLONING MATERIAL MAP

@@ -13,7 +13,7 @@ DOMAINBOUNDINGBOX               -2.35 -2.35 -0.05 2.35 2.35 0.05
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     SPH
 RESULTSEVRY                     32
-RESTARTEVRY                     128 
+RESTARTEVRY                     128
 TIMESTEP                        1.25e-3
 NUMSTEP                         160
 MAXTIME                         0.2

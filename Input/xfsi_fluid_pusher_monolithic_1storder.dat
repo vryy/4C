@@ -24,7 +24,7 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No                            
+STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -45,8 +45,8 @@ SECONDORDER                     no
 ITEMAX                          5
 INFNORMSCALING                  no
 CONVTOL                         1.0E-12
-NORM_INC                        Rel                           
-NORM_RESF                       Rel                           
+NORM_INC                        Rel
+NORM_RESF                       Rel
 TOL_DIS_RES_L2                  1.0E-06
 TOL_DIS_RES_INF                 1.0E-06
 TOL_DIS_INC_L2                  1.0E-06
@@ -89,11 +89,11 @@ DYNAMICTYP                      GenAlpha
 TIMESTEP                        0.025
 NUMSTEP                         80
 MAXTIME                         2.0
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
-PREDICT                         ConstDisVelAcc                
+PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -106,22 +106,22 @@ MAXITER                         100
 LINEAR_SOLVER                   2
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no                            
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
 NAME                            XFSI_SOLVER
 SOLVER                          UMFPACK
@@ -141,13 +141,13 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
-NIT_STAB_FAC                    21.97015825                   
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    vol_equivalent                
-CONV_STAB_SCALING               none                          
+COUPLING_METHOD                 Nitsche
+NIT_STAB_FAC                    21.97015825
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

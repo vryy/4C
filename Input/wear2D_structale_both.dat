@@ -62,7 +62,7 @@ LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 static 
+PARALLEL_REDIST                 static
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARCOEFF                       0.0003

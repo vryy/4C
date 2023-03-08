@@ -43,7 +43,7 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB rstab_gls 
+RSTAB rstab_gls
 STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic

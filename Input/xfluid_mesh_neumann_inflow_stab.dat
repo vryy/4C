@@ -80,8 +80,8 @@ MASS_CONSERVATION_COMBO         sum
 MASS_CONSERVATION_SCALING       full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY .10 DENSITY 10 GAMMA 1.0
-MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 13 DENS 1 
-MAT 13 ELAST_CoupNeoHooke YOUNG 100000 NUE 0.3 
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 13 DENS 1
+MAT 13 ELAST_CoupNeoHooke YOUNG 100000 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.707106781186547
 ----------------------------------------------------------DESIGN DESCRIPTION

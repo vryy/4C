@@ -46,8 +46,8 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      nonlinear 
-TIMEINTEGR                      One_Step_Theta 
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
 MAXTIME                         100
 NUMSTEP                         500
 TIMESTEP                        0.002
@@ -80,7 +80,7 @@ ABSTOLRES                       1e-14
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        no_stabilization 
+STABTYPE                        no_stabilization
 SUGRVEL                         no
 ASSUGRDIFF                      no
 DEFINITION_TAU                  Franca_Valentin

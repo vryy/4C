@@ -31,7 +31,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function             
+INITIALFIELD                    field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         2
@@ -68,7 +68,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01

@@ -40,13 +40,13 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes  
-STRUCT_STRAIN                   GL  
-STRUCT_STRESS                   2PK  
-STRUCT_COUPLING_STRESS          2PK  
-THERM_HEATFLUX                  Initial  
-THERM_TEMPERATURE               Yes  
-THERM_TEMPGRAD                  Initial  
+STRUCT_DISP                     Yes
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   2PK
+STRUCT_COUPLING_STRESS          2PK
+THERM_HEATFLUX                  Initial
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -56,18 +56,18 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
-ITERNORM                        Inf  
+DYNAMICTYP                      OneStepTheta
+ITERNORM                        Inf
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  
+PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
@@ -80,15 +80,15 @@ THETA                           0.5
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta   
-INITFUNCNO                      1  
-INITIALFIELD                    field_by_function  
-ITERNORM                        Inf  
+DYNAMICTYP                      OneStepTheta
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
+ITERNORM                        Inf
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
@@ -105,18 +105,18 @@ THETA                           0.5
 COUPALGO                        tsi_monolithic
 ITEMAX                          15
 ITEMIN                          1
-MAXTIME                         50  
+MAXTIME                         50
 NORM_INC                        Abs
-NUMSTEP                         1  
+NUMSTEP                         1
 RESTARTEVRY                     50
 TIMESTEP                        0.05
-RESULTSEVRY                           1  
+RESULTSEVRY                           1
 ---------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
-ITERNORM                        Rms  
+ITERNORM                        Rms
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               Coupl_And_Singl  
-NORM_RESF                       Rel   
+NORMCOMBI_RESFINC               Coupl_And_Singl
+NORM_RESF                       Rel
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
@@ -143,13 +143,13 @@ AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-06
 AMGNXN_TYPE                     TSI: AMG(BGS)
-SOLVER                          Belos 
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 
-MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15 
+MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15
+MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15
 MAT 0 MAT_Struct_PlasticLinElast YOUNG 0 NUE 0 DENS 0 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
-MAT 2 THERM_FourierIso CAPA 3405.49 CONDUCT 3.1e5 
-MAT 4 THERM_FourierIso CAPA 3956.04 CONDUCT 7.5e4 
+MAT 2 THERM_FourierIso CAPA 3405.49 CONDUCT 3.1e5
+MAT 4 THERM_FourierIso CAPA 3956.04 CONDUCT 7.5e4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
@@ -185,7 +185,7 @@ DVOL                            1
 // support total z
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
-DSURF 1 
+DSURF 1
 // thr convection hot gas --> cycle is applied via CURVE2
 E 6 - Tempnp coeff -28000 surtemp 1.0 surtempfunct 3 funct 0
 // thr top surrounding temp

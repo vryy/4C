@@ -54,7 +54,7 @@ NLNSOL                          newtonlinuzawa
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2                             
+LINEAR_SOLVER                   2
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0
@@ -98,7 +98,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPREC                          ML                            
+AZPREC                          ML
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -160,7 +160,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPREC ILU 
+AZPREC ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES

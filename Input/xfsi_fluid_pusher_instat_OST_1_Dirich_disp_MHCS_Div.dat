@@ -38,11 +38,11 @@ NUMSTEP                         130
 RESULTSEVRY                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-SECONDORDER                     No                            
+SECONDORDER                     No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-COUPVARIABLE                    Force                         
+COUPVARIABLE                    Force
 ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           1.0
@@ -90,13 +90,13 @@ Debug                           = No
 XML File                        = fsi_part_struct_solver.xml
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                        yes                           
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1

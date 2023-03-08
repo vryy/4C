@@ -93,9 +93,9 @@ DSURF  1
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-// left_block 
+// left_block
 E 1 - ScaTra 1
-// right_block 
+// right_block
 E 2 - ScaTra 2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2

@@ -28,14 +28,14 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes 
-STRUCT_DISP                     Yes  
-STRUCT_STRAIN                   GL  
-STRUCT_STRESS                   2PK  
-STRUCT_COUPLING_STRESS          2PK  
-THERM_HEATFLUX                  Current  
-THERM_TEMPERATURE               Yes  
-THERM_TEMPGRAD                  Current  
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   2PK
+STRUCT_COUPLING_STRESS          2PK
+THERM_HEATFLUX                  Current
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Current
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -45,18 +45,18 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 LINEAR_SOLVER                   3
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  
+NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  
+PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
@@ -69,20 +69,20 @@ THETA                           0.5
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
-INITFUNCNO                      1  
-INITIALFIELD                    field_by_function  
+DYNAMICTYP                      OneStepTheta
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp  
+PREDICT                         ConstTemp
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
@@ -91,38 +91,38 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic  
+COUPALGO                        tsi_monolithic
 ITEMAX                          50
 ITEMIN                          1
 MAXTIME                         4.0
-NORM_INC                        Abs  
-NUMSTEP                         10  
+NORM_INC                        Abs
+NUMSTEP                         10
 RESTARTEVRY                     5
-TIMESTEP                        0.1  
+TIMESTEP                        0.1
 RESULTSEVRY                           5
 ---------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06
-ITERNORM                        Rms  
+ITERNORM                        Rms
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               Coupl_And_Singl  
-NORM_RESF                       Rel  
+NORMCOMBI_RESFINC               Coupl_And_Singl
+NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  
+AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  
+AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none   
-AZSOLVE                         GMRES  
+AZSCAL                          none
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  
+IFPACKCOMBINE                   Add
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -139,7 +139,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
 AZBDIAG                         0
@@ -148,7 +148,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -162,8 +162,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  
-ML_MAXLEVEL                     3  
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -171,7 +171,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  
+SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL_SOLVER
 AZBDIAG                         0
@@ -180,7 +180,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2  
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -194,8 +194,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  
-ML_MAXLEVEL                     3  
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -203,7 +203,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445 CONDUCT 1031.2 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
@@ -244,7 +244,7 @@ DVOL                            1
 // STR fix vol in y,z
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
-DSURF 0 
+DSURF 0
 // THR left surf heat convection
 //E 8 - 1 1 373.15 none 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS

@@ -32,10 +32,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes 
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls 
-STABTYPE                        residual_based 
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient

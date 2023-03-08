@@ -24,7 +24,7 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      Af_Gen_Alpha 
+TIMEINTEGR                      Af_Gen_Alpha
 LIFTDRAG                        Yes
 THETA                           1.00
 ALPHA_F                         1.00
@@ -33,8 +33,8 @@ GAMMA                           1.00
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-NUMSTASTEPS                     1 
-START_THETA                     1.0 
+NUMSTASTEPS                     1
+START_THETA                     1.0
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 ADAPTCONV                       yes

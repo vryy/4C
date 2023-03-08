@@ -37,7 +37,7 @@ PHYSICAL_TYPE                   Incompressible
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function             
+INITIALFIELD                    field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         10
@@ -67,7 +67,7 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
+COUPLING_METHOD                 Nitsche
 GHOST_PENALTY_STAB              yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

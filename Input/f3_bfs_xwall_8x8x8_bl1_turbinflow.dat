@@ -58,7 +58,7 @@ TOL_PRES_INC	  1e-04
 ------------------------------------FLUID DYNAMIC/WALL MODEL
 X_WALL                          Yes
 Tauw_Type                       between_steps
-Tauw_Calc_Type                  gradient_to_residual 
+Tauw_Calc_Type                  gradient_to_residual
 Switch_Step                     3
 C_Tauw                          0.011662523800000
 Min_Tauw                        0.005

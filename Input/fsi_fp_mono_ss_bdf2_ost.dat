@@ -26,7 +26,7 @@ NONLINEARBC                     yes
 NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
-TIMEINTEGR                      Af_Gen_Alpha 
+TIMEINTEGR                      Af_Gen_Alpha
 ALPHA_F                         1.00
 ALPHA_M                         1.50
 GAMMA                           1.00

@@ -42,10 +42,10 @@ DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ASSUGRDIFF                      yes
-DEFINITION_ASSGD Almeida_Silva_97_nonlinear 
+DEFINITION_ASSGD Almeida_Silva_97_nonlinear
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                         
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.00000001
 ----------------------------------------------------------DESIGN DESCRIPTION

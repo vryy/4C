@@ -47,8 +47,8 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      nonlinear 
-TIMEINTEGR                      One_Step_Theta 
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
 MAXTIME                         1.0
 NUMSTEP                         500
 TIMESTEP                        0.002
@@ -82,7 +82,7 @@ ABSTOLRES                       1e-14
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        no_stabilization 
+STABTYPE                        no_stabilization
 SUGRVEL                         no
 ASSUGRDIFF                      no
 DEFINITION_TAU                  Franca_Valentin
@@ -176,7 +176,7 @@ MUELU_XML_ENFORCE               No
 NAME                            No_name
 SIMPLE_DAMPING                  1
 ----------------------------------------------------------MATERIALS
-MAT 7 MAT_matlist_reactions LOCAL No NUMMAT 9 MATIDS 8 9 10 11 12 13 14 15 16 NUMREAC 3 REACIDS 71 72 73 END 
+MAT 7 MAT_matlist_reactions LOCAL No NUMMAT 9 MATIDS 8 9 10 11 12 13 14 15 16 NUMREAC 3 REACIDS 71 72 73 END
 MAT 8 MAT_scatra DIFFUSIVITY 0.0
 MAT 9 MAT_scatra DIFFUSIVITY 0.0
 MAT 10 MAT_scatra DIFFUSIVITY 0.0

@@ -47,7 +47,7 @@ NUMSTEP                         80
 RESULTSEVRY                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-SECONDORDER                     No                            
+SECONDORDER                     No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
@@ -87,7 +87,7 @@ DYNAMICTYP                      GenAlpha
 TIMESTEP                        0.025
 NUMSTEP                         80
 MAXTIME                         2.0
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
@@ -117,22 +117,22 @@ Debug                           = No
 XML File                        = fsi_part_struct_solver.xml
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no                            
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid Solver
 SOLVER                          UMFPACK
@@ -151,13 +151,13 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=SL(boundary-zone)_and_GHOST=GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
-NIT_STAB_FAC                    21.97015825                   
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    vol_equivalent                
-CONV_STAB_SCALING               abs_inflow                    
+COUPLING_METHOD                 Nitsche
+NIT_STAB_FAC                    21.97015825
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
+CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

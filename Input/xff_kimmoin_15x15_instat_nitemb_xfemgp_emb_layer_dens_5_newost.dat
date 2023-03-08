@@ -57,8 +57,8 @@ TOL_VEL_INC	  1.0E-12
 TOL_PRES_RES	  1.0E-12
 TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                    
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+STABTYPE                        residual_based
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
@@ -68,12 +68,12 @@ GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       
-EOS_CONV_STREAM                 xfem_gp                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_xfem_gp              
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
@@ -88,38 +88,38 @@ INTERFACE_TERMS_PREVIOUS_STATE  PreviousState_full
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
 MASS_CONSERVATION_SCALING       full
-NIT_STAB_FAC                    24.40282794                   
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    vol_equivalent                
+NIT_STAB_FAC                    24.40282794
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
-GHOST_PENALTY_STAB              yes                           
-GHOST_PENALTY_FAC               0.003                         
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.003
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                     
-AZOUTPUT                        50                            
-AZSOLVE                         GMRES                         
-AZPREC                          ILU                           
-AZREUSE                         1                             
-IFPACKGFILL                     3                             
-AZTOL                           1.0E-08                       
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           1000                          
-IFPACKOVERLAP                   0                             
-ML_MAXCOARSESIZE                1                             
-ML_MAXLEVEL                     3                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  0.0                           
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 ILU                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               Umfpack                       
-ML_SMOTIMES                     3 3 0                         
-ML_DAMPFINE                     0.2                           
-ML_DAMPMED                      0.2                           
-ML_DAMPCOARSE                   1.0                           
+SOLVER                          Belos
+AZOUTPUT                        50
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         1
+IFPACKGFILL                     3
+AZTOL                           1.0E-08
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           1000
+IFPACKOVERLAP                   0
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     3 3 0
+ML_DAMPFINE                     0.2
+ML_DAMPMED                      0.2
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.005 DENSITY 5.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1

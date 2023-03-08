@@ -39,13 +39,13 @@ OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No  
-STRUCT_STRAIN                   EA  
-STRUCT_STRESS                   Cauchy  
-STRUCT_COUPLING_STRESS          Cauchy  
-THERM_HEATFLUX                  Current  
-THERM_TEMPERATURE               Yes  
-THERM_TEMPGRAD                  Current  
+STRUCT_PLASTIC_STRAIN           No
+STRUCT_STRAIN                   EA
+STRUCT_STRESS                   Cauchy
+STRUCT_COUPLING_STRESS          Cauchy
+THERM_HEATFLUX                  Current
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Current
 WRITE_TO_SCREEN                 Yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
@@ -57,7 +57,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
@@ -71,9 +71,9 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  
+NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  
+PREDICT                         ConstDis
 PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -96,10 +96,10 @@ THETA                           1.0
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  
-ITERNORM                        Rms  
+INITIALFIELD                    field_by_function
+ITERNORM                        Rms
 LINEAR_SOLVER                   2
 LUMPCAPA                        No
 MAXITER                         50
@@ -110,7 +110,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         TangTemp  
+PREDICT                         TangTemp
 RESEVRYERGY                     0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -120,12 +120,12 @@ TOLTEMP                         1e-08
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic  
+COUPALGO                        tsi_monolithic
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         5000.0
-NORM_INC                        Abs  
-NUMSTEP                         5  
+NORM_INC                        Abs
+NUMSTEP                         5
 RESTARTEVRY                     4
 TIMESTEP                        200.0
 RESULTSEVRY                           1
@@ -133,19 +133,19 @@ RESULTSEVRY                           1
 MERGE_TSI_BLOCK_MATRIX          Yes
 CONVTOL                         1e-06
 TOLINC                          1e-07
-ITERNORM                        Rms  
+ITERNORM                        Rms
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               Coupl_Or_Singl  
-NORM_RESF                       Rel  
+NORMCOMBI_RESFINC               Coupl_Or_Singl
+NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2

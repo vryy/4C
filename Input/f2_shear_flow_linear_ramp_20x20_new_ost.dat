@@ -17,19 +17,19 @@ RESTART                         0
 //!RESTART                      5
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           10
 RESTARTEVRY                     1
 MAXTIME                         1.0
 NUMSTEP                         100
 TIMESTEP                        0.05
-THETA                           0.66 
-NONLINITER                      Newton 
+THETA                           0.66
+NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-NUMSTASTEPS                     0 
+NUMSTASTEPS                     0
 START_THETA                     0.66
-INITIALFIELD                    zero_field 
+INITIALFIELD                    zero_field
 STARTFUNCNO                     4
 SIMPLER                         no
 GMSH_OUTPUT                     yes
@@ -43,22 +43,22 @@ TOL_VEL_INC	  1.0E-13
 TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                  
-TDS                             quasistatic                     
+STABTYPE                        residual_based
+TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                    
-SUPG                            yes                             
-PSPG                            yes                             
-VSTAB                           no_vstab                        
-GRAD_DIV                        yes                             
-CROSS-STRESS                    no_cross                        
-REYNOLDS-STRESS                 no_reynolds                     
+TRANSIENT                       no_transient
+SUPG                            yes
+PSPG                            yes
+VSTAB                           no_vstab
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK 
+SOLVER                          UMFPACK
 //AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0

@@ -25,14 +25,14 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes 
-STRUCT_DISP                     Yes  
-STRUCT_STRAIN                   GL  
-STRUCT_STRESS                   2PK  
-STRUCT_COUPLING_STRESS          2PK  
-THERM_HEATFLUX                  Current  
-THERM_TEMPERATURE               Yes  
-THERM_TEMPGRAD                  Current  
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   2PK
+STRUCT_COUPLING_STRESS          2PK
+THERM_HEATFLUX                  Current
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Current
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -42,19 +42,19 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 LOADLIN                         no
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  
+NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  
+PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -68,19 +68,19 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  
+DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  
+NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp  
+PREDICT                         ConstTemp
 RESEVRYERGY                     0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -90,42 +90,42 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_iterstagg  
+COUPALGO                        tsi_iterstagg
 ITEMAX                          30
 ITEMIN                          1
 MAXTIME                         4
-NORM_INC                        Rel  
-NUMSTEP                         20  
+NORM_INC                        Rel
+NUMSTEP                         20
 RESTARTEVRY                     5
 TIMESTEP                        0.01
 RESULTSEVRY                           5
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
-COUPVARIABLE                    Displacement  
+COUPVARIABLE                    Displacement
 //FIXEDOMEGA                    1.0
 //MAXOMEGA                      0.2
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          UMFPACK  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  
+AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  
+AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none  
-AZSOLVE                         GMRES  
+AZSCAL                          none
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  
+IFPACKCOMBINE                   Add
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -142,7 +142,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 210 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445e-05 CONDUCT 1.0312e-03 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 6.445e-05 CONDUCT 1.0312e-03
@@ -190,7 +190,7 @@ DSURF                           1
 // THR left surface heat convection:
 //E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct none
 // nightly test case
-E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct 2 
+E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct 2
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 2
 NODE 4 DSURFACE 2

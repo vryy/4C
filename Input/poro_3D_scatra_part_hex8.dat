@@ -38,10 +38,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes 
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls 
-STABTYPE                        residual_based 
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -112,34 +112,34 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                     
-AZOUTPUT                        0                             
-AZSOLVE                         GMRES                         
-AZPREC                          ILU                           
-AZREUSE                         0                             
-IFPACKGFILL                     0                             
-AZTOL                           1.0E-9                        
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           40                            
-AZOMEGA                         1.0                           
-AZGRAPH                         1                             
-IFPACKOVERLAP                   0                             
-AZSCAL                          none                          
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                5000                          
-ML_MAXLEVEL                     5                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  0.0                           
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 SGS                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               KLU                           
-ML_SMOTIMES                     2 0 0 0 1                     
-ML_DAMPFINE                     0.67                          
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-9
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           40
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 4
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
@@ -149,7 +149,7 @@ MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 2.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy
-MAT 5 MAT_matlist LOCAL No NUMMAT 1 MATIDS 6 END 
+MAT 5 MAT_matlist LOCAL No NUMMAT 1 MATIDS 6 END
 MAT 6 MAT_scatra DIFFUSIVITY 10.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.0/10*x+3.0

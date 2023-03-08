@@ -26,9 +26,9 @@ NUMSTEP                         50
 MAXTIME                         20.0
 TIMESTEP                        0.1
 THETA                           1.0
-VELOCITYFIELD                   zero 
+VELOCITYFIELD                   zero
 VELFUNCNO                       -1
-INITIALFIELD                    field_by_function 
+INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
 CALCERROR                       No
@@ -42,11 +42,11 @@ CHARELELENGTH                   root_of_volume
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 10.00
 MAT 2 MAT_scatra DIFFUSIVITY 10.00
-MAT 3 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 1 2 NUMREAC 1 REACIDS 10 END 
+MAT 3 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 1 2 NUMREAC 1 REACIDS 10 END
 MAT 10 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3

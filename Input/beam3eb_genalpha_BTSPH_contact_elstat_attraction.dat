@@ -82,8 +82,8 @@ BEAMS_NUMINTEGRATIONINTERVAL    20
 
 // needed only for old beam_contact_manager
 BEAMS_DEBUG                     No
-BEAMS_MAXDELTADISSCALEFAC       -1   
-BEAMS_OCTREE                    none 
+BEAMS_MAXDELTADISSCALEFAC       -1
+BEAMS_OCTREE                    none
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.01
 BEAMS_BTSPH                     Yes

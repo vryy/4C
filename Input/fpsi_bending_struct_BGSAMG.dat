@@ -45,11 +45,11 @@ LIFTDRAG                        No
 LINEAR_SOLVER                   3
 MAXTIME                         1000
 MESHTYING                       no
-NONLINITER                      Newton 
+NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state 
+PREDICTOR                       steady_state
 RESTARTEVRY                     3
 SIMPLER                         no
 SIMPLER_SOLVER                  -1
@@ -73,8 +73,8 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls 
-STABTYPE                        residual_based 
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -85,23 +85,23 @@ CROSS-STRESS                    no_cross
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-STABTYPE                        residual_based 
+STABTYPE                        residual_based
 SUPG                            yes
-RSTAB                           rstab_gls 
+RSTAB                           rstab_gls
 TDS                             quasistatic
 TRANSIENT                       no_transient
-VSTAB                           no_vstab 
+VSTAB                           no_vstab
 GRAD_DIV                        yes
 CHARELELENGTH_PC                volume_equivalent_diameter
 CHARELELENGTH_U                 streamlength
 -------------------------------------------------------FPSI DYNAMIC
 CONVTOL                         1e-10
 COUPALGO                        fpsi_monolithic_plain
-PARTITIONED                     monolithic 
+PARTITIONED                     monolithic
 ITEMAX                          100
 NUMSTEP                         4
 RESTARTEVRY                     3
-SHAPEDERIVATIVES                Yes 
+SHAPEDERIVATIVES                Yes
 USESHAPEDERIVATIVES             Yes
 TIMESTEP                        0.01
 RESULTSEVRY                           1
@@ -114,7 +114,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFINC               And
 RESTOL                          1.0e-10 1.0e-8
 INCTOL                          1.0e-10 1.0e-8
-LineSearch                      No  
+LineSearch                      No
 FDCheck                         No
 FDCheck_row                     -1
 FDCheck_column                  -1
@@ -151,7 +151,7 @@ RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
-SOLVER                         Belos 
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         AMGnxn
 AZSUB                          300
@@ -163,7 +163,7 @@ NAME                           FPSI_Solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                fpsi_bending_struct_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                         Belos 
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -172,7 +172,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
-SOLVER                         Belos 
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -181,7 +181,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 4
-SOLVER                         Belos 
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -192,7 +192,7 @@ ML_SMOOTHERCOARSE               GS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
-NLNSOL                          fullnewton 
+NLNSOL                          fullnewton
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.9
@@ -3156,15 +3156,15 @@ NODE    4204 DSURFACE 16
 NODE    4225 DSURFACE 16
 NODE    4246 DSURFACE 16
 // whole fluid interface \y- nodes
-NODE    1 DSURFACE 17 
-NODE    4 DSURFACE 17 
+NODE    1 DSURFACE 17
+NODE    4 DSURFACE 17
 NODE    5 DSURFACE 17
 NODE    8 DSURFACE 17
-NODE    22 DSURFACE 17 
+NODE    22 DSURFACE 17
 NODE    24 DSURFACE 17
-NODE    32 DSURFACE 17 
+NODE    32 DSURFACE 17
 NODE    34 DSURFACE 17
-NODE    42 DSURFACE 17 
+NODE    42 DSURFACE 17
 NODE    44 DSURFACE 17
 NODE    51 DSURFACE 17
 NODE    54 DSURFACE 17
@@ -3211,15 +3211,15 @@ NODE    254 DSURFACE 17
 NODE    262 DSURFACE 17
 NODE    267 DSURFACE 17
 NODE    272 DSURFACE 17
-NODE    17 DSURFACE 17 
-NODE    18 DSURFACE 17 
+NODE    17 DSURFACE 17
+NODE    18 DSURFACE 17
 NODE    19 DSURFACE 17
 NODE    20 DSURFACE 17
-NODE    29 DSURFACE 17 
+NODE    29 DSURFACE 17
 NODE    30 DSURFACE 17
-NODE    39 DSURFACE 17 
+NODE    39 DSURFACE 17
 NODE    40 DSURFACE 17
-NODE    49 DSURFACE 17 
+NODE    49 DSURFACE 17
 NODE    50 DSURFACE 17
 NODE    59 DSURFACE 17
 NODE    60 DSURFACE 17
@@ -3292,10 +3292,10 @@ NODE    273 DSURFACE 17
 NODE    274 DSURFACE 17
 NODE    275 DSURFACE 17
 // channel interface \ y- nodes
-NODE    2901 DSURFACE 18 
+NODE    2901 DSURFACE 18
 NODE    2902 DSURFACE 18
 NODE    2903 DSURFACE 18
-NODE    2904 DSURFACE 18 
+NODE    2904 DSURFACE 18
 NODE    2909 DSURFACE 18
 NODE    2910 DSURFACE 18
 NODE    2913 DSURFACE 18
@@ -3315,7 +3315,7 @@ NODE    2938 DSURFACE 18
 NODE    2941 DSURFACE 18
 NODE    2942 DSURFACE 18
 NODE    2985 DSURFACE 18
-NODE    2986 DSURFACE 18 
+NODE    2986 DSURFACE 18
 NODE    2989 DSURFACE 18
 NODE    2991 DSURFACE 18
 NODE    2993 DSURFACE 18
@@ -3326,7 +3326,7 @@ NODE    3001 DSURFACE 18
 NODE    3003 DSURFACE 18
 NODE    3005 DSURFACE 18
 NODE    3027 DSURFACE 18
-NODE    3028 DSURFACE 18 
+NODE    3028 DSURFACE 18
 NODE    3031 DSURFACE 18
 NODE    3033 DSURFACE 18
 NODE    3035 DSURFACE 18
@@ -3337,7 +3337,7 @@ NODE    3043 DSURFACE 18
 NODE    3045 DSURFACE 18
 NODE    3047 DSURFACE 18
 NODE    3069 DSURFACE 18
-NODE    3070 DSURFACE 18 
+NODE    3070 DSURFACE 18
 NODE    3073 DSURFACE 18
 NODE    3075 DSURFACE 18
 NODE    3077 DSURFACE 18
@@ -3347,10 +3347,10 @@ NODE    3083 DSURFACE 18
 NODE    3085 DSURFACE 18
 NODE    3087 DSURFACE 18
 NODE    3089 DSURFACE 18
-NODE    2796 DSURFACE 18 
+NODE    2796 DSURFACE 18
 NODE    2797 DSURFACE 18
 NODE    2798 DSURFACE 18
-NODE    2799 DSURFACE 18 
+NODE    2799 DSURFACE 18
 NODE    2800 DSURFACE 18
 NODE    2801 DSURFACE 18
 NODE    2802 DSURFACE 18
@@ -3370,7 +3370,7 @@ NODE    2815 DSURFACE 18
 NODE    2816 DSURFACE 18
 NODE    2817 DSURFACE 18
 NODE    2838 DSURFACE 18
-NODE    2839 DSURFACE 18 
+NODE    2839 DSURFACE 18
 NODE    2840 DSURFACE 18
 NODE    2841 DSURFACE 18
 NODE    2842 DSURFACE 18
@@ -3381,7 +3381,7 @@ NODE    2846 DSURFACE 18
 NODE    2847 DSURFACE 18
 NODE    2848 DSURFACE 18
 NODE    2859 DSURFACE 18
-NODE    2860 DSURFACE 18 
+NODE    2860 DSURFACE 18
 NODE    2861 DSURFACE 18
 NODE    2862 DSURFACE 18
 NODE    2863 DSURFACE 18
@@ -3392,7 +3392,7 @@ NODE    2867 DSURFACE 18
 NODE    2868 DSURFACE 18
 NODE    2869 DSURFACE 18
 NODE    2880 DSURFACE 18
-NODE    2881 DSURFACE 18 
+NODE    2881 DSURFACE 18
 NODE    2882 DSURFACE 18
 NODE    2883 DSURFACE 18
 NODE    2884 DSURFACE 18

@@ -61,7 +61,7 @@ REGULARIZATION_STIFFNESS        1e-1
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         undefined
-SEARCH_ALGORITHM                Binarytree 
+SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    10000
 INTTYPE                         Elements_BS
 NUMGP_PER_DIM                   2
@@ -101,7 +101,7 @@ ITEMAX                          200
 ITEMIN                          1
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes
-COUPALGO                        ehl_Monolithic 
+COUPALGO                        ehl_Monolithic
 DRY_CONTACT_MODEL               yes
 -----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
 CONVTOL                         1e10

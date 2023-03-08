@@ -21,7 +21,7 @@ MAXTIME                         2.0
 NUMSTEP                         20
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      One_Step_Theta 
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELOCITYFIELD                   zero
 CALCFLUX_DOMAIN                 total

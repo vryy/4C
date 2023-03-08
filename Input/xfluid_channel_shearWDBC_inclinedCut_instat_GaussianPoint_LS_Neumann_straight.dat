@@ -34,7 +34,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    field_by_function             
+INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
@@ -46,7 +46,7 @@ NUMSTEP                         8
 NUMSTASTEPS                     1
 MAXTIME                         1000.0
 TIMESTEP                        0.1
-THETA                           0.5                           
+THETA                           0.5
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -60,13 +60,13 @@ TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                        yes                           
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -78,10 +78,10 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
+COUPLING_METHOD                 Nitsche
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

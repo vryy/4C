@@ -41,7 +41,7 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     200
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         100
 MAXTIME                         100.0

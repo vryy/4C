@@ -28,15 +28,15 @@ Outer Iteration StatusTest      = No
 THETA                           1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos                     
-AZREUSE                         1                             
-AZTOL                           1.0E-6                        
-AZSUB                           100                           
-ML_MAXCOARSESIZE                1                             
-ML_MAXLEVEL                     2                             
-ML_PROLONG_SMO                  1.33                          
-ML_PROLONG_THRES                0.0                           
-ML_SMOTIMES                     2 1                           
+SOLVER                          Belos
+AZREUSE                         1
+AZTOL                           1.0E-6
+AZSUB                           100
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     2
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOTIMES                     2 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1

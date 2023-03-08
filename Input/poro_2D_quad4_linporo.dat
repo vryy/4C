@@ -21,7 +21,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta                
+TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 -------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -30,10 +30,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes                           
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls                     
-STABTYPE                        residual_based                
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -55,7 +55,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic               
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -86,11 +86,11 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta                  
+DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP

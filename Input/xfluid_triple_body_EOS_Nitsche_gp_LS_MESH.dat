@@ -57,7 +57,7 @@ TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -67,12 +67,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
@@ -87,12 +87,12 @@ MAX_NUM_DOFSETS                 4
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                    24.40282794                   
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    vol_equivalent                
-CONV_STAB_SCALING               abs_inflow                    
+NIT_STAB_FAC                    24.40282794
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
+CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

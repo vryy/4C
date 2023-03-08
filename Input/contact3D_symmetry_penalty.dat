@@ -34,7 +34,7 @@ LINEAR_SOLVER 1
 DYNAMICTYP   Statics
 RESULTSEVRY  2
 RESTARTEVRY  0
-NLNSOL       fullnewton 
+NLNSOL       fullnewton
 TIMESTEP     0.5
 NUMSTEP      2
 MAXTIME      1.0

@@ -36,7 +36,7 @@ OUTPUT_GMSH                     No
 OUTPUTSCALARS                   entire_domain
 CALCERROR                       No
 CONVFORM                        conservative
-WRITEFLUX_IDS                   1 2 
+WRITEFLUX_IDS                   1 2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ITEMAX                          2

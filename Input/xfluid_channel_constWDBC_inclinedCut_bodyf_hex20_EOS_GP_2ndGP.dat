@@ -43,7 +43,7 @@ NUMSTEP                         1
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        1.0
-THETA                           1.0                           
+THETA                           1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -57,7 +57,7 @@ TOL_PRES_RES	  1.0E-12
 TOL_PRES_INC	  1.0E-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -67,12 +67,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         none                          
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
-EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf  
+EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    no
@@ -82,19 +82,19 @@ GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
-NIT_STAB_FAC                    30.0                          
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  
-VISC_STAB_HK                    ele_vol_div_by_max_ele_surf   
-CONV_STAB_SCALING               abs_inflow                    
+COUPLING_METHOD                 Nitsche
+NIT_STAB_FAC                    30.0
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
+CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           1.0
 GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
-GHOST_PENALTY_FAC               0.05                          
+GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

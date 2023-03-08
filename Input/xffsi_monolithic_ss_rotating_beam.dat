@@ -21,7 +21,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    zero_field                    
+INITIALFIELD                    zero_field
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -32,7 +32,7 @@ RESTARTEVRY                     5
 SIMPLER                         no
 STEADYSTEP                      -1
 THETA                           1
-TIMEINTEGR                      One_Step_Theta                
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
@@ -42,28 +42,28 @@ TOL_VEL_INC	  1e-8
 TOL_PRES_RES	  1e-8
 TOL_PRES_INC	  1e-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                    
+STABTYPE                        edge_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no                            
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       
-EOS_CONV_STREAM                 std_eos                       
-EOS_CONV_CROSS                  none                          
-EOS_DIV                         vel_jump_std_eos              
+EOS_PRES                        std_eos
+EOS_CONV_STREAM                 std_eos
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
-NLNSOL                          fullnewton                    
+NLNSOL                          fullnewton
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
@@ -93,7 +93,7 @@ RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          
+LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          40
 CONVTOL                         1.0E-8
 PRECONDREUSE                    0
@@ -109,9 +109,9 @@ GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       
+COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                    21.97015825                   
+NIT_STAB_FAC                    21.97015825
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
