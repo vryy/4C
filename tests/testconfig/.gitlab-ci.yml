@@ -116,7 +116,12 @@ variables:
     | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler
     " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
   after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
+    # sort output of pipeline
+  - cd ../baci-build
+  - 'python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py `ctest -N  | grep
+    -Po "(?<=Total Tests: )[0-9]*"` ../buildtest_full.log ../buildtest_full.log'
+  - cd -
+      # Write selection of the output into the terminal and therefore to GITLAB
     # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_full.log
