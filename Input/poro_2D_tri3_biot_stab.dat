@@ -23,7 +23,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           1.0
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -32,10 +32,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -43,7 +43,7 @@ VSTAB                           no_vstab
 STAB_BIOT                       yes
 STAB_BIOT_SCALING               5.0
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -75,11 +75,11 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP

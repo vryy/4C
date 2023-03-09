@@ -2,10 +2,10 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-Simulation of multi-scale contact of two blocks using 
+Simulation of multi-scale contact of two blocks using
 coefficients found by the BEM model using the first correction
 method, but Young modulus equal to one and a rational function
-as a fit, with y=a/(x-b)+a/b with a = -0.02188, b = 3.854. 
+as a fit, with y=a/(x-b)+a/b with a = -0.02188, b = 3.854.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    200
 //NODES       242
@@ -32,7 +32,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        1
 NUMSTEP                         1
 MAXTIME                         1

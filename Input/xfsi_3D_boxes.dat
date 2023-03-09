@@ -2,7 +2,7 @@
 //
 // Fluid domain defined by a box geometry with rotated solid also
 // defined by a box geometry inside
-// compressible structure, solved monolithically via XFEM, 
+// compressible structure, solved monolithically via XFEM,
 // tests the general monolithic process, uses cln in the cut library
 // REMARK: Due to the coarse mesh, the solution does not seem very physical
 // --> You can increase the INTERVAL of the box domains to get real physics
@@ -71,7 +71,7 @@ SOLVER                          Superlu
 NAME                            Fluid_Solver
 SOLVER                          Superlu
 ----------------------------------------------------------------XFEM GENERAL
-VOLUME_GAUSS_POINTS_BY          DirectDivergence              //Tessellation //DirectDivergence
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 ------------------------------------------------------------------CUT GENERAL

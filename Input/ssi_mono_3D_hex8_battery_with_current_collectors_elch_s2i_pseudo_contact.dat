@@ -143,23 +143,23 @@ DSURF  1
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   3
-// anode_cc 
+// anode_cc
 E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0
-// electrolyte 
+// electrolyte
 E 3 - NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0
-// cathode_cc 
+// cathode_cc
 E 5 - NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   5
-// anode_cc 
+// anode_cc
 E 1 - ScaTra 5
-// anode 
+// anode
 E 2 - ScaTra 1
-// electrolyte 
+// electrolyte
 E 3 - ScaTra 2
-// cathode 
+// cathode
 E 4 - ScaTra 3
-// cathode_cc 
+// cathode_cc
 E 5 - ScaTra 4
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  9
@@ -183,15 +183,15 @@ E 9 - 3 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e
 E 10 - 4 Master
 -----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
 DVOL   3
-// anode 
+// anode
 E 2 - ID 0
-// electrolyte 
+// electrolyte
 E 3 - ID 1
-// cathode 
+// cathode
 E 4 - ID 2
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   1
-// cathode 
+// cathode
 E 4 - ID 0 c_0% 43196.78 c_100% 24362.37 one_hour 3600000
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2

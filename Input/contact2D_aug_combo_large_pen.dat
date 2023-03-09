@@ -105,7 +105,7 @@ Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos // Belos // UMFPACK
+SOLVER                          Belos
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZGRAPH                         0

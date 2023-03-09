@@ -24,8 +24,8 @@ RESTART                         0
 RESULTSEVRY                     1
 RESTARTEVRY                     -1
 NUMSTEP                         7
-MAXTIME                         12600		
-TIMESTEP                        1800		
+MAXTIME                         12600
+TIMESTEP                        1800
 COUPALGO                        twoway_monolithic
 ITEMAX                          20
 ----------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC

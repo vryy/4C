@@ -71,7 +71,7 @@ WEARTYPE                        primvar
 WEARTIMINT                      impl
 WEAR_SIDE                       slave
 WEARCOEFF                       0.003
-WEAR_COUPALGO                   iterstagg // change this to iterstagg!!
+WEAR_COUPALGO                   iterstagg
 WEAR_SHAPEFCN                   dual
 WEARCOEFF_CONF                  mat
 --------------------------------------------------------CLONING MATERIAL MAP

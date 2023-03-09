@@ -74,7 +74,7 @@ BEAMS_PENREGPARAM_G0            0.005
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
 // needed for beam_contact_manager only
-BEAMS_DEBUG                     No //Yes
+BEAMS_DEBUG                     No
 BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes

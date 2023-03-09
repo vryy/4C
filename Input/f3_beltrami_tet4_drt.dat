@@ -21,7 +21,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      Af_Gen_Alpha   //Np_Gen_Alpha //BDF2                          // identical results with: Np_Gen_Alpha
+TIMEINTEGR                      Af_Gen_Alpha
 RESULTSEVRY                           1
 RESTARTEVRY                     2
 MAXTIME                         0.1
@@ -31,8 +31,8 @@ THETA                           0.80
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-NUMSTASTEPS                     1 //0
-START_THETA                     1.0 //0.80
+NUMSTASTEPS                     1
+START_THETA                     1.0
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 STARTFUNCNO                     8

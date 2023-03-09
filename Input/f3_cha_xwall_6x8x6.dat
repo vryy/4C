@@ -79,7 +79,7 @@ GP_Wall_Normal_Off_Wall         10
 GP_Wall_Parallel                2
 ------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            UMFPACK//Belos
+SOLVER            UMFPACK
 AZOUTPUT          0
 AZSOLVE           GMRES
 AZPREC            ILU

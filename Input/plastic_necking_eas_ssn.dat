@@ -44,7 +44,7 @@ NORMCOMBI_DISPPRES              Or
 MAXITER                         30
 MINITER                         2
 NLNSOL                          fullnewton
-PREDICT                         ConstVel // TangDis
+PREDICT                         ConstVel
 INT_STRATEGY                    Standard
 -------------------------------------STRUCT NOX/Printing
 Inner Iteration = no

@@ -53,7 +53,7 @@ UZAWAALGO                       direct
 NLNSOL                          newtonlinuzawa
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-RHO_INF                         0.5//0.8
+RHO_INF                         0.5
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 --------------------------------------------------------------------SOLVER 1

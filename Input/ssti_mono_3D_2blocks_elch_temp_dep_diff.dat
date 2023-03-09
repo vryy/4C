@@ -127,7 +127,7 @@ E 1 - NUMDOF 2 ONOFF 1 1 VAL 10.0 0.0 FUNCT 0 0
 E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
-// electrolyte 
+// electrolyte
 E 2 - NUMDOF 2 ONOFF 1 0 VAL 1.0e1 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL   1
@@ -135,9 +135,9 @@ DVOL   1
 E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-// electrode 
+// electrode
 E 1 - ScaTra 1
-// electrolyte 
+// electrolyte
 E 2 - ScaTra 2
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1

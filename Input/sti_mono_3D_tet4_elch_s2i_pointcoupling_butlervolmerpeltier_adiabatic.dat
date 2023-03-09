@@ -61,9 +61,9 @@ MAT 6 MAT_soret CAPA 1050 CONDUCT 5 SORET 1.
 MAT 7 MAT_soret CAPA 840 CONDUCT 5 SORET 1.
 MAT 8 MAT_soret CAPA 1750 CONDUCT 5 SORET 1.
 -----------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 6 // anode
-SRC_FIELD scatra SRC_MAT 2 TAR_FIELD thermo TAR_MAT 7 // electrolyte
-SRC_FIELD scatra SRC_MAT 3 TAR_FIELD thermo TAR_MAT 8 // cathode
+SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 6
+SRC_FIELD scatra SRC_MAT 2 TAR_FIELD thermo TAR_MAT 7
+SRC_FIELD scatra SRC_MAT 3 TAR_FIELD thermo TAR_MAT 8
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.88              // initial concentration in anode
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0                // initial electric potential in anode

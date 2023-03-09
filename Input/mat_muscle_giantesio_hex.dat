@@ -1,9 +1,9 @@
 -----------------------------------------------------------------------TITLE
 Testcase for testing muscle_giantesio material (passive and active material behaviour)
 
-The setup of the test-case are 2 cubes, 1 for testing the passive (cube 1), and 1 for testing the active material response (cube 2). 
+The setup of the test-case are 2 cubes, 1 for testing the passive (cube 1), and 1 for testing the active material response (cube 2).
 
-Fibers are aligned in z-direction. 
+Fibers are aligned in z-direction.
 
 Boundary conditions:
     Cube 1: uniaxial compression/extension
@@ -111,21 +111,21 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.005 0.006 0.015
 DPOINT		16
 // Dirichlet conditions for cube 1 (passive material behaviour, uniaxial extension constraints)
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(0 0 1)
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 0 0) 
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 1 0) 
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 0 0)
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(0 1 0)
 E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(0 1 1)
 E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(1 0 1)
-E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 0 0) 
+E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 0 0)
 E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(1 1 0)
 E 8 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1 // node(1 1 1)
 
 // Dirichlet conditions for cube 2 (active material behaviour, no constraints in z-direction on top surface)
 E 9  - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 1)
-E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 0) 
-E 11 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 0) 
+E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 0 0)
+E 11 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 0)
 E 12 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(2 1 1)
 E 13 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 1)
-E 14 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 0) 
+E 14 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 0 0)
 E 15 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 1 0)
 E 16 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // node(3 1 1)
 ------------------------------------------------DNODE-NODE TOPOLOGY

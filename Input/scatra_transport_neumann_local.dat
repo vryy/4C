@@ -40,7 +40,7 @@ THERM_TEMPGRAD                  None
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM                        conservative //convective
+CONVFORM                        conservative
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -94,7 +94,7 @@ AZSUB                           300
 AZTOL                           1e-08
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
+IFPACKCOMBINE                   Add
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1

@@ -46,13 +46,13 @@ EVALUATION_MAT                  integration_point
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.5
 ALE_TYPE                        solid
-LINEAR_SOLVER                   1 // dummy
+LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
 TIMESTEP                        0.5
-LINEAR_SOLVER                   1 // dummy
+LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------------FSI DYNAMIC
@@ -63,9 +63,9 @@ RESULTSEVRY                     1
 COUPALGO                        iter_xfem_monolithic
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          5
-INFNORMSCALING                  No                            //is used by xfsi!!!
-NORM_INC                        Rel                           // Abs // Mix
-NORM_RESF                       Rel                           // Abs // Mix
+INFNORMSCALING                  No
+NORM_INC                        Rel
+NORM_RESF                       Rel
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11
@@ -84,7 +84,7 @@ TOL_VEL_RES_INF                 1e-11
 TOL_VEL_RES_L2                  1e-11
 ---------------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Incompressible
-LINEAR_SOLVER                   1 // dummy
+LINEAR_SOLVER                   1
 GRIDVEL                         OST
 LIFTDRAG                        Yes
 NONLINITER                      Newton
@@ -111,7 +111,7 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ALE_XFluid                      Yes
-XFLUID_TIMEINT                  STD=COPY_and_GHOST=COPY/GP//STD=COPY/SL_and_GHOST=COPY/GP//STD=SL(boundary-zone)_and_GHOST=GP
+XFLUID_TIMEINT                  STD=COPY_and_GHOST=COPY/GP
 XFLUID_TIMEINT_CHECK_INTERFACETIPS No
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
@@ -123,9 +123,9 @@ VISC_STAB_HK                    ele_vol_div_by_cut_surf
 IS_PSEUDO_2D                    yes
 CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.1                          // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.1
 GHOST_PENALTY_TRANSIENT_STAB    yes
-GHOST_PENALTY_TRANSIENT_FAC     0.001                         // in [0.001;0.005]
+GHOST_PENALTY_TRANSIENT_FAC     0.001
 GHOST_PENALTY_2nd_STAB          yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1 GAMMA 5.0

@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES       1730
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Thermo_Structure_Interaction // Structure
+PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -34,7 +34,7 @@ TOLDISP                         1.0e-8
 TOLRES                          1.0e4
 NORMCOMBI_DISPPRES              And
 MAXITER                         30
-DIVERCONT                       stop // continue
+DIVERCONT                       stop
 MINITER                         1
 NLNSOL                          fullnewton
 PREDICT                         TangDis
@@ -52,7 +52,7 @@ RHO_INF              1.0
 ----------------------------------------------------THERMAL DYNAMIC
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
-INITIALFIELD                    zero_field // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    zero_field
 INITFUNCNO                      1
 ITERNORM                        L2
 MAXITER                         50
@@ -63,7 +63,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
-PREDICT                         ConstTemp // ConstTempRate //              ConstTemp
+PREDICT                         ConstTemp
 TIMESTEP                        200
 TOLRES                          1e-00
 TOLTEMP                         1e-08
@@ -74,19 +74,19 @@ RHO_INF                         1.0
 MAXTIME                         51
 NUMSTEP                         20
 RESTARTEVRY                     1
-TIMESTEP                        0.1 // 0.02 // 0.02 // 0.5e-1
+TIMESTEP                        0.1
 RESULTSEVRY                     1
 ITEMAX                          30
 COUPALGO                        tsi_monolithic
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-8
 TOLINC                          1e-8
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+ITERNORM                        Rms
 LINEAR_SOLVER                   2
-NORMCOMBI_RESFINC               And    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Abs                // Abs,Mix
-MERGE_TSI_BLOCK_MATRIX          yes // no
-PTCDT                           1 // --> negative values trigger condition number calculation
+NORMCOMBI_RESFINC               And
+NORM_RESF                       Abs
+MERGE_TSI_BLOCK_MATRIX          yes
+PTCDT                           1
 // TSI_LINE_SEARCH                 structure
 -------------------------------------------------------------CONTACT DYNAMIC
 FRICTION                        Coulomb
@@ -101,13 +101,13 @@ NITSCHE_PENALTY_ADAPTIVE    no
 CONSTRAINT_DIRECTIONS       xyz
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
-INTTYPE              Segments // Elements // Segments
+INTTYPE              Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        1
 LM_SHAPEFCN          dual
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3e2
-LM_DUAL_CONSISTENT   none //  all
+LM_DUAL_CONSISTENT   none
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST      none
 ---------------------------------------------------------TSI CONTACT
@@ -116,19 +116,19 @@ HEATTRANSMASTER      0
 TEMP_REF             0
 TEMP_DAMAGE          1
 NITSCHE_THETA_TSI               0.0
-NITSCHE_WEIGHTING_TSI           harmonic // slave // harmonic
-NITSCHE_PENALTY_ADAPTIVE_TSI    no // yes
+NITSCHE_WEIGHTING_TSI           harmonic
+NITSCHE_PENALTY_ADAPTIVE_TSI    no
 PENALTYPARAM_THERMO             1e-5
-NITSCHE_METHOD_TSI             substitution //   nitsche // nitsche // substitution //
+NITSCHE_METHOD_TSI             substitution
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER               Belos // Superlu
+SOLVER               Belos
 AZSOLVE              GMRES
-AZPREC               MLFLUID2 // ILU
+AZPREC               MLFLUID2
 IFPACKGFILL          6
 AZOUTPUT             0
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          Superlu // Belos
+SOLVER                          Superlu
 AZSOLVE                         GMRES
 AZPREC                          BGS2x2
 AZOUTPUT                        0

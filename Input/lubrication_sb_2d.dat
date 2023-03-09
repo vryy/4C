@@ -4,7 +4,7 @@
 -------------------------------------------------------------TITLE
 Testing pure_lubrication framework:
 Slider bearing problem with constant relative motion
-Reference: B. J. Hamrock. Fundamentals of fluid film lubrication. CRC Press, 2004 
+Reference: B. J. Hamrock. Fundamentals of fluid film lubrication. CRC Press, 2004
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
 //NODES       18

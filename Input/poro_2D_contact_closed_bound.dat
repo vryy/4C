@@ -36,7 +36,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta //One_Step_Theta Statics
+DYNAMICTYP                      OneStepTheta
 DAMPING                         Material
 PREDICT                         ConstVel
 LINEAR_SOLVER                   1
@@ -54,7 +54,7 @@ MESH_RELOCATION                 Initial
 INTTYPE                         Segments
 NUMGP_PER_DIM                   0
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 none//dynamic//Static
+PARALLEL_REDIST                 none
 MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 GHOSTING_STRATEGY               redundant_master
@@ -62,7 +62,7 @@ GHOSTING_STRATEGY               redundant_master
 LINEAR_SOLVER                   2
 RESTART_WITH_CONTACT            No
 ADHESION                        None
-FRICTION                        None//Coulomb
+FRICTION                        None
 FRLESS_FIRST                    No
 GP_SLIP_INCR                    No
 STRATEGY                        LagrangianMultipliers
@@ -105,7 +105,7 @@ LINEAR_SOLVER                   2
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 SIMPLER_SOLVER                  -1
-TIMEINTEGR                      One_Step_Theta // One_Step_Theta
+TIMEINTEGR                      One_Step_Theta
 NONLINITER                      fixed_point_like
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm

@@ -35,11 +35,11 @@ ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 GAMMA                           0.666666
 CONVCHECK                       L_2_norm
-CONVFORM convective //conservative
+CONVFORM convective
 GRIDVEL                         BE
 ITEMAX                          1
 MAXTIME                         2.0
-NONLINITER Newton //fixed_point_like
+NONLINITER Newton
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
@@ -56,17 +56,17 @@ TOL_VEL_INC	  1e-06
 TOL_PRES_RES	  1e-06
 TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
+CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
-REYNOLDS-STRESS                 no_reynolds                     // Reynolds stress term not available in combust fluid
+REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
 SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
-VSTAB                           no_vstab                        // no viscous stabilization
-EVALUATION_TAU                  integration_point               // only evaluation at integration point available in combust fluid
+VSTAB                           no_vstab
+EVALUATION_TAU                  integration_point
 ----------------------------------FLUID DYNAMIC/TIMEADAPTIVITY
 CFL_NUMBER                      0.5
 FREEZE_ADAPTIVE_DT_AT           5

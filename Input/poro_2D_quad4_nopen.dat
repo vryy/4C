@@ -45,7 +45,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
@@ -81,7 +81,7 @@ VECTORNORM_INC                  L2
 PARALLEL_REDIST                 no
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta
 PREDICTOR                       steady_state
 CONVFORM                        convective
 GRIDVEL                         BE

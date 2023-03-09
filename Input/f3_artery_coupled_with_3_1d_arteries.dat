@@ -21,8 +21,8 @@ NUMARTNETDIS                    1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
-STRUCT_STRAIN                   ea                            // ea gl
+STRUCT_STRESS                   Cauchy
+STRUCT_STRAIN                   ea
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -40,18 +40,18 @@ LINEAR_SOLVER                   2
 LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-TIMEINTEGR                      Af_Gen_Alpha //BDF2
+TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         1000
-NUMSTASTEPS                     1 //0
-START_THETA                     1.0 //0.67
-ALPHA_F                         1.00 //BDF2
-ALPHA_M                         1.50 //BDF2
-GAMMA                           1.00 //BDF2
+NUMSTASTEPS                     1
+START_THETA                     1.0
+ALPHA_F                         1.00
+ALPHA_M                         1.50
+GAMMA                           1.00
 MAXTIME                         0.4
 TIMESTEP                        0.01
 THETA                           0.66

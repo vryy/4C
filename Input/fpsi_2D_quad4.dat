@@ -70,7 +70,7 @@ LOMA_CONTI_SUPG                 No
 LOMA_CONTI_CROSS_STRESS         no_cross
 LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 ----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
-STABTYPE                        residual_based//residual_based
+STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -126,13 +126,13 @@ MAXTIME                         5000
 CONVTOL                         1e-10
 ALPHABJ                         10
 -----------------------------------------------------------SOLVER 1
-SOLVER                         UMFPACK // UMFPACK Belos
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 2
-SOLVER                         UMFPACK // UMFPACK Belos
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 3
-SOLVER                         UMFPACK // UMFPACK Belos
+SOLVER                         UMFPACK
 -----------------------------------------------------------SOLVER 4
-SOLVER                         UMFPACK // UMFPACK Belos
+SOLVER                         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 6 POROLAWID 10 INITPOROSITY 0.9 //SPoro
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e4 PENALTYPARAMETER 0.0

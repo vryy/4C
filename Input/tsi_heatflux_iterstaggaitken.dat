@@ -32,12 +32,12 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRAIN                   GL // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Initial  // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Initial  // None,No,NO,no,Current,Initial
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   2PK
+STRUCT_COUPLING_STRESS          2PK
+THERM_HEATFLUX                  Initial
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -47,19 +47,19 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics  // GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
+DYNAMICTYP                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 LOADLIN                         no
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Mix  // Abs,Rel
+NORM_RESF                       Mix
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -70,15 +70,15 @@ TOLRES                          1e-04
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics  // OneStepTheta
-INITFUNCNO                      -1  // use FUNCT 1
-INITIALFIELD                    zero_field  // zero_field,field_by_function,field_by_condition
+DYNAMICTYP                      Statics
+INITFUNCNO                      -1
+INITIALFIELD                    zero_field
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton
+NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
@@ -92,18 +92,18 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_iterstagg_aitken  // tsi_{iterstagg,sequstagg,oneway,monolithic}
+COUPALGO                        tsi_iterstagg_aitken
 ITEMAX                          100
 MAXTIME                         5.0
 NUMSTEP                         2000
-NORM_INC                        Abs  // Rel
+NORM_INC                        Abs
 RESTARTEVRY                     1
 TIMESTEP                        1.0
 RESULTSEVRY                           1
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
-COUPVARIABLE                    Displacement  // Displacement,Temperature
-MAXOMEGA                        2  // 0.6; largest omega allowed for Aitken relaxation (0.0 means no constraint)
+COUPVARIABLE                    Displacement
+MAXOMEGA                        2
 --------------------------------------------------------------------SOLVER 1
 NAME                            THERMAL_SOLVER
 SOLVER                          UMFPACK
@@ -113,19 +113,19 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none  // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKCOMBINE                   Add
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -142,7 +142,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 0.0
 // CAPA = C_V* rho = 420* = 420
@@ -165,7 +165,7 @@ E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid // first 1 is loadcurve
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF                           1
 // left surface temperature

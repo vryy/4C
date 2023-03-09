@@ -81,110 +81,110 @@ NDLINE  104
 NDSURF  0
 ---------------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 104
-E 1 - ID 0   TYPE actin// arbitrary
-E 2 - ID 1   TYPE actin// arbitrary
-E 3 - ID 2   TYPE actin// arbitrary
-E 4 - ID 3   TYPE actin// arbitrary
-E 5 - ID 4   TYPE actin// arbitrary
-E 6 - ID 5   TYPE actin// arbitrary
-E 7 - ID 6   TYPE actin// arbitrary
-E 8 - ID 7   TYPE actin// arbitrary
-E 9 - ID 8   TYPE actin// arbitrary
-E 10 - ID 9  TYPE actin// arbitrary
-E 11 - ID 10 TYPE actin// arbitrary
-E 12 - ID 11 TYPE actin// arbitrary
-E 13 - ID 12 TYPE actin// arbitrary
-E 14 - ID 13 TYPE actin// arbitrary
-E 15 - ID 14 TYPE actin// arbitrary
-E 16 - ID 15 TYPE actin// arbitrary
-E 17 - ID 16 TYPE actin// arbitrary
-E 18 - ID 17 TYPE actin// arbitrary
-E 19 - ID 18 TYPE actin// arbitrary
-E 20 - ID 19 TYPE actin// arbitrary
-E 21 - ID 20 TYPE actin// arbitrary
-E 22 - ID 21 TYPE actin// arbitrary
-E 23 - ID 22 TYPE actin// arbitrary
-E 24 - ID 23 TYPE actin// arbitrary
-E 25 - ID 24 TYPE actin// arbitrary
-E 26 - ID 25 TYPE actin// arbitrary
-E 27 - ID 26 TYPE actin// arbitrary
-E 28 - ID 27 TYPE actin// arbitrary
-E 29 - ID 28 TYPE actin// arbitrary
-E 30 - ID 29 TYPE actin// arbitrary
-E 31 - ID 30 TYPE actin// arbitrary
-E 32 - ID 31 TYPE actin// arbitrary
-E 33 - ID 32 TYPE actin// arbitrary
-E 34 - ID 33 TYPE actin// arbitrary
-E 35 - ID 34 TYPE actin// arbitrary
-E 36 - ID 35 TYPE actin// arbitrary
-E 37 - ID 36 TYPE actin// arbitrary
-E 38 - ID 37 TYPE actin// arbitrary
-E 39 - ID 38 TYPE actin// arbitrary
-E 40 - ID 39 TYPE actin// arbitrary
-E 41 - ID 40 TYPE actin// arbitrary
-E 42 - ID 41 TYPE actin// arbitrary
-E 43 - ID 42 TYPE actin// arbitrary
-E 44 - ID 43 TYPE actin// arbitrary
-E 45 - ID 44 TYPE actin// arbitrary
-E 46 - ID 45 TYPE actin// arbitrary
-E 47 - ID 46 TYPE actin// arbitrary
-E 48 - ID 47 TYPE actin// arbitrary
-E 49 - ID 48 TYPE actin// arbitrary
-E 50 - ID 49 TYPE actin// arbitrary
-E 51 - ID 50 TYPE actin// arbitrary
-E 52 - ID 51 TYPE actin// arbitrary
-E 53 - ID 52 TYPE actin// arbitrary
-E 54 - ID 53 TYPE actin// arbitrary
-E 55 - ID 54 TYPE actin// arbitrary
-E 56 - ID 55 TYPE actin// arbitrary
-E 57 - ID 56 TYPE actin// arbitrary
-E 58 - ID 57 TYPE actin// arbitrary
-E 59 - ID 58 TYPE actin// arbitrary
-E 60 - ID 59 TYPE actin// arbitrary
-E 61 - ID 60 TYPE actin// arbitrary
-E 62 - ID 61 TYPE actin// arbitrary
-E 63 - ID 62 TYPE actin// arbitrary
-E 64 - ID 63 TYPE actin// arbitrary
-E 65 - ID 64 TYPE actin// arbitrary
-E 66 - ID 65 TYPE actin// arbitrary
-E 67 - ID 66 TYPE actin// arbitrary
-E 68 - ID 67 TYPE actin// arbitrary
-E 69 - ID 68 TYPE actin// arbitrary
-E 70 - ID 69 TYPE actin// arbitrary
-E 71 - ID 70 TYPE actin// arbitrary
-E 72 - ID 71 TYPE actin// arbitrary
-E 73 - ID 72 TYPE actin// arbitrary
-E 74 - ID 73 TYPE actin// arbitrary
-E 75 - ID 74 TYPE actin// arbitrary
-E 76 - ID 75 TYPE actin// arbitrary
-E 77 - ID 76 TYPE actin// arbitrary
-E 78 - ID 77 TYPE actin// arbitrary
-E 79 - ID 78 TYPE actin// arbitrary
-E 80 - ID 79 TYPE actin// arbitrary
-E 81 - ID 80 TYPE actin// arbitrary
-E 82 - ID 81 TYPE actin// arbitrary
-E 83 - ID 82 TYPE actin// arbitrary
-E 84 - ID 83 TYPE actin// arbitrary
-E 85 - ID 84 TYPE actin// arbitrary
-E 86 - ID 85 TYPE actin// arbitrary
-E 87 - ID 86 TYPE actin// arbitrary
-E 88 - ID 87 TYPE actin// arbitrary
-E 89 - ID 88 TYPE actin// arbitrary
-E 90 - ID 89 TYPE actin// arbitrary
-E 91 - ID 90 TYPE actin// arbitrary
-E 92 - ID 91 TYPE actin// arbitrary
-E 93 - ID 92 TYPE actin// arbitrary
-E 94 - ID 93 TYPE actin// arbitrary
-E 95 - ID 94 TYPE actin// arbitrary
-E 96 - ID 95 TYPE actin// arbitrary
-E 97 - ID 96 TYPE actin// arbitrary
-E 98 - ID 97 TYPE actin// arbitrary
-E 99 - ID 98 TYPE actin// arbitrary
-E 100 - ID 99 TYPE  actin// arbitrary
-E 101 - ID 100 TYPE actin// arbitrary
-E 102 - ID 101 TYPE actin// arbitrary
-E 103 - ID 102 TYPE actin// arbitrary
-E 104 - ID 103 TYPE actin// arbitrary
+E 1 - ID 0   TYPE actin
+E 2 - ID 1   TYPE actin
+E 3 - ID 2   TYPE actin
+E 4 - ID 3   TYPE actin
+E 5 - ID 4   TYPE actin
+E 6 - ID 5   TYPE actin
+E 7 - ID 6   TYPE actin
+E 8 - ID 7   TYPE actin
+E 9 - ID 8   TYPE actin
+E 10 - ID 9  TYPE actin
+E 11 - ID 10 TYPE actin
+E 12 - ID 11 TYPE actin
+E 13 - ID 12 TYPE actin
+E 14 - ID 13 TYPE actin
+E 15 - ID 14 TYPE actin
+E 16 - ID 15 TYPE actin
+E 17 - ID 16 TYPE actin
+E 18 - ID 17 TYPE actin
+E 19 - ID 18 TYPE actin
+E 20 - ID 19 TYPE actin
+E 21 - ID 20 TYPE actin
+E 22 - ID 21 TYPE actin
+E 23 - ID 22 TYPE actin
+E 24 - ID 23 TYPE actin
+E 25 - ID 24 TYPE actin
+E 26 - ID 25 TYPE actin
+E 27 - ID 26 TYPE actin
+E 28 - ID 27 TYPE actin
+E 29 - ID 28 TYPE actin
+E 30 - ID 29 TYPE actin
+E 31 - ID 30 TYPE actin
+E 32 - ID 31 TYPE actin
+E 33 - ID 32 TYPE actin
+E 34 - ID 33 TYPE actin
+E 35 - ID 34 TYPE actin
+E 36 - ID 35 TYPE actin
+E 37 - ID 36 TYPE actin
+E 38 - ID 37 TYPE actin
+E 39 - ID 38 TYPE actin
+E 40 - ID 39 TYPE actin
+E 41 - ID 40 TYPE actin
+E 42 - ID 41 TYPE actin
+E 43 - ID 42 TYPE actin
+E 44 - ID 43 TYPE actin
+E 45 - ID 44 TYPE actin
+E 46 - ID 45 TYPE actin
+E 47 - ID 46 TYPE actin
+E 48 - ID 47 TYPE actin
+E 49 - ID 48 TYPE actin
+E 50 - ID 49 TYPE actin
+E 51 - ID 50 TYPE actin
+E 52 - ID 51 TYPE actin
+E 53 - ID 52 TYPE actin
+E 54 - ID 53 TYPE actin
+E 55 - ID 54 TYPE actin
+E 56 - ID 55 TYPE actin
+E 57 - ID 56 TYPE actin
+E 58 - ID 57 TYPE actin
+E 59 - ID 58 TYPE actin
+E 60 - ID 59 TYPE actin
+E 61 - ID 60 TYPE actin
+E 62 - ID 61 TYPE actin
+E 63 - ID 62 TYPE actin
+E 64 - ID 63 TYPE actin
+E 65 - ID 64 TYPE actin
+E 66 - ID 65 TYPE actin
+E 67 - ID 66 TYPE actin
+E 68 - ID 67 TYPE actin
+E 69 - ID 68 TYPE actin
+E 70 - ID 69 TYPE actin
+E 71 - ID 70 TYPE actin
+E 72 - ID 71 TYPE actin
+E 73 - ID 72 TYPE actin
+E 74 - ID 73 TYPE actin
+E 75 - ID 74 TYPE actin
+E 76 - ID 75 TYPE actin
+E 77 - ID 76 TYPE actin
+E 78 - ID 77 TYPE actin
+E 79 - ID 78 TYPE actin
+E 80 - ID 79 TYPE actin
+E 81 - ID 80 TYPE actin
+E 82 - ID 81 TYPE actin
+E 83 - ID 82 TYPE actin
+E 84 - ID 83 TYPE actin
+E 85 - ID 84 TYPE actin
+E 86 - ID 85 TYPE actin
+E 87 - ID 86 TYPE actin
+E 88 - ID 87 TYPE actin
+E 89 - ID 88 TYPE actin
+E 90 - ID 89 TYPE actin
+E 91 - ID 90 TYPE actin
+E 92 - ID 91 TYPE actin
+E 93 - ID 92 TYPE actin
+E 94 - ID 93 TYPE actin
+E 95 - ID 94 TYPE actin
+E 96 - ID 95 TYPE actin
+E 97 - ID 96 TYPE actin
+E 98 - ID 97 TYPE actin
+E 99 - ID 98 TYPE actin
+E 100 - ID 99 TYPE  actin
+E 101 - ID 100 TYPE actin
+E 102 - ID 101 TYPE actin
+E 103 - ID 102 TYPE actin
+E 104 - ID 103 TYPE actin
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

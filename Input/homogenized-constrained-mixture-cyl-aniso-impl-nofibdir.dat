@@ -86,9 +86,9 @@ MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
 GEOMETRY                        full
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK //Belos
+SOLVER                          UMFPACK
 AZSOLVE                         GMRES
-AZPREC                          ILU //MLFLUID2
+AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
 IFPACKCOMBINE                   Add

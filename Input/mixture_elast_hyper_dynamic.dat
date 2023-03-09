@@ -1,11 +1,11 @@
 -----------------------------------------------------------------------TITLE
 Testcase for testing Mixture toolbox dynamics
 
-The setup of the test-case is 1 cube (HEX8). The cube is fixed on the bottom surface (z=0). 
-On the top surface (z=1), a surface force is applied in x-, y- and z-direction subsequently. 
+The setup of the test-case is 1 cube (HEX8). The cube is fixed on the bottom surface (z=0).
+On the top surface (z=1), a surface force is applied in x-, y- and z-direction subsequently.
 The same problem was used in the ElastHyper toolbox and for the mixture_elast_hyper.dat test
 with the exception that
-- we do a dynamic calculation instead of a static calculation and 
+- we do a dynamic calculation instead of a static calculation and
 - use only one cube instead of three cubes
 
 Tests:

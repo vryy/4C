@@ -26,7 +26,7 @@ STRUCT_STRESS                   Cauchy
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
 ------------------------------------------------SCALAR TRANSPORT DYNAMIC
-CONVFORM                        conservative //convective
+CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
@@ -64,7 +64,7 @@ SUGRVEL                         no
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //Statics
+DYNAMICTYP                      OneStepTheta
 MASSLIN                         Standard
 ITERNORM                        L2
 MAXITER                         100
@@ -105,8 +105,8 @@ SOLVER                          UMFPACK
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0
 
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
-MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
-MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0 //KAPPA 2.2116e6 BETA -2.0
+MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
+MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0
 
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 //MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3

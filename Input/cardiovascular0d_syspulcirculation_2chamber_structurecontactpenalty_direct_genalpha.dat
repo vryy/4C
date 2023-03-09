@@ -11,7 +11,7 @@ PENALTYPARAMTAN                 1.0e1
 SEMI_SMOOTH_CN                  1000
 SEMI_SMOOTH_CT                  1
 SEMI_SMOOTH_NEWTON              Yes
-STRATEGY                        Penalty//LagrangianMultipliers
+STRATEGY                        Penalty
 SYSTEM                          Condensed
 VELOCITY_UPDATE                 No
 NORMCOMBI_RESFCONTCONSTR        And
@@ -25,7 +25,7 @@ LM_DUAL_CONSISTENT              none
 NUMGP_PER_DIM                   5
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.1
-LM_SHAPEFCN                     std//dual
+LM_SHAPEFCN                     std
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0

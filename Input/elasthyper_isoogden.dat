@@ -7,7 +7,7 @@ Geometry and Elements:
 Material:
 - isotropic one-term Odgen material
 - To achieve incompressibility, a volumetric Ogden part is added to the deviatoric part.
-- Parameters are to be in the range of brain material suggested by: 
+- Parameters are to be in the range of brain material suggested by:
   S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of muscle reveals the causes of nonuniform strains in the biceps brachii', Journal of biomechanics, vol. 38, no. 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2005.05.009
 
 Boundary conditions:
@@ -98,12 +98,12 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0 0.2 //shear
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 //z minus
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 //z plus
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 //z minus
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 0 0 2 0 0 0 //z plus
-E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 //z minus
-E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0 //z plus
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 0 0 2 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0
 ------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 2
 NODE 2 DSURFACE 2

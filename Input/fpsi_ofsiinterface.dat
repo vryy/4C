@@ -166,7 +166,7 @@ LOMA_CONTI_SUPG                 No
 LOMA_CONTI_CROSS_STRESS         no_cross
 LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 ----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
-STABTYPE                        residual_based//residual_based
+STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient

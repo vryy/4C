@@ -9,7 +9,7 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 testing reinitialization by distance to interface
-Runs fine with serial revision 21886 (02.03.2016) //Magnus
+Runs fine with serial revision 21886 (02.03.2016)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS 2601
 //NODES    5408
@@ -49,7 +49,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no
 --------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-DEFINITION_TAU                  Taylor_Hughes_Zarins //Franca_Valentin
+DEFINITION_TAU                  Taylor_Hughes_Zarins
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
@@ -57,7 +57,7 @@ SUGRVEL                         no
 -------------------------------------------SOLVER 1
 SOLVER         UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra  DIFFUSIVITY 0.0 //1.0E-9
+MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 6.01753420282992724e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 50 QUANTITY phi VALUE 3.98183442359409723e-01 TOLERANCE 1e-9

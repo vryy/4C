@@ -21,23 +21,23 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes               // No
-STRUCT_DISP                     Yes                // Yes,No,yes,no,YES,NO
-STRUCT_VEL_ACC                  Yes                // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   No                 // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2pk             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          No             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Current            // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current            // None,No,NO,no,Current,Initial
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_VEL_ACC                  Yes
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   2pk
+STRUCT_COUPLING_STRESS          No
+THERM_HEATFLUX                  Current
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Current
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                  GenAlpha       //    Statics  //
+DYNAMICTYP                  GenAlpha
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
-NLNSOL                          fullnewton         // ptc,fullnewton
+NLNSOL                          fullnewton
 PREDICT                         TangDis
 MAXTIME                       8000
 MAXITER                       100
@@ -47,26 +47,26 @@ NUMSTEP                       1
 GENAVG                          TrLike
 RHO_INF                         1.0
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
+THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop               // continue
-DYNAMICTYP                      GenAlpha       // ExplicitEuler,Statics
-INITFUNCNO                      1                  // use FUNCT 1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
-ITERNORM                        L2                 // Rms
+DIVERCONT                       stop
+DYNAMICTYP                      GenAlpha
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
+ITERNORM                        L2
 LINEAR_SOLVER                   2
 LUMPCAPA                        no
 MAXITER                         50
 MAXTIME                         8.0
 MINITER                         0
-NLNSOL                          fullnewton         // vague,fullnewton
-NORMCOMBI_RESFTEMP              And                // Or
+NLNSOL                          fullnewton
+NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
-NORM_TEMP                       Abs                // Rel: relativ 10e-8, Mix: Minimum aus Rel oder Abs
+NORM_TEMP                       Abs
 NUMSTEP                         40000
-PREDICT                         ConstTemp           // ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
@@ -74,35 +74,35 @@ TIMESTEP                        0.05
 TOLRES                          1e-05
 TOLTEMP                         1e-07
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
+THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic     // tsi_{oneway,sequstagg,iterstagg,monolithic}
+COUPALGO                        tsi_monolithic
 ITEMAX                          200
 ITEMIN                          1
-MAXTIME                       8000 //   1200 //             // 8000
-NORM_INC                        Abs                // Abs,Rel
-NUMSTEP                         100000              // 400,800
+MAXTIME                       8000
+NORM_INC                        Abs
+NUMSTEP                         100000
 RESTARTEVRY                     10
 TIMESTEP                        80
-RESULTSEVRY                           10                  // 5
+RESULTSEVRY                           10
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-05
 TOLINC                          1e-02
-CALC_NECKING_TSI_VALUES         No                 // Yes,No
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+CALC_NECKING_TSI_VALUES         No
+ITERNORM                        Rms
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Rel                // Abs,Mix
+NORMCOMBI_RESFINC               And_Singl
+NORM_RESF                       Rel
 MERGE_TSI_BLOCK_MATRIX          yes
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
-SOLVER                  Superlu //        Belos          // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                  Superlu
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1

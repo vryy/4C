@@ -43,11 +43,11 @@ ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 GAMMA                           0.666666
 CONVCHECK                       L_2_norm
-CONVFORM convective //conservative
+CONVFORM convective
 GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
-NONLINITER Newton //fixed_point_like
+NONLINITER Newton
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
@@ -58,7 +58,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
 RESULTSEVRY                           8
 MESHTYING                       no
-INITIALFIELD                    BELTRAMI-FLOW                   // INITIALFIELD field_by_function with INITFUNCNO 1 would do the same
+INITIALFIELD                    BELTRAMI-FLOW
 GEOMETRY      box
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-06
@@ -66,18 +66,18 @@ TOL_VEL_INC	  1e-06
 TOL_PRES_RES	  1e-06
 TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
+CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
-REYNOLDS-STRESS                 no_reynolds                     // Reynolds stress term not available in combust fluid
+REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
 SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
-VSTAB                           no_vstab                        // no viscous stabilization
+VSTAB                           no_vstab
 EVALUATION_TAU                  integration_point
-EVALUATION_MAT                  integration_point               // only evaluation at integration point available in TPF with smoothing
+EVALUATION_MAT                  integration_point
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -104,7 +104,7 @@ CONVTOL                         1e-5
 ITEMAX                          20
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-EXPLPREDICT   no //sonst Probleme
+EXPLPREDICT   no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
@@ -118,8 +118,8 @@ SOLVER                          UMFPACK
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 //MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
-MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // plus side
-MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // minus side
+MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------FUNCT1

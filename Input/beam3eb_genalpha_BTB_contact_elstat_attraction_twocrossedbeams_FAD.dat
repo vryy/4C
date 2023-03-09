@@ -39,7 +39,7 @@ NLNSOL                          fullnewton
 TIMESTEP                        1.0e-4
 NUMSTEP                         40
 MAXTIME                         4.0e-3
-DAMPING                         Material   // Todo
+DAMPING                         Material
 PREDICT                         ConstDis
 TOLRES                          1.0e-10
 TOLDISP                         1.0e-12
@@ -78,8 +78,8 @@ BEAMS_PENREGPARAM_C0            0.0
 
 // only needed for old beam_contact_manager
 BEAMS_DEBUG                     No
-BEAMS_MAXDELTADISSCALEFAC       -1   //10000
-BEAMS_OCTREE                    none //octree_spherical
+BEAMS_MAXDELTADISSCALEFAC       -1
+BEAMS_OCTREE                    none
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.01
 -----------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS
