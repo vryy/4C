@@ -12,16 +12,8 @@
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
 
-#ifndef CHANGEDDATE
-#define CHANGEDDATE "unknown"
-#endif
-
 #ifndef DEBUG
 #cmakedefine DEBUG
-#endif
-
-#ifndef BINIO
-#cmakedefine BINIO
 #endif
 
 #ifndef COLOROUTPUT
@@ -34,8 +26,4 @@
 
 #ifndef TRAP_FE
 #cmakedefine TRAP_FE
-#endif
-
-#ifndef THROWELEMENTERRORS
-#cmakedefine THROWELEMENTERRORS
 #endif

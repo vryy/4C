@@ -1,8 +1,4 @@
 //
-//
-//
-// necessary defines: D_SOLID3 BINIO
-//
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        343
 NODES                           512

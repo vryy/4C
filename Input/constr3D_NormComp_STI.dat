@@ -1,7 +1,3 @@
-//
-//
-// necessary defines: D_SOLID3 BINIO
-//
 -----------------------------------------------------------------------TITLE
 Neumann load applied to a clamped hollow cube. One row of elements
 has a MPC to restrict normal direction defined.
