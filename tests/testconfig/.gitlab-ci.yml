@@ -165,7 +165,7 @@ variables:
   stage: buildtest
   variables:
     BUILD_TARGETS: full
-    CONFIGURE_POSTFIX: --coverage --uselld
+    CONFIGURE_POSTFIX: --coverage
   script:
   - *clean-build-folder
   - *build-and-test

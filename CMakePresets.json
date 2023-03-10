@@ -1,0 +1,8 @@
+{
+  "version": 5,
+  "include": [
+    "presets/docker/CMakePresets.json",
+    "presets/lnm/workstation/CMakePresets.json",
+    "presets/lnm/cluster/CMakePresets.json"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": ".lnm_workstation_base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
+        "CMAKE_C_COMPILER": "/usr/bin/mpicc",
+        "CMAKE_Fortran_COMPILER": "/usr/bin/mpif90",
+        "CMAKE_CXX_FLAGS": "-std=c++17 -Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3 -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_CXX_FLAGS_DEBUG": "-Og",
+        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3",
+        "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
+        "CMAKE_Fortran_FLAGS": "-Wall",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -funroll-all-loops -malign-double",
+        "INCLUDE_INSTALL_DIR": "/lnm/lib/Q3_2017/ubuntu/tpl/include",
+        "LIB_INSTALL_DIR": "/lnm/lib/Q3_2017/ubuntu/tpl/lib",
+        "Trilinos_PREFIX": "/lnm/lib/2022_Q1/trilinos_release",
+        "QHULL_LIBRARY_DIR": "/lnm/lib/Q3_2017/ubuntu/tpl/lib",
+        "QHULL_INCLUDE_DIR": "/lnm/lib/Q3_2017/ubuntu/tpl/include/qhull",
+        "MPI_RUN": "/usr/bin/mpirun",
+        "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
+        "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/lnm/programs64/mathjax-2.7.9"
+      }
+    },
+    {
+      "name": "lnm_workstation",
+      "displayName": "Release build for an LNM workstation",
+      "inherits": [
+        ".lnm_workstation_base"
+      ]
+    },
+    {
+      "name": "lnm_workstation_relwithdebinfo",
+      "displayName": "Release build with debug information for an LNM workstation",
+      "inherits": [
+        ".lnm_workstation_base"
+      ],
+      "cacheVariables": {
+        "Trilinos_PREFIX": "/lnm/lib/2022_Q1/trilinos_relwithdebinfo",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "lnm_workstation_debug",
+      "displayName": "Debug build for an LNM workstation",
+      "inherits": [
+        ".lnm_workstation_base"
+      ],
+      "cacheVariables": {
+        "Trilinos_PREFIX": "/lnm/lib/2022_Q1/trilinos_relwithdebinfo",
+        "CMAKE_BUILD_TYPE": "DEBUG"
+      }
+    },
+    {
+      "name": "lnm_workstation_coverage",
+      "displayName": "Coverage report for an LNM workstation",
+      "inherits": [
+        ".lnm_workstation_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "COVERAGE",
+        "CMAKE_CXX_FLAGS_COVERAGE": "-O0 -g -fprofile-arcs -ftest-coverage",
+        "CMAKE_EXE_LINKER_FLAGS_COVERAGE": "-lopen-pal -fuse-ld=lld"
+      }
+    }
+  ]
+}
