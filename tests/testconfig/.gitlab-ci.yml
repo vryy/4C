@@ -118,8 +118,8 @@ variables:
   after_script:
     # sort output of pipeline
   - cd ../baci-build
-  - 'python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py `ctest -N  | grep
-    -Po "(?<=Total Tests: )[0-9]*"` ../buildtest_full.log ../buildtest_full.log'
+  - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
+    ../buildtest_full.log ../buildtest_full.log
   - cd -
       # Write selection of the output into the terminal and therefore to GITLAB
     # Output 200 lines for any failing test

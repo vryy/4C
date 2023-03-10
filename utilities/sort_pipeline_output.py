@@ -1,14 +1,28 @@
 import argparse
-import os
+import re
+import enum
 
-if __name__ == "__main__":
 
+class LogSection(enum.Enum):
+    SETUP = 0
+    TEST_OUTPUT = 1
+    SUMMARY = 2
+
+
+def write_test_output_lines(test_map, file_out):
+    for test_id in sorted(test_map.keys()):
+        write_lines(test_map[test_id], file_out)
+
+
+def write_lines(list_of_lines, file_out):
+    for line in list_of_lines:
+        file_out.write(line)
+
+
+def main():
     parser = argparse.ArgumentParser()
-    # read_input
-    parser.add_argument(
-        "number_of_test",
-        help="Total number of tests.",
-    )
+
+    # read commmand line arguments
     parser.add_argument(
         "log_file",
         help="Location to log file that was written during pipeline run.",
@@ -19,80 +33,69 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # flag, whether only touched files should be checked
-    num_tests = int(args.number_of_test)
-    log_file = os.path.abspath(args.log_file)
-    log_file_sorted = os.path.abspath(args.log_file_sorted)
+    # setup lines before the actual output
+    setup_output_lines = []
 
-    # map between test number (index+1) and text lines of this test
-    test_map = [[] for x in range(num_tests)]
+    # map between test number and text lines of this test
+    test_output_lines_map = {}
 
-    # lines with text from setup (i.e. configuration, compilation, etc.)
-    setup_lines = []
+    # lines could not be recognized (will be printed after the tests)
+    unrecognized_output_lines = []
 
-    # lines of summary after test
-    summary_lines = []
+    # summary lines after test output
+    summary_output_lines = []
 
-    # first test output. Everything before this line is setup output.
-    first_test_line = 10000000000000
+    # define some regex to classify each line
+    regex_new_test = re.compile(r"^test\s(\d+)$")
+    regex_start_test = re.compile(r"^\s*Start\s+(\d+):")
+    regex_test_output_line = re.compile(r"^(\d+):")
+    regex_test_finish = re.compile(r"^\s*\d+\/\d+\s+Test\s+#(\d+):\s")
 
     # loop over all lines of output
-    with open(log_file, "r") as file_in:
-        for line_num, line in enumerate(file_in):
-            # check if first characters of line contain ": ". This indicates a test output
-            check_string = line[0:6]
-            if check_string.find(": ") != -1:
-                check_string_split = line[0:6].split(": ")[0]
-                if check_string_split.isnumeric():
-                    test_map[int(check_string_split) - 1].append(line)
-                    first_test_line = line_num
-            # special cases
-            else:
-                found_test_output = False
-                # check for "test xxx". This indicates a new test
-                for test_num in range(1, num_tests + 1):
-                    if line.find("test " + str(test_num) + "\n") != -1:
-                        test_map[test_num - 1].append(line)
-                        found_test_output = True
-                        first_test_line = line_num
-                        break
-                # check for "Start". This indicates the start of a test
-                if line.find("      Start ") != -1:
-                    check_string_2 = line.split(":")[0].split()[1]
-                    if check_string_2.isnumeric():
-                        test_map[int(check_string_2) - 1].append(line)
-                        found_test_output = True
-                        first_test_line = line_num
-                # check for "/num_tests Test". This indicates the end of a test
-                elif line.find(" Test ") != -1 and (
-                    line.find("   Passed   ") != -1
-                    or line.find("***Failed") != -1
-                    or line.find("***Not Run") != -1
-                    or line.find("***Timeout") != -1
+    with open(args.log_file, "r") as file_in:
+
+        log_section = LogSection.SETUP
+        for line in file_in:
+            if log_section == LogSection.SETUP:
+                # check whether this line indicates the start of the test suite
+                if match_new_test := regex_new_test.match(line):
+                    test_id = int(match_new_test.group(1))
+                    test_output_lines_map[test_id] = []
+                    test_output_lines_map[test_id].append(line)
+                    log_section = LogSection.TEST_OUTPUT
+                else:
+                    setup_output_lines.append(line)
+
+            elif log_section == LogSection.TEST_OUTPUT:
+                if (
+                    (match_test_line := regex_new_test.match(line)) != None
+                    or (match_test_line := regex_start_test.match(line)) != None
+                    or (match_test_line := regex_test_output_line.match(line)) != None
+                    or (match_test_line := regex_test_finish.match(line)) != None
                 ):
-                    check_string_3 = line.split("#")[1].split(":")[0]
-                    if check_string_3.isnumeric():
-                        test_map[int(check_string_3) - 1].append(line)
-                        found_test_output = True
-                        first_test_line = line_num
+                    test_id = int(match_test_line.group(1))
+                    if test_id not in test_output_lines_map:
+                        test_output_lines_map[test_id] = []
 
-                # if output does not belong to a test, it is either from setup of from summary
-                if found_test_output == False:
-                    if line_num < first_test_line:
-                        setup_lines.append(line)
-                    elif line != "\n":
-                        summary_lines.append(line)
+                    test_output_lines_map[test_id].append(line)
+                elif line == "\n":
+                    continue
+                elif line == "The following tests passed:\n":
+                    summary_output_lines.append(line)
+                    log_section = LogSection.SUMMARY
+                else:
+                    unrecognized_output_lines.append(line)
+                    print(f"Warning: Unrecognized line `{line.strip()}`")
 
-    # write sorted file
-    with open(log_file_sorted, "w") as file_out:
-        for line in setup_lines:
-            file_out.write(line)
+            elif log_section == LogSection.SUMMARY:
+                summary_output_lines.append(line)
 
-        for test in test_map:
-            for line in test:
-                file_out.write(line)
+    with open(args.log_file_sorted, "w") as file_out:
+        write_lines(setup_output_lines, file_out)
+        write_test_output_lines(test_output_lines_map, file_out)
+        write_lines(unrecognized_output_lines, file_out)
+        write_lines(summary_output_lines, file_out)
 
-        file_out.write("\n")
 
-        for line in summary_lines:
-            file_out.write(line)
+if __name__ == "__main__":
+    main()
