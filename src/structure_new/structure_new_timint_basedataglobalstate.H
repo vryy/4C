@@ -487,6 +487,13 @@ namespace STR
         return fextnp_;
       }
 
+      /// Return reaction force \f$freact_{n}\f$
+      Teuchos::RCP<const Epetra_Vector> GetFreactN() const
+      {
+        CheckInitSetup();
+        return freactn_;
+      }
+
       /// Return reaction force \f$freact_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFreactNp() const
       {
@@ -789,6 +796,13 @@ namespace STR
         return fextnp_;
       }
 
+      /// Return reaction force \f$freact_{n}\f$
+      Teuchos::RCP<Epetra_Vector>& GetMutableFreactN()
+      {
+        CheckInitSetup();
+        return freactn_;
+      }
+
       /// Return reaction force \f$freact_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetMutableFreactNp()
       {
@@ -961,6 +975,9 @@ namespace STR
 
       /// global external force vector at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> fextnp_;
+
+      /// global reaction force vector at \f$t_{n}\f$
+      Teuchos::RCP<Epetra_Vector> freactn_;
 
       /// global reaction force vector at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> freactnp_;

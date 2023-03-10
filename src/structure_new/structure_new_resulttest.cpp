@@ -46,7 +46,7 @@ void STR::ResultTest::Init(
   disn_ = gstate.GetDisN();
   veln_ = gstate.GetVelN();
   accn_ = gstate.GetAccN();
-  reactn_ = gstate.GetFreactNp();
+  reactn_ = gstate.GetFreactN();
   gstate_ = Teuchos::rcpFromRef(gstate);
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.GetDiscret();
