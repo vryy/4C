@@ -11,6 +11,8 @@ NODES                           2244
 DIM                             2
 MATERIALS                       3
 NUMDF                           3
+--------------------------------------------------------------------------IO
+VERBOSITY                       standard
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
@@ -50,13 +52,15 @@ LINEAR_SOLVER                   1
 MAXTIME                         1.0
 TIMESTEP                        0.1
 NUMSTEP                         10
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicstructuresplit
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.001
-BASETOL                         1.0E-5
+BASETOL                         1.0E-8
 ITEMAX                          100
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11
@@ -75,6 +79,15 @@ TOL_VEL_RES_INF                 1e-11
 TOL_VEL_RES_L2                  1e-11
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+AZSOLVE                         GMRES
+AZPREC                          MueLu_fsi
+MUELU_XML_FILE                  fsi_monolithic_muelu.xml
+AZOUTPUT                        10
+AZTOL                           1.0e-8
+AZCONV                          AZ_r0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500
@@ -92,15 +105,13 @@ NDLINE                          8
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          4
-//                              structure_dry_vertices
+DPOINT                          3
+//                              structure_vertices
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              inflow_vertices_top
 E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 //                              cavity_vertices
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-//                              structure_vertex_fsi_NoDBC_slave
-E 4 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              structure_ycurves
@@ -132,12 +143,8 @@ NODE 67 DNODE 3
 NODE 131 DNODE 3
 NODE 1124 DNODE 3
 NODE 1155 DNODE 3
-NODE 2 DNODE 4
-NODE 65 DNODE 4
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
-NODE 2 DLINE 1
-NODE 65 DLINE 1
 NODE 66 DLINE 1
 NODE 2 DLINE 2
 NODE 3 DLINE 2

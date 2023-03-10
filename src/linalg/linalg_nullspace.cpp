@@ -116,7 +116,9 @@ void LINALG::NULLSPACE::FixNullSpace(std::string field, const Epetra_Map& oldmap
   if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());
 
   // there is no ML or MueLu list, do nothing
-  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters")) return;
+  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
+      !solveparams.isSublist("MueLu (FSI) Parameters"))
+    return;
 
   // find the ML or MueLu list
   Teuchos::ParameterList* params_ptr = nullptr;
@@ -125,7 +127,7 @@ void LINALG::NULLSPACE::FixNullSpace(std::string field, const Epetra_Map& oldmap
   else if (solveparams.isSublist("MueLu Parameters"))
     params_ptr = &(solveparams.sublist("MueLu Parameters"));
   else
-    return;
+    params_ptr = &(solveparams);
   Teuchos::ParameterList& params = *params_ptr;
 
   const int ndim = params.get("null space: dimension", -1);

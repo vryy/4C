@@ -273,6 +273,10 @@ void LINALG::SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
     }
+    else if (Params().isSublist("MueLu (FSI) Parameters"))
+    {
+      preconditioner_ = Teuchos::rcp(new MueLuFsiBlockPreconditioner(outfile_, Params()));
+    }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_, Params()));

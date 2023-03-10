@@ -71,6 +71,8 @@ namespace INPAR::SOLVER
                                 ///< point formulation (MueLu package)
     multigrid_muelu_beamsolid,  ///< multigrid preconditioner for blocked beam solid interaction
                                 ///< problems (MueLu package)
+    multigrid_muelu_fsi,  ///< multigrid preconditioner for blocked fluid structure interaction
+                          ///< problems (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
     block_gauss_seidel_2x2,  ///< block Gauss-Seidel for 2x2 system (inhouse implementation)
     cheap_simple             ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)

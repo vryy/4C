@@ -65,7 +65,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
       !solveparams.isSublist("MueLu (Fluid) Parameters") &&
       !solveparams.isSublist("MueLu (TSI) Parameters") &&
-      !solveparams.isSublist("MueLu (BeamSolid) Parameters"))
+      !solveparams.isSublist("MueLu (BeamSolid) Parameters") &&
+      !solveparams.isSublist("MueLu (FSI) Parameters"))
     return;
   Teuchos::ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("ML Parameters"))
@@ -79,6 +80,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   else if (solveparams.isSublist("MueLu (TSI) Parameters"))
     mllist_ptr = &(solveparams);
   else if (solveparams.isSublist("MueLu (BeamSolid) Parameters"))
+    mllist_ptr = &(solveparams);
+  else if (solveparams.isSublist("MueLu (FSI) Parameters"))
     mllist_ptr = &(solveparams);
   else
     return;

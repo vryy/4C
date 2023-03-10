@@ -19,7 +19,7 @@
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "fsi_noxlinsys.H"
+#include "fsi_nox_linearsystem.H"
 #include "lib_globalproblem.H"
 #include "solver_linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
@@ -118,8 +118,6 @@ bool NOX::FSI::LinearSystem::applyJacobianTranspose(
 bool NOX::FSI::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
-  const double startTime = timer_.wallTime();
-
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess_) result.init(0.0);
 
@@ -128,7 +126,13 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
 
   Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
   Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
+
+  // get the hopefully adaptive linear solver convergence tolerance
+  solver_->Params()
+      .sublist("Belos Parameters")
+      .set("Convergence Tolerance", p.get("Tolerance", 1.0e-10));
   solver_->Solve(jacPtr_, disi, fres, true, callcount_ == 0);
+
   callcount_ += 1;
 
   // Set the output parameters in the "Output" sublist
@@ -143,9 +147,6 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
     outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
-
-  const double endTime = timer_.wallTime();
-  timeApplyJacbianInverse_ += (endTime - startTime);
 
   return true;
 }

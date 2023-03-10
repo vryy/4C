@@ -11,6 +11,8 @@ NODES                           2244
 DIM                             2
 MATERIALS                       3
 NUMDF                           3
+--------------------------------------------------------------------------IO
+VERBOSITY                       standard
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
@@ -59,7 +61,7 @@ RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.001
-BASETOL                         1.0E-5
+BASETOL                         1.0E-7
 ITEMAX                          100
 TOL_DIS_INC_INF                 1e-10
 TOL_DIS_INC_L2                  1e-10
@@ -79,6 +81,15 @@ TOL_VEL_RES_INF                 1e-10
 TOL_VEL_RES_L2                  1e-10
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+AZSOLVE                         GMRES
+AZPREC                          MueLu_fsi
+MUELU_XML_FILE                  fsi_monolithic_muelu.xml
+AZOUTPUT                        10
+AZTOL                           1.0e-7
+AZCONV                          AZ_r0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500

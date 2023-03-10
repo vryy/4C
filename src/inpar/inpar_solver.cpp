@@ -44,8 +44,8 @@ namespace INPAR::SOLVER
     {
       // this one is longer than 15 and the tuple<> function does not support this,
       // so build the Tuple class directly (which can be any size)
-      Teuchos::Tuple<std::string, 13> name;
-      Teuchos::Tuple<PreconditionerType, 13> number;
+      Teuchos::Tuple<std::string, 14> name;
+      Teuchos::Tuple<PreconditionerType, 14> number;
 
       name[0] = "ILU";
       number[0] = PreconditionerType::ilu;
@@ -67,12 +67,14 @@ namespace INPAR::SOLVER
       number[8] = PreconditionerType::multigrid_muelu_contactsp;
       name[9] = "MueLu_BeamSolid";
       number[9] = PreconditionerType::multigrid_muelu_beamsolid;
-      name[10] = "AMGnxn";
-      number[10] = PreconditionerType::multigrid_nxn;
-      name[11] = "BGS2x2";
-      number[11] = PreconditionerType::block_gauss_seidel_2x2;
-      name[12] = "CheapSIMPLE";
-      number[12] = PreconditionerType::cheap_simple;
+      name[10] = "MueLu_fsi";
+      number[10] = PreconditionerType::multigrid_muelu_fsi;
+      name[11] = "AMGnxn";
+      number[11] = PreconditionerType::multigrid_nxn;
+      name[12] = "BGS2x2";
+      number[12] = PreconditionerType::block_gauss_seidel_2x2;
+      name[13] = "CheapSIMPLE";
+      number[13] = PreconditionerType::cheap_simple;
 
       setStringToIntegralParameter<PreconditionerType>("AZPREC", "ILU",
           "Type of internal preconditioner to use.\n"
