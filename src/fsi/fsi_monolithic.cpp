@@ -10,6 +10,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <Teuchos_RCP.hpp>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Direction_UserDefinedFactory.H>
 
@@ -17,13 +18,14 @@
 #include "fsi_debugwriter.H"
 #include "fsi_nox_group.H"
 #include "fsi_nox_newton.H"
-#include "fsi_noxlinsys.H"
+#include "fsi_nox_linearsystem.H"
 #include "fsi_statustest.H"
 
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_prestress_service.H"
 #include "linalg_blocksparsematrix.H"
+#include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -1294,6 +1296,54 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
 
       auto solver = Teuchos::rcp(new LINALG::Solver(
           fsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      const auto azprectype =
+          Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fsisolverparams, "AZPREC");
+
+      switch (azprectype)
+      {
+        case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi:
+        {
+          solver->PutSolverParamsToSubParams("Inverse1", fsisolverparams);
+          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
+          // on correct map solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null
+          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
+          StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+              solver->Params().sublist("Inverse1"));
+          LINALG::NULLSPACE::FixNullSpace("Structure",
+              *StructureField()->Discretization()->DofRowMap(),
+              SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
+              solver->Params().sublist("Inverse1"));
+
+          solver->PutSolverParamsToSubParams("Inverse2", fsisolverparams);
+          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
+          // on correct map solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null
+          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
+          FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+              solver->Params().sublist("Inverse2"));
+          LINALG::NULLSPACE::FixNullSpace("Fluid", *FluidField()->Discretization()->DofRowMap(),
+              SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
+              solver->Params().sublist("Inverse2"));
+
+          solver->PutSolverParamsToSubParams("Inverse3", fsisolverparams);
+          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
+          // on correct map solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null
+          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we
+          // have to cast the const on the ale discretization away!
+          const_cast<DRT::Discretization&>(*(AleField()->Discretization()))
+              .ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse3"));
+          LINALG::NULLSPACE::FixNullSpace("Ale", *AleField()->Discretization()->DofRowMap(),
+              SystemMatrix()->Matrix(2, 2).EpetraMatrix()->RowMap(),
+              solver->Params().sublist("Inverse3"));
+
+          break;
+        }
+        default:
+        {
+          std::cout << "\nWARNING:   MueLu FSI block preconditioner expected!" << std::endl;
+          break;
+        }
+      }
 
       linSys = Teuchos::rcp(new NOX::FSI::LinearSystem(
           printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver));

@@ -678,12 +678,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
       beloslist.set("Preconditioner Type", "BeamSolid");
       break;
+    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi:
+      beloslist.set("Preconditioner Type", "FSI");
+      break;
     case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
       beloslist.set("Preconditioner Type", "AMGnxn");
       break;
     case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       beloslist.set("Preconditioner Type", "ML");
-      break;
       break;
     case INPAR::SOLVER::PreconditionerType::cheap_simple:
       beloslist.set("Preconditioner Type", "CheapSIMPLE");
@@ -779,6 +781,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+  }
+  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi)
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
     muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)

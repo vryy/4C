@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_NOXLINSYS_H
-#define FSI_NOXLINSYS_H
+#ifndef FSI_NOX_LINEARSYSTEM_H
+#define FSI_NOX_LINEARSYSTEM_H
 
 #include <vector>
 

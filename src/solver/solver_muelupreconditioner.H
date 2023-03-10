@@ -242,6 +242,38 @@ namespace LINALG::SOLVER
 
   };  // class MueLuBeamCpPreconditioner
 
+  /*! \brief MueLu preconditioner for blocked linear systems of equations for fluid structure
+   * interaction
+   */
+  class MueLuFsiBlockPreconditioner : public MueLuPreconditioner
+  {
+   public:
+    MueLuFsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+
+    /*! \brief Create and compute the preconditioner
+     *
+     * The Muelu block-preconditioner only works for matrices of the type
+     * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
+     * and throw an error if not!
+     *
+     * @param create Boolean flag to enforce (re-)creation of the preconditioner
+     * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
+     * @param x Solution of the linear system
+     * @param b Right-hand side of the linear system
+     */
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
+
+    void Print(std::ostream& stream) const override { stream << "MueLuFsiBlockPreconditioner"; }
+
+    // return name of sublist in paramterlist which contains parameters for preconditioner
+    const std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
+
+   private:
+    //! system of equations used for preconditioning used by P_ only
+    Teuchos::RCP<BlockSparseMatrixBase> Pmatrix_;
+  };
+
   namespace MUELU::UTILS
   {
     /*!
