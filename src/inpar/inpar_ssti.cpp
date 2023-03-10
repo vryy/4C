@@ -152,7 +152,7 @@ void INPAR::SSTI::SetValidConditions(
       Teuchos::tuple<int>(
           INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+      Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
   sstiinterfacemeshtyingcomponents.emplace_back(
       Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
 

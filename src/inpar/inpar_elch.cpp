@@ -193,12 +193,12 @@ void INPAR::ELCH::SetValidConditions(
     {
       electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
       electrodesoccomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("c_0%")));
+      electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C_0%")));
       electrodesoccomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("c_0%")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("c_100%")));
+      electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C_100%")));
       electrodesoccomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("c_100%")));
       electrodesoccomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("one_hour")));
+          Teuchos::rcp(new SeparatorConditionComponent("ONE_HOUR")));
       electrodesoccomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("one_hour")));
     }
 
@@ -261,17 +261,17 @@ void INPAR::ELCH::SetValidConditions(
 
     // Butler-Volmer
     std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("i0")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("GAMMA")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFCON")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
@@ -280,17 +280,17 @@ void INPAR::ELCH::SetValidConditions(
     // Butler-Volmer Yang
     // parameter are identical to Butler-Volmer
     std::vector<Teuchos::RCP<ConditionComponent>> butlervolmeryang;
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("i0")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("GAMMA")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFCON")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(new CondCompBundle(
@@ -298,30 +298,30 @@ void INPAR::ELCH::SetValidConditions(
 
     // Tafel kinetics
     std::vector<Teuchos::RCP<ConditionComponent>> tafel;
-    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha")));
+    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha")));
-    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("i0")));
-    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("GAMMA")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFCON")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.emplace_back(
         Teuchos::rcp(new CondCompBundle("Tafel", tafel, INPAR::ELCH::tafel)));
 
     // linear kinetics
     std::vector<Teuchos::RCP<ConditionComponent>> linear;
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha")));
+    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha")));
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("i0")));
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("GAMMA")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFCON")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(
@@ -330,13 +330,13 @@ void INPAR::ELCH::SetValidConditions(
     // Butler-Volmer-Newman: "Newman (book), 2004, p. 213, eq. 8.26"
     //                       "Wittmann (Bachelor thesis), 2011, p. 15, eq. 2.30"
     std::vector<Teuchos::RCP<ConditionComponent>> bvnewman;
-    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_a")));
+    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_A")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("k_a")));
-    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_c")));
+    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_C")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("k_c")));
-    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("beta")));
+    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("BETA")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("beta")));
-    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
@@ -345,17 +345,17 @@ void INPAR::ELCH::SetValidConditions(
     // Butler-Volmer-Newman: "Bard (book), 2001, p. 99, eq. 3.4.10"
     //                       "Wittmann (Bachelor thesis), 2011, p. 16, eq. 2.32"
     std::vector<Teuchos::RCP<ConditionComponent>> bvbard;
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e0")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E0")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("e0")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k0")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K0")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("k0")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("beta")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("BETA")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("beta")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("c_c0")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C_C0")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("c_c0")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("c_a0")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C_A0")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("c_a0")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
@@ -363,11 +363,11 @@ void INPAR::ELCH::SetValidConditions(
 
     // Nernst equation:
     std::vector<Teuchos::RCP<ConditionComponent>> nernst;
-    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e0")));
+    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E0")));
     nernst.emplace_back(Teuchos::rcp(new RealConditionComponent("e0")));
-    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("c0")));
+    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C0")));
     nernst.emplace_back(Teuchos::rcp(new RealConditionComponent("c0")));
-    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     nernst.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.emplace_back(
         Teuchos::rcp(new CondCompBundle("Nernst", nernst, INPAR::ELCH::nernst)));
@@ -375,7 +375,7 @@ void INPAR::ELCH::SetValidConditions(
     // input: stoichiometry for reaction mechanism (IntRealBundle)
     // definition separator for int vectors
     std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-    intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoich")));
+    intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
 
     // definition int vectors
     std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
@@ -391,20 +391,20 @@ void INPAR::ELCH::SetValidConditions(
     std::vector<Teuchos::RCP<ConditionComponent>> elechemcomponents;
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("POT")));
     elechemcomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("pot")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("funct", true, true)));
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
     elechemcomponents.emplace_back(Teuchos::rcp(
         new IntRealBundle("intreal bundle", Teuchos::rcp(new IntConditionComponent("numscal")),
             intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
     // porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("epsilon")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("EPSILON")));
     elechemcomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("epsilon")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ZERO_CUR")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("zero_cur")));
     elechemcomponents.emplace_back(
         Teuchos::rcp(new CondCompBundleSelector("kinetic model", reactionmodel)));
@@ -464,20 +464,20 @@ void INPAR::ELCH::SetValidConditions(
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("ConditionID")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("pot")));
+          Teuchos::rcp(new SeparatorConditionComponent("POT")));
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new RealConditionComponent("pot")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("funct")));
+          Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("funct", true, true)));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+          Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
 
       // input: stoichiometry for reaction mechanism (IntRealBundle)
       // definition separator for int vectors
       std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-      intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoich")));
+      intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
 
       // definition int vectors
       std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
@@ -494,10 +494,10 @@ void INPAR::ELCH::SetValidConditions(
               intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
 
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("e-")));
+          Teuchos::rcp(new SeparatorConditionComponent("E-")));
       electrodedomainkineticscomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
+          Teuchos::rcp(new SeparatorConditionComponent("ZERO_CUR")));
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("zero_cur")));
 
@@ -508,19 +508,19 @@ void INPAR::ELCH::SetValidConditions(
         // Butler-Volmer
         std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
         butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent(
-            "A_s")));  // ratio of electrode-electrolyte interface area to total two-phase volume
+            "A_S")));  // ratio of electrode-electrolyte interface area to total two-phase volume
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("A_s")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("i0")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("GAMMA")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFCON")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
         butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
         kineticmodels.emplace_back(Teuchos::rcp(
@@ -569,34 +569,34 @@ void INPAR::ELCH::SetValidConditions(
 
     {
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("NumberOfHalfCycles")));
+          Teuchos::rcp(new SeparatorConditionComponent("NUMBER_OF_HALF_CYCLES")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("NumberOfHalfCycles")));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("BeginWithCharging")));
+          Teuchos::rcp(new SeparatorConditionComponent("BEGIN_WITH_CHARGING")));
       cccvcyclingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent(
           "BeginWithCharging")));  // Boolean parameter represented by integer parameter
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("ConditionIDForCharge")));
+          Teuchos::rcp(new SeparatorConditionComponent("CONDITION_ID_FOR_CHARGE")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("ConditionIDForCharge", false, true)));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("ConditionIDForDischarge")));
+          Teuchos::rcp(new SeparatorConditionComponent("CONDITION_ID_FOR_DISCHARGE")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("ConditionIDForDischarge", false, true)));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("InitRelaxTime")));
+          Teuchos::rcp(new SeparatorConditionComponent("INIT_RELAX_TIME")));
       cccvcyclingcomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("InitRelaxTime")));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("AdaptiveTimeSteppingInitRelax")));
+          Teuchos::rcp(new SeparatorConditionComponent("ADAPTIVE_TIME_STEPPING_INIT_RELAX")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("AdaptiveTimeSteppingInitRelax")));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("NumAddAdaptTimeSteps")));
+          Teuchos::rcp(new SeparatorConditionComponent("NUM_ADD_ADAPT_TIME_STEPS")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("NumAddAdaptTimeSteps", false, true)));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("MinTimeStepsDuringInitRelax")));
+          Teuchos::rcp(new SeparatorConditionComponent("MIN_TIME_STEPS_DURING_INIT_RELAX")));
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("MinTimeStepsDuringInitRelax", false, true)));
     }
@@ -641,22 +641,22 @@ void INPAR::ELCH::SetValidConditions(
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
       cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("Current")));
+          Teuchos::rcp(new SeparatorConditionComponent("CURRENT")));
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("Current")));
       cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("CutoffVoltage")));
+          Teuchos::rcp(new SeparatorConditionComponent("CUT_OFF_VOLTAGE")));
       cccvhalfcyclecomponents.emplace_back(
           Teuchos::rcp(new RealConditionComponent("CutoffVoltage")));
       cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("CutoffCRate")));
+          Teuchos::rcp(new SeparatorConditionComponent("CUT_OFF_C_RATE")));
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("CutoffCRate")));
       cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("RelaxTime")));
+          Teuchos::rcp(new SeparatorConditionComponent("RELAX_TIME")));
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("RelaxTime")));
       // switch adaptive time stepping on for different phases of half cycle: 1st: end of constant
       // current, 2nd: end of constant voltage, 3rd: end of relaxation
       cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("AdaptiveTimeSteppingPhaseOnOff")));
+          Teuchos::rcp(new SeparatorConditionComponent("ADAPTIVE_TIME_STEPPING_PHASE_ON_OFF")));
       cccvhalfcyclecomponents.emplace_back(
           Teuchos::rcp(new IntVectorConditionComponent("AdaptiveTimeSteppingPhaseOnOff", 3)));
     }

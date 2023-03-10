@@ -172,20 +172,20 @@ E 4 - 1 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact D
 E 5 - 1 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 1 RefConfCheckNonSmoothSelfContactSurface 0
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 E 1 - ID 0
 E 6 - ID 1
 ----------------------DESIGN SSI INTERFACE CONTACT SURF CONDITIONS
 DSURF  4
-E 2 - 0 S2IKineticsID 0 ContactConditionID 0
-E 3 - 0 S2IKineticsID 0 ContactConditionID 0
-E 4 - 1 S2IKineticsID 1 ContactConditionID 1
-E 5 - 1 S2IKineticsID 1 ContactConditionID 1
+E 2 - 0 S2I_KINETICS_ID  0 ContactConditionID 0
+E 3 - 0 S2I_KINETICS_ID  0 ContactConditionID 0
+E 4 - 1 S2I_KINETICS_ID  1 ContactConditionID 1
+E 5 - 1 S2I_KINETICS_ID  1 ContactConditionID 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    9 DNODE 1

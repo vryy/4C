@@ -131,20 +131,20 @@ E 2 - ScaTra 2
 E 3 - ScaTra 3
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave S2IKineticsID 0
-E 3 - 0 Master S2IKineticsID 0
-E 4 - 1 Master S2IKineticsID 1
-E 5 - 1 Slave S2IKineticsID 1
+E 2 - 0 Slave S2I_KINETICS_ID  0
+E 3 - 0 Master S2I_KINETICS_ID  0
+E 4 - 1 Master S2I_KINETICS_ID  1
+E 5 - 1 Slave S2I_KINETICS_ID  1
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KineticModel Butler-Volmer_Linearized numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 2 - 0 Slave KINETIC_MODEL Butler-Volmer_Linearized NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  4.52e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-VolmerReduced_Linearized numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_Linearized NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
-E 1 - ID 0 c_0% 2.029 c_100% 10.88 one_hour 3600
-E 3 - ID 1 c_0% 22.37 c_100% 10.56 one_hour 3600
+E 1 - ID 0 C_0% 2.029 C_100% 10.88 ONE_HOUR 3600
+E 3 - ID 1 C_0% 22.37 C_100% 10.56 ONE_HOUR 3600
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 E 1 - ID 0

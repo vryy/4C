@@ -122,7 +122,7 @@ void INPAR::S2I::SetValidConditions(
         Teuchos::tuple<int>(
             INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
     s2imeshtyingcomponents.emplace_back(
-        Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+        Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
     s2imeshtyingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
 
     // insert input file line components into condition definitions
@@ -192,7 +192,7 @@ void INPAR::S2I::SetValidConditions(
               // constant permeability
               std::vector<Teuchos::RCP<ConditionComponent>> constperm;
               // total number of existing scalars
-              constperm.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+              constperm.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // empty vector --> no separators for integer vectors needed
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               // empty vector --> no integer vectors needed
@@ -200,7 +200,7 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
               // string separator in front of real permeability vector in input file line
               realsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("permeabilities")));
+                  Teuchos::rcp(new SeparatorConditionComponent("PERMEABILITIES")));
               // real vector of constant permeabilities
               std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
               realvectcomp.emplace_back(
@@ -209,7 +209,7 @@ void INPAR::S2I::SetValidConditions(
                   Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
                   realsepcomp, realvectcomp)));
               constperm.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               constperm.emplace_back(Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
               kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
@@ -220,11 +220,11 @@ void INPAR::S2I::SetValidConditions(
               // Butler-Volmer
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
               // total number of existing scalars
-              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               // string separator in front of integer stoichiometry vector in input file line
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -236,16 +236,16 @@ void INPAR::S2I::SetValidConditions(
               butlervolmer.emplace_back(Teuchos::rcp(new IntRealBundle("stoichiometries",
                   Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
                   realsepcomp, realvectcomp)));
-              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
-              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
-              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+              butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmer.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmer.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
@@ -271,11 +271,11 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerpeltier;
               // total number of existing scalars
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+                  Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // string separator in front of integer stoichiometry vector in input file line
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -287,23 +287,23 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new IntRealBundle("stoichiometries",
                   Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
                   realsepcomp, realvectcomp)));
-              butlervolmerpeltier.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+              butlervolmerpeltier.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+                  Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmerpeltier.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
               butlervolmerpeltier.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("peltier")));
+                  Teuchos::rcp(new SeparatorConditionComponent("PELTIER")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new RealConditionComponent("peltier")));
 
               kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Peltier",
@@ -315,11 +315,11 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedcapacitance;
               // total number of existing scalars
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+                  Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // string separator in front of integer stoichiometry vector in input file line
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -332,27 +332,27 @@ void INPAR::S2I::SetValidConditions(
                   "stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp,
                   intvectcomp, realsepcomp, realvectcomp)));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("e-")));
+                  Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+                  Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("k_r")));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("capacitance")));
+                  Teuchos::rcp(new SeparatorConditionComponent("CAPACITANCE")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("capacitance")));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_a")));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmerreducedcapacitance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
@@ -366,11 +366,11 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerresistance;
               // total number of existing scalars
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+                  Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // string separator in front of integer stoichiometry vector in input file line
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -383,25 +383,25 @@ void INPAR::S2I::SetValidConditions(
                   Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
                   realsepcomp, realvectcomp)));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("e-")));
+                  Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmerresistance.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+                  Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmerresistance.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_a")));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
               butlervolmerresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+                  Teuchos::rcp(new SeparatorConditionComponent("RESISTANCE")));
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("resistance")));
               butlervolmerresistance.emplace_back(
@@ -422,11 +422,11 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedwithresistance;
               // total number of existing scalars
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+                  Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // string separator in front of integer stoichiometry vector in input file line
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -439,27 +439,27 @@ void INPAR::S2I::SetValidConditions(
                   "stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp,
                   intvectcomp, realsepcomp, realvectcomp)));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("e-")));
+                  Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+                  Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("k_r")));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_a")));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
               butlervolmerreducedwithresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+                  Teuchos::rcp(new SeparatorConditionComponent("RESISTANCE")));
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("resistance")));
               butlervolmerreducedwithresistance.emplace_back(
@@ -481,11 +481,11 @@ void INPAR::S2I::SetValidConditions(
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedthermo;
               // total number of existing scalars
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+                  Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               // string separator in front of integer stoichiometry vector in input file line
               std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
               intsepcomp.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+                  Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
               // integer vector of stoichiometric coefficients
               std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
               intvectcomp.emplace_back(
@@ -498,30 +498,30 @@ void INPAR::S2I::SetValidConditions(
                   "stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp,
                   intvectcomp, realsepcomp, realvectcomp)));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("e-")));
+                  Teuchos::rcp(new SeparatorConditionComponent("E-")));
               butlervolmerreducedthermo.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+                  Teuchos::rcp(new SeparatorConditionComponent("K_R")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("k_r")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_a")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+                  Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("alpha_c")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("thermoperm")));
+                  Teuchos::rcp(new SeparatorConditionComponent("THERMOPERM")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("thermoperm")));
               butlervolmerreducedthermo.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("molar_heat_capacity")));
+                  Teuchos::rcp(new SeparatorConditionComponent("MOLAR_HEAT_CAPACITY")));
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("molar_heat_capacity")));
 
@@ -539,13 +539,13 @@ void INPAR::S2I::SetValidConditions(
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
               constantinterfaceresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+                  Teuchos::rcp(new SeparatorConditionComponent("RESISTANCE")));
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("resistance")));
-              constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("e-"));
+              constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("E-"));
               constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
               constantinterfaceresistance.emplace_back(
-                  Teuchos::rcp(new SeparatorConditionComponent("is_pseudo_contact")));
+                  Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
@@ -564,7 +564,7 @@ void INPAR::S2I::SetValidConditions(
           }  // kinetic models for scatra-scatra interface kinetics
 
           // insert kinetic models into vector with slave-side condition components
-          slaveside.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+          slaveside.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
           slaveside.emplace_back(
               Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
 
@@ -638,9 +638,9 @@ void INPAR::S2I::SetValidConditions(
           // Butler-Volmer
           std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
           butlervolmer.emplace_back(Teuchos::rcp(
-              new SeparatorConditionComponent("numscal")));  // total number of existing scalars
+              new SeparatorConditionComponent("NUMSCAL")));  // total number of existing scalars
           std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
-          intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+          intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
           std::vector<Teuchos::RCP<IntVectorConditionComponent>>
               intvectcomp;  // string separator in front of integer stoichiometry vector in input
                             // file line
@@ -653,31 +653,31 @@ void INPAR::S2I::SetValidConditions(
           butlervolmer.emplace_back(Teuchos::rcp(new IntRealBundle("stoichiometries",
               Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp, intvectcomp,
               realsepcomp, realvectcomp)));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
           butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("molmass")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("MOLMASS")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("molar mass")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("density")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DENSITY")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("density")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("conductivity")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("CONDUCTIVITY")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("conductivity")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("regtype")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGTYPE")));
           butlervolmer.emplace_back(
               Teuchos::rcp(new StringConditionComponent("regularization type", "trigonometrical",
                   Teuchos::tuple<std::string>("none", "polynomial", "Hein", "trigonometrical"),
                   Teuchos::tuple<int>(INPAR::S2I::regularization_none,
                       INPAR::S2I::regularization_polynomial, INPAR::S2I::regularization_hein,
                       INPAR::S2I::regularization_trigonometrical))));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("regpar")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGPAR")));
           butlervolmer.emplace_back(
               Teuchos::rcp(new RealConditionComponent("regularization parameter")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("initthickness")));
+          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("INITTHICKNESS")));
           butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("initial thickness")));
 
           kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
@@ -687,7 +687,7 @@ void INPAR::S2I::SetValidConditions(
 
       // insert kinetic models into vector with input file line components
       s2igrowthcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+          Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
       s2igrowthcomponents.emplace_back(
           Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
     }

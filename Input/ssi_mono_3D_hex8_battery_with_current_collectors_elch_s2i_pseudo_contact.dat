@@ -164,21 +164,21 @@ E 5 - ScaTra 4
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  9
 // cc-side_(sl)_of_an-cc_interface
-E 2 - 0 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 8.0e-3 e- 1 is_pseudo_contact 1
+E 2 - 0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 8.0e-3  E- 1 IS_PSEUDO_CONTACT 1
 // an-side_(ma)_of_an-cc_interface
 E 3 - 0 Master
 // an-side_(sl)_of_an-el_interface
-E 4 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 1.0e-4 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 1
+E 4 - 1 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-4 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 1
 // el-side_(ma)_of_an-el_interface
 E 5 - 1 Master
 // el-side_(ma)_of_cat-el_interface
 E 6 - 2 Master
 // cat-side_(sl)_of_cat-el_interfac
-E 7 - 2 Slave KineticModel Butler-VolmerReduced_Capacitance numscal 1 stoichiometries -1 e- 1 k_r 2.0e-5 capacitance 0.1 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 1
+E 7 - 2 Slave KINETIC_MODEL Butler-VolmerReduced_Capacitance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  2.0e-5 CAPACITANCE 0.1 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 1
 // cat-side_(ma)_of_cat-cc_interfac
 E 8 - 3 Master
 // cc-side_(sl)_of_cat-comp_cat-cc_
-E 9 - 3 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e-5 e- 1 is_pseudo_contact 0
+E 9 - 3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 2.0e-5  E- 1 IS_PSEUDO_CONTACT 0
 // cat-side_cc
 E 10 - 4 Master
 -----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
@@ -192,7 +192,7 @@ E 4 - ID 2
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   1
 // cathode
-E 4 - ID 0 c_0% 43196.78 c_100% 24362.37 one_hour 3600000
+E 4 - ID 0 C_0% 43196.78 C_100% 24362.37 ONE_HOUR 3600000
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 // an-side_cc
@@ -202,23 +202,23 @@ E 10 - ID 1
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  9
 // cc-side_(sl)_of_an-cc_interface
-E 2 - 0 Slave S2IKineticsID 0
+E 2 - 0 Slave S2I_KINETICS_ID  0
 // an-side_(ma)_of_an-cc_interface
-E 3 - 0 Master S2IKineticsID 0
+E 3 - 0 Master S2I_KINETICS_ID  0
 // an-side_(sl)_of_an-el_interface
-E 4 - 1 Slave S2IKineticsID 1
+E 4 - 1 Slave S2I_KINETICS_ID  1
 // el-side_(ma)_of_an-el_interface
-E 5 - 1 Master S2IKineticsID 1
+E 5 - 1 Master S2I_KINETICS_ID  1
 // el-side_(ma)_of_cat-el_interface
-E 6 - 2 Master S2IKineticsID 2
+E 6 - 2 Master S2I_KINETICS_ID  2
 // cat-side_(sl)_of_cat-el_interfac
-E 7 - 2 Slave S2IKineticsID 2
+E 7 - 2 Slave S2I_KINETICS_ID  2
 // cat-side_(ma)_of_cat-cc_interfac
-E 8 - 3 Master S2IKineticsID 3
+E 8 - 3 Master S2I_KINETICS_ID  3
 // cc-side_(sl)_of_cat-comp_cat-cc_
-E 9 - 3 Slave S2IKineticsID 3
+E 9 - 3 Slave S2I_KINETICS_ID  3
 // cat-side_cc
-E 10 - 4 Master S2IKineticsID 4
+E 10 - 4 Master S2I_KINETICS_ID  4
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

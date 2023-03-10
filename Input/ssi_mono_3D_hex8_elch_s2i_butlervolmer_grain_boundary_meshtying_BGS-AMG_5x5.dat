@@ -198,31 +198,31 @@ E 3 -
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
-E 1 - 0 Slave KineticModel NoInterfaceFlux
+E 1 - 0 Slave KINETIC_MODEL NoInterfaceFlux
 // master-side_cc-el
 E 2 - 0 Master
 // slave-side_cc-cath
-E 3 - 1 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 2.0e-5 e- 1 is_pseudo_contact 0
+E 3 - 1 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 2.0e-5  E- 1 IS_PSEUDO_CONTACT 0
 // master-side_cc-cath
 E 4 - 1 Master
 // master-side_el-cath
 E 5 - 2 Master
 // slave-side_el-cath
-E 6 - 2 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 6 - 2 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.036426957e3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
-E 1 - 0 Slave S2IKineticsID 0
+E 1 - 0 Slave S2I_KINETICS_ID  0
 // master-side_cc-el
-E 2 - 0 Master S2IKineticsID 0
+E 2 - 0 Master S2I_KINETICS_ID  0
 // slave-side_cc-cath
-E 3 - 1 Slave S2IKineticsID 1
+E 3 - 1 Slave S2I_KINETICS_ID  1
 // master-side_cc-cath
-E 4 - 1 Master S2IKineticsID 1
+E 4 - 1 Master S2I_KINETICS_ID  1
 // master-side_el-cath
-E 5 - 2 Master S2IKineticsID 2
+E 5 - 2 Master S2I_KINETICS_ID  2
 // slave-side_el-cath
-E 6 - 2 Slave S2IKineticsID 2
+E 6 - 2 Slave S2I_KINETICS_ID  2
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  3
 // slave-side_cc-el
@@ -234,17 +234,17 @@ E 6 - 3 ImplType ElchElectrode thickness 1.0
 ----------------------DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS
 DSURF  6
 // slave-side_cc-el
-E 1 - 1 ManifoldConditionID 1 KineticModel NoInterfaceFlux
+E 1 - 1 ManifoldConditionID 1 KINETIC_MODEL NoInterfaceFlux
 // master-side_cc-el
-E 2 - 2 ManifoldConditionID 1 KineticModel NoInterfaceFlux
+E 2 - 2 ManifoldConditionID 1 KINETIC_MODEL NoInterfaceFlux
 // slave-side_cc-cath
-E 3 - 3 ManifoldConditionID 2 KineticModel NoInterfaceFlux
+E 3 - 3 ManifoldConditionID 2 KINETIC_MODEL NoInterfaceFlux
 // master-side_cc-cath
-E 4 - 4 ManifoldConditionID 2 KineticModel NoInterfaceFlux
+E 4 - 4 ManifoldConditionID 2 KINETIC_MODEL NoInterfaceFlux
 // master-side_el-cath
-E 5 - 5 ManifoldConditionID 3 KineticModel NoInterfaceFlux
+E 5 - 5 ManifoldConditionID 3 KINETIC_MODEL NoInterfaceFlux
 // slave-side_el-cath
-E 6 - 6 ManifoldConditionID 3 KineticModel NoInterfaceFlux
+E 6 - 6 ManifoldConditionID 3 KINETIC_MODEL NoInterfaceFlux
 ----------------------------DESIGN SURF MANIFOLD DIRICH CONDITIONS
 DSURF  3
 // slave-side_cc-el

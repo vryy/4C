@@ -84,11 +84,11 @@ E 1 - ScaTra 1
 E 2 - ScaTra 2
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  2
-E 2 - 0 Slave S2IKineticsID 0
-E 3 - 0 Master S2IKineticsID 0
+E 2 - 0 Slave S2I_KINETICS_ID  0
+E 3 - 0 Master S2I_KINETICS_ID  0
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
-E 2 - 0 Slave KineticModel ConstantPermeability numscal 1 permeabilities 1.0 is_pseudo_contact 0
+E 2 - 0 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 1.0 IS_PSEUDO_CONTACT 0
 E 3 - 0 Master
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1

@@ -148,15 +148,15 @@ E 2 - ScaTra 2
 E 3 - ScaTra 3
 ------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF  4
-E 3 - 1 Slave S2IKineticsID 1
-E 4 - 1 Master S2IKineticsID 1
-E 5 - 2 Slave S2IKineticsID 2
-E 6 - 2 Master S2IKineticsID 2
+E 3 - 1 Slave S2I_KINETICS_ID  1
+E 4 - 1 Master S2I_KINETICS_ID  1
+E 5 - 2 Slave S2I_KINETICS_ID  2
+E 6 - 2 Master S2I_KINETICS_ID  2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 3 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.28
+E 3 - 1 Slave KINETIC_MODEL Butler-Volmer-Peltier NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  6.554939e-9 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0 PELTIER -0.28
 E 4 - 1 Master
-E 5 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 peltier -0.38
+E 5 - 2 Slave KINETIC_MODEL Butler-Volmer-Peltier NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  6.554939e-7 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0 PELTIER -0.38
 E 6 - 2 Master
 -----------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
 DVOL   3
@@ -165,8 +165,8 @@ E 2 -
 E 3 -
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
-E 2 - ID 0 c_0% 0.0 c_100% 24.681 one_hour 3600
-E 3 - ID 1 c_0% 23.671 c_100% 0.0 one_hour 3600
+E 2 - ID 0 C_0% 0.0 C_100% 24.681 ONE_HOUR 3600
+E 3 - ID 1 C_0% 23.671 C_100% 0.0 ONE_HOUR 3600
 -------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF  2
 E 1 - ID 0

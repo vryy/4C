@@ -271,9 +271,9 @@ E 10 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 6 0
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 9 - ID 0 pot 1.0 funct 5 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
+E 9 - ID 0 POT 1.0 FUNCT 5 NUMSCAL 3 STOICH -1 0 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 964.853399 GAMMA 1.0 REFCON 1.0 DL_SPEC_CAP 0.0 END
 //                              cathode
-E 10 - ID 1 pot 0.0 funct 5 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
+E 10 - ID 1 POT 0.0 FUNCT 5 NUMSCAL 3 STOICH -1 0 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 964.853399 GAMMA 1.0 REFCON 1.0 DL_SPEC_CAP 0.0 END
 --------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
 DSURF                           2
 E 8 - 1

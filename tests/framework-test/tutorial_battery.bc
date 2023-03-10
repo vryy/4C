@@ -69,7 +69,7 @@ sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
 description="ScaTra 3"
 *eb3="CONDITION"
 sectionname="DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS"
-description="ID 0 c_0% 43196.78 c_100% 24362.37 one_hour 3600000"
+description="ID 0 C_0% 43196.78 C_100% 24362.37 ONE_HOUR 3600000"
 
 Element Block, named: anode_cc
 of Shape: TET4
@@ -117,17 +117,17 @@ Property Name: none
 has 10 Nodes
 *ns2="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="0 Slave S2IKineticsID 0"
+description="0 Slave S2I_KINETICS_ID  0"
 *ns2="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="0 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 1.0e-5 e- 1 is_pseudo_contact 0"
+description="0 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT 0"
 
 Node Set, named: an-side_(ma)_of_an-cc_interface
 Property Name: none
 has 10 Nodes
 *ns3="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="0 Master S2IKineticsID 0"
+description="0 Master S2I_KINETICS_ID  0"
 *ns3="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
 description="0 Master"
@@ -137,17 +137,17 @@ Property Name: none
 has 8 Nodes
 *ns4="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="1 Slave S2IKineticsID 1"
+description="1 Slave S2I_KINETICS_ID  1"
 *ns4="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0"
+description="1 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 1.036426957e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0"
 
 Node Set, named: el-side_(ma)_of_an-el_interface
 Property Name: none
 has 8 Nodes
 *ns5="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="1 Master S2IKineticsID 1"
+description="1 Master S2I_KINETICS_ID  1"
 *ns5="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
 description="1 Master"
@@ -157,7 +157,7 @@ Property Name: none
 has 195 Nodes
 *ns6="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="2 Master S2IKineticsID 2"
+description="2 Master S2I_KINETICS_ID  2"
 *ns6="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
 description="2 Master"
@@ -167,17 +167,17 @@ Property Name: none
 has 195 Nodes
 *ns7="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="2 Slave S2IKineticsID 2"
+description="2 Slave S2I_KINETICS_ID  2"
 *ns7="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="2 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0"
+description="2 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1 E- 1 K_R 2.07e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0"
 
 Node Set, named: cat-side_(ma)_of_cat-cc_interfac
 Property Name: none
 has 12 Nodes
 *ns8="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="3 Master S2IKineticsID 3"
+description="3 Master S2I_KINETICS_ID  3"
 *ns8="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
 description="3 Master"
@@ -187,17 +187,17 @@ Property Name: none
 has 12 Nodes
 *ns9="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="3 Slave S2IKineticsID 3"
+description="3 Slave S2I_KINETICS_ID  3"
 *ns9="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="3 Slave KineticModel ConstantInterfaceResistance ONOFF 0 1 resistance 1.0e-5 e- 1 is_pseudo_contact 0"
+description="3 Slave KINETIC_MODEL ConstantInterfaceResistance ONOFF 0 1 RESISTANCE 1.0e-5 E- 1 IS_PSEUDO_CONTACT 0"
 
 Node Set, named: sol-el-side_(ma)_of_comp_cat-cc_
 Property Name: none
 has 35 Nodes
 *ns10="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="4 Master S2IKineticsID 4"
+description="4 Master S2I_KINETICS_ID  4"
 *ns10="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
 description="4 Master"
@@ -207,10 +207,10 @@ Property Name: none
 has 35 Nodes
 *ns11="CONDITION"
 sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
-description="4 Slave S2IKineticsID 4"
+description="4 Slave S2I_KINETICS_ID  4"
 *ns11="CONDITION"
 sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
-description="4 Slave KineticModel NoInterfaceFlux"
+description="4 Slave KINETIC_MODEL NoInterfaceFlux"
 
 Node Set, named: cat-side_cc
 Property Name: none

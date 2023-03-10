@@ -122,9 +122,9 @@ E 2 -
 -----------------------DESIGN SSI INTERFACE CONTACT SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 0 S2IKineticsID 1 ContactConditionID 1
+E 2 - 0 S2I_KINETICS_ID  1 ContactConditionID 1
 // right_block_side_of_interface
-E 3 - 0 S2IKineticsID 1 ContactConditionID 1
+E 3 - 0 S2I_KINETICS_ID  1 ContactConditionID 1
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // left_block_side_of_interface
@@ -134,7 +134,7 @@ E 3 - 1 Master Inactive
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 1 Slave KineticModel ConstantPermeability numscal 1 permeabilities 5.0e-2 is_pseudo_contact 0
+E 2 - 1 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 5.0e-2 IS_PSEUDO_CONTACT 0
 // right_block_side_of_interface
 E 3 - 1 Master
 -----------------------------------------------DSURF-NODE TOPOLOGY
