@@ -344,17 +344,19 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
   solidStriding.push_back(solidDofs);
   thermoStriding.push_back(thermoDofs);
 
-  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> solidmap =
-      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-          xA11->getRowMap(), solidStriding, xA11->getRowMap()->getIndexBase(), -1, 0));
+  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> solidmap =
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA11->getRowMap()->lib(),
+          xA11->getRowMap()->getGlobalNumElements(), xA11->getRowMap()->getLocalElementList(),
+          xA11->getRowMap()->getIndexBase(), solidStriding, xA11->getRowMap()->getComm(), -1));
   Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> thermomap =
-      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-          xA22->getRowMap(), thermoStriding, xA22->getRowMap()->getIndexBase(), -1, 0));
+      Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA22->getRowMap()->lib(),
+          xA22->getRowMap()->getGlobalNumElements(), xA22->getRowMap()->getLocalElementList(),
+          xA22->getRowMap()->getIndexBase(), thermoStriding, xA22->getRowMap()->getComm(), -1));
 
   // build map extractor
   std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
-  maps.push_back(solidmap);
-  maps.push_back(thermomap);
+  maps.emplace_back(solidmap);
+  maps.emplace_back(thermomap);
 
   Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
       Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
@@ -390,7 +392,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
               solidmap, muelulist_.sublist("Inverse1"));
 
       int thermoDimns = thermoList.get<int>("null space: dimension", -1);
-      if (thermoDimns == -1 || solidDofs == -1)
+      if (thermoDimns == -1 || thermoDofs == -1)
         dserror("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
