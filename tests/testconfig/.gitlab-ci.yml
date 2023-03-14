@@ -1,56 +1,56 @@
-    #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # Define global variables for all jobs
 variables:
-    # Clone repository by default, file have changed attribute.
+  # Clone repository by default, file have changed attribute.
   GIT_STRATEGY: clone
-    # If not called by a scheduler this variable has to be 0.
-    # 1: daily full (release, debug)
-    # 3: weekly coverage
-    # 4: weekly testing of Baci with a current Trilinos develop version
+  # If not called by a scheduler this variable has to be 0.
+  # 1: daily full (release, debug)
+  # 3: weekly coverage
+  # 4: weekly testing of Baci with a current Trilinos develop version
   GITLAB_SCHEDULER_TYPE: '0'
 
-    # Build type for pipelines started via the GitLab GUI
-    # Options:
-    # - "release" (default)
-    # - "debug"
+  # Build type for pipelines started via the GitLab GUI
+  # Options:
+  # - "release" (default)
+  # - "debug"
   CTEST_BUILD_TYPE_GITLAB: release
 
-    # Prefix for do-configure.
+  # Prefix for do-configure.
   CTEST_CONFIGURE_PREFIX: ''
 
-    # Postfix for do-configure.
+  # Postfix for do-configure.
   CTEST_CONFIGURE_POSTFIX: ''
 
-    # Number of threads to be used during build
+  # Number of threads to be used during build
   CTEST_NUMBER_OF_BUILD_THREADS: '3'
 
-    # Number of threads to be used during testing
+  # Number of threads to be used during testing
   CTEST_NUMBER_OF_TEST_THREADS: '1'
 
-    # Select specific test by regular expressen (".": all)
+  # Select specific test by regular expressen (".": all)
   TEST_TAG: .
 
-    # Temporary exclude postprocessing tests at IMCS.
+  # Temporary exclude postprocessing tests at IMCS.
   CTEST_EXCLUDE_STRING: ''
 
-    # Flag to specify if pipeline fails on warning (0:no, 1:yes)
+  # Flag to specify if pipeline fails on warning (0:no, 1:yes)
   CTEST_FAIL_ON_WARNING: '1'
 
-    # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
+  # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
   GITLAB_SCHEDULER_LNM_SCHMARRN: '0'
   GITLAB_SCHEDULER_LNM_DEEP: '0'
   GITLAB_SCHEDULER_LNM_BRUTEFORCE: '0'
 
-    # Flags for entering interactive mode on specific machines # (0: off, 1: on)
+  # Flags for entering interactive mode on specific machines # (0: off, 1: on)
   GITLAB_INTERACTIVE_MODE: '0'
-    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
+  # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
   GITLAB_INTERACTIVE_MACHINE: none
-    # Flags for doing a clean build in interactive mode # (0: off, 1: on)
+  # Flags for doing a clean build in interactive mode # (0: off, 1: on)
   GITLAB_INTERACTIVE_CLEAN: '0'
 
-    # Flags for cdash.
+  # Flags for cdash.
   CTEST_DROP_SITE_CDASH_GITLAB: '0'
   CTEST_DROP_SITE_GITLAB: jacobi.lnm.ed.tum.de
   CTEST_DROP_LOCATION_GITLAB: /cdash/submit.php?project=baci
@@ -65,13 +65,13 @@ variables:
 .buildtest_minimal: &buildtest_minimal
   stage: buildtest
   variables:
-        # So the old build can be used again.
+    # So the old build can be used again.
     GIT_STRATEGY: fetch
   script:
   - 'echo minimal test: triggered by change in any protected branch'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
   - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal -j
@@ -79,7 +79,7 @@ variables:
     -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests
     passed\,"
   after_script:
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_minimal.log buildtest_minimal.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -101,30 +101,35 @@ variables:
 .buildtest_full: &buildtest_full
   stage: buildtest
   script:
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
     -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS"
     | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler
     " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+    # sort output of pipeline
+  - cd ../baci-build
+  - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
+    ../buildtest_full.log ../buildtest_full.log
+  - cd -
+      # Write selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_full.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_full.log buildtest_full.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -143,34 +148,34 @@ variables:
 .buildtest_interactive: &buildtest_interactive
   stage: buildtest
   script:
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # clear cache only if specified
+    # clear cache only if specified
   - if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then
   - echo Cleaning old build files
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
   - fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
     -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_interactive.log
     | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
     "\.\.\.   Passed" -e " tests passed\," '
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+    # Write Selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_interactive.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_interactive.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_interactive.log buildtest_interactive.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -185,55 +190,55 @@ variables:
 .buildtest_coverage_weekly: &buildtest_coverage_weekly
   stage: buildtest
   script:
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING"
     -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee buildtest_weekly_coverage.log
     | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
     "\.\.\.   Passed" -e " tests passed\," '
-        # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
+    # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
   - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory
     . --output-file baci_coverage_base.info > baci_coverage_base.log
-        # generate the baci_coverage_tests.info based on tests run above
+    # generate the baci_coverage_tests.info based on tests run above
   - lcov --capture --no-external --directory ../baci-build/ --base-directory . --output-file
     baci_coverage_tests.info > baci_coverage_tests.log
-        # combine the baseline coverage with the coverage from the tests
+    # combine the baseline coverage with the coverage from the tests
   - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info
     --output-file baci_coverage.info  > baci_coverage.log
-        # remove unwanted files from the coveragre report
+    # remove unwanted files from the coveragre report
   - lcov --remove baci_coverage.info "*/unittests*/*" "*/tests/*" "*/baci-build/*"
     -o baci_coverage_filtered.info > baci_coverage_filtered.log
-        # generate the html version of the coverage report
+    # generate the html version of the coverage report
   - genhtml baci_coverage_filtered.info --legend --demangle-cpp --output-directory
     coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
-        # add repo link to the commit that the report is based on
+    # add repo link to the commit that the report is based on
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
     commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+      # Write Selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' buildtest_weekly_coverage.log || true
   - sed -n '/tests passed,/,//p' buildtest_weekly_coverage.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # update (push) the cache of the weekly coverage report:
-    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
+      # update (push) the cache of the weekly coverage report:
+      # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
     key: cache-weekly-coverage-report
     paths:
     - coverage_report/
-            # the log is needed to print the weekly value of total line coverage in daily and minimal master pipelines
+      # the log is needed to print the weekly value of total line coverage in daily and minimal master pipelines
     - genhtml_weekly_coverage.log
     policy: push
   artifacts:
@@ -256,31 +261,31 @@ variables:
 .buildtest_daily: &buildtest_daily
   stage: buildtest
   script:
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - echo Nightly Test Release
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING"
     -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily.log
     | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
     "\.\.\.   Passed" -e " tests passed\,"
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+    # Write Selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_daily.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_daily.log buildtest_daily.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -297,31 +302,31 @@ variables:
 .buildtest_daily_debug: &buildtest_daily_debug
   stage: buildtest
   script:
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - echo Nightly Test Debug
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING"
     -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily_debug.log | grep -e
     "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed"
     -e " tests passed\,"
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+    # Write Selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -338,45 +343,45 @@ variables:
   script:
   - echo Build and test Trilinos develop branch
   - cd $CI_PROJECT_DIR/..
-        # Delete old Trilinos 
+    # Delete old Trilinos
   - rm -rf Trilinos
-        # Cloning the Trilinos-develop branch 
+    # Cloning the Trilinos-develop branch
   - git clone -b develop https://github.com/trilinos/Trilinos.git
   - cd Trilinos
-        # Apply patches for baci
+    # Apply patches for baci
   - git apply $CI_PROJECT_DIR/trilinos/trilinos_for_baci.patch
-        # Delete old Trilinos build files
+    # Delete old Trilinos build files
   - rm -rf $CI_PROJECT_DIR/../Trilinos-develop-build
   - mkdir $CI_PROJECT_DIR/../Trilinos-develop-build
   - cd $CI_PROJECT_DIR/../Trilinos-develop-build
-        # Configure Trilinos and build it
+    # Configure Trilinos and build it
   - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
   - make -j${CTEST_NUMBER_OF_BUILD_THREADS} install |& tee -a ../buildtest_release_trilinos_develop.log
-        # Specify which configuration is tested by this pipeline
+    # Specify which configuration is tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
     -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS"
     | tee -a ../buildtest_release_trilinos_develop.log | grep -e "^MakeCommand" -e
     "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests
     passed\," '
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        # Output 200 lines for any failing test
+    # Write Selection of the output into the terminal and therefore to GITLAB
+    # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_release_trilinos_develop.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_release_trilinos_develop.log
-        # Specify which configuration was tested by this pipeline
+    # Specify which configuration was tested by this pipeline
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_release_trilinos_develop.log buildtest_release_trilinos_develop.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -392,25 +397,25 @@ variables:
   stage: doxygen
   script:
   - echo Doxygen
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Output to log because it is too much for the gitlab console.
+    # Output to log because it is too much for the gitlab console.
   - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log
-        # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
+    # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
   - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
     during doxygen generation.'; exit 1; else echo 'Doxygen builds without fatal errors.';
     fi
   - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
     doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
-        # Move final doxygen into the base folder for the next stage
+    # Move final doxygen into the base folder for the next stage
   - mv $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen
   after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
+    # Write Selection of the output into the terminal and therefore to GITLAB
   - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
-        # Write information about possible Latex errors to terminal
+    # Write information about possible Latex errors to terminal
   - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
     doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
-        # Move the log file to the source folder, so it can be found by artifacts.
+    # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../doxygen.log doxygen.log
 
 #-------------------------------------------------------------------------------
@@ -540,21 +545,21 @@ lnm-codeclimate:
   stage: checkcode
   script:
   - echo Check code for possible improvements
-        # Delete old build files.
+    # Delete old build files.
   - rm -rf ../baci-build/
-        # Clear eventual ccache cache.
+    # Clear eventual ccache cache.
   - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
     fi
   - mkdir ../baci-build/
   - cd ../baci-build/
-        # configure to get a compilation database
+    # configure to get a compilation database
   - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-        # create  and activate virtual environment
+    # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
   - pip install wheel
   - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
-        # run clang tidy and export report
+    # run clang tidy and export report
   - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 12 -p . -extra-arg="-I/usr/lib/x86_64-linux-gnu/openmpi/include/"
     -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter
     ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
@@ -624,11 +629,11 @@ lnm-workstation-buildtest_interactive:
 lnm-buildtest_coverage_weekly:
   <<: *buildtest_coverage_weekly
   variables:
-        # increase the global test timeout
+    # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '30'
-        # increase the unit test timeout
+    # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
-        # enable coverage option of ctest
+    # enable coverage option of ctest
     CTEST_NUMBER_OF_TEST_THREADS: '10'
     CTEST_NUMBER_OF_BUILD_THREADS: '10'
     CTEST_CONFIGURE_POSTFIX: --coverage --uselld
@@ -644,28 +649,28 @@ lnm-buildtest_coverage_weekly:
 pages: # job name needs to be pages
   stage: pages
   variables:
-        # stage operates exclusively on artifacts. No need for source code.
+    # stage operates exclusively on artifacts. No need for source code.
     GIT_STRATEGY: fetch
     # Download Doxygen from previous lnm-doxygen stage
   dependencies:
   - lnm-doxygen
   script:
-        # print the weekly measured coverage rate
+    # print the weekly measured coverage rate
   - echo 'Weekly measured'
   - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
-        # Create directory that will be published
+    # Create directory that will be published
   - mkdir -p public
-        # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
+    # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
   - mv coverage_report public/coverage_report
-        # Move most recent doxygen to public folder
+    # Move most recent doxygen to public folder
   - mv doxygen public/doxygen
-        # Create python venv to create badges
+    # Create python venv to create badges
   - python3 -m venv venv
   - . venv/bin/activate
   - pip install anybadge
-        # Create doxygen badge
+    # Create doxygen badge
   - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
-        # Create website badge
+    # Create website badge
   - anybadge -l website -v ok --color=green -f public/website.svg
   coverage: /lines\.*:\s+\d+\.\d+/
   cache:
@@ -675,15 +680,15 @@ pages: # job name needs to be pages
     - genhtml_weekly_coverage.log
     policy: pull
   artifacts:
-        # store the public path in artifact
-        # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
-        # the content of the below artifact is published on GitLab Pages
+    # store the public path in artifact
+    # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
+    # the content of the below artifact is published on GitLab Pages
     paths:
     - public
     expire_in: 1 day
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  tags:   # must run on the same machine as the coverage report
+  tags: # must run on the same machine as the coverage report
   - lnm-coverage-weekly
   - lnm-ubuntu
 
