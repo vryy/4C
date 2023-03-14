@@ -1337,6 +1337,9 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
   // store the old external force
   GState().GetMutableFextN()->Scale(1.0, FextNp());
 
+  // store the old reaction force
+  GState().GetMutableFreactN()->Scale(1.0, *GState().GetFreactNp());
+
   // new at t_{n+1} -> t_{n+timefac_n}
   //    F^{struct}_{n+timefac_n} := timefac_n * F^{struct}_{n+1}
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();

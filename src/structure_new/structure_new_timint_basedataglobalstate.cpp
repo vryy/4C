@@ -63,6 +63,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       accnp_(Teuchos::null),
       fintnp_(Teuchos::null),
       fextnp_(Teuchos::null),
+      freactn_(Teuchos::null),
       freactnp_(Teuchos::null),
       finertialn_(Teuchos::null),
       finertialnp_(Teuchos::null),
@@ -190,6 +191,7 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   fextnp_ = LINALG::CreateVector(*DofRowMapView(), true);
 
+  freactn_ = LINALG::CreateVector(*DofRowMapView(), true);
   freactnp_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   finertialn_ = LINALG::CreateVector(*DofRowMapView(), true);
