@@ -97,6 +97,8 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
 
   if (IsPredictorState()) return;
 
+  UpdateConstantStateContributions();
+
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------
   // new end-point displacements
