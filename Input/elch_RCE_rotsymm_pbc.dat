@@ -179,16 +179,12 @@ E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 1 4 0 0
 DSURF                           1
 //                              outer_wall
 E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.003 0.103 0.2 0.0 FUNCT 0 0 0 0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              slave
 E 5 - 1 Slave PLANE xz LAYER 0 ANGLE +90.0 ABSTREETOL 1e-9
 //                              master
 E 3 - 1 Master PLANE xz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           1
 //                              completeinnerwall

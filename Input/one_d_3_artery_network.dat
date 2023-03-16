@@ -86,8 +86,6 @@ NDPOINT                         6
 NDLINE                          3
 NDSURF                          1
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 ---------------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
 DPOINT                          1
 E 1 - flow forced 10.0 0.0 1 2
@@ -95,8 +93,6 @@ E 1 - flow forced 10.0 0.0 1 2
 DPOINT                          2
 E 4 - 0.0 none
 E 6 - 0.0 none
----------------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT                          0
 -----------------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
 DPOINT                          3
 E 2 - 1 0.1
@@ -110,29 +106,11 @@ E 3 - inlet
 E 4 - outlet
 E 5 - inlet
 E 6 - outlet
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT
 DLINE                           3
 E 1 - 1
 E 2 - 2
 E 3 - 3
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2

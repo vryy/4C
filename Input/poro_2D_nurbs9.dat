@@ -98,8 +98,6 @@ E 2 -
 ---------------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
 DLINE                           1
 E 3 -
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
 ---------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF                           1
 //                              Surface

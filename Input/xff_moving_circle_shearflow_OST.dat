@@ -107,10 +107,6 @@ DVOL 2
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // Fluid xfem
@@ -123,8 +119,6 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0.0 0.0 0.0 FUNCT 3 0 0 0
 DSURF 1
 // Fluid xfem
 E 4 - COUPLINGID 1 xfluid
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF 0
 ------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid volume

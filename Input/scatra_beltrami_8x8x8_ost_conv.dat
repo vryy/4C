@@ -144,10 +144,6 @@ NDPOINT                         1
 NDLINE                          0
 NDSURF                          8
 NDVOL                           1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
@@ -170,8 +166,6 @@ E 3 -
 E 4 -
 E 5 -
 E 6 -
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 649 DNODE 1
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

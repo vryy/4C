@@ -245,8 +245,6 @@ E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 DVOL                            1
 E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // no velocity in x and z-direction at all nodes!!!
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -254,8 +252,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 DVOL                            1
 E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // no ALE-displacement in x and z-direction at all nodes!!!
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 //                              anode
