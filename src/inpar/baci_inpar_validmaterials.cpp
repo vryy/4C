@@ -475,6 +475,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Combo muscle material
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_Muscle_Combo", "Combo muscle material", INPAR::MAT::m_muscle_combo));
+
+    AddNamedReal(m, "ALPHA", "experimentally fitted material parameter");
+    AddNamedReal(m, "BETA", "experimentally fitted material parameter");
+    AddNamedReal(m, "GAMMA", "experimentally fitted material parameter");
+    AddNamedReal(m, "KAPPA", "material parameter for coupled volumetric contribution");
+    AddNamedReal(m, "OMEGA0", "weighting factor for isotropic tissue constituents");
+    AddNamedReal(m, "POPT", "tetanised optimal (maximal) active stress");
+    AddNamedReal(m, "LAMBDAMIN", "minimal active fiber stretch");
+    AddNamedReal(
+        m, "LAMBDAOPT", "optimal active fiber stretch related to active nominal stress maximum");
+    AddNamedReal(m, "C", "constant scaling tanh-type activation function");
+    AddNamedReal(m, "ACTSTARTTIME", "starting time of muscle activation");
+    AddNamedReal(m, "DENS", "density");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Active strain Giantesio muscle material
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Muscle_Giantesio",
