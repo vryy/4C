@@ -137,6 +137,52 @@ void INPAR::S2I::SetValidConditions(
   }
 
   /*--------------------------------------------------------------------*/
+  // scatra-scatra interface no evaluation condition
+  {
+    // definition of scatra-scatra interface no evaluation line condition
+    auto s2inoevaluationline = Teuchos::rcp(
+        new ConditionDefinition("DESIGN S2I NO EVALUATION LINE CONDITIONS", "S2INoEvaluation",
+            "Scatra-scatra interface no evaluation line condition. This condition can be used to "
+            "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
+            "is in coupled algorithms, where a specific `S2IKinetics` condition should not be "
+            "evaluated within the scalar transport framework, as it already evaluated elsewhere. "
+            "One example is the SSI contact.",
+            DRT::Condition::S2INoEvaluation, true, DRT::Condition::Line));
+
+    // definition of scatra-scatra interface no evaluation surface condition
+    auto s2inoevaluationsurf = Teuchos::rcp(new ConditionDefinition(
+        "DESIGN S2I NO EVALUATION SURF CONDITIONS", "S2INoEvaluation",
+        "Scatra-scatra interface no evaluation surface condition. This condition can be used to "
+        "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
+        "is in coupled algorithms, where a specific `S2IKinetics` condition should not be "
+        "evaluated within the scalar transport framework, as it already evaluated elsewhere. "
+        "One example is the SSI contact.",
+        DRT::Condition::S2INoEvaluation, true, DRT::Condition::Surface));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent>> s2inoevaluationcomponents;
+    s2inoevaluationcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    s2inoevaluationcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(
+        "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+        Teuchos::tuple<int>(
+            INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
+    s2inoevaluationcomponents.emplace_back(
+        Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
+    s2inoevaluationcomponents.emplace_back(
+        Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
+
+    // insert input file line components into condition definitions
+    for (auto& conditioncomponent : s2inoevaluationcomponents)
+    {
+      s2inoevaluationline->AddComponent(conditioncomponent);
+      s2inoevaluationsurf->AddComponent(conditioncomponent);
+    }
+
+    condlist.push_back(s2inoevaluationline);
+    condlist.push_back(s2inoevaluationsurf);
+  }
+
+  /*--------------------------------------------------------------------*/
   // scatra-scatra interface kinetics condition
   {
     // definition of scatra-scatra interface kinetics point condition
