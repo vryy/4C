@@ -126,50 +126,22 @@ NDPOINT 2
 NDLINE 0
 NDSURF 3
 NDVOL 4
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.2 0.0 0.0 0.0 0.0 FUNCT 0 2 0 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF 0
---------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT 0
----------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE 0
----------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF 0
-----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // xFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // xFluid upper and lower surface
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 2
 // XFluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // Fluid xfem
@@ -182,8 +154,6 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 FUNCT 3 0 0 0
 DSURF 1
 // Fluid xfem
 E 2 - COUPLINGID 1 xfluid
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF 0
 ------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid volume

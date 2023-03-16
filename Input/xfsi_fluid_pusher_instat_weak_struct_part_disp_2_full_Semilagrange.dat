@@ -180,14 +180,6 @@ NDVOL 2
 DSURF 1
 // surface inflow
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // top inflow points
@@ -250,52 +242,6 @@ E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.70 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 1
 E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF 0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL 0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT 0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE 0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF 0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE 0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF 0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT 0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE 0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF 0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL 0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF 0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF 0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF 0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE 0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF 0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE 0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF 0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF 6

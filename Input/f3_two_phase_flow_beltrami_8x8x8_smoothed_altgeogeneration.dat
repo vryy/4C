@@ -151,10 +151,6 @@ NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top

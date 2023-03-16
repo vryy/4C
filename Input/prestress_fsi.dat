@@ -189,8 +189,6 @@ NDPOINT                         12
 NDLINE                          22
 NDSURF                          14
 NDVOL                           3
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
@@ -204,45 +202,19 @@ E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           0
 //E 3 - 1 1 0 0 0 0 0 1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
 E 1 - 1
 E 2 - 1
 E 5 - 1
 E 6 - 1
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 726 DNODE 1
 NODE 5513 DNODE 2

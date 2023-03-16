@@ -174,16 +174,6 @@ NDVOL                           1
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 FUNCT 0 0 0 0 0 0 0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // Surface x-

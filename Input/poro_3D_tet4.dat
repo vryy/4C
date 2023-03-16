@@ -181,8 +181,6 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              z-
 E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
-DPOINT                          0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           4
 // Line y+z-

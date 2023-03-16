@@ -242,8 +242,6 @@ DVOL                            0
 DVOL                           1
 //                              fluid_volume
 E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 BOOLEANTYPE none COMPLEMENTARY 0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2 DNODE 1
 NODE 1 DNODE 2
