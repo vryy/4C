@@ -26,6 +26,8 @@
 
 /cmake/                            @baci/baci_maintainer @baci/team_infrastructure
 
+/dependencies/                     @baci/baci_maintainer @baci/team_infrastructure
+
 /doc/                              @baci/baci_maintainer @baci/team_infrastructure
 
 /doc_removed_code/                 @baci/baci_maintainer
@@ -417,4 +419,3 @@ do-configure                       @baci/team_infrastructure @baci/baci_maintain
 TestingFramework.cmake             @baci/team_testing
 TestingFrameworkListOfTests.cmake  @baci/baci_developers
 UnittestingFramework.cmake         @baci/team_testing
-
