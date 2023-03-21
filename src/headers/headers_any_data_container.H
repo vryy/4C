@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Any data container based on vectors of Teuchos::any data.
+\brief Any data container based on vectors of std::any data.
 
 
 \level 1
@@ -11,8 +11,9 @@
 #ifndef HEADERS_ANY_DATA_CONTAINER_H
 #define HEADERS_ANY_DATA_CONTAINER_H
 
-#include <Teuchos_any.hpp>
+#include <any>
 #include "lib_dserror.H"
+#include "lib_demangle.H"
 #include <unordered_map>
 
 // forward declaration
@@ -59,41 +60,34 @@ namespace GEN
     /// internal data container
     struct AnyData
     {
-      /// default constructor
-      AnyData() = default;
-
-      /// copy constructor
-      AnyData(const Teuchos::any& data) : data_(data){/* empty */};
-
-      /// destructor
-      ~AnyData() = default;
-
       /// accessor
-      const Teuchos::any& get() const
+      [[nodiscard]] const std::any& TryGet() const
       {
-        if (data_.empty()) dserror("The data is empty!");
+        if (!data_.has_value()) dserror("The data is empty!");
 
         return data_;
       }
 
       /// set any data and perform a sanity check
       template <typename T>
-      void set(const T& data)
+      void TrySet(const T& data)
       {
-        if (data_.empty())
-          data_ = data;
-        else
+        if (data_.has_value())
+        {
           dserror(
               "There are already data:\n%s\nAre you sure, that you want "
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
               "respective task.",
-              data_.typeName().c_str());
+              DRT::UTILS::TryDemangle(data_.type().name()).c_str());
+        }
+        else
+          data_ = data;
       }
 
      private:
       /// actual stored data (of any type)
-      Teuchos::any data_;
+      std::any data_;
     };
 
    public:
@@ -259,7 +253,7 @@ namespace GEN
       // clear all entries
       if (id < 0)
       {
-        for (auto& any_data : any_data_vec) any_data = Teuchos::any();
+        for (auto& any_data : any_data_vec) any_data = AnyData{};
 
         return;
       }
@@ -268,20 +262,20 @@ namespace GEN
       if (id >= static_cast<int>(any_data_vec.size())) return;
 
       // clear only one entry
-      any_data_vec[id] = Teuchos::any();
+      any_data_vec[id] = AnyData{};
     }
 
     /// pack and set the data pointer
     template <typename T, DataType type>
     void SetData(const T* data, const unsigned id)
     {
-      Teuchos::any any_data(data);
+      std::any any_data(data);
       SetAnyData<type>(any_data, id);
     }
 
     /// set the data in the respective container
     template <DataType type>
-    void SetAnyData(const Teuchos::any& any_data, const unsigned id)
+    void SetAnyData(const std::any& any_data, const unsigned id)
     {
       switch (type)
       {
@@ -318,16 +312,13 @@ namespace GEN
     template <typename T, DataType type>
     const T* GetData(const unsigned id) const
     {
-      const Teuchos::any& any_data = GetAnyData<type>(id);
-
-      //      any_data.print( std::cout );
-      //      std::cout << any_data.typeName() << std::endl;
-      return Teuchos::any_cast<const T*>(any_data);
+      const std::any& any_data = GetAnyData<type>(id);
+      return std::any_cast<const T*>(any_data);
     }
 
     /// access the data
     template <DataType type>
-    const Teuchos::any& GetAnyData(const unsigned id) const
+    const std::any& GetAnyData(const unsigned id) const
     {
       switch (type)
       {
@@ -357,22 +348,22 @@ namespace GEN
 
     /// add to any data vector
     void AddToAnyDataVec(
-        const Teuchos::any& any_data, const unsigned id, std::vector<AnyData>& any_data_vec) const
+        const std::any& any_data, const unsigned id, std::vector<AnyData>& any_data_vec) const
     {
       if (any_data_vec.size() <= id) any_data_vec.resize(id + 1);
 
       AnyData& data_id = any_data_vec[id];
-      data_id.set(any_data);
+      data_id.TrySet(any_data);
     }
 
     /// access content of any data vector
-    inline const Teuchos::any& GetFromAnyDataVec(
+    inline const std::any& GetFromAnyDataVec(
         const unsigned id, const std::vector<AnyData>& any_data_vec) const
     {
       if (id >= any_data_vec.size())
         dserror("Requested ID #%d exceeds the AnyData vector size (=%d).", id, any_data_vec.size());
 
-      return any_data_vec[id].get();
+      return any_data_vec[id].TryGet();
     }
 
    private:
