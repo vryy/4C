@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of the Weickenmeier active skeletal muscle material
+\brief Implementation of the Weickenmeier active skeletal muscle material (generalized active strain
+approach)
 
 \level 3
 
@@ -294,7 +295,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
   CORE::LINALG::Matrix<6, 1> domegaadCv(Mv);
-  domegaadCv.Scale(derivOmegaa);
+  domegaadCv.Scale(derivOmegaa * 0.5 / lambdaM);
 
   // compute helper matrices for further calculation
   CORE::LINALG::Matrix<3, 3> LomegaaM(L);
@@ -357,10 +358,11 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
-  if (abs(t_tot + 1.0) < 1e-14) dserror("No total time given for muscle Weickenmeier material!");
+  if (std::abs(t_tot + 1.0) < 1e-14)
+    dserror("No total time given for muscle Weickenmeier material!");
   // save (time) step size
   double timestep = params.get<double>("delta time", -1);
-  if (abs(timestep + 1.0) < 1e-14)
+  if (std::abs(timestep + 1.0) < 1e-14)
     dserror("No time step size given for muscle Weickenmeier material!");
 
   // approximate first time derivative of lambdaM through BW Euler
@@ -463,7 +465,7 @@ void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(const double lambdaM, con
   omegaa = W0 / (alpha * std::pow(lambdaM, 2.)) - derivIp / (2.0 * lambdaM);
 
   // computation of partial derivative of omegaa w.r.t. lambdaM
-  derivOmegaa = derivLambert / (2.0 * alpha * std::pow(lambdaM, 3.)) -
-                W0 / (alpha * std::pow(lambdaM, 4)) - derivderivIp / (4.0 * std::pow(lambdaM, 2.)) +
-                derivIp / (4.0 * std::pow(lambdaM, 3.));
+  derivOmegaa = derivLambert / (alpha * lambdaM * lambdaM) -
+                2.0 * W0 / (alpha * lambdaM * lambdaM * lambdaM) - derivderivIp / (2.0 * lambdaM) +
+                derivIp / (2.0 * lambdaM * lambdaM);
 }

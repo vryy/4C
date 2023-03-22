@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief Definition of classes for the isochoric part of the anisotropic Blemker active skeletal
-muscle material
+(active stress approach) muscle material
 
 \level 3
 */
@@ -62,14 +62,17 @@ namespace MAT
      * \brief Isochoric part of the Blemker muscle material
      *
      * This material represents an active hyperelastic muscle material using an active stress
-     * approach as described by Blemker et. al.
+     * approach as described by Blemker et al.
      *
      * Reference for the material model: S. S. Blemker, P. M. Pinsky und S. L. Delp, 'A 3D model of
      * muscle reveals the causes of nonuniform strains in the biceps brachii', Journal of
      * biomechanics, vol. 38, no. 4, pp. 657-665, 2005. doi: 10.1016/j.jbiomech.2004.04.009
      *
      * To account for a time dependent activation, a tanh-type function scaling the activation level
-     * alpha is added in addition to the original version in the paper.
+     * alpha is added in addition to the original version in the paper. Since the material exhibits
+     * no response for uniaxial compression in the fiber direction, it should be paired, e.g., with
+     * a simple Neo Hooke model to account for the isotropic extracellular matrix compressive
+     * resistance.
      */
     class IsoMuscleBlemker : public Summand
     {

@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of the Giantesio active strain skeletal muscle material
+\brief Implementation of the Giantesio active strain skeletal muscle material (active strain
+approach)
 
 \level 3
 
@@ -431,11 +432,12 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // save current simulation time
   double currentTime = params.get<double>("total time", -1);
-  if (abs(currentTime + 1.0) < 1e-14) dserror("No total time given for muscle Giantesio material!");
+  if (std::abs(currentTime + 1.0) < 1e-14)
+    dserror("No total time given for muscle Giantesio material!");
 
   // save (time) step size
   double timeStepSize = params.get<double>("delta time", -1);
-  if (abs(timeStepSize + 1.0) < 1e-14)
+  if (std::abs(timeStepSize + 1.0) < 1e-14)
     dserror("No time step size given for muscle Giantesio material!");
 
   // compute matrices

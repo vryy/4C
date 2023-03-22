@@ -1,5 +1,6 @@
 -----------------------------------------------------------------------TITLE
-Testcase for testing muscle_giantesio material (passive and active material behaviour)
+Testcase for testing MAT_Muscle_Giantesio material (passive and active material behaviour)
+Activation prescribed through active strain approach
 
 The setup of the test-case are 2 cubes, 1 for testing the passive (cube 1), and 1 for testing the active material response (cube 2).
 

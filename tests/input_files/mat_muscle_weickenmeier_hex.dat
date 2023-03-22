@@ -1,5 +1,6 @@
 -----------------------------------------------------------------------TITLE
-Testcase for testing muscle_weickenmeier material (passive and active material behaviour)
+Testcase for testing MAT_Muscle_Weickenmeier material (passive and active material behaviour)
+Activation prescribed through generalized active strain approach
 
 The setup of the test-case are 3 cubes, 1 for testing the passive (cube 1), and 2 for testing the active material response (cube 2, 3).
 Cube 3 additionally tests the velocity dependence of the active forces while cube 2 neglects this dependency.

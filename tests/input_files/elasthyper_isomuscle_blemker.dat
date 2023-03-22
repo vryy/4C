@@ -1,11 +1,12 @@
 -----------------------------------------------------------------------TITLE
 Testcase for testing ELAST_IsoMuscle_Blemker material
+Activation prescribed through active stress approach
 
 Geometry and Elements:
 - The setup of the test-case is one cube of size 1x1x1 discretized by 2 linear HEX elements in each direction. Hence the cube consists of 8 HEX8 elements.
 
 Fibers:
-- Element fiber notation (FIBER1 FIBER 2): FIBER 1 in z-direction
+- Element fiber notation (FIBER1 FIBER2): FIBER 1 in z-direction
 
 Material:
 - Blemker muscle material, activation start after one timestep at t=0.0001

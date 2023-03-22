@@ -92,7 +92,7 @@ namespace MAT
        * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
        * To be able to turn the velocity dependency on and off, this concept is adopted for the
        * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
-       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et. al.
+       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et al..
        *
        * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
@@ -118,7 +118,7 @@ namespace MAT
        * al. scale and shift the eccentric branch of the velocity dependency using the parameter d.
        * To be able to turn the velocity dependency on and off, this concept is adopted for the
        * concentric branch as well. Choosing de=dc=0 leads to a neglection of the velocity
-       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et. al.
+       * dependence. Choosing dc=1 and de=d-1 reproduces the function presented by Boel et al..
        *
        * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on
        * the finite element method', Computer Methods in Biomechanics and Biomedical Engineering,
