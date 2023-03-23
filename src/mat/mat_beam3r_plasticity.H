@@ -324,7 +324,10 @@ namespace MAT
     //! axial stress
     std::vector<T> stressN_;
 
+    /// Number of integration points for forces
     unsigned int numgp_force_;
+
+    /// Number of integration points for moments
     unsigned int numgp_moment_;
     //@}
   };
