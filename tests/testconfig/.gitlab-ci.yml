@@ -44,6 +44,14 @@ variables:
   # Flags for doing a clean build in interactive mode # (0: off, 1: on)
   GITLAB_INTERACTIVE_CLEAN: '0'
 
+  # Variables for docker
+  BACI_DOCKER_BUILD_IMAGES:
+    description: Build the docker images and push them to the CI registry
+    value: 'False'
+    options:
+    - 'True'
+    - 'False'
+  BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -374,6 +382,7 @@ variables:
 #-------------------------------------------------------------------------------
 
 stages:
+- build-docker-images
 - checkcode
 - buildtest
 - doxygen
@@ -761,3 +770,24 @@ lnm-doxygen:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+
+# Build the docker image with all dependencies for Baci
+build-base-dependencies:
+  stage: build-docker-images
+  tags:
+  - docker
+  image: docker:20.10.16
+  services:
+  - docker:20.10.16-dind
+  variables:
+    FULL_IMAGE_PATH: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    # pull the latest available image to make use of caching
+  - echo $CI_REGISTRY_IMAGE
+  - echo $CI_REGISTRY
+  - docker build --no-cache --tag $FULL_IMAGE_PATH --file docker/Dockerfile .
+  - docker push $FULL_IMAGE_PATH
+  rules:
+  - if: $BACI_DOCKER_BUILD_IMAGES == "True"
