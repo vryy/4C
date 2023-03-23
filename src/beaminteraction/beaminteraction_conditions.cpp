@@ -140,7 +140,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
              interaction_type ==
                  INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
     {
-      // Add all beam-to-solid contitions.
+      // Add all beam-to-solid conditions.
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 

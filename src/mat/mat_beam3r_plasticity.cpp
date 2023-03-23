@@ -102,6 +102,62 @@ MAT::BeamPlasticMaterial<T>::BeamPlasticMaterial(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+
+template <typename T>
+void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
+{
+  cN_eff_.resize(numgp_force);
+  cM_eff_.resize(numgp_moment);
+  gammaplastconv_.resize(numgp_force);
+  gammaplastnew_.resize(numgp_force);
+  gammaplastaccum_.resize(numgp_force);
+  kappaplastconv_.resize(numgp_moment);
+  kappaplastnew_.resize(numgp_moment);
+  kappaplastaccum_.resize(numgp_moment);
+  effyieldstressN_.resize(numgp_force);
+  effyieldstressM_.resize(numgp_moment);
+  deltaKappaplast_.resize(numgp_moment);
+  normstressM_.resize(numgp_moment);
+  deltastressM_.resize(numgp_moment);
+  kappaelast_.resize(numgp_moment);
+  kappaelastflow_.resize(numgp_moment);
+  elastic_curvature_.resize(numgp_moment);
+  deltaGammaplast_.resize(numgp_force);
+  deltastressN_.resize(numgp_force);
+  stressN_.resize(numgp_force);
+
+  for (int gp = 0; gp < numgp_force; gp++)
+  {
+    cN_eff_[gp] = LINALG::Matrix<3, 3, T>(true);
+    gammaplastconv_[gp] = LINALG::Matrix<3, 1, T>(true);
+    gammaplastnew_[gp] = LINALG::Matrix<3, 1, T>(true);
+    gammaplastaccum_[gp] = 0;
+    effyieldstressN_[gp] = 0;
+    deltaKappaplast_[gp] = 0;
+    deltaGammaplast_[gp] = LINALG::Matrix<3, 1, T>(true);
+    deltastressN_[gp] = LINALG::Matrix<3, 1, T>(true);
+    stressN_[gp] = 0;
+  }
+
+  for (int gp = 0; gp < numgp_moment; gp++)
+  {
+    cM_eff_[gp] = LINALG::Matrix<3, 3, T>(true);
+    kappaplastconv_[gp] = LINALG::Matrix<3, 1, T>(true);
+    kappaplastnew_[gp] = LINALG::Matrix<3, 1, T>(true);
+    kappaplastaccum_[gp] = 0;
+    effyieldstressM_[gp] = 0;
+    normstressM_[gp] = 0;
+    deltastressM_[gp] = 0;
+    kappaelast_[gp] = LINALG::Matrix<3, 1, T>(true);
+    kappaelastflow_[gp] = LINALG::Matrix<3, 1, T>(true);
+    elastic_curvature_[gp] = LINALG::Matrix<3, 1, T>(true);
+  }
+
+  numgp_force_ = numgp_force;
+  numgp_moment_ = numgp_moment;
+}
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 // Pack data
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::Pack(DRT::PackBuffer& data) const
@@ -121,6 +177,8 @@ void MAT::BeamPlasticMaterial<T>::Pack(DRT::PackBuffer& data) const
   this->AddtoPack(data, matid);
 
   // Pack all internal variables
+  this->AddtoPack(data, numgp_force_);
+  this->AddtoPack(data, numgp_moment_);
   this->AddtoPack(data, gammaplastaccum_);
   this->AddtoPack(data, gammaplastconv_);
   this->AddtoPack(data, kappaplastaccum_);
@@ -141,6 +199,9 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
   int matid;
   this->ExtractfromPack(position, data, matid);
 
+  this->ExtractfromPack(position, data, numgp_force_);
+  this->ExtractfromPack(position, data, numgp_moment_);
+  this->Setup(numgp_force_, numgp_moment_);
   this->ExtractfromPack(position, data, gammaplastaccum_);
   this->ExtractfromPack(position, data, gammaplastconv_);
   this->ExtractfromPack(position, data, kappaplastaccum_);
@@ -168,7 +229,7 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressN, const LINALG::Matrix<3, 3, T>& CN,
-    const LINALG::Matrix<3, 1, T>& Gamma)
+    const LINALG::Matrix<3, 1, T>& Gamma, const unsigned int gp)
 {
   //*************Begin: Plasticity of strains in axial direction
 
@@ -176,7 +237,7 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
   if (this->Params().GetYieldStressN() < 0.0)
   {
     // compute material stresses by multiplying strains with constitutive matrix
-    MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(stressN, CN, Gamma);
+    MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(stressN, CN, Gamma, gp);
   }
   else
   {
@@ -186,31 +247,32 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
     // compute elastic strain
     for (int i = 0; i < 3; i++)
     {
-      Gammaelast(i) = Gamma(i) - gammaplastconv_(i);
+      Gammaelast(i) = Gamma(i) - gammaplastconv_[gp](i);
     }
     // compute resulting stress
     stressN.Multiply(CN, Gammaelast);
 
     // check if yield stress is surpassed
-    if (std::abs(stressN(0)) > effyieldstressN_)
+    if (std::abs(stressN(0)) > effyieldstressN_[gp])
     {
       // compute plastic strain increment
-      deltastressN_(0) = std::abs(stressN(0)) - effyieldstressN_;
+      deltastressN_[gp](0) = std::abs(stressN(0)) - effyieldstressN_[gp];
 
-      deltaGammaplast_(0) = ((CN(0, 0) - cN_eff_(0, 0)) / CN(0, 0) * deltastressN_(0) / CN(0, 0)) *
-                            FADUTILS::Signum(stressN(0));
+      deltaGammaplast_[gp](0) =
+          ((CN(0, 0) - cN_eff_[gp](0, 0)) / CN(0, 0) * deltastressN_[gp](0) / CN(0, 0)) *
+          FADUTILS::Signum(stressN(0));
 
-      gammaplastnew_(0) = gammaplastconv_(0) + deltaGammaplast_(0);
+      gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + deltaGammaplast_[gp](0);
 
       // update elastic strain and stress
       for (int i = 0; i < 3; i++)
       {
-        Gammaelast(i) = Gamma(i) - gammaplastnew_(i);
+        Gammaelast(i) = Gamma(i) - gammaplastnew_[gp](i);
       }
 
       stressN.Multiply(CN, Gammaelast);
     }
-    stressN_ = std::abs(stressN(0));
+    stressN_[gp] = std::abs(stressN(0));
   }
   //*************End: Plasticity of strains in axial direction
 }
@@ -220,7 +282,7 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::EvaluateMomentContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressM, const LINALG::Matrix<3, 3, T>& CM,
-    const LINALG::Matrix<3, 1, T>& Cur)
+    const LINALG::Matrix<3, 1, T>& Cur, const unsigned int gp)
 {
   //*************Begin: Plasticity of curvatures
 
@@ -228,18 +290,21 @@ void MAT::BeamPlasticMaterial<T>::EvaluateMomentContributionsToStress(
   if (this->Params().GetYieldStressM() < 0.0)
   {
     // compute material stresses by multiplying curvature with constitutive matrix
-    MAT::BeamElastHyperMaterial<T>::EvaluateMomentContributionsToStress(stressM, CM, Cur);
+    MAT::BeamElastHyperMaterial<T>::EvaluateMomentContributionsToStress(stressM, CM, Cur, gp);
   }
   else
   {
+    //! copy of material curvature K (but first entry is 0 if torsional plasticity is turned off)
+    LINALG::Matrix<3, 1, T> kappa{true};
+
     // If torsional plasticity is turned on, use full curvature vector for plasticity,
     // else, continue with reduced curvature vector (first entry is zero)
     if (this->Params().GetTorsionPlasticity())
     {
-      kappa_(0) = Cur(0);
+      kappa(0) = Cur(0);
     }
-    kappa_(1) = Cur(1);
-    kappa_(2) = Cur(2);
+    kappa(1) = Cur(1);
+    kappa(2) = Cur(2);
 
 
     // return-mapping algorithm
@@ -247,48 +312,49 @@ void MAT::BeamPlasticMaterial<T>::EvaluateMomentContributionsToStress(
     // compute elastic curvature
     for (int i = 0; i < 3; i++)
     {
-      kappaelast_(i) = kappa_(i) - kappaplastconv_(i);
+      kappaelast_[gp](i) = kappa(i) - kappaplastconv_[gp](i);
     }
 
     // compute resulting moments
-    stressM.Multiply(CM, kappaelast_);
+    stressM.Multiply(CM, kappaelast_[gp]);
 
     // compute norm of moment vector
-    normstressM_ = stressM.Norm2();
+    normstressM_[gp] = stressM.Norm2();
 
     // compute fraction that exceeds the current yield moment
-    deltastressM_ = normstressM_ - effyieldstressM_;
+    deltastressM_[gp] = normstressM_[gp] - effyieldstressM_[gp];
 
     // check if yield moment is surpassed
-    if (deltastressM_ > 0.0)
+    if (deltastressM_[gp] > 0.0)
     {
       // compute plastic curvature increment
-      deltaKappaplast_ = (CM(1, 1) - cM_eff_(1, 1)) / CM(1, 1) * deltastressM_ / CM(1, 1);
+      deltaKappaplast_[gp] =
+          (CM(1, 1) - cM_eff_[gp](1, 1)) / CM(1, 1) * deltastressM_[gp] / CM(1, 1);
 
       // update plastic curvature
       for (int i = 0; i < 3; i++)
       {
-        kappaplastnew_(i) =
-            kappaplastconv_(i) + deltaKappaplast_ * kappaelast_(i) / kappaelast_.Norm2();
+        kappaplastnew_[gp](i) = kappaplastconv_[gp](i) +
+                                deltaKappaplast_[gp] * kappaelast_[gp](i) / kappaelast_[gp].Norm2();
       }
 
       // update elastic curvature
       for (int i = 0; i < 3; i++)
       {
-        kappaelast_(i) = kappa_(i) - kappaplastnew_(i);
+        kappaelast_[gp](i) = kappa(i) - kappaplastnew_[gp](i);
       }
 
       // update moment vector and its norm
-      stressM.Multiply(CM, kappaelast_);
-      normstressM_ = stressM.Norm2();
+      stressM.Multiply(CM, kappaelast_[gp]);
+      normstressM_[gp] = stressM.Norm2();
     }
 
     // if torsional plasticity is turned off, the moment needs to be recomputed using the full
     // elastic curvature (kappaelast(0) is zero in this case)
     if (!this->Params().GetTorsionPlasticity())
     {
-      kappaelast_(0) = Cur(0);
-      stressM.Multiply(CM, kappaelast_);
+      kappaelast_[gp](0) = Cur(0);
+      stressM.Multiply(CM, kappaelast_[gp]);
     }
   }
 
@@ -302,22 +368,25 @@ void MAT::BeamPlasticMaterial<T>::ComputeConstitutiveParameter(
 {
   MAT::BeamElastHyperMaterial<T>::ComputeConstitutiveParameter(C_N, C_M);
 
-  // If plasticity for axial strains is enabled, get hardening constitutive parameters
-  if (this->Params().GetYieldStressN() >= 0)
+  for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {
-    GetHardeningConstitutiveMatrixOfForcesMaterialFrame(cN_eff_);
-    gammaplastnew_ = gammaplastconv_;
-    GetEffectiveYieldStressN(
-        effyieldstressN_, this->Params().GetYieldStressN(), C_N(0, 0), cN_eff_(0, 0));
+    // If plasticity for axial strains is enabled, get hardening constitutive parameters
+    if (this->Params().GetYieldStressN() >= 0)
+    {
+      GetHardeningConstitutiveMatrixOfForcesMaterialFrame(cN_eff_[gp]);
+      GetEffectiveYieldStressN(
+          effyieldstressN_[gp], this->Params().GetYieldStressN(), C_N(0, 0), cN_eff_[gp](0, 0), gp);
+    }
   }
-
-  // If plasticity for curvatures is enabled, get hardening constitutive parameters
-  if (this->Params().GetYieldStressM() >= 0)
+  for (unsigned int gp = 0; gp < numgp_moment_; gp++)
   {
-    GetHardeningConstitutiveMatrixOfMomentsMaterialFrame(cM_eff_);
-    kappaplastnew_ = kappaplastconv_;
-    GetEffectiveYieldStressM(
-        effyieldstressM_, this->Params().GetYieldStressM(), C_M(1, 1), cM_eff_(1, 1));
+    // If plasticity for curvatures is enabled, get hardening constitutive parameters
+    if (this->Params().GetYieldStressM() >= 0)
+    {
+      GetHardeningConstitutiveMatrixOfMomentsMaterialFrame(cM_eff_[gp]);
+      GetEffectiveYieldStressM(
+          effyieldstressM_[gp], this->Params().GetYieldStressM(), C_M(1, 1), cM_eff_[gp](1, 1), gp);
+    }
   }
 }
 
@@ -327,26 +396,33 @@ void MAT::BeamPlasticMaterial<T>::ComputeConstitutiveParameter(
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::Update()
 {
-  gammaplastaccum_ += std::abs(gammaplastconv_(0) - gammaplastnew_(0));
-  gammaplastconv_ = gammaplastnew_;
-  kappaplastaccum_ += std::sqrt(
-      (kappaplastconv_(0) - kappaplastnew_(0)) * (kappaplastconv_(0) - kappaplastnew_(0)) +
-      (kappaplastconv_(1) - kappaplastnew_(1)) * (kappaplastconv_(1) - kappaplastnew_(1)) +
-      (kappaplastconv_(2) - kappaplastnew_(2)) * (kappaplastconv_(2) - kappaplastnew_(2)));
-  kappaplastconv_ = kappaplastnew_;
-  cN_eff_.Scale(0.0);
-  cM_eff_.Scale(0.0);
-  kappa_.Scale(0.0);
-  kappaelast_.Scale(0.0);
-  kappaelastflow_.Scale(0.0);
-  elastic_curvature_.Scale(0.0);
-  deltaGammaplast_.Scale(0.0);
-  deltastressN_.Scale(0.0);
-  deltaKappaplast_ = 0.0;
-  normstressM_ = 0.0;
-  deltastressM_ = 0.0;
-  effyieldstressN_ = 0.0;
-  effyieldstressM_ = 0.0;
+  for (unsigned int gp = 0; gp < numgp_force_; gp++)
+  {
+    gammaplastaccum_[gp] += std::abs(gammaplastconv_[gp](0) - gammaplastnew_[gp](0));
+    gammaplastconv_[gp] = gammaplastnew_[gp];
+    cN_eff_[gp].Scale(0.0);
+    effyieldstressN_[gp] = 0.0;
+    deltaGammaplast_[gp].Scale(0.0);
+    deltastressN_[gp].Scale(0.0);
+  }
+  for (unsigned int gp = 0; gp < numgp_moment_; gp++)
+  {
+    kappaplastaccum_[gp] += std::sqrt((kappaplastconv_[gp](0) - kappaplastnew_[gp](0)) *
+                                          (kappaplastconv_[gp](0) - kappaplastnew_[gp](0)) +
+                                      (kappaplastconv_[gp](1) - kappaplastnew_[gp](1)) *
+                                          (kappaplastconv_[gp](1) - kappaplastnew_[gp](1)) +
+                                      (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)) *
+                                          (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)));
+    kappaplastconv_[gp] = kappaplastnew_[gp];
+    cM_eff_[gp].Scale(0.0);
+    effyieldstressM_[gp] = 0.0;
+    kappaelast_[gp].Scale(0.0);
+    kappaelastflow_[gp].Scale(0.0);
+    elastic_curvature_[gp].Scale(0.0);
+    deltaKappaplast_[gp] = 0.0;
+    normstressM_[gp] = 0.0;
+    deltastressM_[gp] = 0.0;
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -435,9 +511,9 @@ void MAT::BeamPlasticMaterial<T>::GetHardeningConstitutiveMatrixOfMomentsMateria
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::GetEffectiveYieldStressN(
-    T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0) const
+    T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0, const unsigned int gp) const
 {
-  eff_yieldN = init_yieldN + (CN_0 * CN_eff_0) / (CN_0 - CN_eff_0) * gammaplastaccum_;
+  eff_yieldN = init_yieldN + (CN_0 * CN_eff_0) / (CN_0 - CN_eff_0) * gammaplastaccum_[gp];
 }
 
 
@@ -445,21 +521,22 @@ void MAT::BeamPlasticMaterial<T>::GetEffectiveYieldStressN(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::GetEffectiveYieldStressM(
-    T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1) const
+    T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1, const unsigned int gp) const
 {
-  eff_yieldM = init_yieldM + (CM_1 * CM_eff_1) / (CM_1 - CM_eff_1) * kappaplastaccum_;
+  eff_yieldM = init_yieldM + (CM_1 * CM_eff_1) / (CM_1 - CM_eff_1) * kappaplastaccum_[gp];
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
-    LINALG::Matrix<3, 3, T>& stiffM, const LINALG::Matrix<3, 3, T>& C_M)
+    LINALG::Matrix<3, 3, T>& stiffM, const LINALG::Matrix<3, 3, T>& C_M, const int gp)
 {
   /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
    * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
-  if (this->Params().GetYieldStressM() < 0 || normstressM_ + 10e-10 < effyieldstressM_)
-    MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(stiffM, C_M);
+
+  if (this->Params().GetYieldStressM() < 0 || normstressM_[gp] + 10e-10 < effyieldstressM_[gp])
+    MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(stiffM, C_M, gp);
   else
   {
     // Compute stiffness matrix for plastic regime:
@@ -480,14 +557,14 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
     // initialize kappaelastflow, which points in the direction of the plastic increment
     for (int i = i_start; i < 3; i++)
     {
-      kappaelastflow_(i) = kappaelast_(i);
+      kappaelastflow_[gp](i) = kappaelast_[gp](i);
     }
-    normKappaelastflow = kappaelastflow_.Norm2();
+    normKappaelastflow = kappaelastflow_[gp].Norm2();
 
     // compute e, which is the unit vector in the direction of kappaelastflow
     for (int i = i_start; i < 3; i++)
     {
-      elastic_curvature_(i) = kappaelastflow_(i) / normKappaelastflow;
+      elastic_curvature_[gp](i) = kappaelastflow_[gp](i) / normKappaelastflow;
     }
 
     // compute the stiffness matrix of moments
@@ -497,11 +574,12 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
       {
         stiffM(i, j) =
             C_M(1, 1) *
-            ((deltaKappaplast_ / normKappaelastflow - (1.0 - cM_eff_(1, 1) / C_M(1, 1))) *
-                elastic_curvature_(i) * elastic_curvature_(j));
+            ((deltaKappaplast_[gp] / normKappaelastflow - (1.0 - cM_eff_[gp](1, 1) / C_M(1, 1))) *
+                elastic_curvature_[gp](i) * elastic_curvature_[gp](j));
 
         if (i == j)
-          stiffM(i, j) = stiffM(i, j) + C_M(1, 1) * (1.0 - deltaKappaplast_ / normKappaelastflow);
+          stiffM(i, j) =
+              stiffM(i, j) + C_M(1, 1) * (1.0 - deltaKappaplast_[gp] / normKappaelastflow);
       }
     }
     // if torsional plasticity is turned off, the first entry of the stiffness matrix is that of
@@ -517,15 +595,15 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfForces(
-    LINALG::Matrix<3, 3, T>& stiffN, const LINALG::Matrix<3, 3, T>& C_N)
+    LINALG::Matrix<3, 3, T>& stiffN, const LINALG::Matrix<3, 3, T>& C_N, const int gp)
 {
-  if (this->Params().GetYieldStressN() < 0.0 || stressN_ < effyieldstressN_)
+  if (this->Params().GetYieldStressN() < 0.0 || stressN_[gp] < effyieldstressN_[gp])
   {
     stiffN = C_N;
   }
   else
   {
-    stiffN = cN_eff_;
+    stiffN = cN_eff_[gp];
   }
 }
 

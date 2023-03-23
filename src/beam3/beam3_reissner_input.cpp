@@ -11,6 +11,7 @@
 #include "beam3_reissner.H"
 
 #include "mat_material.H"
+#include "mat_beam_material_generic.H"
 #include "mat_par_parameter.H"
 
 #include "lib_linedefinition.H"
@@ -71,6 +72,11 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
 
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];
+
+  DRT::UTILS::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
+  DRT::UTILS::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
+
+  GetBeamMaterial().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
 
   return true;
 }

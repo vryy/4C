@@ -62,7 +62,7 @@ MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial(
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressN, const LINALG::Matrix<3, 3, T>& CN,
-    const LINALG::Matrix<3, 1, T>& Gamma)
+    const LINALG::Matrix<3, 1, T>& Gamma, const unsigned int gp)
 {
   // compute material stresses by multiplying strains with constitutive matrix
   stressN.Multiply(CN, Gamma);
@@ -73,7 +73,7 @@ void MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::EvaluateMomentContributionsToStress(
     LINALG::Matrix<3, 1, T>& stressM, const LINALG::Matrix<3, 3, T>& CM,
-    const LINALG::Matrix<3, 1, T>& Cur)
+    const LINALG::Matrix<3, 1, T>& Cur, const unsigned int gp)
 {
   // compute material stresses by multiplying curvature with constitutive matrix
   stressM.Multiply(CM, Cur);
@@ -246,7 +246,7 @@ double MAT::BeamElastHyperMaterial<T>::GetInteractionRadius() const
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(
-    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M)
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M, const int gp)
 {
   stiffness_matrix = C_M;
 }
@@ -255,7 +255,7 @@ void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfForces(
-    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N)
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N, const int gp)
 {
   stiffness_matrix = C_N;
 }
