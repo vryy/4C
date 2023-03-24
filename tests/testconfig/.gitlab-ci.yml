@@ -52,6 +52,12 @@ variables:
     - 'True'
     - 'False'
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
+  BACI_DOCKER_RUN_TEST:
+    description: Run tests inside docker image
+    value: 'True'
+    options:
+    - 'True'
+    - 'False'
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -791,3 +797,23 @@ build-base-dependencies:
   - docker push $FULL_IMAGE_PATH
   rules:
   - if: $BACI_DOCKER_BUILD_IMAGES == "True"
+
+lnm-buildtest_full_docker:
+  extends: .buildtest_full
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
+    BUILD_GENERATOR: ninja
+    CTEST_BUILD_CONFIG_GITLAB: docker.config
+  tags:
+  - docker
+  needs:
+  - checkcode
+  - job: build-base-dependencies
+    optional: true
+  # rules as .buildtest_full but never run when BACI_DOCKER_RUN_TEST == False
+  rules:
+  - if: $BACI_DOCKER_RUN_TEST == "False"
+    when: never
+  - !reference [.buildtest_full, rules]
