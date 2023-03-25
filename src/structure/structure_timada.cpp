@@ -219,11 +219,9 @@ int STR::TimAda::Integrate()
 
     // update
     //    Update();
-    sti_->stepn_ += 1;
     timestep_ += 1;
     time_ += stepsize_;
     UpdateStepSize(stpsiznew);
-    sti_->timen_ += stepsize_;
 
     UpdatePeriod();
     outrest_ = outsys_ = outstr_ = outene_ = false;
@@ -521,7 +519,8 @@ void STR::TimAda::AttachFileStepSize()
 void STR::TimAda::UpdateStepSize(const double dtnew)
 {
   UpdateStepSize();
-  stepsize_ = dtnew;
+  SetDt(dtnew);
+  sti_->UpdateStepTime();
 
   return;
 }
