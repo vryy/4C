@@ -176,23 +176,23 @@ E 3 - ScaTra 3
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
 // an_el_an_side
-E 2 - 0 Slave KineticModel Butler-VolmerReduced_ThermoResistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 thermoperm 1.0e-4 molar_heat_capacity 0.0
+E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
 // an_el_el_side
 E 3 - 0 Master
 // cath_el_el_side
 E 4 - 1 Master
 // cath_el_cath_side
-E 5 - 1 Slave KineticModel Butler-VolmerReduced_ThermoResistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0 thermoperm 1.0e-4 molar_heat_capacity 0.0
+E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
 --------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
-E 2 - 0 Slave S2IKineticsID 0
+E 2 - 0 Slave S2I_KINETICS_ID  0
 // an_el_el_side
-E 3 - 0 Master S2IKineticsID 0
+E 3 - 0 Master S2I_KINETICS_ID  0
 // cath_el_el_side
-E 4 - 1 Master S2IKineticsID 1
+E 4 - 1 Master S2I_KINETICS_ID  1
 // cath_el_cath_side
-E 5 - 1 Slave S2IKineticsID 1
+E 5 - 1 Slave S2I_KINETICS_ID  1
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

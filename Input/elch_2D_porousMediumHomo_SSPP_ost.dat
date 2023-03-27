@@ -130,9 +130,9 @@ NDVOL   0
 -----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE  2
 // anode
-E 3 - ID 0 pot -0.2 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 100 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
+E 3 - ID 0 POT -0.2 FUNCT none NUMSCAL 1 STOICH -1  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 100 GAMMA 0.66 REFCON 1.0 DL_SPEC_CAP 0.0
 // cathode
-E 4 - ID 1 pot 0.00 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 100 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
+E 4 - ID 1 POT 0.00 FUNCT none NUMSCAL 1 STOICH -1  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.5 ALPHA_C 0.5 I0 100 GAMMA 0.66 REFCON 1.0 DL_SPEC_CAP 0.0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  2
 E 3 -

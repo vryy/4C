@@ -337,7 +337,7 @@ void INPAR::SSI::SetValidConditions(
       Teuchos::tuple<int>(
           INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   ssiinterfacemeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+      Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
 
   // insert input file line components into condition definitions
@@ -410,10 +410,10 @@ void INPAR::SSI::SetValidConditions(
             Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
 
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+            Teuchos::rcp(new SeparatorConditionComponent("RESISTANCE")));
         constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new RealConditionComponent("resistance")));
-        constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("e-"));
+        constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("E-"));
         constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
 
         kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("ConstantInterfaceResistance",
@@ -424,10 +424,10 @@ void INPAR::SSI::SetValidConditions(
         // Butler-Volmer-reduced
         std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
         // total number of existing scalars
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
         // string separator in front of integer stoichiometry vector in input file line
         std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
-        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
         // integer vector of stoichiometric coefficients
         std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
         intvectcomp.emplace_back(
@@ -439,13 +439,13 @@ void INPAR::SSI::SetValidConditions(
         butlervolmerreduced.emplace_back(Teuchos::rcp(
             new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
                 intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
 
         kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced",
@@ -461,7 +461,7 @@ void INPAR::SSI::SetValidConditions(
     }
 
     surfmanifoldkinetics->AddComponent(
-        Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+        Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
   }
@@ -522,7 +522,8 @@ void INPAR::SSI::SetValidConditions(
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacecontact;
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssiinterfacecontact.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+  ssiinterfacecontact.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
   ssiinterfacecontact.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("ContactConditionID")));

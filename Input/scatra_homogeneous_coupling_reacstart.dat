@@ -253,17 +253,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  0
 NDVOL   1
-// ------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
-// DVOL                           9
-// E 1 - numscal 9 stoich -1 0 0 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 -1 1 0 0 0 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 1 -1 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 0 0 -1 -2 1 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 5.0
-// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff 2.0 coupling simple_multiplicative
-// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 3.0
-// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 1 reaccoeff 1.0 coupling simple_multiplicative reacstart 3.0
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1
