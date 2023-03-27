@@ -233,6 +233,7 @@ namespace DRT
       TransportThermoConvections,
       S2IKinetics,
       S2IMeshtying,
+      S2INoEvaluation,
       S2ICouplingGrowth,
       S2ISCLCoupling,
       ElectrodeSOC,

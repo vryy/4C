@@ -522,11 +522,15 @@ void INPAR::SSI::SetValidConditions(
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacecontact;
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
+      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+      Teuchos::tuple<int>(
+          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   ssiinterfacecontact.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
   ssiinterfacecontact.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("ContactConditionID")));
+      Teuchos::rcp(new SeparatorConditionComponent("CONTACT_CONDITION_ID")));
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ContactConditionID")));
 
   // insert input file line components into condition definitions

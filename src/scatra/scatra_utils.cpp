@@ -20,6 +20,52 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "geometry_position_array.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
+    Teuchos::RCP<DRT::Discretization> discretization)
+{
+  // check if the number of s2i condition definition is correct
+  std::vector<DRT::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
+      s2imeshtying_conditions, s2inoevaluation_conditions;
+  discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  discretization->GetCondition("S2ISCLCoupling", s2isclcoupling_condition);
+  discretization->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  discretization->GetCondition("S2INoEvaluation", s2inoevaluation_conditions);
+
+  if ((s2ikinetics_conditions.size() + s2isclcoupling_condition.size()) !=
+      (s2imeshtying_conditions.size() + s2inoevaluation_conditions.size()))
+  {
+    dserror(
+        "For each 'S2IKinetics' or 'S2ISCLCoupling' condition a corresponding 'S2IMeshtying' or "
+        "'S2INoEvaluation' condition has to be defined!");
+  }
+
+  // combine conditions that define the physics and the evaluation type
+  std::vector<DRT::Condition*> s2ievaluation_conditions(s2imeshtying_conditions);
+  s2ievaluation_conditions.insert(s2ievaluation_conditions.end(),
+      s2inoevaluation_conditions.begin(), s2inoevaluation_conditions.end());
+  std::vector<DRT::Condition*> s2iphysics_conditions(s2ikinetics_conditions);
+  s2iphysics_conditions.insert(s2iphysics_conditions.end(), s2isclcoupling_condition.begin(),
+      s2isclcoupling_condition.end());
+
+  std::vector<int> s2ievaluation_nodes, s2iphysics_nodes;
+  DRT::UTILS::FindConditionedNodes(*discretization, s2ievaluation_conditions, s2ievaluation_nodes);
+  DRT::UTILS::FindConditionedNodes(*discretization, s2iphysics_conditions, s2iphysics_nodes);
+
+  if (s2iphysics_nodes != s2ievaluation_nodes)
+  {
+    dserror(
+        "Definition of 'S2IKinetics' or 'S2ISCLCoupling' conditions and corresponding "
+        "'S2IMeshtying' or 'S2INoEvaluation' conditions is inconsistent! The nodes the conditions "
+        "are defined on do not match!");
+  }
+
+  SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition("S2IMeshtying", discretization);
+  SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition("S2INoEvaluation", discretization);
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(

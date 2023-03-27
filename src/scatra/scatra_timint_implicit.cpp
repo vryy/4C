@@ -297,8 +297,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
         "Set the parameter SOLVERTYPE in SCALAR TRANSPORT DYNAMIC section to 'nonlinear' or "
         "'linear_incremental'!");
   }
-  if (s2imeshtying_)
-    SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition("S2IMeshtying", Discretization());
+
+  SCATRAUTILS::CheckConsistencyOfS2IConditions(Discretization());
 
   // create strategy
   CreateMeshtyingStrategy();
