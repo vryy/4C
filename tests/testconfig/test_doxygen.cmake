@@ -6,12 +6,6 @@ set($ENV{LC_MESSAGES} "en_EN") # set output to english such that ctest can analy
 set(CTEST_SITE "$ENV{HOSTNAME}")
 set(CTEST_BUILD_NAME "$ENV{CTEST_BUILD_NAME_GITLAB}")
 
-# prepare environment
-set(WITH_MEMCHECK FALSE)
-set(WITH_COVERAGE FALSE)
-
-# ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-
 # prepare commands
 set(CTEST_CONFIGURE_COMMAND
     "${CTEST_SOURCE_DIRECTORY}/do-configure -f --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"

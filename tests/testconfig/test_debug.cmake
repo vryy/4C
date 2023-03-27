@@ -6,10 +6,6 @@ set($ENV{LC_MESSAGES} "en_EN") # set output to english such that ctest can analy
 set(CTEST_SITE "$ENV{HOSTNAME}")
 set(CTEST_BUILD_NAME "$ENV{CTEST_BUILD_NAME_GITLAB}")
 
-# prepare environment
-set(WITH_MEMCHECK TRUE)
-set(WITH_COVERAGE TRUE)
-
 ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 
 # prepare commands
