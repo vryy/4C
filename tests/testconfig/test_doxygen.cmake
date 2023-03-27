@@ -14,21 +14,16 @@ set(WITH_COVERAGE FALSE)
 
 # prepare commands
 set(CTEST_CONFIGURE_COMMAND
-    "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"
+    "${CTEST_SOURCE_DIRECTORY}/do-configure -f --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"
     )
 set(CTEST_BUILD_COMMAND "$ENV{CTEST_BUILD_COMMAND}")
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "5000")
 
 # do the testing
 ctest_start("${HOSTNAME}")
-#ctest_update()
+
 ctest_configure()
 ctest_build(RETURN_VALUE testBuild)
-#ctest_test()
-
-if($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1)
-  ctest_submit()
-endif($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1)
 
 if(NOT ${testBuild} EQUAL 0)
   message(SEND_ERROR "Baci build failed!")

@@ -17,9 +17,6 @@ variables:
   # - "debug"
   CTEST_BUILD_TYPE_GITLAB: release
 
-  # Prefix for do-configure.
-  CTEST_CONFIGURE_PREFIX: ''
-
   # Postfix for do-configure.
   CTEST_CONFIGURE_POSTFIX: ''
 
@@ -49,11 +46,6 @@ variables:
   GITLAB_INTERACTIVE_MACHINE: none
   # Flags for doing a clean build in interactive mode # (0: off, 1: on)
   GITLAB_INTERACTIVE_CLEAN: '0'
-
-  # Flags for cdash.
-  CTEST_DROP_SITE_CDASH_GITLAB: '0'
-  CTEST_DROP_SITE_GITLAB: jacobi.lnm.ed.tum.de
-  CTEST_DROP_LOCATION_GITLAB: /cdash/submit.php?project=baci
 
 
 #-------------------------------------------------------------------------------
@@ -121,7 +113,7 @@ variables:
   - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
     ../buildtest_full.log ../buildtest_full.log
   - cd -
-      # Write selection of the output into the terminal and therefore to GITLAB
+    # Write selection of the output into the terminal and therefore to GITLAB
     # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
   - sed -n '/tests passed,/,//p' ../buildtest_full.log
@@ -223,7 +215,7 @@ variables:
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
     commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
-      # Write Selection of the output into the terminal and therefore to GITLAB
+    # Write Selection of the output into the terminal and therefore to GITLAB
     # Output 200 lines for any failing test
   - grep -B 200 '*Failed\|*Timeout' buildtest_weekly_coverage.log || true
   - sed -n '/tests passed,/,//p' buildtest_weekly_coverage.log
@@ -231,8 +223,8 @@ variables:
   - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
   - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
   - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-      # update (push) the cache of the weekly coverage report:
-      # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
+    # update (push) the cache of the weekly coverage report:
+    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
     key: cache-weekly-coverage-report
@@ -590,7 +582,6 @@ lnm-buildtest_minimal:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   tags:
   - lnm-release-minimal
   - lnm-ubuntu
@@ -701,7 +692,6 @@ lnm-buildtest_daily:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   tags:
   - lnm-release-daily
   - lnm-ubuntu
@@ -716,7 +706,6 @@ lnm-buildtest_daily_bruteforce:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   before_script:
   - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
   tags:
@@ -734,7 +723,6 @@ lnm-buildtest-bruteforce_interactive:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
     GIT_STRATEGY: fetch
   before_script:
   - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
@@ -753,7 +741,6 @@ lnm-buildtest_daily_deep:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   before_script:
   - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
   tags:
@@ -771,7 +758,6 @@ lnm-buildtest-deep_interactive:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
     GIT_STRATEGY: fetch
   before_script:
   - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
@@ -790,7 +776,6 @@ lnm-buildtest_daily_schmarrn:
     CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   before_script:
   - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
   tags:
@@ -808,7 +793,6 @@ lnm-buildtest-schmarrn_interactive:
     CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
     CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Schmarrn-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
     GIT_STRATEGY: fetch
   before_script:
   - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
@@ -827,7 +811,6 @@ lnm-buildtest_daily_debug:
     CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
     CTEST_BUILD_NAME_GITLAB: LnM-Workstation DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   tags:
   - lnm-debug-daily
   - lnm-ubuntu
@@ -863,7 +846,6 @@ lnm-doxygen:
     CTEST_BUILD_COMMAND: ninja documentation
     CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-    CTEST_DROP_SITE_CDASH_GITLAB: '1'
   tags:
   - lnm-doxygen
   - lnm-ubuntu
