@@ -273,7 +273,6 @@ void INPAR::ELCH::SetValidConditions(
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
-    butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
         new CondCompBundle("Butler-Volmer", butlervolmer, INPAR::ELCH::butler_volmer)));
 
@@ -292,7 +291,6 @@ void INPAR::ELCH::SetValidConditions(
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(new CondCompBundle(
         "Butler-Volmer-Yang1997", butlervolmeryang, INPAR::ELCH::butler_volmer_yang1997)));
 
@@ -323,7 +321,6 @@ void INPAR::ELCH::SetValidConditions(
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
-    linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(
         Teuchos::rcp(new CondCompBundle("linear", linear, INPAR::ELCH::linear)));
 
@@ -338,7 +335,6 @@ void INPAR::ELCH::SetValidConditions(
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("beta")));
     bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
-    bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
         new CondCompBundle("Butler-Volmer-Newman", bvnewman, INPAR::ELCH::butler_volmer_newman)));
 
@@ -357,7 +353,6 @@ void INPAR::ELCH::SetValidConditions(
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("c_a0")));
     bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DL_SPEC_CAP")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
-    bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.emplace_back(Teuchos::rcp(
         new CondCompBundle("Butler-Volmer-Bard", bvbard, INPAR::ELCH::butler_volmer_bard)));
 
