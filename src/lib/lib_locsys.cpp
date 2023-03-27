@@ -299,7 +299,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
     // unity matrix for non-locsys node
     if (locsysindex < 0)
     {
-      for (int r = 0; r < numdof; ++r) trafo_->ReplaceValue(1.0, dofs[r], dofs[r]);
+      for (int r = 0; r < numdof; ++r) trafo_->SetValue(1.0, dofs[r], dofs[r]);
     }
     // trafo matrix for locsys node
     else
@@ -367,7 +367,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
       for (int r = 0; r < numdof; ++r)
-        for (int c = 0; c < numdof; ++c) trafo_->ReplaceValue(nodetrafo(r, c), dofs[r], dofs[c]);
+        for (int c = 0; c < numdof; ++c) trafo_->SetValue(nodetrafo(r, c), dofs[r], dofs[c]);
 
       // store the DOF with locsys
       for (int r = 0; r < numdof; ++r) locsysdofset.insert(dofs[r]);

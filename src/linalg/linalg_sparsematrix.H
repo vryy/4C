@@ -204,7 +204,7 @@ namespace LINALG
 
 
     /*
-     * \brief Replace a single value in a Epetra_FECrsMatrix
+     * \brief Set a single value in a Epetra_FECrsMatrix
      *
      * This method inserts a new entry in a EpetraFECrsMatrix if it does not yet exist. If the entry
      * already exists, it is overwritten.
@@ -213,7 +213,7 @@ namespace LINALG
      * \params[in] rgid row position
      * \params[in] cgid column position
      */
-    void ReplaceValue(double val, int rgid, int cgid);
+    void SetValue(double val, int rgid, int cgid);
 
     /*!
       Assemble method for an Epetra_FECrsMatrix.

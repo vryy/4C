@@ -728,7 +728,7 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ReplaceValue(double val, int rgid, int cgid)
+void LINALG::SparseMatrix::SetValue(double val, int rgid, int cgid)
 {
   if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
     dserror("no assembling to Dirichlet row");
