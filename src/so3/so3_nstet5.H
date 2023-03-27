@@ -35,7 +35,6 @@ namespace DRT
     class StructuralSurface;
     class StructuralVolume;
     class NStet5;
-    class InvDesign;
     class PreStress;
 
 
@@ -393,8 +392,6 @@ namespace DRT
         calc_struct_B_and_F,
         multi_calc_dens,
         prestress_update,
-        inversedesign_update,
-        inversedesign_switch,
         multi_readrestart
       };
 
@@ -423,7 +420,7 @@ namespace DRT
       inline double Vol() { return V_; }
 
       ///----------------------------------------------- prestressing switch & time
-      /// prestressing and invdesign assume 4 Gausspoints per element,
+      /// prestressing assume 4 Gausspoints per element,
       /// that is, one per sub-element
       INPAR::STR::PreStress pstype_;
       double pstime_;
@@ -436,9 +433,6 @@ namespace DRT
       /// compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
-
-      friend class DRT::ELEMENTS::InvDesign;
-      Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
       //---------------------------------------------- quantities related to subtets
       //! nodal connectivity  of subelements

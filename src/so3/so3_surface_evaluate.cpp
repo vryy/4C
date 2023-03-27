@@ -142,33 +142,15 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // initialize last converged configuration
       xc.LightShape(numnode, numdim);
 
-      // in inverse design analysis the spatial configuration (i.e imaged state) is the reference
-      // for
-      // which we want equilibrium. This true spatial configuration is the material configuration in
-      // BACI
-      // no exection here for mulf because displacements are reset after each load step, hence last
-      // converged state is always the material configuration
-      if (::UTILS::PRESTRESS::IsInverseDesignActive(time))
-      {
-        // no linearization needed for inverse analysis
-        loadlin = false;
+      // no linearization needed for load in last converged configuration
+      loadlin = false;
 
-        // evaluate material configuration
-        MaterialConfiguration(xc);
-      }
-      // standard forward analysis
-      else
-      {
-        // no linearization needed for load in last converged configuration
-        loadlin = false;
-
-        // evaluate last converged configuration
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        SpatialConfiguration(xc, mydisp);
-      }
+      // evaluate last converged configuration
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      SpatialConfiguration(xc, mydisp);
     }
     break;
     case config_spatial:
@@ -176,14 +158,11 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // initialize spatial configuration
       xc.LightShape(numnode, numdim);
 
-      // in inverse design analysis the spatial configuration (i.e imaged state) is the reference
-      // for
-      // which we want equilibrium. This true spatial configuration is the material configuration in
-      // BACI
-      // same holds for mulf
-      if (::UTILS::PRESTRESS::IsMulfActive(time) || ::UTILS::PRESTRESS::IsInverseDesignActive(time))
+
+      // The true spatial configuration is the material configuration for mulf
+      if (::UTILS::PRESTRESS::IsMulfActive(time))
       {
-        // no linearization needed for inverse design analysis and mulf
+        // no linearization needed for mulf
         loadlin = false;
 
         // evaluate material configuration

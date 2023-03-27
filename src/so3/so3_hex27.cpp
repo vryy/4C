@@ -12,6 +12,7 @@
 #include "so3_surface.H"
 #include "so3_line.H"
 #include "so3_utils.H"
+#include "so3_prestress.H"
 
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
@@ -24,9 +25,6 @@
 
 #include "linalg_utils_nullspace.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
-#include "so3_prestress.H"
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
 

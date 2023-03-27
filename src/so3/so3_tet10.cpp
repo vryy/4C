@@ -25,8 +25,6 @@
 
 #include "fem_general_utils_fem_shapefunctions.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 #include "fiber_node.H"
 #include "fiber_utils.H"

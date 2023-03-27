@@ -56,7 +56,6 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class InvDesign;
     class PreStress;
     class So_sh8Type;
 
@@ -431,8 +430,6 @@ namespace DRT
         calc_struct_energy,         //!< compute internal energy
         calc_struct_errornorms,     //!< compute error norms (L2,H1,energy)
         prestress_update,
-        inversedesign_update,
-        inversedesign_switch,
         multi_readrestart,           //!< multi-scale: read restart on microscale
         multi_eas_init,              //!< multi-scale: initialize EAS parameters on microscale
         multi_eas_set,               //!< multi-scale: set EAS parameters on microscale
@@ -506,10 +503,6 @@ namespace DRT
       // compute defgrd in all gp for given disp
       virtual void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
-
-      // inverse design analysis objects
-      friend class DRT::ELEMENTS::InvDesign;
-      Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
 
       // internal calculation methods

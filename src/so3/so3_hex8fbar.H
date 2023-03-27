@@ -19,8 +19,6 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    // forward declarations
-    class InvDesign;
 
     class So_hex8fbarType : public DRT::ElementType
     {

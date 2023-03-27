@@ -20,8 +20,6 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"

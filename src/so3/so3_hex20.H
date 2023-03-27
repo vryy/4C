@@ -33,7 +33,6 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class InvDesign;
     class PreStress;
 
     class So_hex20Type : public DRT::ElementType
@@ -347,9 +346,8 @@ namespace DRT
         prestress_update,
         calc_struct_energy,      //!< compute internal energy
         calc_struct_errornorms,  //!< compute error norms (L2,H1,energy)
-        inversedesign_update,
-        multi_readrestart,  //!< multi-scale: read restart on microscale
-        multi_calc_dens     //!< multi-scale: calculate homogenized density
+        multi_readrestart,       //!< multi-scale: read restart on microscale
+        multi_calc_dens          //!< multi-scale: calculate homogenized density
       };
 
       //! container containing all kind of solid3 thisandthat
@@ -373,8 +371,6 @@ namespace DRT
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
-      friend class DRT::ELEMENTS::InvDesign;
-      Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
       // internal calculation methods
 

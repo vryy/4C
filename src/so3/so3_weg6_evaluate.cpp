@@ -6,6 +6,7 @@
 
 *----------------------------------------------------------------------*/
 #include "so3_weg6.H"
+#include "so3_prestress.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "lib_dserror.H"
@@ -23,10 +24,6 @@
 #include "lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// inverse design object
-#include "so3_inversedesign.H"
-#include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"
 
@@ -81,10 +78,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     act = So_weg6::calc_struct_energy;
   else if (action == "calc_struct_prestress_update")
     act = So_weg6::prestress_update;
-  else if (action == "calc_struct_inversedesign_update")
-    act = So_weg6::inversedesign_update;
-  else if (action == "calc_struct_inversedesign_switch")
-    act = So_weg6::inversedesign_switch;
   else if (action == "calc_global_gpstresses_map")
     act = So_weg6::calc_global_gpstresses_map;
   else if (action == "calc_struct_recover")
@@ -134,14 +127,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (::UTILS::PRESTRESS::IsInverseDesignActive(
-              time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
-      else
-        sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr,
-            &elevec1, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none);
+      sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
+          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none);
     }
     break;
 
@@ -199,14 +187,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (::UTILS::PRESTRESS::IsInverseDesignActive(
-              time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
-      else
-        sow6_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
-            &elevec1, &elevec2, &elevec3, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none);
+      sow6_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
+          &elevec2, &elevec3, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none);
     }
     break;
 
@@ -239,13 +222,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
-        if (::UTILS::PRESTRESS::IsInverseDesignActive(
-                time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
-              &strain, params, iostress, iostrain);
-        else
-          sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
-              nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
+        sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+            nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
           DRT::PackBuffer data;
@@ -361,13 +339,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
           defgrd.MultiplyTT(xcurr, N_XYZ);
 
-
-        if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-            !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-        {
-          dserror("Calc Energy not implemented for prestress id");
-        }
-
         // Right Cauchy-Green tensor = F^T * F
         LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
         cauchygreen.MultiplyTN(defgrd, defgrd);
@@ -452,8 +423,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
 
@@ -493,24 +462,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    //==================================================================================
-    case inversedesign_update:
-    {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      invdesign_->sow6_StoreMaterialConfiguration(this, mydisp);
-      invdesign_->IsInit() = true;  // this is to make the restart work
-    }
-    break;
 
-    //==================================================================================
-    case inversedesign_switch:
-    {
-      time_ = params.get<double>("total time");
-    }
-    break;
     //==================================================================================
     // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses
     // >
@@ -558,14 +510,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         }
         else
         {
-          if (::UTILS::PRESTRESS::IsInverseDesignActive(
-                  time_, pstype_, pstime_))  // inverse design analysis
-            invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr,
-                &stress, &strain, params, iostress, iostrain);
-
-          else  // standard analysis
-            sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
-                nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
+          sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+              nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
         }
         // add stresses to global map
         // get EleID Id()
@@ -680,22 +626,9 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
-    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-      if (!(invdesign_->IsInit()))
-      {
-        invdesign_->MatrixtoStorage(gp, invJ_[gp], invdesign_->JHistory());
-        invdesign_->DetJHistory()[gp] = detJ_[gp];
-      }
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
   if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-      !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-    invdesign_->IsInit() = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -796,26 +729,6 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     else
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
       defgrd.MultiplyTT(xcurr, N_XYZ);
-
-
-    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-    {
-      // make the multiplicative update so that defgrd refers to
-      // the reference configuration that resulted from the inverse
-      // design analysis
-      LINALG::Matrix<3, 3> Fhist;
-      invdesign_->StoragetoMatrix(gp, Fhist, invdesign_->FHistory());
-      LINALG::Matrix<3, 3> tmp3x3;
-      tmp3x3.Multiply(defgrd, Fhist);
-      defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
-
-      // make detJ and invJ refer to the ref. configuration that resulted from
-      // the inverse design analysis
-      detJ = invdesign_->DetJHistory()[gp];
-      invdesign_->StoragetoMatrix(gp, tmp3x3, invdesign_->JHistory());
-      N_XYZ.Multiply(tmp3x3, derivs[gp]);
-    }
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;

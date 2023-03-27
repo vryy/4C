@@ -23,8 +23,6 @@
 #include "lib_globalproblem.H"
 #include "so3_utils.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 DRT::ELEMENTS::So_pyramid5Type DRT::ELEMENTS::So_pyramid5Type::instance_;
@@ -246,16 +244,6 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
     }
     prestress_->Unpack(tmpprestress);
     // end
-  }
-
-  // invdesign_
-  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position, data, tmpinvdesign);
-    if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOP5, NUMGPT_SOP5));
-    invdesign_->Unpack(tmpinvdesign);
   }
 
   if (position != data.size())

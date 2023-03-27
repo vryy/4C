@@ -35,7 +35,6 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class InvDesign;
     class PreStress;
 
     class So_tet4Type : public DRT::ElementType
@@ -377,8 +376,6 @@ namespace DRT
         prestress_update,
         calc_struct_energy,
         calc_struct_output_E,
-        inversedesign_update,
-        inversedesign_switch,
         multi_calc_dens,
         multi_readrestart
       };
@@ -411,8 +408,6 @@ namespace DRT
       void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
           const LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, int gp) const;
 
-      friend class DRT::ELEMENTS::InvDesign;
-      Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
 
       // internal calculation methods
 

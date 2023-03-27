@@ -71,9 +71,6 @@ INVANA::InvanaAugLagr::InvanaAugLagr()
   pstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(invp, "PRESTRESS");
   if (::UTILS::PRESTRESS::IsMulf(pstype_)) pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    dserror("id is not implemented yet for the adjoint formulation");
-
   // initialize the vector of time steps according to the structural dynamic params
   time_.resize(msteps_, 0.0);
   for (int i = 0; i < msteps_; i++) time_[i] = (i + 1) * timestep_;

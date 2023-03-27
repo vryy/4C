@@ -25,7 +25,6 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "so3_prestress.H"
-#include "so3_inversedesign.H"
 #include "patspec.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "structure_new_enum_lists.H"
@@ -91,10 +90,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::multi_calc_dens;
     else if (action == "calc_struct_prestress_update")
       act = ELEMENTS::struct_update_prestress;
-    else if (action == "calc_struct_inversedesign_update")
-      act = ELEMENTS::inversedesign_update;
-    else if (action == "calc_struct_inversedesign_switch")
-      act = ELEMENTS::inversedesign_switch;
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
     else if (action == "calc_struct_predict")
@@ -339,8 +334,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         invJ_0.Invert();
         prestress_->MatrixtoStorage(NUMGPT_SOH8, invJ_0, prestress_->JHistory());
       }
-      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
 
@@ -386,24 +379,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    //==================================================================================
-    case ELEMENTS::inversedesign_update:
-    {
-      time_ = params.get<double>("total time");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      invdesign_->soh8_StoreMaterialConfiguration(this, mydisp);
-      invdesign_->IsInit() = true;  // this is to make the restart work
-    }
-    break;
-    //==================================================================================
-    case ELEMENTS::inversedesign_switch:
-    {
-      time_ = params.get<double>("total time");
-    }
-    break;
     //==================================================================================
     // read restart of microscale
     case ELEMENTS::multi_readrestart:
@@ -532,12 +507,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
-
-        if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-            !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-        {
-          dserror("Calc Energy not implemented for prestress id");
-        }
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}

@@ -18,9 +18,6 @@
 #include "mat_elasthyper.H"
 
 #include "so3_nstet5.H"
-
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 

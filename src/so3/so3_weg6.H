@@ -34,7 +34,6 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class InvDesign;
     class PreStress;
 
     class So_weg6Type : public DRT::ElementType
@@ -353,8 +352,6 @@ namespace DRT
                                   //!< to state in the beginning of the computation
         calc_struct_energy,
         prestress_update,
-        inversedesign_update,
-        inversedesign_switch,
         calc_global_gpstresses_map,  //! basically calc_struct_stress but with assembly of global
                                      //! gpstresses map
         calc_recover
@@ -380,10 +377,6 @@ namespace DRT
       // compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
-
-      friend class DRT::ELEMENTS::InvDesign;
-      Teuchos::RCP<DRT::ELEMENTS::InvDesign> invdesign_;
-
 
 
       // internal calculation methods

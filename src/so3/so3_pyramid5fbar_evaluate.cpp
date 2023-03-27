@@ -313,8 +313,6 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
         invJ_0.Invert();
         prestress_->MatrixtoStorage(NUMGPT_SOP5, invJ_0, prestress_->JHistory());
       }
-      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
 
@@ -359,12 +357,6 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-
-    //==================================================================================
-    case inversedesign_update:
-      dserror("The sopyramid5fbar element does not support inverse design analysis");
-      break;
-
 
     // read restart of microscale
     case multi_readrestart:
