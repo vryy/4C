@@ -67,7 +67,7 @@ replaceSolidRef:=(
 (*Get beam position vector.*)
 
 
-beamType="hermite3";
+beamType="hermite2";
 xBeam:={
 	fieldFunction[beamType]/.posDof->posBx[n]/.tanDof->tanBx[n],
 	fieldFunction[beamType]/.posDof->posBy[n]/.tanDof->tanBy[n],
@@ -81,7 +81,7 @@ xBeam:={
 
 (*The element length is taken from the baci simulation*)
 replaceBeamRef:={
-    beamLength->0.6069705610916388,
+    beamLength->0.6192043571449604711,
     posBx[0][1]->0.15,
     posBy[0][1]->0.2,
     posBz[0][1]->0.3,
@@ -147,7 +147,7 @@ gaussPointPotential[xii_]:=Module[{pointInSolid},
 pointInSolid=projectPointToSolid[xBeam/.xi->xii/.n->0/.replaceBeamRef];
 
 (*Calcualte the meshtying potential.*)
-lambda.(xBeam-xSolid)/.xi->xii/.pointInSolid
+lambda . (xBeam-xSolid)/.xi->xii/.pointInSolid
 ]
 
 (*Calculate the element matrices.*)
@@ -189,7 +189,7 @@ StringRiffle[{
 functionStringPre="  /**
    * \\brief Test a non straight beam in a mathematica_solid_type element, with mathematica_mortar_type mortar shape functions.
    */
-  void Test_beam_to_solid_meshtying_mortar_hermite3_mathematica_solid_type_mathematica_mortar_type()
+  TEST_F(BeamToSolidVolumeMeshtyingPairMortarTest, TestBeamToSolidMeshtyingMortarHermite2mathematica_solid_Typemathematica_mortar_Type)
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -202,17 +202,17 @@ functionStringPre="  /**
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1> q_beam;
+    LINALG::Matrix<9, 1> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -247,65 +247,77 @@ functionStringPost="// Perform the unit tests.
 
 SetDirectory[NotebookDirectory[]];
 
+solidT:=Capitalize[solidType];
+lambdaT:=Capitalize[lambdaType];
+stringReplace:=StringReplace[
+  functionStringPre,
+  {
+    "mathematica_solid_type"->solidType,
+    "mathematica_mortar_type"->lambdaType,
+    "mathematica_solid_Type"->solidT,
+    "mathematica_mortar_Type"->lambdaT
+  }
+]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+
 solidType="hex8";
 lambdaType="line2";
-unitTestString=StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=stringReplace;
 
 solidType="hex8";
 lambdaType="line3";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex8";
 lambdaType="line4";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex20";
 lambdaType="line2";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex20";
 lambdaType="line3";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex20";
 lambdaType="line4";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex27";
 lambdaType="line2";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex27";
 lambdaType="line3";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="hex27";
 lambdaType="line4";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet4";
 lambdaType="line2";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet4";
 lambdaType="line3";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet4";
 lambdaType="line4";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet10";
 lambdaType="line2";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet10";
 lambdaType="line3";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 solidType="tet10";
 lambdaType="line4";
-unitTestString=unitTestString<>"\n\n"<>StringReplace[functionStringPre,{"mathematica_solid_type"->solidType,"mathematica_mortar_type"->lambdaType}]<>"\n"<>getTestString<>"\n\n"<>functionStringPost;
+unitTestString=unitTestString<>"\n\n"<>stringReplace;
 
 Export["unitTestCode.txt",unitTestString]
 
