@@ -19,7 +19,7 @@
 #include "contact_aug_integrator_policy.H"
 #include "io_pstream.H"
 
-//#define DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
+// #define DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -834,60 +834,6 @@ double CONTACT::INTEGRATOR::LeviCivitaSymbol(const int i, const int j, const int
     default:
       return 0.0;
   }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool CONTACT::INTEGRATOR::CheckSymmetry(
-    const Deriv2ndMap& deriv2nd, const bool output, const double rel_tol, const double abs_tol)
-{
-  bool check = true;
-  for (auto& deriv2nd_var : deriv2nd)
-  {
-    for (auto& deriv2nd_var_lin : deriv2nd_var.second)
-    {
-      auto cit = deriv2nd.find(deriv2nd_var_lin.first);
-      if (cit == deriv2nd.end()) dserror("Can not find Var-GID = %d!", deriv2nd_var_lin.first);
-
-      auto ciit = cit->second.find(deriv2nd_var.first);
-      if (ciit == cit->second.end())
-      {
-        if (deriv2nd_var_lin.second != 0.0)
-          dserror("Cannot find (Var-GID, Lin-GID) pair = (%d, %d)!", deriv2nd_var_lin.first,
-              deriv2nd_var.first);
-        else
-          continue;
-      }
-
-      const double diff = deriv2nd_var_lin.second - ciit->second;
-
-      check = (std::abs(diff) <= abs_tol + rel_tol * std::abs(deriv2nd_var_lin.second));
-
-      if (output)
-      {
-        std::cout << "(var, lin) -> (" << deriv2nd_var.first << ", " << deriv2nd_var_lin.first
-                  << "): " << deriv2nd_var_lin.second << " == " << ciit->second
-                  << " (abs-error =  " << std::abs(diff) << ")";
-      }
-
-      if (not check)
-      {
-        if (output)
-          std::cout << " -- FAILED\n";
-        else
-          std::cout << "(var, lin) -> (" << deriv2nd_var.first << ", " << deriv2nd_var_lin.first
-                    << "): " << deriv2nd_var_lin.second << " == " << ciit->second
-                    << " (abs-error =  " << std::abs(diff) << ") -- FAILED\n";
-        return false;
-      }
-      else
-      {
-        if (output) std::cout << " -- PASSED\n";
-      }
-    }
-  }
-
-  return check;
 }
 
 /*----------------------------------------------------------------------------*/

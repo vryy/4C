@@ -492,20 +492,9 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
 
   /*--------------------------------------------------------------------------*/
   // (1) Export the 1-st order derivatives
-#ifdef DEBUG
-  const double t_start = Teuchos::Time::wallTime();
-  const double send_size = CONTACT::INTEGRATOR::SizeOf(export_d_normals);
-  std::cout << "Export 1-st order normal derivatives of proc " << Comm().MyPID() << " ("
-            << std::scientific << send_size / 1.0e6 << " MByte)...";
-#endif
 
   DRT::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_d_normals);
-
-#ifdef DEBUG
-  const double t_diff = Teuchos::Time::wallTime() - t_start;
-  std::cout << " successfully! (" << t_diff << "secs)\n";
-#endif
 
   /*--------------------------------------------------------------------------*/
   // (2) Unpack the 1-st order derivatives
@@ -554,20 +543,9 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
 
   /*--------------------------------------------------------------------------*/
   // (1) Export the 2-nd order derivatives
-#ifdef DEBUG
-  const double t_start = Teuchos::Time::wallTime();
-  const double send_size = CONTACT::INTEGRATOR::SizeOf(export_dd_normals);
-  std::cout << "Export 2-nd order normal derivatives of proc " << Comm().MyPID() << " ("
-            << std::scientific << send_size / 1.0e6 << " MByte)...";
-#endif
 
   DRT::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_dd_normals);
-
-#ifdef DEBUG
-  const double t_diff = Teuchos::Time::wallTime() - t_start;
-  std::cout << " successfully! (" << t_diff << "secs)\n";
-#endif
 
   /*--------------------------------------------------------------------------*/
   // (2) Unpack the 2-nd order derivatives

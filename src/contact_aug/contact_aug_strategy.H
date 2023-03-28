@@ -157,13 +157,6 @@ namespace CONTACT
 
       enum INPAR::CONTACT::VariationalApproach VariationalApproachType() const { return var_type_; }
 
-      void SetFDCheckType(const enum INPAR::CONTACT::FDCheck fd_check_type)
-      {
-        fd_check_type_ = fd_check_type;
-      }
-
-      enum INPAR::CONTACT::FDCheck FDCheckType() const { return fd_check_type_; }
-
       void SetPotential(const Teuchos::RCP<Potential>& potential) { potentialPtr_ = potential; }
 
       CONTACT::AUG::Potential& Potential() { return *potentialPtr_; }
@@ -1081,9 +1074,6 @@ namespace CONTACT
 
       //! Check linear and angular momentum conservation
       void CheckConservationLaws(CONTACT::ParamsInterface& cparams);
-
-      //! Finite Difference check of the augmented Lagrange terms at GP level
-      void AugFDCheckGP(CONTACT::ParamsInterface& cparams);
 
       //! Finite Difference check of the augmented Lagrange terms at global level
       void AugFDCheckGlobal(CONTACT::ParamsInterface& cparams);
