@@ -6,15 +6,9 @@ set($ENV{LC_MESSAGES} "en_EN") # set output to english such that ctest can analy
 set(CTEST_SITE "$ENV{HOSTNAME}")
 set(CTEST_BUILD_NAME "$ENV{CTEST_BUILD_NAME_GITLAB}")
 
-# prepare environment
-set(WITH_MEMCHECK FALSE)
-set(WITH_COVERAGE FALSE)
-
-# ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-
 # prepare commands
 set(CTEST_CONFIGURE_COMMAND
-    "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --no-ccache --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"
+    "${CTEST_SOURCE_DIRECTORY}/do-configure -f --no-ccache --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} --generator=$ENV{BUILD_GENERATOR} $ENV{CTEST_CONFIGURE_POSTFIX}"
     )
 set(CTEST_BUILD_COMMAND "$ENV{CTEST_BUILD_COMMAND}")
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "5000")
@@ -28,10 +22,6 @@ if(NOT $ENV{TEST_TAG} STREQUAL ""
    )# Only execute if tests are selected as otherwise script returns err
   ctest_test(RETURN_VALUE testRes)
 endif(NOT $ENV{TEST_TAG} STREQUAL "")
-
-if($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1) # Send results to the Dashboard (cdash) if enabled
-  ctest_submit()
-endif($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1)
 
 if(NOT ${testBuild} EQUAL 0) # Send error for a failed build
   message(SEND_ERROR "Baci build failed!")
