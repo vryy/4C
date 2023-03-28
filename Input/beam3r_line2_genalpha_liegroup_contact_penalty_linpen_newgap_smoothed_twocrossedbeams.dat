@@ -37,8 +37,13 @@ DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
+<<<<<<< HEAD:Input/beam3r_line2_genalpha_liegroup_contact_penalty_linpen_newgap_smoothed_twocrossedbeams.dat
 TIMESTEP                        0.1
 NUMSTEP                         10
+=======
+TIMESTEP                        0.5
+NUMSTEP                         2
+>>>>>>> 4b2433514a... Correcting beam reference length calculation:Input/beam3_line2_genalpha_contact_penalty_newgap_smoothed.dat
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0

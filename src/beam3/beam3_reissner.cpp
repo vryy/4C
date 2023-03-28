@@ -880,8 +880,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      * ******************************/
 
     // note: in case of Hermite centerline interpolation: iteratively via Newton's method
-    Calculate_reflength<nnodecl, vpernode>(disp_refe_centerline, BEAM3RLENGTHCALCNEWTONTOL);
-
+    reflength_ = Calc_reflength<nnodecl, vpernode>(disp_refe_centerline);
 
     /************************ Compute quantities required for elasticity
      ***********************************
@@ -1246,119 +1245,6 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Treffirst() const
   Tref.Update(1.0 / norm, Trefnode_[0]);
 
   return Tref;
-}
-
-/*--------------------------------------------------------------------------------------------*
- | Calculates the element length                                                   meier 01/16|
- *--------------------------------------------------------------------------------------------*/
-template <unsigned int nnode, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::Calculate_reflength(
-    const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
-    const double tolerance)
-{
-  // nnode: number of nodes
-  // vpernode: interpolated values per node (2: Hermite, i.e. value + derivative of value)
-
-  /* in case of Hermite centerline interpolation,
-   * the length is computed iteratively via Newton's method: f(l)=l-int(|N'd|)dxi=0*/
-
-  // safety check
-  if (vpernode == 2 and nnode != 2)
-    dserror(
-        "the function Calculate_length is implemented for 3rd order Hermite interpolation of the "
-        "centerline only!");
-
-  // initial value for iteration: difference vector of positions of boundary nodes (always ID 0 and
-  // 1) also trivial solution in case of linear Lagrange interpolation: (nnode==2 && vpernode==1)
-  if (vpernode == 2 || (nnode == 2 && vpernode == 1))
-  {
-    LINALG::Matrix<3, 1> tempvec(true);
-    for (int dim = 0; dim < 3; dim++)
-    {
-      tempvec(dim) = disp_totlag_centerline(3 * vpernode * 1 + dim) - disp_totlag_centerline(dim);
-    }
-    reflength_ = tempvec.Norm2();
-  }
-  else
-    reflength_ = 0.0;
-
-  // non-trivial solution
-  if (!(nnode == 2 && vpernode == 1))
-  {
-    // Get 'more than enough' integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
-
-    // Newton Iteration - Tolerance and residual
-    double res = 1.0;
-
-    // Integral-value for Gauss Integration
-    double int_length = 0.0;
-    // Derivative value of the length integral for Newton Iteration (=weighted sum over deriv_int,
-    // gauss quadrature of: int(d/dl(|N'd|))dxi)
-    double deriv_length = 0.0;
-    // value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
-    double deriv_int = 0.0;
-
-    // Matrices to store the function values of the shape functions
-    std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
-
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(
-        gausspoints, H_i_xi, this->Shape(), this->RefLength());
-
-    // current value of the derivative at the GP
-    LINALG::Matrix<3, 1> r_xi;
-
-    int numiter = 0;
-
-    // in case of Lagrange interpolation, one integration loop is sufficient
-    do
-    {
-      numiter++;
-      int_length = 0.0;
-      deriv_length = 0.0;
-
-      // Loop through all GPs and compute the length and the derivative of the length
-      for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
-      {
-        deriv_int = 0;
-
-        // integral of the length
-        deriv_int = 0;
-
-        Calc_r_xi<nnode, vpernode, double>(disp_totlag_centerline, H_i_xi[numgp], r_xi);
-
-        int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
-
-        // derivative only needed for Newton's method in case of Hermite interpolation
-        if (vpernode == 2)
-        {
-          // derivative of the integral of the length at GP
-          for (int dim = 0; dim < 3; dim++)
-          {
-            deriv_int += (disp_totlag_centerline(3 + dim) * H_i_xi[numgp](1) / reflength_ +
-                             disp_totlag_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) /
-                                 reflength_) *
-                         r_xi(dim);
-          }
-          deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
-        }
-      }
-
-      res = reflength_ - int_length;
-      // Update
-      reflength_ =
-          reflength_ - res / (1 - deriv_length);  // the derivative of f(l)=l-int(|N'd|)dxi=0 is
-                                                  // f'(l)=1-int(d/dl(|N'd|))dxi
-    } while (vpernode != 1 && std::fabs(res) > tolerance && numiter < 100);
-
-    if (numiter > 100)
-      dserror(
-          "failed to compute length of element in reference configuration iteratively: "
-          "Newton unconverged!");
-  }
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------------*

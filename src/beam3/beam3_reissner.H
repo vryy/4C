@@ -48,11 +48,6 @@ namespace LARGEROTATIONS
   class TriadInterpolationLocalRotationVectors;
 }
 
-#define BEAM3RLENGTHCALCNEWTONTOL \
-  10e-12  // Tolerance for iterative determination of element
-          // length.
-// DEFAULT: 10e-12
-
 // #define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the
 // element
 //  length and to only provide random numbers for the 3 translational DoFs (needed in order to
@@ -1003,15 +998,9 @@ namespace DRT
       //! determine Gauss rule from required type of integration and parameter list
       DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
-     private:
-      //! calculates the element length in reference configuration
-      template <unsigned int nnode, unsigned int vpernode>
-      void Calculate_reflength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
-          const double tolerance);
-
       //@}
 
+     private:
       //! @name Methods for Brownian dynamics simulations
 
       //! computes rotational damping forces and stiffness

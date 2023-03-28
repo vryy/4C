@@ -84,9 +84,6 @@ dserror(
                             // is implemented.
 // DEFAULT: intrule_line_4point
 
-#define LENGTHCALCNEWTONTOL 10e-12  // Tolerance for iterative determination of element length.
-// DEFAULT: 10e-12
-
 #define BEAM3K_COLLOCATION_POINTS \
   3  // defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner
      // nodes are introduced
@@ -315,6 +312,11 @@ namespace DRT
       virtual inline double RefLength() const { return length_; }
 
       /*!
+      \brief Set bool indicating, if Kirchhoff constraint is enforced in a strong or weak manner
+      */
+      void SetWeakConstraint(const bool yesno);
+
+      /*!
       \brief Get jacobi factor of first Gauss point
       */
       const double& GetJacobi() const { return jacobi_[0]; }
@@ -515,6 +517,11 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1);
+
+      /*!
+      \brief Set rotations in the initial configuration
+      */
+      void SetUpInitialRotations(const std::vector<double>& nodal_thetas);
 
 
       //! sets up from current nodal position all geometric parameters (considering current position
@@ -1207,11 +1214,6 @@ namespace DRT
 
       //! lump mass matrix
       void Lumpmass(Epetra_SerialDenseMatrix* emass);
-
-      //! Computes the length of the element and its Jacobi based upon a hermitian interpolation of
-      //! the geometry
-      void Calculate_length(const std::vector<LINALG::Matrix<3, 1>>& xrefe,
-          const std::vector<LINALG::Matrix<3, 1>>& trefe, double tolerance);
 
       template <typename T>
       void Calculate_clcurvature(LINALG::Matrix<3, 1, T>& r_s, LINALG::Matrix<3, 1, T>& r_ss,

@@ -412,6 +412,16 @@ namespace DRT
         return *browndyn_interface_ptr_;
       }
 
+      /** \brief calculates the element length in reference configuration
+       */
+      template <unsigned int nnode, unsigned int vpernode>
+      double Calc_reflength(
+          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline)
+      {
+        return DRT::UTILS::BEAM::CalcReflength<nnode, vpernode>(
+            disp_totlag_centerline, this->Shape());
+      }
+
       /*! \brief Get centerline position at given parameter coordinate xi
        *
        * @tparam nnode number of nodes

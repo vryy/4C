@@ -23,6 +23,7 @@ include(cmake/BACILinkGoogleTestNecessaryLibraries.cmake)
 add_subdirectory(common)
 
 # List all test directories here
+add_subdirectory(beam3)
 add_subdirectory(beaminteraction)
 add_subdirectory(comm)
 add_subdirectory(contact_constitutivelaw)

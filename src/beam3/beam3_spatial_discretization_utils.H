@@ -11,371 +11,419 @@
 #ifndef BEAM3_SPATIAL_DISCRETIZATION_UTILS_H
 #define BEAM3_SPATIAL_DISCRETIZATION_UTILS_H
 
-
 #include "lib_element.H"
 #include "lib_dserror.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_integration.H"
 
-
-namespace DRT
+namespace DRT::UTILS::BEAM
 {
-  namespace UTILS
+  /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
-    namespace BEAM
+    I_i.Clear();
+
+    switch (vpernode)
     {
-      /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+      case 1:
       {
-        I_i.Clear();
-
-        switch (vpernode)
-        {
-          case 1:
-          {
-            // evaluate Lagrange shape functions at xi
-            DRT::UTILS::shape_function_1D(I_i, xi, distype);
-            break;
-          }
-          case 2:
-          {
-            dsassert(hermite_length_param != -1.0,
-                "you must provide a length parameter in case of "
-                "Hermite interpolation!");
-
-            // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
-            DRT::UTILS::shape_function_hermite_1D(
-                I_i, xi, hermite_length_param, DRT::Element::line2);
-            break;
-          }
-          default:
-            dserror("invalid value for vpernode (number of values per node) specified");
-        }
+        // evaluate Lagrange shape functions at xi
+        DRT::UTILS::shape_function_1D(I_i, xi, distype);
+        break;
       }
-
-      /** \brief evaluate shape function derivatives at position \xi in element parameter space
-       * [-1,1]
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionDerivsAtXi(const T& xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+      case 2:
       {
-        I_i_xi.Clear();
+        dsassert(hermite_length_param != -1.0,
+            "you must provide a length parameter in case of "
+            "Hermite interpolation!");
 
-        switch (vpernode)
-        {
-          case 1:
-          {
-            // evaluate Lagrange shape function derivs at xi
-            DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype);
-            break;
-          }
-          case 2:
-          {
-            dsassert(hermite_length_param != -1.0,
-                "you must provide a length parameter in case of "
-                "Hermite interpolation!");
-
-            // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-            DRT::UTILS::shape_function_hermite_1D_deriv1(
-                I_i_xi, xi, hermite_length_param, DRT::Element::line2);
-            break;
-          }
-          default:
-            dserror("invalid value for vpernode (number of values per node) specified");
-        }
+        // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D(I_i, xi, hermite_length_param, DRT::Element::line2);
+        break;
       }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
 
-      /** \brief evaluate second derivatives of shape function at position \xi in element parameter
-       *         space [-1,1]
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunction2ndDerivsAtXi(const T& xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  /** \brief evaluate shape function derivatives at position \xi in element parameter space [-1,1]
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionDerivsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  {
+    I_i_xi.Clear();
+
+    switch (vpernode)
+    {
+      case 1:
       {
-        I_i_xixi.Clear();
-
-        switch (vpernode)
-        {
-          case 1:
-          {
-            // evaluate Lagrange shape function derivs at xi
-            DRT::UTILS::shape_function_1D_deriv2(I_i_xixi, xi, distype);
-            break;
-          }
-          case 2:
-          {
-            dsassert(hermite_length_param != -1.0,
-                "you must provide a length parameter in case of "
-                "Hermite interpolation!");
-
-            // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-            DRT::UTILS::shape_function_hermite_1D_deriv2(
-                I_i_xixi, xi, hermite_length_param, DRT::Element::line2);
-            break;
-          }
-          default:
-            dserror("invalid value for vpernode (number of values per node) specified");
-        }
+        // evaluate Lagrange shape function derivs at xi
+        DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype);
+        break;
       }
-
-      /** \brief evaluate third derivatives of shape function at position \xi in element parameter
-       *         space [-1,1]
-       *
-       *  \author grill
-       *  \date 04/19 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixixi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+      case 2:
       {
-        I_i_xixixi.Clear();
+        dsassert(hermite_length_param != -1.0,
+            "you must provide a length parameter in case of "
+            "Hermite interpolation!");
 
-        switch (vpernode)
-        {
-          case 1:
-          {
-            // evaluate Lagrange shape function derivs at xi
-            if (nnode >= 4)
-              dserror("Please implement 3rd derivatives of Lagrange shape functions!");
-
-            break;
-          }
-          case 2:
-          {
-            dsassert(hermite_length_param != -1.0,
-                "you must provide a length parameter in case of "
-                "Hermite interpolation!");
-
-            // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-            DRT::UTILS::shape_function_hermite_1D_deriv3(
-                I_i_xixixi, xi, hermite_length_param, DRT::Element::line2);
-            break;
-          }
-          default:
-            dserror("invalid value for vpernode (number of values per node) specified");
-        }
+        // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D_deriv1(
+            I_i_xi, xi, hermite_length_param, DRT::Element::line2);
+        break;
       }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
 
-      /** \brief evaluate shape functions and its first derivatives at position \xi in element
-       *         parameter space [-1,1]
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  /** \brief evaluate second derivatives of shape function at position \xi in element parameter
+   *         space [-1,1]
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunction2ndDerivsAtXi(const T& xi,
+      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  {
+    I_i_xixi.Clear();
+
+    switch (vpernode)
+    {
+      case 1:
       {
-        EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
-        EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
+        // evaluate Lagrange shape function derivs at xi
+        DRT::UTILS::shape_function_1D_deriv2(I_i_xixi, xi, distype);
+        break;
       }
-
-      /** \brief evaluate shape functions and its first and second derivatives at position \xi in
-       *         element parameter space [-1,1]
-       *
-       *  \author grill
-       *  \date 10/17 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi(const T& xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
-          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+      case 2:
       {
-        EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
-        EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
-        EvaluateShapeFunction2ndDerivsAtXi<nnode, vpernode>(
-            xi, I_i_xixi, distype, hermite_length_param);
+        dsassert(hermite_length_param != -1.0,
+            "you must provide a length parameter in case of "
+            "Hermite interpolation!");
+
+        // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D_deriv2(
+            I_i_xixi, xi, hermite_length_param, DRT::Element::line2);
+        break;
       }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
 
-      /** \brief evaluate shape functions at all specified Gauss points at once
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
-          double integration_interval_lower_limit = -1.0,
-          double integration_interval_upper_limit = 1.0)
+  /** \brief evaluate third derivatives of shape function at position \xi in element parameter
+   *         space [-1,1]
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
+      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixixi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  {
+    I_i_xixixi.Clear();
+
+    switch (vpernode)
+    {
+      case 1:
       {
-        if (I_i.size() != (unsigned int)gausspoints.nquad)
-          dserror(
-              "vector for individual shape functions to be evaluated at %d GPs has wrong size: %d",
-              gausspoints.nquad, I_i.size());
+        // evaluate Lagrange shape function derivs at xi
+        if (nnode >= 4) dserror("Please implement 3rd derivatives of Lagrange shape functions!");
 
+        break;
+      }
+      case 2:
+      {
+        dsassert(hermite_length_param != -1.0,
+            "you must provide a length parameter in case of "
+            "Hermite interpolation!");
+
+        // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
+        DRT::UTILS::shape_function_hermite_1D_deriv3(
+            I_i_xixixi, xi, hermite_length_param, DRT::Element::line2);
+        break;
+      }
+      default:
+        dserror("invalid value for vpernode (number of values per node) specified");
+    }
+  }
+
+  /** \brief evaluate shape functions and its first derivatives at position \xi in element
+   *         parameter space [-1,1]
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  {
+    EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
+    EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
+  }
+
+  /** \brief evaluate shape functions and its first and second derivatives at position \xi in
+   *         element parameter space [-1,1]
+   *
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi(const T& xi,
+      LINALG::Matrix<1, vpernode * nnode, T>& I_i, LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+  {
+    EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
+    EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
+    EvaluateShapeFunction2ndDerivsAtXi<nnode, vpernode>(
+        xi, I_i_xixi, distype, hermite_length_param);
+  }
+
+  /** \brief evaluate shape functions at all specified Gauss points at once
+   *
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
+  {
+    if (I_i.size() != (unsigned int)gausspoints.nquad)
+      dserror("vector for individual shape functions to be evaluated at %d GPs has wrong size: %d",
+          gausspoints.nquad, I_i.size());
+
+    for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
+    {
+      // Get location of GP in element parameter space xi \in [-1;1]
+      const T xi_tilde = gausspoints.qxg[numgp][0];
+
+      /* do a mapping into integration interval, i.e. coordinate transformation
+       * note: this has no effect if integration interval is [-1;1] */
+      const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
+                             (1.0 + xi_tilde) * integration_interval_upper_limit);
+
+      EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i[numgp], distype, hermite_length_param);
+    }
+  }
+
+  /** \brief evaluate shape function derivatives at all specified Gauss points at once
+   *
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
+  {
+    if (I_i_xi.size() != (unsigned int)gausspoints.nquad)
+      dserror(
+          "vector for individual shape function derivatives to be evaluated at %d GPs has "
+          "wrong size: %d",
+          gausspoints.nquad, I_i_xi.size());
+
+    for (int numgp = 0; numgp < gausspoints.nquad; ++numgp)
+    {
+      // Get location of GP in element parameter space xi \in [-1;1]
+      const T xi_tilde = gausspoints.qxg[numgp][0];
+
+      /* do a mapping into integration interval, i.e. coordinate transformation
+       * note: this has no effect if integration interval is [-1;1] */
+      const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
+                             (1.0 + xi_tilde) * integration_interval_upper_limit);
+
+      EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(
+          xi, I_i_xi[numgp], distype, hermite_length_param);
+    }
+  }
+
+  /** \brief evaluate shape functions and derivatives at all specified Gauss points at once
+   *
+   */
+  template <unsigned int nnode, unsigned int vpernode, typename T>
+  void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
+      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
+      const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
+  {
+    EvaluateShapeFunctionsAllGPs<nnode, vpernode>(gausspoints, I_i, distype, hermite_length_param,
+        integration_interval_lower_limit, integration_interval_upper_limit);
+    EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, I_i_xi, distype,
+        hermite_length_param, integration_interval_lower_limit, integration_interval_upper_limit);
+  }
+
+  /** \brief assemble one shape function matrix, such that: r=N*d
+   */
+  template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+  void AssembleShapeFunctions(const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
+  {
+    // assembly_N is just an array to help assemble the matrices of the shape functions
+    // it determines, which shape function is used in which column of N
+    unsigned int assembly_N[3][3 * numnodes * numnodalvalues];
+
+    // Initialize to zero
+    for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i)
+      for (unsigned int j = 0; j < 3; ++j) assembly_N[j][i] = 0;
+
+    /*
+    Set number of shape functions for each 3*3 block:
+    e.g. second order Lagrange polynomials (numnodes=3, numnodalvalues=1)
+    int assembly_N[3][9]=  { {1,0,0,2,0,0,3,0,0},
+                             {0,1,0,0,2,0,0,3,0},
+                             {0,0,1,0,0,2,0,0,3}};
+
+    e.g. cubic Hermite polynomials (numnodes=2, numnodalvalues=2)
+    int assembly_N[3][12]=  {{1,0,0,2,0,0,3,0,0,4,0,0},
+                             {0,1,0,0,2,0,0,3,0,0,4,0},
+                             {0,0,1,0,0,2,0,0,3,0,0,4}};
+    */
+
+    for (unsigned int i = 0; i < numnodes * numnodalvalues; ++i)
+    {
+      assembly_N[0][3 * i] = i + 1;
+      assembly_N[1][3 * i + 1] = i + 1;
+      assembly_N[2][3 * i + 2] = i + 1;
+    }
+
+    // Assemble the matrices of the shape functions
+    for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i)
+      for (unsigned int j = 0; j < 3; ++j)
+      {
+        if (assembly_N[j][i] == 0)
+          N(j, i) = 0.0;
+        else
+          N(j, i) = N_i(assembly_N[j][i] - 1);
+      }
+  }
+
+  /** \brief assemble shape function matrices, such that: r=N*d, r_xi=N_xi*d, r_xixi=N_xixi*d
+   */
+  template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+  void AssembleShapeFunctionsAndDerivsAnd2ndDerivs(
+      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
+      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
+      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N,
+      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
+      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
+  {
+    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i, N);
+    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
+    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xixi, N_xixi);
+  }
+
+  /** \brief interpolation of nodal DoFs based on given shape function values
+   */
+  template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T, typename T2>
+  void CalcInterpolation(const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
+      const LINALG::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
+      LINALG::Matrix<ndim, 1, T>& result)
+  {
+    result.Clear();
+
+    for (unsigned int idim = 0; idim < ndim; ++idim)
+      for (unsigned int idofperdim = 0; idofperdim < vpernode * nnode; ++idofperdim)
+        result(idim) += shapefcn_vals(idofperdim) * dof_vals(ndim * idofperdim + idim);
+  }
+
+  /** \brief calculates the element length in reference configuration
+   */
+  template <unsigned int nnode, unsigned int vpernode>
+  double CalcReflength(
+      const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
+      const DRT::Element::DiscretizationType& distype)
+  {
+    if (vpernode == 2 and nnode != 2)
+      dserror(
+          "the function Calc_reflength is implemented for 3rd order Hermite interpolation of the "
+          "centerline only!");
+
+    double reflength;
+    const double tolerance = 1e-12;
+
+    // initial value for iteration: difference vector of positions of boundary nodes (always ID 0
+    // and 1) also trivial solution in case of linear Lagrange interpolation: (nnode==2 &&
+    // vpernode==1)
+    if (vpernode == 2 || (nnode == 2 && vpernode == 1))
+    {
+      LINALG::Matrix<3, 1> tempvec(true);
+      for (int dim = 0; dim < 3; dim++)
+        tempvec(dim) = disp_totlag_centerline(3 * vpernode * 1 + dim) - disp_totlag_centerline(dim);
+      reflength = tempvec.Norm2();
+    }
+    else
+      reflength = 0.0;
+
+    // non-trivial solution
+    if (!(nnode == 2 && vpernode == 1))
+    {
+      // Get 'more than enough' integration points for exact integration
+      const auto gausspoints =
+          DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
+
+      // Newton Iteration - Tolerance and residual
+      double res = 1.0;
+
+      // Matrices to store the function values of the shape functions
+      std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
+
+      // current value of the derivative at the GP
+      LINALG::Matrix<3, 1> r_xi;
+
+      int numiter = 0;
+
+      // in case of Lagrange interpolation, one integration loop is sufficient
+      do
+      {
+        numiter++;
+        // Integral-value for Gauss Integration
+        double int_length = 0.0;
+        // Derivative value of the length integral for Newton Iteration (=weighted sum over
+        // deriv_int, gauss quadrature of: int(d/dl(|N'd|))dxi)
+        double deriv_length = 0.0;
+
+        EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, H_i_xi, distype, reflength);
+
+        // Loop through all GPs and compute the length and the derivative of the length
         for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
         {
-          // Get location of GP in element parameter space xi \in [-1;1]
-          const T xi_tilde = gausspoints.qxg[numgp][0];
+          // value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
+          double deriv_int = 0;
 
-          /* do a mapping into integration interval, i.e. coordinate transformation
-           * note: this has no effect if integration interval is [-1;1] */
-          const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
-                                 (1.0 + xi_tilde) * integration_interval_upper_limit);
+          CalcInterpolation<nnode, vpernode, 3, double>(
+              disp_totlag_centerline, H_i_xi[numgp], r_xi);
 
-          EvaluateShapeFunctionsAtXi<nnode, vpernode>(
-              xi, I_i[numgp], distype, hermite_length_param);
-        }
-      }
+          int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
 
-      /** \brief evaluate shape function derivatives at all specified Gauss points at once
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
-          double integration_interval_lower_limit = -1.0,
-          double integration_interval_upper_limit = 1.0)
-      {
-        if (I_i_xi.size() != (unsigned int)gausspoints.nquad)
-          dserror(
-              "vector for individual shape function derivatives to be evaluated at %d GPs has "
-              "wrong size: %d",
-              gausspoints.nquad, I_i_xi.size());
-
-        for (int numgp = 0; numgp < gausspoints.nquad; ++numgp)
-        {
-          // Get location of GP in element parameter space xi \in [-1;1]
-          const T xi_tilde = gausspoints.qxg[numgp][0];
-
-          /* do a mapping into integration interval, i.e. coordinate transformation
-           * note: this has no effect if integration interval is [-1;1] */
-          const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
-                                 (1.0 + xi_tilde) * integration_interval_upper_limit);
-
-          EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(
-              xi, I_i_xi[numgp], distype, hermite_length_param);
-        }
-      }
-
-      /** \brief evaluate shape functions and derivatives at all specified Gauss points at once
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
-          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
-          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
-          double integration_interval_lower_limit = -1.0,
-          double integration_interval_upper_limit = 1.0)
-      {
-        EvaluateShapeFunctionsAllGPs<nnode, vpernode>(gausspoints, I_i, distype,
-            hermite_length_param, integration_interval_lower_limit,
-            integration_interval_upper_limit);
-        EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, I_i_xi, distype,
-            hermite_length_param, integration_interval_lower_limit,
-            integration_interval_upper_limit);
-      }
-
-      /** \brief assemble one shape function matrix, such that: r=N*d
-       *
-       *  \author meier
-       *  \date 10/14 */
-      template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-      void AssembleShapeFunctions(const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
-          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
-      {
-        // assembly_N is just an array to help assemble the matrices of the shape functions
-        // it determines, which shape function is used in which column of N
-        unsigned int assembly_N[3][3 * numnodes * numnodalvalues];
-
-        // Initialize to zero
-        for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i)
-          for (unsigned int j = 0; j < 3; ++j) assembly_N[j][i] = 0;
-
-        /*
-        Set number of shape functions for each 3*3 block:
-        e.g. second order Lagrange polynomials (numnodes=3, numnodalvalues=1)
-        int assembly_N[3][9]=  { {1,0,0,2,0,0,3,0,0},
-                                 {0,1,0,0,2,0,0,3,0},
-                                 {0,0,1,0,0,2,0,0,3}};
-
-        e.g. cubic Hermite polynomials (numnodes=2, numnodalvalues=2)
-        int assembly_N[3][12]=  {{1,0,0,2,0,0,3,0,0,4,0,0},
-                                 {0,1,0,0,2,0,0,3,0,0,4,0},
-                                 {0,0,1,0,0,2,0,0,3,0,0,4}};
-        */
-
-        for (unsigned int i = 0; i < numnodes * numnodalvalues; ++i)
-        {
-          assembly_N[0][3 * i] = i + 1;
-          assembly_N[1][3 * i + 1] = i + 1;
-          assembly_N[2][3 * i + 2] = i + 1;
-        }
-
-        // Assemble the matrices of the shape functions
-        for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i)
-        {
-          for (unsigned int j = 0; j < 3; ++j)
+          // derivative only needed for Newton's method in case of Hermite interpolation
+          if (vpernode == 2)
           {
-            if (assembly_N[j][i] == 0)
+            // derivative of the integral of the length at GP
+            for (int dim = 0; dim < 3; dim++)
             {
-              N(j, i) = 0.0;
+              deriv_int += (disp_totlag_centerline(3 + dim) * H_i_xi[numgp](1) / reflength +
+                               disp_totlag_centerline(3 * vpernode * 1 + 3 + dim) *
+                                   H_i_xi[numgp](3) / reflength) *
+                           r_xi(dim);
             }
-            else
-            {
-              N(j, i) = N_i(assembly_N[j][i] - 1);
-            }
+            deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
           }
         }
-      }
 
-      /** \brief assemble shape function matrices, such that: r=N*d, r_xi=N_xi*d, r_xixi=N_xixi*d
-       *
-       *  \author meier
-       *  \date 01/14 */
-      template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-      void AssembleShapeFunctionsAndDerivsAnd2ndDerivs(
-          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
-          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
-          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
-          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N,
-          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
-          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
-      {
-        AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i, N);
-        AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
-        AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xixi, N_xixi);
-      }
+        // Update the derivative of f(l)=l-int(|N'd|)dxi=0 is f'(l)=1-int(d/dl(|N'd|))dxi
+        res = reflength - int_length;
+        reflength = reflength - res / (1 - deriv_length);
+      } while (vpernode != 1 && std::fabs(res) > tolerance && numiter < 100);
 
-      /** \brief interpolation of nodal DoFs based on given shape function values
-       *
-       *  \author grill
-       *  \date 03/16 */
-      template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T,
-          typename T2>
-      void CalcInterpolation(const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
-          const LINALG::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
-          LINALG::Matrix<ndim, 1, T>& result)
-      {
-        result.Clear();
+      if (numiter > 100)
+        dserror(
+            "failed to compute length of element in reference configuration iteratively: "
+            "Newton unconverged!");
+    }
 
-        for (unsigned int idim = 0; idim < ndim; ++idim)
-          for (unsigned int idofperdim = 0; idofperdim < vpernode * nnode; ++idofperdim)
-            result(idim) += shapefcn_vals(idofperdim) * dof_vals(ndim * idofperdim + idim);
-      }
-
-
-    }  // namespace BEAM
-  }    // namespace UTILS
-}  // namespace DRT
+    return reflength;
+  }
+}  // namespace DRT::UTILS::BEAM
 
 #endif
