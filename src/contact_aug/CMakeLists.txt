@@ -10,7 +10,6 @@ set(OBJS_CONTACT_AUG
     contact_aug_integrator_policy_debug.cpp
     contact_aug_interface.cpp
     contact_aug_interface_assembly.cpp
-    contact_aug_interface_tools.cpp
     contact_aug_lagrange_interface.cpp
     contact_aug_lagrange_multiplier_function.cpp
     contact_aug_lagrange_strategy.cpp

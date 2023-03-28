@@ -180,8 +180,6 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
         "The \"ADD_INACTIVE_FORCE_CONTRIBUTIONS\" option is only supported "
         "by the complete variational approach.");
 
-  Data().SetFDCheckType(Teuchos::getIntegralValue<INPAR::CONTACT::FDCheck>(p_aug, "FD_CHECK"));
-
   Data().SetPotential(Teuchos::rcp(new Potential(*this, *augDataPtr_)));
 
   Data().SetMatrixRowColTransformer(Teuchos::rcp(new MORTAR::MatrixRowColTransformer(4)));
@@ -563,33 +561,6 @@ void CONTACT::AUG::Strategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 void CONTACT::AUG::Strategy::PostEvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
   if (not IsInContact() and not WasInContact() and not WasInContactLastTimeStep()) return;
-
-  // --- DEBUGGING -------------------------------------------------------
-  switch (Data().FDCheckType())
-  {
-    // Finite Difference check at Gauss-point level
-    case INPAR::CONTACT::FDCheck::gauss_point:
-    {
-      AugFDCheckGP(cparams);
-      break;
-    }
-    // Finite Difference check at global level
-    case INPAR::CONTACT::FDCheck::global:
-    {
-      AugFDCheckGlobal(cparams);
-      break;
-    }
-    case INPAR::CONTACT::FDCheck::off:
-    {
-      /* do nothing */
-      break;
-    }
-    default:
-    {
-      dserror("Unknown FDCheck type. (enum=%d)", Data().FDCheckType());
-      break;
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*

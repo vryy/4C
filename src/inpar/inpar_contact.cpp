@@ -185,11 +185,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Type of employed assemble strategy", tuple<std::string>("node_based"),
       tuple<int>(assemble_node_based), &augcontact);
 
-  setStringToIntegralParameter<FDCheck>("FD_CHECK", "off",
-      "Switch finite difference check on and off.",
-      tuple<std::string>("off", "global", "gauss_point"),
-      tuple<FDCheck>(FDCheck::off, FDCheck::global, FDCheck::gauss_point), &augcontact);
-
   IntParameter("PARALLEL_REDIST_INTERVAL", -1,
       "Specifies the Newton iteration interval in which the parallel "
       "redistribution is controlled. An interval value equal to or smaller than "

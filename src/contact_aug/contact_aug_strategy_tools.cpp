@@ -27,27 +27,6 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::AugFDCheckGP(CONTACT::ParamsInterface& cparams)
-{
-  if (not IsInContact()) return;
-
-  for (auto& interface_ptr : interface_)
-  {
-    Teuchos::RCP<Interface> aug_interface_ptr =
-        Teuchos::rcp_dynamic_cast<Interface>(interface_ptr, true);
-
-    aug_interface_ptr->FD_Debug_GPCheck1stOrder(cparams);
-    aug_interface_ptr->FD_Debug_GPCheck2ndOrder(cparams);
-
-    aug_interface_ptr->FD_DebugVec_GPCheck1stOrder(cparams);
-    aug_interface_ptr->FD_DebugVec_GPCheck2ndOrder(cparams);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
 {
   // *** linearization w.r.t. displ. *********************************
