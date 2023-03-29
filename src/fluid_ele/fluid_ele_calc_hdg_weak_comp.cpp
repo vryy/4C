@@ -395,7 +395,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
 
       reg(0) += N(i, q) * vecValues[msd_ * ndofs + i];
 
-      for (unsigned int d = 0; d <= nsd_; ++d)
+      for (unsigned int d = 0; d < nsd_; ++d)
         weg(d) += N(i, q) * vecValues[(msd_ + 1 + d) * ndofs + i];
     }
 
