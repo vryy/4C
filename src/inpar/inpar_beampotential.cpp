@@ -29,7 +29,7 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   setNumericStringParameter("POT_LAW_EXPONENT", "1.0",
       "negative(!) exponent(s)  \f$m_i\f$ of potential law "
-      "\f$\\Phi(r) = \\sum_i (k_i * r^(-m_i)).\f$",
+      "\f$\\Phi(r) = \\sum_i (k_i * r^{-m_i}).\f$",
       &beampotential);
   setNumericStringParameter("POT_LAW_PREFACTOR", "0.0",
       "prefactor(s) \f$k_i\f$ of potential law \f$\\Phi(r) = \\sum_i (k_i * r^{-m_i})\f$.",

@@ -39,8 +39,6 @@
 #include "inpar_elemag.H"
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist, bool color)
 {
@@ -144,7 +142,7 @@ DRT::INPUT::ValidConditions()
           "Point Neumann", DRT::Condition::PointNeumann, false, DRT::Condition::Point));
   Teuchos::RCP<ConditionDefinition> pointneumanneb =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT MOMENT EB CONDITIONS", "PointNeumannEB",
-          "Point Neumann Moment auf Euler-Bernoulli Balken", DRT::Condition::PointNeumannEB, false,
+          "Point Neumann Moment for an Euler-Bernoulli beam", DRT::Condition::PointNeumannEB, false,
           DRT::Condition::Point));
   Teuchos::RCP<ConditionDefinition> lineneumann =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE NEUMANN CONDITIONS", "LineNeumann",

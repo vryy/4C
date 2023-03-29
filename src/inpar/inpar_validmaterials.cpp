@@ -38,8 +38,7 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(std::ostream& stream,
 
   const std::string sectionname = "MATERIALS";
   const unsigned l = sectionname.length();
-  stream << redlight << "--";
-  for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
+  stream << redlight << "--" << std::string(std::max<int>(65 - l, 0), '-');
   stream << greenlight << sectionname << endcolor << '\n';
 
   for (auto& i : matlist)
@@ -47,7 +46,6 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(std::ostream& stream,
     i->Print(stream, nullptr, color);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -209,7 +207,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_permeable", "permeability for flow in porous media", INPAR::MAT::m_permeable_fluid));
 
-    AddNamedString(m, "TYPE", "Problem type: Darcy or Darcy-Stokes", "Darcy-Stokes");
+    AddNamedString(m, "TYPE", "Problem type: Darcy, Darcy-Stokes (default)", "Darcy-Stokes");
     AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
     AddNamedReal(m, "DENSITY", "density");
     AddNamedReal(m, "PERMEABILITY", "permeability of medium");
@@ -295,7 +293,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "REACSCALE", "scaling for reaction coefficient");
     // reacscale could now be done by constant distribution function
     AddNamedInt(m, "DISTRFUNCT", "spatial distribution of reaction coefficient", 0, true);
-    AddNamedString(m, "COUPLING", "type of coupling", "no_coupling", false);
+    AddNamedString(m, "COUPLING",
+        "type of coupling: "
+        "simple_multiplicative, power_multiplicative, constant, michaelis_menten, by_function, "
+        "no_coupling (default)",
+        "no_coupling", false);
     AddNamedRealVector(m, "ROLE", "role in michaelis-menten like reactions", "NUMSCAL");
     AddNamedRealVector(m, "REACSTART", "starting point of reaction", "NUMSCAL", 0.0, true);
 
@@ -311,7 +313,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedIntVector(m, "STOICH", "reaction stoichometrie list", "NUMSCAL");
     AddNamedReal(m, "REACCOEFF", "reaction coefficient");
     AddNamedInt(m, "DISTRFUNCT", "spatial distribution of reaction coefficient", 0, true);
-    AddNamedString(m, "COUPLING", "type of coupling", "no_coupling", false);
+    AddNamedString(m, "COUPLING",
+        "type of coupling: "
+        "simple_multiplicative, power_multiplicative, constant, michaelis_menten, by_function, "
+        "no_coupling (default)",
+        "no_coupling", false);
     AddNamedRealVector(m, "ROLE", "role in michaelis-menten like reactions", "NUMSCAL");
     AddNamedRealVector(m, "REACSTART", "starting point of reaction", "NUMSCAL", 0.0, true);
 
@@ -542,8 +548,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DIFF3", "conductivity perpendicular to fiber direction");
     AddNamedReal(
         m, "PERTUBATION_DERIV", "pertubation for calculation of reaction coefficient derivative");
-    AddNamedString(m, "MODEL", "Model type: MV, FHN, TNNP, SAN or INADA", "MV");
-    AddNamedString(m, "TISSUE", "Tissue type: M, ENDO, EPI, AN, N or NH", "M");
+    AddNamedString(m, "MODEL", "Model type: MV (default), FHN, TNNP, SAN or INADA", "MV");
+    AddNamedString(m, "TISSUE", "Tissue type: M (default), ENDO, EPI, AN, N or NH", "M");
     AddNamedReal(m, "TIME_SCALE", "Scale factor for time units of Model");
 
     AppendMaterialDefinition(matlist, m);
@@ -899,7 +905,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     // model for half cell open circuit potential of electrode
     AddNamedString(matelectrode, "OCP_MODEL",
-        "model for half cell open circuit potential of electrode", "none");
+        "model for half cell open circuit potential of electrode: "
+        "Redlich-Kister, Taralov, Polynomial, csv",
+        "none");
 
     // lower bound of range of validity as a fraction of C_MAX for ocp calculation model
     AddNamedReal(matelectrode, "X_MIN",
@@ -921,7 +929,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     // *.csv file with data points for half cell open circuit potential
     AddNamedString(matelectrode, "OCP_CSV",
-        "*.csv file with data points for half cell open circuit potential", "", true);
+        "\\*.csv file with data points for half cell open circuit potential", "", true);
 
     // end of input line
     AddNamedSeparator(matelectrode, "END", "indicating end of line");
@@ -1227,7 +1235,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_Struct_Robinson", "Robinson's visco-plastic material", INPAR::MAT::m_vp_robinson));
 
-    AddNamedString(m, "KIND", "kind of Robinson material", "arya_narloyz");
+    AddNamedString(m, "KIND",
+        "kind of Robinson material: "
+        "Butler, Arya, Arya_NarloyZ (default), Arya_CrMoSteel",
+        "Arya_NarloyZ");
     AddNamedInt(m, "YOUNGNUM", "number of Young's modulus in list");
     AddNamedRealVector(m, "YOUNG", "Young's modulus", "YOUNGNUM");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -1314,7 +1325,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "AAA thrombus material according to GASSER [2008]", INPAR::MAT::m_aaagasser));
 
     AddNamedReal(m, "DENS", "mass density");
-    AddNamedString(m, "VOL", "Type of volumetric Strain Energy Density (OSM,SuBa,SiTa)", "OSM");
+    AddNamedString(
+        m, "VOL", "Type of volumetric Strain Energy Density: OSM (default),SuBa,SiTa", "OSM");
     AddNamedReal(m, "NUE", "Poisson's ratio (0.49)");
     AddNamedReal(m, "BETA", "empiric constant for OSM (-2.0)");
     AddNamedReal(m, "CLUM", "luminal stiffness parameter (2.62e3)");
@@ -1552,7 +1564,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "logarithmic neo-Hooke material acc. to Bonet and Wood", INPAR::MAT::mes_couplogneohooke));
 
     AddNamedString(m, "MODE",
-        "parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
+        "parameter set: YN (Young's modulus and Poisson's ration; default) or Lame (mue and "
+        "lambda)",
+        "YN");
     AddNamedReal(m, "C1", "E or mue");
     AddNamedReal(m, "C2", "nue or lambda");
 
@@ -1589,7 +1603,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "mixed logarithmic neo-Hooke material", INPAR::MAT::mes_couplogmixneohooke));
 
     AddNamedString(m, "MODE",
-        "parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
+        "parameter set: YN (Young's modulus and Poisson's ration; default) or Lame (mue and "
+        "lambda)",
+        "YN");
     AddNamedReal(m, "C1", "E or mue");
     AddNamedReal(m, "C2", "nue or lambda");
 
@@ -2105,19 +2121,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "Parameter for structural tensor strategy in anisotropic materials",
         INPAR::MAT::mes_structuraltensorstratgy));
 
-    // choose between:
-    // "Standard"
-    // "ByDistributionFunction"
-    // "DispersedTransverselyIsotropic"
-    //  rauch 10/17
-    AddNamedString(m, "STRATEGY", "Strategy for evaluation of structural tensor", "Standard");
+    AddNamedString(m, "STRATEGY",
+        "Strategy for evaluation of structural tensor: "
+        "Standard (default), ByDistributionFunction, DispersedTransverselyIsotropic",
+        "Standard");
 
     // choose between:
     // "none"
     // "Bingham"
     // "vonMisesFisher"
     //  rauch 10/17
-    AddNamedString(m, "DISTR", "Type of distribution function around mean direction", "none", true);
+    AddNamedString(m, "DISTR",
+        "Type of distribution function around mean direction: "
+        "none, Bingham, vonMisesFisher",
+        "none", true);
 
     AddNamedReal(m, "C1", "constant 1 for distribution function", 1.0, true);
     AddNamedReal(m, "C2", "constant 2 for distribution function", 0.0, true);
@@ -2201,7 +2218,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "TAU", "relaxation parameter");
     AddNamedReal(m, "BETA", "emphasis of viscous to elastic part");
     AddNamedString(m, "SOLVE",
-        "Solution of evolution equation via: OST or CONVOL (convolution integral)", "OST");
+        "Solution of evolution equation via: OST (default) or CONVOL (convolution integral)",
+        "OST");
 
 
     AppendMaterialDefinition(matlist, m);
@@ -2239,7 +2257,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "NUMBRANCH", "number of viscoelastic branches");
     AddNamedIntVector(m, "MATIDS", "the list material IDs", "NUMBRANCH");
     AddNamedString(m, "SOLVE",
-        "Solution for evolution equation: OST or CONVOL (convolution integral)", "CONVOL");
+        "Solution for evolution equation: OST (default) or CONVOL (convolution integral)",
+        "CONVOL");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2724,15 +2743,30 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "SHEARGROWTHFAC", "growth factor for shear");
     AddNamedReal(m, "HOMRAD", "homeostatic target value of inner radius");
     AddNamedReal(m, "STARTTIME", "at this time turnover of collagen starts");
-    AddNamedString(m, "INTEGRATION", "time integration scheme (Explicit, Implicit)", "Explicit");
+    AddNamedString(m, "INTEGRATION",
+        "time integration scheme: "
+        "Explicit (default), or Implicit",
+        "Explicit");
     AddNamedReal(m, "TOL", "tolerance for local Newton iteration, only for implicit integration");
-    AddNamedString(m, "GROWTHFORCE", "driving force of growth (Single, All, ElaCol)", "Single");
-    AddNamedString(m, "ELASTINDEGRAD", "how elastin is degraded (None, Rectangle, Time)", "None");
-    AddNamedString(m, "MASSPROD", "how mass depends on driving force (Lin, CosCos)", "Lin");
+    AddNamedString(m, "GROWTHFORCE",
+        "driving force of growth: "
+        "Single (default), All, ElaCol",
+        "Single");
+    AddNamedString(m, "ELASTINDEGRAD",
+        "how elastin is degraded: "
+        "None (default), Rectangle, Time",
+        "None");
+    AddNamedString(m, "MASSPROD",
+        "how mass depends on driving force: "
+        "Lin (default), CosCos",
+        "Lin");
     AddNamedString(m, "INITSTRETCH",
         "how to set stretches in the beginning (None, Homeo, UpdatePrestretch)", "None");
     AddNamedInt(m, "CURVE", "number of timecurve for increase of prestretch in time", 0);
-    AddNamedString(m, "DEGOPTION", "which degradation function (Lin, Cos, Exp, ExpVar)", "Lin");
+    AddNamedString(m, "DEGOPTION",
+        "Type of degradation function: "
+        "Lin (default), Cos, Exp, ExpVar",
+        "Lin");
     AddNamedReal(m, "MAXMASSPRODFAC", "maximal factor of mass production");
     AddNamedReal(m, "ELASTINFAC", "factor for elastin content", 0.0, true);
     AddNamedBool(m, "STOREHISTORY",
@@ -2929,7 +2963,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "ORTHOPERMEABILITY1", "first permeability for orthotropy", 0.0, true);
     AddNamedReal(m, "ORTHOPERMEABILITY2", "second permeability for orthotropy", 0.0, true);
     AddNamedReal(m, "ORTHOPERMEABILITY3", "third permeability for orthotropy", 0.0, true);
-    AddNamedString(m, "TYPE", "Problem type: Darcy or Darcy-Brinkman", "Darcy");
+    AddNamedString(m, "TYPE", "Problem type: Darcy (default) or Darcy-Brinkman", "Darcy");
     // optional parameter
     AddNamedString(m, "PERMEABILITYFUNCTION",
         "Permeability function: Const(Default) or Kozeny_Carman", "Const", true);
@@ -2983,7 +3017,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "TOTALNUMDOF", "total number of multiphase-dofs");
     AddNamedInt(m, "NUMVOLFRAC", "number of volfracs");
     AddNamedIntVector(m, "SCALE", "advanced reaction list", "TOTALNUMDOF");
-    AddNamedString(m, "COUPLING", "type of coupling", "no_coupling", false);
+    AddNamedString(m, "COUPLING",
+        "type of coupling: "
+        "scalar_by_function, no_coupling (default)",
+        "no_coupling", false);
     AddNamedInt(m, "FUNCTID", "function ID defining the reaction");
 
     AppendMaterialDefinition(matlist, m);
@@ -3501,7 +3538,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "MAT_Crosslinker", "material for a linkage between beams", INPAR::MAT::m_crosslinkermat));
 
     AddNamedReal(matdef, "MATNUM", "number of beam elasthyper material");
-    AddNamedString(matdef, "JOINTTYPE", "type of joint (rigid or pin)", "beam3rline2rigid");
+    AddNamedString(matdef, "JOINTTYPE",
+        "type of joint: "
+        "beam3rline2rigid (default), beam3rline2pin or truss",
+        "beam3rline2rigid");
     AddNamedReal(matdef, "LINKINGLENGTH", "distance between the two binding domains of a linker");
     AddNamedReal(matdef, "LINKINGLENGTHTOL",
         "tolerance for linker length in the sense: length +- tolerance");
@@ -3517,7 +3557,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         matdef, "DELTABELLEQ", "deltaD in Bell's equation for force dependent off rate", 0.0, true);
     AddNamedReal(matdef, "NOBONDDISTSPHERE",
         "distance to sphere elements in which no double bonded linker is allowed", 0.0, true);
-    AddNamedString(matdef, "TYPE", "type of crosslinker", "arbitrary", true);
+    AddNamedString(matdef, "TYPE",
+        "type of crosslinker: "
+        "arbitrary (default), actin, collagen, integrin",
+        "arbitrary", true);
 
     AppendMaterialDefinition(matlist, matdef);
   }

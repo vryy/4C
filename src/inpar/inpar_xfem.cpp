@@ -47,7 +47,7 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "MAX_NUM_DOFSETS", 3, "Maximum number of volumecells in the XFEM element", &xfem_general);
 
   setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY", "full",
-      "which strategy used for the nodal dofset management per node?",
+      "Strategy used for the nodal dofset management per node",
       tuple<std::string>(
           "OneDofset_PerNodeAndPosition", "ConnectGhostDofsets_PerNodeAndPosition", "full"),
       tuple<int>(INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition,
@@ -57,14 +57,14 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
-      "how to find Gauss Points for the cut volumes",
+      "Method for finding Gauss Points for the cut volumes",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
       tuple<int>(INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::VCellGaussPts_MomentFitting,
           INPAR::CUT::VCellGaussPts_DirectDivergence),
       &xfem_general);
 
   setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY", "Tessellation",
-      "how to find Gauss Points for the boundary cells",
+      "Method for finding Gauss Points for the boundary cells",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
       tuple<int>(INPAR::CUT::BCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_MomentFitting,
           INPAR::CUT::BCellGaussPts_DirectDivergence),
@@ -90,7 +90,7 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // xfluidfluid-fsi-monolithic approach
   setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH", "xffsi_fixedALE_partitioned",
-      "The monolithic apporach for xfluidfluid-fsi",
+      "The monolithic approach for xfluidfluid-fsi",
       tuple<std::string>(
           "xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
       tuple<int>(INPAR::XFEM::XFFSI_Full_Newton,      // xffsi with no fixed xfem-coupling

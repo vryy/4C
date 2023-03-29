@@ -326,7 +326,7 @@ namespace DRT
                   {
                     // remove comments, trailing and leading whitespaces
                     // compact internal whitespaces
-                    line = DRT::UTILS::strip_comment(line);
+                    line = DRT::UTILS::StripComment(line);
 
                     // line is now empty
                     if (line.size() == 0) continue;
@@ -1011,7 +1011,7 @@ namespace DRT
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces
-          line = DRT::UTILS::strip_comment(line);
+          line = DRT::UTILS::StripComment(line);
 
           // line is now empty
           if (line.size() == 0) continue;
