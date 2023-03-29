@@ -14,6 +14,9 @@
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <cctype>
+#include <cstring>
 #endif
 
 
@@ -32,45 +35,28 @@ namespace DRT
       \date 03/07
     */
     /*----------------------------------------------------------------------*/
-    static std::string trim(const std::string& line)
-    {
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-      return boost::algorithm::trim_all_copy(boost::algorithm::replace_all_copy(line, "\t", " "));
-#else
-      std::istringstream t;
-      std::string s;
-      std::string newline;
-      t.str(line);
-      while (t >> s)
-      {
-        newline.append(s);
-        newline.append(" ");
-      }
-      if (newline.size() > 0) newline.resize(newline.size() - 1);
-      return newline;
-#endif
-    }
+    std::string Trim(const std::string& line);
 
-    // remove comments, trailing and leading whitespaces
-    static std::string strip_comment(const std::string& line)
-    {
-      std::string newline = line;
+    /*----------------------------------------------------------------------*/
+    /*!
+      remove comments, trailing and leading whitespaces
 
-      // remove comments
+      @param[in] line arbitrary string
+      @result same string stripped
+    */
+    /*----------------------------------------------------------------------*/
+    std::string StripComment(const std::string& line);
 
-      std::string::size_type loc = line.find("//");
-      if (loc != std::string::npos)
-      {
-        newline = newline.substr(0, loc);
-      }
+    /*----------------------------------------------------------------------*/
+    /*!
+      convert all characters in a string into lower case
+      (wrapper to the corresponding routine in boost::algorithm)
 
-      // remove trailing and leading whitespaces
-      // compact internal whitespaces
-      newline = trim(newline);
-
-      return newline;
-    }
-
+      @param[in] line arbitrary string
+      @result same string in all lower case
+    */
+    /*----------------------------------------------------------------------*/
+    std::string ToLower(const std::string& line);
   }  // namespace UTILS
 }  // namespace DRT
 

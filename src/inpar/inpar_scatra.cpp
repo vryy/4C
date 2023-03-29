@@ -256,12 +256,12 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // flag for output of performance statistics associated with linear solver into *.csv file
   BoolParameter("OUTPUTLINSOLVERSTATS", "No",
-      "flag for output of performance statistics associated with linear solver into *.csv file",
+      "flag for output of performance statistics associated with linear solver into csv file",
       &scatradyn);
 
   // flag for output of performance statistics associated with nonlinear solver into *.csv file
   BoolParameter("OUTPUTNONLINSOLVERSTATS", "No",
-      "flag for output of performance statistics associated with nonlinear solver into *.csv file",
+      "flag for output of performance statistics associated with nonlinear solver into csv file",
       &scatradyn);
 
   // flag for point-based null space calculation

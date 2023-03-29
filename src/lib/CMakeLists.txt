@@ -61,6 +61,7 @@ set(OBJS_LIB
     lib_utils_gid_vector.cpp
     lib_utils_materials.cpp
     lib_utils_parallel.cpp
+    lib_utils_reader.cpp
     lib_voigt_notation.cpp
     )
 
@@ -71,6 +72,7 @@ set(LIBS_LIB
     alg_particle_engine
     alg_poromultiphase_scatra
     alg_statinvanalysis
+    create_rtdfiles
     ele_discsh3
     ele_elemag
     ele_to3

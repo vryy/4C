@@ -12,7 +12,6 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <algorithm>
 #include <iterator>
 
 #include <string>
@@ -26,6 +25,7 @@
 #include "lib_utils_cond_and_mat_definition.H"
 
 #include "mat_material.H"
+#include "create_rtdfiles_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -153,6 +153,19 @@ void DRT::INPUT::SeparatorMaterialComponent::Describe(std::ostream& stream)
   stream << "    " << std::setw(15) << std::left << separator_ << std::setw(15) << std::left
          << (optional_ ? "(optional)" : "") << description_;
 }
+
+
+std::vector<std::string> DRT::INPUT::SeparatorMaterialComponent::WriteReadTheDocs() const
+{
+  std::vector<std::string> tablerow;
+
+  tablerow.push_back(separator_);
+  tablerow.push_back((optional_ ? "yes" : ""));
+  std::string descriptionstring = "";
+  tablerow.push_back(description_);
+  return tablerow;
+}
+
 
 
 /*-----------------------------------------------------------------------------*
@@ -293,6 +306,7 @@ DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
 void DRT::INPUT::IntVectorMaterialComponent::DefaultLine(std::ostream& stream)
 {
   for (int i = 0; i < length_; ++i) stream << defaultvalue_ << " ";
+  if (length_ == 0) stream << "<int vec> ;";
 }
 
 
@@ -460,6 +474,7 @@ DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
 void DRT::INPUT::RealVectorMaterialComponent::DefaultLine(std::ostream& stream)
 {
   for (int i = 0; i < length_; ++i) stream << defaultvalue_ << " ";
+  if (length_ == 0) stream << "<real vec> ;";
 }
 
 
@@ -756,6 +771,70 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
   stream << endcolor << "\n";
 
   return stream;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::MaterialDefinition::WriteReadTheDocs(std::ostream& stream)
+{
+  /* Each entry consists of a number of fields:
+  - header
+  - description
+  - code line
+  - parameter description */
+
+  // the Material title
+  DRT::RTD::WriteLinktarget(stream, materialname_);
+  DRT::RTD::WriteHeader(stream, 1, materialname_);
+
+  // the description of the material
+  DRT::RTD::WriteParagraph(stream, description_);
+
+  // the material line as it occurs in the dat file
+  std::string parameter = "   MAT <matID>  " + materialname_;
+  std::vector<std::string> materialcode;
+  //
+  // Also: create the table from the parameter descriptions (based on the so-called
+  // separatorComponents) table header
+  const unsigned tablesize = 3;
+  DRT::RTD::Table parametertable(tablesize);
+  std::vector<std::string> tablerow(tablesize);
+  tablerow = {"Parameter", "optional", "Description"};
+  parametertable.AddRow(tablerow);
+
+  for (auto& parameterterm : inputline_)
+  {
+    if (auto* separator = dynamic_cast<SeparatorMaterialComponent*>(parameterterm.get()))
+    {
+      parametertable.AddRow(separator->WriteReadTheDocs());
+
+      if (parameter.length() > 60)
+      {
+        parameter += " \\";
+        materialcode.push_back(parameter);
+        parameter = "   ";
+      }
+    }
+    std::ostringstream parameterstream;
+    parameterterm->DefaultLine(parameterstream);
+    parameter += " " + parameterstream.str();
+  }
+  materialcode.push_back(parameter);
+  DRT::RTD::WriteCode(stream, materialcode);
+  //
+  // Now printing the parameter table
+  parametertable.SetWidths({10, 10, 50});
+  parametertable.AddDirective("header-rows", "1");
+
+  if (parametertable.GetRows() == 1)
+  {
+    tablerow = {"no parameters", "", ""};
+    parametertable.AddRow(tablerow);
+  }
+  parametertable.Print(stream);
+
+  return;
 }
 
 

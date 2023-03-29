@@ -18,6 +18,9 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_utils_cond_and_mat_definition.cpp"
+#include "lib_utils_reader.H"
+#include "create_rtdfiles_utils.H"
+#include <boost/algorithm/string/join.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -35,6 +38,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(
       std::ostream_iterator<std::string>(*out, " "));
   return out;
 }
+
+
 
 /* -----------------------------------------------------------------------------------------------*
  | Class StringConditionComponent                                                       ehrl 09/12|
@@ -94,6 +99,16 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
 void DRT::INPUT::StringConditionComponent::DefaultLine(std::ostream& stream)
 {
   stream << defaultvalue_;
+}
+
+std::string DRT::INPUT::StringConditionComponent::WriteReadTheDocs() { return "<" + Name() + ">"; }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::StringConditionComponent::GetOptions()
+{
+  return datfilevalues_;
 }
 
 
@@ -159,6 +174,8 @@ void DRT::INPUT::SeparatorConditionComponent::DefaultLine(std::ostream& stream)
   stream << separator_;
 }
 
+std::string DRT::INPUT::SeparatorConditionComponent::WriteReadTheDocs() { return separator_; }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -166,6 +183,14 @@ void DRT::INPUT::SeparatorConditionComponent::Print(
     std::ostream& stream, const DRT::Condition* cond)
 {
   stream << separator_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::SeparatorConditionComponent::GetOptions()
+{
+  return Teuchos::Array<std::string>();
 }
 
 
@@ -217,6 +242,19 @@ void DRT::INPUT::IntConditionComponent::DefaultLine(std::ostream& stream)
     stream << "none";
   else
     stream << 0;
+}
+
+std::string DRT::INPUT::IntConditionComponent::WriteReadTheDocs()
+{
+  return (noneallowed_) ? "none" : "0";
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::IntConditionComponent::GetOptions()
+{
+  return Teuchos::Array<std::string>();
 }
 
 
@@ -307,6 +345,22 @@ void DRT::INPUT::IntVectorConditionComponent::DefaultLine(std::ostream& stream)
   }
 }
 
+std::string DRT::INPUT::IntVectorConditionComponent::WriteReadTheDocs()
+{
+  std::string parameterstring = "<int vec";
+  if (noneallowed_) parameterstring += " [incl none]";
+  parameterstring += ":" + Name() + "> ";
+  return parameterstring;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::IntVectorConditionComponent::GetOptions()
+{
+  return Teuchos::Array<std::string>();
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -387,6 +441,16 @@ DRT::INPUT::RealConditionComponent::RealConditionComponent(std::string name)
  *----------------------------------------------------------------------*/
 void DRT::INPUT::RealConditionComponent::DefaultLine(std::ostream& stream) { stream << "0.0"; }
 
+std::string DRT::INPUT::RealConditionComponent::WriteReadTheDocs() { return "0.0"; }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::RealConditionComponent::GetOptions()
+{
+  return Teuchos::Array<std::string>();
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -440,6 +504,19 @@ DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
 void DRT::INPUT::RealVectorConditionComponent::DefaultLine(std::ostream& stream)
 {
   for (int i = 0; i < length_; ++i) stream << "0.0 ";
+}
+
+std::string DRT::INPUT::RealVectorConditionComponent::WriteReadTheDocs()
+{
+  return "<real vec:" + Name() + "> ";
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::RealVectorConditionComponent::GetOptions()
+{
+  return Teuchos::Array<std::string>();
 }
 
 
@@ -522,6 +599,34 @@ void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
   intvectcomp_[1]->DefaultLine(stream);
   stream << " ";
 }
+
+std::string DRT::INPUT::DirichletNeumannBundle::WriteReadTheDocs()
+{
+  std::string parameterstring = "";
+  // numdof int
+  parameterstring += intcomp_->WriteReadTheDocs() + " ";
+  // ONOFF
+  parameterstring += intvectsepcomp_[0]->WriteReadTheDocs() + " ";
+  // onoff vector
+  parameterstring += intvectcomp_[0]->WriteReadTheDocs() + " ";
+  // VAL
+  parameterstring += realvectsepcomp_[0]->WriteReadTheDocs() + " ";
+  // val vector
+  parameterstring += realvectcomp_[0]->WriteReadTheDocs() + " ";
+  // FUNCT
+  parameterstring += intvectsepcomp_[1]->WriteReadTheDocs() + " ";
+  // funct vector
+  parameterstring += intvectcomp_[1]->WriteReadTheDocs() + " ";
+  return parameterstring;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::DirichletNeumannBundle::GetOptions()
+{
+  return Teuchos::Array<std::string>();
+}
+
 
 void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::Condition* cond)
 {
@@ -613,6 +718,20 @@ void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
     }
     realvectcomp_[i]->DefaultLine(stream);
   }
+}
+
+std::string DRT::INPUT::IntRealBundle::WriteReadTheDocs()
+{
+  std::ostringstream parameterstream;
+  DRT::INPUT::IntRealBundle::DefaultLine(parameterstream);
+  return parameterstream.str();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::IntRealBundle::GetOptions()
+{
+  return Teuchos::Array<std::string>();
 }
 
 /*----------------------------------------------------------------------*
@@ -709,6 +828,24 @@ void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
   }
 }
 
+std::string DRT::INPUT::CondCompBundle::WriteReadTheDocs()
+{
+  std::string parameterstring;
+  for (auto& component : condcomp_)
+  {
+    parameterstring += component->WriteReadTheDocs() + " ";
+  }
+  return parameterstring;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::CondCompBundle::GetOptions()
+{
+  return Teuchos::Array<std::string>();
+}
+
+
 /*----------------------------------------------------------------------*
  | CondCompBundle::Print()                                    ehrl 09/12|
  *----------------------------------------------------------------------*/
@@ -738,7 +875,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefini
  *----------------------------------------------------------------------*/
 DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(std::string name_condition_components,
     const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp)
-    : ConditionComponent(name_condition_components + "_selector_internal"),
+    : ConditionComponent(name_condition_components),  // + "_selector_internal"),
       stringcomp_(),
       condcomp_()
 {
@@ -783,6 +920,36 @@ void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
       break;
     }
   }
+}
+/*----------------------------------------------------------------------*
+| CondCompBundleSelector::DefaultLines()                      ische 03/21|
+*----------------------------------------------------------------------*/
+std::vector<std::string> DRT::INPUT::CondCompBundleSelector::WriteReadTheDocsLines()
+{
+  std::vector<std::string> condCompStrings;
+  for (auto& componentBundle : condcomp_)
+  {
+    std::string condCompString(componentBundle.second->Name() + " ");
+    // print default condition component bundle (default bundle)
+    condCompString += componentBundle.second->WriteReadTheDocs();
+    condCompStrings.push_back(condCompString);
+  }
+  return condCompStrings;
+}
+
+std::string DRT::INPUT::CondCompBundleSelector::WriteReadTheDocs()
+{
+  std::string parameterstring = "";
+  parameterstring += stringcomp_->WriteReadTheDocs() + " [further parameters]";
+  return parameterstring;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::Array<std::string> DRT::INPUT::CondCompBundleSelector::GetOptions()
+{
+  return stringcomp_->GetOptions();
 }
 
 
@@ -1053,4 +1220,157 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
   }
 
   return stream;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::ConditionDefinition::WriteReadTheDocs(std::ostream& stream)
+{
+  /* Each entry consists of a number of fields:
+  - Part 1: link target and header
+  - Part 2: description
+  - Part 3: code lines
+  - Part 4: table for description and admissible values of string
+    and conditionComponentBundleSelector parameters
+  - Part 5: finally additional code lines for model specific parameters
+    or the complex ConditionComponentBundleSelectors
+  */
+
+  const std::string sectionlinktarget =
+      Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(sectionname_));
+  //
+  // boundary condition header
+  //
+  /*------ PART 1 --------------------------
+   * Boundary condition header (incl. link target)
+   */
+  // link target line
+  DRT::RTD::WriteLinktarget(stream, sectionlinktarget);
+  // condition name as section header
+  DRT::RTD::WriteHeader(stream, 1, sectionname_);
+
+  /*------ PART 2 -------------------------
+   * boundary condition description string
+   */
+  std::string descriptionline = (description_ == "") ? "no description yet" : description_;
+  DRT::RTD::WriteParagraph(stream, descriptionline);
+
+  /*------ PART 3 -------------------------
+   * boundary condition input lines
+   * In this section, the table for parameter description is filled as well.
+   */
+  // First line: condition name as a section
+  unsigned l = sectionname_.length();
+  std::vector<std::string> conditioncode{
+      "--" + std::string(std::max<int>(65 - l, 0), '-') + sectionname_};
+  // second line: geometry type
+  std::string name;
+  switch (gtype_)
+  {
+    case DRT::Condition::Point:
+      conditioncode.push_back("DPOINT  0");
+      break;
+    case DRT::Condition::Line:
+      conditioncode.push_back("DLINE  0");
+      break;
+    case DRT::Condition::Surface:
+      conditioncode.push_back("DSURF  0");
+      break;
+    case DRT::Condition::Volume:
+      conditioncode.push_back("DVOL  0");
+      break;
+    default:
+      dserror("geometry type unspecified");
+      break;
+  }
+  // Collecting information for the final code line (conditioncodeline)
+  // Also:
+  // store admissible values for string parameters (vector<string> parametertable) -> Part 4
+  // store options for the CondCompBundles (vector<string> condCompStrings) -> Part 5
+  std::string conditioncodeline = "E <setnumber> -";
+  bool isNewlinePossible = false;
+  //
+  // also: Generate the table rows for admissible values of string parameters
+  const unsigned tablesize = 3;
+  DRT::RTD::Table parametertable(tablesize);
+  std::vector<std::string> tablerow = {"Parameter", "Default", "Admissible values"};
+  std::vector<std::string> condCompStrings;
+  std::string condCompName("");
+  parametertable.AddRow(tablerow);
+  for (auto& condparameter : inputline_)
+  {
+    // newline after some 60 characters, but no newline after a separator condition
+    if (isNewlinePossible)
+    {
+      conditioncode.push_back(conditioncodeline + " \\ ");
+      conditioncodeline = "   ";  // start a new line
+    }
+    conditioncodeline += " " + condparameter->WriteReadTheDocs();
+    isNewlinePossible = (conditioncodeline.length() > 60);
+    if (auto* previousparameter = dynamic_cast<SeparatorConditionComponent*>(condparameter.get()))
+    {
+      previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
+      isNewlinePossible = false;
+    }
+    // If the component is a string component, store the admissible parameters in the table:
+    if (auto* stringComponent = dynamic_cast<StringConditionComponent*>(condparameter.get()))
+    {
+      tablerow[0] = stringComponent->Name();
+      std::ostringstream parametercell;
+      stringComponent->DefaultLine(parametercell);
+      tablerow[1] = parametercell.str();
+      std::string optionscell("");
+      Teuchos::Array<std::string> datfilevalues = stringComponent->GetOptions();
+      tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
+      parametertable.AddRow(tablerow);
+    }
+    // if the component is a bundleselector (bundle of variables following a string keyword):
+    if (auto* compBundleSelector = dynamic_cast<CondCompBundleSelector*>(condparameter.get()))
+    {
+      condCompName = compBundleSelector->Name();
+      std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
+      condCompStrings.insert(condCompStrings.end(), bundle.begin(), bundle.end());
+      tablerow[0] = condCompName;
+      Teuchos::Array<std::string> datfilevalues = compBundleSelector->GetOptions();
+      tablerow[1] = datfilevalues[0];
+      std::string optionscell("");
+      tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
+      parametertable.AddRow(tablerow);
+    }
+  }
+  // Now write the complete code of this condition to the readthedocs file
+  conditioncode.push_back(conditioncodeline);
+  DRT::RTD::WriteCode(stream, conditioncode);
+
+  /*------ PART 4 -------------------------
+   * Now write a table for the options of the string variables, if any have been stored above
+   */
+  if (parametertable.GetRows() > 1)
+  {
+    std::string optionheaderstring("**String options:**");
+    DRT::RTD::WriteParagraph(stream, optionheaderstring);
+    // table header for the options in string parameters
+    parametertable.SetWidths({0, 0, 50});
+    parametertable.AddDirective("header-rows", "1");
+
+    parametertable.Print(stream);
+  }
+
+  /*------ PART 5 -------------------------
+   * Finally add the model specific parameters for the complex ConditionComponentBundleSelectors
+   */
+  if (condCompStrings.size() > 0)
+  {
+    std::string optionheaderstring =
+        "The following parameter sets are possible for `<" + condCompName + ">`:";
+    DRT::RTD::WriteParagraph(stream, optionheaderstring);
+    conditioncode.clear();
+    for (auto& condCompString : condCompStrings)
+    {
+      conditioncode.push_back(condCompString);
+    }
+    DRT::RTD::WriteCode(stream, conditioncode);
+  }
+  return;
 }

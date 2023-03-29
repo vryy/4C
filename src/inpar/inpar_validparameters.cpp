@@ -225,8 +225,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
         if (secname != "") secname += "/";
         secname += name;
         unsigned l = secname.length();
-        stream << redlight << "--";
-        for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
+        stream << redlight << "--" << std::string(std::max<int>(65 - l, 0), '-');
         stream << greenlight << secname << endcolor << '\n';
         PrintDatHeader(stream, list.sublist(name), secname, color, comment);
       }
@@ -265,14 +264,13 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
         const Teuchos::any& v = entry.getAny(false);
         stream << bluelight << name << endcolor;
         unsigned l = name.length();
-        for (int i = 0; i < std::max<int>(31 - l, 0); ++i) stream << ' ';
+        stream << std::string(std::max<int>(31 - l, 0), ' ');
         if (NeedToPrintEqualSign(list)) stream << " =";
         stream << ' ' << yellowlight << v << endcolor << '\n';
       }
     }
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -302,8 +300,8 @@ void DRT::INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::Para
       const Teuchos::any& v = entry.getAny(false);
       int l = list.name(i).length();
       stream << "    " << list.name(i);
-      for (int i = 0; i < std::max<int>(31 - l, 0); ++i) stream << ' ';
-      stream << ' ' << v << '\n';
+      stream << std::string(std::max<int>(31 - l, 0), ' ');
+      stream << ' ' << v << "\n";
     }
   }
   if (hasDefault) stream << "\n";

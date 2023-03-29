@@ -37,7 +37,6 @@ namespace DRT
     /// print all known material sections without contents
     void PrintEmptyMaterialDefinitions(std::ostream& stream,
         std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& condlist, bool color = true);
-
   }  // namespace INPUT
 }  // namespace DRT
 

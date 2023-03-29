@@ -295,6 +295,7 @@ set(FULL_TARGETS
     post_s8convert
     pre_exodus
     pre_locsys
+    create_rtd
     cut_test
     )
 

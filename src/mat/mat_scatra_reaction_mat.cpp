@@ -35,7 +35,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
   if (coupling_ == reac_coup_none)
     dserror(
         "The coupling '%s' is not a valid reaction coupling. Valid couplings are "
-        "'simple_multiplicative', 'constand'and michaelis_menten.",
+        "'simple_multiplicative', 'constant' and 'michaelis_menten'.",
         (matdata->Get<std::string>("COUPLING"))->c_str());
 
   if (numscal_ != (int)stoich_->size())

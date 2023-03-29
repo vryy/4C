@@ -55,7 +55,8 @@ namespace DRT
     class ConditionComponent
     {
      public:
-      /// construct with the name of the corresponding variable in the condition
+      /* construct with the name of the corresponding variable in the condition
+       */
       explicit ConditionComponent(std::string name);
 
       /// virtual destructor is mandatory
@@ -64,6 +65,13 @@ namespace DRT
       /// write my part of the default (comment) line of the condition
       virtual void DefaultLine(std::ostream& stream) = 0;
 
+      /* write my part of a default line of the condition
+       * as restructuredText for ReadTheDocs
+       * For some components it returns the same output as Default line (but as a string).
+       * However, for many components the output in ReadTheDocs is more illustrative.
+       */
+      virtual std::string WriteReadTheDocs() = 0;
+
       /// write my part of this actual condition
       virtual void Print(std::ostream& stream, const DRT::Condition* cond) = 0;
 
@@ -71,17 +79,27 @@ namespace DRT
       virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition) = 0;
 
+      /*!
+       * This routine is only used for DRT::INPUT::StringConditionComponent
+       *
+       * @return list of options as a a Teuchos array of strings
+       *
+       * \see DRT::INPUT::StringConditionComponent
+       */
+      //
+      virtual Teuchos::Array<std::string> GetOptions() = 0;
+
       /// the name of my variable inside a condition
       std::string Name() const { return name_; }
+
+     private:
+      /// my condition variable name
+      std::string name_;
 
      protected:
       /// push back token into stream so that it can be read again
       Teuchos::RCP<std::stringstream> PushBack(
           const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
-
-     private:
-      /// my condition variable name
-      std::string name_;
     };
 
 
@@ -124,7 +142,13 @@ namespace DRT
           const Teuchos::Array<int>& intcondvalues, bool optional = false);
 
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -160,6 +184,11 @@ namespace DRT
       SeparatorConditionComponent(std::string separator, bool optional = false);
 
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
@@ -197,7 +226,13 @@ namespace DRT
        */
       explicit IntConditionComponent(std::string name, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);
+
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
@@ -237,7 +272,13 @@ namespace DRT
        */
       IntVectorConditionComponent(std::string name, int length, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);
+
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
@@ -269,7 +310,13 @@ namespace DRT
         \param name variable name in DRT::Condition
        */
       RealConditionComponent(std::string name);
+
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
@@ -295,8 +342,15 @@ namespace DRT
         \param length number of double values expected
        */
       RealVectorConditionComponent(std::string name, int length, bool optional = false);
+
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -332,7 +386,13 @@ namespace DRT
           std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp);
 
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -399,7 +459,13 @@ namespace DRT
           std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp);
 
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -436,7 +502,13 @@ namespace DRT
           std::string name, std::vector<Teuchos::RCP<ConditionComponent>> condcomp, int model);
 
       void DefaultLine(std::ostream& stream) override;
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -459,7 +531,14 @@ namespace DRT
           const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp);
 
       void DefaultLine(std::ostream& stream) override;
+      std::vector<std::string> WriteReadTheDocsLines();
+
+      std::string WriteReadTheDocs() override;
+
+      Teuchos::Array<std::string> GetOptions() override;
+
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
+
       Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<DRT::Condition> condition) override;
@@ -533,6 +612,9 @@ namespace DRT
       /// print my dat file section and possible conditions from the Discretization
       std::ostream& Print(
           std::ostream& stream, const Discretization* dis = nullptr, bool color = false);
+
+      /// Write dat file section and possible conditions to a rst file for ReadTheDocs
+      void WriteReadTheDocs(std::ostream& stream);
 
       /// name of my section in input file
       std::string SectionName() const { return sectionname_; }
