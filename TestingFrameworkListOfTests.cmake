@@ -1245,6 +1245,11 @@ baci_test(rigidsphere_freefall 1 5)
 baci_test(roughcontact3d_lin 2 1)
 baci_test(roughcontact2d_brokenrational_patchtest 2 "")
 baci_test(roughcontact3d_multipatch 2 "")
+
+if(BACI_WITH_MIRCO)
+    baci_test(roughcontact2d_mirco_patchtest 2 "")
+endif(BACI_WITH_MIRCO)
+
 baci_test(scatra_1D_line2_diffnumdof 2 150)
 post_processing(scatra_1D_line2_diffnumdof 2 2 "" "" 200)
 baci_test(scatra_1D_line2_distrreaccoeff 2 "")
