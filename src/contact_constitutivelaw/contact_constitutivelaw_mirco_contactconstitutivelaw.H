@@ -107,15 +107,25 @@ namespace CONTACT
 
       //! @name Evaluation methods
       //@{
-      /// evaluate the constitutive law
-      // The pressure response for a gap is calucated using MIRCO, which uses BEM for solving
-      // contact between a rigid rough surface and a linear elastic half plane.
+      /** \brief evaluate the constitutive law
+       *
+       * The pressure response for a gap is calucated using MIRCO, which uses BEM for solving
+       * contact between a rigid rough surface and a linear elastic half plane.
+       *
+       * \param gap contact gap at the mortar node
+       * \return The pressure response from MIRCO
+       */
       double Evaluate(double gap) override;
 
-      /// Evaluate derivative of the constitutive law
-      // The derivative of the pressure response is approximated using a finite difference approach
-      // by calling MIRCO twice at two different gap values and doing a backward difference
-      // approximation for the linearization.
+      /** \brief Evaluate derivative of the constitutive law
+       *
+       * The derivative of the pressure response is approximated using a finite difference approach
+       * by calling MIRCO twice at two different gap values and doing a backward difference
+       * approximation for the linearization.
+       *
+       * \param gap contact gap at the mortar node
+       * \return Derivative of the pressure responses from MIRCO
+       */
       double EvaluateDeriv(double gap) override;
       //@}
 
