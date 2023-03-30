@@ -52,11 +52,6 @@ namespace FSI
     void DumpJacobian(NOX::Epetra::Interface::Required& interface, double alpha, double beta,
         Teuchos::RCP<Epetra_Vector> soln, std::string filename);
 
-    /// shift given map to have no overlap with maps in vector
-    Teuchos::RCP<const Epetra_Map> ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
-        const std::vector<Teuchos::RCP<const Epetra_Map>>& vecSpaces);
-
-
     /// Check whether fluid node numbers and ALE node numbers are equal.
     bool FluidAleNodesDisjoint(
         Teuchos::RCP<DRT::Discretization> fluiddis,  ///< pointer to fluid discretization

@@ -128,28 +128,6 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
   EpetraExt::RowMatrixToMatlabFile(filename.c_str(), *jacobian);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
-    const std::vector<Teuchos::RCP<const Epetra_Map>>& vecSpaces)
-{
-  int maxgid = 0;
-  for (unsigned i = 0; i < vecSpaces.size(); ++i)
-  {
-    maxgid = std::max(maxgid, vecSpaces[i]->MaxAllGID());
-  }
-
-  std::vector<int> gids;
-  gids.reserve(emap->NumMyElements());
-  std::transform(emap->MyGlobalElements(), emap->MyGlobalElements() + emap->NumMyElements(),
-      std::back_inserter(gids),
-      std::bind(std::plus<int>(), std::placeholders::_1, maxgid + 1 - emap->MinAllGID()));
-
-  return Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, emap->Comm()));
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::UTILS::FluidAleNodesDisjoint(
