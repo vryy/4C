@@ -106,9 +106,8 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
       surfacegenerator);
   surfacegenerator->GetSurface(*topology_);
 
-  maxTopologyHeight_ = 0.0;
-  double MeanTopologyHeight = 0.0;
-  MIRCO::ComputeMaxAndMean(*topology_, maxTopologyHeight_, MeanTopologyHeight);
+  auto max_and_mean = MIRCO::ComputeMaxAndMean(*topology_);
+  maxTopologyHeight_ = max_and_mean.max_;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

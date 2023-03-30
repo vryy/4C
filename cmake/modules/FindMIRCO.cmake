@@ -28,7 +28,7 @@ if(BACI_WITH_MIRCO)
     fetchcontent_declare(
       mirco
       GIT_REPOSITORY https://github.com/imcs-compsim/MIRCO.git
-      GIT_TAG a20ecef34f3932819b2d4951b33847132f7cd260 #v0.1.0
+      GIT_TAG 046c49ba0d0c58e71aa21cd376781c12cbd88a62 #v0.1.0
       )
     fetchcontent_makeavailable(mirco)
 
