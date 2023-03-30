@@ -354,15 +354,6 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       else  // for beam elements
       {
         dserror("The locsys condition is not implemented for beam elements!");
-        for (int dim = 0; dim < 3; dim++)
-        {
-          nodetrafo(3, 3 + dim) =
-              vec1(dim);  // In this implementation only the nodal tangents (local dofs 3,4,5),
-          nodetrafo(4, 3 + dim) = vec2(
-              dim);  // which are necessary for clamped ends with arbitrary spatial orientation,
-          nodetrafo(5, 3 + dim) =
-              vec3(dim);  // but NOT the nodal positions (local dofs 0,1,2) are transformed.
-        }
       }
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
