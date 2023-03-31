@@ -726,7 +726,20 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
     dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::SetValue(double val, int rgid, int cgid)
+{
+  if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
+    dserror("no assembling to Dirichlet row");
 
+  int errone = sysmat_->ReplaceGlobalValues(rgid, 1, &val, &cgid);
+  if (errone > 0)
+  {
+    int errtwo = sysmat_->InsertGlobalValues(rgid, 1, &val, &cgid);
+    if (errtwo > 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d", errtwo);
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

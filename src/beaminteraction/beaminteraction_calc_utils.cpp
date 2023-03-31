@@ -59,7 +59,6 @@ namespace BEAMINTERACTION
       bool beameles = false;
       bool othereles = false;
 
-      // TODO: actually we would have to check all elements of all processors!!! Gather?
       for (int i = 0; i < static_cast<int>(node.NumElement()); ++i)
       {
         if (IsBeamElement(*(node.Elements())[i]))
