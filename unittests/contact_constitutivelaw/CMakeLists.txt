@@ -5,7 +5,6 @@ set(SOURCE_LIST
     unit_brokenrational_contactconstitutivelaw.cpp
     unit_cubic_contactconstitutivelaw.cpp
     unit_linear_contactconstitutivelaw.cpp
-    unit_mirco_contactconstitutivelaw.cpp
     unit_power_contactconstitutivelaw.cpp
     )
 

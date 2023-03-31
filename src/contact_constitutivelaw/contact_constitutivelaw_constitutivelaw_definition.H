@@ -10,7 +10,6 @@
 #ifndef CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 #define CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 
-#include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
 #include <iostream>
 #include <list>
@@ -247,7 +246,7 @@ namespace CONTACT
        * \param[in] type of contact constitutive law to be built
        */
       RealContactConstitutiveLawComponent(std::string name,  ///< variable name in DRT::Material
-          const double defaultvalue = 0.0,                   ///< a default value
+          const double defaultvalue = 0,                     ///< a default value
           bool optional = false);
 
       /**
@@ -282,45 +281,8 @@ namespace CONTACT
 
      private:
       /// a default value
-      double defaultvalue_;
+      int defaultvalue_;
     };
-
-    /// condition line part that is a string out of a list of valid strings
-    /*!
-      \see ConditionDefinition
-     */
-    class StringContactConstitutiveLawComponent : public ContactConstitutiveLawComponent
-    {
-     public:
-      /// construct condition component that reads and writes a string variable
-      /*!
-        \param name Name of the corresponding variable in the DRT::Condition
-        \param defaultvalue Default value of this variable
-        \param datfilevalues Possible values in the dat file
-        \param condvalues Corresponding values stored in the DRT::Condition (std::string or enum
-        =^int)
-        \param optional Whether this string is optional in the dat file
-      */
-
-      StringContactConstitutiveLawComponent(
-          std::string name,  ///< Name of the corresponding variable in the MAT::PAR::Material
-          std::string defaultvalue,  ///< Default value of this variable
-          bool optional = false      ///< Whether this string is optional in the dat file
-      );
-
-      void DefaultLine(std::ostream& stream) override;
-      void Print(std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond) override;
-      void Describe(std::ostream& stream) override;
-      Teuchos::RCP<std::stringstream> Read(LawDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container) override;
-
-     private:
-      std::string defaultvalue_;
-      std::string name_;
-      bool optional_;
-    };
-
 
     /** Add a separator followed by a single real value
      *
@@ -359,20 +321,6 @@ namespace CONTACT
     {
       def->AddComponent(
           Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
-    }
-
-    inline void AddNamedString(
-        const Teuchos::RCP<LawDefinition> def,  ///< a condition definition to which named string is
-        const std::string& name,                ///< name of string to add
-        const std::string& description,         ///< description about value
-        const std::string& defaultvalue,        ///< default string
-        const bool optional = false             ///< optional parameter if true
-    )
-    {
-      def->AddComponent(
-          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
-      def->AddComponent(
-          Teuchos::rcp(new StringContactConstitutiveLawComponent(name, defaultvalue, optional)));
     }
 
     /** Add contact constitutive law definition to list of defined definitions

@@ -126,35 +126,6 @@ DRT::INPUT::ValidContactConstitutiveLaws()
     AppendCoConstLawComponentDefinition(coconstlawlist, m);
   }
 
-  // mirco function
-  {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
-            "Mirco function", INPAR::CONTACT::ConstitutiveLawType::colaw_mirco));
-
-    AddNamedReal(m, "FirstMatID", "First material ID");
-    AddNamedReal(m, "SecondMatID", "Second material ID");
-    AddNamedReal(m, "LateralLength", "length of lateral side of the BEM patch");
-    AddNamedReal(m, "Resolution", "resolution of the surface");
-    AddNamedReal(m, "InitialTopologyStdDeviation",
-        "Initial Standard deviation for the random-midpoint generator", 20, true);
-    AddNamedReal(m, "HurstExponent", "Hurst exponent of the surface", 0.7, true);
-    AddNamedReal(m, "RandomTopologyFlag", "Use random midpoint generator flag", 1, true);
-    AddNamedReal(m, "RandomSeedFlag", "Random seed flag", 0, true);
-    AddNamedReal(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);
-    AddNamedReal(m, "Tolerance", "Tolerance for the convergence of force", 0.01, true);
-    AddNamedReal(m, "MaxIteration", "Maximum iteration of NNLS", 1000, true);
-    AddNamedReal(m, "WarmStartingFlag", "Warm-starting flag, solution accelerator", 1, true);
-    AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
-    AddNamedReal(m, "FiniteDifferenceFraction",
-        "Fraction of pertubation difference compared to the actual gap", 0.001, true);
-    AddNamedReal(m, "ActiveGapTolerance", "Minimum gap to consider a node as active", 1e-6, true);
-    AddNamedString(
-        m, "TopologyFilePath", "Absolute path to file with micro-topology data", "", true);
-
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
-  }
-
   // deliver
   return vm;
 }

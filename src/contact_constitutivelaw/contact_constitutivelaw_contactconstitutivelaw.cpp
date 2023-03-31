@@ -15,14 +15,12 @@
 #include "lib_globalproblem.H"
 #include "contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
 #include "contact_constitutivelaw_bundle.H"
-
 #include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 #include "contact_constitutivelaw_cubic_contactconstitutivelaw.H"
 #include "contact_constitutivelaw_linear_contactconstitutivelaw.H"
 #include "contact_constitutivelaw_power_contactconstitutivelaw.H"
-#ifdef BACI_WITH_MIRCO
-#include "contact_constitutivelaw_mirco_contactconstitutivelaw.H"
-#endif
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -77,14 +75,6 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
           new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(coconstlawdata);
       return params->CreateConstitutiveLaw();
     }
-#ifdef BACI_WITH_MIRCO
-    case INPAR::CONTACT::ConstitutiveLawType::colaw_mirco:
-    {
-      CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
-          new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(coconstlawdata);
-      return params->CreateConstitutiveLaw();
-    }
-#endif
     case INPAR::CONTACT::ConstitutiveLawType::colaw_none:
     {
       dserror("No contact constitutive law found\n");
