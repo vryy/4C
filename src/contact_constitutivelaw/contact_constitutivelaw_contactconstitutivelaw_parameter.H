@@ -41,8 +41,7 @@ namespace INPAR
       colaw_brokenrational,  ///< brokenrational constitutive law
       colaw_linear,          ///< linear constitutive law
       colaw_cubic,           ///< cubic constitutive law
-      colaw_power,           ///< simple power law as constitutive law
-      colaw_mirco            ///< mirco constitutive law
+      colaw_power            ///< simple power law as constitutive law
     };
   }  // namespace CONTACT
 }  // namespace INPAR

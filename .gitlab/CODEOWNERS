@@ -153,8 +153,8 @@ geometry_pair/             @baci/team_discretization
 immersed_problem/          @baci/team_fsi
 
 inpar/                     @baci/team_input
-inpar/inpar_validcontactconstitutivelaw* @baci/team_contact
-inpar/inpar_validmaterials*  @baci/team_material
+inpar/validcontactconstitutivelaw* @baci/team_contact
+inpar/validmaterials*  @baci/team_material
 inpar/inpar_ale*           @baci/team_fsi
 inpar/inpar_beam*          @baci/team_input @baci/team_structure
 inpar/inpar_bio*           @baci/team_reduced_fluid_models

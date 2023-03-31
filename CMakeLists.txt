@@ -127,7 +127,6 @@ find_package(FFTW)
 find_package(ACML)
 find_package(AMDLIBM)
 find_package(CLN REQUIRED)
-find_package(MIRCO)
 
 ###------------------------------------------------------------------ List of files
 
