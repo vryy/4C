@@ -184,6 +184,9 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
   accn_->Update(
       -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
 
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
+
   // watch out
   return;
 }
@@ -209,6 +212,10 @@ void STR::TimIntOneStepTheta::PredictConstVelConsistAcc()
       *(*dis_)(0), 0.0);
   accn_->Update(
       -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
+
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
+
   // That's it!
   return;
 }
@@ -235,6 +242,9 @@ void STR::TimIntOneStepTheta::PredictConstAcc()
       *(*dis_)(0), 0.0);
   accn_->Update(
       -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
+
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
 
   // That's it!
   return;
