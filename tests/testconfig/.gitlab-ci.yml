@@ -18,22 +18,19 @@ variables:
   CTEST_BUILD_TYPE_GITLAB: release
 
   # Postfix for do-configure.
-  CTEST_CONFIGURE_POSTFIX: ''
+  CONFIGURE_POSTFIX: ''
 
   # Number of threads to be used during build
-  CTEST_NUMBER_OF_BUILD_THREADS: '3'
+  NUMBER_OF_BUILD_THREADS: '3'
 
   # Number of threads to be used during testing
-  CTEST_NUMBER_OF_TEST_THREADS: '1'
+  NUMBER_OF_TEST_THREADS: '1'
 
   # Select specific test by regular expressen (".": all)
   TEST_TAG: .
 
-  # Temporary exclude postprocessing tests at IMCS.
+  # Select tests to exclude by regular expression.
   CTEST_EXCLUDE_STRING: ''
-
-  # Flag to specify if pipeline fails on warning (0:no, 1:yes)
-  CTEST_FAIL_ON_WARNING: '1'
 
   # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
   GITLAB_SCHEDULER_LNM_SCHMARRN: '0'
@@ -52,33 +49,87 @@ variables:
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
 
-# This kind of job is started when something changes in any protected branch.
-# Minimal tests are performed.
-.buildtest_minimal: &buildtest_minimal
+# Commands to remove old build files (on shell executors)
+.clean-build-folder: &clean-build-folder
+  # Delete old build files.
+- rm -rf ${CI_PROJECT_DIR}/../baci-build/
+  # Clear eventual ccache cache.
+- if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
+  fi
+
+.build-only: &build-only
+- mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+  # configure
+- if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized";
+  fi
+- ${CI_PROJECT_DIR}/do-configure -f --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+  --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
+- echo Building the following targets ${BUILD_TARGETS}
+  # build (note: this works even with an older CMake since we directly call the native build tool
+- cmake --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS} 2>&1
+  | tee build.log
+
+.build-and-test: &build-and-test
+- *build-only
+  # test
+- 'echo ctest selection: $CTEST_TEST_SELECTION'
+- ctest -VV "$CTEST_TEST_SELECTION" -j $NUMBER_OF_TEST_THREADS | tee test.log | grep
+  -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
+- cd ${CI_PROJECT_DIR}
+
+.check-no-warnings:
+- cd ${CI_PROJECT_DIR}/../baci-build
+  # check for warnings
+- if grep -iP "warning:" build.log; then echo 'Warnings found!' && exit 1; else echo
+  'No warnings found'; fi
+- cd ${CI_PROJECT_DIR}
+
+.post-process-log-files: &post-process-log-files
+  # sort output of pipeline
+- cd ${CI_PROJECT_DIR}/../baci-build
+- ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
+  test.log test.log
+    # Write selection of the output into the terminal and therefore to GITLAB
+  # Output 200 lines for any failing test
+- grep -B 200 '*Failed\|*Timeout' test.log || true
+- sed -n '/tests passed,/,//p' test.log
+  # Specify which configuration was tested by this pipeline
+- 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
+- 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
+- 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
+  # Move the log files to the source folder, so it can be found by artifacts.
+- mv build.log ${CI_PROJECT_DIR}/
+- mv test.log ${CI_PROJECT_DIR}/
+- cd ${CI_PROJECT_DIR}
+
+
+# Generic job that builds and tests the project. Derived jobs may configure the details via variables.
+.buildtest_base:
   stage: buildtest
   variables:
     # So the old build can be used again.
     GIT_STRATEGY: fetch
+    BUILD_TARGETS: full
   script:
-  - 'echo minimal test: triggered by change in any protected branch'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-  - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal -j
-    "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_minimal.log | grep -e "^MakeCommand"
-    -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests
-    passed\,"
+  - *clean-build-folder
+  - *build-and-test
   after_script:
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_minimal.log buildtest_minimal.log
+  - *post-process-log-files
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - buildtest_minimal.log
+    - build.log
+    - test.log
     when: on_failure
     expire_in: 1 day
+
+
+# This kind of job is started when something changes in any protected branch.
+# Minimal tests are performed.
+.buildtest_minimal:
+  extends: .buildtest_base
+  variables:
+    CTEST_TEST_SELECTION: -L minimal
   rules:
   - if: $CI_PIPELINE_SOURCE == "schedule"
     when: never
@@ -90,45 +141,10 @@ variables:
 
 # This kind of job is started when a user triggers a job in the gitlab UI.
 # Full tests are performed.
-.buildtest_full: &buildtest_full
-  stage: buildtest
-  script:
-    # Specify which configuration is tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-    # Output to log because it is too much for the gitlab console.
-  - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
-    -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS"
-    | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler
-    " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
-  after_script:
-    # sort output of pipeline
-  - cd ../baci-build
-  - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
-    ../buildtest_full.log ../buildtest_full.log
-  - cd -
-    # Write selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
-  - sed -n '/tests passed,/,//p' ../buildtest_full.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_full.log buildtest_full.log
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - buildtest_full.log
-    when: on_failure
-    expire_in: 1 day
+.buildtest_full:
+  extends: .buildtest_base
+  variables:
+    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
   rules:
   - if: $GITLAB_SCHEDULER_TYPE != "0"
     when: never
@@ -137,65 +153,61 @@ variables:
   - if: $CI_PIPELINE_SOURCE == "web"
 
 # This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
-.buildtest_interactive: &buildtest_interactive
+.buildtest_interactive:
   stage: buildtest
+  variables:
+    BUILD_TARGETS: full
   script:
-    # Specify which configuration is tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
     # clear cache only if specified
   - if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then
-  - echo Cleaning old build files
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
+  - *clean-build-folder
   - fi
-    # Output to log because it is too much for the gitlab console.
-  - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
-    -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_interactive.log
-    | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
-    "\.\.\.   Passed" -e " tests passed\," '
+    # Run build and test as usual
+  - *build-and-test
   after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' ../buildtest_interactive.log || true
-  - sed -n '/tests passed,/,//p' ../buildtest_interactive.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_interactive.log buildtest_interactive.log
+  - *post-process-log-files
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - buildtest_interactive.log
+    - build.log
+    - test.log
     expire_in: 1 day
+    when: always
+
+# This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
+.build_interactive:
+  stage: buildtest
+  variables:
+    BUILD_TARGETS: full
+  script:
+    # clear cache only if specified
+  - if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then
+  - *clean-build-folder
+  - fi
+  - *build-only
+  after_script:
+  - cd ${CI_PROJECT_DIR}/../baci-build
+  - mv build.log ${CI_PROJECT_DIR}/
+  artifacts:
+    name: $CI_JOB_NAME-$CI_JOB_ID
+    paths:
+    - build.log
+    expire_in: 1 day
+    when: always
+
 
 # This kind of job is started by a weekly scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "3"
 # Full tests with coverage are performed
 # A coverage report is created
-.buildtest_coverage_weekly: &buildtest_coverage_weekly
+.buildtest_coverage_weekly:
   stage: buildtest
+  variables:
+    BUILD_TARGETS: full
+    CONFIGURE_POSTFIX: --coverage --uselld
   script:
-    # Specify which configuration is tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-    # Output to log because it is too much for the gitlab console.
-  - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING"
-    -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee buildtest_weekly_coverage.log
-    | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
-    "\.\.\.   Passed" -e " tests passed\," '
+  - *clean-build-folder
+  - *build-and-test
     # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
   - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory
     . --output-file baci_coverage_base.info > baci_coverage_base.log
@@ -215,16 +227,9 @@ variables:
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
     commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
-    # Write Selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' buildtest_weekly_coverage.log || true
-  - sed -n '/tests passed,/,//p' buildtest_weekly_coverage.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # update (push) the cache of the weekly coverage report:
-    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
+  - *post-process-log-files
+      # update (push) the cache of the weekly coverage report:
+      # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
     key: cache-weekly-coverage-report
@@ -240,7 +245,8 @@ variables:
     - baci_coverage_tests.log
     - baci_coverage.log
     - baci_coverage_filtered.log
-    - buildtest_weekly_coverage.log
+    - build.log
+    - test.log
     - genhtml_weekly_coverage.log
     when: always
     expire_in: 1 day
@@ -250,39 +256,29 @@ variables:
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
 # Full tests are performed.
-.buildtest_daily: &buildtest_daily
+.buildtest_daily:
+  extends: .buildtest_base
+  variables:
+    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
+
+# A variant of buildtest_daily which only builds the project
+.build_daily:
   stage: buildtest
+  variables:
+    GIT_STRATEGY: fetch
+    BUILD_TARGETS: full
   script:
-    # Specify which configuration is tested by this pipeline
-  - echo Nightly Test Release
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-    # Output to log because it is too much for the gitlab console.
-  - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING"
-    -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily.log
-    | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e
-    "\.\.\.   Passed" -e " tests passed\,"
+  - *clean-build-folder
+  - *build-only
   after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
-  - sed -n '/tests passed,/,//p' ../buildtest_daily.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_daily.log buildtest_daily.log
+  - cd ${CI_PROJECT_DIR}/../baci-build
+  - mv build.log ${CI_PROJECT_DIR}/
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - buildtest_daily.log
+    - build.log
     when: on_failure
     expire_in: 1 day
   rules:
@@ -291,47 +287,19 @@ variables:
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
 # Debug tests are performed.
-.buildtest_daily_debug: &buildtest_daily_debug
-  stage: buildtest
-  script:
-    # Specify which configuration is tested by this pipeline
-  - echo Nightly Test Debug
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-    # Output to log because it is too much for the gitlab console.
-  - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING"
-    -j "$CTEST_NUMBER_OF_TEST_THREADS" | tee ../buildtest_daily_debug.log | grep -e
-    "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed"
-    -e " tests passed\,"
-  after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
-  - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - buildtest_daily_debug.log
-    when: on_failure
-    expire_in: 1 day
+.buildtest_daily_debug:
+  extends: .buildtest_base
+  variables:
+    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
+    CTEST_BUILD_TYPE_GITLAB: debug
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
 # Trilinos-develop build job
-.buildtest_release_trilinos_develop: &buildtest_release_trilinos_develop
+.buildtest_release_trilinos_develop:
   stage: buildtest
+  variables:
+    BUILD_TARGETS: full
   script:
   - echo Build and test Trilinos develop branch
   - cd $CI_PROJECT_DIR/..
@@ -348,36 +316,19 @@ variables:
   - cd $CI_PROJECT_DIR/../Trilinos-develop-build
     # Configure Trilinos and build it
   - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
-  - make -j${CTEST_NUMBER_OF_BUILD_THREADS} install |& tee -a ../buildtest_release_trilinos_develop.log
-    # Specify which configuration is tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-    # Output to log because it is too much for the gitlab console.
-  - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake
-    -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" -j "$CTEST_NUMBER_OF_TEST_THREADS"
-    | tee -a ../buildtest_release_trilinos_develop.log | grep -e "^MakeCommand" -e
-    "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests
-    passed\," '
+  - make -j${NUMBER_OF_BUILD_THREADS} install |& tee -a ../buildtest_release_trilinos_develop.log
+
+  - *clean-build-folder
+  - *build-and-test
   after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-    # Output 200 lines for any failing test
-  - grep -B 200 '*Failed\|*Timeout' ../buildtest_release_trilinos_develop.log || true
-  - sed -n '/tests passed,/,//p' ../buildtest_release_trilinos_develop.log
-    # Specify which configuration was tested by this pipeline
-  - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-  - 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-  - 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
+  - *post-process-log-files
     # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../buildtest_release_trilinos_develop.log buildtest_release_trilinos_develop.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
+    - build.log
+    - test.log
     - buildtest_release_trilinos_develop.log
     when: on_failure
     expire_in: 1 week
@@ -385,14 +336,19 @@ variables:
   - if: $GITLAB_SCHEDULER_TYPE == "4"
 
 # Doxygen job
-.doxygen: &doxygen
+.doxygen:
   stage: doxygen
   script:
   - echo Doxygen
     # Delete old build files.
   - rm -rf ../baci-build/
-    # Output to log because it is too much for the gitlab console.
-  - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log
+  - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+
+    # Configure and build
+  - ${CI_PROJECT_DIR}/do-configure -f --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+    --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
+  - cmake --build . --target documentation > ../doxygen.log
+
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
   - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
     during doxygen generation.'; exit 1; else echo 'Doxygen builds without fatal errors.';
@@ -453,36 +409,30 @@ checkcode:
 # IMCS--------------------------------------------------------------------------
 
 imcs-buildtest_minimal_ubuntu20:
-  <<: *buildtest_minimal
+  extends: .buildtest_minimal
   variables:
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
   - imcs-minimal-ubuntu20
   needs: [checkcode]
 
 imcs-buildtest_full_ubuntu20:
-  <<: *buildtest_full
+  extends: .buildtest_full
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '12'
-    CTEST_NUMBER_OF_BUILD_THREADS: '12'
+    NUMBER_OF_TEST_THREADS: '12'
+    NUMBER_OF_BUILD_THREADS: '12'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
   - imcs-full-ubuntu20
   needs: [checkcode]
 
 imcs-buildtest_interactive_ubuntu20:
-  <<: *buildtest_interactive
+  extends: .buildtest_interactive
   variables:
     TEST_TAG: ''
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
     GIT_STRATEGY: fetch
   tags:
@@ -492,38 +442,32 @@ imcs-buildtest_interactive_ubuntu20:
     when: always
 
 imcs-buildtest_daily_ubuntu20:
-  <<: *buildtest_daily
+  extends: .buildtest_daily
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '12'
-    CTEST_NUMBER_OF_BUILD_THREADS: '12'
+    NUMBER_OF_TEST_THREADS: '12'
+    NUMBER_OF_BUILD_THREADS: '12'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-nightly-full-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
   - imcs-nightly-full-ubuntu20
   needs: [checkcode]
 imcs-buildtest_daily_debug_ubuntu20:
-  <<: *buildtest_daily_debug
+  extends: .buildtest_daily_debug
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '12'
-    CTEST_NUMBER_OF_BUILD_THREADS: '12'
+    NUMBER_OF_TEST_THREADS: '12'
+    NUMBER_OF_BUILD_THREADS: '12'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-baci-DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
   tags:
   - imcs-nightly-debug-ubuntu20
   needs: [checkcode]
 
 imcs-buildtest_release_trilinos_develop:
-  <<: *buildtest_release_trilinos_develop
+  extends: .buildtest_release_trilinos_develop
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '12'
-    CTEST_NUMBER_OF_BUILD_THREADS: '12'
+    NUMBER_OF_TEST_THREADS: '12'
+    NUMBER_OF_BUILD_THREADS: '12'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: imcs-workstation-ubuntu20-trilinos-develop-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
     TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
@@ -536,14 +480,8 @@ imcs-buildtest_release_trilinos_develop:
 lnm-codeclimate:
   stage: checkcode
   script:
-  - echo Check code for possible improvements
-    # Delete old build files.
-  - rm -rf ../baci-build/
-    # Clear eventual ccache cache.
-  - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-    fi
-  - mkdir ../baci-build/
-  - cd ../baci-build/
+  - *clean-build-folder
+  - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
   - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
     # create  and activate virtual environment
@@ -574,13 +512,11 @@ lnm-codeclimate:
   - lnm-ubuntu
 
 lnm-buildtest_minimal:
-  <<: *buildtest_minimal
+  extends: .buildtest_minimal
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '10'
-    CTEST_NUMBER_OF_BUILD_THREADS: '10'
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation-minimal-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-release-minimal
@@ -588,13 +524,11 @@ lnm-buildtest_minimal:
   needs: [checkcode]
 
 lnm-buildtest_full:
-  <<: *buildtest_full
+  extends: .buildtest_full
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '10'
-    CTEST_NUMBER_OF_BUILD_THREADS: '10'
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-release-user
@@ -602,12 +536,10 @@ lnm-buildtest_full:
   needs: [checkcode]
 
 lnm-workstation-buildtest_interactive:
-  <<: *buildtest_interactive
+  extends: .buildtest_interactive
   variables:
     TEST_TAG: ''
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation-interactive-$TEST_TAG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
     GIT_STRATEGY: fetch
   tags:
@@ -618,19 +550,16 @@ lnm-workstation-buildtest_interactive:
     when: always
 
 lnm-buildtest_coverage_weekly:
-  <<: *buildtest_coverage_weekly
+  extends: .buildtest_coverage_weekly
   variables:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '30'
     # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
     # enable coverage option of ctest
-    CTEST_NUMBER_OF_TEST_THREADS: '10'
-    CTEST_NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_CONFIGURE_POSTFIX: --coverage --uselld
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation-coverage-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-coverage-weekly
@@ -684,118 +613,94 @@ pages: # job name needs to be pages
   - lnm-ubuntu
 
 lnm-buildtest_daily:
-  <<: *buildtest_daily
+  extends: .buildtest_daily
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '10'
-    CTEST_NUMBER_OF_BUILD_THREADS: '10'
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-release-daily
   - lnm-ubuntu
   needs: [checkcode]
 
-lnm-buildtest_daily_bruteforce:
-  <<: *buildtest_daily
+lnm-build_daily_bruteforce:
+  extends: .build_daily
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: CentOS-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
   before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
+  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-release-nightly-build-bruteforce
   rules:
   - if: $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
   needs: [checkcode]
 
-lnm-buildtest-bruteforce_interactive:
-  <<: *buildtest_interactive
+lnm-build-bruteforce_interactive:
+  extends: .build_interactive
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-BruteForce-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
     GIT_STRATEGY: fetch
   before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9
+  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-bruteforce-interactive
   rules:
   - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce"
     when: always
 
-lnm-buildtest_daily_deep:
-  <<: *buildtest_daily
+lnm-build_daily_deep:
+  extends: .build_daily
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: CentOS-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
   before_script:
-  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
+  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-release-nightly-build-deep
   rules:
   - if: $GITLAB_SCHEDULER_LNM_DEEP == "1"
   needs: [checkcode]
 
-lnm-buildtest-deep_interactive:
-  <<: *buildtest_interactive
+lnm-build-deep_interactive:
+  extends: .build_interactive
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Deep-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
     GIT_STRATEGY: fetch
   before_script:
-  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
+  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-deep-interactive
   rules:
   - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_deep"
     when: always
 
-lnm-buildtest_daily_schmarrn:
-  <<: *buildtest_daily
+lnm-build_daily_schmarrn:
+  extends: .build_daily
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
-    CTEST_BUILD_NAME_GITLAB: CentOS-baci-Schmarrn-GITLAB
+    BUILD_TARGETS: baci-release post_processor
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
   before_script:
-  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
+  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-release-nightly-build-schmarrn
   rules:
   - if: $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
   needs: [checkcode]
 
-lnm-buildtest-schmarrn_interactive:
-  <<: *buildtest_interactive
+lnm-build-schmarrn_interactive:
+  extends: .build_interactive
   variables:
-    TEST_TAG: ''
-    CTEST_FAIL_ON_WARNING: '0'
     BUILD_GENERATOR: make
-    CTEST_BUILD_COMMAND: make -j${CTEST_NUMBER_OF_BUILD_THREADS} baci-release post_processor
-    CTEST_BUILD_NAME_GITLAB: CentOS-interactive-baci-Schmarrn-GITLAB
+    BUILD_TARGETS: baci-release post_processor
     CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
     GIT_STRATEGY: fetch
   before_script:
-  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9
+  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9 cmake/3.25.1
   tags:
   - lnm-schmarrn-interactive
   rules:
@@ -803,13 +708,11 @@ lnm-buildtest-schmarrn_interactive:
     when: always
 
 lnm-buildtest_daily_debug:
-  <<: *buildtest_daily_debug
+  extends: .buildtest_daily_debug
   variables:
-    CTEST_NUMBER_OF_TEST_THREADS: '10'
-    CTEST_NUMBER_OF_BUILD_THREADS: '10'
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja full -j${CTEST_NUMBER_OF_BUILD_THREADS}
-    CTEST_BUILD_NAME_GITLAB: LnM-Workstation DEBUG-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-debug-daily
@@ -817,11 +720,9 @@ lnm-buildtest_daily_debug:
   needs: [checkcode]
 
 lnm-doxygen-web:
-  <<: *doxygen
+  extends: .doxygen
   variables:
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja documentation
-    CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-doxygen
@@ -840,11 +741,9 @@ lnm-doxygen-web:
   - if: $CI_PIPELINE_SOURCE == "web"
 
 lnm-doxygen:
-  <<: *doxygen
+  extends: .doxygen
   variables:
     BUILD_GENERATOR: ninja
-    CTEST_BUILD_COMMAND: ninja documentation
-    CTEST_BUILD_NAME_GITLAB: Doxygen-GITLAB
     CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
   tags:
   - lnm-doxygen
