@@ -37,13 +37,6 @@ variables:
   GITLAB_SCHEDULER_LNM_DEEP: '0'
   GITLAB_SCHEDULER_LNM_BRUTEFORCE: '0'
 
-  # Flags for entering interactive mode on specific machines # (0: off, 1: on)
-  GITLAB_INTERACTIVE_MODE: '0'
-  # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
-  GITLAB_INTERACTIVE_MACHINE: none
-  # Flags for doing a clean build in interactive mode # (0: off, 1: on)
-  GITLAB_INTERACTIVE_CLEAN: '0'
-
   # Variables for docker
   BACI_DOCKER_BUILD_IMAGES:
     description: Build the docker images and push them to the CI registry
@@ -163,52 +156,7 @@ variables:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE != "0"
     when: never
-  - if: $GITLAB_INTERACTIVE_MODE == "1"
-    when: never
   - if: $CI_PIPELINE_SOURCE == "web"
-
-# This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
-.buildtest_interactive:
-  stage: buildtest
-  variables:
-    BUILD_TARGETS: full
-  script:
-    # clear cache only if specified
-  - if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then
-  - *clean-build-folder
-  - fi
-    # Run build and test as usual
-  - *build-and-test
-  after_script:
-  - *post-process-log-files
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - build.log
-    - test.log
-    expire_in: 1 day
-    when: always
-
-# This kind of job is started when a user triggers a job in the Gitlab UI and sets the interactive flag GITLAB_INTERACTIVE_MODE to 1
-.build_interactive:
-  stage: buildtest
-  variables:
-    BUILD_TARGETS: full
-  script:
-    # clear cache only if specified
-  - if [ "$GITLAB_INTERACTIVE_CLEAN" == "1" ]; then
-  - *clean-build-folder
-  - fi
-  - *build-only
-  after_script:
-  - cd ${CI_PROJECT_DIR}/../baci-build
-  - mv build.log ${CI_PROJECT_DIR}/
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - build.log
-    expire_in: 1 day
-    when: always
 
 
 # This kind of job is started by a weekly scheduler, with the variable
@@ -416,8 +364,6 @@ checkcode:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "3" || $GITLAB_SCHEDULER_TYPE == "4"
     when: never
-  - if: $GITLAB_INTERACTIVE_MODE == "1"
-    when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -446,19 +392,6 @@ imcs-buildtest_full_ubuntu20:
   - imcs-full-ubuntu20
   needs: [checkcode]
 
-imcs-buildtest_interactive_ubuntu20:
-  extends: .buildtest_interactive
-  variables:
-    TEST_TAG: ''
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
-    GIT_STRATEGY: fetch
-  tags:
-  - imcs-interactive-ubuntu20
-  rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs_ubuntu20"
-    when: always
-
 imcs-buildtest_daily_ubuntu20:
   extends: .buildtest_daily
   variables:
@@ -469,6 +402,7 @@ imcs-buildtest_daily_ubuntu20:
   tags:
   - imcs-nightly-full-ubuntu20
   needs: [checkcode]
+
 imcs-buildtest_daily_debug_ubuntu20:
   extends: .buildtest_daily_debug
   variables:
@@ -519,8 +453,6 @@ lnm-codeclimate:
     reports:
       codequality: codeclimate.json
   rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1"
-    when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -552,20 +484,6 @@ lnm-buildtest_full:
   - lnm-release-user
   - lnm-ubuntu
   needs: [checkcode]
-
-lnm-workstation-buildtest_interactive:
-  extends: .buildtest_interactive
-  variables:
-    TEST_TAG: ''
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-    GIT_STRATEGY: fetch
-  tags:
-  - lnm-workstation-interactive
-  - lnm-ubuntu
-  rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_workstation"
-    when: always
 
 lnm-buildtest_coverage_weekly:
   extends: .buildtest_coverage_weekly
@@ -655,20 +573,6 @@ lnm-build_daily_bruteforce:
   - if: $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
   needs: [checkcode]
 
-lnm-build-bruteforce_interactive:
-  extends: .build_interactive
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
-    GIT_STRATEGY: fetch
-  before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-bruteforce-interactive
-  rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_bruteforce"
-    when: always
-
 lnm-build_daily_deep:
   extends: .build_daily
   variables:
@@ -681,20 +585,6 @@ lnm-build_daily_deep:
   rules:
   - if: $GITLAB_SCHEDULER_LNM_DEEP == "1"
   needs: [checkcode]
-
-lnm-build-deep_interactive:
-  extends: .build_interactive
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
-    GIT_STRATEGY: fetch
-  before_script:
-  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-deep-interactive
-  rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_deep"
-    when: always
 
 lnm-build_daily_schmarrn:
   extends: .build_daily
@@ -709,21 +599,6 @@ lnm-build_daily_schmarrn:
   rules:
   - if: $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
   needs: [checkcode]
-
-lnm-build-schmarrn_interactive:
-  extends: .build_interactive
-  variables:
-    BUILD_GENERATOR: make
-    BUILD_TARGETS: baci-release post_processor
-    CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
-    GIT_STRATEGY: fetch
-  before_script:
-  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-schmarrn-interactive
-  rules:
-  - if: $GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_schmarrn"
-    when: always
 
 lnm-buildtest_daily_debug:
   extends: .buildtest_daily_debug
@@ -753,8 +628,6 @@ lnm-doxygen-web:
     expire_in: 1 day
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
-    when: never
-  - if: $GITLAB_INTERACTIVE_MODE == "1"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
 
