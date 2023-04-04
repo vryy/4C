@@ -389,6 +389,8 @@ solver_nonlin_nox/             @baci/team_solvers
 
 Input/rigidsphere*                 @baci/team_structure
 
+/Input/roughcontact*               @baci/team_contact
+
 /Input/scatra*                     @baci/team_scatra
 
 /Input/solid*                      @baci/team_structure
