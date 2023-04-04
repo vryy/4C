@@ -2042,7 +2042,7 @@ baci_test(immersed_compressing_struct_part_dispcoup_h8 3 "")
 baci_test(activefiber_square_cell_dashpot_h8 3 "")
 baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 
-# testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
+# testing the whole framework: from pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_battery 2 "")
 baci_framework_test(tutorial_contact_3d 2 "")
 baci_framework_test(tutorial_fluid 2 "")

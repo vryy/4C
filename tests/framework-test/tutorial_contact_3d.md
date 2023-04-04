@@ -81,12 +81,12 @@ The contact specific parameters are given under `--MORTAR COUPLING`. Dual Lagran
 The final `.dat` input file for BACI can be created with the `pre_exodus` executable as described in the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md). To manually create the `.dat` file the full command states:
 
 ```bash
-<buildDir>/pre_exodus --exo=xxx_tutorial_contact_3d.e --head=tutorial_contact_3d.head --bc=tutorial_contact_3d.bc --dat=tutorial_contact_3d.dat
+<buildDir>/pre_exodus --exo=tutorial_contact_3d.e --head=tutorial_contact_3d.head --bc=tutorial_contact_3d.bc --dat=tutorial_contact_3d.dat
 ```
 
 This saves the `.dat` file in the current work directory. The `.dat` file now contains all the information from the created files, plus a list of all nodes and structure elements. 
 
-> Remark: The framework testing with ctest executes the command above automatically. It also requires the prefix `xxx_*.e` so that the file is found during the framework test. 
+> Remark: The framework testing with ctest executes the command above automatically.
 
 ## Run Simulation
 
