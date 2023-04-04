@@ -269,6 +269,69 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiv
 
   return condline;
 }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::
+    StringContactConstitutiveLawComponent(std::string name, std::string defaultvalue, bool optional)
+    : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::DefaultLine(
+    std::ostream& stream)
+{
+  stream << defaultvalue_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Print(
+    std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
+{
+  stream << *cond->Get<std::string>(Name());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Describe(std::ostream& stream)
+{
+  stream << "    " << std::setw(15) << std::left << name_ << std::setw(15) << std::left
+         << (optional_ ? "(optional)" : "") << name_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream>
+CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Read(
+    CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
+{
+  std::string stringcomponent = defaultvalue_;
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  if ((size_t)position != condline->str().size())
+  {
+    std::string stringcomp;
+    *condline >> stringcomp;
+    stringcomponent = stringcomp;
+
+    // remove double parameter value from stringstream "condline"
+    condline->str(
+        condline->str().erase((size_t)condline->tellg() - stringcomp.size(), stringcomp.size()));
+
+    // reset current position in stringstream "condline"
+    condline->seekg(position);
+  }
+
+  // add double parameter value to contact constitutive law parameter list
+  container->Add(Name(), stringcomponent);
+
+  return condline;
+}
+
 /*======================================================================*/
 /*======================================================================*/
 

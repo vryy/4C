@@ -47,7 +47,7 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap)
 {
-  if (gap + params_->GetOffset() >= 0)
+  if (gap + params_->GetOffset() > 0)
   {
     dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
@@ -66,7 +66,7 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap)
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::EvaluateDeriv(double gap)
 {
-  if (gap + params_->GetOffset() >= 0.0)
+  if (gap + params_->GetOffset() > 0.0)
   {
     dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
