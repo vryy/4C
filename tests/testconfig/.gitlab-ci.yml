@@ -62,7 +62,7 @@ variables:
   # configure
 - if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized";
   fi
-- ${CI_PROJECT_DIR}/do-configure -f --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+- ${CI_PROJECT_DIR}/do-configure --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
   --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
 - echo Building the following targets ${BUILD_TARGETS}
   # build (note: this works even with an older CMake since we directly call the native build tool
@@ -345,7 +345,7 @@ variables:
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
 
     # Configure and build
-  - ${CI_PROJECT_DIR}/do-configure -f --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+  - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
     --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
   - cmake --build . --target documentation > ../doxygen.log
 

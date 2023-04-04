@@ -7,6 +7,17 @@
 
 cmake_minimum_required(VERSION 3.17)
 
+# try to prevent modification of source directory
+# note: some files may still be written before CMake can abort and need to be removed manually
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+  message(
+    FATAL_ERROR
+      "In-source build not allowed. "
+      "Please create a new directory, preferably next to the source directory, and run CMake from there. "
+      "You may want to remove CMakeCache.txt and CMakeFiles/ which were created in the source directory."
+    )
+endif()
+
 project(baci CXX C Fortran)
 
 # Print CMake version to screen
