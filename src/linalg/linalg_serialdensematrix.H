@@ -54,7 +54,7 @@ namespace LINALG
     \param set_object_label (in): set an epetra object label for print out (defaults to true!)
 
     */
-    SerialDenseMatrix(int NumRows, int NumCols, bool init = false, bool set_object_label = true);
+    SerialDenseMatrix(int NumRows, int NumCols, bool init = true, bool set_object_label = true);
 
     /*!
     \brief Standard Constructor wrapping

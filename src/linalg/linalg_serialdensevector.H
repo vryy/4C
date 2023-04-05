@@ -52,7 +52,7 @@ namespace LINALG
     \param Length           (in): supposed length of vector
 
     */
-    SerialDenseVector(int Length, bool init = false);
+    SerialDenseVector(int Length, bool init = true);
 
     /*!
     \brief Standard Constructor wrapping
