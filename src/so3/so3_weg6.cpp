@@ -25,8 +25,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-// inverse design object
-#include "so3_inversedesign.H"
+// prestress object
 #include "so3_prestress.H"
 
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
@@ -121,11 +120,6 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6, NUMGPT_WEG6));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -148,11 +142,6 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
 
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -195,12 +184,6 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
-  }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    DRT::ParObject::AddtoPack(data, *invdesign_);
   }
 
   // detJ_
@@ -246,16 +229,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
     prestress_->Unpack(tmpprestress);
-  }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position, data, tmpinvdesign);
-    if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6, NUMGPT_WEG6));
-    invdesign_->Unpack(tmpinvdesign);
   }
 
   // detJ_

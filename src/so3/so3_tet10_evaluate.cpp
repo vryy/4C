@@ -23,8 +23,6 @@
 #include "so3_utils.H"
 #include "fiber_node.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"
@@ -383,8 +381,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
     //==================================================================================
@@ -738,14 +734,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         else
         {
-          if (::UTILS::PRESTRESS::IsInverseDesignActive(
-                  time_, pstype_, pstime_))  // inverse design analysis
-            dserror("Inverse Design not implemented for SOTET10");
-          // invdesign_->so_tet10_nlnstiffmass(this,lm,mydisp,myres,nullptr,nullptr,nullptr,&stress,&strain,params,iostress,iostrain);
-
-          else  // standard analysis
-            so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
-                nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
+          so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+              nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
         }
         // add stresses to global map
         // get EleID Id()

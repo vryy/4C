@@ -92,28 +92,6 @@ namespace UTILS
       return pstype == INPAR::STR::PreStress::material_iterative;
     }
 
-    /*!
-     * \brief Returns whether Inverse Design is set for prestressing in the parameters of
-     * structural dynamics. This method does not ensure that Inverse Design is actually
-     * active
-     *
-     * \return true Inverse Design is set in input file
-     * \return false Inverse Design is not set in input file
-     */
-    static inline bool IsInverseDesign() { return GetType() == INPAR::STR::PreStress::id; }
-
-    /*!
-     * \brief Returns whether Inverse Design is set for prestressing in the given
-     * parameter. This method does not ensure that Inverse Design is actually active
-     *
-     * \param pstype Prestress type that is used
-     * \return true Inverse Design is set in input file
-     * \return false Inverse Design is not set in input file
-     */
-    static inline bool IsInverseDesign(INPAR::STR::PreStress pstype)
-    {
-      return pstype == INPAR::STR::PreStress::id;
-    }
 
     /*!
      * \brief Returns whether no prestressing is set in the parameters of
@@ -228,34 +206,6 @@ namespace UTILS
       return IsMulf(pstype) && currentTime <= pstime + 1.0e-15;
     }
 
-    /*!
-     * \brief Returns true if Inverse Design prestressing method is currently active with the
-     * parameters of strtuctural dynamics.
-     *
-     * \param currentTimeCurrent time of the simulation
-     * \return true Inverse Design prestressing method is active
-     * \return false Inverse Design prestressing method is active
-     */
-    static inline bool IsInverseDesignActive(const double currentTime)
-    {
-      return IsInverseDesign() && currentTime <= GetPrestressTime() + 1.0e-15;
-    }
-
-    /*!
-     * \brief Returns true if Inverse Design prestressing method is currently active with the given
-     * parameters.
-     *
-     * \param currentTimeCurrent time of the simulation
-     * \param pstype Prestress type that is used
-     * \param pstime Prestress time that is used
-     * \return true Inverse Design prestressing method is active
-     * \return false Inverse Design prestressing method is active
-     */
-    static inline bool IsInverseDesignActive(
-        const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
-    {
-      return IsInverseDesign(pstype) && currentTime <= pstime + 1.0e-15;
-    }
 
   }  // namespace PRESTRESS
 }  // namespace UTILS

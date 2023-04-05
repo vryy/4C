@@ -26,8 +26,6 @@ set(OBJS_SOH8_LIB
     so3_hex8p1j1.cpp
     so3_hex8p1j1_evaluate.cpp
     so3_hex8p1j1_input.cpp
-    so3_inversedesign.cpp
-    so3_inversedesign_evaluate.cpp
     so3_line.cpp
     so3_line_evaluate.cpp
     so3_nstet.cpp

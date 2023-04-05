@@ -22,8 +22,6 @@
 #include "so3_surface.H"
 #include "so3_line.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 #include "so3_utils.H"
 
@@ -243,12 +241,6 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4, 4, true));
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -266,11 +258,6 @@ DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
 
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -307,14 +294,6 @@ void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    DRT::ParObject::AddtoPack(data, *invdesign_);
-  }
-
-  return;
 }
 
 
@@ -352,17 +331,6 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
     prestress_->Unpack(tmpprestress);
   }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position, data, tmpinvdesign);
-    if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4, 4, true));
-    invdesign_->Unpack(tmpinvdesign);
-  }
-
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

@@ -44,8 +44,6 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <impl/Kokkos_Traits.hpp>
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 #include "fluid_ele_parameter_timint.H"
@@ -128,15 +126,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (::UTILS::PRESTRESS::IsInverseDesignActive(
-              time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
-
-      else  // standard analysis
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
-            nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none, INPAR::STR::strain_none);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
+          nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none, INPAR::STR::strain_none);
 
       break;
     }
@@ -213,11 +205,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (::UTILS::PRESTRESS::IsInverseDesignActive(
-              time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
-      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      if (act == ELEMENTS::struct_calc_internalinertiaforce)
       {
         nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr, &mass_matrix_evaluate,
             &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
@@ -554,15 +542,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
-        if (::UTILS::PRESTRESS::IsInverseDesignActive(
-                time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
-              &strain, params, iostress, iostrain);
-
-        else  // standard analysis
-          nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-              nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
-              ioplstrain);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+            nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
         {
           DRT::PackBuffer data;
@@ -780,8 +761,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
         }
       }
-      if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-        dserror("Reset of Inverse Design not yet implemented");
 
       // reset EAS parameters:
       if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easnone)
@@ -858,12 +837,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
-
-        if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-            !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-        {
-          dserror("Calc Energy not implemented for prestress id");
-        }
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -1423,24 +1396,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    //==================================================================================
-    case ELEMENTS::inversedesign_update:
-    {
-      time_ = params.get<double>("total time");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      invdesign_->soh8_StoreMaterialConfiguration(this, mydisp);
-      invdesign_->IsInit() = true;  // this is to make the restart work
-    }
-    break;
-    //==================================================================================
-    case ELEMENTS::inversedesign_switch:
-    {
-      time_ = params.get<double>("total time");
-    }
-    break;
+
     //==================================================================================
     // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses
     // >
@@ -1495,15 +1451,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         auto ioplstrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
-        if (::UTILS::PRESTRESS::IsInverseDesignActive(
-                time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
-              &strain, params, iostress, iostrain);
-
-        else  // standard analysis
-          nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-              nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
-              ioplstrain);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+            nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
         // add stresses to global map
         // get EleID Id()
@@ -1760,25 +1709,9 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
     }
-
-    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-    {
-      if (!(invdesign_->IsInit()))
-      {
-        invdesign_->MatrixtoStorage(gp, invJ_[gp], invdesign_->JHistory());
-        invdesign_->DetJHistory()[gp] = detJ_[gp];
-      }
-    }
   }
 
   if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-      !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-    invdesign_->IsInit() = true;
-
-  return;
 }
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping with respect to the    farah 06/13|
@@ -2208,26 +2141,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
         else
           dserror("negative deformation gradient determinant");
       }  // if (det_defgrd<0.0)
-    }
-
-    if (::UTILS::PRESTRESS::IsInverseDesign(pstype_) &&
-        !::UTILS::PRESTRESS::IsInverseDesignActive(time_, pstype_, pstime_))
-    {
-      // printf("Ele %d entering id poststress\n",Id());
-      // make the multiplicative update so that defgrd refers to
-      // the reference configuration that resulted from the inverse
-      // design analysis
-      LINALG::Matrix<3, 3> Fhist;
-      invdesign_->StoragetoMatrix(gp, Fhist, invdesign_->FHistory());
-      LINALG::Matrix<3, 3> tmp3x3;
-      tmp3x3.Multiply(defgrd, Fhist);
-      defgrd = tmp3x3;
-
-      // make detJ and invJ refer to the ref. configuration that resulted from
-      // the inverse design analysis
-      detJ = invdesign_->DetJHistory()[gp];
-      invdesign_->StoragetoMatrix(gp, tmp3x3, invdesign_->JHistory());
-      N_XYZ.Multiply(tmp3x3, derivs[gp]);
     }
 
     /* non-linear B-operator (may so be called, meaning

@@ -19,7 +19,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-// inverse design object
 
 
 DRT::ELEMENTS::So_tet4avType DRT::ELEMENTS::So_tet4avType::instance_;

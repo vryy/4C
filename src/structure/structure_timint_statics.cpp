@@ -60,8 +60,6 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
     // check if we are in prestressing mode
     if (::UTILS::PRESTRESS::IsMulf())
       IO::cout << "with static MULF prestress" << IO::endl;
-    else if (::UTILS::PRESTRESS::IsInverseDesign())
-      IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
     else
       IO::cout << "with statics" << IO::endl;
   }

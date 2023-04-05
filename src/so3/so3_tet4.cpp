@@ -24,8 +24,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 #include "fiber_node.H"
 #include "fiber_utils.H"
@@ -128,11 +126,6 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
-
-  return;
 }
 
 /*----------------------------------------------------------------------***
@@ -150,11 +143,6 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old)
 {
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-
-  return;
 }
 
 /*----------------------------------------------------------------------***
@@ -207,14 +195,6 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    DRT::ParObject::AddtoPack(data, *invdesign_);
-  }
-
-  return;
 }
 
 
@@ -255,16 +235,6 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
     prestress_->Unpack(tmpprestress);
-  }
-
-  // invdesign_
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position, data, tmpinvdesign);
-    if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
-    invdesign_->Unpack(tmpinvdesign);
   }
 
   if (position != data.size())

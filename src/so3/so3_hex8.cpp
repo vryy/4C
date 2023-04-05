@@ -26,8 +26,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 #include "fiber_node.H"
@@ -144,9 +142,6 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
-
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::kinem_linear)
@@ -187,9 +182,6 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
 
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-
-  if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
   {
@@ -252,11 +244,6 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   {
     DRT::ParObject::AddtoPack(data, *prestress_);
   }
-  // invdesign_
-  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    DRT::ParObject::AddtoPack(data, *invdesign_);
-  }
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -314,15 +301,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
     }
     prestress_->Unpack(tmpprestress);
-  }
-  // invdesign_
-  else if (::UTILS::PRESTRESS::IsInverseDesign(pstype_))
-  {
-    std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position, data, tmpinvdesign);
-    if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8, NUMGPT_SOH8));
-    invdesign_->Unpack(tmpinvdesign);
   }
 
   // detJ_

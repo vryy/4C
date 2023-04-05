@@ -1407,11 +1407,6 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
         // Choose special update action for elements in case of MULF
         EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
         break;
-      case INPAR::STR::PreStress::id:
-        dserror(
-            "Inverse design prestressing is only implemented in the old time integration "
-            "framework.");
-        break;
       default:
         dserror(
             "The type of prestressing algorithm is unknown in the new time "
@@ -2020,12 +2015,6 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
       break;
     case DRT::ELEMENTS::struct_update_prestress:
       action = "calc_struct_prestress_update";
-      break;
-    case DRT::ELEMENTS::inversedesign_update:
-      action = "calc_struct_inversedesign_update";
-      break;
-    case DRT::ELEMENTS::inversedesign_switch:
-      action = "calc_struct_inversedesign_switch";
       break;
     case DRT::ELEMENTS::struct_calc_global_gpstresses_map:
       action = "calc_global_gpstresses_map";

@@ -21,8 +21,6 @@
 #include "lib_globalproblem.H"
 #include "mat_micromaterial.H"
 
-// inverse design object
-#include "so3_inversedesign.H"
 #include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"

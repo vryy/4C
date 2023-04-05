@@ -59,13 +59,11 @@ namespace DRT
       struct_gauss_point_data_output,       //!< collect material data for vtk runtime output
       struct_update_prestress,
       analyse_jacobian_determinant,  //!< analyze the Jacobian determinant of the element
-      inversedesign_update,
-      inversedesign_switch,
-      multi_readrestart,      //!< multi-scale: read restart on microscale
-      multi_init_eas,         //!< multi-scale: initialize EAS parameters on microscale
-      multi_set_eas,          //!< multi-scale: set EAS parameters on microscale
-      multi_calc_dens,        //!< multi-scale: calculate homogenized density
-      shell_calc_stc_matrix,  //!< calculate scaled director matrix for thin shell structures
+      multi_readrestart,             //!< multi-scale: read restart on microscale
+      multi_init_eas,                //!< multi-scale: initialize EAS parameters on microscale
+      multi_set_eas,                 //!< multi-scale: set EAS parameters on microscale
+      multi_calc_dens,               //!< multi-scale: calculate homogenized density
+      shell_calc_stc_matrix,         //!< calculate scaled director matrix for thin shell structures
       shell_calc_stc_matrix_inverse,  //!< calculate inverse of scaled director matrix for thin
                                       //!< shell structures
       struct_calc_ptcstiff,   //!< calculate artificial stiffness due to PTC solution strategy
@@ -143,10 +141,6 @@ namespace DRT
         return struct_gauss_point_data_output;
       else if (action == "calc_struct_prestress_update")
         return struct_update_prestress;
-      else if (action == "calc_struct_inversedesign_update")
-        return inversedesign_update;
-      else if (action == "calc_struct_inversedesign_switch")
-        return inversedesign_switch;
       else if (action == "calc_global_gpstresses_map")
         return struct_calc_global_gpstresses_map;
       else if (action == "interpolate_velocity_to_given_point")
@@ -219,10 +213,6 @@ namespace DRT
           return "struct_update_prestress";
         case analyse_jacobian_determinant:
           return "analyse_jacobian_determinant";
-        case inversedesign_update:
-          return "inversedesign_update";
-        case inversedesign_switch:
-          return "inversedesign_switch";
         case multi_readrestart:
           return "multi_readrestart";
         case multi_init_eas:

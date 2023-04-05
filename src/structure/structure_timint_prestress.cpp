@@ -41,8 +41,6 @@ void STR::TimIntPrestress::Setup()
   switch (::UTILS::PRESTRESS::GetType())
   {
     case INPAR::STR::PreStress::mulf:
-    case INPAR::STR::PreStress::id:
-      // both are implemented
       break;
     default:
       dserror(
@@ -78,24 +76,7 @@ void STR::TimIntPrestress::UpdateStepElement()
     }
   }
 
-  // INVERSE DESIGN
-  else if (::UTILS::PRESTRESS::IsInverseDesign())
-  {
-    if (::UTILS::PRESTRESS::IsInverseDesignActive((*time_)[0]))
-    {
-      if (!discret_->Comm().MyPID()) IO::cout << "====== Entering INVERSEDESIGN update" << IO::endl;
-      // action for elements
-      p.set("action", "calc_struct_inversedesign_update");
-    }
-    else
-    {
-      // action for elements
-      p.set("action", "calc_struct_update_istep");
-      discret_->ClearState();
-    }
-  }
-
-  // params for both MULF and ID
+  // params for MULF
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
 
@@ -103,21 +84,6 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->SetState("displacement", (*dis_)(0));
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-
-  if (::UTILS::PRESTRESS::IsInverseDesignActive((*time_)[0]) &&
-      !::UTILS::PRESTRESS::IsInverseDesignActive(timen_))
-  {
-    // switch in id mode:
-    dis_->UpdateSteps(*zeros_);
-    vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
-    acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
-    if (!discret_->Comm().MyPID()) IO::cout << "XXXXXX Entering INVERSEDESIGN SWITCH" << IO::endl;
-    // action for elements
-    p.set("action", "calc_struct_inversedesign_switch");
-    p.set("total time", timen_);
-    discret_->Evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  }
 
   if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
   {

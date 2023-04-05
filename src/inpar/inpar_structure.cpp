@@ -93,13 +93,12 @@ namespace INPAR
           &sdyn);
 
       setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
-          "prestressing takes values none mulf id",
-          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID",
-              "Material_Iterative", "MATERIAL_ITERATIVE", "material_iterative"),
+          "prestressing takes values none mulf material_iterative",
+          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "Material_Iterative",
+              "MATERIAL_ITERATIVE", "material_iterative"),
           tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
               INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
-              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::id, INPAR::STR::PreStress::id,
-              INPAR::STR::PreStress::id, INPAR::STR::PreStress::material_iterative,
+              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::material_iterative,
               INPAR::STR::PreStress::material_iterative, INPAR::STR::PreStress::material_iterative),
           &sdyn);
 

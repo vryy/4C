@@ -1,5 +1,11 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Inverse design prestressing
+- removed in commit f3f8662ba8cdcdcfbe3b9bcb14755e9b1cfc13d0
+- reasons: the inverse design feature is no longer used, MULF or similar prestressing methods as in the
+  mixture material should be preferred
+- removed by Janina Datz
+
 Topology optimization of fluid domains
 - removed in commit 57aa60e4278aa7d81d45f8dbaad62b8528d44d1b
 - reasons: module is unused and unmaintained -> reduce dependencies and easen maintenance work 
