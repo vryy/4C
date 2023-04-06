@@ -55,8 +55,8 @@ else
 fi
 
 ### Module prefixes check ######################################
-echo "Start test for module prefixes ..."
-python ./utilities/code_checks/file_prefix_check.py src src --out wrong_prefix.txt | tee wrong_prefix.txt
+echo "Start test for module prefixes and correct include style ..."
+python ./utilities/code_checks/check_file_prefix_and_includes.py src src --out wrong_prefix.txt | tee wrong_prefix.txt
 
 if [ -s wrong_prefix.txt ]
 then
