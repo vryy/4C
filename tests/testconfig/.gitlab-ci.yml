@@ -77,7 +77,7 @@ variables:
   -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
-.check-no-warnings:
+.check-no-warnings: &check-no-warnings
 - cd ${CI_PROJECT_DIR}/../baci-build
   # check for warnings
 - if grep -iP "warning:" build.log; then echo 'Warnings found!' && exit 1; else echo
@@ -113,6 +113,7 @@ variables:
   script:
   - *clean-build-folder
   - *build-and-test
+  - *check-no-warnings
   after_script:
   - *post-process-log-files
   artifacts:
@@ -263,7 +264,8 @@ variables:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
-# A variant of buildtest_daily which only builds the project
+# A variant of buildtest_daily which only builds the project (and does not check for warnings!)
+# Use for LNM clusters
 .build_daily:
   stage: buildtest
   variables:
@@ -320,6 +322,7 @@ variables:
 
   - *clean-build-folder
   - *build-and-test
+  - *check-no-warnings
   after_script:
   - *post-process-log-files
     # Move the log file to the source folder, so it can be found by artifacts.
