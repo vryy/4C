@@ -21,7 +21,7 @@
 #include "cut_memory_manager.H"
 #include <unordered_map>
 
-#include "linalg_gauss.H"
+#include "linalg_gauss_templates.H"
 
 #include "fem_general_utils_fem_shapefunctions.H"
 
