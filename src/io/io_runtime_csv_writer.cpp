@@ -193,8 +193,8 @@ namespace IO
       std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
       outputfile << sectionpriorrestart.str();
       outputfile.close();
+      header_line_written_ = true;
     }
-    header_line_written_ = true;
   }
 
   void RuntimeCsvWriterProc0::RegisterDataVector(
