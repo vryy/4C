@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "adapter_str_fsi_timint_adaptive.H"
 

@@ -11,8 +11,8 @@
 
 #include "inv_analysis_base.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_MultiVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_MultiVector.h>
 #include "inpar_structure.H"
 
 // forward declarations

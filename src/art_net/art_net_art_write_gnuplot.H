@@ -11,10 +11,10 @@
 #ifndef ART_NET_ART_WRITE_GNUPLOT_H
 #define ART_NET_ART_WRITE_GNUPLOT_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
 #include <iostream>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"

@@ -13,11 +13,11 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Map.h>
+#include <Epetra_CrsGraph.h>
 
 #include "inpar_statinvanalysis.H"
 #include "inv_analysis_DcsMatrix.H"

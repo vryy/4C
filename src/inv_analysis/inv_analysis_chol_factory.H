@@ -9,7 +9,7 @@
 #ifndef INV_ANALYSIS_CHOL_FACTORY_H
 #define INV_ANALYSIS_CHOL_FACTORY_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 class Epetra_CrsMatrix;
 

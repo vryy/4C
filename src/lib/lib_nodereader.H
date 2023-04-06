@@ -15,7 +15,7 @@
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"
 
-#include "Epetra_Map.h"
+#include <Epetra_Map.h>
 
 namespace DRT
 {

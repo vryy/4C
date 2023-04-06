@@ -16,9 +16,9 @@
 #include "linalg_utils_densematrix_determinant.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_FECrsMatrix.h"
-#include "Sacado.hpp"
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_FECrsMatrix.h>
+#include <Sacado.hpp>
 
 #include "mat_service.H"
 #include "mat_micromaterial.H"

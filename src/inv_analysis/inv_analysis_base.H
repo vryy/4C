@@ -9,10 +9,10 @@
 #ifndef INV_ANALYSIS_BASE_H
 #define INV_ANALYSIS_BASE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Map.h"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Comm.h>
 
 // forward declarations
 namespace DRT

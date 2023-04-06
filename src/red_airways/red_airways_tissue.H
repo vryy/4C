@@ -17,7 +17,7 @@
 #include "lib_resulttest.H"
 
 #include <Teuchos_RCP.hpp>
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 #include "inpar_bio.H"
 
 

@@ -21,7 +21,7 @@ its parameters and conditions.
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <Teuchos_Time.hpp>
-#include "Teuchos_TimeMonitor.hpp"
+#include <Teuchos_TimeMonitor.hpp>
 #include "lib_globalproblem.H"
 #include "lib_resulttest.H"
 #include "lib_utils_createdis.H"

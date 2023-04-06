@@ -12,9 +12,9 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include <Teuchos_SerialDenseVector.hpp>
 #include "lib_globalproblem.H"
-#include "mirco_evaluate.h"
-#include "mirco_topology.h"
-#include "mirco_topologyutilities.h"
+#include <mirco_evaluate.h>
+#include <mirco_topology.h>
+#include <mirco_topologyutilities.h>
 #include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*/

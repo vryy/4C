@@ -10,7 +10,7 @@
 #ifndef INV_ANALYSIS_INITIAL_GUESS_H
 #define INV_ANALYSIS_INITIAL_GUESS_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 namespace Teuchos
 {

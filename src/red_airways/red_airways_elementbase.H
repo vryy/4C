@@ -13,8 +13,8 @@
 #define RED_AIRWAYS_ELEMENTBASE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 
 #include "lib_element.H"

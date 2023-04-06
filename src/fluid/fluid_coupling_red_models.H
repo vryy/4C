@@ -14,9 +14,9 @@ problem
 #define FLUID_COUPLING_RED_MODELS_H
 
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "art_net_dyn_drt.H"

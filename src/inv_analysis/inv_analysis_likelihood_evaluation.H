@@ -12,8 +12,8 @@
 
 #include <random>
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 namespace Teuchos
 {

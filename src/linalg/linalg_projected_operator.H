@@ -10,8 +10,8 @@
 #ifndef LINALG_PROJECTED_OPERATOR_H
 #define LINALG_PROJECTED_OPERATOR_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Operator.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Operator.h>
 
 // forward declarations
 class Epetra_MultiVector;

@@ -10,7 +10,7 @@
 #ifndef INV_ANALYSIS_CHOL_FACTOR_BASE_H
 #define INV_ANALYSIS_CHOL_FACTOR_BASE_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RefCountPtr.hpp>
 
 class Epetra_CrsMatrix;
 class Epetra_MultiVector;

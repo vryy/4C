@@ -17,8 +17,8 @@
 #include "lib_discret_faces.H"
 #include "lib_dserror.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
 #include <string>
 
 // forward declarations

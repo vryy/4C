@@ -36,11 +36,11 @@ References are
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_TimeMonitor.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "inpar_fluid.H"
 #include "inpar_scatra.H"

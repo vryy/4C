@@ -10,7 +10,7 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_meshtying_poro_lagrange_strategy.H"
 #include "inpar_contact.H"
 #include "linalg_multiply.H"

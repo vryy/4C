@@ -11,9 +11,9 @@
 #ifndef FSI_OVERLAPPREC_AMGNXN_H
 #define FSI_OVERLAPPREC_AMGNXN_H
 
-#include "Epetra_MultiVector.h"
-#include "Epetra_Operator.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 
 #include "fsi_overlapprec.H"
 

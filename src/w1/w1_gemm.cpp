@@ -14,11 +14,11 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseSolver.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseSolver.h>
 
 #include "lib_element.H"
 #include "lib_node.H"

@@ -15,14 +15,14 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "mat_stvenantkirchhoff.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "lib_globalproblem.H"
 #include "fem_general_utils_integration.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
 #include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;

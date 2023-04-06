@@ -11,13 +11,13 @@
 #ifndef REBALANCE_H
 #define REBALANCE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Map.h"
+#include <Epetra_Comm.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Map.h>
 
-#include "Teuchos_ParameterList.hpp"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "inpar_rebalance.H"
 

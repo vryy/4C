@@ -13,10 +13,10 @@
 #include "beaminteraction_contact_pair.H"
 
 // Todo get rid of header inclusions
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "lib_condition.H"

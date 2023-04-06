@@ -16,7 +16,7 @@
 #include "lib_node.H"
 #include "lib_element.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

@@ -10,14 +10,14 @@
 #ifndef BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
 #define BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
 /************************************************************************/
 /* Beam contact algorithm options                                       */
 /************************************************************************/
 #define RELCONSTRTOL /* flag for relative evaluation of the constraint tolerance */
-//#define MEASURETIME             /* flag for time measurement of octree setup and intermediate
-// steps */ #define OCTREEDEBUG             /* flag for debug options in octree search routine*/
+// #define MEASURETIME             /* flag for time measurement of octree setup and intermediate
+//  steps */ #define OCTREEDEBUG             /* flag for debug options in octree search routine*/
 
 /************************************************************************/
 /* Beam contact algorithm parameters                                    */
@@ -99,15 +99,15 @@ NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three 
   0.6  // Value of above scalar product x1_xi*x2_xi, at which the beams are again considered as not
        // parallel
 
-//#define AUTOMATICDIFF           //Decide whether automatic differentiation via Sacado is used or
-// not default: Off
+// #define AUTOMATICDIFF           //Decide whether automatic differentiation via Sacado is used or
+//  not default: Off
 #ifdef AUTOMATICDIFF
 // TODO
 dserror(
     "check functionality of FAD based linearization in case of beam3k and beam3r with Hermite cl "
     "intpol");
 typedef Sacado::Fad::DFad<double> TYPE;
-//#define FADCHECKS //Decide whether FAD checks via Sacado are printed as output or not
+// #define FADCHECKS //Decide whether FAD checks via Sacado are printed as output or not
 #else
 typedef double TYPE;
 #endif
@@ -116,16 +116,17 @@ typedef double TYPE;
                               // reaches the end of the second beam
 // default: true
 
-//#define MAXFORCE           50      //prescribe maximum penalty force (cut off value in combination
-// with secant stiffness) #define BASICSTIFFWEIGHT    1.1    //Additional weighting of the basis
-// stiffness term
+// #define MAXFORCE           50      //prescribe maximum penalty force (cut off value in
+// combination
+//  with secant stiffness) #define BASICSTIFFWEIGHT    1.1    //Additional weighting of the basis
+//  stiffness term
 
 #define ITERMAX 15  // Newton iteration at which PTC or ALGORITHMICDAMP is applied
-//#define ALGORITHMICDAMP      50      //Apply algorithmicdamp proportional to iterative gap change
+// #define ALGORITHMICDAMP      50      //Apply algorithmicdamp proportional to iterative gap change
 //(tends to zero in converged configuration) #define ALGDAMPREGFAC1       0.001 #define
-// ALGDAMPREGFAC2      -0.03 #define ALGDAMPBASICSTIFFFAC 1.0 #define ALGCOMPLETESTIFF #define
-// BEAMCONTACTPTC       10        //Apply PTC terms to contact elements #define BEAMCONTACTPTCROT
-// 0.0
+//  ALGDAMPREGFAC2      -0.03 #define ALGDAMPBASICSTIFFFAC 1.0 #define ALGCOMPLETESTIFF #define
+//  BEAMCONTACTPTC       10        //Apply PTC terms to contact elements #define BEAMCONTACTPTCROT
+//  0.0
 
 
 #define MAXNUMSEG 256  // default: 256         //maximal number of segments
@@ -139,21 +140,22 @@ typedef double TYPE;
 #define BEAMCONTACTGAUSSRULE GaussRule1D::line_5point  // Gauss rule applied in each segment
 // default: 5 GP
 
-//#define CONSISTENTTRANSITION 2                    //apply moment based transition: 1 -> variant 1,
-// 2 -> variant 2 #define ENDPOINTSEGMENTATION                       //build integration segments at
-// the physical beam endpoints
+// #define CONSISTENTTRANSITION 2                    //apply moment based transition: 1 -> variant
+// 1,
+//  2 -> variant 2 #define ENDPOINTSEGMENTATION                       //build integration segments
+//  at the physical beam endpoints
 #define RELSEGMENTTOL \
   0.0000000001  // default:0.0000000001              //minimal (relative) size of a cut integration
                 // interval
-//#define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
+// #define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
 
-//#define CHANGEENDPOINTPROJECTION                 //If CHANGEENDPOINTPROJECTION is defined, the
-// endpoint projection necessary for ENDPOINTSEGMENTATION is done as an orthogonal projection and
-// not
-// as an closest point projection
+// #define CHANGEENDPOINTPROJECTION                 //If CHANGEENDPOINTPROJECTION is defined, the
+//  endpoint projection necessary for ENDPOINTSEGMENTATION is done as an orthogonal projection and
+//  not
+//  as an closest point projection
 
 // TODO
-//#define ONLYLEFTENDPOINTCONTACT                  //hack necessary for example "dynamic failure of
+// #define ONLYLEFTENDPOINTCONTACT                  //hack necessary for example "dynamic failure of
 // rope" -> endpoint contact is only considered at one end of the ropes
 
 #define CPP_APPROX  // Use approximation based on point-to-line projection in case of non-converent
@@ -164,8 +166,8 @@ typedef double TYPE;
 
 #define INITSEG1 1  // minimal number of segments of element1 (necessary for debugging)
 #define INITSEG2 1  // minimal number of segments of element2 (necessary for debugging)
-//#define NOSEGMENTATION                             //switch segmentation of -> one element=one
-// segment
+// #define NOSEGMENTATION                             //switch segmentation of -> one element=one
+//  segment
 
 // TODO: Change back to default
 #define MAXPENETRATIONSAFETYFAC \
@@ -200,21 +202,21 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
   10 /* number of gmsh visualization devisions of beam element in circumferential direction*/
 #define N_Axial 10 /* number of gmsh visualization devisions of beam element in axial direction*/
 
-//#define DISTINGUISHCONTACTCOLOR
-//#define CONTACTPAIRSPECIFICOUTPUT
-//#define OUTPUTALLPROCS
-//#define OUTPUTEVERY 0.000001        //Write gmsh output in time intervals of size OUTPUTEVERY
-//#define OUTPUTEVERYNEWTONSTEP      //Write output also after each Newton step
-//#define GMSHTIMESTEPS              /*write gmsh output in each time step */
-//#define GMSHNEWTONSTEPS            /*write gmsh and console output in each Newton step */
-//#define REACTIONFORCES             /* output of reaction forces and moments */
-//#define BEAMCONTACTFDCHECKS        /* perform finite difference checks */
+// #define DISTINGUISHCONTACTCOLOR
+// #define CONTACTPAIRSPECIFICOUTPUT
+// #define OUTPUTALLPROCS
+// #define OUTPUTEVERY 0.000001        //Write gmsh output in time intervals of size OUTPUTEVERY
+// #define OUTPUTEVERYNEWTONSTEP      //Write output also after each Newton step
+// #define GMSHTIMESTEPS              /*write gmsh output in each time step */
+// #define GMSHNEWTONSTEPS            /*write gmsh and console output in each Newton step */
+// #define REACTIONFORCES             /* output of reaction forces and moments */
+// #define BEAMCONTACTFDCHECKS        /* perform finite difference checks */
 
-//#define PRINTGAPFILE //print file with gap/gap error
-//#define PRINTNUMCONTACTSFILE//print number of active contact points over time
-//#define PRINTGAPSOVERLENGTHFILE //print all GP gaps and forces over element length
+// #define PRINTGAPFILE //print file with gap/gap error
+// #define PRINTNUMCONTACTSFILE//print number of active contact points over time
+// #define PRINTGAPSOVERLENGTHFILE //print all GP gaps and forces over element length
 
-//#define FDCHECK                //perform finite difference check of contact linearization
+// #define FDCHECK                //perform finite difference check of contact linearization
 
 
 
@@ -223,18 +225,18 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 /************************************************************************/
 
 #define LINPENALTY
-//#define QUADPENALTY
-//#define ARBITPENALTY 2
+// #define QUADPENALTY
+// #define ARBITPENALTY 2
 #ifdef ARBITPENALTY
 #define G0 3.0e-2  // G0 > 0
 #endif
-//#define GAP0 // GAP0 > 0                        // Decide if complete stiffness is used
+// #define GAP0 // GAP0 > 0                        // Decide if complete stiffness is used
 #define GAUSSRULE \
   GaussRule1D::line_6point  // Define gauss rule for integrating residual and stiffness
                             // terms
 
-//#define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado
-// is used default: Off
+// #define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado
+//  is used default: Off
 #ifdef AUTOMATICDIFFBTS
         typedef Sacado::Fad::DFad<double> TYPEBTS;
 //  #define FADCHECKSTIFFNESS                     // Decide if FAD checks for contact stiffness are
@@ -250,15 +252,17 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 typedef double TYPEBTS;
 #endif
 
-//#define FDCHECKSTIFFNESS                        // Decide if differentiation via finite difference
-// for calculating contact stiffness is used default: Off
+// #define FDCHECKSTIFFNESS                        // Decide if differentiation via finite
+// difference
+//  for calculating contact stiffness is used default: Off
 
 #ifndef AUTOMATICDIFFBTS
-//#define BTSOLGMSH                           // gmsh output of solids
-//#define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
-//#define GMSHFORCE                             // Create extra Gmsh file with contact forces acting
-// on solid element #define SAVEFORCE                             // Create text file with contact
-// forces at all contact interval borders and Gauss points
+// #define BTSOLGMSH                           // gmsh output of solids
+// #define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
+// #define GMSHFORCE                             // Create extra Gmsh file with contact forces
+// acting
+//  on solid element #define SAVEFORCE                             // Create text file with contact
+//  forces at all contact interval borders and Gauss points
 #endif
 // -----------------------------------------------------------------
 

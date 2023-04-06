@@ -13,9 +13,9 @@
 
 #include "inpar_poromultiphase_scatra.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 
 // forward declarations
 namespace LINALG

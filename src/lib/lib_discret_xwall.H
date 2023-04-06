@@ -16,11 +16,11 @@ of dofs per node on a fluid discretization for xwall
 #include "lib_discret_faces.H"
 #include "lib_dserror.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 #include <string>
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 namespace DRT
 {

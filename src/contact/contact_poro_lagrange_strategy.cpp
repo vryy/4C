@@ -9,7 +9,7 @@ interface
 */
 /*---------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_defines.H"

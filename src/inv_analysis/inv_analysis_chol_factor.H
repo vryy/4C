@@ -11,8 +11,8 @@
 #define INV_ANALYSIS_CHOL_FACTOR_H
 
 #include "inv_analysis_chol_factor_base.H"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_MultiVector.h"
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_MultiVector.h>
 
 class Epetra_SerialSpdDenseSolver;
 class Epetra_SerialSymDenseMatrix;

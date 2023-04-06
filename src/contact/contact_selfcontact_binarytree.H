@@ -9,8 +9,8 @@
 #ifndef CONTACT_SELFCONTACT_BINARYTREE_H
 #define CONTACT_SELFCONTACT_BINARYTREE_H
 
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Map.h"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Map.h>
 #include "lib_element.H"
 #include "mortar_base_binarytree.H"
 

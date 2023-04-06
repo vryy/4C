@@ -16,7 +16,7 @@ Pack, Unpack, NumDofPerNode etc.
 #define ELEMAG_ELE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "lib_elementtype.H"
 #include "fem_general_utils_integration.H"

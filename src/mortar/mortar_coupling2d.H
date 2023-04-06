@@ -10,7 +10,7 @@
 #define MORTAR_COUPLING2D_H
 
 #include <vector>
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 #include "inpar_mortar.H"
 
 // forward declarations

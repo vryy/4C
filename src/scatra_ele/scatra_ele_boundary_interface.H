@@ -11,9 +11,9 @@
 #define SCATRA_ELE_BOUNDARY_INTERFACE_H
 
 #include <vector>
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
 
 #include "lib_element.H"
 

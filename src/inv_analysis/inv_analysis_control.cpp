@@ -11,7 +11,7 @@
 #include "inv_analysis_control.H"
 
 // TEUCHOS
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 // INVANA
 #include "inv_analysis_base.H"

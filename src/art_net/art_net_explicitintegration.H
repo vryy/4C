@@ -16,10 +16,10 @@
 #ifndef ART_NET_EXPLICITINTEGRATION_H
 #define ART_NET_EXPLICITINTEGRATION_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
@@ -28,7 +28,7 @@
 #include "art_net_art_junction.H"
 #include "art_net_art_write_gnuplot.H"
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include <ctime>
 #include <cstdlib>

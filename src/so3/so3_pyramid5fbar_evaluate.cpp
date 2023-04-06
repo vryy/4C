@@ -6,7 +6,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "so3_pyramid5fbar.H"
 #include "linalg_serialdensematrix.H"
 #include "lib_discret.H"

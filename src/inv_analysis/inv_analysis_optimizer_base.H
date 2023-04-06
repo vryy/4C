@@ -9,8 +9,8 @@
 #ifndef INV_ANALYSIS_OPTIMIZER_BASE_H
 #define INV_ANALYSIS_OPTIMIZER_BASE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_MultiVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_MultiVector.h>
 
 #include "inv_analysis_writer.H"
 

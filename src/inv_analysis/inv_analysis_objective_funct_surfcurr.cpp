@@ -19,8 +19,8 @@
 #include "io_pstream.H"
 #include "comm_utils.H"
 
-#include "Epetra_SerialSpdDenseSolver.h"
-#include "Epetra_SerialSymDenseMatrix.h"
+#include <Epetra_SerialSpdDenseSolver.h>
+#include <Epetra_SerialSymDenseMatrix.h>
 
 #include <sys/time.h>
 #include <random>

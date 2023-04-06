@@ -13,7 +13,7 @@
 
 
 /*! header inclusions */
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include "inpar_xfem.H"
 #include "inpar_cut.H"

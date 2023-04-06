@@ -13,7 +13,7 @@ passive-scalar transport
 #include <complex>
 
 #ifdef HAVE_FFTW
-#include "fftw3.h"
+#include <fftw3.h>
 #endif
 
 #include "scatra_turbulence_hit_scalar_forcing.H"

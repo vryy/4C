@@ -14,7 +14,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <set>
-#include "memory"
+#include <memory>
 #include "io_runtime_csv_writer.H"
 
 namespace ADAPTER

@@ -9,7 +9,7 @@
 #ifndef SSI_MONOLITHIC_DBC_HANDLER_H
 #define SSI_MONOLITHIC_DBC_HANDLER_H
 
-#include "Teuchos_RCPDecl.hpp"
+#include <Teuchos_RCPDecl.hpp>
 
 #include "linalg_sparseoperator.H"
 

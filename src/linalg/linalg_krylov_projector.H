@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_MultiVector;

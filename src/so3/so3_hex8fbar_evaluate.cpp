@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "so3_hex8fbar.H"
 #include "linalg_serialdensematrix.H"
 #include "lib_discret.H"

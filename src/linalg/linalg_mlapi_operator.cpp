@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 #include "linalg_mlapi_operator.H"
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|

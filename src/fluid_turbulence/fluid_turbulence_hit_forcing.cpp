@@ -12,7 +12,7 @@
 #include <complex>
 
 #ifdef HAVE_FFTW
-#include "fftw3.h"
+#include <fftw3.h>
 #endif
 
 #include "fluid_turbulence_hit_forcing.H"

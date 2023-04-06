@@ -12,8 +12,8 @@
 
 #include "lib_dserror.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MapFactory.hpp>

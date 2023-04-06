@@ -10,7 +10,7 @@
 
 /*----------------------------------------------------------------------*/
 #include "so3_sh8p8.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "lib_voigt_notation.H"
 
 /*----------------------------------------------------------------------*/

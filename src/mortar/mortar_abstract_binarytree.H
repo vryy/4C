@@ -9,7 +9,7 @@
 #ifndef MORTAR_ABSTRACT_BINARYTREE_H
 #define MORTAR_ABSTRACT_BINARYTREE_H
 
-#include "Epetra_SerialDenseMatrix.h"
+#include <Epetra_SerialDenseMatrix.h>
 
 namespace MORTAR
 {

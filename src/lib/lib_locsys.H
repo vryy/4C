@@ -12,7 +12,7 @@
 #ifndef LIB_LOCSYS_H
 #define LIB_LOCSYS_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "fluid_ele_action.H"
 #include "ale_ale3.H"
 #include "lib_discret_interface.H"

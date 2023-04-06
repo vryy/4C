@@ -13,7 +13,7 @@
 #include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "fem_general_utils_integration.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "fem_general_utils_nurbs_shapefunctions.H"

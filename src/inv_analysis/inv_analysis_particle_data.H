@@ -10,8 +10,8 @@
 #ifndef INV_ANALYSIS_PARTICLE_DATA_H
 #define INV_ANALYSIS_PARTICLE_DATA_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 #include "lib_parobject.H"
 #include "lib_parobjectfactory.H"
 

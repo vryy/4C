@@ -33,7 +33,7 @@ algorithms
 #include "io.H"
 #include "io_gmsh.H"
 
-#include "Epetra_MultiVector.h"
+#include <Epetra_MultiVector.h>
 
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 12/15 |

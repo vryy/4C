@@ -10,9 +10,9 @@
 #ifndef SOLVER_AMGNXN_PRECONDITIONER_H
 #define SOLVER_AMGNXN_PRECONDITIONER_H
 
-#include "Epetra_MultiVector.h"
-#include "Epetra_Operator.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 #include <MueLu.hpp>
 #include <MueLu_Level.hpp>
 #include <MueLu_BaseClass.hpp>

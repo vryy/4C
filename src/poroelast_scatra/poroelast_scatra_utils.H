@@ -10,7 +10,7 @@
 #ifndef POROELAST_SCATRA_UTILS_H
 #define POROELAST_SCATRA_UTILS_H
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "inpar_poroelast.H"

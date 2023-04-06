@@ -10,7 +10,7 @@
 #ifndef FLUID_ELE_HDG_WEAK_COMP_H
 #define FLUID_ELE_HDG_WEAK_COMP_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 #include "fluid_ele.H"

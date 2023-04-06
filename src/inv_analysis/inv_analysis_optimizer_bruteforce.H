@@ -12,7 +12,7 @@
 
 #include "inv_analysis_optimizer_base.H"  // base class
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 
 namespace INVANA

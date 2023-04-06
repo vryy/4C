@@ -11,7 +11,7 @@
 
 #include "inv_analysis_optimizer_base.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

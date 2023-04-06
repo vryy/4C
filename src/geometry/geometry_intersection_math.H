@@ -16,8 +16,8 @@
 
 
 #include "linalg_fixedsizematrix.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_SerialDenseVector.h>
 
 
 namespace GEO

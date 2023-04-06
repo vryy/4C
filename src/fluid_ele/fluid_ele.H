@@ -21,7 +21,7 @@ of errors, turbulence statistics etc.).
 #define FLUID_ELE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 #include "lib_elementtype.H"

@@ -14,8 +14,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Epetra_Comm.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 #include "lib_container.H"
 #include "lib_dserror.H"

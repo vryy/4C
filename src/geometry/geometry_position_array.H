@@ -12,7 +12,7 @@
 
 #include "lib_node.H"
 #include "fem_general_utils_local_connectivity_matrices.H"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Epetra_SerialDenseMatrix.h>
 
 
 namespace GEO

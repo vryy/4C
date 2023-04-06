@@ -12,16 +12,14 @@
 #include "inv_analysis_likelihood_evaluation.H"
 #include "inv_analysis_particle_data.H"
 
-#include "Epetra_Vector.h"
-#include "Epetra_Map.h"
-#include "Epetra_Comm.h"
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Comm.h>
 
 #include <random>
 #include <chrono>
 
-#include "signal.h"
-
-#include <fenv.h>
+#include <cfenv>
 
 
 /*----------------------------------------------------------------------*/

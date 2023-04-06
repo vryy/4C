@@ -27,12 +27,12 @@
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "Epetra_CrsMatrix.h"
+#include <Epetra_CrsMatrix.h>
 #include "inv_analysis_DcsMatrix.H"
 
-#include <fenv.h>
+#include <cfenv>
 
-#include "math.h"
+#include <cmath>
 #include <string>
 
 /*----------------------------------------------------------------------*/

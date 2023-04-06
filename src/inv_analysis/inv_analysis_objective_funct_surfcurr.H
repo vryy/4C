@@ -12,7 +12,7 @@
 
 #include "inv_analysis_objective_funct.H"
 
-#include "Epetra_Map.h"
+#include <Epetra_Map.h>
 
 #include <Kokkos_Core.hpp>
 

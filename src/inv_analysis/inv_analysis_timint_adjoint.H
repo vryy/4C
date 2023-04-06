@@ -13,10 +13,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Epetra_IntVector.h"
-#include "Epetra_MultiVector.h"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_IntVector.h>
+#include <Epetra_MultiVector.h>
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 namespace DRT

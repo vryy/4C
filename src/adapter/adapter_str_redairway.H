@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include "adapter_str_wrapper.H"
 

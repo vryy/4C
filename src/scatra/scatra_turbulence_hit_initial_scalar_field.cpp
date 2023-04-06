@@ -14,7 +14,7 @@ transport
 #include <math.h>
 
 #ifdef HAVE_FFTW
-#include "fftw3.h"
+#include <fftw3.h>
 #endif
 
 #include "scatra_turbulence_hit_initial_scalar_field.H"

@@ -11,7 +11,7 @@
 #ifndef LIB_MESHREADER_H
 #define LIB_MESHREADER_H
 
-#include "Epetra_CrsGraph.h"
+#include <Epetra_CrsGraph.h>
 
 #include "lib_inputreader.H"
 #include "lib_elementreader.H"

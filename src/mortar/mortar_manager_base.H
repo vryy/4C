@@ -10,10 +10,10 @@
 #ifndef MORTAR_MANAGER_BASE_H
 #define MORTAR_MANAGER_BASE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 
 
 // forward declarations

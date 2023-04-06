@@ -12,9 +12,9 @@
 #ifndef FLUID_TURBULENCE_HIT_FORCING_H
 #define FLUID_TURBULENCE_HIT_FORCING_H
 
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Teuchos_RCP.hpp>
 
 #include "inpar_fluid.H"
 

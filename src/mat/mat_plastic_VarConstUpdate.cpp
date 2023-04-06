@@ -20,7 +20,7 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 #include "lib_globalproblem.H"
 #include "mat_par_bundle.H"
 #include "mat_service.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "linalg_fixedsizematrix.H"
 #include "lib_voigt_notation.H"
 

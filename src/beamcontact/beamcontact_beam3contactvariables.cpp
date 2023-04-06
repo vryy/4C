@@ -25,7 +25,7 @@
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 
-#include "Teuchos_TimeMonitor.hpp"
+#include <Teuchos_TimeMonitor.hpp>
 #include "beaminteraction_beam3contact_defines.H"
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 

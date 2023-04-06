@@ -17,7 +17,7 @@
 #include "lib_dserror.H"
 #include "inpar_statinvanalysis.H"
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*/
 INVANA::OptimizerFactory::OptimizerFactory() { ; }

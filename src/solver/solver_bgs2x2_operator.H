@@ -10,8 +10,8 @@
 #ifndef SOLVER_BGS2X2_OPERATOR_H
 #define SOLVER_BGS2X2_OPERATOR_H
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "lib_dserror.H"
 #include "solver_linalg_precond.H"

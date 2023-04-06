@@ -12,7 +12,7 @@
 #define CUT_LEAST_SQUARES_H
 
 #include <vector>
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"

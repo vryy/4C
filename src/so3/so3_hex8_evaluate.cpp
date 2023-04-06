@@ -22,7 +22,7 @@
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_so3_material.H"
 #include "mat_elasthyper.H"
 #include "mat_growthremodel_elasthyper.H"

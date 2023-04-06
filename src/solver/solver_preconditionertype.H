@@ -10,16 +10,16 @@
 #ifndef SOLVER_PRECONDITIONERTYPE_H
 #define SOLVER_PRECONDITIONERTYPE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Operator.h"
-#include "Epetra_LinearProblem.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_LinearProblem.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Vector.h>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 namespace LINALG::SOLVER
 {

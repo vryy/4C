@@ -17,7 +17,7 @@
 #include "mat_fluid_linear_density_viscosity.H"
 #include "mat_fluid_weakly_compressible.H"
 #include "mat_stvenantkirchhoff.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 namespace
 {

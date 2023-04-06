@@ -12,8 +12,8 @@
  *----------------------------------------------------------------------*/
 #include <Teuchos_Time.hpp>
 #include <Epetra_Vector.h>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*

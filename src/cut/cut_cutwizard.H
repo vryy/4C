@@ -14,9 +14,9 @@ surface meshes
 
 #include "inpar_cut.H"
 
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
 #include "cut_clnwrapper.H"
 #include "linalg_fixedsizematrix.H"
 

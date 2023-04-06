@@ -34,7 +34,7 @@
 #include "beam3_euler_bernoulli.H"
 #include "beam3_spatial_discretization_utils.H"
 
-#include "Teuchos_TimeMonitor.hpp"
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"

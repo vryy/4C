@@ -8,12 +8,12 @@
 /*----------------------------------------------------------------------*/
 #include "inv_analysis_chol_factor.H"
 
-#include "Epetra_Comm.h"
-#include "Epetra_SerialSymDenseMatrix.h"
-#include "Epetra_SerialSpdDenseSolver.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Import.h"
-#include "Epetra_Export.h"
+#include <Epetra_Comm.h>
+#include <Epetra_SerialSymDenseMatrix.h>
+#include <Epetra_SerialSpdDenseSolver.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Import.h>
+#include <Epetra_Export.h>
 
 #include "lib_dserror.H"
 #include "linalg_utils_densematrix_communication.H"

@@ -9,7 +9,7 @@
 #ifndef ADAPTER_POROMULTIPHASE_H
 #define ADAPTER_POROMULTIPHASE_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include "linalg_utils_sparse_algebra_math.H"
 

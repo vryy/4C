@@ -13,7 +13,7 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 
 /*----------------------------------------------------------------------*

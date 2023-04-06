@@ -12,7 +12,7 @@
 #include "lib_voigt_notation.H"
 #include "mat_service.H"
 #include "linalg_utils_densematrix_inverse.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)

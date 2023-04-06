@@ -13,7 +13,7 @@
 
 #include "inpar_poromultiphase.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 namespace DRT

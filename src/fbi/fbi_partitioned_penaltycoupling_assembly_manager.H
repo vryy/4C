@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "lib_dserror.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 // Forward declarations.

@@ -9,8 +9,8 @@
 #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H
 #define SSI_MONOLITHIC_MESHTYING_STRATEGY_H
 
-#include "Teuchos_RCPDecl.hpp"
-#include "vector"
+#include <Teuchos_RCPDecl.hpp>
+#include <vector>
 
 #include "linalg_sparseoperator.H"
 

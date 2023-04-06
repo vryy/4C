@@ -10,7 +10,7 @@
 #define MORTAR_COUPLING3D_H
 
 #include <vector>
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 #include "mortar_coupling3d_classes.H"
 #include "inpar_mortar.H"
 #include "headers_pairedvector.H"

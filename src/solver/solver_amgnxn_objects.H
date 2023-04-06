@@ -11,8 +11,8 @@
 #define SOLVER_AMGNXN_OBJECTS_H
 
 // Trilinos includes
-#include "Epetra_MultiVector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Teuchos_RCP.hpp>
 
 // Baci includes
 #include "linalg_blocksparsematrix.H"

@@ -9,9 +9,9 @@
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include <iostream>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Teuchos_TimeMonitor.hpp"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "thermo_timint.H"
 #include "thermo_resulttest.H"

@@ -15,7 +15,7 @@ to)
 
 #ifndef FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
 #define FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "linalg_utils_sparse_algebra_math.H"
 
 /*

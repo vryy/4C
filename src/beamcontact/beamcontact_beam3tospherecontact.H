@@ -10,10 +10,10 @@
 #ifndef BEAMCONTACT_BEAM3TOSPHERECONTACT_H
 #define BEAMCONTACT_BEAM3TOSPHERECONTACT_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "lib_condition.H"

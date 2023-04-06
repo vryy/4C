@@ -11,7 +11,7 @@
 
 #include "lib_container.H"
 #include "lib_dserror.H"
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 
 DRT::ContainerType DRT::ContainerType::instance_;

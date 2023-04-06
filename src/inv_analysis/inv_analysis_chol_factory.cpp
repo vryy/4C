@@ -11,8 +11,8 @@
 #include "inv_analysis_chol_factor.H"
 #include "lib_dserror.H"
 
-#include "Epetra_Map.h"
-#include "Epetra_CrsMatrix.h"
+#include <Epetra_Map.h>
+#include <Epetra_CrsMatrix.h>
 
 
 Teuchos::RCP<INVANA::CholFactorBase> INVANA::CholFactory::Create(

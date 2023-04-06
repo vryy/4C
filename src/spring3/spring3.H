@@ -11,14 +11,14 @@
 #define SPRING3_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 
 #include "lib_elementtype.H"
 #include "fem_general_utils_integration.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
 #include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;

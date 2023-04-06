@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "mortar_abstract_binarytree.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

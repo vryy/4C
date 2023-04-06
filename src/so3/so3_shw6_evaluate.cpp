@@ -15,7 +15,7 @@
 #include "linalg_serialdensevector.H"
 #include "fem_general_utils_integration.H"
 #include "fem_general_utils_fem_shapefunctions.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_viscoanisotropic.H"
 #include "mat_micromaterial.H"
 #include "structure_new_elements_paramsinterface.H"

@@ -13,7 +13,7 @@
 #include "lib_prestress_service.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_so3_material.H"
 #include "contact_analytical.H"
 #include "fem_general_utils_integration.H"

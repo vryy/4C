@@ -7,7 +7,7 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
 #include "contact_interface.H"

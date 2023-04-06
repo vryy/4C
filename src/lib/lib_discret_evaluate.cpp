@@ -20,8 +20,8 @@
 #include "linalg_sparsematrix.H"
 #include "lib_assemblestrategy.H"
 #include "lib_function_of_time.H"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 
 #include <Teuchos_TimeMonitor.hpp>
 

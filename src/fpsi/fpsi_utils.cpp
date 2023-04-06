@@ -33,7 +33,7 @@
 #include "lib_utils_createdis.H"
 #include "lib_globalproblem.H"
 #include "lib_condition_selector.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "poroelast_scatra_utils_clonestrategy.H"
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;

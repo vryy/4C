@@ -12,7 +12,7 @@
 #define STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 
 #include <NOX_Epetra_Scaling.H>
-#include "Epetra_Map.h"
+#include <Epetra_Map.h>
 #include "inpar_structure.H"
 
 // forward declarations

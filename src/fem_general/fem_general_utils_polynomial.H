@@ -15,7 +15,7 @@
 
 #include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 namespace DRT
 {

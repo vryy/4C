@@ -10,7 +10,7 @@
 #ifndef SOLVER_IFPACKPRECONDITIONER_H
 #define SOLVER_IFPACKPRECONDITIONER_H
 
-#include "Ifpack.h"
+#include <Ifpack.h>
 
 #include "solver_preconditionertype.H"
 

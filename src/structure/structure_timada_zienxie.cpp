@@ -13,8 +13,8 @@
 /* headers */
 #include <iostream>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "structure_timada_zienxie.H"
 #include "structure_timint.H"

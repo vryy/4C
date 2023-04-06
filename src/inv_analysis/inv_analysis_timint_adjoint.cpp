@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include "io_pstream.H"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseVector.h>
 
 #include "io.H"
 #include "io_control.H"
@@ -24,7 +24,7 @@
 #include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "Epetra_CrsMatrix.h"
+#include <Epetra_CrsMatrix.h>
 
 
 /*----------------------------------------------------------------------*/

@@ -15,10 +15,10 @@
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "io_gmsh.H"
 #include <Teuchos_Time.hpp>
-#include "Teuchos_TimeMonitor.hpp"
+#include <Teuchos_TimeMonitor.hpp>
 #include "mat_visconeohooke.H"
 #include "mat_viscoanisotropic.H"
 #include "mat_viscoelasthyper.H"

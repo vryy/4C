@@ -7,7 +7,7 @@
 #ifndef MORTAR_INTEGRATOR_H
 #define MORTAR_INTEGRATOR_H
 
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
 

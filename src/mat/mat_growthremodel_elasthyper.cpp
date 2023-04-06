@@ -21,7 +21,7 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 #include "lib_globalproblem.H"
 #include "mat_par_bundle.H"
 #include "mat_service.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "matelast_isoneohooke.H"
 #include "matelast_volsussmanbathe.H"
 #include "mat_elasthyper_service.H"

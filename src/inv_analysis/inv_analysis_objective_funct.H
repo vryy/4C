@@ -10,8 +10,8 @@
 #ifndef INV_ANALYSIS_OBJECTIVE_FUNCT_H
 #define INV_ANALYSIS_OBJECTIVE_FUNCT_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_MultiVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_MultiVector.h>
 
 namespace INVANA
 {

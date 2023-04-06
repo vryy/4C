@@ -11,7 +11,7 @@
 
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
-#include "Epetra_Map.h"
+#include <Epetra_Map.h>
 
 #include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"

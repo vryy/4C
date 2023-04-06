@@ -20,7 +20,7 @@
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

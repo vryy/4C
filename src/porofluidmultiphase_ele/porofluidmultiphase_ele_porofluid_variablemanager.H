@@ -12,7 +12,7 @@
 #include "porofluidmultiphase_ele_action.H"
 
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <vector>
 
 #include "linalg_fixedsizematrix.H"

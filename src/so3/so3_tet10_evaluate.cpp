@@ -18,7 +18,7 @@
 #include "contact_analytical.H"
 #include "lib_globalproblem.H"
 #include "mat_so3_material.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "fem_general_utils_integration.H"
 #include "so3_utils.H"
 #include "fiber_node.H"

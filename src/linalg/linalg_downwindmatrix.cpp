@@ -11,7 +11,7 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include <Teuchos_Time.hpp>
 
-#include "ml_utils.h"
+#include <ml_utils.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|

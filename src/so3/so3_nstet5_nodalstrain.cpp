@@ -15,9 +15,9 @@
 #include "lib_dserror.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_FECrsMatrix.h"
-#include "Teuchos_SerialDenseMatrix.hpp"
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_FECrsMatrix.h>
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "linalg_serialdensevector.H"
 
 #include "mat_service.H"
