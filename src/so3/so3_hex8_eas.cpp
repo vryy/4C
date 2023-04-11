@@ -32,8 +32,12 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   Epetra_SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
   Epetra_SerialDenseMatrix invKaa(neas_, neas_);
+  // EAS matrix K_{alpha alpha} of last converged load/time step
+  Epetra_SerialDenseMatrix invKaao(neas_, neas_);
   // EAS matrix K_{d alpha}
   Epetra_SerialDenseMatrix Kda(neas_, NUMDOF_SOH8);
+  // EAS matrix K_{d alpha} of last converged load/time step
+  Epetra_SerialDenseMatrix Kdao(neas_, NUMDOF_SOH8);
   // EAS increment over last Newton step
   Epetra_SerialDenseMatrix eas_inc(neas_, 1);
 
@@ -42,7 +46,9 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   data_.Add("alphao", alphao);
   data_.Add("feas", feas);
   data_.Add("invKaa", invKaa);
+  data_.Add("invKaao", invKaao);
   data_.Add("Kda", Kda);
+  data_.Add("Kdao", Kdao);
   data_.Add("eas_inc", eas_inc);
 
   return;
@@ -77,13 +83,17 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   Epetra_SerialDenseMatrix* alphao = nullptr;                     // EAS alphas
   Epetra_SerialDenseMatrix* feas = nullptr;                       // EAS history
   Epetra_SerialDenseMatrix* Kaainv = nullptr;                     // EAS history
+  Epetra_SerialDenseMatrix* Kaainvo = nullptr;                    // EAS history
   Epetra_SerialDenseMatrix* Kda = nullptr;                        // EAS history
+  Epetra_SerialDenseMatrix* Kdao = nullptr;                       // EAS history
   Epetra_SerialDenseMatrix* eas_inc = nullptr;                    // EAS history
   alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // get alpha of previous iteration
   alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // get alpha of previous iteration
   feas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
   Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");
   Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");
   eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
   if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
@@ -91,7 +101,9 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   alphao->Reshape(neas_, 1);
   feas->Reshape(neas_, 1);
   Kaainv->Reshape(neas_, neas_);
+  Kaainvo->Reshape(neas_, neas_);
   Kda->Reshape(neas_, NUMDOF_SOH8);
+  Kdao->Reshape(neas_, NUMDOF_SOH8);
   eas_inc->Reshape(neas_, 1);
 
   return;

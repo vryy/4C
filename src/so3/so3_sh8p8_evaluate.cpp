@@ -347,16 +347,24 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");      // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+        auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");    // Kaa^{-1}_{n+1}
+        auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");          // Kda_{n+1}
+        auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
         // alphao := alpha
         if (eastype_ == soh8_eassosh8)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, 1>(*alphao, *alpha);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMEAS_SOSH8_>(*Kaainvo, *Kaainv);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMDOF_SOH8>(*Kdao, *Kda);
         }
         else if (eastype_ == soh8_easa)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, 1>(*alphao, *alpha);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMEAS_A_>(*Kaainvo, *Kaainv);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMDOF_SOH8>(*Kdao, *Kda);
         }
         else
         {
@@ -372,16 +380,24 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");      // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+        auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");    // Kaa^{-1}_{n+1}
+        auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");          // Kda_{n+1}
+        auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
         // alpha := alphao
         if (eastype_ == soh8_eassosh8)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, 1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMEAS_SOSH8_>(*Kaainv, *Kaainvo);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMDOF_SOH8>(*Kda, *Kdao);
         }
         else if (eastype_ == soh8_easa)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, 1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMEAS_A_>(*Kaainv, *Kaainvo);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMDOF_SOH8>(*Kda, *Kdao);
         }
         else
         {
