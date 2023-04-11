@@ -8,7 +8,6 @@
 
 #include "fem_general_utils_gauss_point_postprocess.H"
 #include "lib_element.H"
-#include "so3_element_service.H"
 #include "fem_general_utils_gauss_point_extrapolation.H"
 #include "fem_general_utils_gausspoints.H"
 #include "fem_general_utils_integration.H"

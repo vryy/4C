@@ -13,6 +13,8 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
+#include "lib_element.H"
+
 namespace DRT
 {
   class Element;
@@ -44,6 +46,43 @@ namespace DRT::ELEMENTS
    */
   void EvaluateGaussPointQuantityAtElementCenter(
       DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& element_data);
+
+
+  /*!
+   * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
+   *
+   * \tparam T Type of the data, either SerialDenseMatrix or LINALG::Matrix
+   * \param global_data Global cell data
+   * \param gp_data (numgp x size) matrix of the Gauss point data
+   * \param ele element
+   */
+  template <class T>
+  void AssembleAveragedElementValues(
+      Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele);
+
+
+  // --- template and inline functions --- //
+
+  template <class T>
+  void DRT::ELEMENTS::AssembleAveragedElementValues(
+      Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele)
+  {
+    const Epetra_BlockMap& elemap = global_data.Map();
+    int lid = elemap.LID(ele.Id());
+    if (lid != -1)
+    {
+      for (decltype(gp_data.N()) i = 0; i < gp_data.N(); ++i)
+      {
+        double& s = (*(global_data(i)))[lid];  // resolve pointer for faster access
+        s = 0.;
+        for (decltype(gp_data.M()) j = 0; j < gp_data.M(); ++j)
+        {
+          s += gp_data(j, i);
+        }
+        s *= 1.0 / gp_data.M();
+      }
+    }
+  }
 
 }  // namespace DRT::ELEMENTS
 

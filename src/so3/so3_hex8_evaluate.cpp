@@ -40,6 +40,7 @@
 
 #include "fem_general_utils_integration.H"
 #include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <impl/Kokkos_Traits.hpp>
