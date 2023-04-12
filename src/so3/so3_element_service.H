@@ -17,37 +17,6 @@ namespace DRT
   namespace ELEMENTS
   {
     /*!
-     * \brief Assemble nodal data (that comes from an extrapolation from Gauss points) to the global
-     * data
-     *
-     * If the last parameter is true, the nodal data of each node is divided by the number of
-     * elements that share the specific node to get an averaged value at each node. If the parameter
-     * is false, the division by the number of elements has to be done later.
-     *
-     * \tparam T Type of the data, either SerialDenseMatrix or LINALG::Matrix
-     * \param global_data Global nodal data vector
-     * \param nodal_data (numnod x size) matrix with data at the nodes
-     * \param ele element
-     * \param nodal_average whether or not to compute the nodal average based on the element that
-     * share the nodes
-     */
-    template <class T>
-    void AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data, const T& nodal_data,
-        const DRT::ELEMENTS::So_base* ele, bool nodal_average = true);
-
-    /*!
-     * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
-     *
-     * \tparam T Type of the data, either SerialDenseMatrix or LINALG::Matrix
-     * \param global_data Global cell data
-     * \param gp_data (numgp x size) matrix of the Gauss point data
-     * \param ele element
-     */
-    template <class T>
-    void AssembleAveragedElementValues(
-        Epetra_MultiVector& global_data, const T& gp_data, const DRT::Element& ele);
-
-    /*!
      * \brief Assemble nodal element count
      *
      * \param global_data Add a 1 to all nodes belonging to this element

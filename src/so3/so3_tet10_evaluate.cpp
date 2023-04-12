@@ -20,6 +20,7 @@
 #include "mat_so3_material.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "fem_general_utils_integration.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
 #include "so3_utils.H"
 #include "fiber_node.H"
 
