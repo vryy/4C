@@ -246,11 +246,9 @@ namespace INPAR
     /// Type of (global) damping
     enum DampKind
     {
-      damp_none = 0,       ///< damping off
-      damp_rayleigh,       ///< globally applied Rayleigh damping
-      damp_material,       ///< element-wise applied damping
-                           ///< using element velocities
-      damp_brownianmotion  ///< damping due to brownian motion
+      damp_none = 0,  ///< damping off
+      damp_rayleigh,  ///< globally applied Rayleigh damping
+      damp_material,  ///< element-wise applied damping using element velocities
     };
 
     /*! \brief Mid-average type of internal forces for generalised-alpha-like time integration

@@ -1379,7 +1379,7 @@ ADAPTCONV_BETTER                0.1
 //                              Yes,No,yes,no,YES,NO
 //
 // type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
-//                              no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
+//                              no,No,NO,yes,Yes,YES,Rayleigh,Material
 DAMPING                         No
 //
 // What to do in time integration even if Newton-Raphson iteration failed
