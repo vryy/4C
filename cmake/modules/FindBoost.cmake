@@ -2,10 +2,10 @@
 list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # This is needed on kaiser to enforce the usage of the non-system boost libraries
-option(USE_NO_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
-if(USE_NO_SYSTEM_PATHS)
+option(BOOST_EXCLUDE_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
+if(BOOST_EXCLUDE_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON)
-endif(USE_NO_SYSTEM_PATHS)
+endif(BOOST_EXCLUDE_SYSTEM_PATHS)
 
 # call the built-in finder with the specifications set outside
 find_package(Boost)

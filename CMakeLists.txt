@@ -54,7 +54,9 @@ if(NOT CMAKE_BUILD_TYPE)
       )
 endif(NOT CMAKE_BUILD_TYPE)
 
-#
+###------------------------------------------------------------------- Default cmake settings
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 ### compile time options
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -317,11 +319,15 @@ add_subdirectory(src)
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
+# NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to
+# https://github.com/open-mpi/ompi/issues/8510#issuecomment-1329297350
+set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
+    "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
+    )
 
 enable_testing()
 include(CTest)
 
-###------------------------------------------------------------------ Unit Tests
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
 include(UnittestingFramework.cmake)
