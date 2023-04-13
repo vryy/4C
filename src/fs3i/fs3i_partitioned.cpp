@@ -576,7 +576,7 @@ void FS3I::PartFS3I::SetupSystem()
   scatrasolver_ = Teuchos::rcp(new LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm(),
       DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  // get the solver number used for structural ScalarTransport solver
+  // get the solver number used for fluid ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
   const int linsolver2number = fs3idyn.get<int>("LINEAR_SOLVER2");
