@@ -371,3 +371,75 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     dserror("eastype not implemented");
   }
 }  // end of soh8_eassetup
+
+/*----------------------------------------------------------------------*
+ |  Update EAS parameters (private)                                     |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_easupdate()
+{
+  const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");       // Alpha_{n+1}
+  auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+  const auto* Kaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
+  auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+  const auto* Kda = data_.Get<Epetra_SerialDenseMatrix>("Kda");           // Kda_{n+1}
+  auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+  switch (eastype_)
+  {
+    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easnone:
+      break;
+    default:
+      dserror("Don't know what to do with EAS type %d", eastype_);
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Restore EAS parameters (private)                                     |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_easrestore()
+{
+  auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");     // Alpha_{n+1}
+  const auto* alphao = data_.Get<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+  auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
+  const auto* Kaainvo = data_.Get<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+  auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");         // Kda_{n+1}
+  const auto* Kdao = data_.Get<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+  switch (eastype_)
+  {
+    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
+      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easnone:
+      break;
+    default:
+      dserror("Don't know what to do with EAS type %d", eastype_);
+      break;
+  }
+}
