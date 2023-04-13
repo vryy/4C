@@ -730,11 +730,11 @@ namespace FSI
      *  \sa SelectTimeStepSize
      *
      *  <h3> References </h3>
-     *  Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013
-     * (supervised by Matthias Mayr)
-     *
-     *  \author mayr.mt
-     *  \date 08/2013
+     *  - EK Wilhelm: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013
+     *    (supervised by Matthias Mayr)
+     *  - M Mayr, WA Wall, MW Gee: Adaptive time stepping for fluid-structure interaction solvers,
+     * Finite Elements in Analysis and Design, 141:55-69, 2018,
+     * https://doi.org/10.1016/j.finel.2017.12.002
      */
     void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
