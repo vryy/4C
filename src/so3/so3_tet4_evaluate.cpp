@@ -14,7 +14,7 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "patspec.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_elasthyper.H"
 #include "mat_stvenantkirchhoff.H"
 #include "mat_constraintmixture.H"

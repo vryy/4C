@@ -22,7 +22,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 #include "so3_plast_ssn.H"
 #include "lib_linedefinition.H"
 #include "mat_plasticelasthyper.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 #include "structure_new_elements_paramsinterface.H"
 #include "linalg_serialdensematrix.H"

@@ -12,8 +12,8 @@
 #ifndef LIB_MATCHINGOCTREE_H
 #define LIB_MATCHINGOCTREE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
 #include <vector>
 #include "lib_dserror.H"
 

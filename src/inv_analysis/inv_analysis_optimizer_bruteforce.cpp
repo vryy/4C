@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "inv_analysis_optimizer_bruteforce.H"
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include "inv_analysis_base.H"
 #include "inv_analysis_matpar_manager.H"

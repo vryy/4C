@@ -11,8 +11,8 @@
 /* headers */
 #include <iostream>
 #include "io_pstream.H"
-#include "Epetra_SerialDenseVector.h"
-#include "Teuchos_TimeMonitor.hpp"
+#include <Epetra_SerialDenseVector.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "structure_timint.H"
 #include "structure_timint_genalpha.H"

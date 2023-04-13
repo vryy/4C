@@ -11,7 +11,7 @@
  | Header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_wear_interface.H"

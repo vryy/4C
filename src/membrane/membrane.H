@@ -14,8 +14,8 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #ifndef MEMBRANE_H
 #define MEMBRANE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 #include "membrane_eletypes.H"
 

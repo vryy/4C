@@ -9,9 +9,9 @@
 
 #include "inv_analysis_initial_guess.H"
 
-#include "Epetra_Map.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
+#include <Epetra_Map.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Vector.h>
 
 #include "inv_analysis_base.H"
 #include "inv_analysis_matpar_manager.H"

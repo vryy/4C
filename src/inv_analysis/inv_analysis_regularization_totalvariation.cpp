@@ -19,8 +19,8 @@
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_CombineMode.h"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_CombineMode.h>
 
 
 /*----------------------------------------------------------------------*/

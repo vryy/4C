@@ -11,9 +11,9 @@
 #define SOLVER_AMGNXN_VCYCLE_H
 
 // Trilinos includes
-#include "Epetra_MultiVector.h"
-#include "Epetra_Operator.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 #include <MueLu.hpp>
 #include <MueLu_Level.hpp>
 #include <MueLu_BaseClass.hpp>

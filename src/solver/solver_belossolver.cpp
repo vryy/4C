@@ -26,12 +26,12 @@
 #include <MueLu_VerboseObject.hpp>
 
 // Belos headers
-#include "BelosConfigDefs.hpp"
-#include "BelosLinearProblem.hpp"
-#include "BelosEpetraAdapter.hpp"
-#include "BelosBlockCGSolMgr.hpp"
-#include "BelosBlockGmresSolMgr.hpp"
-#include "BelosBiCGStabSolMgr.hpp"
+#include <BelosConfigDefs.hpp>
+#include <BelosLinearProblem.hpp>
+#include <BelosEpetraAdapter.hpp>
+#include <BelosBlockCGSolMgr.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosBiCGStabSolMgr.hpp>
 
 // BACI headers
 #include "solver_belossolver.H"

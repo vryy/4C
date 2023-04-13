@@ -15,7 +15,7 @@
 #include "porofluidmultiphase_utils.H"
 #include "inpar_poromultiphase_scatra.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
 

@@ -10,12 +10,12 @@
 #ifndef BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 #define BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 #include "linalg_fixedsizematrix.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "lib_discret.H"

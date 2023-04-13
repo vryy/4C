@@ -13,10 +13,10 @@
 #define LIB_ELEMENT_H
 
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 
 #include "lib_parobject.H"
 #include "lib_condition.H"

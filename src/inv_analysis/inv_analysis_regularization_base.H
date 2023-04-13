@@ -13,8 +13,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Epetra_MultiVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_MultiVector.h>
 #include "inv_analysis_matpar_manager.H"  //for ConnectivityData
 
 // forward declarations

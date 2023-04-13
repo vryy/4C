@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include "inv_analysis_DcsMatrix.H"
 
-#include "Epetra_Vector.h"
-#include "Epetra_Map.h"
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
 
 #include "linalg_utils_densematrix_communication.H"
 

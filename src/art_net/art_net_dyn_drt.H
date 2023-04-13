@@ -11,7 +11,7 @@
 #define ART_NET_DYN_DRT_H
 
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace ADAPTER

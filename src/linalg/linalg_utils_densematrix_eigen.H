@@ -10,10 +10,10 @@
 #ifndef LINALG_UTILS_DENSEMATRIX_EIGEN_H
 #define LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_LAPACK.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 

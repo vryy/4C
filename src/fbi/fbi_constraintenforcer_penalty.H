@@ -10,7 +10,7 @@ fluid-beam interaction).
 #ifndef FBI_CONSTRAINTENFORCER_PENALTY_H
 #define FBI_CONSTRAINTENFORCER_PENALTY_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "fbi_constraintenforcer.H"
 #include <Epetra_Vector.h>
 

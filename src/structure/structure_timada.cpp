@@ -11,7 +11,7 @@
 /* headers */
 #include <iostream>
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include "lib_discret.H"
 #include "lib_globalproblem.H"

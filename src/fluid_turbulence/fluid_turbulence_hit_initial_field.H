@@ -12,8 +12,8 @@
 #ifndef FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
 #define FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 #include "inpar_fluid.H"
 

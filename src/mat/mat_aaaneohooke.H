@@ -22,8 +22,8 @@ the input line should read
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
 

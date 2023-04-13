@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include <fstream>
 

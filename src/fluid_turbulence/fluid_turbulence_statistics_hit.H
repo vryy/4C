@@ -12,8 +12,8 @@
 #ifndef FLUID_TURBULENCE_STATISTICS_HIT_H
 #define FLUID_TURBULENCE_STATISTICS_HIT_H
 
-#include "Teuchos_ParameterList.hpp"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 #include "linalg_utils_sparse_algebra_create.H"
 
 // forward declarations

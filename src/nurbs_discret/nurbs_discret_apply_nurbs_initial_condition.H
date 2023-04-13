@@ -20,9 +20,9 @@ the function value as well)
 #ifndef NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 #define NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 namespace DRT

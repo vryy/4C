@@ -13,28 +13,28 @@
 #include "lib_dserror.H"
 
 // NOX includes
-#include "NOX_Epetra_Interface_Required.H"
-#include "NOX_Epetra_Interface_Jacobian.H"
-#include "NOX_Epetra_Interface_Preconditioner.H"
-#include "Teuchos_ParameterList.hpp"
-#include "NOX_Epetra_Scaling.H"
-#include "NOX_Utils.H"
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <Teuchos_ParameterList.hpp>
+#include <NOX_Epetra_Scaling.H>
+#include <NOX_Utils.H>
 
 // External include files for Epetra
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_LinearProblem.h"
-#include "AztecOO.h"
-#include "AztecOO_Operator.h"
-#include "AztecOO_StatusTest.h"
-#include "AztecOO_StatusTestCombo.h"
-#include "AztecOO_StatusTestMaxIters.h"
-#include "AztecOO_StatusTestResNorm.h"
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_LinearProblem.h>
+#include <AztecOO.h>
+#include <AztecOO_Operator.h>
+#include <AztecOO_StatusTest.h>
+#include <AztecOO_StatusTestCombo.h>
+#include <AztecOO_StatusTestMaxIters.h>
+#include <AztecOO_StatusTestResNorm.h>
 
 
-#include "AztecOO.h"
+#include <AztecOO.h>
 
 #include <typeinfo>
 #include <Teuchos_TimeMonitor.hpp>

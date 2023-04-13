@@ -43,11 +43,11 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 
 
 // Todo @grill: get rid of header in header inclusions
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 #include "lib_elementtype.H"
 #include "lib_node.H"
 #include "fem_general_largerotations.H"

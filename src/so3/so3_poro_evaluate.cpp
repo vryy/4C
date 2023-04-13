@@ -13,7 +13,7 @@
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include <iterator>
 
 #include "mat_fluidporo.H"

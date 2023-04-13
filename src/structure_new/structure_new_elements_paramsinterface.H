@@ -21,7 +21,7 @@
 #include "lib_elements_paramsinterface.H"  // base class
 #include "solver_nonlin_nox_enum_lists.H"  // enums
 
-#include "Epetra_MultiVector.h"
+#include <Epetra_MultiVector.h>
 
 
 namespace GEO

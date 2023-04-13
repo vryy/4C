@@ -20,7 +20,7 @@ used during debugging, not in optimized runs.
 
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 namespace DRT
 {

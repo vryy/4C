@@ -15,12 +15,12 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_Import.h"
-#include "Epetra_Map.h"
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Import.h>
+#include <Epetra_Map.h>
 #include "lib_dserror.H"
 
 /* ====================================================================

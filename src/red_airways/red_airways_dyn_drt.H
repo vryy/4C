@@ -15,7 +15,7 @@
 #define RED_AIRWAYS_DYN_DRT_H
 
 #include <Teuchos_Time.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "solver_linalg_solver.H"

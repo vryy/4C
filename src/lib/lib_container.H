@@ -14,9 +14,9 @@
 
 
 #include <string>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseMatrix.h>
 
 #include "lib_parobject.H"
 #include "lib_dserror.H"

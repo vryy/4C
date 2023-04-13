@@ -9,8 +9,8 @@
 #ifndef ART_NET_ARTERY_H
 #define ART_NET_ARTERY_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 
 #include "lib_element.H"

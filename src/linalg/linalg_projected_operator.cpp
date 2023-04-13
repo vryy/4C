@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "linalg_projected_operator.H"
-#include "Epetra_MultiVector.h"
+#include <Epetra_MultiVector.h>
 #include "linalg_krylov_projector.H"
 #include "lib_dserror.H"
 

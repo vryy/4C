@@ -19,7 +19,7 @@
 #include "lib_utils.H"
 #include "mat_stvenantkirchhoff.H"
 #include "mat_elasthyper.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

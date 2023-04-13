@@ -22,7 +22,7 @@
 #include "binstrategy_utils.H"
 
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>

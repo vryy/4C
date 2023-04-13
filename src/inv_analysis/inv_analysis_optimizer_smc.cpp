@@ -22,9 +22,9 @@
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "Epetra_CrsMatrix.h"
+#include <Epetra_CrsMatrix.h>
 
-#include "math.h"
+#include <cmath>
 #include <string>
 
 /*----------------------------------------------------------------------*/

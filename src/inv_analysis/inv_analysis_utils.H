@@ -9,8 +9,8 @@
 #ifndef INV_ANALYSIS_UTILS_H
 #define INV_ANALYSIS_UTILS_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 #include "inv_analysis_chol_factor_base.H"
 #include "timestepping_mstep.H"
 

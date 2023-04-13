@@ -9,8 +9,8 @@
 #ifndef SSI_MONOLITHIC_CONTACT_STRATEGY_H
 #define SSI_MONOLITHIC_CONTACT_STRATEGY_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCPDecl.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace CONTACT
 {

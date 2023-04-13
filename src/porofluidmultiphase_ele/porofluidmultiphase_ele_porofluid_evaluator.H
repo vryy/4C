@@ -15,7 +15,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include <vector>
 

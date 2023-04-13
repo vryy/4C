@@ -10,7 +10,7 @@
 #include "so3_sh8.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "io_gmsh.H"
 #include "mat_viscoanisotropic.H"
 #include "mat_material.H"

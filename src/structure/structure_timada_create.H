@@ -12,10 +12,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #include <Teuchos_Time.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------*/

@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 // Ifpack
-#include "Ifpack_LocalFilter.h"
+#include <Ifpack_LocalFilter.h>
 
 // baci
 #include "fsi_overlapprec_hybrid.H"

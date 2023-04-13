@@ -11,7 +11,7 @@
 /*!----------------------------------------------------------------------
 \brief the header of everything
 *----------------------------------------------------------------------*/
-#include "string.h"
+#include <string.h>
 #include "lib_dserror.H"
 #include "pss_full_am.h"
 #include "pss_full_prototypes.h"

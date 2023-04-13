@@ -13,7 +13,7 @@
 
 #include "inv_analysis_utils.H"
 #include "inv_analysis_initial_guess.H"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*/
 INVANA::RegularizationTikhonov::RegularizationTikhonov() : RegularizationBase() {}

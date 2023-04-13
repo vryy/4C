@@ -14,7 +14,7 @@ of the usual Lagrangian polynomials for standard transport elements
 #define SCATRA_ELE_HDG_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 #include "scatra_ele.H"

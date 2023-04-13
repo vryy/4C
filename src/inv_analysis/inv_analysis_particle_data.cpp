@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "inv_analysis_particle_data.H"
 
-#include "Epetra_Map.h"
+#include <Epetra_Map.h>
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 

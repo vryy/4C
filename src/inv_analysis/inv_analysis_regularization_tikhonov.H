@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "inv_analysis_regularization_base.H"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 namespace INVANA
 {

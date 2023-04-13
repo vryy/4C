@@ -15,8 +15,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 #include "inpar_thermo.H"
 

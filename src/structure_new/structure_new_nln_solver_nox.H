@@ -13,7 +13,7 @@
 #define STRUCTURE_NEW_NLN_SOLVER_NOX_H
 
 #include "structure_new_nln_solver_generic.H"  // base class
-#include "NOX_StatusTest_Generic.H"
+#include <NOX_StatusTest_Generic.H>
 
 namespace NOX
 {

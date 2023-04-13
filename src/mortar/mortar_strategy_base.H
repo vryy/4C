@@ -10,12 +10,12 @@
 #define MORTAR_STRATEGY_BASE_H
 
 #include "solver_nonlin_nox_constraint_interface_preconditioner.H"  // interface specifications
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Operator.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
 
 #include "mortar_interface.H"  // for the enum state type
 #include "inpar_contact.H"     // for the INPAR::CONTACT enums

@@ -24,7 +24,7 @@
 
 #include "beam3_base.H"
 
-#include "Epetra_FEVector.h"
+#include <Epetra_FEVector.h>
 
 
 /*-----------------------------------------------------------------------------------------------*

@@ -15,11 +15,11 @@
 #include "lib_discret.H"
 #include "lib_dserror.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 #include <string>
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 namespace LINALG

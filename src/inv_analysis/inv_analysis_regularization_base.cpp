@@ -13,7 +13,7 @@
 #include "inv_analysis_initial_guess.H"
 
 #include "linalg_mapextractor.H"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------*/

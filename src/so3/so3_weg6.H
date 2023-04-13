@@ -9,7 +9,7 @@
 #define SO3_WEG6_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"
 #include "lib_element.H"
 #include "lib_elementtype.H"

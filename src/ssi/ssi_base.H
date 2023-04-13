@@ -12,7 +12,7 @@
 
 #include "adapter_algorithmbase.H"
 #include "lib_discret.H"
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 #include "ssi_str_model_evaluator_base.H"
 
 // forward declarations

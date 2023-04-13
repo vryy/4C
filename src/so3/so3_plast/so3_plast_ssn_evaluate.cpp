@@ -17,7 +17,7 @@
 #include "lib_globalproblem.H"
 #include "lib_voigt_notation.H"
 #include "mat_plasticelasthyper.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_service.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "structure_new_gauss_point_data_output_manager.H"

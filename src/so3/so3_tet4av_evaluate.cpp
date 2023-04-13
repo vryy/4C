@@ -10,7 +10,7 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "mat_so3_material.H"
 #include "contact_analytical.H"
 #include "lib_globalproblem.H"

@@ -17,9 +17,9 @@ overhead as possible from the time integration method.
 #ifndef FLUID_TURBULENCE_STATISTIC_MANAGER_H
 #define FLUID_TURBULENCE_STATISTIC_MANAGER_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "inpar_fluid.H"
 #include "inpar_scatra.H"
 

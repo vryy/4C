@@ -10,7 +10,7 @@
 #define LINALG_SERIALDENSEVECTOR_H
 
 
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseVector.h>
 
 
 namespace LINALG

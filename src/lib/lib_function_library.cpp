@@ -17,7 +17,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "lib_function_library.H"
 #include "lib_globalproblem.H"
 #include "lib_linedefinition.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "io_csv_reader.H"
 #include "io_control.H"

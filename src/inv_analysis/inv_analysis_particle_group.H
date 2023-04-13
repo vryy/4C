@@ -17,7 +17,7 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "mpi.h"
+#include <mpi.h>
 
 namespace INVANA
 {

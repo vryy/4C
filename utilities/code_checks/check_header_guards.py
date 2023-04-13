@@ -67,11 +67,10 @@ def main():
     except ValueError:
         print("Something went wrong! Check the error functions in this script again!")
         errors += 1
-    if errors > 0:
-        if errfile is None:
-            utils.pretty_print_error_stderr(allerrors)
-        else:
-            utils.pretty_print_error_file(allerrors, errfile)
+
+    utils.pretty_print_error_report(
+        "Wrong header guards in the following files:", allerrors, errfile
+    )
     return errors
 
 

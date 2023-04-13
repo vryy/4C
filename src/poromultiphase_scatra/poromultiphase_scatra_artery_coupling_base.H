@@ -12,7 +12,7 @@
 
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 

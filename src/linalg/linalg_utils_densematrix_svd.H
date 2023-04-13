@@ -10,8 +10,8 @@
 #ifndef LINALG_UTILS_DENSEMATRIX_SVD_H
 #define LINALG_UTILS_DENSEMATRIX_SVD_H
 
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_LAPACK.hpp>
 #include "lib_exporter.H"
 

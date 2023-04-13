@@ -19,7 +19,7 @@
 
 extern "C"
 {
-#include "./shell8/s8_shell8.h"
+#include "shell8/s8_shell8.h"
 }
 
 

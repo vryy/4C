@@ -11,7 +11,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "mat_par_parameter.H"
 #include "mat_par_material.H"
 #include "mat_par_bundle.H"

@@ -13,7 +13,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include "lib_elementtype.H"
 #include "lib_discret.H"

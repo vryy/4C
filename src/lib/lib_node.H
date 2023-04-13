@@ -13,7 +13,7 @@
 #define LIB_NODE_H
 
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "lib_parobject.H"
 #include "lib_condition.H"

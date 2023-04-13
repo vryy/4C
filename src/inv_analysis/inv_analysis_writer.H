@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "Epetra_MultiVector.h"
+#include <Epetra_MultiVector.h>
 
 #include "io.H"
 

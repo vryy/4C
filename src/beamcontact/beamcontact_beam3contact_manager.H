@@ -12,12 +12,12 @@
 #define BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Comm.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "linalg_fixedsizematrix.H"

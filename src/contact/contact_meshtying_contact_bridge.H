@@ -9,10 +9,10 @@
 #ifndef CONTACT_MESHTYING_CONTACT_BRIDGE_H
 #define CONTACT_MESHTYING_CONTACT_BRIDGE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 #include "inpar_contact.H"
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 #include "lib_dserror.H"
 
 // forward declarations

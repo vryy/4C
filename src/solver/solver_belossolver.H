@@ -10,8 +10,8 @@
 #ifndef SOLVER_BELOSSOLVER_H
 #define SOLVER_BELOSSOLVER_H
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "solver_krylovsolver.H"
 #include "solver_preconditionertype.H"

@@ -11,9 +11,9 @@ Created on: Feb 27, 2014
 
 // Trilinos includes
 #include <Ifpack.h>
-#include "Epetra_MultiVector.h"
-#include "Epetra_Operator.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 #include <MueLu.hpp>
 #include <MueLu_Level.hpp>
 #include <MueLu_BaseClass.hpp>

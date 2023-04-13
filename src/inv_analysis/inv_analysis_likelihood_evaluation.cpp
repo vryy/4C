@@ -12,7 +12,7 @@
 #include "inv_analysis_base.H"  // for the posterior evaluation
 #include "inv_analysis_objective_funct.H"
 #include "inv_analysis_chol_factor_base.H"  // for the prior evaluation
-#include "Epetra_CrsMatrix.h"
+#include <Epetra_CrsMatrix.h>
 #include "inpar_invanalysis.H"
 
 #include "lib_dserror.H"

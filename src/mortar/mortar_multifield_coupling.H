@@ -12,8 +12,8 @@
 #ifndef MORTAR_MULTIFIELD_COUPLING_H
 #define MORTAR_MULTIFIELD_COUPLING_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 // forward declaration
 namespace LINALG

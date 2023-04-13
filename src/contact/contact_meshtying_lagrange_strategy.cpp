@@ -10,7 +10,7 @@
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_meshtying_lagrange_strategy.H"
 #include "contact_meshtying_defines.H"
 #include "mortar_defines.H"

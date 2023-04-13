@@ -15,8 +15,8 @@
 #define LINALG_PROJECTED_PRECOND_H
 
 
-#include "Epetra_Operator.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_MultiVector;

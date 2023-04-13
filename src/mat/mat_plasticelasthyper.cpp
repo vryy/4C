@@ -21,7 +21,7 @@ rY_13 0.7
 #include "lib_globalproblem.H"
 #include "mat_par_bundle.H"
 #include "mat_service.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 #include "lib_voigt_notation.H"
 
 /*----------------------------------------------------------------------*/

@@ -10,7 +10,7 @@
 #include "lib_utils.H"
 #include "lib_dserror.H"
 #include "linalg_utils_densematrix_inverse.H"
-#include "Epetra_SerialDenseSolver.h"
+#include <Epetra_SerialDenseSolver.h>
 
 #include "mat_micromaterial.H"
 #include "mat_stvenantkirchhoff.H"

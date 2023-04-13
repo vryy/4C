@@ -13,10 +13,10 @@
 #ifndef RED_AIRWAYS_IMPLICITINTEGRATION_H
 #define RED_AIRWAYS_IMPLICITINTEGRATION_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
@@ -25,7 +25,7 @@
 #include "io.H"
 #include "lib_function.H"
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 #include <ctime>
 #include <cstdlib>

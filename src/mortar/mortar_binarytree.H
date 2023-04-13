@@ -9,8 +9,8 @@
 #ifndef MORTAR_BINARYTREE_H
 #define MORTAR_BINARYTREE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
 #include "mortar_base_binarytree.H"
 #include "inpar_mortar.H"
 

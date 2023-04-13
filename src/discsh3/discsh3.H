@@ -12,8 +12,8 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 #include "lib_element.H"
 #include "lib_elementtype.H"
@@ -26,7 +26,7 @@
 #include "lib_discret.H"
 #include "lib_discret_faces.H"
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 

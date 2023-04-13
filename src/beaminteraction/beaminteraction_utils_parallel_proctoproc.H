@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

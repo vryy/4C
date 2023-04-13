@@ -13,8 +13,8 @@ means are computed as time averages
 #ifndef FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
 #define FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace LINALG

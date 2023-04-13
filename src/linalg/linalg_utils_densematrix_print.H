@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "Epetra_SerialDenseMatrix.h"
+#include <Epetra_SerialDenseMatrix.h>
 
 namespace LINALG
 {

@@ -55,10 +55,10 @@ output.
 #ifndef FLUID_TURBULENCE_STATISTICS_CHA_H
 #define FLUID_TURBULENCE_STATISTICS_CHA_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "lib_discret.H"
 #include "nurbs_discret.H"
 #include "fem_general_utils_nurbs_shapefunctions.H"

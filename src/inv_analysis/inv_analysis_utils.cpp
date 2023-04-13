@@ -10,14 +10,14 @@
 #include "inv_analysis_utils.H"
 
 #include "lib_dserror.H"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseVector.h>
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "inv_analysis_DcsMatrix.H"
 #include "inv_analysis_chol_factory.H"
 #include "inpar_statinvanalysis.H"
 
-#include "Teuchos_ParameterList.hpp"
-#include "Teuchos_StandardParameterEntryValidators.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <fstream>
 

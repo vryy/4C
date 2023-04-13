@@ -6,6 +6,7 @@ import baciheader as bh
 import subprocess
 import common_utils as utils
 
+
 # CHECK FOR TABS
 def contains_tabs(filename):
     "Return True if this version of the file contains tabs."
@@ -159,11 +160,7 @@ def main():
     except ValueError:
         print("Something went wrong! Check the error functions in this script again!")
         errors += 1
-    if errors > 0:
-        if errfile is None:
-            utils.pretty_print_error_stderr(allerrors)
-        else:
-            utils.pretty_print_error_file(allerrors, errfile)
+    utils.pretty_print_error_report("", allerrors, errfile)
     return errors
 
 

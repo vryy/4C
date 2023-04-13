@@ -16,7 +16,7 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include <math.h>
 
 #ifdef HAVE_FFTW
-#include "fftw3.h"
+#include <fftw3.h>
 #endif
 
 #include "fluid_turbulence_hit_initial_field.H"

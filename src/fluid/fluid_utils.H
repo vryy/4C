@@ -12,7 +12,7 @@
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
 #include "lib_discret.H"
 #include "linalg_blocksparsematrix.H"

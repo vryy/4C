@@ -14,8 +14,8 @@ transport
 #ifndef SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_H
 #define SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_H
 
-#include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 #include "inpar_scatra.H"
 

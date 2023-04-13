@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_tsi_interface.H"

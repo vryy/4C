@@ -10,7 +10,7 @@
 #ifndef INV_ANALYSIS_DCSMATRIX_H
 #define INV_ANALYSIS_DCSMATRIX_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "timestepping_mstep.H"
 

@@ -13,13 +13,13 @@
 #define FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H
 
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
 #include <Epetra_Map.h>
 
 #include "fluid_utils_mapextractor.H"
 #include "fluid_utils.H"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "io.H"

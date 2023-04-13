@@ -33,12 +33,12 @@
 #endif
 
 /* Anasazi headers*/
-#include "AnasaziConfigDefs.hpp"
-#include "AnasaziBasicEigenproblem.hpp"
-#include "AnasaziBlockDavidsonSolMgr.hpp"
-#include "AnasaziBasicOutputManager.hpp"
-#include "AnasaziEpetraAdapter.hpp"
-#include "Teuchos_CommandLineProcessor.hpp"
+#include <AnasaziConfigDefs.hpp>
+#include <AnasaziBasicEigenproblem.hpp>
+#include <AnasaziBlockDavidsonSolMgr.hpp>
+#include <AnasaziBasicOutputManager.hpp>
+#include <AnasaziEpetraAdapter.hpp>
+#include <Teuchos_CommandLineProcessor.hpp>
 
 #include <fenv.h>
 

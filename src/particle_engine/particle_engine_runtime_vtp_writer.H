@@ -17,7 +17,7 @@
 #include "particle_engine_container.H"
 #include "particle_engine_container_bundle.H"
 
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

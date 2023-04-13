@@ -14,9 +14,9 @@ passive-scalar transport
 #ifndef SCATRA_TURBULENCE_HIT_SCALAR_FORCING_H
 #define SCATRA_TURBULENCE_HIT_SCALAR_FORCING_H
 
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Teuchos_RCP.hpp>
 
 #include "inpar_fluid.H"
 #include "inpar_scatra.H"
