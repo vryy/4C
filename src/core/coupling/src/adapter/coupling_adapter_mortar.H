@@ -109,13 +109,6 @@ namespace ADAPTER
         const int nds_slave = 0           ///< slave dofset number
     );
 
-    //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface
-    //! ONLY))
-    virtual void SetupForUQAbuseNormalCalculation(
-        Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
-        const Epetra_Comm& comm                      ///< communicator
-    );
-
     /// create integration cells
     virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
             intcells  //!< vector of mortar integration cells
