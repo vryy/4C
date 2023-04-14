@@ -31,8 +31,8 @@ namespace DRT
     Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> ValidConditions();
 
     /// print all known condition sections without contents
-    void PrintEmptyConditionDefinitions(std::ostream& stream,
-        std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist, bool color = true);
+    void PrintEmptyConditionDefinitions(
+        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace INPUT
 }  // namespace DRT

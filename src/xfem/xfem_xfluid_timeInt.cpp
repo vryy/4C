@@ -17,7 +17,6 @@
 
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
-#include "lib_colors.H"
 #include "lib_condition_selector.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"

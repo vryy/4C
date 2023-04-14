@@ -22,7 +22,6 @@ interface
 #include "lib_assemblestrategy.H"
 #include "lib_parobjectfactory.H"
 #include "lib_linedefinition.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "lib_dofset_predefineddofnumber.H"
 
@@ -5139,13 +5138,12 @@ void FLD::XFluid::ReadRestart(int step)
   if (myrank_ == 0)
   {
     IO::cout
-        << RED
         << "Warning: For Restart we Cut the configuration of the last time step with the final (in "
            "best case converged)"
         << " solution, without restart the configuration used would be one newton step ealier! --> "
            "This might lead to problems if the solution is no "
         << " converged an therefore the dofset coming from restart and during simulation differ!"
-        << END_COLOR << IO::endl;
+        << IO::endl;
   }
 
   if (alefluid_)

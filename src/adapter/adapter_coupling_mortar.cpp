@@ -17,7 +17,6 @@
 #include "lib_condition_utils.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
-#include "lib_colors.H"
 #include "io.H"
 #include "linalg_multiply.H"
 #include "linalg_utils_sparse_algebra_assemble.H"

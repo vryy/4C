@@ -932,7 +932,7 @@ void DRT::Problem::WriteInputParameters()
   std::string s = OutputControlFile()->FileName();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
-  DRT::INPUT::PrintDatHeader(stream, *getParameterList(), "", false, false);
+  DRT::INPUT::PrintDatHeader(stream, *getParameterList(), "", false);
 }
 
 

@@ -18,7 +18,6 @@ between the xfluid class and the cut-library
 #include "xfem_discretization_utils.H"
 #include "xfem_xfluid_contact_communicator.H"
 
-#include "lib_colors.H"
 #include "lib_utils_parallel.H"
 #include "lib_utils_createdis.H"
 #include "lib_dofset_transparent_independent.H"

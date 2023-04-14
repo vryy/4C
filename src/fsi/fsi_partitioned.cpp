@@ -26,7 +26,6 @@
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "inpar_fsi.H"
-#include "lib_colors.H"
 
 #include "io_control.H"
 #include "structure_aux.H"

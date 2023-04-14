@@ -43,8 +43,7 @@ namespace DRT
      */
     void PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
         std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
-            contactconstitutivlawlist,
-        bool color = true);
+            contactconstitutivlawlist);
 
   }  // namespace INPUT
 }  // namespace DRT

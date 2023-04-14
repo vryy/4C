@@ -1029,18 +1029,10 @@ DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(const std::stri
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::Lines::Print(std::ostream& stream)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
   unsigned l = sectionname_.length();
-  stream << redlight << "--";
+  stream << "--";
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
-  stream << greenlight << sectionname_ << endcolor << '\n';
+  stream << sectionname_ << '\n';
 
   for (auto& definition : definitions_)
   {

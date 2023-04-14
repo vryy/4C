@@ -13,7 +13,6 @@
 
 #include "lib_resulttest.H"
 #include "lib_dserror.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "io_control.H"
 #include "io_pstream.H"
@@ -215,7 +214,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
     }
   }
 
-  if (comm.MyPID() == 0) IO::cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
+  if (comm.MyPID() == 0) IO::cout << "\nOK (" << count << ")\n";
 }
 
 

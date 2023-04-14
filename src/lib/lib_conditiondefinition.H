@@ -610,8 +610,7 @@ namespace DRT
           std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap);
 
       /// print my dat file section and possible conditions from the Discretization
-      std::ostream& Print(
-          std::ostream& stream, const Discretization* dis = nullptr, bool color = false);
+      std::ostream& Print(std::ostream& stream, const Discretization* dis = nullptr);
 
       /// Write dat file section and possible conditions to a rst file for ReadTheDocs
       void WriteReadTheDocs(std::ostream& stream);

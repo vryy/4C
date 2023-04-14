@@ -16,7 +16,6 @@
 
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
-#include "lib_colors.H"
 
 #include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"

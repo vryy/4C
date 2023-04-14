@@ -17,7 +17,6 @@
 #include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "inpar_fsi.H"

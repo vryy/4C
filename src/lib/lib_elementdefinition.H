@@ -43,7 +43,7 @@ namespace DRT
       void PrintElementDatHeaderToStream(std::ostream& stream);
 
       /// Print section header to stream
-      void PrintSectionHeader(std::ostream& stream, std::string name, bool color = false);
+      void PrintSectionHeader(std::ostream& stream, std::string name);
 
       /// Print valid input lines for given element type
       void PrintElementLines(std::ostream& stream, std::string name);

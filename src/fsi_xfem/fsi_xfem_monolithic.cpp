@@ -29,7 +29,6 @@
 
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
-#include "lib_colors.H"
 
 #include "structure_aux.H"
 

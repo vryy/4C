@@ -66,7 +66,7 @@ namespace DRT
 
     /// print flag sections of dat file with given list
     void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,
-        std::string parentname = "", bool color = false, bool comment = true);
+        std::string parentname = "", bool comment = true);
 
     /// provide std::string to keep flag for printing equal signs
     ///

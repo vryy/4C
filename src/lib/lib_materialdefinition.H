@@ -414,7 +414,7 @@ namespace DRT
 
       /// print my DAT file section and possible materials from the Discretization
       std::ostream& Print(std::ostream& stream,  ///< the output stream
-          const Discretization* dis = nullptr, const bool color = false);
+          const Discretization* dis = nullptr);
 
       /// write the material to a restructuredText file used for ReadTheDocs
       void WriteReadTheDocs(std::ostream& stream);

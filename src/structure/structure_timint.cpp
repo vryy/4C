@@ -27,7 +27,6 @@
 
 #include "lib_discret_faces.H"
 #include "lib_locsys.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 #include "surfstress_manager.H"
@@ -551,11 +550,11 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // warnings
 #ifdef CONTACTPSEUDO2D
-    std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
-              << "is a real 3D problem, switch it off!" << END_COLOR << std::endl;
+    std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
+              << "is a real 3D problem, switch it off!" << std::endl;
 #else
-    std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
-              << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << std::endl;
+    std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
+              << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
 #endif  // #ifdef CONTACTPSEUDO2D
   }
 

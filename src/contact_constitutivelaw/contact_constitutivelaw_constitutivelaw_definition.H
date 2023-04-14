@@ -87,7 +87,7 @@ namespace CONTACT
 
       /// print my DAT file section and possible contact constitutive laws
       std::ostream& Print(std::ostream& stream,  ///< the output stream
-          const DRT::Discretization* dis = NULL, const bool color = false);
+          const DRT::Discretization* dis = NULL);
 
       /// get contact constitutive law name
       std::string Name() const { return coconstlawname_; }

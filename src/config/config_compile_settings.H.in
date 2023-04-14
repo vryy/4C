@@ -16,10 +16,6 @@
 #cmakedefine DEBUG
 #endif
 
-#ifndef COLOROUTPUT
-#cmakedefine COLOROUTPUT
-#endif
-
 #ifndef DSERROR_DUMP
 #cmakedefine DSERROR_DUMP
 #endif

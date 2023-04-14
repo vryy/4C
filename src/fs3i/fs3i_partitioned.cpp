@@ -26,7 +26,6 @@
 #include "fsi_utils.H"
 #include "lib_condition_selector.H"
 #include "lib_condition_utils.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_createdis.H"
 #include "lib_condition_utils.H"

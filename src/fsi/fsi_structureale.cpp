@@ -22,7 +22,6 @@
 #include "inpar_validparameters.H"
 #include "structure_aux.H"
 
-#include "lib_colors.H"
 
 #include <string>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

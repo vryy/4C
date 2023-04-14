@@ -23,7 +23,6 @@
 #include "inpar_parameterlist_utils.H"
 
 #include "lib_discret.H"
-#include "lib_colors.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -2894,29 +2893,21 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   {
     if (nonsmooth)
     {
-      std::cout << BLUE2_LIGHT << "Total ACTIVE SURFACE nodes:\t" << gsurfacenodes << END_COLOR
-                << std::endl;
-      std::cout << BLUE2_LIGHT << "Total    ACTIVE EDGE nodes:\t" << gedgenodes << END_COLOR
-                << std::endl;
-      std::cout << BLUE2_LIGHT << "Total  ACTIVE CORNER nodes:\t" << gcornernodes << END_COLOR
-                << std::endl;
-      std::cout << RED_LIGHT << "Total       INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total ACTIVE SURFACE nodes:\t" << gsurfacenodes << std::endl;
+      std::cout << "Total    ACTIVE EDGE nodes:\t" << gedgenodes << std::endl;
+      std::cout << "Total  ACTIVE CORNER nodes:\t" << gcornernodes << std::endl;
+      std::cout << "Total       INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
     else if (friction_)
     {
-      std::cout << BLUE2_LIGHT << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << std::endl;
-      std::cout << BLUE2_LIGHT << "Total    STICK nodes:\t" << gactivenodes - gslipnodes
-                << END_COLOR << std::endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total     SLIP nodes:\t" << gslipnodes << std::endl;
+      std::cout << "Total    STICK nodes:\t" << gactivenodes - gslipnodes << std::endl;
+      std::cout << "Total INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
     else
     {
-      std::cout << BLUE2_LIGHT << "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR
-                << std::endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total   ACTIVE nodes:\t" << gactivenodes << std::endl;
+      std::cout << "Total INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
   }
 #endif  // #ifdef CONTACTASOUTPUT

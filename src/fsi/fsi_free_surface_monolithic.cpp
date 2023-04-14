@@ -33,7 +33,6 @@
 
 
 #include "inpar_validparameters.H"
-#include "lib_colors.H"
 
 #include "solver_linalg_precond.H"
 #include "linalg_matrixtransform.H"
