@@ -80,7 +80,7 @@ variables:
 - *build-only
   # test
 - 'echo ctest selection: $CTEST_TEST_SELECTION'
-- ctest -VV "$CTEST_TEST_SELECTION" -j $NUMBER_OF_TEST_THREADS | tee test.log | grep
+- ctest -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS | tee test.log | grep
   -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
@@ -151,8 +151,6 @@ variables:
 # Full tests are performed.
 .buildtest_full:
   extends: .buildtest_base
-  variables:
-    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
   rules:
   - if: $GITLAB_SCHEDULER_TYPE != "0"
     when: never
@@ -221,8 +219,6 @@ variables:
 # Full tests are performed.
 .buildtest_daily:
   extends: .buildtest_base
-  variables:
-    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
@@ -254,7 +250,6 @@ variables:
 .buildtest_daily_debug:
   extends: .buildtest_base
   variables:
-    CTEST_TEST_SELECTION: -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG"
     CTEST_BUILD_TYPE_GITLAB: debug
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
