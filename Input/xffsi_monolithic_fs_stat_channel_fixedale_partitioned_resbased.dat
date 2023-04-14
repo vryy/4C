@@ -115,7 +115,7 @@ MAXTIME                         1000.0
 TIMESTEP                        1
 NUMSTEP                         1
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicfluidsplit
+COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nonox
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          10

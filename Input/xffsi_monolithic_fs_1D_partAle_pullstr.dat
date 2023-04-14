@@ -51,7 +51,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         6
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicfluidsplit
+COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nonox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          7
