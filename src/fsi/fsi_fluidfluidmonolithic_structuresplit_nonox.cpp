@@ -10,6 +10,7 @@ using XFEM
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fsi_debugwriter.H"

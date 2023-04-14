@@ -14,8 +14,9 @@ with condensed structure interface displacements
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
-#include "coupling_adapter_mortar.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid_fsi.H"
 

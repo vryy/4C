@@ -14,11 +14,6 @@
 
 #include "poroelast_monolithic.H"
 
-namespace ADAPTER
-{
-  class CouplingConverter;
-}
-
 namespace POROELAST
 {
   //! base class for monolithic approaches, when the system is splitted for some reason

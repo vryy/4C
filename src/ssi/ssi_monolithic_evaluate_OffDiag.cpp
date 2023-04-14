@@ -13,6 +13,7 @@
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_str_ssiwrapper.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 
 #include "lib_assemblestrategy.H"
 #include "lib_discret.H"

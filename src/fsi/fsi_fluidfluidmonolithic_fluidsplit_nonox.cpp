@@ -9,6 +9,7 @@
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fsi_debugwriter.H"

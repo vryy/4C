@@ -24,6 +24,8 @@ with condensed structure interface displacements
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+
 #include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "linalg_multiply.H"

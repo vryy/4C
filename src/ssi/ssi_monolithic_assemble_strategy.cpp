@@ -9,6 +9,7 @@
 
 #include "ssi_monolithic.H"
 
+#include "coupling_adapter_converter.H"
 #include "adapter_str_ssiwrapper.H"
 
 #include "contact_nitsche_strategy_ssi.H"

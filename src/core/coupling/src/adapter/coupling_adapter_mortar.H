@@ -15,7 +15,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 #include "lib_dserror.H"
-#include "coupling_adapter.H"
+#include "coupling_adapter_base.H"
 
 // forward declarations
 namespace LINALG

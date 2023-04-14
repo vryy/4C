@@ -11,6 +11,7 @@
 
 #include "fsi_constrmonolithic_fluidsplit.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fluid_utils_mapextractor.H"

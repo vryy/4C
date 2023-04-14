@@ -12,6 +12,7 @@
 #include <iterator>
 #include "linalg_matrixtransform.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "lib_dserror.H"
 #include "lib_exporter.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

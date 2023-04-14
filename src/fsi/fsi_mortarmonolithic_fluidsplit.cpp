@@ -15,8 +15,9 @@ with condensed fluid interface velocities
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
-#include "coupling_adapter_mortar.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fsi_mortarmonolithic_fluidsplit.H"
