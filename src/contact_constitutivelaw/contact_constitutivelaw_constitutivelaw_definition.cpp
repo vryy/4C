@@ -16,7 +16,6 @@
 #include "contact_constitutivelaw_constitutivelaw_definition.H"
 #include "lib_inputreader.H"
 #include "contact_constitutivelaw_bundle.H"
-#include "lib_colors.H"
 #include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
 /*======================================================================*/
@@ -336,34 +335,14 @@ CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Read(
 /*======================================================================*/
 
 std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
-    std::ostream& stream, const DRT::Discretization* dis, const bool color)
+    std::ostream& stream, const DRT::Discretization* dis)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
-
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
 
   // the descriptive lines (comments)
-  stream << blue2light << comment << std::endl;
-  stream << blue2light << comment << " " << magentalight << description_ << std::endl;
+  stream << comment << std::endl;
+  stream << comment << " " << description_ << std::endl;
   for (unsigned i = 0; i < inputline_.size(); ++i)
   {
     std::ostringstream desc;
@@ -372,14 +351,14 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
   }
 
   // the default line
-  stream << blue2light << comment << "LAW 0   " << magentalight << coconstlawname_ << "   ";
+  stream << comment << "LAW 0   " << coconstlawname_ << "   ";
   for (unsigned i = 0; i < inputline_.size(); ++i)
   {
     inputline_[i]->DefaultLine(stream);
     stream << " ";
   }
 
-  stream << endcolor << "\n";
+  stream << "\n";
 
   return stream;
 }

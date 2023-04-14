@@ -12,7 +12,6 @@ transform matrixes, vectors, ...
 
 #include "lib_discret.H"
 #include "lib_condition_selector.H"
-#include "lib_colors.H"
 
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
@@ -461,7 +460,7 @@ void XFEM::Coupling_Comm_Manager::DebugOut(
     std::string str1, std::string str2, std::string str3, std::string str4)
 {
 #ifdef COUP_MANAGER_DEBUG_OUT
-  std::cout << GRAY_LIGHT << str1 << str2 << str3 << str4 << END_COLOR << std::flush;
+  std::cout << str1 << str2 << str3 << str4 << std::flush;
 #endif
   return;
 }

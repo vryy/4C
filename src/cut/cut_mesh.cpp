@@ -25,7 +25,6 @@ mesh
 // search
 #include "geometry_searchtree.H"
 
-#include "lib_colors.H"
 
 /*-------------------------------------------------------------------------------------*
  * constructor

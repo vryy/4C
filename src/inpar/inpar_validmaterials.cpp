@@ -10,40 +10,20 @@
 #include "inpar_validmaterials.H"
 #include "lib_materialdefinition.H"
 #include "inpar_material.H"
-#include "lib_colors.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintEmptyMaterialDefinitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist, bool color)
+void DRT::INPUT::PrintEmptyMaterialDefinitions(
+    std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
   const std::string sectionname = "MATERIALS";
   const unsigned l = sectionname.length();
-  stream << redlight << "--" << std::string(std::max<int>(65 - l, 0), '-');
-  stream << greenlight << sectionname << endcolor << '\n';
+  stream << "--" << std::string(std::max<int>(65 - l, 0), '-');
+  stream << sectionname << '\n';
 
   for (auto& i : matlist)
   {
-    i->Print(stream, nullptr, color);
+    i->Print(stream, nullptr);
   }
 }
 

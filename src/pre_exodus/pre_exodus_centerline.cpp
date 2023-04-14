@@ -12,7 +12,6 @@
 #include "pre_exodus_centerline.H"
 #include <iostream>
 #include <list>
-#include "lib_colors.H"
 #include "pre_exodus_soshextrusion.H"  // for Gmsh plot
 
 /*----------------------------------------------------------------------*/
@@ -148,8 +147,8 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::EleCenter
       // get all node ids from this nodeset
       else
       {
-        std::cout << RED << "Found surface nodes NodeSet! Fiber directions computed accordingly"
-                  << END_COLOR << std::endl;
+        std::cout << "Found surface nodes NodeSet! Fiber directions computed accordingly"
+                  << std::endl;
 
         std::set<int> all_surfnodes = nss.find(surfnodes_id)->second.GetNodeSet();
 
@@ -698,11 +697,7 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::element_c
     std::map<std::pair<int, int>, std::vector<double>>::iterator normal;
     normal = np_eb_el.find(eb_el);
 
-    if (np_eb_el.find(eb_el) != np_eb_el.end())
-    {
-      r_0 = np_eb_el.find(eb_el)->second;
-      // std::cout << RED << r_0[0] << r_0[1] << r_0[2] << END_COLOR << std::endl;
-    }
+    if (np_eb_el.find(eb_el) != np_eb_el.end()) r_0 = np_eb_el.find(eb_el)->second;
 
     // position vector from centerline point 1 to centerline point 2 (axial direction)
     r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,

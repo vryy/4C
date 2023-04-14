@@ -13,7 +13,6 @@
 #include <Teuchos_any.hpp>
 
 #include "inpar_validparameters.H"
-#include "lib_colors.H"
 #include "lib_globalproblem_enums.H"
 #include "io_pstream.H"
 #include "inpar.H"
@@ -172,27 +171,9 @@ void PrintHelpMessage()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,
-    std::string parentname, bool color, bool comment)
+void DRT::INPUT::PrintDatHeader(
+    std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool comment)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
   // prevent invalid ordering of parameters caused by alphabetical output:
   // in the first run, print out all list elements that are not a sublist
   // in the second run, do the recursive call for all the sublists in the list
@@ -209,13 +190,12 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
 
       if (comment)
       {
-        stream << blue2light << "//" << endcolor << '\n';
+        stream << "//" << '\n';
 
         std::string doc = entry.docString();
         if (doc != "")
         {
-          Teuchos::StrUtils::printLines(stream, blue2light + "// ", doc);
-          stream << endcolor;
+          Teuchos::StrUtils::printLines(stream, "// ", doc);
         }
       }
 
@@ -225,9 +205,9 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
         if (secname != "") secname += "/";
         secname += name;
         unsigned l = secname.length();
-        stream << redlight << "--" << std::string(std::max<int>(65 - l, 0), '-');
-        stream << greenlight << secname << endcolor << '\n';
-        PrintDatHeader(stream, list.sublist(name), secname, color, comment);
+        stream << "--" << std::string(std::max<int>(65 - l, 0), '-');
+        stream << secname << '\n';
+        PrintDatHeader(stream, list.sublist(name), secname, comment);
       }
       else
       {
@@ -244,29 +224,28 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
               }
               if (len < 74)
               {
-                stream << blue2light << "//     ";
+                stream << "//     ";
                 for (int i = 0; i < static_cast<int>(values->size()) - 1; ++i)
                 {
-                  stream << magentalight << (*values)[i] << blue2light << ",";
+                  stream << (*values)[i] << ",";
                 }
-                stream << magentalight << (*values)[values->size() - 1] << endcolor << '\n';
+                stream << (*values)[values->size() - 1] << '\n';
               }
               else
               {
                 for (int i = 0; i < (int)values->size(); ++i)
                 {
-                  stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor
-                         << '\n';
+                  stream << "//     " << (*values)[i] << '\n';
                 }
               }
             }
           }
         const Teuchos::any& v = entry.getAny(false);
-        stream << bluelight << name << endcolor;
+        stream << name;
         unsigned l = name.length();
         stream << std::string(std::max<int>(31 - l, 0), ' ');
         if (NeedToPrintEqualSign(list)) stream << " =";
-        stream << ' ' << yellowlight << v << endcolor << '\n';
+        stream << ' ' << v << '\n';
       }
     }
   }
@@ -278,7 +257,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
 void PrintDefaultDatHeader()
 {
   Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
-  DRT::INPUT::PrintDatHeader(std::cout, *list, "", true);
+  DRT::INPUT::PrintDatHeader(std::cout, *list);
 }
 
 

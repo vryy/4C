@@ -272,7 +272,7 @@ int main(int argc, char** argv)
       {
         Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> mlist =
             DRT::INPUT::ValidMaterials();
-        DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist, false);
+        DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
@@ -497,7 +497,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
       DRT::INPUT::ValidConditions();
-  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist, false);
+  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
 
   // print valid element lines as proposal (parobjects have to be registered for doing this!)
   defaultbc << std::endl << std::endl;

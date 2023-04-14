@@ -10,40 +10,20 @@
 
 #include "contact_constitutivelaw_constitutivelaw_definition.H"
 #include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
-#include "lib_colors.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist, bool color)
+    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
   const std::string sectionname = "Contact Constitutive Law";
   const unsigned l = sectionname.length();
-  stream << redlight << "--";
+  stream << "--";
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
-  stream << greenlight << sectionname << endcolor << '\n';
+  stream << sectionname << '\n';
 
   for (unsigned i = 0; i < coconstlawlist.size(); ++i)
   {
-    coconstlawlist[i]->Print(stream, NULL, color);
+    coconstlawlist[i]->Print(stream, NULL);
   }
 }
 

@@ -28,7 +28,6 @@
 #include "solver_linalg_solver.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
-#include "lib_colors.H"
 #include "adapter_coupling.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "ale_utils_clonestrategy.H"

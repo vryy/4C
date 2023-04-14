@@ -20,7 +20,6 @@ with condensed fluid interface velocities
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "adapter_str_structure.H"
 #include "adapter_str_fsiwrapper.H"
@@ -955,9 +954,8 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
   {
     Utils()->out() << std::scientific << "\nlinear solver quality:\n"
                    << "L_2-norms:\n"
-                   << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                   << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                   << END_COLOR "\n";
+                   << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                   << "\n";
   }
   r.NormInf(&n);
   sr->NormInf(&ns);
@@ -966,9 +964,8 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
   if (verbosity_ == INPAR::FSI::verbosity_full)
   {
     Utils()->out() << "L_inf-norms:\n"
-                   << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                   << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                   << END_COLOR "\n";
+                   << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                   << "\n";
   }
   Utils()->out().flags(flags);
 

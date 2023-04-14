@@ -21,7 +21,6 @@
 #include "structure_dyn_nln_drt.H"
 #include "io.H"
 #include "io_control.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
 #include "inpar_structure.H"

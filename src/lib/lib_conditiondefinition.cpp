@@ -14,7 +14,6 @@
 #include <iterator>
 #include <utility>
 #include "lib_conditiondefinition.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_utils_cond_and_mat_definition.cpp"
@@ -1125,31 +1124,12 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::ostream& DRT::INPUT::ConditionDefinition::Print(
-    std::ostream& stream, const Discretization* dis, bool color)
+    std::ostream& stream, const Discretization* dis)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
   unsigned l = sectionname_.length();
-  stream << redlight << "--";
+  stream << "--";
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
-  stream << greenlight << sectionname_ << endcolor << '\n';
+  stream << sectionname_ << '\n';
 
   std::string name;
   switch (gtype_)
@@ -1185,19 +1165,20 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
     }
   }
 
-  stream << bluelight << name << endcolor;
+  stream << name;
   l = name.length();
   for (int i = 0; i < std::max<int>(31 - l, 0); ++i) stream << ' ';
-  stream << ' ' << yellowlight << count << endcolor << '\n';
+  stream << ' ' << count << '\n';
 
-  stream << blue2light << "//" << magentalight << "E num - ";
+  stream << "//"
+         << "E num - ";
   for (auto& i : inputline_)
   {
     i->DefaultLine(stream);
     stream << " ";
   }
 
-  stream << endcolor << "\n";
+  stream << "\n";
 
   if (dis != nullptr)
   {

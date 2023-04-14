@@ -39,12 +39,12 @@
 #include "inpar_elemag.H"
 
 
-void DRT::INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist, bool color)
+void DRT::INPUT::PrintEmptyConditionDefinitions(
+    std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
-    condlist[i]->Print(stream, NULL, color);
+    condlist[i]->Print(stream, NULL);
   }
 }
 

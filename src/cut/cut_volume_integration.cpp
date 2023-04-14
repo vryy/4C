@@ -20,7 +20,6 @@ equations
 #include "cut_enum.H"
 #include <Epetra_MultiVector.h>
 
-#include "lib_colors.H"
 
 /*--------------------------------------------------------------------------*
          compute the rhs of the moment fitting equations
@@ -1089,8 +1088,6 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(
  *-------------------------------------------------------------------------------------*/
 std::string GEO::CUT::VolumeIntegration::IsPointInside(LINALG::Matrix<3, 1> &rst)
 {
-  //  std::cout << RED << "** GEO::CUT::VolumeIntegration::IsPointInside -- This function does not
-  //  work for general volumecells (concave, facets with holes, ...)! **" << END_COLOR << std::endl;
   const plain_facet_set &facete = volcell_->Facets();
 
   //--------------------------------------------------------------------------------

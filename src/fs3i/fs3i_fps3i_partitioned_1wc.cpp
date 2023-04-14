@@ -21,7 +21,6 @@
 #include "lib_utils_createdis.H"
 #include "lib_condition_utils.H"
 #include "lib_globalproblem.H"
-#include "lib_colors.H"
 #include "lib_condition_selector.H"
 #include "fsi_monolithic.H"
 #include "scatra_algorithm.H"

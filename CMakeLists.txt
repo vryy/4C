@@ -95,11 +95,6 @@ endif(IGNORE_UNSTABLE_CUTTEST)
 
 # fancy stuff
 
-option(COLOROUTPUT "use colored output to the terminal" OFF)
-if(COLOROUTPUT)
-  add_definitions("-DCOLOROUTPUT")
-endif(COLOROUTPUT)
-
 option(DSERROR_DUMP "dserror creates a core file" OFF)
 if(DSERROR_DUMP)
   add_definitions("-DDSERROR_DUMP")

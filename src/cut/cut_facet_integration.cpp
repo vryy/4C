@@ -22,7 +22,6 @@ equations
 #include "cut_output.H"
 #endif
 
-#include "lib_colors.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -769,9 +768,8 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck(
     std::list<Teuchos::RCP<BoundaryCell>> &divCells, std::string alreadyDone, Mesh &mesh)
 {
   std::cout
-      << RED
       << "FacetIntegration::DebugAreaCheck --- This Test is broken for facets with wholes inside!!!"
-      << END_COLOR << std::endl;
+      << std::endl;
   // finally we should just have one triangulation/splitting proceducre which handles automatically
   // holes, not very useful if we have to treat this on every step where we need triangulation ...
   // Todo ...error is commented out because of that!!!
@@ -872,9 +870,8 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck(
 
     std::cout << "Area1 = " << area1 << "\t"
               << "Area2 = " << area2 << "\n";
-    std::cout << RED
-              << "!!!WARNING!!! area predicted by splitting and triangulation are not the same\n"
-              << END_COLOR;
+    std::cout << "!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
+
     // throw std::runtime_error( "error: area predicted by splitting and triangulation are not the
     // same" ); dserror( "error: area predicted by splitting and triangulation are not the same" );
 

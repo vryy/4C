@@ -28,7 +28,6 @@
 #include "fsi_statustest.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 
 // FLUID includes

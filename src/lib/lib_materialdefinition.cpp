@@ -20,7 +20,6 @@
 #include <iostream>
 
 #include "lib_materialdefinition.H"
-#include "lib_colors.H"
 #include "lib_globalproblem.H"
 #include "lib_utils_cond_and_mat_definition.H"
 
@@ -725,34 +724,14 @@ void DRT::INPUT::MaterialDefinition::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& DRT::INPUT::MaterialDefinition::Print(
-    std::ostream& stream, const Discretization* dis, const bool color)
+std::ostream& DRT::INPUT::MaterialDefinition::Print(std::ostream& stream, const Discretization* dis)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-    blue2light = BLUE2_LIGHT;
-    bluelight = BLUE_LIGHT;
-    redlight = RED_LIGHT;
-    yellowlight = YELLOW_LIGHT;
-    greenlight = GREEN_LIGHT;
-    magentalight = MAGENTA_LIGHT;
-    endcolor = END_COLOR;
-  }
-
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
 
   // the descriptive lines (comments)
-  stream << blue2light << comment << std::endl;
-  stream << blue2light << comment << " " << magentalight << description_ << std::endl;
+  stream << comment << std::endl;
+  stream << comment << " " << description_ << std::endl;
   for (auto& i : inputline_)
   {
     std::ostringstream desc;
@@ -761,14 +740,14 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
   }
 
   // the default line
-  stream << blue2light << comment << "MAT 0   " << magentalight << materialname_ << "   ";
+  stream << comment << "MAT 0   " << materialname_ << "   ";
   for (auto& i : inputline_)
   {
     i->DefaultLine(stream);
     stream << " ";
   }
 
-  stream << endcolor << "\n";
+  stream << "\n";
 
   return stream;
 }

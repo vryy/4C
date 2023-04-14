@@ -35,8 +35,8 @@ namespace DRT
     Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> ValidMaterials();
 
     /// print all known material sections without contents
-    void PrintEmptyMaterialDefinitions(std::ostream& stream,
-        std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& condlist, bool color = true);
+    void PrintEmptyMaterialDefinitions(
+        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& condlist);
   }  // namespace INPUT
 }  // namespace DRT
 

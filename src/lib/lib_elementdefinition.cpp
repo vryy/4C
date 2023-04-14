@@ -149,25 +149,12 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::ElementDefinition::PrintSectionHeader(
-    std::ostream& stream, std::string name, bool color)
+void DRT::INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
 {
-  std::string blue2light = "";
-  std::string bluelight = "";
-  std::string redlight = "";
-  std::string yellowlight = "";
-  std::string greenlight = "";
-  std::string magentalight = "";
-  std::string endcolor = "";
-
-  if (color)
-  {
-  }
-
   unsigned l = name.length();
-  stream << redlight << "--";
+  stream << "--";
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
-  stream << greenlight << name << endcolor << '\n';
+  stream << name << '\n';
 }
 
 
