@@ -46,15 +46,18 @@ namespace LINALG
     \brief Standard Constructor wrapping
            Epetra_SerialDenseMatrix(int NumRows, int NumCols, bool set_object_label=true);
 
-    Opposed to the base class constructor, this one does NOT initialize the matrix to zero.
+    This class provides the possibility to avoid the initialization of the matrix to improve
+    performance, by explicitly setting the init flag to false. The default behavior is to set to
+    zero.
 
     \param NumRows          (in): no. of rows the matrix is supposed to have
     \param NumCols          (in): no. of cols the matrix is supposed to have
-    \param init             (in): flag indicating whether matrix is zeroed out (defaults to false!)
+    \param init             (in): flag indicating whether the matrix is initialized to zero (true)
+                                  or left uninitialized (false). Defaults to true.
     \param set_object_label (in): set an epetra object label for print out (defaults to true!)
 
     */
-    SerialDenseMatrix(int NumRows, int NumCols, bool init = false, bool set_object_label = true);
+    SerialDenseMatrix(int NumRows, int NumCols, bool init = true, bool set_object_label = true);
 
     /*!
     \brief Standard Constructor wrapping
