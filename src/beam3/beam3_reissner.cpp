@@ -1392,13 +1392,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
       {
         LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 2, double>(disp_totlag_centerline_fixedsize);
-        pos = this->GetPosAtXi<2, 2>(xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       else
       {
         LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 1, double>(disp_totlag_centerline_fixedsize);
-        pos = this->GetPosAtXi<2, 1>(xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::GetPosAtXi<2, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       break;
     }
@@ -1406,21 +1406,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     {
       LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<3, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<3, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<3, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
       LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<4, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<4, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<4, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
       LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<5, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<5, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<5, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     default:

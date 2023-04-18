@@ -412,6 +412,19 @@ namespace DRT
         return *browndyn_interface_ptr_;
       }
 
+      /*! \brief Get centerline position at given parameter coordinate xi
+       */
+      template <unsigned int nnode, unsigned int vpernode, typename T>
+      void GetPosAtXi(LINALG::Matrix<3, 1, T>& r, const double& xi,
+          const LINALG::Matrix<3 * nnode * vpernode, 1, T>& disp_totlag) const
+      {
+        LINALG::Matrix<1, vpernode * nnode, T> N_i;
+
+        DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
+            xi, N_i, Shape(), RefLength());
+        Calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
+      }
+
       /** \brief compute beam centerline position vector at position \xi in element parameter space
        * [-1,1] via interpolation of nodal DoFs based on given shape function values
        *

@@ -725,26 +725,6 @@ namespace DRT
           const std::vector<LINALG::Matrix<4, 1, double>>& Qnode,
           Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* inertia_force);
 
-      /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      // Todo: think about moving this method to Beam3Base (as protected) and call it from
-      //       all derived beam elements in public method GetPosAtXi with correct template
-      //       parameters :-)
-      template <unsigned int nnodecl, unsigned int vpernode>
-      LINALG::Matrix<3, 1> GetPosAtXi(const double& xi,
-          const LINALG::Matrix<3 * nnodecl * vpernode, 1, double>& disp_totlag) const
-      {
-        LINALG::Matrix<3, 1> r;
-        LINALG::Matrix<1, vpernode * nnodecl, double> N_i;
-
-        DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
-            xi, N_i, this->Shape(), this->RefLength());
-        this->Calc_r<nnodecl, vpernode, double>(disp_totlag, N_i, r);
-
-        return r;
-      }
-
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
        *  \author grill
