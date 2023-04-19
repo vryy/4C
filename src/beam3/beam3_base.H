@@ -413,6 +413,9 @@ namespace DRT
       }
 
       /*! \brief Get centerline position at given parameter coordinate xi
+       *
+       * The parameter disp_totlag should be given as absolute degrees of freedom of the beam
+       * centerline.
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void GetPosAtXi(LINALG::Matrix<3, 1, T>& r, const double& xi,
