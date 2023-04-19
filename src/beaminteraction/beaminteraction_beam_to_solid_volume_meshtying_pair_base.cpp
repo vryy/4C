@@ -20,7 +20,6 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_kirchhoff.H"
 #include "beam3_euler_bernoulli.H"

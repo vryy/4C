@@ -14,7 +14,7 @@
 
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_scalar_types.H"
-#include "beam3.H"
+
 #include "beam3_reissner.H"
 #include "beam3_kirchhoff.H"
 #include "beam3_euler_bernoulli.H"
@@ -55,11 +55,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     {
       LINALG::Matrix<3, 1> tan;
       const DRT::ElementType& eot = Element1()->ElementType();
-      if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-      {
-        dserror("ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3 element");
-      }
-      else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+
+      if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {
         const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(Element1());
         if (ele->HermiteCenterlineInterpolation())

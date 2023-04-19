@@ -12,7 +12,6 @@ element
 #include "beamcontact_beam3tosolidmeshtying.H"
 #include "beaminteraction_beam3contact_utils.H"
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_kirchhoff.H"
 #include "beam3_euler_bernoulli.H"
@@ -48,11 +47,7 @@ CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Beam3toso
     {
       LINALG::Matrix<3, 1> tan;
       const DRT::ElementType& eot = element1_->ElementType();
-      if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-      {
-        dserror("ERROR: Beam3tosolidmeshtying: numnodalvalues=2 detected for beam3 element");
-      }
-      else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+      if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {
         const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element1_);
         if (ele->HermiteCenterlineInterpolation())

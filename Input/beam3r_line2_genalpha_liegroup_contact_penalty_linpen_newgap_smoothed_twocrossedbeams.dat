@@ -4,11 +4,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Convergence Test for BEAM3 Elements; Test based on M. Schulz and C. Filippou: Int. J. Numer. Meth. Engng 2001; 50:780 figure 5
-but beam rotated with +45 degree in the x-y-plane to check correct behaviour of our coupled rotations
+Small 3D beam contact example with beam3r elements and penalty approach which tests the new gap function (BEAMS_NEWGAP: Yes)
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
-NODES                           9
+NODES                           4
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
@@ -34,72 +33,82 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
-TIMESTEP                        0.1
-NUMSTEP                         10
+TIMESTEP                        0.5
+NUMSTEP                         2
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDis
-NORM_DISP                       Abs
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
 NORM_RESF                       Abs
+NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-10
-TOLRES                          1.0E-06
-TOLCONSTR                       1.0E-03
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-MAXITER                         15
+MAXITER                         25
+MASSLIN                         rotations
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+BETA                            0.5
+GAMMA                           1.0
+ALPHA_M                         0.5
+ALPHA_F                         0.5
+RHO_INF                         -1.0
+----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           1e+01
+BEAMS_NEWGAP                    Yes
+BEAMS_SMOOTHING                 cpp
+BEAMS_PENALTYLAW                LinPen
+BEAMS_OCTREE                    none
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          1
+NDPOINT                         4
+NDLINE                          2
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          1
-E 2 - NUMDOF 6 ONOFF 0 0 0 1 1 0 VAL 0.0 0.0 0.0 -4.44288 4.44288 0.0 FUNCT 0 0 0 1 1 0 Live Mid
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           1
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0 -0.7 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
+DLINE 2
+E 1 - ID 0 TYPE arbitrary
+E 2 - ID 1 TYPE arbitrary
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 9 DNODE 2
+NODE 2 DNODE 2
+NODE 3 DNODE 3
+NODE 4 DNODE 4
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
-NODE 3 DLINE 1
-NODE 4 DLINE 1
-NODE 5 DLINE 1
-NODE 6 DLINE 1
-NODE 7 DLINE 1
-NODE 8 DLINE 1
-NODE 9 DLINE 1
+NODE 3 DLINE 2
+NODE 4 DLINE 2
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0
-NODE 2 COORD 8.838834764831843e-02 8.838834764831843e-02 0
-NODE 3 COORD 1.767766952966369e-01 1.767766952966369e-01 0
-NODE 4 COORD 2.651650429449553e-01 2.651650429449553e-01 0
-NODE 5 COORD 3.535533905932737e-01 3.535533905932737e-01 0
-NODE 6 COORD 4.419417382415922e-01 4.419417382415922e-01 0
-NODE 7 COORD 5.303300858899106e-01 5.303300858899106e-01 0
-NODE 8 COORD 6.187184335382291e-01 6.187184335382291e-01 0
-NODE 9 COORD 7.071067811865475e-01 7.071067811865475e-01 0
+NODE 1 COORD -1.00000000000000e+00 0.100000000000000e+00 -0.000000000000000e+00
+NODE 2 COORD  1.00000000000000e+00 0.1000000000000000e+00 -0.000000000000000e+00
+NODE 3 COORD  0.2e-01 -1.0e+00 0.60000000000000e+00
+NODE 4 COORD  0.2e-01  1.0e+00 0.60000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 BEAM3 LINE5 1 5 2 3 4 MAT 1
-2 BEAM3 LINE5 5 9 6 7 8 MAT 1
+1 BEAM3R LINE2 1 2 MAT 1 TRIADS 0 0 0 0 0 0
+2 BEAM3R LINE2 3 4 MAT 1 TRIADS 0 0 1.570796327 0 0 1.570796327
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_BeamReissnerElastHyper YOUNG 2.4e+13 SHEARMOD 1.2e+13 DENS 1e-9 CROSSAREA 1e-06 SHEARCORR 1.1 MOMINPOL 1.66667e-13 MOMIN2 8.33333e-14 MOMIN3 8.33333e-14
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -7.0710659640670803e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -7.0710659640671969e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -6.3661992421102098e-01 TOLERANCE 1e-8
+MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.0e+05 SHEARMOD 5.0e+04 DENS 0.001 CROSSAREA 0.00282743 SHEARCORR 1.1 MOMINPOL 0.00000127235 MOMIN2 0.000000636173 MOMIN3 0.000000636173
 -------------------------------------------------------------FUNCT1
-SYMBOLIC_FUNCTION_OF_TIME t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME t
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.38001788335375115e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  9.68881140078627068e-17 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -3.07626811366946251e-01 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
