@@ -17,10 +17,9 @@
 #include <sstream>
 
 #include <mpi.h>
+#ifdef ENABLE_STACKTR
 #include <execinfo.h>
-#include <unistd.h>
-
-#include <cxxabi.h>
+#endif
 #include <stdio.h>
 
 

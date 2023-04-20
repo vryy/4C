@@ -152,7 +152,7 @@ namespace DRT
           std::vector<int> nids;
           nids.reserve(sourceele->NumNode());
           transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
-              back_inserter(nids), std::mem_fun(&DRT::Node::Id));
+              back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // check if element has nodes which are not in col map on this proc.
           // this should not be the case since each proc should have all nodes of
@@ -169,7 +169,7 @@ namespace DRT
           // copy node ids of condition ele to rownodeset but leave those that do
           // not belong to this processor
           remove_copy_if(nids.begin(), nids.end(), inserter(rownodeset_, rownodeset_.begin()),
-              not1(DRT::UTILS::MyGID(sourcenoderowmap)));
+              std::not_fn(DRT::UTILS::MyGID(sourcenoderowmap)));
 
           // Do not clone ghost elements here! Those will be handled by the
           // discretization itself.
@@ -511,7 +511,8 @@ namespace DRT
             // copy node ids of actele to rownodeset but leave those that do
             // not belong to this processor
             remove_copy_if(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
-                inserter(rownodeset, rownodeset.begin()), not1(DRT::UTILS::MyGID(noderowmap)));
+                inserter(rownodeset, rownodeset.begin()),
+                std::not_fn(DRT::UTILS::MyGID(noderowmap)));
 
             copy(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
                 inserter(colnodeset, colnodeset.begin()));
@@ -561,7 +562,7 @@ namespace DRT
             std::vector<int> nids;
             nids.reserve(actele->NumNode());
             transform(actele->Nodes(), actele->Nodes() + actele->NumNode(), back_inserter(nids),
-                std::mem_fun(&DRT::Node::Id));
+                std::mem_fn(&DRT::Node::Id));
 
             // check if element has nodes, which are not in col map on this proc.
             // this should not be, since each proc should have all nodes of all
@@ -579,7 +580,7 @@ namespace DRT
             // copy node ids of condition ele to rownodeset except for those which do
             // not belong to this processor
             remove_copy_if(nids.begin(), nids.end(), inserter(rownodeset, rownodeset.begin()),
-                std::not1(DRT::UTILS::MyGID(sourcenoderowmap)));
+                std::not_fn(DRT::UTILS::MyGID(sourcenoderowmap)));
           }
         }
 
@@ -654,7 +655,7 @@ namespace DRT
           std::vector<int> nids;
           nids.reserve(sourceele->NumNode());
           transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
-              back_inserter(nids), std::mem_fun(&DRT::Node::Id));
+              back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // set the same global node ids to the new element
           newele->SetNodeIds(nids.size(), nids.data());
@@ -767,7 +768,7 @@ namespace DRT
           std::vector<int> nids;
           nids.reserve(sourceele->NumNode());
           transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
-              back_inserter(nids), std::mem_fun(&DRT::Node::Id));
+              back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // set the same global node ids to the new element
           newele->SetNodeIds(nids.size(), nids.data());

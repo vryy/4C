@@ -275,7 +275,7 @@ UTILS::MPConstraint3::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
       const int numnodes = ngid_ele.size();
 
       remove_copy_if(ngid_ele.data(), ngid_ele.data() + numnodes,
-          inserter(rownodeset, rownodeset.begin()), not1(DRT::UTILS::MyGID(actnoderowmap)));
+          inserter(rownodeset, rownodeset.begin()), std::not_fn(DRT::UTILS::MyGID(actnoderowmap)));
       // copy node ids specified in condition to colnodeset
       copy(ngid_ele.data(), ngid_ele.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 

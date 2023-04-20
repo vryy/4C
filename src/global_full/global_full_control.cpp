@@ -9,9 +9,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <unistd.h>
-#include <sys/times.h>
-
 #include "global_full_init_control.H"
 #include "global_full_inp_control.H"
 #include "lib_globalproblem.H"
