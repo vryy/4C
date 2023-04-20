@@ -414,8 +414,12 @@ namespace DRT
 
       /*! \brief Get centerline position at given parameter coordinate xi
        *
-       * The parameter disp_totlag should be given as absolute degrees of freedom of the beam
-       * centerline.
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
+       *
+       * The parameter disp_totlag has to contain the absolute (total Lagrange) values of the
+       * centerline degrees of freedom, i.e., the reference values + the current displacement
+       * values (\ref UpdateDispTotlag or \ref AddRefValuesDispCenterline).
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void GetPosAtXi(LINALG::Matrix<3, 1, T>& r, const double& xi,
