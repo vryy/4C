@@ -260,7 +260,6 @@ set(BACI_LIBRARIES
     cardiovascular0d
     comm
     constraint
-    fortran
     geometry
     headers
     linalg

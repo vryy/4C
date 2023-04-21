@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fortran_definitions.h"
+#include "linalg_fortran_definitions.h"
 #include "linalg_utils_densematrix_inverse.H"
 #include "lib_dserror.H"
 
