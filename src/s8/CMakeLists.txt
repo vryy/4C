@@ -15,7 +15,6 @@ baci_add_library(ele_s8 ${OBJS_S8_LIB})
 
 set(LIBS_ELE_S8
     # cmake-format: sortable
-    fortran
     linalg
     )
 

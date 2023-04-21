@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FORTRAN_DEFINITIONS_H
-#define FORTRAN_DEFINITIONS_H
+#ifndef LINALG_FORTRAN_DEFINITIONS_H
+#define LINALG_FORTRAN_DEFINITIONS_H
 
 // append underscores, if necessary. Important for linking to fortran routines
 #undef CCA_APPEND_U
@@ -51,4 +51,4 @@ extern "C"
 
 #endif
 
-#endif  // FORTRAN_FORTRAN_DEFINITIONS_H
+#endif
