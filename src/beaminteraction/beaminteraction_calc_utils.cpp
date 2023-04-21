@@ -11,6 +11,7 @@
 #include "beam_link.H"
 #include "periodic_boundingbox.H"
 #include "crosslinking_params.H"
+#include "solid_ele.H"
 #include "spherebeamlinking_params.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
@@ -1156,7 +1157,8 @@ namespace BEAMINTERACTION
         {
           eletypeset[1].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL)
+        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL ||
+                 dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != NULL)
         {
           eletypeset[2].insert(eleptr->Id());
         }

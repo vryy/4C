@@ -25,6 +25,7 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_surface_contact_params.H"
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
+#include "solid_ele.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
 #include "inpar_beam_to_solid.H"
@@ -261,8 +262,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
     const std::vector<DRT::Element const*>& ele_ptrs)
 {
-  const DRT::ELEMENTS::So_base* solidele = dynamic_cast<const DRT::ELEMENTS::So_base*>(ele_ptrs[1]);
-  const DRT::Element::DiscretizationType shape = solidele->Shape();
+  const DRT::Element::DiscretizationType shape = ele_ptrs[1]->Shape();
   const auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_, true);

@@ -208,11 +208,7 @@ DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
 {
 }
 
-DRT::Element* DRT::ELEMENTS::Solid::Clone() const
-{
-  return nullptr;
-  //  return new DRT::ELEMENTS::Solid(*this);
-}
+DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new DRT::ELEMENTS::Solid(*this); }
 
 int DRT::ELEMENTS::Solid::NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
 

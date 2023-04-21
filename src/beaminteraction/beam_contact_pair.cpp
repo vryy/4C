@@ -27,6 +27,7 @@
 #include "beam_contact_params.H"
 
 #include "geometry_pair.H"
+#include "solid_ele.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -81,7 +82,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
 {
   // Check the type of the second element.
   const bool other_is_beam = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
-  const bool other_is_solid = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != nullptr;
+  const bool other_is_solid = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != nullptr ||
+                              dynamic_cast<DRT::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
       ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance();
 
