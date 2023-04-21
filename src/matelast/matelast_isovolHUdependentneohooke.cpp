@@ -51,20 +51,6 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(int numgp, DRT::INPUT::LineD
   {
     HU = -999.0;
   }
-
-  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  int HUlumen = pslist.get<int>("MAXHULUMEN");
-
-  // if HU is smaller than the threshold for calcification or smaller than
-  // the Lumen HU (+10 security factor), there is no contribution at all
-  if (HU <= params_->ctmin_ || HU < (HUlumen + 10))
-    alpha_ = 0.;
-  else if (HU > params_->ctmax_)
-    alpha_ = params_->alphamax_;
-  else
-    alpha_ =
-        0.5 * params_->alphamax_ *
-        (sin(M_PI * (HU - params_->ctmin_) / (params_->ctmax_ - params_->ctmin_) - M_PI / 2) + 1.0);
 }
 
 /*----------------------------------------------------------------------

@@ -432,7 +432,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::ARTDYN::SetValidParameters(list);
   INPAR::ARTNET::SetValidParameters(list);
   INPAR::BIOFILM::SetValidParameters(list);
-  INPAR::PATSPEC::SetValidParameters(list);
   INPAR::REDAIRWAYS::SetValidParameters(list);
   INPAR::CARDIOVASCULAR0D::SetValidParameters(list);
   INPAR::IMMERSED::SetValidParameters(list);

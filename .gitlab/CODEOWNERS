@@ -224,8 +224,6 @@ particle_wall/             @baci/team_particle
 
 pasi/                      @baci/team_particle
 
-patspec/                   @baci/baci_maintainer # todo: ask Jonas Biehler
-
 poroelast/                 @baci/team_poro
 
 porofluidmultiphase/       @baci/team_poro

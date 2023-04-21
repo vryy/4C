@@ -42,7 +42,6 @@
 #include "constraint_springdashpot_manager.H"
 #include "beamcontact_beam3contact_manager.H"
 #include "cardiovascular0d_manager.H"
-#include "patspec.H"
 #include "stru_multi_microstatic.H"
 #include "mor_pod.H"
 
@@ -160,7 +159,6 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       dtsolve_(0.0),
       dtele_(0.0),
       dtcmt_(0.0),
-      pslist_(Teuchos::null),
       strgrdisp_(Teuchos::null),
       mor_(Teuchos::null),
       issetup_(false),
@@ -325,25 +323,6 @@ void STR::TimInt::Setup()
     }
   }
 
-  // check for patient specific needs
-  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-  if (DRT::INPUT::IntegralValue<int>(patspec, "PATSPEC"))
-  {
-    // check if patspeccond are already initialized
-    // this is of relevance for Montecarlo Simulation
-    std::vector<DRT::Condition*> pscond;
-    discret_->GetCondition("PatientSpecificData", pscond);
-    if (!pscond.size())
-    {
-      if (discret_->Comm().MyPID() == 0)
-      {
-        std::cout << "do we set up patspec stuff " << std::endl;
-      }
-      pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
-      // initialize patient specific parameters and conditions
-      PATSPEC::PatientSpecificGeometry(discret_, pslist_);
-    }
-  }
 
   // Check for porosity dofs within the structure and build a map extractor if necessary
   porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
@@ -1070,8 +1049,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     // for structure ale
     if (dismat_ != Teuchos::null) discret_->SetState(0, "material_displacement", (*dismat_)(0));
-
-    PATSPEC::ComputeEleInnerRadius(discret_);
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -2122,15 +2099,6 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
 
   // write output on micro-scale (multi-scale analysis)
   if (havemicromat_) OutputMicro();
-
-  // write patient specific output
-  if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
-  {
-    OutputPatspec();
-  }
-
-  // what's next?
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -3104,19 +3072,6 @@ void STR::TimInt::OutputNodalPositions()
 }
 
 /*----------------------------------------------------------------------*/
-/* output patient specific stuff */
-void STR::TimInt::OutputPatspec()
-{
-  // do the output for the patient specific conditions (if they exist)
-  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-  if (DRT::INPUT::IntegralValue<int>(patspec, "PATSPEC"))
-  {
-    PATSPEC::PatspecOutput(output_, discret_, pslist_);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disn, const Teuchos::RCP<Epetra_Vector> vel,
@@ -3222,11 +3177,6 @@ void STR::TimInt::ApplyForceInternal(const double time, const double dt,
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-
-  // compute new inner radius
-  discret_->ClearState();
-  discret_->SetState("displacement", dis);
-  PATSPEC::ComputeEleInnerRadius(discret_);
 
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements

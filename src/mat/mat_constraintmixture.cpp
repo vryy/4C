@@ -1304,14 +1304,6 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const LINALG::Matrix<NUM_STRESS
   double fac_stress = 0.0;
 
   //--------------------------------------------------------------------------------------
-  // prestress time
-  //  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  //  INPAR::STR::PreStress pstype =
-  //  Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS"); double pstime = -1.0 *
-  //  params_->lifetime_ - dt; if (pstype == INPAR::STR::PreStress::mulf)
-  //    pstime = pslist.get<double>("PRESTRESSTIME");
-
-  //--------------------------------------------------------------------------------------
   // calculate stress and elasticity matrix
   for (int idpast = minindex_; idpast < sizehistory - firstiter; idpast++)
   {

@@ -12,7 +12,6 @@
 #include "lib_dserror.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "patspec.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "contact_analytical.H"
@@ -97,11 +96,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else
     dserror("Unknown type of action for So_tet10");
-
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)
