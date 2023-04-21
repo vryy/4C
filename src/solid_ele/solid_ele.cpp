@@ -185,8 +185,17 @@ void DRT::ELEMENTS::SolidType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::SolidType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  // todo make this work for 3D
-  dserror("Not implemented yet!");
+  switch (numdof)
+  {
+    case 3:
+      return LINALG::ComputeSolid3DNullSpace(node, x0);
+    case 2:
+      return LINALG::ComputeSolid2DNullSpace(node, x0);
+    default:
+      dserror(
+          "The null space computation of a solid element of dimension %d is not yet implemented",
+          numdof);
+  }
   exit(1);
 }
 
@@ -240,8 +249,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
   {
     return DRT::UTILS::ElementBoundaryFactory<StructuralLine, Solid>(DRT::UTILS::buildLines, this);
   }
-  else if (NumLine() ==
-           1)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
+  else if (NumLine() == 1)  // 1D boundary element and 1D parent element -> body load
+                            // (calculated in evaluate)
   {
     // 1D (we return the element itself)
     std::vector<Teuchos::RCP<Element>> surfaces(1);
@@ -268,8 +277,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
   if (NumSurface() > 1)  // 2D boundary element and 3D parent element
     return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, Solid>(
         DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() ==
-           1)  // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
+  else if (NumSurface() == 1)  // 2D boundary element and 2D parent element -> body load
+                               // (calculated in evaluate)
   {
     // 2D (we return the element itself)
     std::vector<Teuchos::RCP<Element>> surfaces(1);
@@ -285,8 +294,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Volumes()
 {
-  if (NumVolume() ==
-      1)  // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
+  if (NumVolume() == 1)  // 3D boundary element and a 3D parent element -> body load
+                         // (calculated in evaluate)
   {
     std::vector<Teuchos::RCP<Element>> volumes(1);
     volumes[0] = Teuchos::rcp(this, false);
