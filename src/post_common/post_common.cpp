@@ -26,10 +26,10 @@
 #include "rigidsphere.H"
 #include "inpar_problemtype.H"
 
-#include "pss_full_cpp.h"
+#include "io_legacy_table_cpp.h"
 extern "C"
 {
-#include "pss_full_table_iter.h"
+#include "io_legacy_table_iter.h"
 }
 
 /*----------------------------------------------------------------------*
@@ -298,7 +298,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
     {
       first_result = first_result->next;
     }
-    const INT first_step = map_read_int(symbol_map(first_result), "step");
+    const int first_step = map_read_int(symbol_map(first_result), "step");
 
 
     /*------------------------------------------------------------------*/
@@ -319,7 +319,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* find the previous results */
     {
-      INT counter = 0;
+      int counter = 0;
 
       /*
        * the dummy_symbol is a hack that allows us to treat all results
@@ -331,7 +331,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
       while (previous_results->next != NULL)
       {
         SYMBOL* result;
-        INT step;
+        int step;
         result = previous_results->next;
         step = map_read_int(symbol_map(result), "step");
 
@@ -362,7 +362,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* find the previous mesh files */
     {
-      INT counter = 0;
+      int counter = 0;
 
       /*
        * the dummy_symbol is a hack that allows us to treat all results
@@ -374,7 +374,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
       while (previous_fields->next != NULL)
       {
         SYMBOL* field;
-        INT step;
+        int step;
         field = previous_fields->next;
         step = map_read_int(symbol_map(field), "step");
 
@@ -1196,7 +1196,7 @@ int PostResult::next_result()
        * the real numbers, too. Maybe that's the best way to handle
        * it. */
       /* In case of FSI everything else hurts even more. */
-      const INT step = map_read_int(map, "step");
+      const int step = map_read_int(map, "step");
 
       /* we are only interessted if the result matches the slice */
       if ((step >= problem->start()) && ((step <= problem->end()) || (problem->end() == -1)) &&

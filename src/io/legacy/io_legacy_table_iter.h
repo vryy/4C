@@ -7,10 +7,10 @@
 
 ---------------------------------------------------------------------*/
 
-#ifndef PSS_FULL_TABLE_ITER_H
-#define PSS_FULL_TABLE_ITER_H
+#ifndef IO_LEGACY_TABLE_ITER_H
+#define IO_LEGACY_TABLE_ITER_H
 
-#include "pss_full_table.h"
+#include "io_legacy_table.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ typedef struct _STACK_ELEMENT
 /*----------------------------------------------------------------------*/
 typedef struct _STACK
 {
-  INT count;
+  int count;
   STACK_ELEMENT head;
 } STACK;
 
@@ -63,7 +63,7 @@ typedef struct _MAP_ITERATOR
 
 void init_map_iterator(MAP_ITERATOR* iterator, MAP* map);
 
-INT next_map_node(MAP_ITERATOR* iterator);
+int next_map_node(MAP_ITERATOR* iterator);
 
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
 

@@ -9,8 +9,7 @@ Iterate the symbol table and visit all entries.
 
 ---------------------------------------------------------------------*/
 
-#include "pss_full_table_iter.h"
-#include "pss_full_prototypes.h"
+#include "io_legacy_table_iter.h"
 #include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
@@ -41,7 +40,7 @@ static void push_map_node(MAP_ITERATOR* iterator, MAP_NODE* map_node)
 {
   STACK_ELEMENT* new_element;
 
-  new_element = (STACK_ELEMENT*)CCACALLOC(1, sizeof(STACK_ELEMENT));
+  new_element = (STACK_ELEMENT*)calloc(1, sizeof(STACK_ELEMENT));
   new_element->map_node = map_node;
   new_element->snext = iterator->stack.head.snext;
   iterator->stack.head.snext = new_element;
@@ -69,7 +68,7 @@ static void pop_map_node(MAP_ITERATOR* iterator)
     tmp_free = iterator->stack.head.snext;
     iterator->stack.head.snext = iterator->stack.head.snext->snext;
     iterator->stack.count--;
-    CCAFREE(tmp_free);
+    free(tmp_free);
   }
 }
 
@@ -84,9 +83,9 @@ static void pop_map_node(MAP_ITERATOR* iterator)
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-INT next_map_node(MAP_ITERATOR* iterator)
+int next_map_node(MAP_ITERATOR* iterator)
 {
-  INT result = 0;
+  int result = 0;
 
   /* if the map is empty there is nothing to iterate */
   if (iterator->map != NULL)

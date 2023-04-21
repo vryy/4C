@@ -13,8 +13,7 @@
 *----------------------------------------------------------------------*/
 #include <string.h>
 #include "lib_dserror.H"
-#include "pss_full_am.h"
-#include "pss_full_prototypes.h"
+#include "s8_array.h"
 
 
 /*----------------------------------------------------------------------*
@@ -27,204 +26,11 @@
 *//*! @{ (documentation module open)*/
 
 
-/*!----------------------------------------------------------------------
-\brief counter of memory in byte
-
-<pre>                                                         m.gee 02/02
-defined in pss_am.c
-</pre>
-
-*----------------------------------------------------------------------*/
-#if defined(DEBUG) || defined(MEMDEBUG)
-long int num_byte_allocated;
-
-/*!----------------------------------------------------------------------
-\brief size of a DOUBLE in byte
-
-<pre>                                                         m.gee 02/02
-in debug mode all memory is allocated one DOUBLE bigger then
-asked for, so the size of what was allocated can be stored
-</pre>
-\sa ShiftPointer() , MYBYTE
-
-*----------------------------------------------------------------------*/
-#define DWORD (sizeof(DOUBLE))
-
-/*!----------------------------------------------------------------------
-\brief exactly one byte
-
-<pre>                                                         m.gee 02/02
-in debug mode all memory is allocated one DOUBLE bigger then
-asked for, so the size of what was allocated can be stored
-This variable is used by the function ShiftPointer
-</pre>
-\sa ShiftPointer() , DWORD
-
-*----------------------------------------------------------------------*/
-#define MYBYTE (sizeof(unsigned char))
-#endif
-
-
-
-/*!----------------------------------------------------------------------
-\brief redefinition of malloc DEBUG version
-
-<pre>                                                         m.gee 2/02
-bhaves exactly like malloc conform to ansi c standard
-if compiled with DEBUG define, it counts the allocated memory
-</pre>
-\sa CCACALLOC() , CCAREALLOC() , CCAFREE()
-
-*----------------------------------------------------------------------*/
-#if defined(DEBUG) || defined(MEMDEBUG)
-void *CCAMALLOC(unsigned size)
-{
-  char *buf;
-
-  buf = (char *)malloc((size_t)(size + DWORD));
-  if (!buf) dserror("Allocation of memory failed");
-  ((INT *)buf)[0] = size;
-  num_byte_allocated += (size + DWORD);
-  return (void *)(buf + DWORD);
-} /* end of CCAMALLOC */
-/*----------------------------------------------------------------------*
- | redefinition of malloc FAST version                        m.gee 2/02|
- | bhaves exactly like malloc conform to ansi c standard                |
- *----------------------------------------------------------------------*/
-#else
-void *CCAMALLOC(unsigned size)
-{
-  void *buf;
-  /*assert(size>0);*/
-  buf = malloc((size_t)size);
-  if (!buf) dserror("Allocation of memory failed");
-  return (void *)(buf);
-} /* end of CCAMALLOC */
-#endif
-
-
-
-/*!----------------------------------------------------------------------
-\brief redefinition of calloc DEBUG version
-
-<pre>                                                         m.gee 2/02
-bhaves exactly like calloc conform to ansi c standard
-if compiled with DEBUG define, it counts the allocated memory
-</pre>
-\sa CCAMALLOC() , CCAREALLOC() , CCAFREE()
-
-*----------------------------------------------------------------------*/
-#if defined(DEBUG) || defined(MEMDEBUG)
-void *CCACALLOC(INT num, INT size)
-{
-  char *buf;
-  buf = (char *)calloc((size_t)(num * size + DWORD), (size_t)MYBYTE);
-  if (!buf) dserror("Allocation of memory failed");
-  ((INT *)buf)[0] = size * num;
-  num_byte_allocated += (num * size + DWORD);
-  return (void *)(buf + DWORD);
-} /* end of CCACALLOC */
-/*----------------------------------------------------------------------*
- | redefinition of calloc FAST version                    m.gee 2/02    |
- | bhaves exactly like calloc conform to ansi c standard                |
- *----------------------------------------------------------------------*/
-#else
-void *CCACALLOC(INT num, INT size)
-{
-  void *buf;
-  /*assert(num*size>0);*/
-  buf = calloc((size_t)num, (size_t)size);
-  if (!buf) dserror("Allocation of memory failed");
-  return (void *)(buf);
-} /* end of CCACALLOC */
-#endif
-
-
-
-/*!----------------------------------------------------------------------
-\brief redefinition of realloc DEBUG version
-
-<pre>                                                         m.gee 2/02
-bhaves exactly like realloc conform to ansi c standard
-if compiled with DEBUG define, it counts the allocated memory
-</pre>
-\sa CCACALLOC() , CCAMALLOC() , CCAFREE()
-
-*----------------------------------------------------------------------*/
-#if defined(DEBUG) || defined(MEMDEBUG)
-void *CCAREALLOC(void *oldptr, INT size)
-{
-  INT n;
-  char *buf = ((char *)oldptr) - DWORD;
-  if (!oldptr) dserror("Tried to realloc NULL pointer");
-  if (!buf) dserror("Tried to realloc NULL-DWORD pointer");
-  n = ((INT *)buf)[0];
-  num_byte_allocated -= (n + DWORD);
-  buf = (char *)realloc(buf, (size_t)(size + DWORD));
-  if (!buf) dserror("Allocation of memory failed");
-  ((INT *)buf)[0] = size;
-  num_byte_allocated += (size + DWORD);
-  return (void *)(buf + DWORD);
-} /* end of CCAREALLOC */
-/*----------------------------------------------------------------------*
- | redefinition of realloc FAST version                  m.gee 2/02     |
- | bhaves exactly like realloc conform to ansi c standard               |
- *----------------------------------------------------------------------*/
-#else
-void *CCAREALLOC(void *oldptr, INT size)
-{
-  void *buf;
-  /*assert(size>0);*/
-  buf = realloc(oldptr, (size_t)size);
-  if (!buf) dserror("Allocation of memory failed");
-  return (void *)(buf);
-} /* end of CCAREALLOC */
-#endif
-
-
-
-/*!----------------------------------------------------------------------
-\brief redefinition of free DEBUG version
-
-<pre>                                                         m.gee 2/02
-bhaves exactly like free conform to ansi c standard
-if compiled with DEBUG define, it counts the allocated memory
-</pre>
-\sa CCACALLOC() , CCAMALLOC() , CCAREALLOC()
-
-*----------------------------------------------------------------------*/
-#if defined(DEBUG) || defined(MEMDEBUG)
-void *CCAFREE(void *oldptr)
-{
-  INT n;
-  char *p = ((char *)oldptr) - DWORD;
-  if (!oldptr) dserror("Tried to free NULL pointer");
-  if (!p) dserror("Tried to free NULL-DWORD pointer");
-  n = ((INT *)p)[0];
-  *((INT *)p) = 0;
-  num_byte_allocated -= (n + DWORD);
-  free(p);
-  return (oldptr = NULL);
-} /* end of FREE */
-/*----------------------------------------------------------------------*
- | redefinition of free FAST version                      m.gee 2/02    |
- | bhaves exactly like free conform to ansi c standard                  |
- *----------------------------------------------------------------------*/
-#else
-void *CCAFREE(void *oldptr)
-{
-  free(oldptr);
-  return (oldptr = NULL);
-} /* end of FREE */
-#endif
-
-
-
 /*!---------------------------------------------------------------------
 \brief define a 1 or 2 dimensional array in structure ARRAY
 
 <pre>                                                        m.gee 8/00
-allocate a 1 or 2 - D vector of type INT or DOUBLE in the structure
+allocate a 1 or 2 - D vector of type int or double in the structure
 memory is allocted and pointed to in the following style:
 
 1D arrays:
@@ -243,20 +49,20 @@ am-allocated 2D arrays therefore operate on the transpose of the array.
 </pre>
 \param namstr   char*   (i)   name of array
 \param a        ARRAY*  (i)   adress of structure ARRAY the vector lives in
-\param fdim     INT     (i)   first dimension of 2D vector dimension of 1D vector
-\param sdim     INT     (i)   scnd dimension of 2D vector
+\param fdim     int     (i)   first dimension of 2D vector dimension of 1D vector
+\param sdim     int     (i)   scnd dimension of 2D vector
 \param typstr   char[]  (i)   type of array to allocate
               ="IV"     allocate integer vector in a->a.iv
               ="IA"     allocate integer array  in a->a.ia
-              ="DV"     allocate DOUBLE vector in a->a.dv
-              ="DA"     allocate DOUBLE array  in a->a.da
+              ="DV"     allocate double vector in a->a.dv
+              ="DA"     allocate double array  in a->a.da
 \return void pointer to allocated memory
 \sa am4def()
 
 ------------------------------------------------------------------------*/
-void *amdef(char *namstr, ARRAY *a, INT fdim, INT sdim, char typstr[])
+void *amdef(char *namstr, ARRAY *a, int fdim, int sdim, char typstr[])
 {
-  register INT i = 0;
+  register int i = 0;
 
   dsassert(fdim > 0 && sdim > 0, "no empty array allowed");
 
@@ -286,25 +92,25 @@ void *amdef(char *namstr, ARRAY *a, INT fdim, INT sdim, char typstr[])
 next:
   switch (a->Typ)
   {
-    case cca_DA: /* -------------------------------------------DOUBLE array */
-      a->a.da = (DOUBLE **)CCAMALLOC((fdim * sizeof(DOUBLE *)));
-      a->a.da[0] = (DOUBLE *)CCAMALLOC((fdim * sdim * sizeof(DOUBLE)));
+    case cca_DA: /* -------------------------------------------double array */
+      a->a.da = (double **)malloc((fdim * sizeof(double *)));
+      a->a.da[0] = (double *)malloc((fdim * sdim * sizeof(double)));
       for (i = 1; i < fdim; i++) a->a.da[i] = &(a->a.da[0][i * sdim]);
       break;
 
 
     case cca_IA: /* ------------------------------------------integer array */
-      a->a.ia = (INT **)CCAMALLOC((fdim * sizeof(INT *)));
-      a->a.ia[0] = (INT *)CCAMALLOC((fdim * sdim * sizeof(INT)));
+      a->a.ia = (int **)malloc((fdim * sizeof(int *)));
+      a->a.ia[0] = (int *)malloc((fdim * sdim * sizeof(int)));
       for (i = 1; i < fdim; i++) a->a.ia[i] = &(a->a.ia[0][i * sdim]);
       break;
 
-    case cca_DV: /* ------------------------------------------DOUBLE vector */
-      a->a.dv = (DOUBLE *)CCAMALLOC((fdim * sdim * sizeof(DOUBLE)));
+    case cca_DV: /* ------------------------------------------double vector */
+      a->a.dv = (double *)malloc((fdim * sdim * sizeof(double)));
       break;
 
     case cca_IV: /* -----------------------------------------integer vector */
-      a->a.iv = (INT *)CCAMALLOC((fdim * sdim * sizeof(INT)));
+      a->a.iv = (int *)malloc((fdim * sdim * sizeof(int)));
       break;
 
     default:
@@ -323,7 +129,7 @@ next:
 <pre>                                                        m.gee 8/00
 changes an already allocated array a in dimensions
 a typecast of the values in the array is not possible
-(no INT to DOUBLE or vice versa transformation)
+(no int to double or vice versa transformation)
 
 a cast from iv to ia and from dv to da and vice versa is allowed
 
@@ -344,8 +150,8 @@ it does    : array[3][3] ->redefine-> array[9]
              values array[1..2][0..2] dropped, array[3..8]=0.0
 </pre>
 \param a         ARRAY* (i) adress of structure ARRAY the vector lives in
-\param newfdim   INT    (i) new first dimension of 2D vector dimension of 1D vector
-\param newsdim   INT    (i) new scnd dimension of 2D vector
+\param newfdim   int    (i) new first dimension of 2D vector dimension of 1D vector
+\param newsdim   int    (i) new scnd dimension of 2D vector
 \param newtypstr char[] (i) type the array shall be reallocated to
                  ="IV"  convert existing iv or ia to iv
                  ="IA"  convert existing iv or ia to ia
@@ -356,9 +162,9 @@ it does    : array[3][3] ->redefine-> array[9]
 \sa am4redef()
 
 ------------------------------------------------------------------------*/
-void *amredef(ARRAY *a, INT newfdim, INT newsdim, char newtypstr[])
+void *amredef(ARRAY *a, int newfdim, int newsdim, char newtypstr[])
 {
-  INT i, j;
+  int i, j;
   enum
   {
     amredefvoid,
@@ -367,7 +173,7 @@ void *amredef(ARRAY *a, INT newfdim, INT newsdim, char newtypstr[])
     newDV,
     newDA
   } newtyp = amredefvoid;
-  INT size1, size2;
+  int size1, size2;
   ARRAY copyarray;
 
   /*--------------------------------------- find out the new typ of array */
@@ -578,7 +384,7 @@ array->mytracer = NULL
 *----------------------------------------------------------------------*/
 void amdel(ARRAY *array)
 {
-  INT size;
+  int size;
 
   /*-------------------------------------------------delete name of array */
   strncpy(array->name, "DELETED", 9);
@@ -586,20 +392,36 @@ void amdel(ARRAY *array)
   switch (array->Typ)
   {
     case cca_DA:
-      if (array->sdim) CCAFREE(array->a.da[0]);
-      if (array->fdim) array->a.da = CCAFREE(array->a.da);
+      if (array->sdim) free(array->a.da[0]);
+      if (array->fdim)
+      {
+        free(array->a.da);
+        array->a.da = NULL;
+      }
       break;
     case cca_IA:
-      if (array->sdim) CCAFREE(array->a.ia[0]);
-      if (array->fdim) array->a.ia = CCAFREE(array->a.ia);
+      if (array->sdim) free(array->a.ia[0]);
+      if (array->fdim)
+      {
+        free(array->a.ia);
+        array->a.ia = NULL;
+      }
       break;
     case cca_DV:
       size = array->fdim * array->sdim;
-      if (size) array->a.dv = CCAFREE(array->a.dv);
+      if (size)
+      {
+        free(array->a.dv);
+        array->a.dv = NULL;
+      }
       break;
     case cca_IV:
       size = array->fdim * array->sdim;
-      if (size) array->a.iv = CCAFREE(array->a.iv);
+      if (size)
+      {
+        free(array->a.iv);
+        array->a.iv = NULL;
+      }
       break;
     default:
       dserror("Unknown type of array given");
@@ -620,7 +442,7 @@ void amdel(ARRAY *array)
 
 <pre>                                                         m.gee 8/00
 initializes the content of the ARRAY array to zero
-put 0 to integer fields, 0.0 to DOUBLE fields
+put 0 to integer fields, 0.0 to double fields
 </pre>
 \param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
 \return void
@@ -629,10 +451,10 @@ put 0 to integer fields, 0.0 to DOUBLE fields
 *----------------------------------------------------------------------*/
 void amzero(ARRAY *array)
 {
-  register INT i;
-  INT dim;
-  INT *iptr;
-  DOUBLE *dptr;
+  register int i;
+  int dim;
+  int *iptr;
+  double *dptr;
 
   /*----------------------------------------------------------------------*/
   dim = (array->fdim) * (array->sdim);
@@ -671,7 +493,7 @@ to avoid warnings in compilation, the call has to take the form
 amscal(&val,(void*)(&int_one));
 or
 amscal(&val,(void*)(&double_one));
-depending on whether val holds an INT or DOUBLE array
+depending on whether val holds an int or double array
 </pre>
 \param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
 \param value  void*  (i)   adress of scaling value casted to void
@@ -681,33 +503,33 @@ depending on whether val holds an INT or DOUBLE array
 *----------------------------------------------------------------------*/
 void amscal(ARRAY *array, void *value)
 {
-  register INT i;
-  INT dim;
-  INT *ivalue;
-  DOUBLE *dvalue;
-  INT *iptr;
-  DOUBLE *dptr;
+  register int i;
+  int dim;
+  int *ivalue;
+  double *dvalue;
+  int *iptr;
+  double *dptr;
   /*----------------------------------------------------------------------*/
   dim = (array->fdim) * (array->sdim);
   switch (array->Typ)
   {
     case cca_DA:
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.da[0];
       for (i = 0; i < dim; i++) *(dptr++) *= (*dvalue);
       break;
     case cca_DV:
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.dv;
       for (i = 0; i < dim; i++) *(dptr++) *= (*dvalue);
       break;
     case cca_IA:
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.ia[0];
       for (i = 0; i < dim; i++) *(iptr++) *= (*ivalue);
       break;
     case cca_IV:
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.iv;
       for (i = 0; i < dim; i++) *(iptr++) *= (*ivalue);
       break;
@@ -727,7 +549,7 @@ to avoid warnings in compilation, the call has to take the form
 aminit(&val,(void*)(&int_one));
 or
 aminit(&val,(void*)(&double_one));
-depending on whether val holds an INT or DOUBLE array
+depending on whether val holds an int or double array
 </pre>
 \param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
 \param value  void*  (i)   adress of value casted to void
@@ -737,33 +559,33 @@ depending on whether val holds an INT or DOUBLE array
 *----------------------------------------------------------------------*/
 void aminit(ARRAY *array, void *value)
 {
-  register INT i;
-  INT dim;
-  INT *ivalue;
-  DOUBLE *dvalue;
-  INT *iptr;
-  DOUBLE *dptr;
+  register int i;
+  int dim;
+  int *ivalue;
+  double *dvalue;
+  int *iptr;
+  double *dptr;
   /*----------------------------------------------------------------------*/
   dim = (array->fdim) * (array->sdim);
   switch (array->Typ)
   {
     case cca_DA:
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.da[0];
       for (i = 0; i < dim; i++) *(dptr++) = *dvalue;
       break;
     case cca_DV:
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.dv;
       for (i = 0; i < dim; i++) *(dptr++) = *dvalue;
       break;
     case cca_IA:
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.ia[0];
       for (i = 0; i < dim; i++) *(iptr++) = *ivalue;
       break;
     case cca_IV:
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.iv;
       for (i = 0; i < dim; i++) *(iptr++) = *ivalue;
       break;
@@ -791,10 +613,10 @@ user must provide an previously NOT allocted structure array_to
 *----------------------------------------------------------------------*/
 void *am_alloc_copy(ARRAY *array_from, ARRAY *array_to)
 {
-  register INT i;
-  INT dim;
-  INT *iptr_from, *iptr_to;
-  DOUBLE *dptr_from, *dptr_to;
+  register int i;
+  int dim;
+  int *iptr_from, *iptr_to;
+  double *dptr_from, *dptr_to;
   /*----------------------------------------------------------------------*/
   dim = array_from->fdim * array_from->sdim;
   switch (array_from->Typ)
@@ -846,10 +668,10 @@ user must provide exisiting arrays of matching type and size!
 *----------------------------------------------------------------------*/
 void *amcopy(ARRAY *array_from, ARRAY *array_to)
 {
-  register INT i;
-  INT dim1, dim2;
-  INT *iptr_from, *iptr_to;
-  DOUBLE *dptr_from, *dptr_to;
+  register int i;
+  int dim1, dim2;
+  int *iptr_from, *iptr_to;
+  double *dptr_from, *dptr_to;
   dim1 = array_from->fdim * array_from->sdim;
   dim2 = array_to->fdim * array_to->sdim;
   if (dim1 != dim2) dserror("mismatching dimensions, cannot copy ARRAYs");
@@ -895,21 +717,21 @@ user must provide matching array-types and sufficient space in array_to
 </pre>
 \param array_from  ARRAY* (i)   adress of existing structure to be added from
 \param array_to    ARRAY* (i/o) adress of existing structure to be added to
-\param factor      DOUBLE (i)   scaling factor of array_from
-\param init        INT    (i)   init flag
+\param factor      double (i)   scaling factor of array_from
+\param init        int    (i)   init flag
 \return void
-\warning In the case of INT-arrays round_off takes place !
+\warning In the case of int-arrays round_off takes place !
 \sa aminit() , amscal() , amcopy() , am_alloc_copy()
 
 *----------------------------------------------------------------------*/
-void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init)
+void amadd(ARRAY *array_to, ARRAY *array_from, double factor, int init)
 {
-  register INT i, j;
-  INT fdim, sdim;
-  DOUBLE **dafrom, **dato;
-  DOUBLE *dvfrom, *dvto;
-  INT **iafrom, **iato;
-  INT *ivfrom, *ivto;
+  register int i, j;
+  int fdim, sdim;
+  double **dafrom, **dato;
+  double *dvfrom, *dvto;
+  int **iafrom, **iato;
+  int *ivfrom, *ivto;
   /*----------------------------------------------------------------------*/
   if (array_to->Typ != array_from->Typ) dserror("Mismatch of Types");
   /*----------------------------------------------------------------------*/
@@ -939,7 +761,7 @@ void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init)
       iafrom = array_from->a.ia;
       iato = array_to->a.ia;
       for (i = 0; i < fdim; i++)
-        for (j = 0; j < sdim; j++) iato[i][j] += (INT)((DOUBLE)iafrom[i][j] * factor);
+        for (j = 0; j < sdim; j++) iato[i][j] += (int)((double)iafrom[i][j] * factor);
       break;
     case cca_IV:
       fdim = array_to->fdim * array_to->sdim;
@@ -947,7 +769,7 @@ void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init)
       fdim = IMIN(fdim, sdim);
       ivfrom = array_from->a.iv;
       ivto = array_to->a.iv;
-      for (i = 0; i < fdim; i++) ivto[i] += (INT)((DOUBLE)ivfrom[i] * factor);
+      for (i = 0; i < fdim; i++) ivto[i] += (int)((double)ivfrom[i] * factor);
       break;
     default:
       dserror("Unknown type of array given");
@@ -962,7 +784,7 @@ void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init)
 \brief define a 3 or 4 dimensional array in structure ARRAY4D
 
 <pre>                                                        m.gee 12/01
-allocate a 3 or 4 - D vector of type INT or DOUBLE in the structure
+allocate a 3 or 4 - D vector of type int or double in the structure
 In the case of 3D arrays, the fourth dimension fodim must be zero.
 
 memory is allocted and pointed to in the following style:
@@ -983,23 +805,23 @@ am-allocated 3/4D arrays therefore operate on the transpose of the array.
 </pre>
 \param namstr    char*    (i)   name of array
 \param a         ARRAY4D* (i/o) adress of structure ARRAY4D the vector lives in
-\param fdim      INT      (i)   first dimension of 2D vector dimension of 1D vector
-\param sdim      INT      (i)   scnd dimension of 2D vector
-\param tdim      INT      (i)   thrd dimension of 2D vector
-\param fodim     INT      (i)   fourth dimension of 2D vector
+\param fdim      int      (i)   first dimension of 2D vector dimension of 1D vector
+\param sdim      int      (i)   scnd dimension of 2D vector
+\param tdim      int      (i)   thrd dimension of 2D vector
+\param fodim     int      (i)   fourth dimension of 2D vector
 \param typstr    char[]   (i)   type of array to allocate
                  ="I3"     allocate integer vector in a->a.i3
-                 ="I4"     allocate DOUBLE array  in a->a.i4
+                 ="I4"     allocate double array  in a->a.i4
                  ="D3"     allocate integer vector in a->a.d3
-                 ="D4"     allocate DOUBLE array  in a->a.d4
+                 ="D4"     allocate double array  in a->a.d4
 \return void pointer to allocated memory
 \sa amdef() , am4redef
 
 ------------------------------------------------------------------------*/
-void *am4def(char *namstr, ARRAY4D *a, INT fdim, INT sdim, INT tdim, INT fodim, char typstr[])
+void *am4def(char *namstr, ARRAY4D *a, int fdim, int sdim, int tdim, int fodim, char typstr[])
 {
-  register INT i;
-  INT endloop;
+  register int i;
+  int endloop;
   strcpy(a->name, namstr);
   a->fdim = fdim;
   a->sdim = sdim;
@@ -1028,33 +850,33 @@ void *am4def(char *namstr, ARRAY4D *a, INT fdim, INT sdim, INT tdim, INT fodim, 
 next:
   switch (a->Typ)
   {
-    case cca_D3: /* --------------------------------------------DOUBLE D3 array */
+    case cca_D3: /* --------------------------------------------double D3 array */
       if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-      a->a.d3 = (DOUBLE ***)CCAMALLOC((fdim * sizeof(DOUBLE **)));
-      a->a.d3[0] = (DOUBLE **)CCAMALLOC((fdim * sdim * sizeof(DOUBLE *)));
-      a->a.d3[0][0] = (DOUBLE *)CCAMALLOC((fdim * sdim * tdim * sizeof(DOUBLE)));
+      a->a.d3 = (double ***)malloc((fdim * sizeof(double **)));
+      a->a.d3[0] = (double **)malloc((fdim * sdim * sizeof(double *)));
+      a->a.d3[0][0] = (double *)malloc((fdim * sdim * tdim * sizeof(double)));
 
       for (i = 1; i < fdim; i++) a->a.d3[i] = &(a->a.d3[0][i * sdim]);
       endloop = fdim * sdim;
       for (i = 1; i < endloop; i++) a->a.d3[0][i] = &(a->a.d3[0][0][i * tdim]);
       break;
 
-    case cca_I3: /* ----------------------------------------------INT I3 array */
+    case cca_I3: /* ----------------------------------------------int I3 array */
       if (fodim != 0) dserror("Illegal fourth dimension in call to am4def");
-      a->a.i3 = (INT ***)CCAMALLOC((fdim * sizeof(INT **)));
-      a->a.i3[0] = (INT **)CCAMALLOC((fdim * sdim * sizeof(INT *)));
-      a->a.i3[0][0] = (INT *)CCAMALLOC((fdim * sdim * tdim * sizeof(INT)));
+      a->a.i3 = (int ***)malloc((fdim * sizeof(int **)));
+      a->a.i3[0] = (int **)malloc((fdim * sdim * sizeof(int *)));
+      a->a.i3[0][0] = (int *)malloc((fdim * sdim * tdim * sizeof(int)));
 
       for (i = 1; i < fdim; i++) a->a.i3[i] = &(a->a.i3[0][i * sdim]);
       endloop = fdim * sdim;
       for (i = 1; i < endloop; i++) a->a.i3[0][i] = &(a->a.i3[0][0][i * tdim]);
       break;
 
-    case cca_D4: /* --------------------------------------------DOUBLE D4 array */
-      a->a.d4 = (DOUBLE ****)CCAMALLOC((fdim * sizeof(DOUBLE ***)));
-      a->a.d4[0] = (DOUBLE ***)CCAMALLOC((fdim * sdim * sizeof(DOUBLE **)));
-      a->a.d4[0][0] = (DOUBLE **)CCAMALLOC((fdim * sdim * tdim * sizeof(DOUBLE *)));
-      a->a.d4[0][0][0] = (DOUBLE *)CCAMALLOC((fdim * sdim * tdim * fodim * sizeof(DOUBLE)));
+    case cca_D4: /* --------------------------------------------double D4 array */
+      a->a.d4 = (double ****)malloc((fdim * sizeof(double ***)));
+      a->a.d4[0] = (double ***)malloc((fdim * sdim * sizeof(double **)));
+      a->a.d4[0][0] = (double **)malloc((fdim * sdim * tdim * sizeof(double *)));
+      a->a.d4[0][0][0] = (double *)malloc((fdim * sdim * tdim * fodim * sizeof(double)));
 
       for (i = 1; i < fdim; i++) a->a.d4[i] = &(a->a.d4[0][i * sdim]);
       endloop = fdim * sdim;
@@ -1063,11 +885,11 @@ next:
       for (i = 1; i < endloop; i++) a->a.d4[0][0][i] = &(a->a.d4[0][0][0][i * fodim]);
       break;
 
-    case cca_I4: /* ----------------------------------------------INT I4 array */
-      a->a.i4 = (INT ****)CCAMALLOC((fdim * sizeof(INT ***)));
-      a->a.i4[0] = (INT ***)CCAMALLOC((fdim * sdim * sizeof(INT **)));
-      a->a.i4[0][0] = (INT **)CCAMALLOC((fdim * sdim * tdim * sizeof(INT *)));
-      a->a.i4[0][0][0] = (INT *)CCAMALLOC((fdim * sdim * tdim * fodim * sizeof(INT)));
+    case cca_I4: /* ----------------------------------------------int I4 array */
+      a->a.i4 = (int ****)malloc((fdim * sizeof(int ***)));
+      a->a.i4[0] = (int ***)malloc((fdim * sdim * sizeof(int **)));
+      a->a.i4[0][0] = (int **)malloc((fdim * sdim * tdim * sizeof(int *)));
+      a->a.i4[0][0][0] = (int *)malloc((fdim * sdim * tdim * fodim * sizeof(int)));
 
       for (i = 1; i < fdim; i++) a->a.i4[i] = &(a->a.i4[0][i * sdim]);
       endloop = fdim * sdim;
@@ -1112,26 +934,30 @@ void am4del(ARRAY4D *array)
   switch (array->Typ)
   {
     case cca_D3:
-      CCAFREE(array->a.d3[0][0]);
-      CCAFREE(array->a.d3[0]);
-      array->a.d3 = CCAFREE(array->a.d3);
+      free(array->a.d3[0][0]);
+      free(array->a.d3[0]);
+      free(array->a.d3);
+      array->a.d3 = NULL;
       break;
     case cca_I3:
-      CCAFREE(array->a.i3[0][0]);
-      CCAFREE(array->a.i3[0]);
-      array->a.i3 = CCAFREE(array->a.i3);
+      free(array->a.i3[0][0]);
+      free(array->a.i3[0]);
+      free(array->a.i3);
+      array->a.i3 = NULL;
       break;
     case cca_D4:
-      CCAFREE(array->a.d4[0][0][0]);
-      CCAFREE(array->a.d4[0][0]);
-      CCAFREE(array->a.d4[0]);
-      array->a.d4 = CCAFREE(array->a.d4);
+      free(array->a.d4[0][0][0]);
+      free(array->a.d4[0][0]);
+      free(array->a.d4[0]);
+      free(array->a.d4);
+      array->a.d4 = NULL;
       break;
     case cca_I4:
-      CCAFREE(array->a.i4[0][0][0]);
-      CCAFREE(array->a.i4[0][0]);
-      CCAFREE(array->a.i4[0]);
-      array->a.i4 = CCAFREE(array->a.i4);
+      free(array->a.i4[0][0][0]);
+      free(array->a.i4[0][0]);
+      free(array->a.i4[0]);
+      free(array->a.i4);
+      array->a.i4 = NULL;
       break;
     default:
       dserror("Unknown type of array given");
@@ -1148,7 +974,7 @@ void am4del(ARRAY4D *array)
 
 <pre>                                                         m.gee 12/01
 initializes the content of the ARRAY4D array to zero
-put 0 to integer fields, 0.0 to DOUBLE fields
+put 0 to integer fields, 0.0 to double fields
 </pre>
 \param array  ARRAY* (i/o) adress of structure ARRAY the vector lives in
 \return void
@@ -1157,10 +983,10 @@ put 0 to integer fields, 0.0 to DOUBLE fields
 *----------------------------------------------------------------------*/
 void am4zero(ARRAY4D *array)
 {
-  register INT i;
-  INT dim;
-  INT *iptr;
-  DOUBLE *dptr;
+  register int i;
+  int dim;
+  int *iptr;
+  double *dptr;
   switch (array->Typ)
   {
     case cca_D3:
@@ -1200,7 +1026,7 @@ to avoid warnings in compilation, the call has to take the form
 am4init(&val,(void*)(&int_one));
 or
 am4init(&val,(void*)(&double_one));
-depending on whether val holds an INT or DOUBLE array
+depending on whether val holds an int or double array
 </pre>
 \param array  ARRAY4D* (i/o) adress of structure ARRAY4D the vector lives in
 \param value  void*  (i)   adress of value casted to void
@@ -1210,35 +1036,35 @@ depending on whether val holds an INT or DOUBLE array
 *----------------------------------------------------------------------*/
 void am4init(ARRAY4D *array, void *value)
 {
-  register INT i;
-  INT dim;
-  INT *ivalue;
-  DOUBLE *dvalue;
-  INT *iptr;
-  DOUBLE *dptr;
+  register int i;
+  int dim;
+  int *ivalue;
+  double *dvalue;
+  int *iptr;
+  double *dptr;
   switch (array->Typ)
   {
     case cca_D3:
       dim = (array->fdim) * (array->sdim) * (array->tdim);
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.d3[0][0];
       for (i = 0; i < dim; i++) *(dptr++) = *dvalue;
       break;
     case cca_D4:
       dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
-      dvalue = (DOUBLE *)value;
+      dvalue = (double *)value;
       dptr = array->a.d4[0][0][0];
       for (i = 0; i < dim; i++) *(dptr++) = *dvalue;
       break;
     case cca_I3:
       dim = (array->fdim) * (array->sdim) * (array->tdim);
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.i3[0][0];
       for (i = 0; i < dim; i++) *(iptr++) = *ivalue;
       break;
     case cca_I4:
       dim = (array->fdim) * (array->sdim) * (array->tdim) * (array->fodim);
-      ivalue = (INT *)value;
+      ivalue = (int *)value;
       iptr = array->a.i4[0][0][0];
       for (i = 0; i < dim; i++) *(iptr++) = *ivalue;
       break;
@@ -1266,10 +1092,10 @@ user must provide an previously NOT allocted structure array_to
 *----------------------------------------------------------------------*/
 void *am4_alloc_copy(ARRAY4D *array_from, ARRAY4D *array_to)
 {
-  register INT i;
-  INT dim;
-  INT *iptr_from, *iptr_to;
-  DOUBLE *dptr_from, *dptr_to;
+  register int i;
+  int dim;
+  int *iptr_from, *iptr_to;
+  double *dptr_from, *dptr_to;
   switch (array_from->Typ)
   {
     case cca_D3:
@@ -1327,10 +1153,10 @@ user must provide exisiting arrays of matching type and size!
 *----------------------------------------------------------------------*/
 void *am4copy(ARRAY4D *array_from, ARRAY4D *array_to)
 {
-  register INT i;
-  INT dim, dimnew;
-  INT *iptr_from, *iptr_to;
-  DOUBLE *dptr_from, *dptr_to;
+  register int i;
+  int dim, dimnew;
+  int *iptr_from, *iptr_to;
+  double *dptr_from, *dptr_to;
   if (array_from->Typ != array_to->Typ)
     dserror("mismatching typ of ARRAY4Ds, cannot copy ARRAY4Ds");
   /*----------------------------------------------------------------------*/
@@ -1384,7 +1210,7 @@ void *am4copy(ARRAY4D *array_from, ARRAY4D *array_to)
 <pre>                                                        m.gee 12/01
 changes an already allocated array a in dimensions
 a typecast of the values in the array is not possible
-(no INT to DOUBLE or vice versa transformation)
+(no int to double or vice versa transformation)
 
 a cast between 3D and 4D arrays is NOT allowed
 
@@ -1404,19 +1230,19 @@ Additional memory in in redefined array is set to zero
 
 </pre>
 \param a         ARRAY4D* (i/o) adress of structure ARRAY the vector lives in
-\param newfdim   INT      (i)   new first dimension of 3/4D array dimension
-\param newsdim   INT      (i)   new scnd dimension of 3/4D array
-\param newtdim   INT      (i)   new thrd dimension of 3/4D array
-\param newfodim  INT      (i)   new fourth dimension of 3/4D array
+\param newfdim   int      (i)   new first dimension of 3/4D array dimension
+\param newsdim   int      (i)   new scnd dimension of 3/4D array
+\param newtdim   int      (i)   new thrd dimension of 3/4D array
+\param newfodim  int      (i)   new fourth dimension of 3/4D array
 \warning This routine can be very expensive
 \return void pointer to reallocated and reorganized memory
 \sa amredef()
 
 ------------------------------------------------------------------------*/
-void *am4redef(ARRAY4D *array, INT newfdim, INT newsdim, INT newtdim, INT newfodim)
+void *am4redef(ARRAY4D *array, int newfdim, int newsdim, int newtdim, int newfodim)
 {
-  register INT i, j, k, l;
-  INT size1, size2, size3, size4;
+  register int i, j, k, l;
+  int size1, size2, size3, size4;
   ARRAY4D copyarray;
   switch (array->Typ)
   {
@@ -1484,16 +1310,16 @@ void *am4redef(ARRAY4D *array, INT newfdim, INT newsdim, INT newtdim, INT newfod
 } /* end of am4redef */
 
 
-void amprint(FILE *err, ARRAY *a, INT fdim, INT sdim)
+void amprint(FILE *err, ARRAY *a, int fdim, int sdim)
 {
-  INT i, j;
+  int i, j;
 
   if (fdim > a->fdim) dserror("fdim for amprint too large!\n");
   if (sdim > a->sdim) dserror("sdim for amprint too large!\n");
 
   switch (a->Typ)
   {
-    case cca_DA: /* -------------------------------------------DOUBLE array */
+    case cca_DA: /* -------------------------------------------double array */
       for (i = 0; i < fdim; i++)
       {
         fprintf(err, "%3d: ", i);
@@ -1516,7 +1342,7 @@ void amprint(FILE *err, ARRAY *a, INT fdim, INT sdim)
       }
       break;
 
-    case cca_DV: /* ------------------------------------------DOUBLE vector */
+    case cca_DV: /* ------------------------------------------double vector */
       for (i = 0; i < fdim; i++)
       {
         fprintf(err, "%3d: ", i);

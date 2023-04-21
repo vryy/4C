@@ -6,6 +6,7 @@ set(OBJS_S8_LIB
     s8_line.cpp
     s8_line_evaluate.cpp
     s8_scatra.cpp
+    shell8/s8_array.c
     shell8/s8_shell8_mat_linel.c
     shell8/s8_shell8_mattransform.c
     shell8/s8_shell8_tmat.c

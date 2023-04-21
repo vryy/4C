@@ -10,7 +10,7 @@
 #ifndef S8_SHELL8_H
 #define S8_SHELL8_H
 
-#include "pss_full_am.h"
+#include "s8_array.h"
 #include "s8_materials.h"
 
 /*----------------------------------------------------------------------*

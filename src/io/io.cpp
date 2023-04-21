@@ -19,7 +19,7 @@
 #include "nurbs_discret.H"
 #include "fluid_ele_immersed_base.H"
 
-#include "pss_full_cpp.h"  // access to legacy parser module
+#include "io_legacy_table_cpp.h"  // access to legacy parser module
 
 
 /*----------------------------------------------------------------------*/

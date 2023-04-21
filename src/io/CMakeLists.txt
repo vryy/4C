@@ -23,7 +23,9 @@ set(LIBS_IO
     # cmake-format: sortable
     config
     lib
-    pss_full
     )
 
 baci_add_dependency(io ${LIBS_IO})
+
+add_subdirectory(legacy)
+baci_add_dependency(io io_legacy)

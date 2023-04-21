@@ -37,10 +37,8 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#ifndef PSS_FULL_TYPES_H
-#define PSS_FULL_TYPES_H
-
-#include "pss_full_am.h"
+#ifndef IO_LEGACY_TYPES_H
+#define IO_LEGACY_TYPES_H
 
 /*!
   \brief Types of the symbols we store in a map.
@@ -83,9 +81,9 @@ typedef struct _SYMBOL
   /* put the union first to have the double value properly aligned */
   union
   {
-    CHAR* string;
-    INT integer;
-    DOUBLE real;
+    char* string;
+    int integer;
+    double real;
     struct _MAP* dir;
   } s;
   SYMBOL_TYPES type;
@@ -111,9 +109,9 @@ typedef struct _SYMBOL
 */
 typedef struct _MAP_NODE
 {
-  CHAR* key;
+  char* key;
   SYMBOL* symbol;
-  INT count;
+  int count;
   struct _MAP_NODE* lhs;
   struct _MAP_NODE* rhs;
 } MAP_NODE;
@@ -131,7 +129,7 @@ typedef struct _MAP_NODE
 typedef struct _MAP
 {
   MAP_NODE root;
-  INT count;
+  int count;
 } MAP;
 
 
