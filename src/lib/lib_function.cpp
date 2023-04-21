@@ -229,7 +229,7 @@ namespace
 
       dserror(
           "It is not allowed to set primary variables of your problem as constants in the "
-          "VariableExprFunction.\n\n"
+          "VARFUNCTION.\n\n"
           "Variables passed to Evaluate: %s \n"
           "Constants from Input: %s",
           join_keys(variable_values).c_str(), join_keys(constants_from_input).c_str());
