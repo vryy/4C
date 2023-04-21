@@ -1,5 +1,12 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Patspec
+- removed in commit 7afadb7a3cb641f4eabf0c74acf835004d463de9
+- reasons: the patient specific implementations directly in the code are no longer in use
+- respective input files are removed in commit be291660c62d7ff755a885b3fa72818edf4f5d44
+- the material matelast_isovolHUdependentneohooke is removed in b255dcf373e59aaab9cc1bc3441ed25ed62dde30
+- removed by Janina Datz
+
 Inverse design prestressing
 - removed in commit f3f8662ba8cdcdcfbe3b9bcb14755e9b1cfc13d0
 - reasons: the inverse design feature is no longer used, MULF or similar prestressing methods as in the
