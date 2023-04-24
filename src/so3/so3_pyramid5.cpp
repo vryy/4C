@@ -87,8 +87,6 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
       .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 
