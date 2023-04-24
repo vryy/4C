@@ -74,7 +74,7 @@ namespace
           WrapFunction(DRT::UTILS::TryCreateCombustFunction),
           WrapFunction(DRT::UTILS::TryCreateXfluidFunction),
           WrapFunction(DRT::UTILS::TryCreateLibraryFunctionScalar),
-          WrapFunction(DRT::UTILS::TryCreateExprFunction<dim>),
+          WrapFunction(DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<dim>),
           WrapFunction(DRT::UTILS::TryCreateFunctionOfTime)};
 
       const bool found_and_inserted_function = std::invoke(
