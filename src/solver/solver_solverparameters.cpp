@@ -8,6 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "lib_discret.H"
+#include "lib_dserror.H"
+
+#include "linalg_nullspace.H"
+
 #include "solver_solverparameters.H"
 
 //----------------------------------------------------------------------------------

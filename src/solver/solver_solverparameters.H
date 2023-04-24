@@ -10,12 +10,10 @@
 #ifndef SOLVER_SOLVERPARAMETERS_H
 #define SOLVER_SOLVERPARAMETERS_H
 
-#include "lib_discret.H"
-#include "lib_dserror.H"
-#include "lib_elementtype.H"
-
-#include "linalg_nullspace.H"
-#include "linalg_utils_sparse_algebra_manipulation.H"
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace LINALG::SOLVER
 {
