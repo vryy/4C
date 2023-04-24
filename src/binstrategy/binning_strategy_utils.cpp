@@ -17,6 +17,7 @@
 #include "rigidsphere.H"
 #include "so_base.H"
 
+#include "solid_ele.H"
 #include "utils_parallel.H"
 #include "exporter.H"
 
@@ -75,27 +76,28 @@ namespace BINSTRATEGY
     {
       // (Todo make this nicer and cheaper)
 
-      if (dynamic_cast<DRT::ELEMENTS::Transport const*>(eleptr) != NULL)
+      if (dynamic_cast<DRT::ELEMENTS::Transport const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Scatra;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Fluid const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Fluid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Fluid;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Bele3 const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::BELE3;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Beam;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::RigidSphere;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr ||
+               dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Solid;
       }
