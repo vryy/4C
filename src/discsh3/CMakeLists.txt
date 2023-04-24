@@ -14,4 +14,4 @@ set(LIBS_ELE_DISCSH3
     linalg
     )
 
-target_link_libraries(ele_discsh3 PUBLIC ${LIBS_ELE_DISCSH3})
+baci_add_dependency(ele_discsh3 ${LIBS_ELE_DISCSH3})

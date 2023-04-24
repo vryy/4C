@@ -70,4 +70,4 @@ namespace PATSPEC
 
 
 }  // namespace PATSPEC
-#endif /* PATSPEC_H */
+#endif  // PATSPEC_H

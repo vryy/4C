@@ -11,7 +11,7 @@
 #define SO3_PORO_H
 
 #include "inpar_structure.H"
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 
 namespace MAT
 {
@@ -336,7 +336,6 @@ namespace DRT
         calc_struct_stress,
         calc_struct_multidofsetcoupling,  //!< structure-fluid coupling: internal force, stiffness
                                           //!< for poroelasticity (structural part)
-        postprocess_stress,
         interpolate_porosity_to_given_point
       };
 
@@ -672,4 +671,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SO3_PORO_H */
+#endif  // SO3_PORO_H

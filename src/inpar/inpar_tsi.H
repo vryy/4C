@@ -13,7 +13,7 @@
 #define INPAR_TSI_H
 
 #include "inpar_parameterlist_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |
@@ -166,4 +166,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_TSI_H
+#endif  // INPAR_TSI_H

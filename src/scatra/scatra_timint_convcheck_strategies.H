@@ -11,7 +11,7 @@
 #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 #define SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // forward declaration
 namespace Teuchos
@@ -349,4 +349,4 @@ namespace SCATRA
         const ConvCheckStrategyPoroMultiphaseScatra& old);
   };  // class ConvCheckStrategyPoroMultiphaseScatra
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+#endif  // SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

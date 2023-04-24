@@ -4,7 +4,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    312
 //NODES       626
@@ -60,7 +60,7 @@ MAT_NEWMAN_CONST_C              -1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 3   MAT_newman   VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 TRANSNR -1 THERMFAC 0 COND_CONC_DEP_FUNCT -11 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 2.6e-4 TRANS_PARA_NUM 1 TRANS_PARA 0.363 COND_PARA_NUM 3 COND_PARA 1.58e3 0.85 1.4 END
-MAT 1   MAT_elchmat   NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END 
+MAT 1   MAT_elchmat   NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2   MAT_elchphase   EPSILON 0.2020 TORTUOSITY 0.532 NUMMAT 1 MATIDS 3 END
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME -1.0e-3
@@ -78,8 +78,8 @@ SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE -1.71411948005193533e-03 TOLERANC
 NDSURF  2
 -------------------------ELECTRODE DOMAIN KINETICS SURF CONDITIONS
 DSURF  2
-E 1 - ID 0 pot -0.01 funct none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer A_s 1717.5 alpha_a 0.5 alpha_c 0.5 i0 36.0 gamma 0.0 refcon 1.5 dl_spec_cap 0.0 END
-E 2 - ID 1 pot 0 funct none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer A_s 1862.1 alpha_a 0.5 alpha_c 0.5 i0 36.0 gamma 0.0 refcon 1.5 dl_spec_cap 0.0 END
+E 1 - ID 0 POT -0.01 FUNCT none NUMSCAL 1 STOICH -1  E- 1 ZERO_CUR 0 Butler-Volmer A_S 1717.5 ALPHA_A 0.5 ALPHA_C 0.5 I0 36.0 GAMMA 0.0 REFCON 1.5 DL_SPEC_CAP 0.0 END
+E 2 - ID 1 POT 0 FUNCT none NUMSCAL 1 STOICH -1  E- 1 ZERO_CUR 0 Butler-Volmer A_S 1862.1 ALPHA_A 0.5 ALPHA_C 0.5 I0 36.0 GAMMA 0.0 REFCON 1.5 DL_SPEC_CAP 0.0 END
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

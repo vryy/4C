@@ -14,8 +14,8 @@
 #include "ehl_monolithic.H"
 #include "ehl_utils.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

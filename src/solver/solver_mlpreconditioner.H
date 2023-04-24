@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_MLPRECONDITIONER_H_
-#define SOLVER_MLPRECONDITIONER_H_
+#ifndef SOLVER_MLPRECONDITIONER_H
+#define SOLVER_MLPRECONDITIONER_H
 
 #include "solver_preconditionertype.H"
 
@@ -31,7 +31,7 @@ namespace LINALG::SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
 
-    void Print(std::ostream& stream) override { stream << "ML"; }
+    void Print(std::ostream& stream) const override { stream << "ML"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "ML Parameters"; }

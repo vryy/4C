@@ -10,10 +10,10 @@
 #include "poromultiphase_monolithic_twoway.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "ad_porofluidmultiphase_wrapper.H"
-#include "ad_str_wrapper.H"
-#include "ad_art_net.H"
-#include "globalproblem.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
+#include "adapter_str_wrapper.H"
+#include "adapter_art_net.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 #include "inpar_solver.H"
 #include "linalg_equilibrate.H"
@@ -22,12 +22,12 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_print.H"
-#include "linalg_solver.H"
-#include "locsys.H"
+#include "solver_linalg_solver.H"
+#include "lib_locsys.H"
 
 
-#include "assemblestrategy.H"
-#include "elements_paramsminimal.H"
+#include "lib_assemblestrategy.H"
+#include "lib_elements_paramsminimal.H"
 
 #include "poromultiphase_utils.H"
 
@@ -66,7 +66,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
       maxres_(0.0),
       vectornormfres_(INPAR::POROMULTIPHASE::norm_undefined),
       vectornorminc_(INPAR::POROMULTIPHASE::norm_undefined),
-      timernewton_(comm),
+      timernewton_("", true),
       dtsolve_(0.0),
       dtele_(0.0),
       fdcheck_(INPAR::POROMULTIPHASE::FDCheck::fdcheck_none)
@@ -249,9 +249,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate");
 
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   // displacement and fluid velocity & pressure incremental vector
@@ -262,7 +262,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   Evaluate(sx, fx, itnum_ == 0);
 
   // *********** time measurement ***********
-  dtele_ = timernewton_.WallTime() - dtcpu;
+  dtele_ = timernewton_.wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;
@@ -357,7 +357,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
-  // Epetra_Time timerstrcoupl(Comm());
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
 
@@ -617,8 +616,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -627,7 +625,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -659,7 +657,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
   // equip smoother for structure matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams = solver->Params().sublist("Inverse1");
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
@@ -667,7 +665,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
   // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("Belos Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
 
   FluidField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams2);
@@ -894,9 +892,9 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Converged()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
 {
   // reset timer
-  timernewton_.ResetStartTime();
+  timernewton_.reset();
   // *********** time measurement ***********
-  double dtcpu = timernewton_.WallTime();
+  double dtcpu = timernewton_.wallTime();
   // *********** time measurement ***********
 
   if (solveradapttol_ and (itnum_ > 1))
@@ -918,7 +916,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
   equilibration_->UnequilibrateIncrement(iterinc_);
 
   // *********** time measurement ***********
-  dtsolve_ = timernewton_.WallTime() - dtcpu;
+  dtsolve_ = timernewton_.wallTime() - dtcpu;
   // *********** time measurement ***********
 
   return;
@@ -1093,7 +1091,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     std::vector<int> sparseindices(sparselength);
     // int sparseextractionstatus =
     test_crs->ExtractGlobalRowCopy(
-        i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+        i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
 
 
     if (i == spaltenr)
@@ -1192,7 +1190,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             std::vector<int> errorindices(errorlength);
             // int errorextractionstatus =
             error_crs->ExtractGlobalRowCopy(
-                i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+                i, errorlength, errornumentries, errorvalues.data(), errorindices.data());
             for (int k = 0; k < errorlength; ++k)
             {
               if (errorindices[k] == j)
@@ -1213,7 +1211,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             std::vector<int> sparseindices(sparselength);
             // int sparseextractionstatus =
             sparse_crs->ExtractGlobalRowCopy(
-                i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+                i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
             for (int k = 0; k < sparselength; ++k)
             {
               if (sparseindices[k] == j)
@@ -1234,7 +1232,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             std::vector<int> approxindices(approxlength);
             // int approxextractionstatus =
             stiff_approx->ExtractGlobalRowCopy(
-                i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+                i, approxlength, approxnumentries, approxvalues.data(), approxindices.data());
             for (int k = 0; k < approxlength; ++k)
             {
               if (approxindices[k] == j)
@@ -1447,7 +1445,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
   // computation
   Teuchos::ParameterList& blocksmootherparams3 =
       solver->Params().sublist("Inverse" + std::to_string(arteryblocknum));
-  blocksmootherparams3.sublist("Aztec Parameters");
+  blocksmootherparams3.sublist("Belos Parameters");
   blocksmootherparams3.sublist("MueLu Parameters");
 
   // build null space of complete discretization

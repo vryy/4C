@@ -428,7 +428,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
 
     std::vector<Point*> points(8, static_cast<Point*>(NULL));
 
-    std::copy(bot_points.begin(), bot_points.end(), &points[0]);
+    std::copy(bot_points.begin(), bot_points.end(), points.data());
 
     std::vector<Point*>::iterator end = points.begin() + 4;
 
@@ -622,7 +622,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
 
     std::vector<Point*> points(6, static_cast<Point*>(NULL));
 
-    std::copy(bot_points.begin(), bot_points.end(), &points[0]);
+    std::copy(bot_points.begin(), bot_points.end(), points.data());
 
     std::vector<Point*>::iterator end = points.begin() + 3;
 

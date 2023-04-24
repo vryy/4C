@@ -9,12 +9,11 @@
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 
-#include "discret.H"
-#include "dofset_gidbased_wrapper.H"
-#include "dofset_merged_wrapper.H"
-#include "utils_parallel.H"
-#include "utils_createdis.H"
-#include "utils_parameter_list.H"
+#include "lib_discret.H"
+#include "lib_dofset_gidbased_wrapper.H"
+#include "lib_dofset_merged_wrapper.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_utils_clonestrategy.H"
@@ -24,7 +23,9 @@
 #include "scatra_ele.H"
 
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
+
+#include "rebalance_utils.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
@@ -157,7 +158,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
     if (com->MyPID() == 0 and com->NumProc() > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
-    DRT::UTILS::PrintParallelDistribution(*discret_);
+    REBALANCE::UTILS::PrintParallelDistribution(*discret_);
   }
 
   SetIsSetup(true);

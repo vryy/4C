@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_EHL_EHL_PARTITIONED_H_
-#define SRC_EHL_EHL_PARTITIONED_H_
+#ifndef EHL_PARTITIONED_H
+#define EHL_PARTITIONED_H
 
 
 #include "ehl_base.H"
@@ -64,4 +64,4 @@ namespace EHL
   };
 }  // namespace EHL
 
-#endif /* SRC_EHL_EHL_PARTITIONED_H_ */
+#endif  // EHL_PARTITIONED_H

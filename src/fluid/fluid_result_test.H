@@ -1,0 +1,70 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief testing of fluid calculation results
+
+
+\level 1
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef FLUID_RESULT_TEST_H
+#define FLUID_RESULT_TEST_H
+
+
+#include "lib_resulttest.H"
+#include <Epetra_Vector.h>
+
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace FLD
+{
+  // forward declarations
+  class FluidImplicitTimeInt;
+  class FluidGenAlphaIntegration;
+
+
+  /*!
+  \brief Fluid specific result test class
+
+  \author u.kue
+  */
+  class FluidResultTest : public DRT::ResultTest
+  {
+   public:
+    /*!
+    \brief not documented yet
+    */
+    FluidResultTest(FluidImplicitTimeInt& fluid);
+
+    /// our version of nodal value tests
+    /*!
+    Possible position flags are "velx", "vely", "velz", "pressure",
+    "tractionx", "tractiony", "tractionz", "errvel", "errpre" and "divu".
+    With the obvious meaning.
+    */
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
+   private:
+    /// pointer to fluid discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    /// pointer to unknown vector with nodal values
+    Teuchos::RCP<Epetra_Vector> mysol_;
+    /// pointer to traction vector with values
+    Teuchos::RCP<Epetra_Vector> mytraction_;
+    /// pointer to traction vector with values
+    Teuchos::RCP<Epetra_Vector> mywss_;
+    /// pointer to error evaluation
+    Teuchos::RCP<std::vector<double>> myerror_;
+    /// pointer to div u evaluation
+    Teuchos::RCP<double> mydivu_;
+  };
+
+}  // namespace FLD
+
+
+#endif

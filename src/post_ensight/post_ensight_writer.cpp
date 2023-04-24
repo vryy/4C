@@ -17,15 +17,15 @@
 
 #include "inpar_problemtype.H"
 
-#include "discret_xfem.H"
+#include "lib_discret_xfem.H"
 
 #include <string>
 #include <numeric>
 
-#include "pss_cpp.h"
+#include "pss_full_cpp.h"
 extern "C"
 {
-#include "pss_table_iter.h"
+#include "pss_full_table_iter.h"
 }
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface
@@ -48,7 +48,8 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   sortmap.assign(
       proc0map_->MyGlobalElements(), proc0map_->MyGlobalElements() + proc0map_->NumMyElements());
   std::sort(sortmap.begin(), sortmap.end());
-  proc0map_ = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0map_->Comm()));
+  proc0map_ =
+      Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm()));
 
   // get the number of elements for each distype (global numbers)
   numElePerDisType_ = GetNumElePerDisType(dis);
@@ -785,7 +786,7 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
     // proc pid sends its values to proc 0
     if (myrank_ == pid)
     {
-      exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
 
     //--------------------------------------------------
@@ -873,7 +874,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
 
   // form the global sum
   std::vector<int> globalnumeleperdistype(numeledistypes);
-  (dis->Comm()).SumAll(&(myNumElePerDisType[0]), &(globalnumeleperdistype[0]), numeledistypes);
+  (dis->Comm()).SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
 
   // create return argument containing the global element numbers per distype
   NumElePerDisType globalNumElePerDisType;
@@ -989,7 +990,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
       // proc pid sends its values to proc 0
       if (myrank_ == pid)
       {
-        exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
       }
 
       //--------------------------------------------------
@@ -2261,7 +2262,7 @@ void EnsightWriter::WriteString(std::ofstream& stream, const std::string str) co
   {
     s.push_back('\0');
   }
-  stream.write(&s[0], 80);
+  stream.write(s.data(), 80);
 
   return;
 }

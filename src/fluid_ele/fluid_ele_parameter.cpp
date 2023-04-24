@@ -15,7 +15,7 @@ be set in problem specific parameter lists derived from this class.
 
 #include <string>
 #include <iostream>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "io_pstream.H"
 #include "fluid_ele_parameter.H"
 
@@ -83,8 +83,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
       conti_supg_(true),
       conti_cross_(INPAR::FLUID::cross_stress_stab_none),
       conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
-      multifrac_loma_conti_(false),
-      reaction_topopt_(false)
+      multifrac_loma_conti_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
@@ -481,20 +480,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter(Teuchos::Para
   return;
 }
 
-
-//----------------------------------------------------------------------*
-//  set topopt parameters                               winklmaier 07/13|
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementTopoptParameter(Teuchos::ParameterList& params)
-{
-  topopt_params_[0] = params.get<double>("MIN_PORO");
-  topopt_params_[1] = params.get<double>("MAX_PORO");
-  topopt_params_[2] = params.get<double>("SMEAR_FAC");
-  reaction_ = true;
-  reaction_topopt_ = true;
-
-  return;
-}
 
 //----------------------------------------------------------------------*
 //  set turbulence parameters                            rasthofer 11/11|

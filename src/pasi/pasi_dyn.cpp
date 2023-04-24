@@ -13,8 +13,8 @@
 #include "pasi_partitioned_twowaycoup.H"
 #include "pasi_utils.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "comm_utils.H"
 
 #include "inpar_pasi.H"

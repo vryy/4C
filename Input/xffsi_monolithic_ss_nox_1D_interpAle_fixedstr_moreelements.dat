@@ -39,7 +39,7 @@ REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
@@ -52,7 +52,7 @@ SECONDORDER                     No
 ALE_TYPE                        springs_spatial
 LINEAR_SOLVER                   1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
+LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          9
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes

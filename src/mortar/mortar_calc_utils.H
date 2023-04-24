@@ -10,14 +10,14 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef MORTAR_CALC_UTILS_H_
-#define MORTAR_CALC_UTILS_H_
+#ifndef MORTAR_CALC_UTILS_H
+#define MORTAR_CALC_UTILS_H
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_serialdensevector.H"
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
 
@@ -747,4 +747,4 @@ namespace MORTAR
 
 
 
-#endif /* MORTAR_CALC_UTILS_H_ */
+#endif  // MORTAR_CALC_UTILS_H

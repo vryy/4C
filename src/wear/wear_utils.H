@@ -11,17 +11,17 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 12/13 |
  *----------------------------------------------------------------------*/
-#ifndef WEAR_UTILS_H_
-#define WEAR_UTILS_H_
+#ifndef WEAR_UTILS_H
+#define WEAR_UTILS_H
 
 /*----------------------------------------------------------------------*
  | headers                                                  farah 12/13 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
-#include "element.H"
+#include "lib_element.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
 
@@ -180,4 +180,4 @@ namespace WEAR
 
 }  // namespace WEAR
 
-#endif /* WEAR_UTILS_H_ */
+#endif  // WEAR_UTILS_H

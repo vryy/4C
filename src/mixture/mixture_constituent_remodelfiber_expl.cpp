@@ -9,17 +9,17 @@ equations
 #include <memory>
 #include <cstdlib>
 
-#include "growth_evolution_linear_cauchy.H"
+#include "mixture_growth_evolution_linear_cauchy.H"
 #include "mixture_constituent.H"
 #include "mixture_constituent_remodelfiber_expl.H"
-#include "voigt_notation.H"
-#include "globalproblem.H"
-#include "function_of_time.H"
-#include "matpar_bundle.H"
-#include "material_service.H"
+#include "lib_voigt_notation.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
+#include "mat_par_bundle.H"
+#include "mat_service.H"
 #include "mixture_constituent_remodelfiber_material_exponential.H"
 #include "mixture_constituent_remodelfiber_material_exponential_active.H"
-#include "elast_aniso_structuraltensor_strategy.H"
+#include "matelast_aniso_structuraltensor_strategy.H"
 #include "mixture_constituent_remodelfiber_lib.H"
 
 // anonymous namespace for helper classes and functions

@@ -57,8 +57,8 @@ TOL_PRES_RES	  1e-04
 TOL_PRES_INC	  1e-04
 ------------------------------------FLUID DYNAMIC/WALL MODEL
 X_WALL                          Yes
-Tauw_Type                       between_steps//fix_point_iter_with_step_control//between_steps//between_steps//fix_point_iter_with_step_control//between_steps//fix_point_iter_with_step_control//mean_iter
-Tauw_Calc_Type                  gradient_to_residual //spalding //gradient
+Tauw_Type                       between_steps
+Tauw_Calc_Type                  gradient_to_residual
 Switch_Step                     3
 C_Tauw                          0.011662523800000
 Min_Tauw                        0.005
@@ -80,10 +80,10 @@ GRAD_DIV                        Yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Codina_convscaled
-CHARELELENGTH_U                 volume_equivalent_diameter//streamlength
+CHARELELENGTH_U                 volume_equivalent_diameter
 CHARELELENGTH_PC                volume_equivalent_diameter
-EVALUATION_TAU                  integration_point//element_center
-EVALUATION_MAT                  integration_point//element_center
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 PHYSICAL_MODEL                  no_model
@@ -93,7 +93,7 @@ INITIALINFLOWFIELD              field_by_function
 INFLOWFUNC                      1
 INFLOW_INIT_DIST                0.15
 NUMINFLOWSTEP                   0
-CANONICAL_INFLOW                no//channel_flow_of_height_2
+CANONICAL_INFLOW                no
 INFLOW_CHA_SIDE                 -0.164
 INFLOW_HOMDIR                   xz
 INFLOW_SAMPLING_START           1

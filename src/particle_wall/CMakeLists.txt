@@ -15,4 +15,4 @@ set(LIBS_ALG_PARTICLE_WALL
     particleengine
     )
 
-target_link_libraries(alg_particle_wall PUBLIC ${LIBS_ALG_PARTICLE_WALL})
+baci_add_dependency(alg_particle_wall ${LIBS_ALG_PARTICLE_WALL})

@@ -12,17 +12,16 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "globalproblem.H"      // for curves and functions
-#include "standardtypes_cpp.H"  // for EPS12 and so on
+#include "lib_globalproblem.H"  // for curves and functions
 
-#include "fourieriso.H"
-#include "matlist.H"
-#include "scatra_mat.H"
-#include "thermostvenantkirchhoff.H"
+#include "mat_fourieriso.H"
+#include "mat_list.H"
+#include "mat_scatra_mat.H"
+#include "mat_thermostvenantkirchhoff.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 #include "fluid_rotsym_periodicbc.H"
 /*----------------------------------------------------------------------*
@@ -372,6 +371,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
     case SCATRA::BoundaryAction::calc_boundary_integral:
     {
       CalcBoundaryIntegral(ele, elevec1_epetra);
+      break;
+    }
+    case SCATRA::BoundaryAction::calc_nodal_size:
+    {
+      EvaluateNodalSize(ele, params, discretization, la, elevec1_epetra);
       break;
     }
     case SCATRA::BoundaryAction::calc_Robin:
@@ -952,7 +956,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
   // length of normal to this element
   const double length = normal.Norm2();
   // outward-pointing normal of length 1.0
-  if (length > EPS10)
+  if (length > 1e-10)
     normal.Scale(1 / length);
   else
     dserror("Zero length for element normal");
@@ -2313,7 +2317,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
 
       functfac = DRT::Problem::Instance()
                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-                     .Evaluate(&(coordgp3D[0]), time, 0);
+                     .Evaluate(coordgp3D.data(), time, 0);
     }
     else
       functfac = 1.0;
@@ -2849,6 +2853,30 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
     }  // loop over scalars
   }    // loop over integration points
 }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNodalSize(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& nodalsize)
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac =
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints, gpid);
+    for (int vi = 0; vi < nen_; ++vi)
+    {
+      nodalsize[numdofpernode_ * vi] += funct_(vi, 0) * fac;
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

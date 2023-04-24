@@ -70,4 +70,4 @@ namespace INPAR
 }  // namespace INPAR
 
 
-#endif  // #ifndef INPAR_ELEMAG_H
+#endif  // INPAR_ELEMAG_H

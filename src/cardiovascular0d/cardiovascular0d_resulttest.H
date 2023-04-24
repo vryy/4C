@@ -7,11 +7,11 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef CARDIOVASCULAR0DRESULTTEST_H
-#define CARDIOVASCULAR0DRESULTTEST_H
+#ifndef CARDIOVASCULAR0D_RESULTTEST_H
+#define CARDIOVASCULAR0D_RESULTTEST_H
 
 #include <Epetra_Vector.h>
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 
 // forward declarations
@@ -55,4 +55,4 @@ class Cardiovascular0DResultTest : public DRT::ResultTest
   const bool havecardiorespir_syspulperiphcirculation_;
 };
 
-#endif /* #ifndef CARDIOVASCULAR0DRESULTTEST_H */
+#endif  // CARDIOVASCULAR0D_RESULTTEST_H

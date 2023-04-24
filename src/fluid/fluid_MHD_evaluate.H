@@ -78,4 +78,4 @@ namespace FLD
   };
 
 }  // namespace FLD
-#endif  // not FLUID_MHD_EVALUATE
+#endif  // FLUID_MHD_EVALUATE_H

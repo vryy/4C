@@ -10,12 +10,12 @@
 
 #include "fsi_lung_overlapprec.H"
 #include "io_control.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid.H"
-#include "globalproblem.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid.H"
+#include "lib_globalproblem.H"
 #include "linalg_multiply.H"
-#include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "solver_linalg_precond.H"
+#include "solver_linalg_solver.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

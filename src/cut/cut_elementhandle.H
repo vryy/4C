@@ -14,7 +14,7 @@
 
 #include "cut_element.H"
 
-#include "utils_gausspoints.H"
+#include "fem_general_utils_gausspoints.H"
 
 
 namespace GEO

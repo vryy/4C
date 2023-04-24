@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_AC_OST_H
-#define FLD_TIMINT_AC_OST_H
+#ifndef FLUID_TIMINT_AC_OST_H
+#define FLUID_TIMINT_AC_OST_H
 
 
 #include "fluid_timint_ac.H"
@@ -41,4 +41,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_AC_OST_H
+#endif  // FLUID_TIMINT_AC_OST_H

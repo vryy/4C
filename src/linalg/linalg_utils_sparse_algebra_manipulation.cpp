@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 #include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*
@@ -387,7 +387,7 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap, const Epetra_M
   int gcount;
   Comm.SumAll(&count, &gcount, 1);
   Teuchos::RCP<Epetra_Map> Aunknown =
-      Teuchos::rcp(new Epetra_Map(gcount, count, &myaugids[0], 0, Comm));
+      Teuchos::rcp(new Epetra_Map(gcount, count, myaugids.data(), 0, Comm));
 
   return Aunknown;
 }
@@ -453,7 +453,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, map1.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -502,7 +502,7 @@ Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1, const Epet
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, map1.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*

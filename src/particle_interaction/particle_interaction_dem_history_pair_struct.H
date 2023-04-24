@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "parobject.H"
+#include "lib_parobject.H"
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -28,7 +28,7 @@ namespace PARTICLEINTERACTION
     bool stick_ = true;
 
     //! tangential gap
-    double gap_t_[3] = {0.0};
+    double gap_t_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
     void Pack(DRT::PackBuffer& data) const
@@ -54,7 +54,7 @@ namespace PARTICLEINTERACTION
     bool stick_ = true;
 
     //! rolling gap
-    double gap_r_[3] = {0.0};
+    double gap_r_[3] = {0.0, 0.0, 0.0};
 
     //! pack history pair data
     void Pack(DRT::PackBuffer& data) const

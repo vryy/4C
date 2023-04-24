@@ -12,10 +12,10 @@
 #ifndef FLUID_ELE_TDS_H
 #define FLUID_ELE_TDS_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "parobject.H"
-#include "parobjectfactory.H"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include "lib_parobject.H"
+#include "lib_parobjectfactory.H"
 
 
 namespace FLD

@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_PORO_H
-#define FLD_TIMINT_PORO_H
+#ifndef FLUID_TIMINT_PORO_H
+#define FLUID_TIMINT_PORO_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 namespace FLD
 {
@@ -121,4 +121,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_PORO_H
+#endif  // FLUID_TIMINT_PORO_H

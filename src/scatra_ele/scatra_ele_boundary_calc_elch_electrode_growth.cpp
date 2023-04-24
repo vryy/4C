@@ -16,10 +16,10 @@ growth, e.g., lithium plating
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "electrode.H"
-#include "singleton_owner.H"
+#include "mat_electrode.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -65,8 +65,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -152,8 +152,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
@@ -186,13 +186,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
-  LINALG::Matrix<my::nsd_ + 1, my::nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, my::nsd_ + 1, LINALG::Matrix<my::nsd_ + 1, my::nen_>>(
-      ele, XYZe);
+  LINALG::Matrix<nsd_ + 1, nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -265,12 +264,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
       // compute linearizations and residual contributions associated with equations for lithium
       // transport
-      for (int irow = 0; irow < my::nen_; ++irow)
+      for (int irow = 0; irow < nen_; ++irow)
       {
         const int row_conc = irow * 2;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
-        for (int icol = 0; icol < my::nen_; ++icol)
+        for (int icol = 0; icol < nen_; ++icol)
         {
           const int col_conc = icol * 2;
           const int col_pot = col_conc + 1;
@@ -292,12 +291,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
   // compute linearizations and residual contributions associated with closing equations for
   // electric potential
-  for (int irow = 0; irow < my::nen_; ++irow)
+  for (int irow = 0; irow < nen_; ++irow)
   {
     const int row_conc = irow * 2;
     const int row_pot = row_conc + 1;
 
-    for (int icol = 0; icol < my::nen_; ++icol)
+    for (int icol = 0; icol < nen_; ++icol)
     {
       const int col_conc = icol * 2;
       const int col_pot = col_conc + 1;
@@ -378,8 +377,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
@@ -412,13 +411,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
-  LINALG::Matrix<my::nsd_ + 1, my::nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, my::nsd_ + 1, LINALG::Matrix<my::nsd_ + 1, my::nen_>>(
-      ele, XYZe);
+  LINALG::Matrix<nsd_ + 1, nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -485,12 +483,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
           my::scatraparamsboundary_);
 
       // compute linearizations associated with equations for lithium transport
-      for (int irow = 0; irow < my::nen_; ++irow)
+      for (int irow = 0; irow < nen_; ++irow)
       {
         const int row_conc = irow * 2;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
-        for (int icol = 0; icol < my::nen_; ++icol)
+        for (int icol = 0; icol < nen_; ++icol)
           eslavematrix(row_conc, icol) +=
               funct_irow_invF_timefacfac * di_dgrowth * my::funct_(icol);
       }
@@ -498,12 +496,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   }    // loop over integration points
 
   // compute linearizations associated with closing equations for electric potential
-  for (int irow = 0; irow < my::nen_; ++irow)
+  for (int irow = 0; irow < nen_; ++irow)
   {
     const int row_conc = irow * 2;
     const int row_pot = row_conc + 1;
 
-    for (int icol = 0; icol < my::nen_; ++icol)
+    for (int icol = 0; icol < nen_; ++icol)
       eslavematrix(row_pot, icol) += numelectrons * eslavematrix(row_conc, icol);
   }
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICouplingScatraGrowth
@@ -525,8 +523,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
@@ -550,7 +548,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -606,11 +604,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
           my::scatraparamsboundary_, dummy, di_dc_master, di_dpot_slave, di_dpot_master);
 
       // compute linearizations associated with equation for scatra-scatra interface layer growth
-      for (int irow = 0; irow < my::nen_; ++irow)
+      for (int irow = 0; irow < nen_; ++irow)
       {
         const double funct_irow_factor_timefacfac = my::funct_(irow) * factor * timefacfac;
 
-        for (int icol = 0; icol < my::nen_; ++icol)
+        for (int icol = 0; icol < nen_; ++icol)
         {
           const int col_conc = icol * 2;
           const int col_pot = col_conc + 1;
@@ -644,9 +642,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
-  LINALG::Matrix<my::nen_, 1> eslavegrowthhist(true);
+  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  LINALG::Matrix<nen_, 1> eslavegrowthhist(true);
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
   my::ExtractNodeValues(eslavegrowthhist, discretization, la, "growthhist", 2);
 
@@ -670,7 +668,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -680,8 +678,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
     // evaluate mass matrix
-    for (int irow = 0; irow < my::nen_; ++irow)
-      for (int icol = 0; icol < my::nen_; ++icol)
+    for (int irow = 0; irow < nen_; ++irow)
+      for (int icol = 0; icol < nen_; ++icol)
         eslavematrix(irow, icol) += my::funct_(irow) * my::funct_(icol) * fac;
 
     // evaluate overall integration factors
@@ -736,11 +734,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
       // compute linearizations and residual contributions associated with equation for
       // scatra-scatra interface layer growth
-      for (int irow = 0; irow < my::nen_; ++irow)
+      for (int irow = 0; irow < nen_; ++irow)
       {
         const double funct_irow_factor_timefacfac = my::funct_(irow) * factor * timefacfac;
 
-        for (int icol = 0; icol < my::nen_; ++icol)
+        for (int icol = 0; icol < nen_; ++icol)
           eslavematrix(irow, icol) += funct_irow_factor_timefacfac * di_dgrowth * my::funct_(icol);
 
         eslaveresidual[irow] -= my::funct_(irow) * (eslavegrowthint - eslavegrowthhistint) * fac;

@@ -12,7 +12,7 @@ interface
 #define CONTACT_PORO_LAGRANGE_STRATEGY_H
 
 #include "contact_monocoupled_lagrange_strategy.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 namespace ADAPTER
 {
@@ -320,4 +320,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_PORO_LAGRANGE_STRATEGY_H

@@ -7,17 +7,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H_
+#ifndef LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
+#define LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
-#include "Teuchos_RCP.hpp"
-#include "exporter.H"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Export.h>
+#include <Epetra_Import.h>
+#include <Teuchos_RCP.hpp>
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG
@@ -78,7 +78,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -153,7 +153,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -228,7 +228,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -303,7 +303,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -381,7 +381,7 @@ namespace LINALG
       for (int i = 0; i < numproc; ++i) targetvec[i] = i;
     }
     const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(-1, tnummyelements, &targetvec[0], 0, comm);
+    Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
@@ -421,10 +421,10 @@ namespace LINALG
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 
@@ -446,10 +446,10 @@ namespace LINALG
   void GatherAll(std::map<T, U>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T, U>(data, data, numprocs, allproc, comm);
+    Gather<T, U>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -472,10 +472,10 @@ namespace LINALG
   void GatherAll(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -501,10 +501,10 @@ namespace LINALG
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
-    int allproc[numprocs];
+    std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc, comm);
+    Gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 
@@ -684,4 +684,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H_ */
+#endif  // LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H

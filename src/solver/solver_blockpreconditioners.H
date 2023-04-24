@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_BLOCKPRECONDITIONERS_H_
-#define SOLVER_BLOCKPRECONDITIONERS_H_
+#ifndef SOLVER_BLOCKPRECONDITIONERS_H
+#define SOLVER_BLOCKPRECONDITIONERS_H
 
 #include "solver_preconditionertype.H"
 
@@ -32,7 +32,7 @@ namespace LINALG::SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
 
-    void Print(std::ostream& stream) override { stream << "CheapSimple"; }
+    void Print(std::ostream& stream) const override { stream << "CheapSimple"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
@@ -60,7 +60,7 @@ namespace LINALG::SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
 
-    void Print(std::ostream& stream) override { stream << "BGS"; }
+    void Print(std::ostream& stream) const override { stream << "BGS"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "BGS Parameters"; }

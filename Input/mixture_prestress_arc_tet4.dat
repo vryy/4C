@@ -38,8 +38,8 @@ PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-12
 NUMSTEP                         1000
 MAXTIME                         100
-TOLDISP                         1e-11                         // 1e-09 mm
-TOLRES                          1e-08                         // 1e-09 N
+TOLDISP                         1e-11
+TOLRES                          1e-08
 LINEAR_SOLVER                   1
 NLNSOL                          fullnewton
 LOADLIN                         yes
@@ -49,7 +49,7 @@ Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 ---------------------------------------------------------------------MATERIALS
 // Units: [m] = 1.0 kg, [l] = 0.1 m, [t] = 1.0 s, [s] = 1.0 days
-MAT 1 MAT_MixtureElastHyper NUMCONST 3 MATIDSCONST 11 12 14 MATIDMIXTURERULE 10
+MAT 1 MAT_Mixture NUMCONST 3 MATIDSCONST 11 12 14 MATIDMIXTURERULE 10
 MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_STRATEGY 100 NUMCONST 3 MASSFRAC 0.3 0.1 0.6 DENS 1.0000000000000002
 MAT 100 MIX_GrowthStrategy_Isotropic
 // Fiber of the cardiomyocytes

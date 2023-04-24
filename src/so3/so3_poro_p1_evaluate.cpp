@@ -10,10 +10,10 @@
 #include "so3_poro_p1.H"
 #include "so3_poro_p1_eletypes.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "fluidporo.H"
-#include "structporo.H"
+#include "mat_fluidporo.H"
+#include "mat_structporo.H"
 
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
@@ -713,8 +713,8 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector
     LINALG::Matrix<Base::numdim_, Base::numnod_>& vel, LINALG::Matrix<Base::numnod_, 1>* porosity,
     LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp, LINALG::Matrix<Base::numnod_, 1>& epreaf,
     LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* stiffmatrix,
-    __attribute__((unused)) LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
-    __attribute__((unused)) LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
+    [[maybe_unused]] LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
+    [[maybe_unused]] LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
 {
   //=============================get parameters
 

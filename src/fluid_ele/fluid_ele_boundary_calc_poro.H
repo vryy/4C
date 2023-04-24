@@ -14,7 +14,7 @@
 
 #include "fluid_ele_boundary_calc.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace DRT
 {
@@ -55,6 +55,9 @@ namespace DRT
     class FluidEleBoundaryCalcPoro : public FluidBoundaryImpl<distype>
     {
       using Base = DRT::ELEMENTS::FluidBoundaryImpl<distype>;
+
+     protected:
+      using Base::nsd_;
 
      public:
       /// Singleton access method
@@ -382,6 +385,7 @@ namespace DRT
     class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
     {
       using Base = DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>;
+      using Base::nsd_;
 
      public:
       /// Singleton access method

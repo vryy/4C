@@ -16,16 +16,16 @@
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "ad_str_structure_new.H"
-#include "ad_str_factory.H"
-#include "ad_str_wrapper.H"
+#include "adapter_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_wrapper.H"
 #include "adapter_coupling_mortar.H"
 #include "inpar_tsi.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 
 #include "adapter_thermo.H"
-#include "discret.H"
+#include "lib_discret.H"
 
 // for coupling of nonmatching meshes
 #include "adapter_coupling_volmortar.H"
@@ -35,11 +35,11 @@
 #include "contact_lagrange_strategy.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_nitsche_strategy_tsi.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "contact_strategy_factory.H"
 
-#include "str_model_evaluator_contact.H"
-#include "str_model_evaluator_structure.H"
+#include "structure_new_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_structure.H"
 #include "mortar_multifield_coupling.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
@@ -519,7 +519,7 @@ void TSI::Algorithm::GetContactStrategy()
         Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
     contact_strategy_lagrange_->SetState(MORTAR::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->SaveReferenceState(zero_disp);
-    contact_strategy_lagrange_->EvaluateReferenceState(zero_disp);
+    contact_strategy_lagrange_->EvaluateReferenceState();
     contact_strategy_lagrange_->Inttime_init();
     contact_strategy_lagrange_->SetTimeIntegrationInfo(StructureField()->TimIntParam(),
         DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(

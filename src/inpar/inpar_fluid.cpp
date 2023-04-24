@@ -10,11 +10,11 @@
 
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_fluid.H"
 #include "inpar_turbulence.H"
 #include "inpar.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 
 
@@ -32,10 +32,10 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("Incompressible", "Weakly_compressible", "Weakly_compressible_stokes",
           "Weakly_compressible_dens_mom", "Weakly_compressible_stokes_dens_mom",
           "Artificial_compressibility", "Varying_density", "Loma", "Temp_dep_water", "Boussinesq",
-          "Topology_optimization", "Stokes", "Oseen"),
+          "Stokes", "Oseen"),
       tuple<int>(incompressible, weakly_compressible, weakly_compressible_stokes,
           weakly_compressible_dens_mom, weakly_compressible_stokes_dens_mom, artcomp,
-          varying_density, loma, tempdepwater, boussinesq, topopt, stokes, oseen),
+          varying_density, loma, tempdepwater, boussinesq, stokes, oseen),
       &fdyn);
 
   // number of linear solver used for fluid problem
@@ -152,8 +152,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("ALLDOFCOUPLED", "Yes", "all dof (incl. pressure) are coupled", &fdyn);
 
   {
-    Teuchos::Tuple<std::string, 17> name;
-    Teuchos::Tuple<int, 17> label;
+    Teuchos::Tuple<std::string, 16> name;
+    Teuchos::Tuple<int, 16> label;
 
     name[0] = "no";
     label[0] = no_error_calculation;
@@ -185,10 +185,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     label[13] = kimmoin_instat_navier_stokes;
     name[14] = "fsi_fluid_pusher";
     label[14] = fsi_fluid_pusher;
-    name[15] = "topopt_channel";
-    label[15] = topoptchannel;
-    name[16] = "channel_weakly_compressible";
-    label[16] = channel_weakly_compressible;
+    name[15] = "channel_weakly_compressible";
+    label[15] = channel_weakly_compressible;
 
     setStringToIntegralParameter<int>(
         "CALCERROR", "no", "Flag to (de)activate error calculations", name, label, &fdyn);

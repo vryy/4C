@@ -23,4 +23,4 @@
 // #define POROFDCHECK /* flag for finite differences check of tangent stiffness matrix */
 
 
-#endif  // #ifndef POROELAST_DEFINES_H
+#endif  // POROELAST_DEFINES_H

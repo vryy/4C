@@ -10,12 +10,12 @@
 #include "art_net_utils.H"
 
 #include "art_net_impl_stationary.H"
-#include "artnetexplicitintegration.H"
+#include "art_net_explicitintegration.H"
 
-#include "utils_createdis.H"
-#include "artery.H"
+#include "lib_utils_createdis.H"
+#include "art_net_artery.H"
 #include "scatra_ele.H"
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
@@ -159,21 +159,10 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
 /*----------------------------------------------------------------------*
  |                                                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy() const
 {
-  // map
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"Initfield", "Initfield"}, {"ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"},
+      {"PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"},
+      {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }

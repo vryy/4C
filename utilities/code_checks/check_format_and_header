@@ -6,7 +6,8 @@
 #
 # The test will fail if code is found that 
 #   if our header requirements for input files and source files are violated, 
-#   if our requirements for unit and input file tests are violated, or
+#   if our requirements for unit and input file tests are violated
+#   if a source file is not prefixed with the module name, or
 #   if C++ source files, or python, xml or yaml files are found that are not compliant with our respective format style.
 #
 # In the event of failure, an error message is written to stdout and to the files
@@ -52,6 +53,36 @@ else
   rm wrong_tests.txt
   echo "Passed."
 fi
+
+### Module prefixes check ######################################
+echo "Start test for module prefixes and correct include style ..."
+python ./utilities/code_checks/check_file_prefix_and_includes.py src --out wrong_prefix.txt | tee wrong_prefix.txt
+
+if [ -s wrong_prefix.txt ]
+then
+  echo "Failed. Non-compliant files have been reported in wrong_prefix.txt."
+  cat wrong_prefix.txt
+  exit 1
+else
+  rm wrong_prefix.txt
+  echo "Passed."
+fi
+
+
+### Check for header guards ####################################
+echo "Start test for header guards ..."
+python ./utilities/code_checks/check_header_guards.py --out wrong_header_guards.txt | tee wrong_header_guards.txt
+
+if [ -s wrong_header_guards.txt ]
+then
+  echo "Failed. Non-compliant files have been reported in wrong_header_guards.txt."
+  cat wrong_header_guards.txt
+  exit 1
+else
+  rm wrong_header_guards.txt
+  echo "Passed."
+fi
+
 
 ### Style Format check #########################################
 #   1) Check for non-ascii characters

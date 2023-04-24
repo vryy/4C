@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SCATRA_TIMINT_HDG_H_
-#define SCATRA_TIMINT_HDG_H_
+#ifndef SCATRA_TIMINT_HDG_H
+#define SCATRA_TIMINT_HDG_H
 
 #include "scatra_timint_genalpha.H"
 
@@ -76,6 +76,8 @@ namespace SCATRA
     \brief Compare the numerical solution to the analytical one.
     */
     virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError() const;
+
+    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest() override;
 
    protected:
     //! copy constructor
@@ -198,4 +200,4 @@ namespace SCATRA
   };  // class TimIntHDG
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_HDG_H
+#endif  // SCATRA_TIMINT_HDG_H

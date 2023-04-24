@@ -8,12 +8,12 @@
 
 #include "gtest/gtest.h"
 
-#include "globalproblem.H"
-#include "voigt_notation.H"
+#include "lib_globalproblem.H"
+#include "lib_voigt_notation.H"
 
-#include "electrode.H"
-#include "inelastic_defgrad_factors.H"
-#include "matpar_bundle.H"
+#include "mat_electrode.H"
+#include "mat_inelastic_defgrad_factors.H"
+#include "mat_par_bundle.H"
 
 #include "linalg_fixedsizematrix.H"
 

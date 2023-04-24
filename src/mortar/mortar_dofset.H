@@ -9,7 +9,7 @@
 #ifndef MORTAR_DOFSET_H
 #define MORTAR_DOFSET_H
 
-#include "dofset.H"
+#include "lib_dofset.H"
 
 
 // forward declarations
@@ -71,4 +71,4 @@ namespace MORTAR
   };  // class MortarDofSet
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_DOFSET_H
+#endif  // MORTAR_DOFSET_H

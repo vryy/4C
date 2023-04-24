@@ -1,21 +1,16 @@
 set(OBJS_POROELAST
     # cmake-format: sortable
-    poro_base.cpp
-    poro_dyn.cpp
-    poro_monolithicfluidsplit.cpp
-    poro_monolithicmeshtying.cpp
-    poro_monolithicsplit.cpp
-    poro_monolithicsplit_nopenetration.cpp
-    poro_monolithicstructuresplit.cpp
-    poro_partitioned.cpp
-    poro_scatra_base.cpp
-    poro_scatra_monolithic.cpp
-    poro_scatra_part.cpp
-    poro_scatra_part_1wc.cpp
-    poro_scatra_part_2wc.cpp
-    poro_utils_clonestrategy.cpp
+    poroelast_base.cpp
+    poroelast_dyn.cpp
     poroelast_monolithic.cpp
+    poroelast_monolithicfluidsplit.cpp
+    poroelast_monolithicmeshtying.cpp
+    poroelast_monolithicsplit.cpp
+    poroelast_monolithicsplit_nopenetration.cpp
+    poroelast_monolithicstructuresplit.cpp
+    poroelast_partitioned.cpp
     poroelast_utils.cpp
+    poroelast_utils_clonestrategy.cpp
     )
 baci_add_library(alg_poroelast ${OBJS_POROELAST})
 
@@ -27,4 +22,4 @@ set(LIBS_ALG_POROELAST
     inpar
     )
 
-target_link_libraries(alg_poroelast PUBLIC ${LIBS_ALG_POROELAST})
+baci_add_dependency(alg_poroelast ${LIBS_ALG_POROELAST})

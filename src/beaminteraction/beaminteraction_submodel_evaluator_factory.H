@@ -9,13 +9,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_H
 
 
 #include <Teuchos_RCP.hpp>
 
-#include "str_model_evaluator_beaminteraction.H"  // typedef
+#include "beaminteraction_str_model_evaluator.H"  // typedef
 
 namespace BEAMINTERACTION
 {

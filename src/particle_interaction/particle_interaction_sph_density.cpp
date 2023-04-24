@@ -21,16 +21,16 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "element.H"
-#include "utils.H"
-#include "dserror.H"
+#include "lib_element.H"
+#include "lib_utils.H"
+#include "lib_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -630,7 +630,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    std::array<double, 3> vel_j = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -646,7 +646,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     // get pointer to virtual particle states
     const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
-    const double* vel_k = &vel_j[0];
+    const double* vel_k = vel_j.data();
 
     // (current) volume of virtual particle k
     const double V_k = mass_k[0] / dens_k[0];

@@ -21,13 +21,14 @@
 
 #include "poroelast_utils.H"
 
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_clonestrategy.H"
 #include "scatra_ele.H"
 
-#include "utils_createdis.H"
+#include "lib_utils_createdis.H"
 
-#include "dofset_predefineddofnumber.H"
-#include "utils_parallel.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_utils_parallel.H"
+#include "poroelast_scatra_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -160,7 +161,8 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
-  DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis, scatradis);
+  DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
+      structdis, scatradis);
   scatradis->FillComplete();
 
   // the problem is two way coupled, thus each discretization must know the other discretization

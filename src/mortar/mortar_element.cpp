@@ -16,9 +16,9 @@
 
 #include "contact_nitsche_utils.H"
 
-#include "material.H"
+#include "mat_material.H"
 
-#include "so_surface.H"
+#include "so3_surface.H"
 #include <Teuchos_RCP.hpp>
 
 
@@ -737,7 +737,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
   Metrics(xi, gxi, geta);
 
   // n is cross product of gxi and geta
-  double n[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> n = {0.0, 0.0, 0.0};
   n[0] = gxi[1] * geta[2] - gxi[2] * geta[1] * normalfac_;
   n[1] = gxi[2] * geta[0] - gxi[0] * geta[2] * normalfac_;
   n[2] = gxi[0] * geta[1] - gxi[1] * geta[0] * normalfac_;
@@ -997,7 +997,7 @@ double MORTAR::MortarElement::Jacobian(const double* xi)
     Metrics(xi, gxi, geta);
 
     // cross product of gxi and geta
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = gxi[1] * geta[2] - gxi[2] * geta[1];
     cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
     cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];
@@ -1039,7 +1039,7 @@ void MORTAR::MortarElement::DerivJacobian(
   Metrics(xi, gxi, geta);
 
   // cross product of gxi and geta
-  double cross[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> cross = {0.0, 0.0, 0.0};
   cross[0] = gxi[1] * geta[2] - gxi[2] * geta[1];
   cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
   cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];
@@ -1137,7 +1137,7 @@ double MORTAR::MortarElement::ComputeArea()
     GetNodalCoords(coord);
 
     // build vector between the two nodes
-    double tang[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> tang = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       tang[k] = coord(k, 1) - coord(k, 0);
@@ -1153,8 +1153,8 @@ double MORTAR::MortarElement::ComputeArea()
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
-    double t1[3] = {0.0, 0.0, 0.0};
-    double t2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> t2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       t1[k] = coord(k, 1) - coord(k, 0);
@@ -1162,7 +1162,7 @@ double MORTAR::MortarElement::ComputeArea()
     }
 
     // cross product of t1 and t2
-    double t1xt2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1xt2 = {0.0, 0.0, 0.0};
     t1xt2[0] = t1[1] * t2[2] - t1[2] * t2[1];
     t1xt2[1] = t1[2] * t2[0] - t1[0] * t2[2];
     t1xt2[2] = t1[0] * t2[1] - t1[1] * t2[0];
@@ -1214,7 +1214,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int, double>& a
     GetNodalCoords(coord);
 
     // build vector between the two nodes
-    double tang[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> tang = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       tang[k] = coord(k, 1) - coord(k, 0);
@@ -1230,8 +1230,8 @@ double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int, double>& a
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
-    double t1[3] = {0.0, 0.0, 0.0};
-    double t2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> t2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       t1[k] = coord(k, 1) - coord(k, 0);
@@ -1239,7 +1239,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int, double>& a
     }
 
     // cross product of t1 and t2
-    double t1xt2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> t1xt2 = {0.0, 0.0, 0.0};
     t1xt2[0] = t1[1] * t2[2] - t1[2] * t2[1];
     t1xt2[1] = t1[2] * t2[0] - t1[0] * t2[2];
     t1xt2[2] = t1[0] * t2[1] - t1[1] * t2[0];
@@ -1355,7 +1355,7 @@ double MORTAR::MortarElement::MinEdgeSize()
     {
       // there is only one edge
       // (we approximate the quadratic case as linear)
-      double diff[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < 3; ++dim) diff[dim] = coord(dim, 1) - coord(dim, 0);
       minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -1368,7 +1368,7 @@ double MORTAR::MortarElement::MinEdgeSize()
       // (we approximate the quadratic case as linear)
       for (int edge = 0; edge < 3; ++edge)
       {
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int dim = 0; dim < 3; ++dim)
         {
           if (edge == 2)
@@ -1390,7 +1390,7 @@ double MORTAR::MortarElement::MinEdgeSize()
       // (we approximate the quadratic case as linear)
       for (int edge = 0; edge < 4; ++edge)
       {
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int dim = 0; dim < 3; ++dim)
         {
           if (edge == 3)
@@ -1415,8 +1415,8 @@ double MORTAR::MortarElement::MinEdgeSize()
       EvaluateShape(sxi0, sval0, sderiv, nrow);
       EvaluateShape(sxi1, sval1, sderiv, nrow);
 
-      double gpx0[3] = {0.0, 0.0, 0.0};
-      double gpx1[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> gpx0 = {0.0, 0.0, 0.0};
+      std::array<double, 3> gpx1 = {0.0, 0.0, 0.0};
 
       for (int j = 0; j < nrow; ++j)
       {
@@ -1427,7 +1427,7 @@ double MORTAR::MortarElement::MinEdgeSize()
         }
       }
 
-      double diff[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < 3; ++dim) diff[dim] = gpx1[dim] - gpx0[dim];
       minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -1457,8 +1457,8 @@ double MORTAR::MortarElement::MinEdgeSize()
       EvaluateShape(sxi2, sval2, sderiv, nrow);
       EvaluateShape(sxi3, sval3, sderiv, nrow);
 
-      double gpx0[3] = {0.0, 0.0, 0.0};
-      double gpx1[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> gpx0 = {0.0, 0.0, 0.0};
+      std::array<double, 3> gpx1 = {0.0, 0.0, 0.0};
 
       for (int j = 0; j < nrow; ++j)
       {
@@ -1473,7 +1473,7 @@ double MORTAR::MortarElement::MinEdgeSize()
       // (we approximate the quadratic case as linear)
       for (int edge = 0; edge < 4; ++edge)
       {
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int dim = 0; dim < 3; ++dim)
         {
           if (edge == 0)
@@ -1523,7 +1523,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
     case line3:
     {
       // there is only one edge
-      double diff[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> diff = {0.0, 0.0, 0.0};
       for (int dim = 0; dim < 3; ++dim) diff[dim] = coord(dim, 1) - coord(dim, 0);
       maxedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
@@ -1535,7 +1535,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
       // there are three edges
       for (int edge = 0; edge < 3; ++edge)
       {
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int dim = 0; dim < 3; ++dim)
         {
           if (edge == 2)
@@ -1556,7 +1556,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
       // there are four edges
       for (int edge = 0; edge < 4; ++edge)
       {
-        double diff[3] = {0.0, 0.0, 0.0};
+        std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int dim = 0; dim < 3; ++dim)
         {
           if (edge == 3)

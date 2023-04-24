@@ -10,22 +10,23 @@
 
 #include "porofluidmultiphase_timint_ost.H"
 
-#include "material.H"
-#include "cnst_1d_art.H"
+#include "mat_material.H"
+#include "mat_cnst_1d_art.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 
-#include "ad_porofluidmultiphase.H"
-#include "utils_parallel.H"
+#include "adapter_porofluidmultiphase.H"
+#include "lib_utils_parallel.H"
+#include "rebalance_utils.H"
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
-#include "position_array.H"
-#include "intersection_service_templates.H"
-#include "intersection_service.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
+#include "geometry_position_array.H"
+#include "geometry_intersection_service_templates.H"
+#include "geometry_intersection_service.H"
 #include "inpar_bio.H"
 
 
@@ -257,20 +258,20 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
   Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), &coleles[0], 0, contdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, contdis->Comm()));
 
   artdis->ExportColumnElements(*extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
   Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, contdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, contdis->Comm()));
 
   artdis->ExportColumnNodes(*extendednodecolmap);
 
   // fill and inform user
   artdis->FillComplete();
-  DRT::UTILS::PrintParallelDistribution(*artdis);
+  REBALANCE::UTILS::PrintParallelDistribution(*artdis);
 
   // user output
   if (contdis->Comm().MyPID() == 0)
@@ -331,11 +332,9 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
     std::cout << "Starting with OctTree search for coupling ... " << std::endl;
-  Epetra_Time timersearch(contdis->Comm());
-  // reset timer
-  timersearch.ResetStartTime();
+  Teuchos::Time timersearch("OctTree_search", true);
   // *********** time measurement ***********
-  double dtcpu = timersearch.WallTime();
+  double dtcpu = timersearch.wallTime();
   // *********** time measurement ***********
 
   // nodal positions of artery-discretization (fully overlapping)
@@ -347,8 +346,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // gather
   std::vector<int> procs(contdis->Comm().NumProc());
   for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
-  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
-      my_positions_artery, positions_artery, contdis->Comm().NumProc(), &procs[0], contdis->Comm());
+  LINALG::Gather<int, LINALG::Matrix<3, 1>>(my_positions_artery, positions_artery,
+      contdis->Comm().NumProc(), procs.data(), contdis->Comm());
 
   // do the actual search on fully overlapping artery discretization
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)
@@ -382,7 +381,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     // estimated total time of the search is then 20 times this time)
     if (iart == static_cast<int>(0.05 * artEleGIDs.size()))
     {
-      double mydtsearch = timersearch.WallTime() - dtcpu;
+      double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;
       contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
       if (contdis->Comm().MyPID() == 0)
@@ -391,7 +390,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   }
 
   // *********** time measurement ***********
-  double mydtsearch = timersearch.WallTime() - dtcpu;
+  double mydtsearch = timersearch.wallTime() - dtcpu;
   double maxdtsearch = 0.0;
   contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
   // *********** time measurement ***********

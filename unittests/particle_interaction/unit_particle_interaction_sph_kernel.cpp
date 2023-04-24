@@ -12,7 +12,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 namespace
 {

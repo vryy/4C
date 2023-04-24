@@ -8,9 +8,10 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SSI_MONOLITHIC_H_
-#define SSI_MONOLITHIC_H_
+#ifndef SSI_MONOLITHIC_H
+#define SSI_MONOLITHIC_H
 
+#include <Teuchos_Time.hpp>
 #include "ssi_base.H"
 
 // forward declarations
@@ -288,7 +289,7 @@ namespace SSI
     Teuchos::RCP<SSI::ContactStrategyBase> strategy_contact_;
 
     //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<const SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
+    Teuchos::RCP<SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
@@ -300,7 +301,7 @@ namespace SSI
     Teuchos::RCP<SSI::MeshtyingStrategyBase> strategy_meshtying_;
 
     //! timer for Newton-Raphson iteration
-    Teuchos::RCP<Epetra_Time> timer_;
+    Teuchos::RCP<Teuchos::Time> timer_;
   };
 }  // namespace SSI
 #endif

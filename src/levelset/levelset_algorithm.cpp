@@ -16,9 +16,8 @@
 #include "levelset_intersection_utils.H"
 
 #include "scatra_resulttest.H"
-#include "standardtypes_cpp.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "io.H"
 
@@ -274,7 +273,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     EvaluateErrorComparedToAnalyticalSol();
   }
 
-  while ((step_ < stepmax_) and ((time_ + EPS12) < maxtime_))
+  while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step

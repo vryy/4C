@@ -2,10 +2,10 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-Simulation of multi-scale contact of two blocks using 
+Simulation of multi-scale contact of two blocks using
 coefficients found by the BEM model using the first correction
 method, but Young modulus equal to one and a rational function
-as a fit, with y=a/(x-b)+a/b with a = -0.02188, b = 3.854. 
+as a fit, with y=a/(x-b)+a/b with a = -0.02188, b = 3.854.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    200
 //NODES       242
@@ -32,7 +32,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        1
 NUMSTEP                         1
 MAXTIME                         1
@@ -61,16 +61,20 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.0 NUE 0.0 DENS 1.0
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
 LAW 1 CoConstLaw_brokenrational A -0.02188 B 3.854 C -0.005677 Offset 0.0
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
+NDPOINT 4
 NDLINE  6
 NDSURF  0
 NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 2
+DPOINT 4
 // bottomcorner
 E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 // topcorner
 E 2 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
+// other corner
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+// other corner
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 1.0 FUNCT 0 1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // ground
@@ -84,12 +88,14 @@ E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 1.0 FUNCT 0 1
 --------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // bottomcontact
-E 1 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 0 RefConfCheckNonSmoothSelfContactSurface 0.0 ConstitutiveLawID 1 
+E 1 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 0 RefConfCheckNonSmoothSelfContactSurface 0.0 ConstitutiveLawID 1
 // topcontact
 E 2 - 0 Slave Active FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 0 RefConfCheckNonSmoothSelfContactSurface 0.0 ConstitutiveLawID 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    21 DNODE 1
 NODE    242 DNODE 2
+NODE    121 DNODE 3
+NODE    142 DNODE 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1
@@ -602,9 +608,9 @@ NODE       242 COORD -5.0000000000000000e+02  5.0000000000000000e+02  0.00000000
    199 WALL QUAD4  229 230 241 240    MAT 2 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    200 WALL QUAD4  230 231 242 241    MAT 2 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE -2.2397082298994e-02 TOLERANCE 1e-08
-STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -5.429741382598877 TOLERANCE 1e-06
-STRUCTURE DIS structure NODE 237 QUANTITY dispx VALUE 6.7519759759307e-03 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 237 QUANTITY dispy VALUE -7.306454181671143 TOLERANCE 1e-06
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -5.41267137802679787e+00 TOLERANCE 1e-06
+STRUCTURE DIS structure NODE 237 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 237 QUANTITY dispy VALUE -7.29366431098662549e+00 TOLERANCE 1e-06
 ---------------------------------------------------------------END
 // END

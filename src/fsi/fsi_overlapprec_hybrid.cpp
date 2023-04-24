@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------------*/
 
 // Ifpack
-#include "Ifpack_LocalFilter.h"
+#include <Ifpack_LocalFilter.h>
 
 // baci
 #include "fsi_overlapprec_hybrid.H"
 #include "fsi_overlapprec_fsiamg.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 
@@ -66,7 +66,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
 /*----------------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 {
-  Epetra_Time timer(FullRowMap().Comm());
+  Teuchos::Time timer("FSI SetupPreconditioner", true);
 
   FILE outfile;  // ToDo (mayr) Specify output file
   Teuchos::ParameterList ifpacklist;
@@ -178,7 +178,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
         if (additiveschwarzeverywhere_ or interfaceproc)
         {
           int err = rows[j][c]->ExtractGlobalRowCopy(
-              fieldmap.GID(i), maxNumEntries, numEntries, &values[0], &indices[0]);
+              fieldmap.GID(i), maxNumEntries, numEntries, values.data(), indices.data());
           if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
         }
         else
@@ -192,7 +192,8 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
         }
         if (numEntries > 0)
         {
-          int err = A->InsertGlobalValues(fieldmap.GID(i), numEntries, &values[0], &indices[0]);
+          int err =
+              A->InsertGlobalValues(fieldmap.GID(i), numEntries, values.data(), indices.data());
           if (err != 0)
             dserror(
                 "InsertGlobalValues failed, error = %d!.\n"
@@ -208,8 +209,8 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   comm.Barrier();
   if (comm.MyPID() == 0)
-    std::cout << "Copied matrix in " << timer.ElapsedTime() << " seconds." << std::endl;
-  timer.ResetStartTime();
+    std::cout << "Copied matrix in " << timer.totalElapsedTime(true) << " seconds." << std::endl;
+  timer.reset();
 
   /****************************************************************************/
 
@@ -225,15 +226,15 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   comm.Barrier();
   if (comm.MyPID() == 0)
-    std::cout << "Built ILU in " << timer.ElapsedTime() << " seconds" << std::endl;
-  timer.ResetStartTime();
+    std::cout << "Built ILU in " << timer.totalElapsedTime(true) << " seconds" << std::endl;
+  timer.reset();
 
   // setup 'multiplicative' part of hybrid preconditioner
   amgprec_->SetupPreconditioner();
 
   comm.Barrier();
-  if (comm.MyPID() == 0) printf("AMG prec in %f seconds.\n", timer.ElapsedTime());
-  timer.ResetStartTime();
+  if (comm.MyPID() == 0) printf("AMG prec in %f seconds.\n", timer.totalElapsedTime(true));
+  timer.reset();
 
   //  /*
   //   * Test if we build the right prec

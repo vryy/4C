@@ -62,6 +62,7 @@ namespace INPAR
     {
       diffcondmat_newman,
       diffcondmat_ion,
+      diffcondmat_scl,
       diffcondmat_undefined
     };
 
@@ -91,4 +92,4 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace ELCH
 }  // namespace INPAR
-#endif  // #ifndef INPAR_ELCH_H
+#endif  // INPAR_ELCH_H

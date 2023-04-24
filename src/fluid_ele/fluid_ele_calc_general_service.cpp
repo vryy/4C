@@ -18,19 +18,19 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
-#include "newtonianfluid.H"
-#include "fluid_linear_density_viscosity.H"
-#include "fluid_murnaghantait.H"
-#include "fluidporo.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_linear_density_viscosity.H"
+#include "mat_fluid_murnaghantait.H"
+#include "mat_fluidporo.H"
 
-#include "nurbs_utils.H"
-#include "Sacado.hpp"
+#include "nurbs_discret_nurbs_utils.H"
+#include <Sacado.hpp>
 
 // immersed fsi related
-#include "immersed_base.H"
+#include "immersed_problem_immersed_base.H"
 
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
@@ -661,14 +661,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
     EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, calcerrfunctno, mat, u,
         p, dervel, fldparatimint_->IsFullImplPressureAndCont(), fldparatimint_->Dt());
 
-    if (calcerr == INPAR::FLUID::topoptchannel &&
-        !(xyzint(1) > -0.2 - 1.0e-014 && xyzint(1) < 0.2 + 1.0e-014))
-    {
-      preint = 0.0;
-      u(0) = 0.0;
-      u(1) = 0.0;
-    }
-
     // compute difference between analytical solution and numerical solution
     deltap = preint - p;
     deltavel.Update(1.0, velint_, -1.0, u);
@@ -882,36 +874,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       }
       else
         dserror("3D analytical solution is not implemented yet");
-    }
-    break;
-    case INPAR::FLUID::topoptchannel:
-    {
-      const double visc = static_cast<const MAT::NewtonianFluid*>(mat.get())->Viscosity();
-      // Y=xyzint(1); y=0 is located in the middle of the channel
-
-      if (xyzint(1) > -0.2 - 1.0e-014 && xyzint(1) < 0.2 + 1.0e-014)
-      {
-        u(0) = 1 - 25 * xyzint(1) * xyzint(1);
-        u(1) = 0.0;
-        p = (xyzint(0) - 0.5) * (-50 * visc);
-
-        dervel(0, 0) = 0.0;
-        dervel(0, 1) = -50 * xyzint(1);
-        dervel(1, 0) = 0.0;
-        dervel(1, 1) = 0.0;
-      }
-      else
-      {
-        u(0) = 0.0;
-        u(1) = 0.0;
-        // p = preint; //pressure error outside of channel not factored in
-        p = 0.0;
-
-        dervel(0, 0) = 0.0;
-        dervel(0, 1) = 0.0;
-        dervel(1, 0) = 0.0;
-        dervel(1, 1) = 0.0;
-      }
     }
     break;
     case INPAR::FLUID::byfunct:
@@ -3173,7 +3135,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
 
   const std::string action = "interpolate_velocity_to_given_point";
 
-  // parameter space coordinates of nodes 0 to 7 according to global report
+  // parameter space coordinates of nodes 0 to 7
   std::vector<std::vector<double>> nodalrefcoords(8);
   nodalrefcoords[0].push_back(-1.0);
   nodalrefcoords[0].push_back(-1.0);
@@ -3514,7 +3476,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     // set action for structure evaluation
     const std::string action = "interpolate_velocity_to_given_point";
 
-    // parameter space coordinates of nodes 0 to 7 according to global report
+    // parameter space coordinates of nodes 0 to 7
     std::vector<std::vector<double>> nodalrefcoords(8);
     nodalrefcoords[0].push_back(-1.0);
     nodalrefcoords[0].push_back(-1.0);
@@ -3859,7 +3821,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
   std::vector<double> mysol(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
   // get view of solution and subgrid-viscosity vector
-  LINALG::Matrix<4 * nen_, 1> sol(&(mysol[0]), true);
+  LINALG::Matrix<4 * nen_, 1> sol(mysol.data(), true);
 
   // the plane normal tells you in which plane the integration takes place
   const int normdirect = params.get<int>("normal direction to homogeneous plane");

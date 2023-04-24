@@ -21,7 +21,6 @@ set(OBJS_FLUID_ELE_LIB
     fluid_ele_calc_poro.cpp
     fluid_ele_calc_poro_p1.cpp
     fluid_ele_calc_std.cpp
-    fluid_ele_calc_topopt_service.cpp
     fluid_ele_calc_turbulence_service.cpp
     fluid_ele_calc_xfem.cpp
     fluid_ele_calc_xfem_coupling.cpp
@@ -61,7 +60,6 @@ set(LIBS_ELE_FLUID
     alg_xfluid
     inpar
     lib_xfem
-    opti
     )
 
-target_link_libraries(ele_fluid PUBLIC ${LIBS_ELE_FLUID})
+baci_add_dependency(ele_fluid ${LIBS_ELE_FLUID})

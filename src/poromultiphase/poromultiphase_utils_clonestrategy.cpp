@@ -8,36 +8,24 @@
 
 
 #include "poromultiphase_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "porofluidmultiphase_ele.H"
-#include "element.H"
+#include "lib_element.H"
 
 
 /*----------------------------------------------------------------------*
  | define conditions to copy to the cloned discretization    vuong 08/16 |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string>
-POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy()
+POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("PoroLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("PoroVolumeNeumann", "VolumeNeumann"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtPorofluidCouplConNodebased", "ArtPorofluidCouplConNodebased"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ArtPorofluidCouplConNodeToPoint", "ArtPorofluidCouplConNodeToPoint"));
-
-  return conditions_to_copy;
+  return {{"PoroDirichlet", "Dirichlet"}, {"PoroPointNeumann", "PointNeumann"},
+      {"PoroLineNeumann", "LineNeumann"}, {"PoroSurfaceNeumann", "SurfaceNeumann"},
+      {"PoroVolumeNeumann", "VolumeNeumann"}, {"Initfield", "Initfield"},
+      {"ArtPorofluidCouplConNodebased", "ArtPorofluidCouplConNodebased"},
+      {"ArtPorofluidCouplConNodeToPoint", "ArtPorofluidCouplConNodeToPoint"}};
 }
 
 

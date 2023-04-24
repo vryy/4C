@@ -4,16 +4,16 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef SO3_THERMO_ELETYPES_H_
-#define SO3_THERMO_ELETYPES_H_
+#ifndef SO3_THERMO_ELETYPES_H
+#define SO3_THERMO_ELETYPES_H
 
-#include "so_hex8.H"
-#include "so_hex8fbar.H"
-#include "so_hex27.H"
-#include "so_hex20.H"
-#include "so_tet4.H"
-#include "so_tet10.H"
-#include "so_nurbs27.H"
+#include "so3_hex8.H"
+#include "so3_hex8fbar.H"
+#include "so3_hex27.H"
+#include "so3_hex20.H"
+#include "so3_tet4.H"
+#include "so3_tet10.H"
+#include "so3_nurbs27.H"
 
 namespace DRT
 {
@@ -233,4 +233,4 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-#endif  // SO3_THERMO_ELETYPES_H_
+#endif  // SO3_THERMO_ELETYPES_H

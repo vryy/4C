@@ -14,19 +14,19 @@
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "inpar_turbulence.H"
 
-#include "utils.H"
+#include "lib_utils.H"
 
-#include "newtonianfluid.H"
-#include "sutherland.H"
+#include "mat_newtonianfluid.H"
+#include "mat_sutherland.H"
 
 #include "nurbs_discret.H"
 
@@ -49,8 +49,8 @@ namespace FLD
       Teuchos::ParameterList& params, const double eosfac)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(&(velocitypressure[0]), true);
-    LINALG::Matrix<4 * iel, 1> temp(&(temperature[0]), true);
+    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    LINALG::Matrix<4 * iel, 1> temp(temperature.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -458,8 +458,8 @@ namespace FLD
       Teuchos::ParameterList& params)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(&(velocitypressure[0]), true);
-    LINALG::Matrix<4 * iel, 1> phi(&(scalar[0]), true);
+    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    LINALG::Matrix<4 * iel, 1> phi(scalar.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -877,8 +877,8 @@ namespace FLD
     LINALG::Matrix<1, iel> etemp;
 
     // wrap matrix objects in fixed-size arrays
-    LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(&(myvel[0]), true);
-    LINALG::Matrix<iel, 1> mytempvec(&(mytemp[0]), true);
+    LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(myvel.data(), true);
+    LINALG::Matrix<iel, 1> mytempvec(mytemp.data(), true);
 
     // split velocity and throw away  pressure, insert into element array
     for (int i = 0; i < iel; ++i)

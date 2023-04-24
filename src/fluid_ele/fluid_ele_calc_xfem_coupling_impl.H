@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H_
-#define FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H_
+#ifndef FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
+#define FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
 
 #include "inpar_xfem.H"
 
@@ -1039,4 +1039,4 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H_ */
+#endif  // FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H

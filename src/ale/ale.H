@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALE_H_
-#define ALE_H_
+#ifndef ALE_H
+#define ALE_H
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "ad_ale.H"
+#include "adapter_ale.H"
 
 #include "inpar_ale.H"
 
@@ -614,4 +614,4 @@ namespace ALE
 
 }  // namespace ALE
 
-#endif /* ALE_H_ */
+#endif  // ALE_H

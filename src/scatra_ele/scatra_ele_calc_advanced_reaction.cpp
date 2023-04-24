@@ -11,18 +11,18 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
 // MATERIALS
-#include "scatra_mat.H"
-#include "scatra_reaction_mat.H"
-#include "matlist.H"
-#include "matlist_reactions.H"
-#include "so3_material.H"
-#include "growth_law.H"
-#include "singleton_owner.H"
+#include "mat_scatra_mat.H"
+#include "mat_scatra_reaction_mat.H"
+#include "mat_list.H"
+#include "mat_list_reactions.H"
+#include "mat_so3_material.H"
+#include "mat_growth_law.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -172,8 +172,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetRhsInt(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double taufac, const double densnp, const LINALG::Matrix<my::nen_, 1>& sgconv,
-    const LINALG::Matrix<my::nen_, 1>& diff)
+    const double taufac, const double densnp, const LINALG::Matrix<nen_, 1>& sgconv,
+    const LINALG::Matrix<nen_, 1>& diff)
 {
   // -----------------first care for 'easy' reaction terms K*(\partial_c
   // c)=Id*K-------------------------------------- NOTE: K_i must not depend on any concentrations!!
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
 
   my::CalcMatReact(emat, k, timefacfac, timetaufac, taufac, densnp, sgconv, diff);
 
-  const LINALG::Matrix<my::nen_, 1>& conv = my::scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_, 1>& conv = my::scatravarmanager_->Conv(k);
 
   // -----------------second care for advanced reaction terms ( - (\partial_c f(c) )------------
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
 
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  LINALG::Matrix<my::nen_, 1> functint = my::funct_;
+  LINALG::Matrix<nen_, 1> functint = my::funct_;
   if (not my::scatrapara_->MatGP()) functint = funct_elementcenter_;
 
   for (int j = 0; j < my::numscal_; j++)
@@ -201,12 +201,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
     //----------------------------------------------------------------
     // standard Galerkin reactive term
     //----------------------------------------------------------------
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const double v = fac_reac * functint(vi);
       const int fvi = vi * my::numdofpernode_ + k;
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
         const int fui = ui * my::numdofpernode_ + j;
 
@@ -221,14 +221,14 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
     {
       double densreataufac = timetaufac_reac * densnp;
       // convective stabilization of reactive term (in convective form)
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const double v = densreataufac * (conv(vi) + sgconv(vi) +
                                              my::scatrapara_->USFEMGLSFac() * 1.0 /
                                                  my::scatraparatimint_->TimeFac() * functint(vi));
         const int fvi = vi * my::numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
           const int fui = ui * my::numdofpernode_ + j;
 
@@ -239,12 +239,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
       if (my::use2ndderiv_)
       {
         // diffusive stabilization of reactive term
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const double v = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * diff(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             const int fui = ui * my::numdofpernode_ + j;
 
@@ -259,12 +259,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
       densreataufac = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * densnp;
 
       // reactive stabilization of convective (in convective form) and reactive term
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const double v = densreataufac * functint(vi);
         const int fvi = vi * my::numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
           const int fui = ui * my::numdofpernode_ + j;
 
@@ -275,12 +275,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
       if (my::use2ndderiv_)
       {
         // reactive stabilization of diffusive term
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const double v = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * my::funct_(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             const int fui = ui * my::numdofpernode_ + j;
 
@@ -293,13 +293,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
       if (not my::scatraparatimint_->IsStationary())
       {
         // reactive stabilization of transient term
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const double v = my::scatrapara_->USFEMGLSFac() * taufac * densnp *
                            remanager->GetReaCoeff(k) * densnp * functint(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             const int fui = ui * my::numdofpernode_ + j;
 
@@ -359,10 +359,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::SetInternalVariables
   my::SetInternalVariablesForMatAndRHS();
 
   // calculate current Gauss-point coordinates from node coordinates and shape functions
-  for (unsigned i = 0; i < my::nsd_; ++i)
+  for (unsigned i = 0; i < nsd_; ++i)
   {
     gpcoord_[i] = 0.0;
-    for (unsigned k = 0; k < my::nen_; ++k)
+    for (unsigned k = 0; k < nen_; ++k)
     {
       gpcoord_[i] += my::xyze_(i, k) * my::funct_(k);
     }

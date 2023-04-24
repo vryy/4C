@@ -9,8 +9,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_NONLIN_MORTAR_H_
-#define ADAPTER_COUPLING_NONLIN_MORTAR_H_
+#ifndef ADAPTER_COUPLING_NONLIN_MORTAR_H
+#define ADAPTER_COUPLING_NONLIN_MORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/14 |
@@ -20,7 +20,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "adapter_coupling_mortar.H"
 
 /*---------------------------------------------------------------------*
@@ -227,4 +227,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_NONLIN_MORTAR_H_ */
+#endif  // ADAPTER_COUPLING_NONLIN_MORTAR_H

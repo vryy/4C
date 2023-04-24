@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_discret_extractor.H"
-#include "periodicbc.H"
-#include "dofset_transparent.H"
-#include "utils_rebalancing.H"
+#include "lib_periodicbc.H"
+#include "lib_dofset_transparent.H"
+#include "rebalance.H"
 #include "io.H"
-#include "discret_xwall.H"
+#include "lib_discret_xwall.H"
 
 
 /*----------------------------------------------------------------------*
@@ -238,8 +238,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap =
-          Teuchos::rcp(new Epetra_Map(-1, rownodes.size(), &rownodes[0], 0, childdiscret_->Comm()));
+      newrownodemap = Teuchos::rcp(
+          new Epetra_Map(-1, rownodes.size(), rownodes.data(), 0, childdiscret_->Comm()));
 
       std::vector<int> colnodes;
 
@@ -249,8 +249,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap =
-          Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, childdiscret_->Comm()));
+      newcolnodemap = Teuchos::rcp(
+          new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, childdiscret_->Comm()));
     }
 
     if (childdiscret_->Comm().MyPID() == 0)
@@ -306,7 +306,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           }
 
           // combine marked nodes of all procs
-          childdiscret_->Comm().SumAll(&mytoggle[0], &toggle[0], toggle.size());
+          childdiscret_->Comm().SumAll(mytoggle.data(), toggle.data(), toggle.size());
 
           // and add nodes to the list of child nodes that will get the condition
           for (unsigned rr = 0; rr < candidates->size(); ++rr)
@@ -371,18 +371,21 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // this is the actual redistribution
-    Teuchos::RCP<Epetra_Map> sepcondrownodes;
-    Teuchos::RCP<Epetra_Map> sepcondcolnodes;
-
     Teuchos::RCP<Epetra_Map> sepcondelenodesmap =
         Teuchos::rcp(new Epetra_Map(*childdiscret_->ElementRowMap()));
-    Epetra_Time time(parentdiscret_->Comm());
+    Teuchos::Time time("", true);
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap,
-        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
+    Teuchos::RCP<const Epetra_CrsGraph> sepcondnodemap =
+        REBALANCE::BuildGraph(childdiscret_, sepcondelenodesmap);
+
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+
+    const auto& [sepcondrownodes, sepcondcolnodes] =
+        REBALANCE::RebalanceNodeMaps(sepcondnodemap, rebalanceParams);
 
     if (childdiscret_->Comm().MyPID() == 0)
     {
@@ -460,10 +463,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       my_n_ghostele[myrank] = childdiscret_->NumMyColElements() - childdiscret_->NumMyRowElements();
       my_n_dof[myrank] = childdiscret_->DofRowMap()->NumMyElements();
 
-      childdiscret_->Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
-      childdiscret_->Comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
-      childdiscret_->Comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
-      childdiscret_->Comm().SumAll(&my_n_dof[0], &n_dof[0], numproc);
+      childdiscret_->Comm().SumAll(my_n_nodes.data(), n_nodes.data(), numproc);
+      childdiscret_->Comm().SumAll(my_n_elements.data(), n_elements.data(), numproc);
+      childdiscret_->Comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numproc);
+      childdiscret_->Comm().SumAll(my_n_dof.data(), n_dof.data(), numproc);
 
       if (childdiscret_->Comm().MyPID() == 0)
       {

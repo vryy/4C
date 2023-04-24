@@ -32,10 +32,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -61,11 +61,11 @@ LINEAR_SOLVER                   1
 TRANSIENT_TERMS                 none
 CONTIPARTINT                    yes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                       // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
@@ -85,56 +85,42 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 0.0001 DENSITY 1.0e-3 PERMEABILITY 1.0e-6 TYPE 
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5*t
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -4.81319652783599172e-02 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE -2.31802853520968639e-02 TOLERANCE 1e-5
-FLUID DIS porofluid NODE 3 QUANTITY velx VALUE -5.04386475041393653e-02 TOLERANCE 1e-5
-FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -5.01200485366229478e-02 TOLERANCE 1e-5
-FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 4.95139101192725917e-01 TOLERANCE 1e-5
-FLUID DIS porofluid NODE 6 QUANTITY pressure VALUE 4.90230682586943300e-01 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -5.77511632654601403e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -8.48521907322918162e-04 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -5.00164308685633607e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE 0.00000000000000000e+00 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 3 QUANTITY velx VALUE -5.00164308685633746e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -5.00301439638524900e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 4.99999025983486833e-01 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 6 QUANTITY pressure VALUE 4.99999033763590728e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -5.01403993951714320e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -5.01403993951710851e-04 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS
-DPOINT                          0
------------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
 E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
 // Surface x-
 //E 4 - 0 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-// Node x+y+z+
-////E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// Node x-y+z+
-//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// Node x-y+z-
-//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// Node x+y+z-
-//E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// Node x+y-z-
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Node x+y-z+
-//E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+////E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Node x+y+z+
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Node x-y-z+
-//E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Node x-y+z+
+//E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Node x-y-z-
+//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Node x-y+z-
+//E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Node x+y-z-
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Node x+y+z-
 //E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
@@ -148,10 +134,10 @@ DLINE                           3
 //E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Line x+z-
 E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// Line y-z-
-E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Line x-z-
-//E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+//E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// Line y-z-
+E 7 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Line y+z-
 //E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Line x-y-
@@ -178,22 +164,22 @@ E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 6 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
 DPOINT                          1
-// Node x+y+z+
-//E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// Node x-y+z+
-//E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// Node x-y+z-
-//E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// Node x+y+z-
-//E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// Node x+y-z-
-//E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Node x+y-z+
-//E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+//E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Node x+y+z+
+//E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Node x-y-z+
-//E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+//E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Node x-y+z+
+//E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Node x-y-z-
-E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Node x-y+z-
+//E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Node x+y-z-
+//E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Node x+y+z-
+//E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           3
 // Line x+z+
@@ -206,14 +192,14 @@ DLINE                           3
 //E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x+z-
 //E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// Line y-z-
-E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-z-
-E 7 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 0 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// Line y-z-
+E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line y+z-
 //E 8 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-y-
-E 9 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 0 1 0 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x+y-
 //E 10 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-y+
@@ -291,10 +277,10 @@ NODE 5 DLINE 4
 // Line x+z-
 NODE 6 DLINE 5
 NODE 7 DLINE 5
-// Line y-z-
-NODE 5 DLINE 6
-NODE 8 DLINE 6
 // Line x-z-
+NODE 2 DLINE 6
+NODE 3 DLINE 6
+// Line y-z-
 NODE 2 DLINE 7
 NODE 6 DLINE 7
 // Line y+z-

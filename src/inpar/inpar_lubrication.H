@@ -6,11 +6,11 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_INPAR_INPAR_LUBRICATION_H_
-#define SRC_INPAR_INPAR_LUBRICATION_H_
+#ifndef INPAR_LUBRICATION_H
+#define INPAR_LUBRICATION_H
 
 #include "inpar_parameterlist_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 namespace INPAR
 {
@@ -91,4 +91,4 @@ namespace INPAR
   }  // namespace LUBRICATION
 }  // namespace INPAR
 
-#endif /* SRC_INPAR_INPAR_LUBRICATION_H_ */
+#endif  // INPAR_LUBRICATION_H

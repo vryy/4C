@@ -8,18 +8,18 @@
 *----------------------------------------------------------------------*/
 
 #include "adapter_coupling.H"
-#include "ad_str_poro_wrapper.H"
-#include "ad_fld_poro.H"
+#include "adapter_str_poro_wrapper.H"
+#include "adapter_fld_poro.H"
 #include "poroelast_monolithic.H"
-#include "ad_ale_fpsi.H"
-#include "xfluid.H"
+#include "adapter_ale_fpsi.H"
+#include "fluid_xfluid.H"
 
 #include "fsi_debugwriter.H"
 
 #include "linalg_blocksparsematrix.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -27,32 +27,31 @@
 #include "inpar_solver.H"
 #include "inpar_fsi.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "colors.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include "io_control.H"
 #include "io.H"
 #include "constraint_manager.H"
 #include "io_pstream.H"
 
-#include "XFScoupling_manager.H"
-#include "XFAcoupling_manager.H"
-#include "XFPcoupling_manager.H"
-#include "XFFcoupling_manager.H"
+#include "fsi_xfem_XFScoupling_manager.H"
+#include "fsi_xfem_XFAcoupling_manager.H"
+#include "fsi_xfem_XFPcoupling_manager.H"
+#include "fsi_xfem_XFFcoupling_manager.H"
 
 
 #include "xfem_condition_manager.H"
 
 #include "xfem_xfluid_contact_communicator.H"
 #include "contact_interface.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "contact_nitsche_strategy_fsi.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "fsi_xfem_monolithic.H"
 /*----------------------------------------------------------------------*/
@@ -1570,7 +1569,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     // Teuchos::TimeMonitor::zeroOutTimers();
 
     // fluid field
-    Epetra_Time tf(Comm());
+    Teuchos::Time tf("fluid", true);
 
     // call the fluid evaluate with the current time-step-increment w.r.t. u^n from the restart:
     // Delta(u,p) = (u,p)^(n+1,i+1) - u^n
@@ -1598,7 +1597,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     FluidField()->Evaluate();
 
-    if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+    if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.totalElapsedTime(true) << IO::endl;
 
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
     if (have_contact_)
@@ -1620,12 +1619,13 @@ bool FSI::MonolithicXFEM::Evaluate()
     }
 
     // structural field
-    Epetra_Time ts(Comm());
+    Teuchos::Time ts("structure", true);
 
     // Evaluate Structure (do not set state again)
     StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
 
-    if (Comm().MyPID() == 0) IO::cout << "structure time: " << ts.ElapsedTime() << IO::endl;
+    if (Comm().MyPID() == 0)
+      IO::cout << "structure time: " << ts.totalElapsedTime(true) << IO::endl;
   }
 
   //--------------------------------------------------------
@@ -2031,12 +2031,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
-      solvertype != INPAR::SOLVER::SolverType::belos)
-  {
-    dserror("aztec solver expected");
-  }
-
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   // get parameter list of structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -2260,7 +2255,7 @@ void FSI::MonolithicXFEM::LinearSolve()
     UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
 
 
-    // Adapt solver tolerance (important if Aztec solver is picked)
+    // Adapt solver tolerance
     // TODO: does or how does this work for changing Newton systems
     solver_->ResetTolerance();
 
@@ -2629,12 +2624,12 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
 
   if (nd_newton_incmax_damping_)
   {
-    std::vector<double> incnorm;
-    incnorm.resize(5, -2.0);  // disp, vel, p , porovel, porop
+    std::array<double, 5> incnorm;
+    incnorm.fill(-2.0);  // disp, vel, p , porovel, porop
     if (!StructurePoro()->isPoro())
     {
       if (nd_max_incnorm_[0] > 0)
-        Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
+        Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
     }
     else if (nd_max_incnorm_[0] > 0 || nd_max_incnorm_[3] > 0 || nd_max_incnorm_[4] > 0)
     {
@@ -2644,7 +2639,7 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       fluidvelpres.push_back(StructurePoro()->FluidField()->PressureRowMap());
       LINALG::MultiMapExtractor fluidvelpresextract(
           *(StructurePoro()->FluidField()->DofRowMap()), fluidvelpres);
-      Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&incnorm[0]);
+      Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 0)
           ->NormInf(&incnorm[3]);
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 1)

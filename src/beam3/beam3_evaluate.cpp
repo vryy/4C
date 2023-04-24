@@ -11,19 +11,18 @@
 
 #include "beam3.H"
 #include "beam3_base.H"
-#include "beam3r.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "exporter.H"
-#include "dserror.H"
-#include "standardtypes_cpp.H"
-#include "utils.H"
+#include "beam3_reissner.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_exporter.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
 #include "linalg_fixedsizematrix.H"
-#include "largerotations.H"
-#include "str_elements_paramsinterface.H"
+#include "fem_general_largerotations.H"
+#include "structure_new_elements_paramsinterface.H"
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -628,7 +627,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
         // evaluate function at the position of the current node       --> dof here correct?
         functionfac = DRT::Problem::Instance()
                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate(&X_ref[0], time, dof);
+                          .Evaluate(X_ref.data(), time, dof);
       }
       else
         functionfac = 1.0;
@@ -1646,8 +1645,8 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(
 inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3, 1>& gamma)
 {
   // translational damping coefficients according to Howard, p. 107, table 6.2;
-  gamma(0) = 2 * PI * BrownianDynParamsInterface().GetViscosity();
-  gamma(1) = 4 * PI * BrownianDynParamsInterface().GetViscosity();
+  gamma(0) = 2 * M_PI * BrownianDynParamsInterface().GetViscosity();
+  gamma(1) = 4 * M_PI * BrownianDynParamsInterface().GetViscosity();
 
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p.
    *107, table 6.2;
@@ -1658,7 +1657,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3, 1>& gamma
       4000;  // 1000;  //1000 not bad for standard Actin3D_10.dat files; for 40 elements also 1
              // seems to work really well; for large networks 4000 seems good (artificial
              // contribution then still just ~0.1 % of nodal moments)
-  gamma(2) = 4 * PI * BrownianDynParamsInterface().GetViscosity() * rsquare * artificial;
+  gamma(2) = 4 * M_PI * BrownianDynParamsInterface().GetViscosity() * rsquare * artificial;
 
   /* in the following section damping coefficients are replaced by those suggested in Ortega2003,
    * which allows for a comparison of the finite element simulation with the results of that

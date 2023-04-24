@@ -16,7 +16,7 @@
 #include "volmortar_defines.H"
 #include "volmortar_cell.H"
 
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 
 #include "mortar_coupling3d_classes.H"
 #include "mortar_calc_utils.H"
@@ -25,7 +25,7 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "cut_volumecell.H"
 
 
@@ -1306,7 +1306,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADi
     // quantities for eval. outside gp
     double gpdist = 1.0e12;
     int gpid = 0;
-    double AuxXi[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> AuxXi = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
     jac = UTILS::Jacobian<distypeS>(eta, Aele);

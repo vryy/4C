@@ -6,11 +6,11 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef INPAR_POROELAST_H_
-#define INPAR_POROELAST_H_
+#ifndef INPAR_POROELAST_H
+#define INPAR_POROELAST_H
 
 #include "inpar_parameterlist_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -120,4 +120,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif /* INPAR_POROELAST_H_ */
+#endif  // INPAR_POROELAST_H

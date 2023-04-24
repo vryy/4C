@@ -11,10 +11,10 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 
-#include "contact_integrator_utils.H"
+#include "contact_aug_contact_integrator_utils.H"
 
 #include "linalg_serialdensevector.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
@@ -927,8 +927,9 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
               new MORTAR::MortarElement(j, cele->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {cele->Nodes()[nodeLIds[0]], cele->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT ::Node*, 2> nodes = {
+              cele->Nodes()[nodeLIds[0]], cele->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();
@@ -988,7 +989,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   }
 
 
-  double tmp1[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> tmp1 = {0.0, 0.0, 0.0};
   // difference
   tmp1[0] = n1->xspatial()[0] - n2->xspatial()[0];
   tmp1[1] = n1->xspatial()[1] - n2->xspatial()[1];
@@ -1082,7 +1083,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
   DRT::Element** adjeles = Elements();
 
   // temporary vector to store nodal normal
-  double n_tmp[3] = {0., 0., 0.};
+  std::array<double, 3> n_tmp = {0., 0., 0.};
   Epetra_SerialDenseMatrix elens(6, nseg);
 
   // we need to store some stuff here

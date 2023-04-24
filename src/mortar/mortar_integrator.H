@@ -7,13 +7,13 @@
 #ifndef MORTAR_INTEGRATOR_H
 #define MORTAR_INTEGRATOR_H
 
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 // forward declarations
 namespace LINALG
@@ -234,4 +234,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif  // #ifndef MORTAR_INTEGRATOR_H
+#endif  // MORTAR_INTEGRATOR_H

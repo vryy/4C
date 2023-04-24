@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef INPAR_VOLMORTAR_H_
-#define INPAR_VOLMORTAR_H_
+#ifndef INPAR_VOLMORTAR_H
+#define INPAR_VOLMORTAR_H
 
 
 /*----------------------------------------------------------------------*/
@@ -60,4 +60,4 @@ namespace INPAR
   }  // namespace VOLMORTAR
 }  // namespace INPAR
 
-#endif /* INPAR_VOLMORTAR_H_ */
+#endif  // INPAR_VOLMORTAR_H

@@ -4,15 +4,12 @@ BACI_HOME=`dirname $0`
 
 #default options which may be modified through command line arguments
 BUILD_TYPE="RELEASE"
-TRILINOS_BUILD_TYPE="release"
 GENERATOR="Unix Makefiles"
 COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
-USE_FORCEBUILD=0
 SHARED_LIBS=OFF
 CCACHE_COMMAND=ccache
-MPIEXEC_EXTRA_OPTS_FOR_TESTING=
 USE_LLD=0
 BUILD_DOXYGEN=ON
 DOXYGEN_USE_LOCAL_MATHJAX=YES
@@ -20,6 +17,9 @@ DOXYGEN_LOCAL_MATHJAX_BASEPATH=
 
 # use experimental Trilinos version (e.g. current state of develop)
 TRILINOS_EXPERIMENTAL=OFF
+
+#use experimental MIRCO version (e.g. current state of develop)
+MIRCO_DEVELOP=OFF
 
 # ignore unstable cut test 
 IGNORE_UNSTABLE_CUTTEST=OFF
@@ -38,11 +38,11 @@ IGNORE_UNSTABLE_CUTTEST=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,generator:,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
+OPTIONS=`getopt -o hc:dae -l help,config:,debug,debug-optimized,generator:,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--generator=make/ninja] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--generator=make/ninja] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
 
 eval set -- $OPTIONS
 
@@ -69,9 +69,6 @@ while true; do
     --coverage)
       COVERAGE=1
       ;;
-    --trilinos-debug)
-      TRILINOS_BUILD_TYPE="dbg"
-      ;;
     --generator)
       case "$2" in
         "make") GENERATOR="Unix Makefiles";;
@@ -82,9 +79,6 @@ while true; do
       ;;
     -a|--useACML)
       USE_ACML=1
-      ;;
-    -f|--forceBuild)
-      USE_FORCEBUILD=1
       ;;
     --no-ccache)
       CCACHE_COMMAND=""
@@ -118,46 +112,8 @@ if [ $# -ne 0 ]; then
   exit 1
 fi
 
-##############################################################
-# check for out-of-source build
-
 BUILD_FOLDER=`pwd -P`
-BUILD_FOLDER_SAFE=$BUILD_FOLDER
 BACI_HOME=`cd $BACI_HOME; pwd -P`
-
-if [[ $USE_FORCEBUILD == 0 ]]; then
-  # check whether BUILD_FOLDER is "out-of-source"
-  while true; do
-    if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
-
-      PROPOSED_BUILDDIR="`dirname $(echo $BACI_HOME | sed -e 's/\/$//')`/build-${BUILD_TYPE,,}"
-
-      echo "********************************************************************************************"
-      echo "No in-source build of BACI allowed..."
-      echo "Please choose a path for building BACI outside of $BACI_HOME"
-      echo "For example: $PROPOSED_BUILDDIR"
-      echo ""
-      echo "HOWTO:"
-      echo "  mkdir -p \"$PROPOSED_BUILDDIR\""
-      echo "  cd \"$PROPOSED_BUILDDIR\""
-      echo "  $BACI_HOME/do-configure [--debug] [--useACML] [...]"
-      echo "  make -j 6 baci"
-      echo "********************************************************************************************"
-
-      exit 2
-    fi
-
-    BUILD_FOLDER="`dirname $(echo $BUILD_FOLDER | sed -e 's/\/$//')`"
-
-    if [[ "x$BUILD_FOLDER" == "x/" ]]; then
-      break;   # no in-source build -> all is fine
-    fi
-  done
-fi
-
-# set valid folder for baci build
-BUILD_FOLDER=$BUILD_FOLDER_SAFE
-
 
 ##############################################################
 # Check if ccache is installed
@@ -256,42 +212,36 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=\"$LINKERFLAGSRELEASE\" \
   -D CMAKE_Fortran_FLAGS:STRING=\"$FFLAGS\" \
   -D CMAKE_Fortran_FLAGS_RELEASE:STRING=\"$FFLAGSRELEASE\" \
-  -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-  -D CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
-  -D BUILD_SHARED_LIBS:BOOL=\"$SHARED_LIBS\" \
-  -D CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH=\"./src\" \
+  -D CMAKE_C_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
+  -D CMAKE_CXX_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
   -D TRILINOS_DEVELOP:BOOL=$TRILINOS_EXPERIMENTAL \
-  -D TRAP_FE:BOOL=ON \
-  -D COLOROUTPUT:BOOL=OFF \
   -D INCLUDE_INSTALL_DIR:PATH=\"$INCLUDE_INSTALL_DIR\" \
   -D LIB_INSTALL_DIR:PATH=\"$LIB_INSTALL_DIR\" \
   -D Trilinos_PREFIX:PATH=\"$Trilinos_PREFIX\" \
   -D SEARCH_CLN_LIBRARY_DIR:PATH=\"$CLN_LIBRARYDIR\" \
   -D SEARCH_CLN_INCLUDE_DIR:PATH=\"$CLN_INCLUDEDIR\" \
-  -D USE_NO_SYSTEM_PATHS:BOOL=\"$BOOST_EXCLUDE_SYSTEM_PATHS\" \
+  -D BOOST_EXCLUDE_SYSTEM_PATHS:BOOL=\"$BOOST_EXCLUDE_SYSTEM_PATHS\" \
   -D BOOST_LIBRARYDIR:PATH=\"$BOOST_LIBRARYDIR\" \
   -D BOOST_INCLUDEDIR:PATH=\"$BOOST_INCLUDEDIR\" \
   -D Boost_NO_BOOST_CMAKE:BOOL=\"$USE_USERSPECIFIED_BOOST\" \
   -D QHULL_LIBRARY_DIR:PATH=\"$QHULL_LIBRARYDIR\" \
   -D QHULL_INCLUDE_DIR:PATH=\"$QHULL_INCLUDEDIR\" \
   -D BACI_WITH_ARBORX:BOOL=\"$BACI_WITH_ARBORX\" \
-  -D MPI_DIR:PATH=\"$MPIDIR\" \
   -D MPI_RUN:FILEPATH=\"$MPIRUN\" \
-  -D MPIEXEC_EXTRA_OPTS_FOR_TESTING:STRING=\"$MPIEXEC_EXTRA_OPTS_FOR_TESTING\" \
-  -D CUBIT_DIR:PATH=\"$CUBIT_PATH\" \
   -D PVPYTHON:FILEPATH=\"$PARAVIEWPYTHON_PATH\" \
   -D BLA_VENDOR:STRING=\"$BLA_VENDORSTRING\" \
   -D BLAS_LIBRARIES:FILEPATH=\"$BLAS_LIBS\" \
   -D LAPACK_LIBRARIES:FILEPATH=\"$LAPACK_LIBS\" \
   -D ACMLDIR:STRING=\"$ACMLDIR_PATH\" \
-  -D CMAKE_C_COMPILER_LAUNCHER=\"$CCACHE_COMMAND\" \
-  -D CMAKE_CXX_COMPILER_LAUNCHER=\"$CCACHE_COMMAND\" \
   -D AMDLIBMDIR:FILEPATH=\"$AMDLIBMDIR_PATH\" \
   -D IGNORE_UNSTABLE_CUTTEST:BOOL=$IGNORE_UNSTABLE_CUTTEST \
-  -D BACI_WITH_GOOGLETEST:BOOL=\"$BACI_WITH_GOOGLETEST\" \
   -D BUILD_DOXYGEN:BOOL=\"$BUILD_DOXYGEN\" \
   -D DOXYGEN_USE_LOCAL_MATHJAX:BOOL=\"$DOXYGEN_USE_LOCAL_MATHJAX\" \
   -D DOXYGEN_LOCAL_MATHJAX_BASEPATH:BOOL=\"$DOXYGEN_LOCAL_MATHJAX_BASEPATH\"
+  -D BACI_WITH_MIRCO:BOOL=\"$BACI_WITH_MIRCO\" \
+  -D MIRCO_DEVELOP:BOOL=\"$MIRCO_DEVELOP\" \
+  -D MIRCO_DEVELOP_INSTALL_DIR:PATH=\"$MIRCO_DEVELOP_INSTALL_DIR\" \
+  -D BACI_WITH_GOOGLETEST:BOOL=\"$BACI_WITH_GOOGLETEST\"
   \"${BACI_HOME}\")
 
 # expand all arguments into one long string, quotes are retained because they are escaped

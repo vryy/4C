@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_COCONSTLAW_INTERFACE_H
-#define CONTACT_COCONSTLAW_INTERFACE_H
+#ifndef CONTACT_CONSTITUTIVELAW_INTERFACE_H
+#define CONTACT_CONSTITUTIVELAW_INTERFACE_H
 
 #include "contact_interface.H"
 
@@ -103,4 +103,4 @@ namespace CONTACT
   };  // class CoInterface
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_COCONSTLAW_INTERFACE_H
+#endif  // CONTACT_CONSTITUTIVELAW_INTERFACE_H

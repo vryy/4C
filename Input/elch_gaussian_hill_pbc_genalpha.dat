@@ -18,20 +18,20 @@ DIM                             3
 PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      nonlinear //linear_incremental
+SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Gen_Alpha
 RESULTSEVRY                     1
 RESTARTEVRY                     2
-NUMSTEP                         10                              // shorter run for nightly test case! //100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps
-TIMESTEP                        0.01                            // Cr = 1.5
+NUMSTEP                         10
+MAXTIME                         1.0
+TIMESTEP                        0.01
 THETA                           0.5
 ALPHA_M                         0.833333333333333
 ALPHA_F                         0.666666666666667
 GAMMA                           0.666666666666667
 VELOCITYFIELD                   function
 VELFUNCNO                       1
-INITIALFIELD                    field_by_condition              // test this option! //field_by_function
+INITIALFIELD                    field_by_condition
 //INITFUNCNO                    2
 FSSUGRDIFF                      No
 MATID                           4
@@ -57,36 +57,36 @@ EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Belos
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                             // !!!!!!! // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         20                              // how often to recompute some preconditioners
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-10                         // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          500                             // max iterations
-AZSUB                           200 //!!!!!!! // size of krylov space for gmres
-AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                               // unused
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                            // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         20
+IFPACKGFILL                     0
+AZTOL                           1.0E-10
+AZCONV                          AZ_r0
+AZITER                          500
+AZSUB                           200
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0 // Pe_e = 5
-MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0 // reproduces D_binary=0.0006666666666
+MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0
+MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0
 // Krylov space projection works only with one CrsMatrix -> Elch_ENC_PDE_ELIM
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------FUNCT1
@@ -128,7 +128,7 @@ DVOL                            1
 E 1 - scatra NUMMODES 3 ONOFF 0 0 1 integration
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
-E 1 - ScaTra 2 // set initial fields as defined by FUNCT 2
+E 1 - ScaTra 2
 // surface 1 equals the whole computational domain!
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

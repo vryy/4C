@@ -16,16 +16,16 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "element.H"
-#include "utils.H"
-#include "dserror.H"
+#include "lib_element.H"
+#include "lib_utils.H"
+#include "lib_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -114,7 +114,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitRelativePositionsOfVirtual
         currvirtualparticle[2] = t * initialparticlespacing;
 
         // current virtual particle within support radius
-        if (UTILS::VecNormTwo(&currvirtualparticle[0]) > maxinteractiondistance) continue;
+        if (UTILS::VecNormTwo(currvirtualparticle.data()) > maxinteractiondistance) continue;
 
         // add to relative positions of virtual particles
         virtualparticles_.push_back(currvirtualparticle);
@@ -196,7 +196,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     }
 
     // acceleration of wall contact point j
-    double acc_j[3] = {0.0};
+    double acc_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetAccCol() != Teuchos::null)
     {
@@ -220,7 +220,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
     // get particles within radius
     std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
-    particleengineinterface_->GetParticlesWithinRadius(&pos_j[0], rad_j[0], neighboringparticles);
+    particleengineinterface_->GetParticlesWithinRadius(pos_j, rad_j[0], neighboringparticles);
 
 #ifdef DEBUG
     if (not(neighboringparticles.size() > 0))
@@ -230,8 +230,8 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     double sumk_Wjk = 0.0;
     double sumk_press_k_Wjk = 0.0;
     double sumk_dens_k_Wjk = 0.0;
-    double sumk_r_jk_Wjk[3] = {0.0};
-    double sumk_vel_k_Wjk[3] = {0.0};
+    double sumk_r_jk_Wjk[3] = {0.0, 0.0, 0.0};
+    double sumk_vel_k_Wjk[3] = {0.0, 0.0, 0.0};
 
     // iterate over neighboring particles
     for (const auto& neighboringparticle : neighboringparticles)
@@ -284,21 +284,22 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
     // compute relative acceleration of wall contact point
     double relacc[3];
-    UTILS::VecSet(relacc, &gravity[0]);
+    UTILS::VecSet(relacc, gravity.data());
     UTILS::VecSub(relacc, acc_j);
 
     // set weighted fluid particle pressure
     weightedpressure_[particlewallpairindex] = sumk_press_k_Wjk * inv_sumk_Wjk;
 
     // set weighted fluid particle pressure gradient
-    UTILS::VecSetScale(&weightedpressuregradient_[particlewallpairindex][0],
+    UTILS::VecSetScale(weightedpressuregradient_[particlewallpairindex].data(),
         sumk_dens_k_Wjk * inv_sumk_Wjk, relacc);
 
     // set weighted fluid particle distance vector
     UTILS::VecSetScale(
-        &weighteddistancevector_[particlewallpairindex][0], inv_sumk_Wjk, sumk_r_jk_Wjk);
+        weighteddistancevector_[particlewallpairindex].data(), inv_sumk_Wjk, sumk_r_jk_Wjk);
 
     // set weighted fluid particle velocity
-    UTILS::VecSetScale(&weightedvelocity_[particlewallpairindex][0], inv_sumk_Wjk, sumk_vel_k_Wjk);
+    UTILS::VecSetScale(
+        weightedvelocity_[particlewallpairindex].data(), inv_sumk_Wjk, sumk_vel_k_Wjk);
   }
 }

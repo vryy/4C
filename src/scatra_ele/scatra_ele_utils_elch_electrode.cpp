@@ -10,8 +10,8 @@
 #include "scatra_ele_utils_elch_electrode.H"
 #include "scatra_ele_calc_elch_electrode.H"
 
-#include "electrode.H"
-#include "singleton_owner.H"
+#include "mat_electrode.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -46,8 +46,8 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
-    const Teuchos::RCP<const MAT::Material> material, const double concentration,
-    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchElectrode>& diffmanager)
+    Teuchos::RCP<const MAT::Material> material, const double concentration,
+    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager)
 {
   const auto* matelectrode = static_cast<const MAT::Electrode*>(material.get());
 

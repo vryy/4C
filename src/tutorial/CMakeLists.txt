@@ -1,8 +1,8 @@
 set(OBJS_TUTORIAL
     # cmake-format: sortable
-    inpar_tutorial.cpp
     tutorial_dyn.cpp
     tutorial_fixedpoint_scheme.cpp
+    tutorial_inpar.cpp
     tutorial_nln_truss.cpp
     tutorial_struct_ale_coupling.cpp
     tutorial_utils.cpp
@@ -18,7 +18,7 @@ set(LIBS_ALG_TUTORIAL
     linalg
     )
 
-target_link_libraries(alg_tutorial PUBLIC ${LIBS_ALG_TUTORIAL})
+baci_add_dependency(alg_tutorial ${LIBS_ALG_TUTORIAL})
 
 add_subdirectory(tutorial_ele)
 add_subdirectory(tutorial_material)

@@ -30,7 +30,7 @@ MATID                           1
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
 ITEMAX                          2
-EXPLPREDICT                     no                              // yes -> oscillations for neutral
+EXPLPREDICT                     no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -91,9 +91,9 @@ NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - ID 0 pot -0.1 funct 3 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 3 - ID 0 POT -0.1 FUNCT 3 NUMSCAL 3 STOICH -1 0 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.25 ALPHA_C 0.75 I0 10 GAMMA 1.0 REFCON 0.1 DL_SPEC_CAP 0.0
 //                              anode
-E 4 - ID 1 pot 0.0 funct 3 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 4 - ID 1 POT 0.0 FUNCT 3 NUMSCAL 3 STOICH -1 0 0  E- 1 EPSILON -1 ZERO_CUR 0 Butler-Volmer ALPHA_A 0.25 ALPHA_C 0.75 I0 10 GAMMA 1.0 REFCON 0.1 DL_SPEC_CAP 0.0
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 3 DLINE 1
 NODE 4 DLINE 1

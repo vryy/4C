@@ -388,12 +388,13 @@ bool COMM_UTILS::AreDistributedVectorsIdentical(const COMM_UTILS::Communicators&
     // second: receive name
     tag = 2672;
     receivename.resize(lengthRecv);
-    MPI_Recv(&receivename[0], lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+    MPI_Recv(
+        receivename.data(), lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
 
     // do comparison of names
-    if (std::strcmp(name, &receivename[0]))
+    if (std::strcmp(name, receivename.data()))
       dserror("comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)",
-          name, &receivename[0]);
+          name, receivename.data());
 
     // compare data
     lengthRecv = 0;
@@ -408,7 +409,8 @@ bool COMM_UTILS::AreDistributedVectorsIdentical(const COMM_UTILS::Communicators&
     // second: receive data
     tag = 2674;
     receivebuf.resize(lengthRecv);
-    MPI_Recv(&receivebuf[0], lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+    MPI_Recv(
+        receivebuf.data(), lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
 
     // start comparison
     int mylength = fullvec->MyLength() * vec->NumVectors();
@@ -456,7 +458,7 @@ bool COMM_UTILS::AreDistributedVectorsIdentical(const COMM_UTILS::Communicators&
 
     // second: send data
     tag = 2674;
-    MPI_Send(&fullvec->Values()[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+    MPI_Send(fullvec->Values(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
   }
 
   // force all procs to stay here until proc 0 has checked the vectors
@@ -554,12 +556,13 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
     // second: receive name
     tag = 2672;
     receivename.resize(lengthRecv);
-    MPI_Recv(&receivename[0], lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+    MPI_Recv(
+        receivename.data(), lengthRecv, MPI_CHAR, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
 
     // do comparison of names
-    if (std::strcmp(name, &receivename[0]))
+    if (std::strcmp(name, receivename.data()))
       dserror("comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)",
-          name, &receivename[0]);
+          name, receivename.data());
 
     // compare data: indices
     lengthRecv = 0;
@@ -574,8 +577,8 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
     // second: receive data
     tag = 2674;
     receivebuf_indices.resize(lengthRecv);
-    MPI_Recv(
-        &receivebuf_indices[0], lengthRecv, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
+    MPI_Recv(receivebuf_indices.data(), lengthRecv, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm,
+        &status);
 
     // start comparison
     int mylength = data_indices.size();
@@ -608,7 +611,7 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
     // second: receive data
     tag = 2676;
     receivebuf_values.resize(lengthRecv);
-    MPI_Recv(&receivebuf_values[0], lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm,
+    MPI_Recv(receivebuf_values.data(), lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm,
         &status);
 
     // start comparison
@@ -656,7 +659,7 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
 
     // second: send data
     tag = 2674;
-    MPI_Send(&data_indices[0], lengthSend, MPI_INT, 0, tag, mpi_gcomm);
+    MPI_Send(data_indices.data(), lengthSend, MPI_INT, 0, tag, mpi_gcomm);
 
     // compare data: values
     lengthSend = data_values.size();
@@ -666,7 +669,7 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
 
     // second: send data
     tag = 2676;
-    MPI_Send(&data_values[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+    MPI_Send(data_values.data(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
   }
 
   // force all procs to stay here until proc 0 has checked the matrices

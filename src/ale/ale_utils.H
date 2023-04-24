@@ -7,11 +7,11 @@
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ALE_ALE_UTILS_H_
-#define SRC_ALE_ALE_UTILS_H_
+#ifndef ALE_UTILS_H
+#define ALE_UTILS_H
 
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 
@@ -72,4 +72,4 @@ namespace ALE
 }  // namespace ALE
 
 
-#endif /* SRC_ALE_ALE_UTILS_H_ */
+#endif  // ALE_UTILS_H

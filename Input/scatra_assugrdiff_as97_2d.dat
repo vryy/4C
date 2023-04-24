@@ -42,10 +42,10 @@ DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ASSUGRDIFF                      yes
-DEFINITION_ASSGD Almeida_Silva_97_nonlinear //Almeida_Silva_97_nonlinear //doCarmo_Galeao_91_nonlinear //Tezduyar_Park_86_nonlinear //Hughes_etal_86_nonlinear //artificial_linear
+DEFINITION_ASSGD Almeida_Silva_97_nonlinear
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                         // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.00000001
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -121,7 +121,6 @@ NODE 241 DLINE 2
 NODE 271 DLINE 2
 NODE 301 DLINE 2
 NODE 333 DLINE 2
-NODE 333 DLINE 3
 NODE 337 DLINE 3
 NODE 339 DLINE 3
 NODE 342 DLINE 3

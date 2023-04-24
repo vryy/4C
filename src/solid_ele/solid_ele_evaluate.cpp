@@ -9,10 +9,10 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "solid_ele_neumann_evaluator.H"
-#include "str_elements_paramsinterface.H"
-#include "dserror.H"
+#include "structure_new_elements_paramsinterface.H"
+#include "lib_dserror.H"
 #include "solid_ele.H"
 #include "solid_ele_factory.H"
 #include "solid_ele_calc_interface.H"
@@ -154,12 +154,6 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
           StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
           discretization, lm, params);
-      return 0;
-    }
-    case struct_postprocess_stress:
-    {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->PostProcessStressStrain(
-          *this, discretization, lm, params);
       return 0;
     }
     case struct_init_gauss_point_data_output:

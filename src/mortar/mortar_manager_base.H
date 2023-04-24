@@ -10,10 +10,10 @@
 #ifndef MORTAR_MANAGER_BASE_H
 #define MORTAR_MANAGER_BASE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 
 
 // forward declarations
@@ -60,7 +60,7 @@ namespace MORTAR
     One needs a derived class for a concrete implementation of the Manager
     class into a given FE code environment (see e.g. contact_manager.H and
     contact_manager.cpp for the BACI mortar contact implementation or
-    meshtying_manager.H and meshtying_manager.coo for the BACI mortar
+    contact_meshtying_manager.H and meshtying_manager.coo for the BACI mortar
     meshtying implementation).
 
     This constructor then has to be fed with a discretization that is expected
@@ -138,4 +138,4 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-#endif  // #ifndef MORTAR_MANAGER_BASE_H
+#endif  // MORTAR_MANAGER_BASE_H

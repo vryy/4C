@@ -7,15 +7,15 @@
 
 #include "solid_ele.H"
 #include <memory>
-#include "solid_utils.H"
-#include "linedefinition.H"
-#include "utils_local_connectivity_matrices.H"
-#include "utils_factory.H"
-#include "so_line.H"
-#include "so_surface.H"
+#include "solid_ele_utils.H"
+#include "lib_linedefinition.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "lib_utils_factory.H"
+#include "so3_line.H"
+#include "so3_surface.H"
 #include "linalg_utils_nullspace.H"
-#include "str_elements_paramsinterface.H"
-#include "so3_material.H"
+#include "structure_new_elements_paramsinterface.H"
+#include "mat_so3_material.H"
 #include "solid_ele_factory.H"
 #include "solid_ele_calc_interface.H"
 

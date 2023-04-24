@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_COMBO_STRATEGY_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_COMBO_STRATEGY_H_
+#ifndef CONTACT_AUG_COMBO_STRATEGY_H
+#define CONTACT_AUG_COMBO_STRATEGY_H
 
 #include "contact_aug_utils.H"
 #include "contact_abstract_strategy.H"
@@ -176,7 +176,7 @@ namespace CONTACT
       void WriteOutput(IO::DiscretizationWriter& writer) const override;
 
       /// function wrapper
-      void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+      void EvaluateReferenceState() override;
 
       /// function wrapper
       bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
@@ -599,4 +599,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_COMBO_STRATEGY_H_ */
+#endif  // CONTACT_AUG_COMBO_STRATEGY_H

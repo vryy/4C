@@ -15,14 +15,13 @@
 #include "scatra_ele_parameter_turbulence.H"
 #include "inpar_fluid.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "utils.H"
-#include "standardtypes_cpp.H"
-#include "newtonianfluid.H"
-#include "matlist.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
+#include "mat_newtonianfluid.H"
+#include "mat_list.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
@@ -809,7 +808,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(doub
     const double xi = std::max(epe, 1.0);
 
     // compute artificial subgrid diffusivity
-    sgdiff = (DSQR(h) * mk * DSQR(vel_norm) * DSQR(densnp)) / (2.0 * diffus * xi);
+    sgdiff = (((h) * (h)) * mk * ((vel_norm) * (vel_norm)) * ((densnp) * (densnp))) /
+             (2.0 * diffus * xi);
 
     // compute entries of (fine-scale) subgrid-diffusivity-scaling vector
     for (unsigned vi = 0; vi < nen_; ++vi)

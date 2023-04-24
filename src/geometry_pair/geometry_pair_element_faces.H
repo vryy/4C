@@ -8,13 +8,13 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_ELEMENT_FACES_H_
-#define GEOMETRY_PAIR_ELEMENT_FACES_H_
+#ifndef GEOMETRY_PAIR_ELEMENT_FACES_H
+#define GEOMETRY_PAIR_ELEMENT_FACES_H
 
 
 #include "geometry_pair_element_functions.H"
 
-#include "element.H"
+#include "lib_element.H"
 
 #include <unordered_map>
 

@@ -13,10 +13,10 @@
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "fluid_functions.H"
-#include "fluid_weakly_compressible.H"
+#include "mat_fluid_weakly_compressible.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -395,7 +395,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
 
       reg(0) += N(i, q) * vecValues[msd_ * ndofs + i];
 
-      for (unsigned int d = 0; d <= nsd_; ++d)
+      for (unsigned int d = 0; d < nsd_; ++d)
         weg(d) += N(i, q) * vecValues[(msd_ + 1 + d) * ndofs + i];
     }
 

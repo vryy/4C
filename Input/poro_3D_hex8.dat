@@ -36,10 +36,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -54,14 +54,14 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
 STRUCT_STRAIN                   Yes
-STRUCT_STRESS                   Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRESS                   Cauchy
+STRUCT_COUPLING_STRESS          Cauchy
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithicstructuresplit poro_monolithic
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 TOLINC_GLOBAL                   1e-08
 ITEMAX                          20
@@ -96,7 +96,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha // OneStepTheta
+DYNAMICTYP                      GenAlpha
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -129,26 +129,14 @@ NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
 E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS
-DPOINT                          0
------------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                           0
 // Surface x+
 //E 6 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
@@ -207,8 +195,6 @@ E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           4
 // Line x+z+

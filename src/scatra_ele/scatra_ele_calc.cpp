@@ -15,22 +15,21 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "utils_boundary_integration.H"
-#include "utils_gder2.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "fem_general_utils_gder2.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
-#include "electrode.H"
-#include "scatra_mat.H"
-#include "scatra_mat_multiscale.H"
-#include "matlist.H"
-#include "newtonianfluid.H"
+#include "mat_electrode.H"
+#include "mat_scatra_mat.H"
+#include "mat_scatra_mat_multiscale.H"
+#include "mat_list.H"
+#include "mat_newtonianfluid.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

@@ -12,21 +12,21 @@
 
 #include "particle_algorithm_utils.H"
 
-#include "particle_timint.H"
-#include "particle_input_generator.H"
-#include "particle_gravity.H"
-#include "particle_viscous_damping.H"
-#include "particle_initial_field.H"
-#include "particle_result_test.H"
+#include "particle_algorithm_timint.H"
+#include "particle_algorithm_input_generator.H"
+#include "particle_algorithm_gravity.H"
+#include "particle_algorithm_viscous_damping.H"
+#include "particle_algorithm_initial_field.H"
+#include "particle_algorithm_result_test.H"
 
 #include "particle_interaction_base.H"
 #include "particle_interaction_sph.H"
 #include "particle_interaction_dem.H"
 
 #include "particle_engine.H"
-#include "particle_communication_utils.H"
-#include "particle_object.H"
-#include "particle_container.H"
+#include "particle_engine_communication_utils.H"
+#include "particle_engine_object.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall.H"
 #include "particle_wall_result_test.H"
@@ -36,8 +36,8 @@
 
 #include "inpar_particle.H"
 
-#include "dserror.H"
-#include "resulttest.H"
+#include "lib_dserror.H"
+#include "lib_resulttest.H"
 
 #include "io.H"
 #include "io_pstream.H"

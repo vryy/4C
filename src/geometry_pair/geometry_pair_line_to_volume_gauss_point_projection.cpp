@@ -12,8 +12,8 @@
 #include "geometry_pair_line_to_3D_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 
-#include "element.H"
-#include "utils_integration.H"
+#include "lib_element.H"
+#include "fem_general_utils_integration.H"
 
 
 #include "geometry_pair_line_projection.H"

@@ -251,4 +251,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // #ifndef FLUID_ROTSYM_PERIODICBC_H
+#endif  // FLUID_ROTSYM_PERIODICBC_H

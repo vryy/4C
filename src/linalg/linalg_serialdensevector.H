@@ -6,11 +6,11 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SERIALDENSEVECTOR_H
-#define SERIALDENSEVECTOR_H
+#ifndef LINALG_SERIALDENSEVECTOR_H
+#define LINALG_SERIALDENSEVECTOR_H
 
 
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseVector.h>
 
 
 namespace LINALG
@@ -45,14 +45,16 @@ namespace LINALG
     \brief Standard Constructor wrapping
            Epetra_SerialDenseVector(int Length);
 
-    Opposed to the base class constructor, this one does NOT initialize the matrix to zero.
-    default behavior of set_object_label is also reversed compared to base class
+    This class provides the possibility to avoid the initialization of the vector to improve
+    performance, by explicitly setting the init flag to false. The default behavior is to set to
+    zero. Default behavior of set_object_label is also reversed compared to base class
     Epetra_SerialDenseVector
 
     \param Length           (in): supposed length of vector
-
+    \param init             (in): flag indicating whether the vector is initialized to zero (true)
+                                  or left uninitialized (false). Defaults to true.
     */
-    SerialDenseVector(int Length, bool init = false);
+    SerialDenseVector(int Length, bool init = true);
 
     /*!
     \brief Standard Constructor wrapping
@@ -160,4 +162,4 @@ namespace LINALG
 
 
 
-#endif  // #ifndef SERIALDENSEVECTOR_H
+#endif  // LINALG_SERIALDENSEVECTOR_H

@@ -12,19 +12,19 @@
 #include "fluid_timint_stat_hdg.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
 #include "fluid_ele_action.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "boxfilter.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "fluid_turbulence_boxfilter.H"
 #include "fluid_utils.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "fluid_ele_hdg.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "io.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
@@ -79,14 +79,14 @@ void FLD::TimIntStationaryHDG::Init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, hdgdis->Comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->Comm()));
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, hdgdis->Comm()));
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
   velpressplitter_->Setup(*hdgdis->DofRowMap(), conddofmap, otherdofmap);
 
   // call Init()-functions of base classes
@@ -213,7 +213,7 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
       dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
+      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
     }
   }
   double globerror = 0;

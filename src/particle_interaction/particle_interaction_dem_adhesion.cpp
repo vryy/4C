@@ -19,20 +19,20 @@
 #include "particle_interaction_dem_adhesion_surface_energy.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "particle_wall_material_dem.H"
+#include "mat_particle_wall_dem.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "element.H"
-#include "utils.H"
-#include "dserror.H"
+#include "lib_element.H"
+#include "lib_utils.H"
+#include "lib_dserror.H"
 
-#include "runtime_vtp_writer.H"
+#include "io_runtime_vtp_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -392,7 +392,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     if (not(surface_energy > 0.0)) continue;
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -440,7 +440,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
       adhesionhistorydata[globalid_i[0]][histele] = touchedadhesionhistory_ij;
 
     // calculation of wall adhesion force
-    double walladhesionforce[3] = {0.0};
+    double walladhesionforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
     {
       UTILS::VecSetScale(
@@ -470,14 +470,14 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
       // determine nodal forces
-      double nodal_force[numnodes * 3];
+      std::vector<double> nodal_force(numnodes * 3);
       for (int node = 0; node < numnodes; ++node)
         for (int dim = 0; dim < 3; ++dim)
           nodal_force[node * 3 + dim] = funct[node] * walladhesionforce[dim];
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
-          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+          numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }

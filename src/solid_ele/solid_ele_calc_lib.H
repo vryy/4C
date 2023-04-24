@@ -12,13 +12,13 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <numeric>
-#include "element.H"
-#include "utils_gausspoints.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_element.H"
+#include "fem_general_utils_gausspoints.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
-#include "utils.H"
-#include "so3_material.H"
-#include "voigt_notation.H"
+#include "lib_utils.H"
+#include "mat_so3_material.H"
+#include "lib_voigt_notation.H"
 
 
 namespace DRT::ELEMENTS::DETAIL

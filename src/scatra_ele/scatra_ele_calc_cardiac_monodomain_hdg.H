@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 
 
-#include "utils_polynomial.H"
+#include "fem_general_utils_polynomial.H"
 
 namespace DRT
 {
@@ -128,4 +128,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HDG_H_ */
+#endif  // SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HDG_H

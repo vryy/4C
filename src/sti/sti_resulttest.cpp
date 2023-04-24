@@ -11,9 +11,9 @@
 
 #include "sti_monolithic.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |

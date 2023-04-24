@@ -33,7 +33,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_Comm.h>

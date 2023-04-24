@@ -59,4 +59,4 @@ namespace SCATRA
   };  // class MeshtyingStrategyStdElch
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H

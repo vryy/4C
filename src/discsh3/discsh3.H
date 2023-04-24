@@ -12,21 +12,21 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
-#include "element.H"
-#include "elementtype.H"
-#include "parobjectfactory.H"
-#include "utils_integration.H"
-#include "utils_fem_shapefunctions.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
+#include "lib_parobjectfactory.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 #include "linalg_serialdensevector.H"
-#include "node.H"
-#include "discret.H"
-#include "discret_faces.H"
+#include "lib_node.H"
+#include "lib_discret.H"
+#include "lib_discret_faces.H"
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 
@@ -1121,4 +1121,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef DISCSH3_H
+#endif  // DISCSH3_H

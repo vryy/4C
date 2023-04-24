@@ -60,7 +60,7 @@ REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             CLASSICAL_LES                   // DNS_OR_RESVMM_LES CLASSICAL_LES RANS
+TURBULENCE_APPROACH             CLASSICAL_LES
 PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 CANONICAL_FLOW                  scatra_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
@@ -180,7 +180,7 @@ ML_DAMPMED                      0.67
 ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0055556 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0 // Sc=3
+MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1

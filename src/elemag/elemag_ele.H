@@ -16,13 +16,13 @@ Pack, Unpack, NumDofPerNode etc.
 #define ELEMAG_ELE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
-#include "elementtype.H"
-#include "utils_integration.H"
-#include "utils_local_connectivity_matrices.H"
-#include "utils_gausspoints.H"
-#include "utils_polynomial.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "fem_general_utils_gausspoints.H"
+#include "fem_general_utils_polynomial.H"
 
 const bool trac_with_pml_elemag = false;
 
@@ -969,4 +969,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_H */
+#endif  // ELEMAG_ELE_H

@@ -13,7 +13,7 @@
 
 #include "tutorial_ele.H"
 #include "tutorial_ele_calc.H"
-#include "tutorial_mat.H"
+#include "tutorial_material.H"
 
 
 TUTORIAL::ELEMENTS::TutorialEleCalc* TUTORIAL::ELEMENTS::TutorialEleCalc::Instance(

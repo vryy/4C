@@ -4,16 +4,16 @@ set(OBJS_POST_COMMON
     )
 
 baci_add_library(post_common ${OBJS_POST_COMMON})
-target_link_libraries(post_common PUBLIC inpar)
+baci_add_dependency(post_common inpar fem_general module_registry)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable
-    post_filter_base.cpp
-    post_processor.cpp
-    post_single_field_writers.cpp
-    post_structure_stress.cpp
-    post_thermo_heatflux.cpp
-    post_writer_base.cpp
+    post_common_filter_base.cpp
+    post_common_post_processor.cpp
+    post_common_single_field_writers.cpp
+    post_common_structure_stress.cpp
+    post_common_thermo_heatflux.cpp
+    post_common_writer_base.cpp
     )
 
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})

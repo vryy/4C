@@ -99,4 +99,4 @@ namespace CONTACT
     Teuchos::RCP<LINALG::SparseMatrix> kdp_;
   };
 }  // namespace CONTACT
-#endif  //  CONTACT_NITSCHE_STRATEGY_PORO_H
+#endif  // CONTACT_NITSCHE_STRATEGY_PORO_H

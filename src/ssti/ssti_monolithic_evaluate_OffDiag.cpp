@@ -7,13 +7,13 @@
 *----------------------------------------------------------------------*/
 #include "ssti_monolithic_evaluate_OffDiag.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
 
-#include "assemblestrategy.H"
-#include "discret.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -22,7 +22,7 @@
 
 #include "ssi_utils.H"
 
-#include "str_enum_lists.H"
+#include "structure_new_enum_lists.H"
 
 #include "linalg_mapextractor.H"
 #include "linalg_matrixtransform.H"

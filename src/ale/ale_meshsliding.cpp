@@ -13,9 +13,9 @@
 #include "contact_interface.H"
 #include "contact_node.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

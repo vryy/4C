@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_POINTPRECONDITIONER_H_
-#define SOLVER_POINTPRECONDITIONER_H_
+#ifndef SOLVER_POINTPRECONDITIONER_H
+#define SOLVER_POINTPRECONDITIONER_H
 
 #include "linalg_downwindmatrix.H"
 #include "linalg_none_operator.H"
@@ -42,7 +42,7 @@ namespace LINALG::SOLVER
       return preconditioner_->PrecOperatorRCP();
     }
 
-    void Print(std::ostream& stream) override
+    void Print(std::ostream& stream) const override
     {
       stream << "InfNorm(";
       preconditioner_->Print(stream);
@@ -83,7 +83,7 @@ namespace LINALG::SOLVER
       return preconditioner_->PrecOperatorRCP();
     }
 
-    void Print(std::ostream& stream) override
+    void Print(std::ostream& stream) const override
     {
       stream << "SymDiag(";
       preconditioner_->Print(stream);

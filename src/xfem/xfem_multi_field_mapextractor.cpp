@@ -13,15 +13,15 @@
 
 #include "xfem_multi_field_mapextractor.H"
 
-#include "xfield_field_coupling_dofset.H"
-#include "xfield_field_coupling.H"
+#include "xfem_xfield_field_coupling_dofset.H"
+#include "xfem_xfield_field_coupling.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_mapextractor.H"
 
-#include "discret_xfem.H"
-#include "parobject.H"
-#include "exporter.H"
+#include "lib_discret_xfem.H"
+#include "lib_parobject.H"
+#include "lib_exporter.H"
 
 #include "linalg_matrixtransform.H"
 
@@ -227,15 +227,15 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       int topid = (myrank + 1) % numprocs;
 
       MPI_Request sizerequest;
-      exporter.ISend(frompid, topid, &sendsize[0], 2, tag, sizerequest);
+      exporter.ISend(frompid, topid, sendsize.data(), 2, tag, sizerequest);
 
       // send gid information
       MPI_Request gidrequest;
-      exporter.ISend(frompid, topid, &sendgid[0], sendgid.size(), tag * 10, gidrequest);
+      exporter.ISend(frompid, topid, sendgid.data(), sendgid.size(), tag * 10, gidrequest);
 
       // send set data
       MPI_Request setrequest;
-      exporter.ISend(frompid, topid, &sendset[0], sendset.size(), tag * 100, setrequest);
+      exporter.ISend(frompid, topid, sendset.data(), sendset.size(), tag * 100, setrequest);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -446,13 +446,13 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveNodeMapExtractors()
     partial_maps[MULTIFIELD::block_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_interface_row_node_gids.size()),
-            &my_interface_row_node_gids[0], 0, Comm()));
+            my_interface_row_node_gids.data(), 0, Comm()));
 
     // slave sided non-interface node maps
     partial_maps[MULTIFIELD::block_non_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_non_interface_row_node_gids.size()),
-            &my_non_interface_row_node_gids[0], 0, Comm()));
+            my_non_interface_row_node_gids.data(), 0, Comm()));
 
     // setup node map extractor
     slave_map_extractors_[dis_count++][map_nodes]->Setup(*((*cit_dis)->NodeRowMap()), partial_maps);
@@ -505,13 +505,13 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveDofMapExtractors()
     // create slave interface dof row map
     partial_maps[MULTIFIELD::block_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_interface] = Teuchos::rcp(new Epetra_Map(
-        -1, static_cast<int>(my_sl_interface_dofs.size()), &my_sl_interface_dofs[0], 0, Comm()));
+        -1, static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, Comm()));
 
     // create slave non-interface dof row map
     partial_maps[MULTIFIELD::block_non_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_sl_non_interface_dofs.size()),
-            &my_sl_non_interface_dofs[0], 0, Comm()));
+            my_sl_non_interface_dofs.data(), 0, Comm()));
 
     // setup dof map extractor
     slave_map_extractors_[dis_count++][map_dofs]->Setup(*((*cit_dis)->DofRowMap()), partial_maps);
@@ -663,7 +663,7 @@ void XFEM::MultiFieldMapExtractor::BuildMasterDofMapExtractor()
         my_ma_interface_dofs.push_back(IDiscret().Dof(inode, j));
     }
     partial_maps.at(i) = Teuchos::rcp<const Epetra_Map>(new Epetra_Map(
-        -1, static_cast<int>(my_ma_interface_dofs.size()), &my_ma_interface_dofs[0], 0, Comm()));
+        -1, static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, Comm()));
   }
 
   // --------------------------------------------------------------------------
@@ -1008,7 +1008,7 @@ void XFEM::MultiFieldMapExtractor::BuildGlobalInterfaceNodeGidSet()
     Comm().Broadcast(&num_my_unique_row_nodes, 1, p);
     if (num_my_unique_row_nodes == 0) continue;
     my_unique_row_node_gid_vec.resize(num_my_unique_row_nodes, -1);
-    Comm().Broadcast(&my_unique_row_node_gid_vec[0], num_my_unique_row_nodes, p);
+    Comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
 
     // ------------------------------------------------------------------------
     // send the interface row node GID vector from processor p to all proc's
@@ -1017,7 +1017,7 @@ void XFEM::MultiFieldMapExtractor::BuildGlobalInterfaceNodeGidSet()
     if (num_my_interface_row_nodes > 0)
     {
       my_interface_row_node_gid_vec.resize(num_my_interface_row_nodes, -1);
-      Comm().Broadcast(&my_interface_row_node_gid_vec[0], num_my_interface_row_nodes, p);
+      Comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
       // create/extend the global interface row node gid set
       g_interface_node_gid_set_.insert(
           my_interface_row_node_gid_vec.begin(), my_interface_row_node_gid_vec.end());
@@ -1045,7 +1045,7 @@ void XFEM::MultiFieldMapExtractor::BuildMasterInterfaceNodeMaps(
   {
     master_interface_node_maps_.push_back(
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_master_interface_node_gids[i].size()),
-            &my_master_interface_node_gids[i][0], 0, Comm())));
+            my_master_interface_node_gids[i].data(), 0, Comm())));
   }
 }
 

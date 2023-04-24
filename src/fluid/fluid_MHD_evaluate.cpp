@@ -11,17 +11,17 @@
 
 
 #include "fluid_MHD_evaluate.H"
-#include "discret.H"
-#include "periodicbc.H"
-#include "dofset_transparent.H"
+#include "lib_discret.H"
+#include "lib_periodicbc.H"
+#include "lib_dofset_transparent.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
-#include "utils_rebalancing.H"
-#include "element.H"
+#include "rebalance.H"
+#include "lib_element.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -195,8 +195,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap =
-          Teuchos::rcp(new Epetra_Map(-1, rownodes.size(), &rownodes[0], 0, bnd_discret_->Comm()));
+      newrownodemap = Teuchos::rcp(
+          new Epetra_Map(-1, rownodes.size(), rownodes.data(), 0, bnd_discret_->Comm()));
 
       std::vector<int> colnodes;
 
@@ -205,8 +205,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap =
-          Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, bnd_discret_->Comm()));
+      newcolnodemap = Teuchos::rcp(
+          new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, bnd_discret_->Comm()));
     }
 
     if (bnd_discret_->Comm().MyPID() == 0)
@@ -254,7 +254,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
           }
         }
 
-        bnd_discret_->Comm().SumAll(&mytoggle[0], &toggle[0], toggle.size());
+        bnd_discret_->Comm().SumAll(mytoggle.data(), toggle.data(), toggle.size());
 
         for (unsigned rr = 0; rr < candidates->size(); ++rr)
         {
@@ -333,20 +333,20 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     std::vector<int> allproc(numproc);
     for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
-    LINALG::Gather<int>(bndnidslocal, bndnids, numproc, &allproc[0], pdiscret_->Comm());
+    LINALG::Gather<int>(bndnidslocal, bndnids, numproc, allproc.data(), pdiscret_->Comm());
 
     //**********************************************************************
     // Compute the rebalancing
-
-    Teuchos::RCP<Epetra_Map> bndrownodes;
-    Teuchos::RCP<Epetra_Map> bndcolnodes;
-
     Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp(new Epetra_Map(*bnd_discret_->ElementRowMap()));
-    Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
+    Teuchos::RCP<const Epetra_CrsGraph> bndnodegraph = REBALANCE::BuildGraph(bnd_discret_, belemap);
+
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+
+    const auto& [bndrownodes, bndcolnodes] =
+        REBALANCE::RebalanceNodeMaps(bndnodegraph, rebalanceParams);
 
     if (bnd_discret_->Comm().MyPID() == 0)
     {
@@ -407,10 +407,10 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
       my_n_ghostele[myrank] = bnd_discret_->NumMyColElements() - bnd_discret_->NumMyRowElements();
       my_n_dof[myrank] = bnd_discret_->DofRowMap()->NumMyElements();
 
-      bnd_discret_->Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
-      bnd_discret_->Comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
-      bnd_discret_->Comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
-      bnd_discret_->Comm().SumAll(&my_n_dof[0], &n_dof[0], numproc);
+      bnd_discret_->Comm().SumAll(my_n_nodes.data(), n_nodes.data(), numproc);
+      bnd_discret_->Comm().SumAll(my_n_elements.data(), n_elements.data(), numproc);
+      bnd_discret_->Comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numproc);
+      bnd_discret_->Comm().SumAll(my_n_dof.data(), n_dof.data(), numproc);
 
       if (bnd_discret_->Comm().MyPID() == 0)
       {

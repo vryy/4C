@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_aug_potential.H"
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_strategy.H"
+#include "contact_aug_interface.H"
 
 #include "io_pstream.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -101,7 +101,7 @@ void CONTACT::AUG::Potential::Compute()
 
   const Epetra_Vector& cn = data_.Cn();
 
-  double lterms[4] = {0.0, 0.0, 0.0, 0.0};
+  std::array<double, 4> lterms = {0.0, 0.0, 0.0, 0.0};
 
   const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& co_interfaces =
       strategy_.ContactInterfaces();
@@ -113,9 +113,9 @@ void CONTACT::AUG::Potential::Compute()
     interface.AssembleContactPotentialTerms(cn, lterms[0], lterms[1], lterms[2], lterms[3]);
   }
 
-  double gterms[4] = {0.0, 0.0, 0.0, 0.0};
+  std::array<double, 4> gterms = {0.0, 0.0, 0.0, 0.0};
 
-  strategy_.Comm().SumAll(&lterms[0], &gterms[0], 4);
+  strategy_.Comm().SumAll(lterms.data(), gterms.data(), 4);
 
   // copy results into the container
   potdata_.zn_gn_ = gterms[0];

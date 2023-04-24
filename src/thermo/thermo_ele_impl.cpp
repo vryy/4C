@@ -10,26 +10,26 @@
 #include "inpar_thermo.H"
 #include "inpar_structure.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "position_array.H"
-#include "condition_utils.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "geometry_position_array.H"
+#include "lib_condition_utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 // material headers
-#include "fourieriso.H"
-#include "thermostvenantkirchhoff.H"
-#include "thermoplasticlinelast.H"
-#include "thermoplastichyperelast.H"
-#include "plasticelasthyper.H"
+#include "mat_fourieriso.H"
+#include "mat_thermostvenantkirchhoff.H"
+#include "mat_thermoplasticlinelast.H"
+#include "mat_thermoplastichyperelast.H"
+#include "mat_plasticelasthyper.H"
 
 #include "thermo_element.H"  // only for visualization of element data
 #include "thermo_ele_impl.H"
 #include "thermo_ele_action.H"
 
-#include "trait_thermo_solid.H"
+#include "mat_trait_thermo_solid.H"
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
@@ -158,8 +158,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(&(mytempnp[0]), true);  // view only!
-    etempn_.Update(etempn);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
+    etempn_.Update(etempn);                                                  // copy
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -169,8 +169,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
     DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempn[0]), true);  // view only!
-    etemp_.Update(etemp);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
+    etemp_.Update(etemp);                                                  // copy
   }
 
   double time = 0.0;
@@ -375,7 +375,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           // fill the vector myratem with the global values of ratem
           DRT::UTILS::ExtractMyValues(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
-          LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(&(myratem[0]), true);  // view only!
+          LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(myratem.data(), true);  // view only!
           efcap.Multiply(ecapa, eratem);
         }  // ratem != Teuchos::null
         break;
@@ -628,8 +628,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, lm);
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempnp[0]), true);  // view only!
-    etempn_.Update(etemp);                                                 // copy
+    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
+    etempn_.Update(etemp);                                                  // copy
   }
   // check for the action parameter
   const auto action = DRT::INPUT::get<THR::Action>(params, "action");

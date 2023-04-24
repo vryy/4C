@@ -19,7 +19,7 @@
 #include "contact_paramsinterface.H"
 #include "contact_element.H"
 #include "contact_utils.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 #include "inpar_contact.H"
@@ -28,9 +28,9 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "epetra_utils.H"
+#include "lib_epetra_utils.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
 
 /*----------------------------------------------------------------------*
@@ -155,7 +155,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
-  // requires a penalty regularization. Here, the penalty contriutions for this
+  // requires a penalty regularization. Here, the penalty contributions for this
   // special case are applied:
   if (nonSmoothContact_)
   {
@@ -1626,8 +1626,9 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
               j, selement->Owner(), DRT::Element::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
-          lineEle->BuildNodalPointers(nodes);
+          std::array<DRT::Node*, 2> nodes = {
+              selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
+          lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
           lineEle->InitializeDataContainer();

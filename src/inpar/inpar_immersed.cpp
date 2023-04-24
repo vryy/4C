@@ -15,8 +15,8 @@
 #include "inpar_fsi.H"
 #include "inpar_structure.H"
 
-#include "validparameters.H"
-#include "conditiondefinition.H"
+#include "inpar_validparameters.H"
+#include "lib_conditiondefinition.H"
 
 
 void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

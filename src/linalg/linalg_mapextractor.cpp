@@ -124,7 +124,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMapsKeepOrder(
 
   // build combined map
   Teuchos::RCP<Epetra_Map> fullmap =
-      Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, maps[0]->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, maps[0]->Comm()));
   return fullmap;
 }
 

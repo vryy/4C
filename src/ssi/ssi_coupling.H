@@ -7,10 +7,10 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_SSI_SSI_COUPLING_H_
-#define SRC_SSI_SSI_COUPLING_H_
+#ifndef SSI_COUPLING_H
+#define SSI_COUPLING_H
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "scatra_timint_implicit.H"
 #include "ssi_base.H"
 
@@ -411,4 +411,4 @@ namespace SSI
 }  // namespace SSI
 
 
-#endif /* SRC_SSI_SSI_COUPLING_H_ */
+#endif  // SSI_COUPLING_H

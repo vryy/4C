@@ -491,4 +491,4 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_COUPLING3D_H
+#endif  // CONTACT_COUPLING3D_H

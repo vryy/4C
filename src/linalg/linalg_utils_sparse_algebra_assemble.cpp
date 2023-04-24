@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
@@ -342,7 +342,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
     if (dbcgids.size() > 0)
     {
       nummyelements = dbcgids.size();
-      myglobalelements = &(dbcgids[0]);
+      myglobalelements = dbcgids.data();
     }
     dbcmap = Teuchos::rcp(
         new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
@@ -355,7 +355,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
     if (freegids.size() > 0)
     {
       nummyelements = freegids.size();
-      myglobalelements = &(freegids[0]);
+      myglobalelements = freegids.data();
     }
     freemap = Teuchos::rcp(
         new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));

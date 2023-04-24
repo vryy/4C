@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H
-#define SSI_MONOLITHIC_EVALUATE_OffDiag_H
+#ifndef SSI_MONOLITHIC_EVALUATE_OFFDIAG_H
+#define SSI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
@@ -158,4 +158,4 @@ namespace SSI
     Teuchos::RCP<const Epetra_Map> full_map_scatra_;
   };
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H
+#endif  // SSI_MONOLITHIC_EVALUATE_OFFDIAG_H

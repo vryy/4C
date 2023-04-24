@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_LUBRICATION_DYN_H_
-#define SRC_LUBRICATION_LUBRICATION_DYN_H_
+#ifndef LUBRICATION_DYN_H
+#define LUBRICATION_DYN_H
 
 
 /*! entry point for the solution of Lubrication problems */
@@ -18,4 +18,4 @@ void lubrication_dyn(int restart /* do we have to perform a restart?  */
 );
 
 
-#endif /* SRC_LUBRICATION_LUBRICATION_DYN_H_ */
+#endif  // LUBRICATION_DYN_H

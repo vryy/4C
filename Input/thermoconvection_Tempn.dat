@@ -33,9 +33,9 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-THERM_HEATFLUX                  Current  // None, Current, Initial
+THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Current  // None, Current, Initial
+THERM_TEMPGRAD                  Current
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo
 RESTART                         0
@@ -45,9 +45,9 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta,GenAlpha
-INITFUNCNO                      1  // -1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+DYNAMICTYP                      OneStepTheta
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         50

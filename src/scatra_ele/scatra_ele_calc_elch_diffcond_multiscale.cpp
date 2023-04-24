@@ -13,10 +13,10 @@ multi-scale framework
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "newman_multiscale.H"
-#include "singleton_owner.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_newman_multiscale.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   phinp[1] = my::funct_.Dot(my::ephinp_[1]);
   phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   const double detF = my::EvalDetFAtIntPoint(ele, intpoints, iquad);
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
       not DRT::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->PartitionedMultiScale());
 
   // calculate gradient of electric potential inside electrode
-  LINALG::Matrix<my::nsd_, 1> gradpot_ed(true);
+  LINALG::Matrix<nsd_, 1> gradpot_ed(true);
   gradpot_ed.Multiply(my::derxy_, my::ephinp_[2]);
 
   // evaluate and assemble macro-scale matrix and vector contributions:
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   const double dq_dpot_el = timefacfac * dq_dphi_micro[1] * specific_micro_scale_surface_area;
   const double dq_dpot_ed = timefacfac * dq_dphi_micro[2] * specific_micro_scale_surface_area;
   const double q = rhsfac * q_micro * specific_micro_scale_surface_area;
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     // matrix contributions
     const double vi_dq_dc_el = my::funct_(vi) * dq_dc_el;
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
     const double vi_dq_dpot_ed = my::funct_(vi) * dq_dpot_ed;
     const int fvi = vi * my::numdofpernode_;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const double vi_dq_dc_el_ui = vi_dq_dc_el * my::funct_(ui);
       const double vi_dq_dpot_el_ui = vi_dq_dpot_el * my::funct_(ui);
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysma
   mydiffcond::Sysmat(ele, emat, erhs, subgrdiff);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all integration points

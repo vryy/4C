@@ -1,9 +1,9 @@
 set(OBJS_BINSTRATEGY
     # cmake-format: sortable
-    binning_strategy.cpp
-    binning_strategy_utils.cpp
-    meshfree_bin.cpp
-    meshfree_multibin.cpp
+    binstrategy.cpp
+    binstrategy_meshfree_bin.cpp
+    binstrategy_meshfree_multibin.cpp
+    binstrategy_utils.cpp
     )
 
 baci_add_library(lib_binstrategy ${OBJS_BINSTRATEGY})
@@ -19,4 +19,4 @@ set(LIBS_LIB_BINSTRATEGY
     rebalance
     )
 
-target_link_libraries(lib_binstrategy PUBLIC ${LIBS_LIB_BINSTRATEGY})
+baci_add_dependency(lib_binstrategy ${LIBS_LIB_BINSTRATEGY})

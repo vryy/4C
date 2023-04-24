@@ -14,14 +14,14 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #ifndef MEMBRANE_H
 #define MEMBRANE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 #include "membrane_eletypes.H"
 
-#include "element.H"
+#include "lib_element.H"
 #include "inpar_structure.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 // include header because number of Gauss points are determined dependent on distype
 #include "thermo_ele_impl_utils.H"

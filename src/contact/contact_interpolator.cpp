@@ -15,7 +15,7 @@
 #include "contact_integrator.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_shape_utils.H"
 #include "mortar_projector.H"
@@ -180,7 +180,7 @@ void NTS::CoInterpolator::Interpolate2D(
       GEN::pairedvector<int, double> dslipmatrix(linsize + ndof * ncol);
       GEN::pairedvector<int, double> dwear(linsize + ndof * ncol);
       //**************************************************************
-      double sxi[2] = {0.0, 0.0};
+      std::array<double, 2> sxi = {0.0, 0.0};
 
       if (sele->Shape() == DRT::Element::line2)
       {
@@ -692,10 +692,10 @@ void NTS::CoInterpolator::nwSlip2D(CONTACT::CoNode& mynode, MORTAR::MortarElemen
   GEN::pairedvector<int, double> dmap_tysl_gp(ncol * ndof + linsize);
 
   // build interpolation of slave GP normal and coordinates
-  double sjumpv[3] = {0.0, 0.0, 0.0};
-  double mjumpv[3] = {0.0, 0.0, 0.0};
-  double jumpv[3] = {0.0, 0.0, 0.0};
-  double tanv[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sjumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> mjumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> jumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> tanv = {0.0, 0.0, 0.0};
 
   double tanlength = 0.0;
   double pwjump = 0.0;
@@ -828,11 +828,11 @@ void NTS::CoInterpolator::nwWear2D(CONTACT::CoNode& mynode, MORTAR::MortarElemen
 
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
-  double gpt[3] = {0.0, 0.0, 0.0};
-  double gplm[3] = {0.0, 0.0, 0.0};
-  double sgpjump[3] = {0.0, 0.0, 0.0};
-  double mgpjump[3] = {0.0, 0.0, 0.0};
-  double jump[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gpt = {0.0, 0.0, 0.0};
+  std::array<double, 3> gplm = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpjump = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpjump = {0.0, 0.0, 0.0};
+  std::array<double, 3> jump = {0.0, 0.0, 0.0};
 
   // for linearization
   double lm_lin = 0.0;
@@ -1046,8 +1046,8 @@ void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement
     GEN::pairedvector<int, double>& dmxi, double* gpn)
 {
   const int ncol = mele.NumNode();
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
   gpn[0] += mynode.MoData().n()[0];
   gpn[1] += mynode.MoData().n()[1];
@@ -1134,8 +1134,8 @@ void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement
 {
   const int ncol = mele.NumNode();
 
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
   gpn[0] += mynode.MoData().n()[0];
   gpn[1] += mynode.MoData().n()[1];
@@ -1409,8 +1409,8 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Morta
   mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
 
   // we also need the GP slave coordinates + normal
-  double sgpn[3] = {0.0, 0.0, 0.0};
-  double sgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
   for (int i = 0; i < numsnode; ++i)
   {
     sgpn[0] += valsxigp[i] * smrtrnodes[i]->MoData().n()[0];
@@ -1474,7 +1474,7 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Morta
   GEN::pairedvector<int, double> dmap_nxsl_gp(linsize + nummnode * ndof);
   GEN::pairedvector<int, double> dmap_nysl_gp(linsize + nummnode * ndof);
 
-  double sgpnmod[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpnmod = {0.0, 0.0, 0.0};
   for (int i = 0; i < 3; ++i) sgpnmod[i] = sgpn[i] * length;
 
   GEN::pairedvector<int, double> dmap_nxsl_gp_mod(linsize + nummnode * ndof);
@@ -1589,8 +1589,8 @@ void NTS::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Morta
   mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
 
   // we also need the GP slave coordinates + normal
-  double sgpn[3] = {0.0, 0.0, 0.0};
-  double sgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
   for (int i = 0; i < numsnode; ++i)
     for (int k = 0; k < 3; ++k)
     {

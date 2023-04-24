@@ -12,16 +12,16 @@
 #include "ssti_resulttest.H"
 #include "ssti_utils.H"
 
-#include "ad_str_factory.H"
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 
 #include "adapter_scatra_base_algorithm.H"
 
 #include "inpar_ssti.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -423,18 +423,18 @@ void SSTI::SSTIAlgorithm::CheckIsInit()
 Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams)
 {
-  auto* thermoparams_copy = new Teuchos::ParameterList(scatraparams);
+  auto thermoparams_copy = Teuchos::ParameterList(scatraparams);
 
   switch (Teuchos::getIntegralValue<INPAR::SCATRA::InitialField>(thermoparams, "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_field_by_function:
     {
-      thermoparams_copy->set<std::string>("INITIALFIELD", "field_by_function");
+      thermoparams_copy.set<std::string>("INITIALFIELD", "field_by_function");
       break;
     }
     case INPAR::SCATRA::initfield_field_by_condition:
     {
-      thermoparams_copy->set<std::string>("INITIALFIELD", "field_by_condition");
+      thermoparams_copy.set<std::string>("INITIALFIELD", "field_by_condition");
       break;
     }
     default:
@@ -442,17 +442,17 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
       break;
   }
 
-  thermoparams_copy->set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
-  thermoparams_copy->sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
+  thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
+  thermoparams_copy.sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
 
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
-    thermoparams_copy->set<bool>("output_file_name_discretization", true);
+    thermoparams_copy.set<bool>("output_file_name_discretization", true);
 
   // adaptive time stepping only from scatra
-  thermoparams_copy->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+  thermoparams_copy.set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
-  return *thermoparams_copy;
+  return thermoparams_copy;
 }
 
 /*----------------------------------------------------------------------*/

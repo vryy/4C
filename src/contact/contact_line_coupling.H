@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_LINE_COUPLING_H_
-#define SRC_CONTACT_CONTACT_LINE_COUPLING_H_
+#ifndef CONTACT_LINE_COUPLING_H
+#define CONTACT_LINE_COUPLING_H
 
 
 #include "mortar_coupling3d_classes.H"
@@ -500,4 +500,4 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
-#endif /* SRC_CONTACT_CONTACT_LINE_COUPLING_H_ */
+#endif  // CONTACT_LINE_COUPLING_H

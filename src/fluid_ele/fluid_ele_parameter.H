@@ -22,7 +22,7 @@ be set in problem specific parameter lists derived from this class.
 #include "inpar_turbulence.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 
@@ -51,9 +51,6 @@ namespace DRT
 
       //! set two-phase parameters
       void SetElementTwoPhaseParameter(Teuchos::ParameterList& params);  //> parameter list
-
-      //! topopt parameters are set
-      void SetElementTopoptParameter(Teuchos::ParameterList& params);  //> parameter list
 
       /*========================================================================*/
       //! @name access-routines
@@ -202,15 +199,6 @@ namespace DRT
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       virtual bool MultiFracLomaConti() const { return multifrac_loma_conti_; };
 
-      /*----------------------------------------------------*/
-      //! @name topopt parameters
-      /*----------------------------------------------------*/
-
-      //! flag to (de)aktivate reaction due to topology optimization
-      bool ReactionTopopt() const { return reaction_topopt_; };
-      //! flag to (de)aktivate reaction due to topology optimization
-      const double* TopoptParams() const { return (double*)topopt_params_; };
-
      protected:
       /*----------------------------------------------------*/
       //! @name general parameters
@@ -343,15 +331,6 @@ namespace DRT
       INPAR::FLUID::ReynoldsStress conti_reynolds_;
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       bool multifrac_loma_conti_;
-
-      /*----------------------------------------------------*/
-      //! @name topopt parameters
-      /*----------------------------------------------------*/
-
-      //! flag to (de)activate reaction due to topology optimization
-      bool reaction_topopt_;
-      //! matrix with values for computation of porosity with respect to topopt density
-      double topopt_params_[3];
 
       /*-----------------------------------------------------*/
 

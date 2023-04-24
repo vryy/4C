@@ -36,12 +36,13 @@ NUMSTEP                         10
 RESTARTEVRY                     2
 SECONDORDER                     yes
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 ITEMAX                          20
-LINEARBLOCKSOLVER               PreconditionedKrylov
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   1
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-08

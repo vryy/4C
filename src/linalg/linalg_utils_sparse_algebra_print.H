@@ -7,15 +7,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_
-#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_
+#ifndef LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H
+#define LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H
 
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
-#include "Epetra_MultiVector.h"
-#include "exporter.H"
+#include <Epetra_Map.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Vector.h>
+#include <Epetra_MultiVector.h>
+#include "lib_exporter.H"
 
 // Forward declarations
 namespace LINALG
@@ -84,4 +84,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_ */
+#endif  // LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H

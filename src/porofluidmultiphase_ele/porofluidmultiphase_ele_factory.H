@@ -7,11 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_FACTORY_H
+#define POROFLUIDMULTIPHASE_ELE_FACTORY_H
 
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {
@@ -48,4 +48,4 @@ namespace DRT
 
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_FACTORY_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_FACTORY_H

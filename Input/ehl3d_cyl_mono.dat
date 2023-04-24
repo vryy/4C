@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES       1106
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Elastohydrodynamic_Lubrication // Lubrication Structure Elastohydrodynamic_Lubrication
+PROBLEMTYP                      Elastohydrodynamic_Lubrication
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -28,10 +28,10 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   3
-DYNAMICTYP                      Statics // GenAlpha
+DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 MAXTIME                         1.0
 NUMSTEP                         3
 TIMESTEP                        0.001
@@ -51,13 +51,13 @@ GENAVG                          TrLike
 RHO_INF                         1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
-STRATEGY                        Ehl // Lagrange
+STRATEGY                        Ehl
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
-SEARCH_ALGORITHM                Binarytree // BruteForceEleBased
+SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    20
 INTTYPE                         Elements
 NUMGP_PER_DIM                   2
@@ -70,11 +70,11 @@ NUMSTEP                         3000
 TIMESTEP                        0.001
 RESULTSEVRY                           1
 RESTARTEVRY                     1
-CALCERROR                       No // No error_by_function
+CALCERROR                       No
 CALCERRORNO                     2
-OUTMEAN                         No // No Yes
-OUTPUT_GMSH                     No // No Yes
-MATLAB_STATE_OUTPUT             No // No Yes
+OUTMEAN                         No
+OUTPUT_GMSH                     No
+MATLAB_STATE_OUTPUT             No
 LINEAR_SOLVER                   3
 ITEMAX                          10
 ABSTOLRES                       1.0e-14
@@ -98,7 +98,7 @@ ITEMAX                          200
 ITEMIN                          5
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes
-COUPALGO                        ehl_Monolithic // ehl_IterStagg // ehl_Monolithic
+COUPALGO                        ehl_Monolithic
 -----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
 CONVTOL                         1e-8
 TOLINC                          1e-8
@@ -120,34 +120,34 @@ STARTOMEGA                      1
 CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Lubrication_Solver
-SOLVER                          Belos                       // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          MLFLUID2
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-9
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+AZCONV                          AZ_r0
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZBDIAG                         0
@@ -182,7 +182,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Belos
-VERBOSITY                       0
 PERMUTE_SYSTEM                  none
 --------------------------------------------------------------------SOLVER 3
 NAME                            Direct_Solver
@@ -190,19 +189,19 @@ SOLVER                          Superlu
 --------------------------------------------------------------------SOLVER 4
 NAME                            EHL_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none   // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKCOMBINE                   Add
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
 ML_AGG_SIZE                     27
@@ -219,7 +218,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Belos  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 1.0
 MAT 10 ELAST_CoupNeoHooke YOUNG 1.0e0 NUE 0.0

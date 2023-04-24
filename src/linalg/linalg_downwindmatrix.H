@@ -14,12 +14,12 @@
 #include <EpetraExt_Reindex_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem.h>
 #include <EpetraExt_Reindex_MultiVector.h>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
-#include "Epetra_IntVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_Time.hpp>
+#include <Epetra_IntVector.h>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 

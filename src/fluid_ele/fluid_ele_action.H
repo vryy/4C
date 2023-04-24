@@ -50,11 +50,7 @@ namespace FLD
     set_general_face_fluid_parameter,
     set_general_face_xfem_parameter,
     set_general_fluid_xfem_parameter,
-    set_topopt_parameter,
-    calc_adjoint_systemmat_and_residual,
     //    calc_adjoint_neumann,
-    set_general_adjoint_parameter,
-    set_adjoint_time_parameter,
     calc_volume,
     interpolate_velocity_to_given_point_immersed,
     update_immersed_information,
@@ -116,7 +112,6 @@ namespace FLD
     poro_splitnopenetration_OD,
     poro_splitnopenetration_ODpres,
     poro_splitnopenetration_ODdisp,
-    ba_calc_adjoint_neumann,
     fpsi_coupling
   };  // enum BoundaryAction
 

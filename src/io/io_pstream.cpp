@@ -230,9 +230,9 @@ void IO::Level::flush()
 /*----------------------------------------------------------------------*
  * Handle special manipulators                                wic 11/12 *
  *----------------------------------------------------------------------*/
-IO::Pstream& operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&)) { return pf(out); }
+IO::Pstream& IO::operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&)) { return pf(out); }
 
 /*----------------------------------------------------------------------*
  * Handle special manipulators                                wic 09/16 *
  *----------------------------------------------------------------------*/
-IO::Level& operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&)) { return pf(out); }
+IO::Level& IO::operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&)) { return pf(out); }

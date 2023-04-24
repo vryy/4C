@@ -8,11 +8,12 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <vector>
-#include "utils_gausspoints.H"
-#include "utils_integration.H"
-#include "element.H"
-#include "element_integration_select.H"
-#include "so_element_service.H"
+#include "lib_element.H"
+#include "so3_element_service.H"
+#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "fem_general_utils_gausspoints.H"
+#include "fem_general_utils_integration.H"
+#include "lib_element_integration_select.H"
 
 namespace
 {
@@ -92,7 +93,7 @@ namespace
     // save default integration rule
     DRT::UTILS::GaussIntegration integration(gp);
     LINALG::SerialDenseMatrix m =
-        DRT::ELEMENTS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
+        DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
   }
 
 }  // namespace

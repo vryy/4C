@@ -66,7 +66,7 @@ namespace ALE
       );
 
       /// returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy();
+      std::map<std::string, std::string> ConditionsToCopy() const;
 
       /// check for correct material
       void CheckMaterialType(const int matid);
@@ -76,4 +76,4 @@ namespace ALE
   }     // namespace UTILS
 }  // namespace ALE
 
-#endif /* ALE_UTILS_CLONESTRATEGY_H */
+#endif  // ALE_UTILS_CLONESTRATEGY_H

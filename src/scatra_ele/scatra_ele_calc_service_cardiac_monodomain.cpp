@@ -15,12 +15,12 @@
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "utils.H"
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
-#include "myocard.H"
-#include "matlist.H"
+#include "mat_myocard.H"
+#include "mat_list.H"
 
 
 /*----------------------------------------------------------------------*
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
         // extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
         my::EvalShapeFuncAndDerivsAtEleCenter();
 

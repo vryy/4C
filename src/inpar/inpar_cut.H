@@ -94,4 +94,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_CUT_H
+#endif  // INPAR_CUT_H

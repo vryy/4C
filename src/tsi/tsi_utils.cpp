@@ -19,18 +19,18 @@
  *----------------------------------------------------------------------*/
 #include "tsi_utils.H"
 
-#include "utils_createdis.H"
-#include "globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
 
 #include "thermo_element.H"
 #include "thermo_ele_impl_utils.H"
 #include "so3_thermo.H"
-#include "so3_ssn_plast.H"
+#include "so3_plast_ssn.H"
 
-#include "dofset.H"
-#include "dofset_predefineddofnumber.H"
-#include "discret.H"
-#include "periodicbc.H"
+#include "lib_dofset.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_discret.H"
+#include "lib_periodicbc.H"
 
 #include "volmortar_utils.H"
 
@@ -38,38 +38,14 @@
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::ConditionsToCopy()
+    const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  // special Thermo conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ThermoDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoVolumeNeumann", "VolumeNeumann"));
-
-  // special Thermo convective heat transfer conditions (Newton's law of heat
-  // transfer)
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoConvections", "ThermoConvections"));
-
-  // conditions for periodic boundary conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LinePeriodic", "LinePeriodic"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SurfacePeriodic", "SurfacePeriodic"));
-
-  /// initial field
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ThermoInitfield", "Initfield"));
-
-  /// mortar coupling
-  conditions_to_copy.insert(std::pair<std::string, std::string>("MortarMulti", "MortarMulti"));
-
-  return conditions_to_copy;
-}  // ConditionsToCopy()
+  return {{"ThermoDirichlet", "Dirichlet"}, {"ThermoPointNeumann", "PointNeumann"},
+      {"ThermoLineNeumann", "LineNeumann"}, {"ThermoSurfaceNeumann", "SurfaceNeumann"},
+      {"ThermoVolumeNeumann", "VolumeNeumann"}, {"ThermoConvections", "ThermoConvections"},
+      {"LinePeriodic", "LinePeriodic"}, {"SurfacePeriodic", "SurfacePeriodic"},
+      {"ThermoInitfield", "Initfield"}, {"MortarMulti", "MortarMulti"}};
+}
 
 
 /*----------------------------------------------------------------------*

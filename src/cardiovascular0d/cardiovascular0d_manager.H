@@ -410,4 +410,4 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
-#endif /*CARDIOVASCULAR0D_MANAGER_H*/
+#endif  // CARDIOVASCULAR0D_MANAGER_H

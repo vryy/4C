@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include <NOX_Common.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
@@ -278,8 +278,8 @@ namespace NOX
       //! Stores the parameter "Compute Scaling Manually".
       bool manualScaling;
 
-      //! Epetra_Time object
-      Epetra_Time timer;
+      //! Teuchos_Time object
+      Teuchos::Time timer;
 
       //! Total time spent in applyJacobianInverse (sec.).
       mutable double timeApplyJacbianInverse;

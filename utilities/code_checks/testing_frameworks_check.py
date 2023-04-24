@@ -385,11 +385,7 @@ def main():
     except ValueError:
         print("Something went wrong! Check the error functions in this script again!")
         errors += 1
-    if len(allerrors) > 0:
-        if errfile is None:
-            utils.pretty_print_error_stderr(allerrors)
-        else:
-            utils.pretty_print_error_file(allerrors, errfile)
+    utils.pretty_print_error_report("", allerrors, errfile)
     return errors
 
 

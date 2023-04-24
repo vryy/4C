@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "gtest/gtest.h"
-#include "muscle_utils.H"
+#include "mat_muscle_utils.H"
 #include "unittests_assertions.h"
 
 namespace
@@ -23,6 +23,42 @@ namespace
     MAT::UTILS::MUSCLE::EvaluateLambert(xi, W0, tol, maxiter);
 
     EXPECT_NEAR(W0, ref_W, 1.0e-10);
+  }
+
+  TEST(MuscleUtilsTest, TestFirstDerivativeCentralDifferences)
+  {
+    const double x = 1.5;
+    const double h = 0.001;
+
+    // lets say f(x) = x^2 + 1
+    const double f_xplus = std::pow(x + h, 2) + 1;
+    const double f_xminus = std::pow(x - h, 2) + 1;
+
+    // correct dfdx would be dfdx = 2x
+    const double ref_dfdx = 2 * x;
+
+    double dfdx = MAT::UTILS::MUSCLE::FirstDerivativeCentralDifferences(f_xminus, f_xplus, h);
+
+    EXPECT_NEAR(dfdx, ref_dfdx, std::pow(h, 2.0));
+  }
+
+  TEST(MuscleUtilsTest, TestSecondDerivativeCentralDifferences)
+  {
+    const double x = 1.5;
+    const double h = 0.001;
+
+    // lets say f(x) = x^2 + 1
+    const double f_x = std::pow(x, 2) + 1;
+    const double f_xplus = std::pow(x + h, 2) + 1;
+    const double f_xminus = std::pow(x - h, 2) + 1;
+
+    // correct dfdx would be ddfddx = 2
+    const double ref_ddfddx = 2;
+
+    double ddfddx =
+        MAT::UTILS::MUSCLE::SecondDerivativeCentralDifferences(f_xminus, f_x, f_xplus, h);
+
+    EXPECT_NEAR(ddfddx, ref_ddfddx, std::pow(h, 2.0));
   }
 
   TEST(MuscleUtilsTest, TestEvaluateForceStretchDependencyEhret)
@@ -96,13 +132,46 @@ namespace
     EXPECT_NEAR(test_dfxi_l_greater_lopt, ref_dfxi_l_greater_lopt, 1.0e-10);
   }
 
+  TEST(MuscleUtilsTest, TestEvaluateIntegralForceStretchDependencyEhret)
+  {
+    const double l_smaller_lmin = 0.5;
+    const double l_greater_lmin_smaller_lopt = 0.7;
+    const double l_greater_lopt = 1.4;
+
+    const double lmin = 0.6;
+    const double lopt = 1.2;
+
+    double ref_dfxi_l_smaller_lmin = 0.0;
+    double ref_dfxi_l_equal_lmin = 0.0;
+    double ref_dfxi_l_greater_lmin_smaller_lopt = 0.013644372005153471;
+    double ref_dfxi_l_equal_lopt = 0.38923276242007693;
+    double ref_dfxi_l_greater_lopt = 0.58254701561680666;
+
+    auto test_dfxi_l_smaller_lmin =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(l_smaller_lmin, lmin, lopt);
+    auto test_dfxi_l_equal_lmin =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(lmin, lmin, lopt);
+    auto test_dfxi_l_greater_lmin_smaller_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+            l_greater_lmin_smaller_lopt, lmin, lopt);
+    auto test_dfxi_l_equal_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(lopt, lmin, lopt);
+    auto test_dfxi_l_greater_lopt =
+        MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(l_greater_lopt, lmin, lopt);
+
+    EXPECT_NEAR(test_dfxi_l_smaller_lmin, ref_dfxi_l_smaller_lmin, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_equal_lmin, ref_dfxi_l_equal_lmin, 1.0e-10);
+    EXPECT_NEAR(
+        test_dfxi_l_greater_lmin_smaller_lopt, ref_dfxi_l_greater_lmin_smaller_lopt, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_equal_lopt, ref_dfxi_l_equal_lopt, 1.0e-10);
+    EXPECT_NEAR(test_dfxi_l_greater_lopt, ref_dfxi_l_greater_lopt, 1.0e-10);
+  }
+
   TEST(MuscleUtilsTest, TestEvaluateForceVelocityDependencyBoel)
   {
-    const double l_case_dotl_greater_zero = 1.2;
-    const double l_case_dotl_smaller_zero = 0.5;
+    const double dotl_greater_zero = (1.2 - 0.7) / 0.1;
+    const double dotl_smaller_zero = (0.5 - 0.7) / 0.1;
 
-    const double lold = 0.7;
-    const double timestepsize = 0.1;
     const double dotlmin = 0.5;
     const double de = 0.7;
     const double dc = 0.5;
@@ -113,9 +182,9 @@ namespace
     double ref_case_dotl_smaller_zero = -5.75;
 
     auto test_case_dotl_greater_zero = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-        l_case_dotl_greater_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+        dotl_greater_zero, dotlmin, de, dc, ke, kc);
     auto test_case_dotl_smaller_zero = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
-        l_case_dotl_smaller_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+        dotl_smaller_zero, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
     EXPECT_NEAR(test_case_dotl_smaller_zero, ref_case_dotl_smaller_zero, 1.0e-10);
@@ -123,11 +192,9 @@ namespace
 
   TEST(MuscleUtilsTest, TestEvaluateDerivativeForceVelocityDependencyBoel)
   {
-    const double l_case_dotl_greater_zero = 1.2;
-    const double l_case_dotl_smaller_zero = 0.5;
+    const double dotl_greater_zero = (1.2 - 0.7) / 0.1;
+    const double dotl_smaller_zero = (0.5 - 0.7) / 0.1;
 
-    const double lold = 0.7;
-    const double timestepsize = 0.1;
     const double dotlmin = 0.5;
     const double de = 0.7;
     const double dc = 0.5;
@@ -139,10 +206,10 @@ namespace
 
     auto test_case_dotl_greater_zero =
         MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-            l_case_dotl_greater_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+            dotl_greater_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
     auto test_case_dotl_smaller_zero =
         MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
-            l_case_dotl_smaller_zero, lold, timestepsize, dotlmin, de, dc, ke, kc);
+            dotl_smaller_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
     EXPECT_NEAR(test_case_dotl_smaller_zero, ref_case_dotl_smaller_zero, 1.0e-10);

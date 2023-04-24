@@ -16,17 +16,17 @@
 #include <set>
 #include <cstring>
 
-#include "utils_local_connectivity_matrices.H"
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_boundary_integration.H"
 
 
 // #define CUT_DUMPCREATION    // dump object creation to generate test case
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR
-#include "sorted_vector.H"
+#include "cut_sorted_vector.H"
 #else
 #include <vector>
 #endif
@@ -105,7 +105,7 @@ namespace GEO
     inline void DumpDoubles(std::ostream& stream, const double* data, int length)
     {
       std::vector<int> c(length * sizeof(double) / sizeof(int));
-      std::memcpy(&c[0], data, c.size() * sizeof(int));
+      std::memcpy(c.data(), data, c.size() * sizeof(int));
       stream << "  {";
       std::copy(c.begin(), c.end(), std::ostream_iterator<int>(stream, ","));
       stream << "};";

@@ -11,13 +11,13 @@
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
-#include "EpetraExt_RowMatrixOut.h"
-#include "dserror.H"
+#include <EpetraExt_RowMatrixOut.h>
+#include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_amgnxn_preconditioner.H"
 #include "solver_amgnxn_vcycle.H"
@@ -76,8 +76,8 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Preconditioner::Setup");
 
-  Epetra_Time timer(A->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   // Free old matrix and preconditioner
   A_ = Teuchos::null;
@@ -118,7 +118,7 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
   else
     dserror("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
 
-  double elaptime = timer.ElapsedTime();
+  double elaptime = timer.totalElapsedTime(true);
   if (myInterface.GetPreconditionerParams().get<std::string>("verbosity", "off") == "on" and
       A->Comm().MyPID() == 0)
     std::cout << "       Calling LINALG::SOLVER::AMGnxn_Preconditioner::Setup takes "
@@ -1150,12 +1150,12 @@ void LINALG::SOLVER::Merged_Operator::Setup()
   }
 
   // Merge the matrix
-  Epetra_Time timer(A_->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   Asp_ = A_->Merge();
 
-  double elaptime = timer.ElapsedTime();
+  double elaptime = timer.totalElapsedTime(true);
   if (A_->Comm().MyPID() == 0)
     std::cout << "   Merging the blocks takes " << std::setw(16) << std::setprecision(6) << elaptime
               << " s" << std::endl;

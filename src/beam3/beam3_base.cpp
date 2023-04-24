@@ -10,22 +10,21 @@
 
 #include "beam3_base.H"
 
-#include "beam_templated_material_generic.H"
+#include "mat_beam_templated_material_generic.H"
 
-#include "periodic_boundingbox.H"
+#include "beaminteraction_periodic_boundingbox.H"
 #include "beaminteraction_calc_utils.H"
-#include "bounding_volume.H"
+#include "geometric_search_bounding_volume.H"
 #include "geometric_search_params.H"
 
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 
 #include "inpar_browniandyn.H"  // enums
 
-#include "standardtypes_cpp.H"
-#include "globalproblem.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "FAD_utils.H"
+#include "headers_FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*
@@ -252,9 +251,9 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3, 1>& gamm
        * (1) damping of translation orthogonal to axis,
        * (2) damping of rotation around its own axis */
 
-      gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity() *
+      gamma(0) = 2.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(1) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(2) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity() *
                  GetCircularCrossSectionRadiusForInteractions() *
                  GetCircularCrossSectionRadiusForInteractions();
 

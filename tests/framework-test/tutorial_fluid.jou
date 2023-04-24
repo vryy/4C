@@ -92,4 +92,4 @@ nodeset 5 name "corners"
 $***********************
 $ export mesh
 $***********************
-export mesh "framework_test_output/tutorial_fluid/xxx_tutorial_fluid.e" dimension 2 block all overwrite
+export mesh "tutorial_fluid.e" dimension 2 block all overwrite

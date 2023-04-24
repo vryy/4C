@@ -11,9 +11,9 @@
 #define SCATRA_ELE_PARAMETER_BOUNDARY_H
 
 #include "scatra_ele_parameter_base.H"
-#include "condition.H"
+#include "lib_condition.H"
 #include "inpar_s2i.H"
-#include "vector"
+#include <vector>
 
 namespace DRT
 {
@@ -157,4 +157,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_PARAMETER_BOUNDARY_H */
+#endif  // SCATRA_ELE_PARAMETER_BOUNDARY_H

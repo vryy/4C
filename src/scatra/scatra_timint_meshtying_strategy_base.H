@@ -14,7 +14,7 @@ strategy without meshtying)
 
 #include "scatra_timint_convcheck_strategies.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -270,4 +270,4 @@ namespace SCATRA
     MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
   };  // class MeshtyingStrategyBase
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H

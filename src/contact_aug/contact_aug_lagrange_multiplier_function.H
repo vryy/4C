@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H_
+#ifndef CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
+#define CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
 
 #include <Teuchos_RCP.hpp>
 #include "contact_aug_utils.H"
 
 #include "inpar_solver.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // forward declarations
 class Epetra_MultiVector;
@@ -107,4 +107,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H_ */
+#endif  // CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H

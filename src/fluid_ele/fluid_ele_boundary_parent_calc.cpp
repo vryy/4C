@@ -11,36 +11,35 @@
 
 #include "fluid_ele_boundary_parent_calc.H"
 #include "fluid_ele.H"
-#include "element_integration_select.H"
+#include "lib_element_integration_select.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_boundary_integration.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 // TODO: remove after Nurbs functions are changed
 #include "nurbs_discret.H"
 
-#include "globalproblem.H"
-#include "utils.H"
-#include "function_of_time.H"
-#include "standardtypes_cpp.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_function_of_time.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 
-#include "arrhenius_pv.H"
-#include "carreauyasuda.H"
-#include "ferech_pv.H"
-#include "fluidporo.H"
-#include "herschelbulkley.H"
-#include "mixfrac.H"
-#include "modpowerlaw.H"
-#include "newtonianfluid.H"
-#include "permeablefluid.H"
-#include "sutherland.H"
-#include "tempdepwater.H"
+#include "mat_arrhenius_pv.H"
+#include "mat_carreauyasuda.H"
+#include "mat_ferech_pv.H"
+#include "mat_fluidporo.H"
+#include "mat_herschelbulkley.H"
+#include "mat_mixfrac.H"
+#include "mat_modpowerlaw.H"
+#include "mat_newtonianfluid.H"
+#include "mat_permeablefluid.H"
+#include "mat_sutherland.H"
+#include "mat_tempdepwater.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -5062,7 +5061,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
 
       // compute averaged norm of traction by division by area element
-      if (area < EPS13) dserror("Area too small, zero or even negative!");
+      if (area < 1e-13) dserror("Area too small, zero or even negative!");
       normtraction /= area;
     }  // if (nsd==3)
   }
@@ -5245,7 +5244,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           nGn += unitnormal(rr) * G(rr, nn) * unitnormal(nn);
         }
       }
-      if (nGn < EPS14) dserror("nGn is zero or negative!");
+      if (nGn < 1e-14) dserror("nGn is zero or negative!");
       const double h = 2.0 / sqrt(nGn);
 
       // interpolate to gausspoint
@@ -5429,7 +5428,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           {
             const double dres_duplus = JacobianSpaldingResidual_uplus(y, visc_, utau, normu);
 
-            if (abs(dres_duplus) < EPS12) dserror("prevent division by zero");
+            if (abs(dres_duplus) < 1e-12) dserror("prevent division by zero");
             const double visc_dudy = -utau * utau / dres_duplus;
 
             if (fabs(normtraction) > 0.001 * visc_ / y)
@@ -5938,10 +5937,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     dserror("Material type is not supported for boundary element with parent-element evaluation!");
 
   // check whether there is zero or negative density
-  if (densaf_ < EPS15) dserror("zero or negative density!");
+  if (densaf_ < 1e-15) dserror("zero or negative density!");
 
   // check whether there is zero or negative (physical) viscosity
-  if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity!");
+  if (visc_ < 1e-15) dserror("zero or negative (physical) diffusivity!");
 
   return;
 }  // FluidBoundaryParent::GetDensityAndViscosity

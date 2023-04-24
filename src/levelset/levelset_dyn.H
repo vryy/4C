@@ -12,4 +12,4 @@
 void levelset_dyn(int restart /* do we have to perform a restart?  */
 );
 
-#endif /* #ifndef LEVELSET_DYN_H */
+#endif  // LEVELSET_DYN_H

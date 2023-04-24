@@ -6,13 +6,13 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_BASE_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_BASE_H_
+#ifndef POROMULTIPHASE_BASE_H
+#define POROMULTIPHASE_BASE_H
 
 
 #include "adapter_algorithmbase.H"
-#include "ad_poromultiphase.H"
-#include "dserror.H"
+#include "adapter_poromultiphase.H"
+#include "lib_dserror.H"
 
 namespace ADAPTER
 {
@@ -230,4 +230,4 @@ namespace POROMULTIPHASE
 
 
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_BASE_H_ */
+#endif  // POROMULTIPHASE_BASE_H

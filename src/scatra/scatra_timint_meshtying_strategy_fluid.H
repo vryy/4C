@@ -98,4 +98,4 @@ namespace SCATRA
     MeshtyingStrategyFluid(const MeshtyingStrategyFluid& old);
   };  // class MeshtyingStrategyFluid
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H

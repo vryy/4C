@@ -22,10 +22,10 @@
 #include "tsi_monolithic.H"
 #include "tsi_utils.H"
 #include "inpar_tsi.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "adapter_thermo.H"
-#include "ad_str_structure.H"
+#include "adapter_str_structure.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

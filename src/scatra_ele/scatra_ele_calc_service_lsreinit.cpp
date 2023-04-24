@@ -16,9 +16,9 @@
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "utils.H"
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,8 +44,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phizero, ephizero_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       //------------------------------------------------------
       // Step 1: precompute element penalty parameter
@@ -81,8 +81,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phizero, ephizero_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       // get current direction
       const int dir = params.get<int>("direction");
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_tau(
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<my::nsd_, 1> gradphizero(true);
+  LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -162,8 +162,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -183,12 +182,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.Dot(my::ephinp_[0]);
-    Teuchos::rcp_dynamic_cast<
-        DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<my::nsd_, my::nen_>>(
+    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->SetPhinp(0, phinp);
-    Teuchos::rcp_dynamic_cast<
-        DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<my::nsd_, my::nen_>>(
+    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->SetHist(0, 0.0);
 
@@ -237,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_tau(
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -249,7 +246,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<my::nsd_, 1> gradphizero(true);
+  LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -259,8 +256,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -285,14 +281,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
     // get sign function
     double signphi = 0.0;
     // gradient of current scalar
-    LINALG::Matrix<my::nsd_, 1> gradphi(true);
+    LINALG::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
     SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
     // get velocity at element center
-    LINALG::Matrix<my::nsd_, 1> convelint(true);
+    LINALG::Matrix<nsd_, 1> convelint(true);
     if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
     // convective term
     //    double conv_phi = convelint.Dot(gradphi);
@@ -321,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
 {
   double vpenalty = fac * my::scatraparatimint_->Dt() * penalty * deriv_sign * norm_gradphizero;
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_;
 
@@ -346,7 +342,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_center(
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_center(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -358,7 +354,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<my::nsd_, 1> gradphizero(true);
+  LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -368,8 +364,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -386,7 +381,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     double phinp = 0.0;
     phinp = my::funct_.Dot(my::ephinp_[0]);
     // gradient of current scalar
-    LINALG::Matrix<my::nsd_, 1> gradphi(true);
+    LINALG::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
@@ -402,7 +397,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     //    }
 
     // get velocity at element center
-    LINALG::Matrix<my::nsd_, 1> convelint(true);
+    LINALG::Matrix<nsd_, 1> convelint(true);
     if (lsreinitparams_->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
     {
       // get sign function
@@ -453,13 +448,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   // do lumping: row sum
   if (lsreinitparams_->Lumping())
   {
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const int fvi = vi * my::numdofpernode_;
 
       double sum = 0.0;
       // loop all columns
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
         const int fui = ui * my::numdofpernode_;
         sum += emat(fvi, fui);

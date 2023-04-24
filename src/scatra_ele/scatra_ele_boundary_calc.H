@@ -15,7 +15,7 @@
 #include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc_utils.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_elch.H"
 
@@ -278,6 +278,14 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
           Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
+      );
+
+      //! evaluate size of element projected to node, i.e. int N dv
+      virtual void EvaluateNodalSize(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                          ///< parameter list
+          DRT::Discretization& discretization,                     ///< discretization
+          DRT::Element::LocationArray& la,                         ///< location array
+          Epetra_SerialDenseVector& nodalsize  ///< elemental size projected to nodes
       );
 
       /*!

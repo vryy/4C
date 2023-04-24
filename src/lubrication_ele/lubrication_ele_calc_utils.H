@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_UTILS_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_UTILS_H_
+#ifndef LUBRICATION_ELE_CALC_UTILS_H
+#define LUBRICATION_ELE_CALC_UTILS_H
 
 
 namespace LUBRICATION
@@ -99,4 +99,4 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_UTILS_H_ */
+#endif  // LUBRICATION_ELE_CALC_UTILS_H

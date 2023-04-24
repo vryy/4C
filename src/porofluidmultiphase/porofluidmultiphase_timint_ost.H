@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_
-#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_
+#ifndef POROFLUIDMULTIPHASE_TIMINT_OST_H
+#define POROFLUIDMULTIPHASE_TIMINT_OST_H
 
 #include "linalg_utils_densematrix_communication.H"
 #include "porofluidmultiphase_timint_implicit.H"
@@ -88,4 +88,4 @@ namespace POROFLUIDMULTIPHASE
 
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_ */
+#endif  // POROFLUIDMULTIPHASE_TIMINT_OST_H

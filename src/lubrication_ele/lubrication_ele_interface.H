@@ -8,14 +8,14 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
+#ifndef LUBRICATION_ELE_INTERFACE_H
+#define LUBRICATION_ELE_INTERFACE_H
 
 #include <vector>
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "element.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include "lib_element.H"
 
 namespace DRT
 {
@@ -72,4 +72,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_ */
+#endif  // LUBRICATION_ELE_INTERFACE_H

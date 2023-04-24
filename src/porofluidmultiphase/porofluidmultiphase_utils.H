@@ -6,12 +6,12 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_
-#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_
+#ifndef POROFLUIDMULTIPHASE_UTILS_H
+#define POROFLUIDMULTIPHASE_UTILS_H
 
 #include <set>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "inpar_porofluidmultiphase.H"
@@ -148,4 +148,4 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_ */
+#endif  // POROFLUIDMULTIPHASE_UTILS_H

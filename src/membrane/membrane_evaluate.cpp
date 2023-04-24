@@ -11,22 +11,20 @@
 #include <Teuchos_RCP.hpp>
 #include "membrane.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "str_elements_paramsinterface.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_densematrix_eigen.H"
-#include "tensor_transformation.H"
-#include "function_of_time.H"
+#include "lib_tensor_transformation.H"
+#include "lib_function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
 
-#include "material.H"
-#include "membrane_elasthyper.H"
-#include "membrane_active_strain.H"
-#include "growthremodel_elasthyper.H"
+#include "mat_material.H"
+#include "mat_membrane_elasthyper.H"
+#include "mat_membrane_active_strain.H"
 
-#include "fluid_ele_action.H"
-#include "immersed_base.H"
-
-#include "membrane_material_interfaces.H"
+#include "mat_membrane_material_interfaces.H"
 #include "membrane_service.H"
 
 
@@ -77,8 +75,6 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_thickness;
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "postprocess_thickness")
       act = ELEMENTS::struct_postprocess_thickness;
     else
@@ -391,75 +387,6 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
-      }
-    }
-    break;
-
-    /*===============================================================================*
-     | struct_postprocess_stress                                                     |
-     *===============================================================================*/
-    case ELEMENTS::struct_postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-              "gpstressmap", Teuchos::null);
-      if (gpstressmap == Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-
-      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
-
-      int gid = Id();
-      LINALG::Matrix<numgpt_post_, 6> gpstress(((*gpstressmap)[gid])->A(), true);
-
-      Teuchos::RCP<Epetra_MultiVector> poststress =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
-      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
-
-      if (stresstype == "ndxyz")
-      {
-        // extrapolation matrix: static because equal for all elements of the same discretization
-        // type
-        static LINALG::Matrix<numnod_, numgpt_post_> extrapol(mem_extrapolmat());
-
-        // extrapolate the nodal stresses for current element
-        LINALG::Matrix<numnod_, 6> nodalstresses;
-        nodalstresses.Multiply(1.0, extrapol, gpstress, 0.0);
-
-        // "assembly" of extrapolated nodal stresses
-        for (int i = 0; i < numnod_; ++i)
-        {
-          int gid = NodeIds()[i];
-          if (poststress->Map().MyGID(NodeIds()[i]))  // rownode
-          {
-            int lid = poststress->Map().LID(gid);
-            int myadjele = Nodes()[i]->NumElement();
-            for (int j = 0; j < 6; j++)
-              (*((*poststress)(j)))[lid] += nodalstresses(i, j) / myadjele;
-          }
-        }
-      }
-      else if (stresstype == "cxyz")
-      {
-        // averaging of stresses/strains from gauss points to element
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < 6; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid];  // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < numgpt_post_; ++j)
-            {
-              s += gpstress(j, i);
-            }
-            s *= 1.0 / numgpt_post_;
-          }
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;

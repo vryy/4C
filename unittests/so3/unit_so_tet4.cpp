@@ -8,9 +8,9 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
-#include "so_tet4.H"
-#include "discret.H"
-#include "globalproblem.H"
+#include "so3_tet4.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 namespace
 {

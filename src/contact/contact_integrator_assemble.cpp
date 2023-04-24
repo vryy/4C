@@ -15,7 +15,7 @@
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_defines.H"
 
 #include "linalg_serialdensevector.H"

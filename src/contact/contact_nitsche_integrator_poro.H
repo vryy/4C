@@ -7,15 +7,15 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_PORO_H
-#define CONTACT_INTEGRATOR_NITSCHE_PORO_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_PORO_H
+#define CONTACT_NITSCHE_INTEGRATOR_PORO_H
 
 #include "contact_nitsche_integrator.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -135,4 +135,4 @@ namespace CONTACT
     double dv_dd_;         // 1/(theta*dt) for OST
   };
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_PORO_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_PORO_H

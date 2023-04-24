@@ -10,4 +10,4 @@ set(LIBS_MOR
     linalg
     )
 
-target_link_libraries(mor PUBLIC ${LIBS_MOR})
+baci_add_dependency(mor ${LIBS_MOR})

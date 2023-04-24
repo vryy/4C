@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
+#ifndef MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
+#define MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
 
 #include <NOX_LAPACK.H>
 #include "linalg_fixedsizematrix.H"
 #include "mixture_prestress_strategy.H"
-#include "elastin_membrane_prestress_strategy.H"
+#include "mixture_elastin_membrane_prestress_strategy.H"
 
 namespace MIXTURE
 {
@@ -69,4 +69,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
+#endif  // MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H

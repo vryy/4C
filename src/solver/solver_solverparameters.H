@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_SOLVERPARAMETERS_H_
-#define SOLVER_SOLVERPARAMETERS_H_
+#ifndef SOLVER_SOLVERPARAMETERS_H
+#define SOLVER_SOLVERPARAMETERS_H
 
-#include "discret.H"
-#include "dserror.H"
-#include "elementtype.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_elementtype.H"
 
 #include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -69,7 +69,7 @@ namespace LINALG::SOLVER
         // communicate data to procs without row element
         std::array<int, 4> ldata{numdf, dimns, nv, np};
         std::array<int, 4> gdata{0, 0, 0, 0};
-        dis.Comm().MaxAll(&ldata[0], &gdata[0], 4);
+        dis.Comm().MaxAll(ldata.data(), gdata.data(), 4);
         numdf = gdata[0];
         dimns = gdata[1];
         nv = gdata[2];

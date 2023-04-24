@@ -12,7 +12,7 @@
 #include "contact_noxinterface.H"
 #include "contact_abstract_strategy.H"
 
-#include "nox_nln_aux.H"
+#include "solver_nonlin_nox_aux.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

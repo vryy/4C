@@ -104,4 +104,4 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace S2I
 }  // namespace INPAR
-#endif  // #ifndef INPAR_S2I_H
+#endif  // INPAR_S2I_H

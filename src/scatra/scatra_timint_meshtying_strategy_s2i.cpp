@@ -17,20 +17,20 @@
 #include "fluid_utils.H"
 #include "linalg_matrixtransform.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "io.H"
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "condition_utils.H"
-#include "dofset_predefineddofnumber.H"
-#include "globalproblem.H"
-#include "utils_gid_vector.H"
-#include "utils_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_utils.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
+#include "lib_utils_parameter_list.H"
 
-#include "electrode.H"
+#include "mat_electrode.H"
 
 #include "mortar_coupling3d_classes.H"
 #include "mortar_interface.H"
@@ -46,7 +46,7 @@
 #include "volmortar_shape.H"
 
 #include "linalg_multiply.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_equilibrate.H"
@@ -2569,7 +2569,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                 localnumlmdof[mypid] = interfacemaps_->Map(1)->NumMyElements();
               else
                 localnumlmdof[mypid] = interfacemaps_->Map(2)->NumMyElements();
-              comm.SumAll(&localnumlmdof[0], &globalnumlmdof[0], numproc);
+              comm.SumAll(localnumlmdof.data(), globalnumlmdof.data(), numproc);
 
               // for each processor, determine offset of minimum Lagrange multiplier dof GID w.r.t.
               // maximum standard dof GID
@@ -2584,8 +2584,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                     scatratimint_->DofRowMap()->MaxAllGID() + 1 + offset + lmdoflid;
 
               // build Lagrange multiplier dofrowmap
-              const Teuchos::RCP<Epetra_Map> lmdofrowmap =
-                  Teuchos::rcp(new Epetra_Map(-1, (int)lmdofgids.size(), &lmdofgids[0], 0, comm));
+              const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::rcp(
+                  new Epetra_Map(-1, (int)lmdofgids.size(), lmdofgids.data(), 0, comm));
 
               // initialize vectors associated with Lagrange multiplier dofs
               lm_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
@@ -3235,11 +3235,12 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
     std::vector<double> values(length, 0.);
     std::vector<int> indices(length, 0);
     if (matrix.EpetraMatrix()->ExtractGlobalRowCopy(
-            dofgid, length, numentries, &values[0], &indices[0]))
+            dofgid, length, numentries, values.data(), indices.data()))
       dserror("Cannot extract matrix row with global ID %d from source matrix!", dofgid);
 
     // copy current source matrix row into destination matrix
-    if (rows.EpetraMatrix()->InsertGlobalValues(dofgid, numentries, &values[0], &indices[0]) < 0)
+    if (rows.EpetraMatrix()->InsertGlobalValues(dofgid, numentries, values.data(), indices.data()) <
+        0)
       dserror("Cannot insert matrix row with global ID %d into destination matrix!", dofgid);
   }
 }
@@ -3837,7 +3838,7 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original.ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original.ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original.ColMap().GID(indices[ientry]) == colgid)
@@ -4713,7 +4714,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
       {
         if (Teuchos::rcp_dynamic_cast<Epetra_FEVector>(systemvector)
                 ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),
-                    &la_master[nds_rows_].lm_[0], cellvector.A()))
+                    la_master[nds_rows_].lm_.data(), cellvector.A()))
           dserror("Assembly into master-side system vector not successful!");
       }
 

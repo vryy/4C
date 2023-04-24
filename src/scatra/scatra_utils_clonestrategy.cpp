@@ -10,82 +10,34 @@
 
 
 #include "scatra_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "scatra_ele.H"
-#include "element.H"
+#include "lib_element.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportNeumannInflow", "TransportNeumannInflow"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "TaylorGalerkinOutflow", "TaylorGalerkinOutflow"));  // schott
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "TaylorGalerkinNeumannInflow", "TaylorGalerkinNeumannInflow"));  // schott
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ReinitializationTaylorGalerkin", "ReinitializationTaylorGalerkin"));  // schott
-  // when the fluid problem is periodic we also expect the mass transport to be so:
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LinePeriodic", "LinePeriodic"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SurfacePeriodic", "SurfacePeriodic"));
-  // when the fluid problem has a turbulent inflow section, we also expect this section for scatra:
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TurbulentInflowSection", "TurbulentInflowSection"));
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LineNeumann", "FluidLineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SurfaceNeumann", "FluidSurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("VolumeNeumann", "FluidVolumeNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("KrylovSpaceProjection", "KrylovSpaceProjection"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ElchBoundaryKinetics", "ElchBoundaryKinetics"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
-
-  // for moving boundary problems
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
-
-  // mortar meshtying
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Mortar", "Mortar"));
-
-  // for coupled scalar transport fields
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraCoupling", "ScaTraCoupling"));
-
-  // for level-set problems
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LsContact", "LsContact"));
-
-  // for super convergent patch recovery
-  conditions_to_copy.insert(std::pair<std::string, std::string>("SPRboundary", "SPRboundary"));
-
-  // XFEM levelset based conditions
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("XFEMLevelsetTwophase", "XFEMLevelsetTwophase"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("XFEMLevelsetCombustion", "XFEMLevelsetCombustion"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
+      {"TransportVolumeNeumann", "VolumeNeumann"},
+      {"TransportNeumannInflow", "TransportNeumannInflow"},
+      {"TaylorGalerkinOutflow", "TaylorGalerkinOutflow"},
+      {"TaylorGalerkinNeumannInflow", "TaylorGalerkinNeumannInflow"},
+      {"ReinitializationTaylorGalerkin", "ReinitializationTaylorGalerkin"},
+      {"LinePeriodic", "LinePeriodic"}, {"SurfacePeriodic", "SurfacePeriodic"},
+      {"TurbulentInflowSection", "TurbulentInflowSection"}, {"LineNeumann", "FluidLineNeumann"},
+      {"SurfaceNeumann", "FluidSurfaceNeumann"}, {"VolumeNeumann", "FluidVolumeNeumann"},
+      {"KrylovSpaceProjection", "KrylovSpaceProjection"},
+      {"ElchBoundaryKinetics", "ElchBoundaryKinetics"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
+      {"Initfield", "Initfield"}, {"TransportRobin", "TransportRobin"},
+      {"FSICoupling", "FSICoupling"}, {"Mortar", "Mortar"}, {"ScaTraCoupling", "ScaTraCoupling"},
+      {"LsContact", "LsContact"}, {"SPRboundary", "SPRboundary"},
+      {"XFEMLevelsetTwophase", "XFEMLevelsetTwophase"},
+      {"XFEMLevelsetCombustion", "XFEMLevelsetCombustion"}};
 }
 
 
@@ -151,40 +103,17 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
-
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("KrylovSpaceProjection", "KrylovSpaceProjection"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-
-  // for coupled scalar transport fields
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraCoupling", "ScaTraCoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("SSICoupling", "SSICoupling"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSICouplingScatraToSolid", "SSICouplingScatraToSolid"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSICouplingSolidToScatra", "SSICouplingSolidToScatra"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ScatraHeteroReactionMaster", "ScatraHeteroReactionMaster"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "ScatraHeteroReactionSlave", "ScatraHeteroReactionSlave"));
-
-  return conditions_to_copy;
+  return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+      {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
+      {"TransportVolumeNeumann", "VolumeNeumann"},
+      {"KrylovSpaceProjection", "KrylovSpaceProjection"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
+      {"Initfield", "Initfield"}, {"ScaTraCoupling", "ScaTraCoupling"},
+      {"SSICoupling", "SSICoupling"}, {"SSICouplingScatraToSolid", "SSICouplingScatraToSolid"},
+      {"SSICouplingSolidToScatra", "SSICouplingSolidToScatra"},
+      {"ScatraHeteroReactionMaster", "ScatraHeteroReactionMaster"},
+      {"ScatraHeteroReactionSlave", "ScatraHeteroReactionSlave"}};
 }
 
 

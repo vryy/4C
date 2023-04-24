@@ -11,16 +11,16 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
-#include "material_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
+#include "mat_service.H"
 #include "mixture_constituent_elasthyper.H"
 #include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
 #include "mixture_constituent_remodelfiber_expl.H"
 #include "mixture_constituent_remodelfiber_impl.H"
-#include "mixture_constituent_muscle_weickenmeier.H"
+#include "mixture_constituent_solidmaterial.H"
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
@@ -101,11 +101,11 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_muscle_weickenmeier:
+    case INPAR::MAT::mix_solid_material:
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_SolidMaterial(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }

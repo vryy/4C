@@ -7,7 +7,7 @@
 
 #include "contact_element.H"
 #include "contact_node.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
 
@@ -312,7 +312,7 @@ void CONTACT::CoElement::DJacDXi(
     double geta[3];
     Metrics(xi, gxi, geta);
 
-    double gsec[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> gsec = {0.0, 0.0, 0.0};
     for (int i = 0; i < NumNode(); ++i)
       for (int k = 0; k < 3; ++k) gsec[k] += secderiv(i, 0) * coord(k, i);
 
@@ -340,7 +340,7 @@ void CONTACT::CoElement::DJacDXi(
     Metrics(xi, gxi, geta);
 
     // cross product of gxi and geta
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = gxi[1] * geta[2] - gxi[2] * geta[1];
     cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
     cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];

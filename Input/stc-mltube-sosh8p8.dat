@@ -28,15 +28,15 @@ Outer Iteration StatusTest      = No
 THETA                           1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZREUSE                         1                             // how often to recompute some preconditioners
-AZTOL                           1.0E-6                        // tolerance in unscaled residual
-AZSUB                           100                           // size of krylov space for gmres
-ML_MAXCOARSESIZE                1                             // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     2                             // ML max number of levels
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOTIMES                     2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+SOLVER                          Belos
+AZREUSE                         1
+AZTOL                           1.0E-6
+AZSUB                           100
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     2
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOTIMES                     2 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1

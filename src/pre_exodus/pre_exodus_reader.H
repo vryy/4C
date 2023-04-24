@@ -10,14 +10,14 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_READER_H_
-#define PRE_EXODUS_READER_H_
+#ifndef PRE_EXODUS_READER_H
+#define PRE_EXODUS_READER_H
 
 #include <string>
 #include <iostream>
 #include <vector>
-#include "dserror.H"
-#include "element.H"
+#include "lib_dserror.H"
+#include "lib_element.H"
 
 namespace EXODUS
 {
@@ -534,4 +534,4 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-#endif /*PRE_EXODUS_READER_H_*/
+#endif  // PRE_EXODUS_READER_H

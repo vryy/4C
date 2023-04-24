@@ -9,9 +9,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3.H"
-#include "beam3eb.H"
-#include "linedefinition.H"
-#include "str_elements_paramsinterface.H"
+#include "lib_linedefinition.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;

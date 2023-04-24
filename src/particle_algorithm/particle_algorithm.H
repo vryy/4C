@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "adapter_algorithmbase.H"
 
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 #include "particle_engine.H"
 
 #include "particle_wall.H"

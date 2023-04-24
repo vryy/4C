@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_utils_sparse_algebra_create.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
@@ -18,12 +18,21 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, co
   if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
+
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_IntVector> LINALG::CreateIntVector(
+    const Epetra_BlockMap& rowmap, const bool init)
+{
+  return Teuchos::rcp(new Epetra_IntVector(rowmap, init));
 }
 
 /*----------------------------------------------------------------------*
@@ -42,7 +51,7 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epet
   mapvec.reserve(gids.size());
   mapvec.assign(gids.begin(), gids.end());
   Teuchos::RCP<Epetra_Map> map =
-      Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), &mapvec[0], 0, comm));
+      Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, comm));
   mapvec.clear();
   return map;
 }
@@ -55,7 +64,7 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int>& gids, const E
   Teuchos::RCP<Epetra_Map> map;
 
   if ((int)gids.size() > 0)
-    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, comm));
+    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, comm));
   else
     map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), 0, 0, comm));
 
@@ -95,7 +104,7 @@ void LINALG::CreateMapExtractorFromDiscretization(
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
   Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
@@ -103,7 +112,7 @@ void LINALG::CreateMapExtractorFromDiscretization(
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
   otherdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
@@ -145,7 +154,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
   Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
@@ -153,7 +162,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
   otherdofmapvec.clear();
 
   extractor.Setup(*dofset.DofRowMap(), conddofmap, otherdofmap);
@@ -200,7 +209,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
   Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
@@ -208,7 +217,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
   otherdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);

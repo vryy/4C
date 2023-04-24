@@ -14,8 +14,8 @@
 #include <filesystem>
 
 #include "post_common.H"
-#include "pss_cpp.h"
-#include "discret.H"
+#include "pss_full_cpp.h"
+#include "lib_discret.H"
 
 
 // deactivate for ascii output. Only do this for debugging.

@@ -11,14 +11,14 @@
 #define SPRING3_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 
-#include "elementtype.H"
-#include "utils_integration.H"
-#include "Sacado.hpp"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
+#include <Sacado.hpp>
 
 #include "inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
@@ -334,7 +334,6 @@ namespace DRT
         calc_struct_update_istep,
         calc_struct_reset_istep,  //!< reset elementwise internal variables
         //!< during iteration to last converged state
-        postprocess_stress,
         calc_struct_ptcstiff,  // calculate artificial stiffness due to PTC solution strategy
         calc_struct_energy
         // calculate current elastic energy of element
@@ -497,4 +496,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef SPRING3_H
+#endif  // SPRING3_H

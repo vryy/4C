@@ -14,4 +14,4 @@
 void immersed_problem_drt();
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef IMMERSED_PROBLEM_DYN_H*/
+#endif  // IMMERSED_PROBLEM_DYN_H

@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSTI_UTILS_H_
-#define SSTI_UTILS_H_
+#ifndef SSTI_UTILS_H
+#define SSTI_UTILS_H
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -231,7 +231,7 @@ namespace SSTI
   {
    public:
     /// returns condition names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy() override;
+    std::map<std::string, std::string> ConditionsToCopy() const override;
 
    protected:
     //! provide cloned element with element specific data (material etc.)
@@ -249,8 +249,8 @@ namespace SSTI
   {
    protected:
     /// returns condition names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy() override;
+    std::map<std::string, std::string> ConditionsToCopy() const override;
   };
 }  // namespace SSTI
 
-#endif /* SSTI_UTILS_H_ */
+#endif  // SSTI_UTILS_H

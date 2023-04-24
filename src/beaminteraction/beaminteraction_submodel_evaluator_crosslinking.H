@@ -8,10 +8,10 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H
 
-#include "binning_strategy_utils.H"
+#include "binstrategy_utils.H"
 #include "inpar_beaminteraction.H"
 #include "linalg_fixedsizematrix.H"
 #include <Epetra_MpiComm.h>

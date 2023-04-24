@@ -39,16 +39,16 @@ Res =                                                                           
 
 *----------------------------------------------------------------------*/
 
-#ifndef CARDIOVASCULAR0DSYSPULCIRCULATION_H
-#define CARDIOVASCULAR0DSYSPULCIRCULATION_H
+#ifndef CARDIOVASCULAR0D_SYSPULCIRCULATION_H
+#define CARDIOVASCULAR0D_SYSPULCIRCULATION_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
-#include "Epetra_FECrsMatrix.h"
-#include "utils_integration.H"
+#include <Epetra_FECrsMatrix.h>
+#include "fem_general_utils_integration.H"
 #include "inpar_cardiovascular0d.H"
 // class which is inherited from
 #include "cardiovascular0d.H"
@@ -185,4 +185,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0DSYSPULCIRCULATION_H*/
+#endif  // CARDIOVASCULAR0D_SYSPULCIRCULATION_H

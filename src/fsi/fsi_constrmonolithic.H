@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_CONSTR_MONOLITHIC_H
-#define FSI_CONSTR_MONOLITHIC_H
+#ifndef FSI_CONSTRMONOLITHIC_H
+#define FSI_CONSTRMONOLITHIC_H
 
 #include "fsi_constr_overlapprec.H"
 #include "fsi_monolithic.H"
@@ -30,20 +30,17 @@ namespace FSI
 {
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a algebraically constrained structure field
-  /*!
-    \author tk
-    \date 02/10
-   */
   class ConstrMonolithic : public BlockMonolithic
   {
    public:
     explicit ConstrMonolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /*! do the setup for the monolithic system
-        1.) setup coupling; right now, we use matching meshes at the interface
-    2.) create combined map
-    3.) create block system matrix
-        */
+    /*! @brief Do the setup for the monolithic system
+
+      1.) setup coupling; right now, we use matching meshes at the interface
+      2.) create combined map
+      3.) create block system matrix
+    */
     virtual void SetupSystem() = 0;
 
     /// some general setup stuff necessary for both fluid and
@@ -52,8 +49,6 @@ namespace FSI
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
-
-    //@}
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
@@ -67,6 +62,7 @@ namespace FSI
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! @name Methods for infnorm-scaling of the system
+    //!@{
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
@@ -75,18 +71,16 @@ namespace FSI
     virtual void UnscaleSolution(
         LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
-    //@}
+    //!@}
 
     //! @name Time Adaptivity
-    //@{
+    //!@{
 
     /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes based on error estimation
      *
      *  Depending on the chosen method (fluid or structure split), only 3 of the
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual double SelectDtErrorBased() const
     {
@@ -98,8 +92,6 @@ namespace FSI
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual bool SetAccepted() const
     {
@@ -107,7 +99,7 @@ namespace FSI
       return false;
     }
 
-    //@}
+    //!@}
 
     /*! \brief Find future / desired owner for each node at the interface
      *
@@ -183,24 +175,22 @@ namespace FSI
     /// fluid and ale coupling at airway outflow
     Teuchos::RCP<ADAPTER::Coupling> coupfaout_;
 
-    ///@}
-
     /// @name infnorm scaling
+    //!@{
 
     Teuchos::RCP<Epetra_Vector> srowsum_;
     Teuchos::RCP<Epetra_Vector> scolsum_;
     Teuchos::RCP<Epetra_Vector> arowsum_;
     Teuchos::RCP<Epetra_Vector> acolsum_;
 
-    //@}
+    //!@}
 
-    ///@}
-
-    /// @ information about constraints are taken from structure ConstraintManager
+    /// @name information about constraints are taken from structure ConstraintManager
+    //!@{
 
     const Teuchos::RCP<::UTILS::ConstrManager> conman_;  ///< constraint manager
 
-    //@}
+    //!@}
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
@@ -211,8 +201,6 @@ namespace FSI
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap() = 0;
 
@@ -222,8 +210,6 @@ namespace FSI
      *  for the entire FSI problem. This is done just by combining the
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void SetupDBCMapExtractor() = 0;
 

@@ -9,21 +9,20 @@
 #include "fsi_lungmonolithic.H"
 #include "fsi_lung_overlapprec.H"
 #include "fsi_overlapprec_amgnxn.H"
-#include "ad_str_lung.H"
-#include "ad_fld_lung.H"
+#include "adapter_str_lung.H"
+#include "adapter_fld_lung.H"
 #include "adapter_coupling.H"
 #include "linalg_blocksparsematrix.H"
 #include "fsi_statustest.H"
 #include "io_control.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "colors.H"
-#include "globalproblem.H"
-#include "constraintdofset.H"
-#include "stru_aux.H"
+#include "lib_globalproblem.H"
+#include "constraint_dofset.H"
+#include "structure_aux.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_ale_fsi.H"
+#include "adapter_ale_fsi.H"
 #include "fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
@@ -563,18 +562,16 @@ void FSI::LungMonolithic::UnscaleSolution(
   cr->Norm2(&nc);
   Utils()->out() << std::scientific << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "   |rc|=" YELLOW << nc << END_COLOR "\n";
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "   |rc|=" << nc << "\n";
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
   cr->NormInf(&nc);
   Utils()->out() << "L_inf-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "   |rc|=" YELLOW << nc << END_COLOR "\n";
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "   |rc|=" << nc << "\n";
 
   Utils()->out().flags(flags);
 }

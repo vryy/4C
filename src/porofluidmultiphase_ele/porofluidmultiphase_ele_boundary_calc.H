@@ -6,16 +6,16 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H
+#define POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H
 
 
 #include "porofluidmultiphase_ele_action.H"
 #include "porofluidmultiphase_ele_interface.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "utils_local_connectivity_matrices.H"
-#include "element.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "lib_element.H"
 
 namespace DRT
 {
@@ -118,4 +118,4 @@ namespace DRT
 
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H

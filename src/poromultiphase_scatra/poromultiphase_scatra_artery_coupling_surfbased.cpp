@@ -9,7 +9,7 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_surfbased.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_densematrix_communication.H"
 
 #include "poromultiphase_scatra_artery_coupling_pair.H"
@@ -73,30 +73,28 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   int duplicates = 0;
   if (Comm().NumProc() > 1)
   {
-    int mygpvec[numgp_per_artele];
-    int sumgpvec[numgp_per_artele];
-    std::fill(mygpvec, mygpvec + numgp_per_artele, 0);
-    std::fill(sumgpvec, sumgpvec + numgp_per_artele, 0);
+    std::vector<int> mygpvec(numgp_per_artele, 0);
+    std::vector<int> sumgpvec(numgp_per_artele, 0);
     // loop over all GIDs
     for (int gid = gp_vector->Map().MinAllGID(); gid <= gp_vector->Map().MaxAllGID(); gid++)
     {
       // reset
-      std::fill(sumgpvec, sumgpvec + numgp_per_artele, 0);
+      std::fill(sumgpvec.data(), sumgpvec.data() + numgp_per_artele, 0);
 
       const int mylid = gp_vector->Map().LID(gid);
       // if not owned or ghosted fill with zeros
-      if (mylid < 0) std::fill(mygpvec, mygpvec + numgp_per_artele, 0);
+      if (mylid < 0) std::fill(mygpvec.data(), mygpvec.data() + numgp_per_artele, 0);
       // else get the GP vector
       else
         for (int igp = 0; igp < numgp_per_artele; igp++)
           mygpvec[igp] = static_cast<int>(((*gp_vector)[igp])[mylid]);
 
       // communicate to all via summation
-      Comm().SumAll(mygpvec, sumgpvec, numgp_per_artele);
+      Comm().SumAll(mygpvec.data(), sumgpvec.data(), numgp_per_artele);
 
       // this is ok for now, either the GID does not exist or the entire element protrudes.
       // Inform user and continue
-      if (*std::max_element(sumgpvec, sumgpvec + numgp_per_artele) < 1)
+      if (*std::max_element(sumgpvec.data(), sumgpvec.data() + numgp_per_artele) < 1)
       {
         std::cout << "WARNING! No GP of element  " << gid + 1 << " could be projected!"
                   << std::endl;
@@ -104,12 +102,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
       }
 
       // if one entry is equal to zero, this GP could not be projected
-      if (*std::min_element(sumgpvec, sumgpvec + numgp_per_artele) < 1)
+      if (*std::min_element(sumgpvec.data(), sumgpvec.data() + numgp_per_artele) < 1)
         dserror("It seems as if one GP could not be projected");
 
       // find number of duplicates
       int sum = 0;
-      sum = std::accumulate(sumgpvec, sumgpvec + numgp_per_artele, sum);
+      sum = std::accumulate(sumgpvec.data(), sumgpvec.data() + numgp_per_artele, sum);
       duplicates += sum - numgp_per_artele;
 
       // if owned or ghosted by this proc. and if duplicates have been detected, replace entry in

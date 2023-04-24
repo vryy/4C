@@ -16,4 +16,4 @@ set(LIBS_ALG_TSI
     volmortar
     )
 
-target_link_libraries(alg_tsi PUBLIC ${LIBS_ALG_TSI})
+baci_add_dependency(alg_tsi ${LIBS_ALG_TSI})

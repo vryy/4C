@@ -10,14 +10,14 @@ problem
 /*-----------------------------------------------------------*/
 
 // #ifdef D_COUPLED_ARTNET
-#ifndef FLUID_COUPLING_RED_MODELS_H_
-#define FLUID_COUPLING_RED_MODELS_H_
+#ifndef FLUID_COUPLING_RED_MODELS_H
+#define FLUID_COUPLING_RED_MODELS_H
 
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
-#include "Teuchos_RCP.hpp"
-#include "discret.H"
+#include <Teuchos_RCP.hpp>
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "art_net_dyn_drt.H"
 #include "red_airways_dyn_drt.H"
@@ -315,4 +315,4 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-#endif /* FLUID_COUPLING_RED_MODELS_H_ */
+#endif  // FLUID_COUPLING_RED_MODELS_H

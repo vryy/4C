@@ -24,7 +24,7 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE linear_full //linear_incremental
+SOLVERTYPE linear_full
 //MASSMAT consistent //row_sum //_including_stab
 SKIPINITDER                     yes
 TIMEINTEGR                      One_Step_Theta

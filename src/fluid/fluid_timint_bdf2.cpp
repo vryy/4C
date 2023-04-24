@@ -11,9 +11,9 @@
 
 #include "fluid_timint_bdf2.H"
 #include "fluid_ele_action.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "boxfilter.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "fluid_turbulence_boxfilter.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
 
@@ -137,7 +137,7 @@ void FLD::TimIntBDF2::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vect
 
   */
 
-  if (dta_ * dtp_ < EPS15) dserror("Zero time step size!!!!!");
+  if (dta_ * dtp_ < 1e-15) dserror("Zero time step size!!!!!");
   const double sum = dta_ + dtp_;
 
   accnp->Update((2.0 * dta_ + dtp_) / (dta_ * sum), *velnp, -sum / (dta_ * dtp_), *veln, 0.0);

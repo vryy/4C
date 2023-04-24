@@ -9,10 +9,10 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_structure.H"
 #include "inpar.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 namespace INPAR
 {
@@ -93,13 +93,12 @@ namespace INPAR
           &sdyn);
 
       setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
-          "prestressing takes values none mulf id",
-          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "id", "Id", "ID",
-              "Material_Iterative", "MATERIAL_ITERATIVE", "material_iterative"),
+          "prestressing takes values none mulf material_iterative",
+          tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "Material_Iterative",
+              "MATERIAL_ITERATIVE", "material_iterative"),
           tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
               INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
-              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::id, INPAR::STR::PreStress::id,
-              INPAR::STR::PreStress::id, INPAR::STR::PreStress::material_iterative,
+              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::material_iterative,
               INPAR::STR::PreStress::material_iterative, INPAR::STR::PreStress::material_iterative),
           &sdyn);
 
@@ -124,10 +123,9 @@ namespace INPAR
       setStringToIntegralParameter<int>("DAMPING", "No",
           "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, "
           "(2) Material based and calculated in elements",
-          tuple<std::string>(
-              "no", "No", "NO", "yes", "Yes", "YES", "Rayleigh", "Material", "BrownianMotion"),
+          tuple<std::string>("no", "No", "NO", "yes", "Yes", "YES", "Rayleigh", "Material"),
           tuple<int>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh, damp_rayleigh,
-              damp_rayleigh, damp_material, damp_brownianmotion),
+              damp_rayleigh, damp_material),
           &sdyn);
       DoubleParameter("M_DAMP", -1.0, "", &sdyn);
       DoubleParameter("K_DAMP", -1.0, "", &sdyn);

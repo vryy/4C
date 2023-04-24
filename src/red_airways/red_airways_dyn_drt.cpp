@@ -11,16 +11,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "red_airway_resulttest.H"
+#include "red_airways_resulttest.H"
 #include "red_airways_dyn_drt.H"
-#include "airwayimplicitintegration.H"
-#include "redairway_tissue.H"
-#include "ad_str_redairway.H"
-#include "resulttest.H"
-#include "globalproblem.H"
+#include "red_airways_implicitintegration.H"
+#include "red_airways_tissue.H"
+#include "adapter_str_redairway.H"
+#include "lib_resulttest.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 #include "io_pstream.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

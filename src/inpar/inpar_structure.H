@@ -16,7 +16,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // forward declaration
 namespace DRT
@@ -248,11 +248,9 @@ namespace INPAR
     /// Type of (global) damping
     enum DampKind
     {
-      damp_none = 0,       ///< damping off
-      damp_rayleigh,       ///< globally applied Rayleigh damping
-      damp_material,       ///< element-wise applied damping
-                           ///< using element velocities
-      damp_brownianmotion  ///< damping due to brownian motion
+      damp_none = 0,  ///< damping off
+      damp_rayleigh,  ///< globally applied Rayleigh damping
+      damp_material,  ///< element-wise applied damping using element velocities
     };
 
     /*! \brief Mid-average type of internal forces for generalised-alpha-like time integration
@@ -533,8 +531,7 @@ namespace INPAR
       none,  ///<  none
       mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010)). Be careful, this
              ///<  prestress algorithm does not ensure equilibrium
-      material_iterative,  ///< Iterative prestress algorithm on the material level
-      id                   ///<  Inverse Design
+      material_iterative  ///< Iterative prestress algorithm on the material level
     };
 
     /// STC scaling for thin shell structures
@@ -725,4 +722,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_STRUCTURE_H
+#endif  // INPAR_STRUCTURE_H

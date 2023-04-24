@@ -491,7 +491,7 @@ bool GEO::CUT::IMPL::FindCycles(graph_t &g, GEO::CUT::Cycle &cycle,
   }
 
   face_visitor vis(name_map, cycles);
-  boost::planar_face_traversal(g, &embedding[0], vis);
+  boost::planar_face_traversal(g, embedding.data(), vis);
 
 #if DEBUG_POINTGRAPH
   for (std::vector<Cycle>::iterator i = cycles.begin(); i != cycles.end(); ++i)

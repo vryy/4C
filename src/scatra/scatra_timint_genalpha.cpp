@@ -9,14 +9,14 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_meshtying_strategy_base.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
 #include "io.H"
 
-#include "utils_parameter_list.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_ele_action.H"
 
@@ -71,7 +71,7 @@ void SCATRA::TimIntGenAlpha::Setup()
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
-  if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
+  if (alphaM_ < 1e-12) dserror("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_ / alphaM_;
 
   // fine-scale vector at time n+alpha_F

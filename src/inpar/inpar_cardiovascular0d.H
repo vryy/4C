@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef INPAR_CARDIOVASCULAR0D_H_
-#define INPAR_CARDIOVASCULAR0D_H_
+#ifndef INPAR_CARDIOVASCULAR0D_H
+#define INPAR_CARDIOVASCULAR0D_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -64,4 +64,4 @@ namespace INPAR
   }  // namespace CARDIOVASCULAR0D
 }  // namespace INPAR
 /*----------------------------------------------------------------------*/
-#endif /* INPAR_CARDIOVASCULAR0D_H_ */
+#endif  // INPAR_CARDIOVASCULAR0D_H

@@ -9,7 +9,7 @@
 
 #include "inpar_IO_runtime_vtp_output_structure.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar.H"
 #include "inpar_parameterlist_utils.H"
 

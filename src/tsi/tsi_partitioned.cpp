@@ -16,16 +16,16 @@
 #include "tsi_utils.H"
 #include "inpar_tsi.H"
 #include "inpar_structure.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "adapter_thermo.H"
-#include "ad_str_structure.H"
+#include "adapter_str_structure.H"
 
 // contact
 #include "contact_abstract_strategy.H"
 #include "mortar_manager_base.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_contact_bridge.H"
 
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries

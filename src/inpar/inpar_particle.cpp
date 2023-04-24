@@ -12,10 +12,10 @@
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 #include "inpar_particle.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
@@ -467,7 +467,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("NORMAL_DAMP", -1.0, "normal contact damping parameter", &particledyndem);
   DoubleParameter("COEFF_RESTITUTION", -1.0, "coefficient of restitution", &particledyndem);
   DoubleParameter("DAMP_REG_FAC", -1.0,
-      "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
+      "linearly regularized damping normal force in the interval "
+      "\f$|g| < (DAMP_REG_FAC * r_{\\min})\f$",
       &particledyndem);
   BoolParameter(
       "TENSION_CUTOFF", "yes", "evaluate tension cutoff of normal contact force", &particledyndem);

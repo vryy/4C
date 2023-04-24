@@ -73,7 +73,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics  // OneStepTheta,GenAlpha
+DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          -1
 LINEAR_SOLVER                   1
@@ -85,15 +85,15 @@ MAXTIME                         20
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          -1
-NLNSOL                          fullnewton  // ptc  // fullnewton
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
-NORM_RESF                       Rel  // Abs
-NUMSTEP                         10 // 200
+NORM_RESF                       Rel
+NUMSTEP                         10
 PREDICT                         ConstDis
 PRESTRESS                       none
 PRESTRESSTIME                   0
@@ -103,9 +103,9 @@ RESTARTEVRY                     1
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMESTEP                        0.2 // 0.1
-TOLDISP                         1e-08  // 1e-10
-TOLRES                          1e-07  // 1e-08
+TIMESTEP                        0.2
+TOLDISP                         1e-08
+TOLRES                          1e-07
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 RHO_INF                         1.0
 GENAVG                          TrLike
@@ -113,7 +113,7 @@ GENAVG                          TrLike
 THETA                           0.5
 -----------------------------------------------------------SOLVER 1
 NAME                            STRUCT SOLVER
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 // [mm,kg,ms,GPa]
 MAT 1   MAT_Struct_Damage   YOUNG 206.9 NUE 0.29 DENS 0 SAMPLENUM 2 SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 KINHARD 0 KINHARD_REC 0 SATHARDENING 0 HARDEXPO 0 TOL 1.0e-06

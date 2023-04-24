@@ -10,4 +10,4 @@ set(LIBS_LIB_STRUCT_ALE
     alg_structure_new
     )
 
-target_link_libraries(lib_struct_ale PUBLIC ${LIBS_LIB_STRUCT_ALE})
+baci_add_dependency(lib_struct_ale ${LIBS_LIB_STRUCT_ALE})

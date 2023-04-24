@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include "io_hdf.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 /*----------------------------------------------------------------------*
@@ -352,7 +352,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
   CalculateRange(new_proc_num, my_id, start, end);
 
   Teuchos::RCP<std::vector<int>> ids = ReadIntData(id_path, start, end);
-  Epetra_Map map(-1, static_cast<int>(ids->size()), &((*ids)[0]), 0, Comm);
+  Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
 
   Teuchos::RCP<Epetra_MultiVector> res;
   if (columns == 1)
@@ -374,8 +374,9 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
     int l = lengths[i - start];
     for (int c = 0; c < columns; ++c)
     {
-      std::copy(&(*values)[offset + c * l / columns], &(*values)[offset + (c + 1) * l / columns],
-          &res->Values()[c * res->MyLength() + offset / columns]);
+      std::copy(values->data() + offset + c * l / columns,
+          values->data() + offset + (c + 1) * l / columns,
+          res->Values() + c * res->MyLength() + offset / columns);
     }
     offset += l;
   }
@@ -401,7 +402,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadResultDataVecChar(std::string
 
   Teuchos::RCP<std::vector<int>> ids = ReadIntData(id_path, start, end);
   // cout << "size of ids:" << (*ids).size() << endl;
-  Epetra_Map map(-1, static_cast<int>(ids->size()), &((*ids)[0]), 0, Comm);
+  Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
   elemap = Teuchos::rcp(new Epetra_Map(map));
 
   Teuchos::RCP<std::vector<char>> res = ReadCharData(value_path, start, end);

@@ -44,7 +44,6 @@ namespace INPAR
       tempdepwater,
       poro,
       poro_p1,
-      topopt,
       stokes,
       oseen
     };
@@ -256,7 +255,6 @@ namespace INPAR
       no_error_calculation,
       beltrami_flow,
       channel2D,
-      topoptchannel,
       gravitation,
       shear_flow,
       byfunct,
@@ -414,4 +412,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_FLUID_H
+#endif  // INPAR_FLUID_H

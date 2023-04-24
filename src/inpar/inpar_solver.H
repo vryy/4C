@@ -41,23 +41,21 @@ namespace INPAR::SOLVER
   //! Available solvers in the Amesos package and Iterative methods
   enum class SolverType
   {
-    umfpack,    ///< Amesos direct solver using UMFPACK
-    superlu,    ///< Amesos direct solver using SuperLU_Dist
-    aztec_msr,  ///< AztecOO iterative solver (outdated)
-    belos,      ///< Belos iterative solver (new package, recommended!)
-    undefined   ///< undefined solver
+    umfpack,   ///< Amesos direct solver using UMFPACK
+    superlu,   ///< Amesos direct solver using SuperLU_Dist
+    belos,     ///< Belos iterative solver
+    undefined  ///< undefined solver
   };
 
-  //! Different solvers within the AztecOO and Belos library
+  //! Different solvers within the Belos package
   enum class IterativeSolverType
   {
-    cg,             ///< cg-solver for symmetric problems
-    gmres,          ///< gmres-solver for non-symmetric problems
-    gmres_condest,  ///< gmres-solver with condition number estimate (only with Aztec!)
-    bicgstab        ///< bicgstab-solver for non-symmetric problems with small storage
+    cg,       ///< cg-solver for symmetric problems
+    gmres,    ///< gmres-solver for non-symmetric problems
+    bicgstab  ///< bicgstab-solver for non-symmetric problems with small storage
   };
 
-  //! Different preconditioners within the Aztec, ML, MueLu and Ifpack package
+  //! Different preconditioners within the ML, MueLu and Ifpack package
   enum class PreconditionerType
   {
     ilu,           ///< incomplete LU factorization with fill in levels (Ifpack package)
@@ -73,6 +71,8 @@ namespace INPAR::SOLVER
                                 ///< point formulation (MueLu package)
     multigrid_muelu_beamsolid,  ///< multigrid preconditioner for blocked beam solid interaction
                                 ///< problems (MueLu package)
+    multigrid_muelu_fsi,  ///< multigrid preconditioner for blocked fluid structure interaction
+                          ///< problems (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
     block_gauss_seidel_2x2,  ///< block Gauss-Seidel for 2x2 system (inhouse implementation)
     cheap_simple             ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)

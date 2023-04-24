@@ -11,8 +11,8 @@
 
 
 #include "inpar_beaminteraction.H"
-#include "validparameters.H"
-#include "conditiondefinition.H"
+#include "inpar_validparameters.H"
+#include "lib_conditiondefinition.H"
 #include "inpar_beamcontact.H"
 #include "inpar_beam_to_solid.H"
 

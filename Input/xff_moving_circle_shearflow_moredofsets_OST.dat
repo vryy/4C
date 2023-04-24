@@ -31,7 +31,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    field_by_function             //zero_field
+INITIALFIELD                    field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         2
@@ -68,7 +68,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01
@@ -96,34 +96,10 @@ NDPOINT 0
 NDLINE 0
 NDSURF 6
 NDVOL 4
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow
 E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -9.0 1.25 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF 0
---------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT 0
----------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE 0
----------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF 0
-----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL 0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // xFluid upper surface
@@ -138,10 +114,6 @@ DVOL 2
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // Fluid xfem

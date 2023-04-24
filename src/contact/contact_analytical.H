@@ -35,4 +35,4 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_ANALYTICAL_H
+#endif  // CONTACT_ANALYTICAL_H

@@ -12,13 +12,13 @@
 
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Vector.h>
 
-#include "elementtype.H"
-#include "utils_integration.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
 
 // forward declaration ...
 namespace STR
@@ -342,4 +342,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef TORSION3_H
+#endif  // TORSION3_H

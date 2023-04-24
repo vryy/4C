@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_EHL_EHL_MONOLITHIC_H_
-#define SRC_EHL_EHL_MONOLITHIC_H_
+#ifndef EHL_MONOLITHIC_H
+#define EHL_MONOLITHIC_H
 
 
 /*----------------------------------------------------------------------*
@@ -20,8 +20,8 @@
 #include "inpar_structure.H"
 #include "inpar_lubrication.H"
 
-#include <Epetra_Time.h>
 #include <Epetra_FEVector.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                          wirtz 01/16 |
@@ -349,8 +349,8 @@ namespace EHL
 
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
-    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
-    double dtsolve_;           //!< linear solver time
+    Teuchos::Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;             //!< linear solver time
     //@}
 
     //! @name Various global forces
@@ -476,4 +476,4 @@ namespace EHL
 }  // namespace EHL
 
 
-#endif /* SRC_EHL_EHL_MONOLITHIC_H_ */
+#endif  // EHL_MONOLITHIC_H

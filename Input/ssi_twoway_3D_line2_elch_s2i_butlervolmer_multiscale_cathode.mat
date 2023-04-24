@@ -40,7 +40,7 @@ NDPOINT 1
 NDLINE 1
 ---------------DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS
 DPOINT 1
-E 1 - KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 is_pseudo_contact 0
+E 1 - KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 11 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY

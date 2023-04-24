@@ -149,4 +149,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_MORTAR_H
+#endif  // INPAR_MORTAR_H

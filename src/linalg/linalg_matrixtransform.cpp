@@ -12,8 +12,8 @@
 #include <iterator>
 #include "linalg_matrixtransform.H"
 #include "adapter_coupling.H"
-#include "dserror.H"
-#include "exporter.H"
+#include "lib_dserror.H"
+#include "lib_exporter.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 
@@ -200,7 +200,7 @@ void LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_C
       // did not find index in linear search (re-indexing from A.ColMap() to B.ColMap()
       // might pass through the indices differently), try binary search
       if (jB == NumEntriesB || IndicesB[jB] != col)
-        jB = std::lower_bound(&IndicesB[0], &IndicesB[0] + NumEntriesB, col) - &IndicesB[0];
+        jB = std::lower_bound(IndicesB, IndicesB + NumEntriesB, col) - IndicesB;
 
       // not found, sparsity pattern of B does not contain the index from A -> terminate
       if (jB == NumEntriesB || IndicesB[jB] != col)
@@ -273,7 +273,7 @@ void LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(Teuchos::RCP<Epetra
 
     if (edst->NumAllocatedGlobalEntries(globalRow) == 0)
     {
-      int err = edst->InsertGlobalValues(globalRow, NumEntries, &vals[0], &idx[0]);
+      int err = edst->InsertGlobalValues(globalRow, NumEntries, vals.data(), idx.data());
       if (err < 0) dserror("InsertGlobalValues error: %d", err);
     }
     else

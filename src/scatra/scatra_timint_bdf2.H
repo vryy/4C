@@ -130,4 +130,4 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_BDF2_H
+#endif  // SCATRA_TIMINT_BDF2_H

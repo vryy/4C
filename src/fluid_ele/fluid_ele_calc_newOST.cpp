@@ -18,13 +18,12 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "standardtypes_cpp.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
 
-#include "arrhenius_pv.H"
+#include "mat_arrhenius_pv.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -299,10 +298,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf, fsevelaf, vol);
     }
-
-    // get reaction coefficient due to porosity for topology optimization
-    // !do this only at gauss point since this is nonlinear!
-    if (fldpara_->ReactionTopopt()) GetPorosityAtGP(eporo);
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType() == INPAR::FLUID::stabtype_residualbased)
@@ -2351,7 +2346,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const b
     case INPAR::FLUID::loma:
     case INPAR::FLUID::tempdepwater:
     case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
     {
       convvelintn_.Update(velintn_);
       break;

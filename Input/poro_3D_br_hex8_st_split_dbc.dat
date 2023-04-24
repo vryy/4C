@@ -38,8 +38,8 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //no_rstab
-STABTYPE                        residual_based//no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -65,11 +65,11 @@ LINEAR_SOLVER                   1
 CONTIPARTINT                    yes
 EQUILIBRATION                   rowsandcolumns_full
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                       // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Belos,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
@@ -103,26 +103,14 @@ NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           0
 // Surface x+
 //E 6 - 1 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS
-DPOINT                          0
------------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                           0
 // Surface x+
 //E 6 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
@@ -181,16 +169,6 @@ E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
------------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
-DPOINT                          0
-------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
-DLINE                           0
-------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
-DSURF                           0
-------------------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
-DSURF                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           5
 E 1 - 1 fluid conforming fsi_real

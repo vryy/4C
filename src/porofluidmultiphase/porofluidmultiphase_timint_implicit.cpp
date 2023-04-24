@@ -17,17 +17,17 @@
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
 #include "porofluidmultiphase_ele_action.H"
 #include "porofluidmultiphase_ele.H"
-#include "fluidporo_multiphase.H"
+#include "mat_fluidporo_multiphase.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
-#include "globalproblem.H"
-#include "assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_assemblestrategy.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -463,7 +463,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::TimeLoop()
   // prepare time loop
   PrepareTimeLoop();
 
-  while ((step_ < stepmax_) and ((time_ + EPS12) < maxtime_))
+  while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step
@@ -865,7 +865,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
   // build map
   int nummydirichvals = mydirichdofs.size();
   Teuchos::RCP<Epetra_Map> dirichmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, discret_->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, discret_->Comm()));
 
   // build vector of maps
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
@@ -924,7 +924,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
 
   // build combined DBC map
   Teuchos::RCP<Epetra_Map> additional_map = Teuchos::rcp(
-      new Epetra_Map(-1, dirichlet_dofs.size(), &(dirichlet_dofs[0]), 0, discret_->Comm()));
+      new Epetra_Map(-1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0, discret_->Comm()));
 
   std::vector<Teuchos::RCP<const Epetra_Map>> condition_maps;
   condition_maps.emplace_back(additional_map);
@@ -2172,7 +2172,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)

@@ -10,15 +10,14 @@
 
 #include <iostream>
 
-#include "validparameters.H"
-#include "colors.H"
-#include "globalproblem.H"
+#include "inpar_validparameters.H"
+#include "lib_globalproblem.H"
 
 #include "io_pstream.H"
 
 #include "adapter_algorithmbase.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -54,8 +53,8 @@ void ADAPTER::AlgorithmBase::PrintHeader()
     IO::cout << "\n"
              << method_ << "\n"
              << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
-             << "     DT = " << std::scientific << dt_ << "     STEP = " YELLOW_LIGHT
-             << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_ << "\n\n";
+             << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_
+             << "/" << std::setw(4) << nstep_ << "\n\n";
   }
 }
 

@@ -39,7 +39,7 @@ namespace SSI
 
     //! return map with original names of conditions to be cloned as key values, and final names of
     //! cloned conditions as mapped values
-    virtual std::map<std::string, std::string> ConditionsToCopy();
+    virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
     //! get impltype of scatra element from structure element
     //!
@@ -75,7 +75,7 @@ namespace SSI
   class ScatraStructureCloneStrategyManifold : public ScatraStructureCloneStrategy
   {
    public:
-    std::map<std::string, std::string> ConditionsToCopy() override;
+    std::map<std::string, std::string> ConditionsToCopy() const override;
 
     void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
         const bool isnurbs) override;

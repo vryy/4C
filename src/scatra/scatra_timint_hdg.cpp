@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_hdg.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
-#include "assemblestrategy.H"
-#include "dofset.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_dofset.H"
 
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_action.H"
@@ -22,9 +22,11 @@
 #include "io_control.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
+
+#include "scatra_resulttest_hdg.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
@@ -546,7 +548,7 @@ void SCATRA::TimIntHDG::SetInitialField(
           dsassert(localDofs.size() == static_cast<std::size_t>(updateVec2.M()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.A(), &localDofs[0]);
+          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.A(), localDofs.data());
         }
 
         // now fill the element vector into the discretization
@@ -666,7 +668,7 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
     {
       localDofs[i] = intdofrowmap->LID(localDofs[i]);
     }
-    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), &localDofs[0]);
+    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), localDofs.data());
   }
 
   discret_->ClearState(true);
@@ -822,7 +824,7 @@ void SCATRA::TimIntHDG::FDCheck()
         int numentries;
         std::vector<double> values(length);
         std::vector<int> indices(length);
-        sysmatcopy->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+        sysmatcopy->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
 
         for (int ientry = 0; ientry < length; ++ientry)
         {
@@ -1333,7 +1335,7 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
       dsassert(localDofs.size() == static_cast<std::size_t>(intphi_ele.M()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), &localDofs[0]);
+      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), localDofs.data());
     }
 
     // now fill the element vector into the new state vector for the trace values
@@ -1429,3 +1431,10 @@ void SCATRA::TimIntHDG::AssembleRHS()
 
   return;
 }  // TimIntHDG::AssembleRHS
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
+}

@@ -9,15 +9,15 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_
-#define SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_
+#ifndef LUBRICATION_RESULTTEST_H
+#define LUBRICATION_RESULTTEST_H
 
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 namespace DRT
 {
@@ -75,4 +75,4 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
-#endif /* SRC_LUBRICATION_LUBRICATION_RESULTTEST_H_ */
+#endif  // LUBRICATION_RESULTTEST_H

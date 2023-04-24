@@ -11,23 +11,25 @@
 #include <Teuchos_ParameterList.hpp>
 #include <memory>
 #include <optional>
-#include "dserror.H"
-#include "utils_integration.H"
-#include "utils.H"
-#include "voigt_notation.H"
+#include "lib_dserror.H"
+#include "fem_general_utils_integration.H"
+#include "lib_utils.H"
+#include "lib_voigt_notation.H"
 #include "solid_ele.H"
-#include "discret.H"
-#include "so3_material.H"
+#include "lib_discret.H"
+#include "mat_so3_material.H"
 #include "solid_ele_calc_lib.H"
-#include "solid_utils.H"
-#include "utils_local_connectivity_matrices.H"
+#include "solid_ele_utils.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 #include "fiber_node.H"
 #include "fiber_utils.H"
-#include "nodal_fiber_holder.H"
+#include "fiber_nodal_fiber_holder.H"
 
-#include "gauss_point_data_output_manager.H"
-#include "so_element_service.H"
-#include "singleton_owner.H"
+#include "structure_new_gauss_point_data_output_manager.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
+#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "so3_element_service.H"
+#include "headers_singleton_owner.H"
 
 namespace
 {
@@ -159,46 +161,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
       });
 
   solid_material.Update();
-}
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::PostProcessStressStrain(const DRT::Element& ele,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params)
-{
-  // TODO: This method would be much easier if we get rid of post_drt_*
-  const Epetra_SerialDenseMatrix gpstress =
-      *(*params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-          "gpstressmap"))[ele.Id()];
-
-  std::string stresstype = params.get<std::string>("stresstype");
-  Epetra_MultiVector& poststress = *params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress");
-
-  if (stresstype == "ndxyz")
-  {
-    ExtrapolateGPQuantityToNodesAndAssemble<distype>(
-        ele, gpstress, poststress, true, stiffness_matrix_integration_);
-  }
-  else if (stresstype == "cxyz")
-  {
-    const Epetra_BlockMap& elemap = poststress.Map();
-    int lid = elemap.LID(ele.Id());
-    if (lid != -1)
-    {
-      for (unsigned i = 0; i < numstr_; ++i)
-      {
-        double& s = (*((poststress)(i)))[lid];  // resolve pointer for faster access
-        s = 0.;
-        for (int j = 0; j < gpstress.M(); ++j)
-        {
-          s += gpstress(j, i);
-        }
-        s *= 1.0 / gpstress.M();
-      }
-    }
-  }
-  else
-    dserror("unknown type of stress/strain output on element level");
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -345,7 +307,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DR
           Epetra_IntVector& global_nodal_element_count =
               *gp_data_output_manager.GetMutableNodalDataCount().at(quantity_name);
 
-          ExtrapolateGPQuantityToNodesAndAssemble<distype>(
+          DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<distype>(
               ele, gp_data, *global_data, false, stiffness_matrix_integration_);
           DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
           break;

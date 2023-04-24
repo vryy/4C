@@ -10,8 +10,8 @@ builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_CONDITION_MANAGER_H_
-#define XFEM_CONDITION_MANAGER_H_
+#ifndef XFEM_CONDITION_MANAGER_H
+#define XFEM_CONDITION_MANAGER_H
 
 // Might want to forward declare the levelset and mesh coupling and put these functions into
 // the xfem_condition_manager.cpp file in a later stage
@@ -806,4 +806,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_CONDITION_MANAGER_H_*/
+#endif  // XFEM_CONDITION_MANAGER_H

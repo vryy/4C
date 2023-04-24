@@ -22,11 +22,11 @@
 #include <vector>
 
 #include <Epetra_Comm.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include <Epetra_Vector.h>
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
@@ -63,7 +63,6 @@ bool NOX::FSI::MinimalPolynomial::compute(
   NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
 
   const NOX::Abstract::Vector& x = soln.getX();
-  const NOX::Epetra::Vector& ex = dynamic_cast<const NOX::Epetra::Vector&>(x);
 
   std::vector<Teuchos::RCP<NOX::Epetra::Vector>> q;
   LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
@@ -73,7 +72,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
   int k;
   for (k = 0; k < kmax_; ++k)
   {
-    Epetra_Time t(ex.getEpetraVector().Comm());
+    Teuchos::Time t("", true);
     NOX::Abstract::Group::ReturnType status;
 
     // Compute F at current solution
@@ -176,7 +175,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
         utils_->out() << "RRE:  k=" << std::setw(2) << k << "  res=" << std::scientific << res
                       << "  eps*r(0,0)=" << std::scientific << eps_ * r(0, 0)
                       << "  r(k,k)=" << std::scientific << r(k, k) << "  time=" << std::scientific
-                      << t.ElapsedTime() << std::endl;
+                      << t.totalElapsedTime(true) << std::endl;
       }
     }
 

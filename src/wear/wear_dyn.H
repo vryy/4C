@@ -15,4 +15,4 @@
 void wear_dyn_drt(int restart);
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef WEAR_DYN_H */
+#endif  // WEAR_DYN_H

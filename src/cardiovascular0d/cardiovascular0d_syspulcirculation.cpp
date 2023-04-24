@@ -11,17 +11,17 @@
 
 #include <iostream>
 
-#include "globalproblem.H"
-#include "utils.H"
-#include "discret.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_discret.H"
+#include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "so_surface.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "so3_surface.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 
 
 

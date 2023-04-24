@@ -10,7 +10,7 @@
 /*--------------------------------------------------------------------------*/
 
 #include "ehl_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "inpar_parameterlist_utils.H"
 

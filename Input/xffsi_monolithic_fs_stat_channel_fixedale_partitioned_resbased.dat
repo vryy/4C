@@ -54,42 +54,42 @@ TOL_VEL_INC	  1e-06
 TOL_PRES_RES	  1e-06
 TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                // edge_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        residual_based
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes                           //no //
-SUPG                            yes//no                       //
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                        no                            //yes
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        none                          // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 none                          // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         none                          // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        none
+EOS_CONV_STREAM                 none
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_surf_with_max_diameter  // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned// xffsi_full_newton  // xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 RELAXING_ALE                    no
 RELAXING_ALE_EVERY              0
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-NIT_STAB_FAC                    100.0                         // (relevant for nitsche)
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
-VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length (relevant for nitsche)
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
+NIT_STAB_FAC                    100.0
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
-HYBRID_LM_L2_PROJ               part_ele_proj                 //full_ele_proj (K_ss whole element or just partial)
+HYBRID_LM_L2_PROJ               part_ele_proj
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 TIMESTEP                        0.005
@@ -98,7 +98,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         200
 MAXTIME                         5.0
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
@@ -117,7 +117,7 @@ NUMSTEP                         1
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nonox
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
+LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          10
 CONVTOL                         1.0E-12
 BASETOL                         1.0E-3
@@ -125,35 +125,35 @@ PRECONDREUSE                    0
 NORMCOMBI_RESFINC               And
 SHAPEDERIVATIVES                No
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                       // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         10                            // how often to recompute some preconditioners
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1200                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // unused
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   1                             // amount of ASM overlap for ILU, ILU, ICC, LU
-IFPACKCOMBINE                   Zero                          // combine mode: Zero, Insert, Add
-AZSCAL                          none                          // none sym infnorm scaling of the system
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1                             // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     1 4 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          UMFPACK
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         10
+IFPACKGFILL                     0
+AZTOL                           1.0E-4
+AZCONV                          AZ_r0
+AZITER                          1200
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   1
+IFPACKCOMBINE                   Zero
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     1 4 1
+ML_DAMPFINE                     1.0
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.4 DENS 2.0 THEXPANS 0.0
@@ -223,8 +223,6 @@ NODE 143 DNODE 1
 NODE 144 DNODE 1
 NODE 161 DNODE 1
 NODE 162 DNODE 1
-NODE 1 DNODE 2
-NODE 2 DNODE 2
 NODE 5 DNODE 2
 NODE 6 DNODE 2
 NODE 37 DNODE 2
@@ -257,8 +255,6 @@ NODE 25 DNODE 3
 NODE 26 DNODE 3
 NODE 29 DNODE 3
 NODE 30 DNODE 3
-NODE 33 DNODE 3
-NODE 34 DNODE 3
 NODE 195 DNODE 4
 NODE 196 DNODE 4
 NODE 197 DNODE 4
@@ -293,24 +289,6 @@ NODE 449 DNODE 4
 NODE 450 DNODE 4
 NODE 467 DNODE 4
 NODE 468 DNODE 4
-NODE 163 DNODE 5
-NODE 166 DNODE 5
-NODE 167 DNODE 5
-NODE 170 DNODE 5
-NODE 200 DNODE 5
-NODE 202 DNODE 5
-NODE 218 DNODE 5
-NODE 220 DNODE 5
-NODE 236 DNODE 5
-NODE 238 DNODE 5
-NODE 254 DNODE 5
-NODE 256 DNODE 5
-NODE 272 DNODE 5
-NODE 274 DNODE 5
-NODE 290 DNODE 5
-NODE 292 DNODE 5
-NODE 308 DNODE 5
-NODE 310 DNODE 5
 NODE 326 DNODE 5
 NODE 328 DNODE 5
 NODE 344 DNODE 5

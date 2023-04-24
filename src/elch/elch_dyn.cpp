@@ -8,24 +8,23 @@
 *----------------------------------------------------------------------*/
 #include "ale_utils_clonestrategy.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_elch.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
 #include "scatra_resulttest_elch.H"
 #include "scatra_timint_elch.H"
 #include "scatra_utils_clonestrategy.H"
 #include "scatra_ele.H"
 
-#include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
 #include "elch_dyn.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -34,18 +33,18 @@
 void elch_dyn(int restart)
 {
   // pointer to problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  auto* problem = DRT::Problem::Instance();
 
   // access the communicator
-  const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
+  const auto& comm = problem->GetDis("fluid")->Comm();
 
   // print ELCH-Logo to screen
   if (comm.MyPID() == 0) printlogo();
 
   // access the fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  auto fluiddis = problem->GetDis("fluid");
   // access the scatra discretization
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  auto scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
@@ -53,14 +52,14 @@ void elch_dyn(int restart)
   scatradis->FillComplete();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& elchcontrol = problem->ELCHControlParams();
+  const auto& elchcontrol = problem->ELCHControlParams();
 
   // print default parameters to screen
   if (comm.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, elchcontrol);
 
   // access the scalar transport parameter list
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
-  const INPAR::SCATRA::VelocityField veltype =
+  const auto& scatradyn = problem->ScalarTransportDynamicParams();
+  const auto veltype =
       DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
@@ -74,7 +73,7 @@ void elch_dyn(int restart)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+      auto dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
@@ -82,14 +81,15 @@ void elch_dyn(int restart)
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-      if (linsolvernumber == (-1))
+      if (linsolvernumber == -1)
+      {
         dserror(
             "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
             "TRANSPORT DYNAMIC to a valid number!");
+      }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
       // now we can call Init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
@@ -108,23 +108,19 @@ void elch_dyn(int restart)
       scatraonly->Setup();
 
       // read the restart information, set vectors and variables
-      if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
+      if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
 
       // set velocity field
       // note: The order ReadRestart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
       // PrepareTimeStep()-call
-      (scatraonly->ScaTraField())->SetVelocityField();
+      scatraonly->ScaTraField()->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
-      (scatraonly->ScaTraField())->TimeLoop();
+      scatraonly->ScaTraField()->TimeLoop();
 
       // perform the result test if required
-      Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatraonly->ScaTraField());
-      if (elchtimint == Teuchos::null) dserror("Time integrator is not of electrochemistry type!");
-      DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-      DRT::Problem::Instance()->TestAll(comm);
+      scatraonly->ScaTraField()->TestResults();
 
       break;
     }
@@ -140,7 +136,7 @@ void elch_dyn(int restart)
         DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
         scatradis->FillComplete();
         // determine implementation type of cloned scatra elements
-        INPAR::SCATRA::ImplType impltype(INPAR::SCATRA::impltype_undefined);
+        INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
         if (DRT::INPUT::IntegralValue<int>(elchcontrol, "DIFFCOND_FORMULATION"))
           impltype = INPAR::SCATRA::impltype_elch_diffcond;
         else
@@ -149,9 +145,8 @@ void elch_dyn(int restart)
         // set implementation type
         for (int i = 0; i < scatradis->NumMyColElements(); ++i)
         {
-          DRT::ELEMENTS::Transport* element =
-              dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-          if (element == NULL)
+          auto* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          if (element == nullptr)
             dserror("Invalid element type!");
           else
             element->SetImplType(impltype);
@@ -162,12 +157,12 @@ void elch_dyn(int restart)
         dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
       // support for turbulent flow statistics
-      const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
+      const auto& fdyn = (problem->FluidDynamicParams());
 
       Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
       if (!aledis->Filled()) aledis->FillComplete(false, false, false);
       // is ALE needed or not?
-      const INPAR::ELCH::ElchMovingBoundary withale =
+      const auto withale =
           DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
 
       if (withale != INPAR::ELCH::elch_mov_bndry_no)
@@ -197,15 +192,16 @@ void elch_dyn(int restart)
 
         // get linear solver id from SCALAR TRANSPORT DYNAMIC
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-        if (linsolvernumber == (-1))
+        if (linsolvernumber == -1)
+        {
           dserror(
               "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
               "TRANSPORT DYNAMIC to a valid number!");
+        }
 
         // create an ELCH::MovingBoundaryAlgorithm instance
-        Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch =
-            Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(
-                comm, elchcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
+        auto elch = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(
+            comm, elchcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
 
         // now we must call Init()
         // NOTE : elch reads time parameters from scatra dynamic section !
@@ -231,26 +227,21 @@ void elch_dyn(int restart)
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
-        problem->AddFieldTest(elch->AleField()->CreateFieldTest());
-        Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
-        if (elchtimint == Teuchos::null)
-          dserror("Time integrator is not of electrochemistry type!");
-        problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-        problem->TestAll(comm);
+        elch->TestResults();
       }
       else
       {
         // get linear solver id from SCALAR TRANSPORT DYNAMIC
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-        if (linsolvernumber == (-1))
+        if (linsolvernumber == -1)
+        {
           dserror(
               "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
               "TRANSPORT DYNAMIC to a valid number!");
+        }
 
         // create an ELCH::Algorithm instance
-        Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(
+        auto elch = Teuchos::rcp(new ELCH::Algorithm(
             comm, elchcontrol, scatradyn, fdyn, problem->SolverParams(linsolvernumber)));
 
         // add proxy of fluid degrees of freedom to scatra discretization
@@ -271,7 +262,6 @@ void elch_dyn(int restart)
         // discretizations are done, now we can call Setup() on the algorithm
         elch->Setup();
 
-
         // read the restart information, set vectors and variables
         if (restart) elch->ReadRestart(restart);
 
@@ -282,13 +272,7 @@ void elch_dyn(int restart)
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
-        Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint =
-            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
-        if (elchtimint == Teuchos::null)
-          dserror("Time integrator is not of electrochemistry type!");
-        problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
-        problem->TestAll(comm);
+        elch->TestResults();
       }
 
       break;
@@ -297,10 +281,7 @@ void elch_dyn(int restart)
       dserror("Unknown velocity field type for transport of passive scalar: %d", veltype);
       break;
   }
-
-  return;
-
-}  // elch_dyn()
+}
 
 
 /*----------------------------------------------------------------------*/

@@ -8,11 +8,10 @@
 /*-----------------------------------------------------------*/
 
 #include "beaminteraction_calc_utils.H"
-#include "beam_link.H"
-#include "periodic_boundingbox.H"
-#include "crosslinking_params.H"
-#include "solid_ele.H"
-#include "spherebeamlinking_params.H"
+#include "beaminteraction_link.H"
+#include "beaminteraction_periodic_boundingbox.H"
+#include "beaminteraction_crosslinking_params.H"
+#include "beaminteraction_spherebeamlinking_params.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -20,15 +19,16 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "beam3_base.H"
 #include "rigidsphere.H"
-#include "so_base.H"
+#include "so3_base.H"
+#include "solid_ele.H"
 
-#include "intersection_math.H"
+#include "geometry_intersection_math.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "io_pstream.H"
 
@@ -60,7 +60,6 @@ namespace BEAMINTERACTION
       bool beameles = false;
       bool othereles = false;
 
-      // TODO: actually we would have to check all elements of all processors!!! Gather?
       for (int i = 0; i < static_cast<int>(node.NumElement()); ++i)
       {
         if (IsBeamElement(*(node.Elements())[i]))
@@ -342,7 +341,7 @@ namespace BEAMINTERACTION
 
         // proc i actually sends nodegids
         requirednodes.resize(numnodes);
-        discret->Comm().Broadcast(&requirednodes[0], numnodes, iproc);
+        discret->Comm().Broadcast(requirednodes.data(), numnodes, iproc);
 
         std::set<int> sdata;
         std::set<int> rdata;
@@ -371,7 +370,7 @@ namespace BEAMINTERACTION
 
       // create new ele col map
       Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(-1, static_cast<int>(colgids.size()), &colgids[0], 0, discret->Comm()));
+          new Epetra_Map(-1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->Comm()));
 
       // temporarily extend ghosting
       BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(discret, newelecolmap, true, false, true);
@@ -603,8 +602,8 @@ namespace BEAMINTERACTION
       // assemble both element vectors into global system vector
       if (fe_sysvec != Teuchos::null)
       {
-        fe_sysvec->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
-        fe_sysvec->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+        fe_sysvec->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
+        fe_sysvec->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
       }
 
       // and finally also assemble stiffness contributions
@@ -1173,7 +1172,8 @@ namespace BEAMINTERACTION
       {
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
-        maps[i] = Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), &mapvec[0], 0, discret->Comm()));
+        maps[i] =
+            Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->Comm()));
       }
 
       eletypeextractor->Setup(*discret()->ElementRowMap(), maps);

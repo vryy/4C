@@ -11,7 +11,7 @@
 #define SOLID_ELE_CALC_EAS_H
 
 #include "solid_ele_calc.H"
-#include "element.H"
+#include "lib_element.H"
 #include "inpar_structure.H"
 #include "solid_ele_eas_utils.H"
 

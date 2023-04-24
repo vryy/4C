@@ -11,7 +11,7 @@
  | Header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_wear_interface.H"
@@ -22,7 +22,7 @@
 #include "contact_integrator.H"
 #include "contact_element.H"
 
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
 #include "mortar_utils.H"
 #include "inpar_contact.H"

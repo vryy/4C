@@ -10,11 +10,11 @@
 
 #include "so3_scatra.H"
 
-#include "so_element_service.H"
+#include "so3_element_service.H"
 
-#include "utils.H"
-#include "so3_material.H"
-#include "str_enum_lists.H"
+#include "lib_utils.H"
+#include "mat_so3_material.H"
+#include "structure_new_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -248,7 +248,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
   // call base class
   so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
       d_cauchyndir_dd, nullptr, nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir,
-      d_cauchyndir_dxi, nullptr, nullptr, nullptr, &scalar_values_at_xi[0], &d_cauchyndir_ds_gp);
+      d_cauchyndir_dxi, nullptr, nullptr, nullptr, scalar_values_at_xi.data(), &d_cauchyndir_ds_gp);
 
   if (d_cauchyndir_ds != nullptr)
   {

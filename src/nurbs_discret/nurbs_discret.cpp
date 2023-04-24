@@ -10,22 +10,22 @@
 /*----------------------------------------------------------------------*/
 
 #include <Epetra_Vector.h>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "utils_integration.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 
-#include "nurbs_utils.H"
+#include "nurbs_discret_nurbs_utils.H"
 #include "nurbs_discret.H"
 
 /*----------------------------------------------------------------------*
@@ -92,12 +92,12 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, Epetra_Vector& toggle,
+void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, DRT::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, toggle, dbcgids);
+  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -115,7 +115,8 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  ReadDirichletCondition(discret, conds, toggle, dbcgids);
+  DRT::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
+  ReadDirichletCondition(discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
   conds.clear();
@@ -130,21 +131,19 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&discret);
   if (not discret_nurbs) dserror("Dynamic cast failed!");
 
-  // build dummy column toggle vector
-  Epetra_Vector toggle_col = Epetra_Vector(*discret_nurbs->DofColMap());
-
-  ReadDirichletCondition(discret, conds, toggle_col, dbcgids_nurbs);
+  // build dummy column toggle vector and auxiliary vectors
+  DRT::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
+  ReadDirichletCondition(discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
-  DoDirichletCondition(discret, conds, time, systemvectors, toggle_col, dbcgids_nurbs);
+  DoDirichletCondition(discret, conds, time, systemvectors, info_col.toggle, dbcgids_nurbs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
-    const DRT::Condition& cond, const double& time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_Vector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
   if (dbcgids[set_col].is_null())
@@ -153,7 +152,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
     return;
   }
 
-  Epetra_Time timer(discret.Comm());
+  Teuchos::Time timer("", true);
 
   // get the processor ID from the communicator
   const int myrank = discret.Comm().MyPID();
@@ -174,7 +173,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       dbcgidsv.reserve(dbcgids[set_row]->size());
       dbcgidsv.assign(dbcgids[set_row]->begin(), dbcgids[set_row]->end());
       nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      myglobalelements = dbcgidsv.data();
     }
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
         myglobalelements, discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));
@@ -194,7 +193,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       dbcgidsv.reserve(dbcgids[set_col]->size());
       dbcgidsv.assign(dbcgids[set_col]->begin(), dbcgids[set_col]->end());
       nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      myglobalelements = dbcgidsv.data();
     }
     dbccolmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
         nurbs_dis.DofColMap()->IndexBase(), discret.DofRowMap()->Comm()));
@@ -495,7 +494,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   if (assemblevecd) auxdbcmapextractor->InsertCondVector(dbcvectord, systemvectors[1]);
   if (assemblevecdd) auxdbcmapextractor->InsertCondVector(dbcvectordd, systemvectors[2]);
 
-  if (myrank == 0) std::cout << timer.ElapsedTime() << " seconds \n\n";
+  if (myrank == 0) std::cout << timer.totalElapsedTime(true) << " seconds \n\n";
 
   return;
 }

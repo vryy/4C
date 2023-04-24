@@ -12,11 +12,11 @@
 #include "fsi_algorithm.H"
 #include "fsi_str_model_evaluator_partitioned.H"
 #include "adapter_coupling.H"
-#include "globalproblem.H"
-#include "validparameters.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_str_structure_new.H"
-#include "ad_str_factory.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_str_structure_new.H"
+#include "adapter_str_factory.H"
 #include "io.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

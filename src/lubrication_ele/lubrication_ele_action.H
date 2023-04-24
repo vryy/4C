@@ -12,8 +12,8 @@ comparison instead of a cumbersome std::string compare.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_ACTION_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_ACTION_H_
+#ifndef LUBRICATION_ELE_ACTION_H
+#define LUBRICATION_ELE_ACTION_H
 
 
 namespace LUBRICATION
@@ -49,4 +49,4 @@ namespace LUBRICATION
 
 
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_ACTION_H_ */
+#endif  // LUBRICATION_ELE_ACTION_H

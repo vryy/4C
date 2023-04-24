@@ -80,4 +80,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef LEVELSET_TIMINT_STAT_H
+#endif  // LEVELSET_TIMINT_STAT_H

@@ -9,8 +9,8 @@
 Here is everything related with writing a dat-file
  */
 /*----------------------------------------------------------------------*/
-#ifndef PRE_EXODUS_WRITEDAT_H_
-#define PRE_EXODUS_WRITEDAT_H_
+#ifndef PRE_EXODUS_WRITEDAT_H
+#define PRE_EXODUS_WRITEDAT_H
 
 #include "pre_exodus_readbc.H"
 
@@ -85,4 +85,4 @@ namespace EXODUS
 }  // namespace EXODUS
 
 
-#endif /*PRE_EXODUS_WRITEDAT_H_*/
+#endif  // PRE_EXODUS_WRITEDAT_H

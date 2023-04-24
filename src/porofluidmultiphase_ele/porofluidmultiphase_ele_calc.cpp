@@ -7,22 +7,22 @@
  *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_ele_calc.H"
-#include "porofluid_phasemanager.H"
-#include "porofluid_variablemanager.H"
-#include "porofluid_evaluator.H"
+#include "porofluidmultiphase_ele_porofluid_phasemanager.H"
+#include "porofluidmultiphase_ele_porofluid_variablemanager.H"
+#include "porofluidmultiphase_ele_porofluid_evaluator.H"
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "fluidporo_multiphase.H"
+#include "mat_fluidporo_multiphase.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_gder2.H"
-#include "position_array.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_gder2.H"
+#include "geometry_position_array.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "material.H"
-#include "singleton_owner.H"
+#include "mat_material.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*

@@ -23,9 +23,9 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   No
-THERM_HEATFLUX                  Initial     // None, Current
+THERM_HEATFLUX                  Initial
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial     // None, Current
+THERM_TEMPGRAD                  Initial
 ------------------------------------------------CONTACT DYNAMIC
 SEMI_SMOOTH_CN       1e0
 SEMI_SMOOTH_CT       1e0
@@ -63,7 +63,7 @@ TOLRES                          1e-00
 ----------------------------------------------------THERMAL DYNAMIC
 DYNAMICTYP                      Statics
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
@@ -86,15 +86,15 @@ NUMSTEP                         20000
 RESTARTEVRY                     1
 TIMESTEP                        1.5
 RESULTSEVRY                           1
-ITEMAX                          10 // 11.02.10
+ITEMAX                          10
 COUPALGO                        tsi_monolithic
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-04
 TOLINC                          1e-07
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+ITERNORM                        Rms
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               Coupl_Or_Singl    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Abs                // Abs,Mix
+NORMCOMBI_RESFINC               Coupl_Or_Singl
+NORM_RESF                       Abs
 MERGE_TSI_BLOCK_MATRIX          yes
 ------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -326,5 +326,7 @@ STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0e+00 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE -1.5e-02 TOLERANCE 1e-12
 THERMAL DIS thermo NODE      80 QUANTITY temp  VALUE 4.0e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE      80 QUANTITY flux  VALUE -5.60172533961289503e+01 TOLERANCE 1e-10
+THERMAL DIS thermo NODE      40 QUANTITY flux  VALUE 4.97931141298927926e+01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

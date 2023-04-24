@@ -13,10 +13,10 @@
 #include <stdio.h>
 
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "condition_utils.H"
-#include "function.H"
-#include "globalproblem.H"
-#include "function_of_time.H"
+#include "lib_condition_utils.H"
+#include "lib_function.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -780,7 +780,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_noderowmap = Teuchos::rcp(new Epetra_Map(-1, nodeids.size(), &nodeids[0], 0, dis->Comm()));
+  cond_noderowmap =
+      Teuchos::rcp(new Epetra_Map(-1, nodeids.size(), nodeids.data(), 0, dis->Comm()));
 
 }  // BuildConditionNodeRowMap
 
@@ -839,7 +840,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_dofrowmap = Teuchos::rcp(new Epetra_Map(-1, dofids.size(), &dofids[0], 0, dis->Comm()));
+  cond_dofrowmap = Teuchos::rcp(new Epetra_Map(-1, dofids.size(), dofids.data(), 0, dis->Comm()));
 
 }  // FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap
 
@@ -1737,7 +1738,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_->Comm().GatherAll(&density, &(alldens[0]), 1);
+  discret_->Comm().GatherAll(&density, alldens.data(), 1);
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {

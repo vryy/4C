@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef INPAR_ARTNET_H
-#define INPAR_ARTNET_H
+#ifndef INPAR_BIO_H
+#define INPAR_BIO_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -145,4 +145,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_ARTNET_H
+#endif  // INPAR_BIO_H

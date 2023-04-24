@@ -7,12 +7,12 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_INPAR_INPAR_EHL_H_
-#define SRC_INPAR_INPAR_EHL_H_
+#ifndef INPAR_EHL_H
+#define INPAR_EHL_H
 
 
 #include "inpar_parameterlist_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // forward declaration
 namespace DRT
@@ -108,4 +108,4 @@ namespace INPAR
 }  // namespace INPAR
 
 
-#endif /* SRC_INPAR_INPAR_EHL_H_ */
+#endif  // INPAR_EHL_H

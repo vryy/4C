@@ -10,12 +10,12 @@
 #ifndef SOLID_ELE_CALC_INTERFACE_H
 #define SOLID_ELE_CALC_INTERFACE_H
 
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "dserror.H"
-#include "element.H"
-#include "so3_material.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include "lib_dserror.H"
+#include "lib_element.H"
+#include "mat_so3_material.H"
 
 namespace STR::MODELEVALUATOR
 {
@@ -99,10 +99,6 @@ namespace DRT
 
       virtual void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params) = 0;
-
-      virtual void PostProcessStressStrain(const DRT::Element& ele,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) = 0;
 

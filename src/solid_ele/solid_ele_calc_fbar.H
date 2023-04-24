@@ -13,11 +13,11 @@
 #include <string>
 #include <unordered_map>
 #include "solid_ele_calc_interface.H"
-#include "element.H"
-#include "utils_gausspoints.H"
-#include "solid_utils.H"
-#include "element_integration_select.H"
-#include "singleton_owner.H"
+#include "lib_element.H"
+#include "fem_general_utils_gausspoints.H"
+#include "solid_ele_utils.H"
+#include "lib_element_integration_select.H"
+#include "headers_singleton_owner.H"
 
 
 namespace DRT
@@ -57,10 +57,6 @@ namespace DRT
 
       void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params) override;
-
-      void PostProcessStressStrain(const DRT::Element& ele,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) override;
 

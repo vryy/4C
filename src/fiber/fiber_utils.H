@@ -9,7 +9,7 @@
 #ifndef FIBER_UTILS_H
 #define FIBER_UTILS_H
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 #include "inpar_structure.H"
 
 namespace DRT

@@ -13,7 +13,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "globalproblem_enums.H"
+#include "lib_globalproblem_enums.H"
 
 namespace INPAR
 {
@@ -43,4 +43,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_PROBLEMTYPE_H
+#endif  // INPAR_PROBLEMTYPE_H

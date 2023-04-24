@@ -11,7 +11,7 @@
 #define MEMBRANE_ELETYPES_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "elementtype.H"
+#include "lib_elementtype.H"
 
 
 namespace DRT
@@ -152,4 +152,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef MEMBRANE_ELETYPES_H
+#endif  // MEMBRANE_ELETYPES_H

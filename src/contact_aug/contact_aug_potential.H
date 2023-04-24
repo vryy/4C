@@ -8,11 +8,11 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_POTENTIAL_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_POTENTIAL_H_
+#ifndef CONTACT_AUG_POTENTIAL_H
+#define CONTACT_AUG_POTENTIAL_H
 
 #include <Teuchos_RCP.hpp>
-#include "dserror.H"
+#include "lib_dserror.H"
 
 class Epetra_Vector;
 
@@ -345,4 +345,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_POTENTIAL_H_ */
+#endif  // CONTACT_AUG_POTENTIAL_H

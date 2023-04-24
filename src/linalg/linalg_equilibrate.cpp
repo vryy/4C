@@ -115,7 +115,7 @@ void LINALG::Equilibration::ComputeInvSymmetry(
     if (length_row > 0)
     {
       matrix.EpetraMatrix()->ExtractGlobalRowCopy(
-          gid_row, length_row, numentries, &values[0], &indices[0]);
+          gid_row, length_row, numentries, values.data(), indices.data());
 
       double maximum = 0;
       for (int j = 0; j < numentries; j++)
@@ -300,7 +300,7 @@ void LINALG::EquilibrationBlock::EquilibrateMatrix(
               // extract current matrix row from matrix block
               int numentries(0);
               std::vector<double> values(length, 0.);
-              if (matrix.EpetraMatrix()->ExtractMyRowCopy(irow, length, numentries, &values[0]))
+              if (matrix.EpetraMatrix()->ExtractMyRowCopy(irow, length, numentries, values.data()))
                 dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
 
               // compute and store current row sum
@@ -372,7 +372,7 @@ void LINALG::EquilibrationBlock::EquilibrateMatrix(
               std::vector<double> values(length, 0.);
               std::vector<int> indices(length, 0);
               if (matrix.EpetraMatrix()->ExtractMyRowCopy(
-                      irow, length, numentries, &values[0], &indices[0]))
+                      irow, length, numentries, values.data(), indices.data()))
                 dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
 
               // add entries of current matrix row to column sums

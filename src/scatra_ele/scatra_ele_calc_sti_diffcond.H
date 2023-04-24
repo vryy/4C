@@ -44,6 +44,9 @@ namespace DRT
       using my = ScaTraEleCalc<distype>;
       using myelch = ScaTraEleCalcElch<distype, DRT::UTILS::DisTypeToDim<distype>::dim>;
       using mystielch = ScaTraEleSTIElch<distype>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
       //! private constructor for singletons
       ScaTraEleCalcSTIDiffCond(
@@ -169,10 +172,10 @@ namespace DRT
       };
 
       //! get internal variable manager for heat transfer within electrochemical substances
-      Teuchos::RCP<ScaTraEleInternalVariableManagerSTIElch<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>> VarManager()
       {
-        return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerSTIElch<my::nsd_, my::nen_>>(my::scatravarmanager_);
+        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(
+            my::scatravarmanager_);
       };
 
       //! diffusion manager for diffusion-conduction formulation

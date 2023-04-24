@@ -13,8 +13,8 @@ continuous interior penalty) scheme
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "assemblestrategy.H"
-#include "discret_faces.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret_faces.H"
 
 #include "cut_elementhandle.H"
 #include "cut_sidehandle.H"
@@ -31,9 +31,9 @@ continuous interior penalty) scheme
 // Needed for material check.
 #include "xfem_utils.H"
 // Needed for safety check.
-#include "material.H"
-#include "matlist.H"
-#include "newtonianfluid.H"
+#include "mat_material.H"
+#include "mat_list.H"
+#include "mat_newtonianfluid.H"
 
 #include "xfem_edgestab.H"
 

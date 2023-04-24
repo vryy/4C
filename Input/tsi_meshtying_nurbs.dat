@@ -17,9 +17,9 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-THERM_HEATFLUX                  Initial  // None, Current
+THERM_HEATFLUX                  Initial
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial  // None, Current
+THERM_TEMPGRAD                  Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -59,11 +59,11 @@ THETA                           1.0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics  //
+DYNAMICTYP                      Statics
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
-NLNSOL                          fullnewton         // ptc,fullnewton
+NLNSOL                          fullnewton
 PREDICT                         ConstDis
 -------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -74,11 +74,11 @@ Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = plastic_ssn_status_test.xml
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_monolithic     // tsi_{oneway,sequstagg,iterstagg,monolithic}
+COUPALGO                        tsi_monolithic
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         100
-NORM_INC                        Abs                // Abs,Rel
+NORM_INC                        Abs
 NUMSTEP                         1
 RESTARTEVRY                     0
 TIMESTEP                        100
@@ -86,11 +86,11 @@ RESULTSEVRY                     1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-10
 TOLINC                          1e-10
-CALC_NECKING_TSI_VALUES         No                 // Yes,No
-ITERNORM                        L2                // Rms,L2,Inf,L1_Scaled
+CALC_NECKING_TSI_VALUES         No
+ITERNORM                        L2
 LINEAR_SOLVER                   1
-NORMCOMBI_RESFINC               And    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Abs                // Abs,Mix
+NORMCOMBI_RESFINC               And
+NORM_RESF                       Abs
 MERGE_TSI_BLOCK_MATRIX          yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

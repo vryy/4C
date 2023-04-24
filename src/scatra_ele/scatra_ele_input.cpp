@@ -6,9 +6,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
-#include "myocard.H"
+#include "mat_myocard.H"
 
 #include "scatra_ele.H"
 
@@ -42,6 +42,8 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond_multiscale;
   else if (impltype == "ElchDiffCondThermo")
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond_thermo;
+  else if (impltype == "ElchScl")
+    impltype_ = INPAR::SCATRA::impltype_elch_scl;
   else if (impltype == "ElchElectrode")
     impltype_ = INPAR::SCATRA::impltype_elch_electrode;
   else if (impltype == "ElchElectrodeGrowth")

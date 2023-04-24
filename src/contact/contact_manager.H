@@ -172,4 +172,4 @@ namespace CONTACT
   };  // class CoManager
 }  // namespace CONTACT
 
-#endif  // #ifndef CONTACT_MANAGER_H
+#endif  // CONTACT_MANAGER_H

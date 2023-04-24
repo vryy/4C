@@ -11,7 +11,7 @@
 #include "so3_poro_p1_scatra.H"
 #include "so3_poro_p1_scatra_eletypes.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                         schmidt 09/17 |

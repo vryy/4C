@@ -14,7 +14,7 @@ levelset
 #include "cut_element.H"
 #include "cut_pointgraph.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

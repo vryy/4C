@@ -12,15 +12,16 @@
 /*----------------------------------------------------------------------*
  | headers                                                  rauch 11/12 |
  *----------------------------------------------------------------------*/
-//
+
 // FPSI includes
 #include "fpsi_utils.H"
 #include "fpsi_monolithic_plain.H"
 
 // POROELAST includes
 #include "poroelast_utils_setup.H"
-#include "poro_utils_clonestrategy.H"
+#include "poroelast_utils_clonestrategy.H"
 
+#include "poroelast_scatra_utils_setup.H"
 // FSI includes
 #include "fsi_utils.H"
 #include "ale_utils_clonestrategy.H"
@@ -29,10 +30,11 @@
 #include "inpar_fpsi.H"
 
 // lib includes
-#include "utils_createdis.H"
-#include "globalproblem.H"
-#include "condition_selector.H"
-
+#include "lib_utils_createdis.H"
+#include "lib_globalproblem.H"
+#include "lib_condition_selector.H"
+#include <Teuchos_RCP.hpp>
+#include "poroelast_scatra_utils_clonestrategy.H"
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 
@@ -115,7 +117,17 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
 
    */
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+
+  // choose cloning strategy depending on poroelast or scatra poroelast problem type
+  if (problem->GetProblemType() == ProblemType::fps3i)
+  {
+    POROELAST::UTILS::SetupPoro<POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements>();
+  }
+  else
+  {
+    POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+  }
+
 
   fluiddis->FillComplete(true, true, true);
   aledis->FillComplete(true, true, true);
@@ -310,8 +322,9 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
     int parenteleowner = -1;
     int match = 0;
     int mastergeomsize = mastergeom.size();
-    int sizelist[mastercomm.NumProc()];  // how many master interface elements has each processor
-    mastercomm.GatherAll(&mastergeomsize, &sizelist[0], 1);
+    std::vector<int> sizelist(
+        mastercomm.NumProc());  // how many master interface elements has each processor
+    mastercomm.GatherAll(&mastergeomsize, sizelist.data(), 1);
     mastercomm.Barrier();  // wait for procs
 
     bool done;
@@ -363,7 +376,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
       mastercomm.Broadcast(&parenteleid, 1, proc);
       mastercomm.Broadcast(&parenteleowner, 1, proc);
-      mastercomm.Broadcast(&masterloc[0], masterloc.size(), proc);
+      mastercomm.Broadcast(masterloc.data(), masterloc.size(), proc);
 
       mastercomm.Barrier();
       // match current master element
@@ -475,7 +488,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
   std::vector<int> mapsizearray(comm.NumProc());
-  comm.GatherAll(&mymapsize, &mapsizearray[0], 1);
+  comm.GatherAll(&mymapsize, mapsizearray.data(), 1);
   comm.SumAll(&mymapsize, &globalmapsize, 1);
 
   int counter = 0;
@@ -523,7 +536,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
         }
       }  // only the owner of the masterele has a pointer != NULL and mastereleowner != -1
 
-      comm.GatherAll(&mastereleowner, &mastereleowners[0], 1);
+      comm.GatherAll(&mastereleowner, mastereleowners.data(), 1);
 
       for (int i = 0; i < comm.NumProc(); i++)
       {
@@ -532,14 +545,14 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
 
       std::vector<int> procHasMasterEle(comm.NumProc());
       HasMasterEle = masterdis->HaveGlobalElement(mastereleid);
-      comm.GatherAll(&HasMasterEle, &procHasMasterEle[0], 1);
+      comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
 
       // ghost parent master element on master discretization of proc owning the matching slave
       // interface element
       const Epetra_Map colcopy = *(masterdis->ElementColMap());
       int myglobalelementsize = colcopy.NumMyElements();
       std::vector<int> myglobalelements(myglobalelementsize);
-      colcopy.MyGlobalElements(&myglobalelements[0]);
+      colcopy.MyGlobalElements(myglobalelements.data());
 
       if (comm.MyPID() == proc and
           mastereleowner != proc)  // ghost master ele on owner of slave ele, but only if this proc
@@ -555,7 +568,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
       int globalsize;
       comm.SumAll(&myglobalelementsize, &globalsize, 1);
       Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(globalsize, myglobalelementsize, &myglobalelements[0], 0, comm));
+          new Epetra_Map(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm));
 
       if (mastereleid == printid)
       {

@@ -10,17 +10,17 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef MORTAR_SHAPE_UTILS_H_
-#define MORTAR_SHAPE_UTILS_H_
+#ifndef MORTAR_SHAPE_UTILS_H
+#define MORTAR_SHAPE_UTILS_H
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_utils_densematrix_inverse.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 // nurbs specific
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
@@ -2124,4 +2124,4 @@ namespace MORTAR
   }  // namespace UTILS
 }  // namespace MORTAR
 
-#endif /* MORTAR_SHAPE_UTILS_H_ */
+#endif  // MORTAR_SHAPE_UTILS_H

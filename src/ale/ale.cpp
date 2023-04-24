@@ -15,16 +15,16 @@
 #include "ale_utils_mapextractor.H"
 
 // further includes for AleBaseAlgorithm:
-#include "globalproblem.H"
-#include "discret.H"
-#include "locsys.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_locsys.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_sparseoperator.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_blocksparsematrix.H"
-#include "linalg_solver.H"
-#include "linalg_precond.H"
+#include "solver_linalg_solver.H"
+#include "solver_linalg_precond.H"
 #include "io.H"
 #include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -33,7 +33,7 @@
 
 #include "inpar_ale.H"
 #include "inpar_fsi.H"
-#include "periodicbc.H"
+#include "lib_periodicbc.H"
 
 #include "io_pstream.H"
 

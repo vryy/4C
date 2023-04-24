@@ -5,10 +5,11 @@ set(OBJS_CARDIOVASCULAR0D
     cardiovascular0d_arterialproxdist.cpp
     cardiovascular0d_dofset.cpp
     cardiovascular0d_manager.cpp
+    cardiovascular0d_nox_nln_linearsystem.cpp
+    cardiovascular0d_respiratory_syspulperiphcirculation.cpp
     cardiovascular0d_resulttest.cpp
+    cardiovascular0d_structure_new_model_evaluator.cpp
     cardiovascular0d_syspulcirculation.cpp
-    cardiovascularrespiratory0d_syspulperiphcirculation.cpp
-    nox_nln_cardiovascular0d_linearsystem.cpp
     )
 
 baci_add_library(cardiovascular0d ${OBJS_CARDIOVASCULAR0D})
@@ -21,4 +22,4 @@ set(LIBS_CARDIOVASCULAR0D
     solver
     )
 
-target_link_libraries(cardiovascular0d PUBLIC ${LIBS_CARDIOVASCULAR0D})
+baci_add_dependency(cardiovascular0d ${LIBS_CARDIOVASCULAR0D})

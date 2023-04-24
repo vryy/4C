@@ -6,19 +6,20 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_
-#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_
+#ifndef LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
+#define LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
-#include "Teuchos_RCP.hpp"
-#include "exporter.H"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Vector.h>
+#include <Epetra_IntVector.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Export.h>
+#include <Epetra_Import.h>
+#include <Teuchos_RCP.hpp>
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG
@@ -36,16 +37,25 @@ namespace LINALG
    \brief Create a new Epetra_Vector and return RefcountPtr to it
 
    \param rowmap (in): row map of vector
-   \param init (in): initializa vector to zero upon construction
+   \param init (in): initialize vector to zero upon construction
    */
   Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_BlockMap& rowmap, const bool init = true);
+
+  /*!
+   \brief Create a new Epetra_IntVector and return RefcountPtr to it
+
+   \param rowmap (in): row map of vector
+   \param init (in): initialize vector to zero upon construction
+   */
+  Teuchos::RCP<Epetra_IntVector> CreateIntVector(
+      const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
    \brief Create a new Epetra_MultiVector and return RefcountPtr to it
 
    \param rowmap (in): row map of vector
    \param rowmap (in): number of vectors
-   \param init (in): initializa vector to zero upon construction
+   \param init (in): initialize vector to zero upon construction
    */
   Teuchos::RCP<Epetra_MultiVector> CreateMultiVector(
       const Epetra_BlockMap& rowmap, const int numrows, const bool init = true);
@@ -134,4 +144,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H_ */
+#endif  // LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H

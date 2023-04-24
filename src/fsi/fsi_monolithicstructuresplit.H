@@ -58,9 +58,7 @@ namespace FSI
     it is.
 
     \sa MonolithicOverlap
-    \author u.kue
-    \date 06/08
-   */
+    */
   class MonolithicStructureSplit : public BlockMonolithic
   {
     friend class FSI::FSIResultTest;
@@ -105,8 +103,6 @@ namespace FSI
      *  = \left((a-b)\lambda^n +
      * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
      * interpolation factors a and b.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CalculateInterfaceEnergyIncrement();
 
@@ -147,8 +143,6 @@ namespace FSI
      *  Depending on the chosen method (fluid or structure split), only 3 of the
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual double SelectDtErrorBased() const;
 
@@ -156,8 +150,6 @@ namespace FSI
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual bool SetAccepted() const;
 
@@ -214,8 +206,6 @@ namespace FSI
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap();
 
@@ -225,8 +215,6 @@ namespace FSI
      *  for the entire FSI problem. This is done just by combining the
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void SetupDBCMapExtractor();
 

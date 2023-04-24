@@ -20,7 +20,7 @@
 #include "contact_nitsche_integrator_ssi_elch.H"
 #include "contact_nitsche_integrator_tsi.H"
 
-#include "contact_augmented_integrator.H"
+#include "contact_aug_integrator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

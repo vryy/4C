@@ -16,7 +16,7 @@ of errors, turbulence statistics etc.)
 #ifndef FLUID_ELE_XWALL_H
 #define FLUID_ELE_XWALL_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "fluid_ele.H"
 
@@ -325,4 +325,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef FLUIDXWall_H
+#endif  // FLUID_ELE_XWALL_H

@@ -9,10 +9,10 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
+#ifndef LUBRICATION_ELE_FACTORY_H
+#define LUBRICATION_ELE_FACTORY_H
 
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {
@@ -47,4 +47,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_ */
+#endif  // LUBRICATION_ELE_FACTORY_H

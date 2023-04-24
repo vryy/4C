@@ -1,5 +1,6 @@
 import subprocess, os, sys, re
 
+
 # UTILS
 
 
@@ -120,6 +121,19 @@ def pretty_print_error_stderr(allerrors):
 def pretty_print_error_file(allerrors, errfile):
     with open(errfile, "w") as file:
         _common_write_error(allerrors, file)
+
+
+def pretty_print_error_report(reason, errors, errfile):
+    if len(errors) > 0:
+        errors = [
+            reason,
+            "",
+        ] + errors
+
+        if errfile is None:
+            pretty_print_error_stderr(errors)
+        else:
+            pretty_print_error_file(errors, errfile)
 
 
 def _common_write_error(allerrors, deststream, header=None):

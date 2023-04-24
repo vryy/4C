@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SO3_PORO_SCATRA_H_
-#define SO3_PORO_SCATRA_H_
+#ifndef SO3_PORO_SCATRA_H
+#define SO3_PORO_SCATRA_H
 
 #include "so3_poro.H"
 
@@ -134,4 +134,4 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
-#endif /* SO3_PORO_SCATRA_H_ */
+#endif  // SO3_PORO_SCATRA_H

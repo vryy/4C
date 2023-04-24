@@ -15,4 +15,4 @@ set(LIBS_ALG_PASI
     adapter
     )
 
-target_link_libraries(alg_pasi PUBLIC ${LIBS_ALG_PASI})
+baci_add_dependency(alg_pasi ${LIBS_ALG_PASI})

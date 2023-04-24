@@ -19,4 +19,4 @@ void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restar
 void printheartlogo();
 
 
-#endif /* #ifndef SCATRA_CARDIAC_MONODOMAIN_DYN_H */
+#endif  // SCATRA_CARDIAC_MONODOMAIN_DYN_H

@@ -11,14 +11,14 @@
 
 #include "fluid_timint.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "fluid_utils_mapextractor.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_parameterlist_utils.H"
 #include "inpar_fluid.H"
 
 #include "fluid_discretization_runtime_vtu_output_params.H"
-#include "discretization_runtime_vtu_writer.H"
+#include "io_discretization_runtime_vtu_writer.H"
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

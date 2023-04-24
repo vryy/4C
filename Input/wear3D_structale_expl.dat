@@ -59,7 +59,7 @@ LINEAR_SOLVER                   2
 ALE_TYPE                        solid
 MAXITER                         100
 -------------------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN                     pg//Dual
+LM_SHAPEFCN                     pg
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION

@@ -20,20 +20,23 @@
 #include "fsi_monolithic.H"
 
 // POROELAST includes
-#include "poro_base.H"
+#include "poroelast_base.H"
 
 // ALE includes
 #include "ale.H"
-#include "ad_ale_fpsi.H"
+#include "adapter_ale_fpsi.H"
 
 // ADAPTER includes
-#include "ad_fld_fluid_fpsi.H"
+#include "adapter_fld_fluid_fpsi.H"
 
 // LINALG includes
 #include "linalg_mapextractor.H"
 
 // INPAR includes
 #include "inpar_fpsi.H"
+
+// Teuchos utils
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -403,7 +406,7 @@ namespace FPSI
     bool printerrfile_;  ///>print infos to error file #errfile_
     FILE* errfile_;      ///> error file handle
     //! timer for solution technique
-    Epetra_Time timer_;
+    Teuchos::Time timer_;
 
     bool isfirsttimestep_;
 

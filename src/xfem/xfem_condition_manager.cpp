@@ -11,7 +11,7 @@ builds the bridge between the xfluid class and the cut-library
 
 #include "xfem_condition_manager.H"
 #include "xfem_utils.H"
-#include "Epetra_IntVector.h"
+#include <Epetra_IntVector.h>
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

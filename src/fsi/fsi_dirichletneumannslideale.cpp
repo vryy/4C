@@ -15,13 +15,13 @@
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_debugwriter.H"
 #include "fsi_utils.H"
-#include "searchtree.H"
+#include "geometry_searchtree.H"
 #include "mortar_interface.H"
 #include "inpar_fsi.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_mortar.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "inpar_fsi.H"
 

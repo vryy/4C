@@ -13,10 +13,10 @@ is handed to a c++ object mesh.
 #include <fstream>
 
 #include "pre_exodus_reader.H"
-#include "Epetra_SerialComm.h"
-#include "Epetra_Time.h"
-#include "Teuchos_TimeMonitor.hpp"
-#include "utils_local_connectivity_matrices.H"
+#include <Epetra_SerialComm.h>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include "fem_general_utils_local_connectivity_matrices.H"
 #include "pre_exodus_soshextrusion.H"  //for gmsh plot
 
 #include <exodusII.h>
@@ -57,7 +57,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
     std::vector<double> x(num_nodes);
     std::vector<double> y(num_nodes);
     std::vector<double> z(num_nodes);
-    error = ex_get_coord(exoid_, &x[0], &y[0], &z[0]);
+    error = ex_get_coord(exoid_, x.data(), y.data(), z.data());
     if (error != 0) dserror("exo error returned");
 
     // store nodes in map
@@ -77,9 +77,9 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
   {
     std::vector<int> epropID(num_elem_blk);
     std::vector<int> ebids(num_elem_blk);
-    error = ex_get_ids(exoid_, EX_ELEM_BLOCK, &(ebids[0]));
+    error = ex_get_ids(exoid_, EX_ELEM_BLOCK, ebids.data());
     if (error != 0) dserror("exo error returned");
-    error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", &(epropID[0]));
+    error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID.data());
     if (error != 0) dserror("exo error returned");
     for (int i = 0; i < num_elem_blk; ++i)
     {
@@ -102,7 +102,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get element connectivity
       std::vector<int> allconn(num_nod_per_elem * num_el_in_blk);
-      error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], &allconn[0], 0, 0);
+      error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], allconn.data(), 0, 0);
       if (error != 0) dserror("exo error returned");
       Teuchos::RCP<std::map<int, std::vector<int>>> eleconn =
           Teuchos::rcp(new std::map<int, std::vector<int>>);
@@ -128,7 +128,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
   {
     std::map<int, NodeSet> prelimNodeSets;  // prelim due to possible prop names
     std::vector<int> npropID(num_node_sets);
-    error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", &(npropID[0]));
+    error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", npropID.data());
     for (int i = 0; i < num_node_sets; ++i)
     {
       // Read NodeSet params
@@ -143,7 +143,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get nodes in node set
       std::vector<int> node_set_node_list(num_nodes_in_set);
-      error = ex_get_set(exoid_, EX_NODE_SET, npropID[i], &(node_set_node_list[0]), NULL);
+      error = ex_get_set(exoid_, EX_NODE_SET, npropID[i], node_set_node_list.data(), NULL);
       if (error > 0)
         std::cout << "'ex_get_set' for EX_NODE_SET returned warning while reading node set "
                   << npropID[i] << std::endl;
@@ -207,7 +207,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
   if (num_side_sets > 0)
   {
     std::vector<int> spropID(num_side_sets);
-    error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", &(spropID[0]));
+    error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", spropID.data());
     for (int i = 0; i < num_side_sets; ++i)
     {
       // get SideSet name
@@ -225,7 +225,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       std::vector<int> side_set_elem_list(num_side_in_set);
       std::vector<int> side_set_side_list(num_side_in_set);
       error = ex_get_set(
-          exoid_, EX_SIDE_SET, spropID[i], &(side_set_elem_list[0]), &(side_set_side_list[0]));
+          exoid_, EX_SIDE_SET, spropID[i], side_set_elem_list.data(), side_set_side_list.data());
       if (error != 0) dserror("error reading side set");
       std::map<int, std::vector<int>> sides_in_set;
       for (int j = 0; j < num_side_in_set; ++j)
@@ -511,7 +511,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   fflush(stdout);
 
   Epetra_SerialComm Comm;
-  Epetra_Time time(Comm);
+  Teuchos::Time time("", true);
   Teuchos::RCP<Teuchos::Time> timetot;
   timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   Teuchos::RCP<Teuchos::Time> time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
@@ -666,7 +666,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
   fflush(stdout);
 
   Epetra_SerialComm Comm;
-  Epetra_Time time(Comm);
+  Teuchos::Time time("", true);
   Teuchos::RCP<Teuchos::Time> timetot;
   timetot = Teuchos::TimeMonitor::getNewTimer("Side Set Connect total");
   Teuchos::RCP<Teuchos::Time> time1 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
@@ -1020,7 +1020,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     yc[it->first - 1] = it->second[1];  // vector starts with 0
     zc[it->first - 1] = it->second[2];  // vector starts with 0
   }
-  error = ex_put_coord(exoid, &xc[0], &yc[0], &zc[0]);
+  error = ex_put_coord(exoid, xc.data(), yc.data(), zc.data());
 
   // Write NodeSets ************************************************************
   std::map<int, NodeSet>::const_iterator ins;
@@ -1043,8 +1043,8 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
           0);  // yet no distribution factors
       if (error != 0) dserror("error writing node set params");
       std::vector<int> nodelist(num_nodes_in_set);
-      ns.FillNodelistArray(&nodelist[0]);
-      error = ex_put_set(exoid, EX_NODE_SET, nsID, &nodelist[0], NULL);
+      ns.FillNodelistArray(nodelist.data());
+      error = ex_put_set(exoid, EX_NODE_SET, nsID, nodelist.data(), NULL);
       if (error != 0) dserror("error writing node set \"%s\" ", nsname);
       error = ex_put_name(exoid, EX_NODE_SET, nsID, nsname);
       if (error != 0) dserror("error writing node set name");
@@ -1075,8 +1075,8 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     if (error != 0) dserror("error writing element block");
     // Write Element Connectivity
     std::vector<int> conn(num_nod_per_elem * numele);
-    eb.FillEconnArray(&conn[0]);
-    error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, &conn[0], 0, 0);
+    eb.FillEconnArray(conn.data());
+    error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, conn.data(), 0, 0);
     if (error != 0) dserror("error writing element block conns");
     // write block name
     const std::string bname = eb.GetName();
@@ -1108,12 +1108,13 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     if (iss->second.GetFirstSideSet().size() == 3)
     {
       globalsides = GlobalifySSeleids(ssID);
-      ss.FillSideLists(&side_set_elem_list[0], &side_set_side_list[0], globalsides);
+      ss.FillSideLists(side_set_elem_list.data(), side_set_side_list.data(), globalsides);
     }
     else
-      ss.FillSideLists(&side_set_elem_list[0], &side_set_side_list[0]);
+      ss.FillSideLists(side_set_elem_list.data(), side_set_side_list.data());
 
-    error = ex_put_set(exoid, EX_SIDE_SET, ssID, &side_set_elem_list[0], &side_set_side_list[0]);
+    error =
+        ex_put_set(exoid, EX_SIDE_SET, ssID, side_set_elem_list.data(), side_set_side_list.data());
     if (error != 0) dserror("error writing side set");
     error = ex_put_name(exoid, EX_SIDE_SET, ssID, ssname);
     if (error != 0) dserror("error writing sideset name");
@@ -1860,7 +1861,7 @@ void EXODUS::PrintSet(std::ostream& os, const std::set<int> actset)
 /*----------------------------------------------------------------------*/
 int EXODUS::HexSideNumberExoToBaci(const int exoface)
 {
-  const int map[6] = {1, 2, 3, 4, 0, 5};
+  constexpr std::array<int, 6> map = {1, 2, 3, 4, 0, 5};
   return map[exoface];
 }
 
@@ -1868,6 +1869,6 @@ int EXODUS::HexSideNumberExoToBaci(const int exoface)
 /*----------------------------------------------------------------------*/
 int EXODUS::PyrSideNumberExoToBaci(const int exoface)
 {
-  const int map[5] = {1, 2, 3, 4, 0};
+  constexpr std::array<int, 5> map = {1, 2, 3, 4, 0};
   return map[exoface];
 }

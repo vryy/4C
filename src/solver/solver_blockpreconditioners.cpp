@@ -10,11 +10,11 @@
 
 #include <Xpetra_MultiVectorFactory.hpp>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "solver_blockpreconditioners.H"
-#include "bgs2x2_operator.H"                   // Lena's BGS implementation
+#include "solver_bgs2x2_operator.H"            // Lena's BGS implementation
 #include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 
 //----------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup(
         // value 0) in order to avoid problems with ML (ML expects an Teuchos::RCP for the null
         // space != NULL)
         if (plength == 0) pnewns->resize(1, 0.0);
-        inv2.sublist("ML Parameters").set("null space: vectors", &((*pnewns)[0]));
+        inv2.sublist("ML Parameters").set("null space: vectors", pnewns->data());
         inv2.sublist("ML Parameters").remove("nullspace", false);
         inv2.sublist("Michael's secret vault")
             .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);

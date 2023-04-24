@@ -26,9 +26,13 @@
 
 /cmake/                            @baci/baci_maintainer @baci/team_infrastructure
 
+/dependencies/                     @baci/baci_maintainer @baci/team_infrastructure
+
 /doc/                              @baci/baci_maintainer @baci/team_infrastructure
 
 /doc_removed_code/                 @baci/baci_maintainer
+
+/docker/                           @baci/baci_maintainer @baci/team_infrastructure
 
 /guides/                           @baci/team_infrastructure
 
@@ -88,6 +92,8 @@ browniandyn/               @baci/team_structure
 cardiovascular0d/          @baci/team_reduced_fluid_models
 
 comm/                      @baci/team_discretization
+
+config/                    @baci/team_infrastructure
 
 constraint/                @baci/team_discretization
 
@@ -205,8 +211,6 @@ mor/                       @baci/team_structure
 mortar/                    @baci/team_contact
 
 nurbs_discret/             @baci/team_discretization
-
-opti/                      @baci/team_fluid
 
 particle_algorithm/        @baci/team_particle
 
@@ -389,6 +393,8 @@ solver_nonlin_nox/             @baci/team_solvers
 
 Input/rigidsphere*                 @baci/team_structure
 
+/Input/roughcontact*               @baci/team_contact
+
 /Input/scatra*                     @baci/team_scatra
 
 /Input/solid*                      @baci/team_structure
@@ -421,4 +427,3 @@ do-configure                       @baci/team_infrastructure @baci/baci_maintain
 TestingFramework.cmake             @baci/team_testing
 TestingFrameworkListOfTests.cmake  @baci/baci_developers
 UnittestingFramework.cmake         @baci/team_testing
-

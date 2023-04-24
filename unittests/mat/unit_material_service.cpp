@@ -8,7 +8,7 @@
 
 #include "gtest/gtest.h"
 
-#include "material_service.H"
+#include "mat_service.H"
 
 #include "linalg_fixedsizematrix.H"
 

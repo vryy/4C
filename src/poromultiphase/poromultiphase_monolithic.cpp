@@ -9,7 +9,7 @@
 
 #include "poromultiphase_monolithic.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

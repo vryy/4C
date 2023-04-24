@@ -10,16 +10,16 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_rule.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
-#include "material_service.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
+#include "mat_service.H"
 #include "mixture_rule_growthremodel.H"
 #include "mixture_rule_simple.H"
 #include "inpar_material.H"
-#include "parobject.H"
-#include "matpar_parameter.H"
-#include "dserror.H"
+#include "lib_parobject.H"
+#include "mat_par_parameter.H"
+#include "lib_dserror.H"
 
 // forward declarations
 namespace DRT

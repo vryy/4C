@@ -29,7 +29,7 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_EpetraOperator.hpp>
 
-#include "linalg_ana.H"
+#include "solver_linalg_ana.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_downwindmatrix.H"
 #include "linalg_multiply.H"
@@ -87,8 +87,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 
   const int myrank = A->Comm().MyPID();
-  Epetra_Time time(A->Comm());
-  Epetra_Time totaltime(A->Comm());
+  Teuchos::Time time("", true);
+  Teuchos::Time totaltime("", true);
   const bool visml = predictSolver_list_.isSublist("ML Parameters");
   const bool pisml = schurSolver_list_.isSublist("ML Parameters");
   const bool vismuelu = predictSolver_list_.isSublist("MueLu Parameters");
@@ -119,8 +119,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
   // Modify lists to reuse subblock preconditioner at least maxiter times
   //-------------------------------------------------------------------------
   {
-    int maxiter = predictSolver_list_.sublist("Aztec Parameters").get("AZ_max_iter", 1);
-    predictSolver_list_.sublist("Aztec Parameters").set("reuse", maxiter + 1);
+    int maxiter = predictSolver_list_.sublist("Belos Parameters").get("Maximum Iterations", 1);
+    predictSolver_list_.sublist("Belos Parameters").set("reuse", maxiter + 1);
   }
 
 #if SIMPLEC_DIAGONAL
@@ -147,41 +147,43 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
 #endif
-  if (!myrank && SIMPLER_TIMING) printf("--- Time to do diagF^{-1}   %10.3E\n", time.ElapsedTime());
-  time.ResetStartTime();
+  if (!myrank && SIMPLER_TIMING)
+    printf("--- Time to do diagF^{-1}   %10.3E\n", time.totalElapsedTime(true));
+  time.reset();
 
   //-------------------------------------------------------------------------
   // Allocate and compute approximate Schur complement operator S
   // S = A(1,1) - A(1,0) * diagAinv * A(0,1)
   //-------------------------------------------------------------------------
   {
-    Epetra_Time ltime(A_->Comm());
+    Teuchos::Time ltime("", true);
     // with Trilinos Q1/2013 there are some improvements in EpetraExt MM.
     // However, they lead to a crash here -> use MLMultiply instead.
     // S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
     S_ = LINALG::MLMultiply(*diagAinv_, (*A_)(0, 1), true);
     if (!myrank && SIMPLER_TIMING)
-      printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.ElapsedTime());
-    ltime.ResetStartTime();
+      printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
+    ltime.reset();
     S_ = LINALG::MLMultiply((*A_)(1, 0), *S_, false);
     // The LINALG::Multiply method would consume a HUGE amount of memory!!!
     // So always use LINALG::MLMultiply in the line above! Otherwise you won't be able
     // to solve any large linear problem since you'll definitely run out of memory.
     // S_ = LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
     if (!myrank && SIMPLER_TIMING)
-      printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.ElapsedTime());
-    ltime.ResetStartTime();
+      printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
+    ltime.reset();
     S_->Add((*A_)(1, 1), false, 1.0, -1.0);
     if (!myrank && SIMPLER_TIMING)
-      printf("*** S = A(1,1) - S        %10.3E\n", ltime.ElapsedTime());
-    ltime.ResetStartTime();
+      printf("*** S = A(1,1) - S        %10.3E\n", ltime.totalElapsedTime(true));
+    ltime.reset();
     S_->Complete((*A_)(1, 1).DomainMap(), (*A_)(1, 1).RangeMap());
     if (!myrank && SIMPLER_TIMING)
-      printf("*** S complete            %10.3E\n", ltime.ElapsedTime());
-    ltime.ResetStartTime();
+      printf("*** S complete            %10.3E\n", ltime.totalElapsedTime(true));
+    ltime.reset();
   }
-  if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n", time.ElapsedTime());
-  time.ResetStartTime();
+  if (!myrank && SIMPLER_TIMING)
+    printf("--- Time to do S            %10.3E\n", time.totalElapsedTime(true));
+  time.reset();
 
 #if CHEAPSIMPLE_ALGORITHM
   {
@@ -258,7 +260,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     else
     {
       std::string type =
-          predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type", "ILU");
+          predictSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack factory;
       Ifpack_Preconditioner* prec = factory.Create(type, A00, 0);
       prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
@@ -267,8 +269,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       Ppredict_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING)
-      printf("--- Time to do P(v)         %10.3E\n", time.ElapsedTime());
-    time.ResetStartTime();
+      printf("--- Time to do P(v)         %10.3E\n", time.totalElapsedTime(true));
+    time.reset();
 
     if (pisml)
     {
@@ -336,7 +338,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
     {
       Ifpack factory;
       std::string type =
-          schurSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type", "ILU");
+          schurSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack_Preconditioner* prec = factory.Create(type, A11, 0);
       prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
@@ -344,8 +346,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       Pschur_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING)
-      printf("--- Time to do P(p)         %10.3E\n", time.ElapsedTime());
-    time.ResetStartTime();
+      printf("--- Time to do P(p)         %10.3E\n", time.totalElapsedTime(true));
+    time.reset();
   }
 #else
   //-------------------------------------------------------------------------
@@ -375,9 +377,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
   pwork1_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
   pwork2_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
 
-  if (!myrank && SIMPLER_TIMING) printf("--- Time to do allocate mem %10.3E\n", time.ElapsedTime());
   if (!myrank && SIMPLER_TIMING)
-    printf("=== Total simpler setup === %10.3E\n", totaltime.ElapsedTime());
+    printf("--- Time to do allocate mem %10.3E\n", time.totalElapsedTime(true));
+  if (!myrank && SIMPLER_TIMING)
+    printf("=== Total simpler setup === %10.3E\n", totaltime.totalElapsedTime(true));
 }
 
 
@@ -386,7 +389,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
 int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  // note: Aztec might pass X and Y as physically identical objects,
+  // note: might pass X and Y as physically identical objects,
   // so we better deep copy here
 
   // extract initial guess and rhs for velocity and pressure

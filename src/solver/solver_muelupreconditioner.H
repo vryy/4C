@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_MUELUPRECONDITIONER_H_
-#define SOLVER_MUELUPRECONDITIONER_H_
+#ifndef SOLVER_MUELUPRECONDITIONER_H
+#define SOLVER_MUELUPRECONDITIONER_H
 
 #include <Xpetra_MultiVector.hpp>
 
@@ -62,7 +62,7 @@ namespace LINALG::SOLVER
     //! linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const final { return P_; }
 
-    void Print(std::ostream& stream) { stream << "MueLuPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const { return "MueLu Parameters"; }
@@ -105,7 +105,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuFlBlockPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuFlBlockPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
@@ -138,7 +138,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuTsiBlockPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuTsiBlockPreconditioner"; }
 
     // return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
@@ -187,7 +187,7 @@ namespace LINALG::SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    void Print(std::ostream& stream) override { stream << "MueLuContactSpPreconditioner"; }
+    void Print(std::ostream& stream) const override { stream << "MueLuContactSpPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
@@ -231,7 +231,7 @@ namespace LINALG::SOLVER
     void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
-    void Print(std::ostream& stream) final { stream << "MueLuBeamSolidBlockPreconditioner"; }
+    void Print(std::ostream& stream) const final { stream << "MueLuBeamSolidBlockPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     const std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }
@@ -241,6 +241,38 @@ namespace LINALG::SOLVER
     Teuchos::RCP<BlockSparseMatrixBase> Pmatrix_;
 
   };  // class MueLuBeamCpPreconditioner
+
+  /*! \brief MueLu preconditioner for blocked linear systems of equations for fluid structure
+   * interaction
+   */
+  class MueLuFsiBlockPreconditioner : public MueLuPreconditioner
+  {
+   public:
+    MueLuFsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+
+    /*! \brief Create and compute the preconditioner
+     *
+     * The Muelu block-preconditioner only works for matrices of the type
+     * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
+     * and throw an error if not!
+     *
+     * @param create Boolean flag to enforce (re-)creation of the preconditioner
+     * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
+     * @param x Solution of the linear system
+     * @param b Right-hand side of the linear system
+     */
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
+
+    void Print(std::ostream& stream) const override { stream << "MueLuFsiBlockPreconditioner"; }
+
+    // return name of sublist in paramterlist which contains parameters for preconditioner
+    const std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
+
+   private:
+    //! system of equations used for preconditioning used by P_ only
+    Teuchos::RCP<BlockSparseMatrixBase> Pmatrix_;
+  };
 
   namespace MUELU::UTILS
   {

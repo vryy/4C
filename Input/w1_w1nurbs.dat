@@ -2,7 +2,7 @@
 General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
-Test WALL and WALLNURBS in the same input file 
+Test WALL and WALLNURBS in the same input file
 --------------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                              4
 NODES                                 16

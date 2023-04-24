@@ -10,15 +10,14 @@
 /*----------------------------------------------------------------------*/
 #include "sti_monolithic.H"
 #include "sti_monolithic_evaluate_OffDiag.H"
-#include <Epetra_Time.h>
 
 #include "adapter_coupling.H"
 #include "linalg_matrixtransform.H"
 
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "globalproblem.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -27,7 +26,7 @@
 #include "linalg_mapextractor.H"
 #include "linalg_multiply.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -400,7 +399,7 @@ void STI::Monolithic::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)
@@ -541,7 +540,7 @@ void STI::Monolithic::OutputMatrixToFile(
   // copy global IDs of matrix rows stored on current processor into vector
   std::vector<int> myrowgids(rowmap.NumMyElements(), 0);
   int* myglobalelements = rowmap.MyGlobalElements();
-  std::copy(myglobalelements, myglobalelements + rowmap.NumMyElements(), &myrowgids[0]);
+  std::copy(myglobalelements, myglobalelements + rowmap.NumMyElements(), myrowgids.data());
 
   // communicate global IDs
   std::vector<int> rowgids(0, 0);
@@ -552,7 +551,7 @@ void STI::Monolithic::OutputMatrixToFile(
 
   // create full row map on processor with ID 0
   const Epetra_Map fullrowmap(
-      -1, static_cast<int>(rowgids.size()), rowgids.size() ? &rowgids[0] : nullptr, 0, comm);
+      -1, static_cast<int>(rowgids.size()), rowgids.size() ? rowgids.data() : nullptr, 0, comm);
 
   // import matrix to processor with ID 0
   Epetra_CrsMatrix crsmatrix(Copy, fullrowmap, 0);
@@ -648,7 +647,7 @@ void STI::Monolithic::OutputVectorToFile(
   // copy global IDs of vector components stored on current processor into vector
   std::vector<int> mygids(map.NumMyElements(), 0);
   int* myglobalelements = map.MyGlobalElements();
-  std::copy(myglobalelements, myglobalelements + map.NumMyElements(), &mygids[0]);
+  std::copy(myglobalelements, myglobalelements + map.NumMyElements(), mygids.data());
 
   // communicate global IDs
   std::vector<int> gids(0, 0);
@@ -659,7 +658,7 @@ void STI::Monolithic::OutputVectorToFile(
 
   // create full vector map on processor with ID 0
   const Epetra_Map fullmap(
-      -1, static_cast<int>(gids.size()), gids.size() ? &gids[0] : nullptr, 0, comm);
+      -1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr, 0, comm);
 
   // export vector to processor with ID 0
   Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);
@@ -1156,7 +1155,7 @@ void STI::Monolithic::BuildNullSpaces() const
       // equip smoother for scatra matrix block with empty parameter sublists to trigger null space
       // computation
       Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
-      blocksmootherparams.sublist("Aztec Parameters");
+      blocksmootherparams.sublist("Belos Parameters");
       blocksmootherparams.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -1181,7 +1180,7 @@ void STI::Monolithic::BuildNullSpaces() const
   // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + iblockstr.str());
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   // equip smoother for thermo matrix block with null space associated with all degrees of freedom
@@ -1215,7 +1214,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
 
     // compute null space modes associated with scatra field
     const DRT::Discretization& scatradis = *ScaTraField()->Discretization();
-    double* modes_scatra[numdofpernode_scatra];
+    std::vector<double*> modes_scatra(numdofpernode_scatra);
     for (int i = 0; i < numdofpernode_scatra; ++i)
       modes_scatra[i] = &((*ns)[i * DofRowMap()->NumMyElements()]);
     for (int i = 0; i < scatradis.NumMyRowNodes(); ++i)
@@ -1227,7 +1226,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
 
     // compute null space modes associated with thermo field
     const DRT::Discretization& thermodis = *ThermoField()->Discretization();
-    double* modes_thermo[numdofpernode_thermo];
+    std::vector<double*> modes_thermo(numdofpernode_thermo);
     for (int i = 0; i < numdofpernode_thermo; ++i)
       modes_thermo[i] = &((*ns)[(numdofpernode_scatra + i) * DofRowMap()->NumMyElements()]);
     for (int i = 0; i < thermodis.NumMyRowNodes(); ++i)
@@ -1481,14 +1480,14 @@ void STI::Monolithic::Solve()
     ++iter_;
 
     // store time before evaluating elements and assembling global system of equations
-    double time = timer_->WallTime();
+    double time = timer_->wallTime();
 
     // assemble global system of equations
     AssembleMatAndRHS();
 
     // determine time needed for evaluating elements and assembling global system of equations,
     // and take maximum over all processors via communication
-    double mydtele = timer_->WallTime() - time;
+    double mydtele = timer_->wallTime() - time;
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
@@ -1505,7 +1504,7 @@ void STI::Monolithic::Solve()
     increment_->PutScalar(0.);
 
     // store time before solving global system of equations
-    time = timer_->WallTime();
+    time = timer_->wallTime();
 
     // equilibrate global system of equations if necessary
     equilibration_->EquilibrateSystem(systemmatrix_, residual_, blockmaps_);
@@ -1518,7 +1517,7 @@ void STI::Monolithic::Solve()
 
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
-    double mydtsolve = timer_->WallTime() - time;
+    double mydtsolve = timer_->wallTime() - time;
     Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if applicable

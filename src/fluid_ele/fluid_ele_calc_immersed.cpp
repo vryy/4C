@@ -14,7 +14,7 @@
 #include "fluid_ele_tds.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_immersed_base.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
@@ -93,13 +93,13 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
-    const LINALG::Matrix<my::nsd_, my::nen_>& eaccam, double& fac1, double& fac2, double& fac3,
+    const LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
   // set number of current gp
   gp_iquad_ = iquad;
   // compute convective conservative term from previous iteration u_old(u_old*nabla)
-  LINALG::Matrix<my::nsd_, 1> conv_old_cons(true);
+  LINALG::Matrix<nsd_, 1> conv_old_cons(true);
   conv_old_cons.Update(my::vdiv_, my::convvelint_, 0.0);
 
   //----------------------------------------------------------------------
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     my::accint_.Multiply(eaccam, my::funct_);
 
     // evaluate momentum residual once for all stabilization right hand sides
-    for (int rr = 0; rr < my::nsd_; ++rr)
+    for (int rr = 0; rr < nsd_; ++rr)
     {
       if (immersedele_->HasProjectedDirichlet())
         my::momres_old_(rr) = my::densam_ * my::accint_(rr) +
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
-      for (int rr = 0; rr < my::nsd_; ++rr)
+      for (int rr = 0; rr < nsd_; ++rr)
       {
         if (immersedele_->HasProjectedDirichlet())
           my::momres_old_(rr) = ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->Dt() +
@@ -199,7 +199,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
         my::rhsmom_.Update(my::densaf_, my::bodyforce_, 1.0, my::generalbodyforce_);
 
       // compute stationary momentum residual:
-      for (int rr = 0; rr < my::nsd_; ++rr)
+      for (int rr = 0; rr < nsd_; ++rr)
       {
         if (immersedele_->HasProjectedDirichlet())
           my::momres_old_(rr) = my::densaf_ * (my::conv_old_(rr) + conv_old_cons(rr)) +
@@ -293,9 +293,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 
     */
 
-    static LINALG::Matrix<1, my::nsd_> sgvelintaf(true);
+    static LINALG::Matrix<1, nsd_> sgvelintaf(true);
     sgvelintaf.Clear();
-    for (int rr = 0; rr < my::nsd_; ++rr)
+    for (int rr = 0; rr < nsd_; ++rr)
     {
       my::tds_->UpdateSvelnpInOneDirection(fac1, fac2, fac3, my::momres_old_(rr),
           my::fldparatimint_->AlphaF(), rr, iquad,
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
               rr),  // sgvelint_ is set to sgvelintnp, but is then overwritten below anyway!
           sgvelintaf(rr));
 
-      int pos = rr + my::nsd_ * iquad;
+      int pos = rr + nsd_ * iquad;
 
       /*
        *  ~n+1           ~n           ~ n            n+1
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
-    LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>& lin_resM_Du, const double& timefacfac)
+    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
       instationary                                 conservative          cross-stress, part 1
@@ -368,21 +368,21 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
   // add conservative terms for covered fluid integration points
   const double timefacfac_densaf = timefacfac * my::densaf_;
-  int idim_nsd_p_idim[my::nsd_];
-  for (int idim = 0; idim < my::nsd_; ++idim)
+  std::array<int, nsd_> idim_nsd_p_idim;
+  for (int idim = 0; idim < nsd_; ++idim)
   {
-    idim_nsd_p_idim[idim] = idim * my::nsd_ + idim;
+    idim_nsd_p_idim[idim] = idim * nsd_ + idim;
   }
 
 
   // convection, convective part (conservative addition)
   if (immersedele_->HasProjectedDirichlet())
   {
-    for (int ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < nen_; ++ui)
     {
       const double v = timefacfac_densaf * my::vdiv_;
 
-      for (int idim = 0; idim < my::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
         lin_resM_Du(idim_nsd_p_idim[idim], ui) += my::funct_(ui) * v;
       }
@@ -391,14 +391,14 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
     //  convection, reactive part (conservative addition) (only for Newton)
     if (my::fldpara_->IsNewton())
     {
-      for (int ui = 0; ui < my::nen_; ++ui)
+      for (int ui = 0; ui < nen_; ++ui)
       {
-        for (int idim = 0; idim < my::nsd_; ++idim)
+        for (int idim = 0; idim < nsd_; ++idim)
         {
           const double temp = timefacfac_densaf * my::velint_(idim);
-          const int idim_nsd = idim * my::nsd_;
+          const int idim_nsd = idim * nsd_;
 
-          for (int jdim = 0; jdim < my::nsd_; ++jdim)
+          for (int jdim = 0; jdim < nsd_; ++jdim)
           {
             lin_resM_Du(idim_nsd + jdim, ui) += temp * my::derxy_(jdim, ui);
           }
@@ -412,16 +412,15 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalPart(
-    LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>& estif_u,
-    LINALG::Matrix<my::nsd_, my::nen_>& velforce,
-    LINALG::Matrix<my::nsd_ * my::nsd_, my::nen_>& lin_resM_Du,
-    LINALG::Matrix<my::nsd_, 1>& resM_Du, const double& rhsfac)
+    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
+    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, LINALG::Matrix<nsd_, 1>& resM_Du,
+    const double& rhsfac)
 {
   my::InertiaConvectionReactionGalPart(estif_u, velforce, lin_resM_Du, resM_Du, rhsfac);
 
   if (immersedele_->HasProjectedDirichlet())
   {
-    for (int idim = 0; idim < my::nsd_; ++idim)
+    for (int idim = 0; idim < nsd_; ++idim)
     {
       /* convection (conservative addition) on right-hand side */
       double v = -rhsfac * my::densaf_ * my::velint_(idim) * my::vdiv_;
@@ -431,7 +430,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalP
       else if (my::fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
         v -= rhsfac * my::velint_(idim) * my::conv_scaaf_;
 
-      for (int vi = 0; vi < my::nen_; ++vi) velforce(idim, vi) += v * my::funct_(vi);
+      for (int vi = 0; vi < nen_; ++vi) velforce(idim, vi) += v * my::funct_(vi);
     }
   }
 
@@ -440,17 +439,17 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalP
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
-    LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>& estif_q_u, LINALG::Matrix<my::nen_, 1>& preforce,
+    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
-  for (int vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < nen_; ++vi)
   {
     const double v = timefacfacpre * my::funct_(vi);
-    for (int ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < nen_; ++ui)
     {
-      const int fui = my::nsd_ * ui;
+      const int fui = nsd_ * ui;
 
-      for (int idim = 0; idim < my::nsd_; ++idim)
+      for (int idim = 0; idim < nsd_; ++idim)
       {
         /* continuity term */
         /*
@@ -477,8 +476,8 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ConservativeFormulation(
-    LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>& estif_u,
-    LINALG::Matrix<my::nsd_, my::nen_>& velforce, const double& timefacfac, const double& rhsfac)
+    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
+    const double& timefacfac, const double& rhsfac)
 {
   if (not(immersedele_->HasProjectedDirichlet()))
     my::ConservativeFormulation(estif_u, velforce, timefacfac, rhsfac);

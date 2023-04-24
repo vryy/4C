@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
-#include "discret.H"
-#include "domainreader.H"
+#include "lib_discret.H"
+#include "lib_domainreader.H"
 
 namespace
 {

@@ -7,15 +7,15 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_H
-#define CONTACT_INTEGRATOR_NITSCHE_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_H
+#define CONTACT_NITSCHE_INTEGRATOR_H
 
 #include "contact_integrator.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "pairedvector.H"
+#include "headers_pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -266,4 +266,4 @@ namespace CONTACT
         double& pet);
   }  // namespace UTILS
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_H

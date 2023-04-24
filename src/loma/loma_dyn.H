@@ -17,4 +17,4 @@ void loma_dyn(int restart /* do we have to perform a restart?  */
 );
 
 
-#endif /* #ifndef LOMA_DYN_H */
+#endif  // LOMA_DYN_H

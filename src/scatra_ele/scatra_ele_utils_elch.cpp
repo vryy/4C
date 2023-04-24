@@ -10,10 +10,9 @@
 #include "scatra_ele_utils_elch.H"
 #include "scatra_ele_calc_elch.H"
 
-#include "ion.H"
+#include "mat_ion.H"
 
-#include "definitions.h"
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -111,7 +110,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       double pot0hist = 0.0;
       if (dlcap != 0.0) pot0hist = cond->GetDouble("pot0hist");
       double i0 = cond->GetDouble("i0");
-      if (i0 < -EPS14)
+      if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
@@ -120,7 +119,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       i0 *= timefac;
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
         dserror(
@@ -144,9 +143,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
                   << exp((-alphac) * frt * eta) << std::endl;
 #endif
       double pow_conint_gamma_k = 0.0;
-      if ((conint[k] / refcon) < EPS13)
+      if ((conint[k] / refcon) < 1e-13)
       {
-        pow_conint_gamma_k = std::pow(EPS13, gamma);
+        pow_conint_gamma_k = std::pow(1e-13, gamma);
 #ifdef DEBUG
         std::cout << "WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
@@ -162,10 +161,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         const double expterm = exp(alphaa * frt * eta) - exp((-alphac) * frt * eta);
 
         double concterm = 0.0;
-        if (conint[k] > EPS13)
+        if (conint[k] > 1e-13)
           concterm = gamma * pow(conint[k], (gamma - 1.0)) / pow(refcon, gamma);
         else
-          concterm = gamma * pow(EPS13, (gamma - 1.0)) / pow(refcon, gamma);
+          concterm = gamma * pow(1e-13, (gamma - 1.0)) / pow(refcon, gamma);
 
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -212,10 +211,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 
         // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         double concterm = 0.0;
-        if ((conint[k] / refcon) > EPS13)
+        if ((conint[k] / refcon) > 1e-13)
           concterm = gamma * pow(conint[k], (gamma - 1.0)) / pow(refcon, gamma);
         else
-          concterm = gamma * pow(EPS13, (gamma - 1.0)) / pow(refcon, gamma);
+          concterm = gamma * pow(1e-13, (gamma - 1.0)) / pow(refcon, gamma);
 
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -258,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       i0 *= timefac;
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
       const double dlcap = cond->GetDouble("dl_spec_cap");
       if (dlcap != 0.0)
         dserror("double layer charging is not implemented for Tafel electrode kinetics");
@@ -282,9 +281,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         std::cout << "WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
                   << exp((-alpha) * frt * eta) << std::endl;
 #endif
-      if ((conint[k] / refcon) < EPS13)
+      if ((conint[k] / refcon) < 1e-13)
       {
-        pow_conint_gamma_k = std::pow(EPS13, gamma);
+        pow_conint_gamma_k = std::pow(1e-13, gamma);
 #ifdef DEBUG
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
@@ -298,10 +297,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 
       double concterm = 0.0;
       // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-      if (conint[k] > EPS13)
+      if (conint[k] > 1e-13)
         concterm = gamma * pow(conint[k], (gamma - 1.0)) / pow(refcon, gamma);
       else
-        concterm = gamma * pow(EPS13, (gamma - 1.0)) / pow(refcon, gamma);
+        concterm = gamma * pow(1e-13, (gamma - 1.0)) / pow(refcon, gamma);
 
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -336,14 +335,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       double pot0hist = 0.0;
       if (dlcap != 0.0) pot0hist = cond->GetDouble("pot0hist");
       i0 *= timefac;
-      if (i0 < -EPS14)
+      if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
         dserror(
@@ -356,9 +355,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       const double eta = epd - ocp;
 
       double pow_conint_gamma_k = 0.0;
-      if ((conint[k] / refcon) < EPS13)
+      if ((conint[k] / refcon) < 1e-13)
       {
-        pow_conint_gamma_k = std::pow(EPS13, gamma);
+        pow_conint_gamma_k = std::pow(1e-13, gamma);
 #ifdef DEBUG
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
@@ -370,7 +369,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       const double linearfunct = (alphaa * frt * eta);
       // note: gamma==0 deactivates concentration dependency
       double concterm = 0.0;
-      if (conint[k] > EPS13)
+      if (conint[k] > 1e-13)
         concterm = gamma * pow(conint[k], (gamma - 1.0)) / pow(refcon, gamma);
       else
         dserror("Better stop here!");
@@ -466,15 +465,15 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // concentration term (product of cathodic and anodic species)
       for (int kk = 0; kk < numscal_; ++kk)
       {
-        if ((conint[kk]) < EPS13)  // 1.0E-16)
+        if ((conint[kk]) < 1e-13)  // 1.0E-16)
         {
-          pow_conint_p *= std::pow(EPS13, p[kk]);
-          pow_conint_q *= std::pow(EPS13, q[kk]);
+          pow_conint_p *= std::pow(1e-13, p[kk]);
+          pow_conint_q *= std::pow(1e-13, q[kk]);
 #ifdef DEBUG
           std::cout << "WARNING: Rel. Conc. of species" << k
                     << " in Butler-Volmer formula is zero/negative: " << (conint[k]) << std::endl;
-          std::cout << "-> Replacement value: pow(1.0E-16,p[ispec]) = " << pow(EPS13, p[k])
-                    << " pow(1.0E-13,q[k]) = " << pow(EPS13, q[k]) << std::endl;
+          std::cout << "-> Replacement value: pow(1.0E-16,p[ispec]) = " << pow(1e-13, p[k])
+                    << " pow(1.0E-13,q[k]) = " << pow(1e-13, q[k]) << std::endl;
 #endif
         }
         else
@@ -742,14 +741,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const double alphaa = cond->GetDouble("alpha_a");
       const double alphac = cond->GetDouble("alpha_c");
       double i0 = cond->GetDouble("i0");
-      if (i0 < -EPS14)
+      if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
       const double dlcap = cond->GetDouble("dl_spec_cap");
       double pot0dtnp = 0.0;
@@ -792,12 +791,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       }
       if (kinetics == INPAR::ELCH::butler_volmer_yang1997)
       {
-        if (((conint[k] / refcon) < EPS13) && (gamma < 1.0))
+        if (((conint[k] / refcon) < 1e-13) && (gamma < 1.0))
         {  // prevents NaN's in the current density evaluation
           expterm =
-              (exp(alphaa * frt * eta) - (pow(EPS13 / refcon, gamma) * exp((-alphac) * frt * eta)));
+              (exp(alphaa * frt * eta) - (pow(1e-13 / refcon, gamma) * exp((-alphac) * frt * eta)));
           linea = ((alphaa)*frt * exp(alphaa * frt * eta)) +
-                  (pow(EPS13 / refcon, gamma) * alphac * frt * exp((-alphac) * frt * eta));
+                  (pow(1e-13 / refcon, gamma) * alphac * frt * exp((-alphac) * frt * eta));
         }
         else
         {
@@ -850,7 +849,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
       const double dlcap = cond->GetDouble("dl_spec_cap");
       if (dlcap != 0.0)
         dserror("double layer charging is not implemented for Tafel electrode kinetics");
@@ -904,14 +903,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       // read model-specific parameter
       const double alphaa = cond->GetDouble("alpha");
       double i0 = cond->GetDouble("i0");
-      if (i0 < -EPS14)
+      if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const double gamma = cond->GetDouble("gamma");
       const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
       const double dlcap = cond->GetDouble("dl_spec_cap");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
@@ -1055,15 +1054,15 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       for (int kk = 0; kk < numscal_; ++kk)
       {
-        if ((conint[kk]) < EPS13)
+        if ((conint[kk]) < 1e-13)
         {
-          pow_conint_p *= std::pow(EPS13, p[kk]);
-          pow_conint_q *= std::pow(EPS13, q[kk]);
+          pow_conint_p *= std::pow(1e-13, p[kk]);
+          pow_conint_q *= std::pow(1e-13, q[kk]);
 #ifdef DEBUG
           std::cout << "WARNING: Rel. Conc. of species" << kk
                     << " in Butler-Volmer formula is zero/negative: " << (conint[kk]) << std::endl;
-          std::cout << "-> Replacement value: pow(EPS,p[ispec]) = " << pow(EPS13, p[kk])
-                    << " pow(1.0E-16,q[i]) = " << pow(EPS13, q[kk]) << std::endl;
+          std::cout << "-> Replacement value: pow(EPS,p[ispec]) = " << pow(1e-13, p[kk])
+                    << " pow(1.0E-16,q[i]) = " << pow(1e-13, q[kk]) << std::endl;
 #endif
         }
         else

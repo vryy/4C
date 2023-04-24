@@ -9,22 +9,22 @@
 
 #include "beaminteraction_conditions.H"
 
-#include "beam_to_beam_contact_condition.H"
-#include "beam_to_beam_point_coupling_pair.H"
-#include "beam_to_beam_point_coupling_pair_condition.H"
-#include "beam_to_solid_conditions.H"
-#include "beam_contact_params.H"
-#include "beam_contact_pair.H"
-#include "beam_to_solid_volume_meshtying_params.H"
-#include "beam_to_solid_surface_meshtying_params.H"
-#include "beam_to_solid_surface_contact_params.H"
+#include "beaminteraction_beam_to_beam_contact_condition.H"
+#include "beaminteraction_beam_to_beam_point_coupling_pair.H"
+#include "beaminteraction_beam_to_beam_point_coupling_pair_condition.H"
+#include "beaminteraction_beam_to_solid_conditions.H"
+#include "beaminteraction_contact_params.H"
+#include "beaminteraction_contact_pair.H"
+#include "beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "beaminteraction_beam_to_solid_surface_meshtying_params.H"
+#include "beaminteraction_beam_to_solid_surface_contact_params.H"
 
 #include "inpar_beam_to_solid.H"
-#include "discret.H"
-#include "condition.H"
+#include "lib_discret.H"
+#include "lib_condition.H"
 #include "geometry_pair_element.H"
 #include "geometry_pair_evaluation_data_base.H"
-#include "so_base.H"
+#include "so3_base.H"
 
 
 /**
@@ -140,7 +140,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
              interaction_type ==
                  INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
     {
-      // Add all beam-to-solid contitions.
+      // Add all beam-to-solid conditions.
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 

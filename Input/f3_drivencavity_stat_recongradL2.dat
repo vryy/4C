@@ -72,37 +72,37 @@ REYNOLDS-STRESS                 no_reynolds
 Reconstruct_Sec_Der             Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK  //Belos                     // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //ILU                           // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     5                             // graph fill for ILU
-AZTOL                           1.0E-17                        // tolerance in unscaled residual
-AZITER                          1500                          // max iterations
-AZSUB                           100                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // unused
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
+SOLVER                          UMFPACK
+AZOUTPUT                        50
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     5
+AZTOL                           1.0E-17
+AZITER                          1500
+AZSUB                           100
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
 AZCONV                          AZ_r0
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1                             // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     1 1 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.66                           // damping fine grid
-ML_DAMPMED                      0.66                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     1 1 1
+ML_DAMPFINE                     0.66
+ML_DAMPMED                      0.66
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            L2_Fluid_Solver
-SOLVER                          UMFPACK //UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -143,51 +143,6 @@ E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id
-DVOL                            0
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF                           1
 E 6 - standard
@@ -373,7 +328,6 @@ NODE 44 DLINE 9
 NODE 30 DLINE 9
 NODE 20 DLINE 9
 NODE 15 DLINE 9
-NODE 14 DLINE 9
 NODE 2178 DLINE 10
 NODE 2175 DLINE 10
 NODE 2171 DLINE 10
@@ -406,7 +360,6 @@ NODE 1711 DLINE 10
 NODE 1699 DLINE 10
 NODE 1691 DLINE 10
 NODE 1685 DLINE 10
-NODE 1679 DLINE 10
 NODE 2177 DLINE 11
 NODE 2174 DLINE 11
 NODE 2169 DLINE 11
@@ -439,7 +392,6 @@ NODE 1694 DLINE 11
 NODE 1678 DLINE 11
 NODE 1672 DLINE 11
 NODE 1664 DLINE 11
-NODE 1662 DLINE 11
 NODE 1661 DLINE 12
 NODE 1558 DLINE 12
 NODE 1460 DLINE 12
@@ -472,7 +424,6 @@ NODE 25 DLINE 12
 NODE 11 DLINE 12
 NODE 6 DLINE 12
 NODE 3 DLINE 12
-NODE 1 DLINE 12
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1680 DSURFACE 1
 NODE 2178 DSURFACE 1
@@ -2850,10 +2801,6 @@ NODE 25 DSURFACE 5
 NODE 11 DSURFACE 5
 NODE 6 DSURFACE 5
 NODE 3 DSURFACE 5
-NODE 14 DSURFACE 6
-NODE 1679 DSURFACE 6
-NODE 1662 DSURFACE 6
-NODE 1 DSURFACE 6
 NODE 16 DSURFACE 6
 NODE 21 DSURFACE 6
 NODE 31 DSURFACE 6

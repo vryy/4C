@@ -7,16 +7,16 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef POROELAST_UTILS_H_
-#define POROELAST_UTILS_H_
+#ifndef POROELAST_UTILS_H
+#define POROELAST_UTILS_H
 
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "inpar_poroelast.H"
-
 #include "volmortar_utils.H"
-#include "element.H"
+#include "lib_element.H"
+
 
 namespace DRT
 {
@@ -37,7 +37,6 @@ namespace MAT
 namespace POROELAST
 {
   class PoroBase;
-  class PoroScatraBase;
 
   //! coupling types of porous media problem
   enum coupltype
@@ -51,10 +50,10 @@ namespace POROELAST
   namespace UTILS
   {
     //! check if element is a poro-element
-    bool CheckPoro(const DRT::Element* actele);
+    bool IsPoroElement(const DRT::Element* actele);
 
     //! check if element is a poro-p1-element
-    bool CheckPoroP1(const DRT::Element* actele);
+    bool IsPoroP1Element(const DRT::Element* actele);
 
     Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
 
@@ -62,14 +61,10 @@ namespace POROELAST
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
-        bool setup_solve = true  //!< setup linear solver for Poroelastic problem (only required if
-                                 //!< Solve() is called) (i)
-    );
-
-    //! create solution algorithm depending on input file
-    Teuchos::RCP<POROELAST::PoroScatraBase> CreatePoroScatraAlgorithm(
-        const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
-        const Epetra_Comm& comm                    //!< communicator(i)
+        bool setup_solve = true,  //!< setup linear solver for Poroelastic problem (only required if
+                                  //!< Solve() is called) (i)
+        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter =
+            Teuchos::null  //! select porosity splitter
     );
 
     //! reset Material pointers after redistribution
@@ -143,4 +138,4 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-#endif  // POROELAST_UTILS_H_
+#endif  // POROELAST_UTILS_H

@@ -8,8 +8,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef INPAR_FS3I_H_
-#define INPAR_FS3I_H_
+#ifndef INPAR_FS3I_H
+#define INPAR_FS3I_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -48,4 +48,4 @@ namespace INPAR
 
 }  // namespace INPAR
 
-#endif /* INPAR_FS3I_H_ */
+#endif  // INPAR_FS3I_H

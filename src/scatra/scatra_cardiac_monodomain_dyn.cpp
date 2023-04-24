@@ -12,9 +12,9 @@
 
 #include "adapter_scatra_base_algorithm.H"
 
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "binning_strategy.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "binstrategy.H"
 
 #include "scatra_timint_implicit.H"
 
@@ -24,7 +24,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "scatra_algorithm.H"
 #include "scatra_resulttest.H"
 #include "scatra_utils_clonestrategy.H"
@@ -97,17 +97,10 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
       // clonestrategy.ConditionsToCopy()' since we than may have some scatra condition twice. So we
       // only copy the Dirichlet and Neumann conditions:
-      std::map<std::string, std::string> conditions_to_copy;
-      conditions_to_copy.insert(
-          std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
-      conditions_to_copy.insert(
-          std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
-      conditions_to_copy.insert(
-          std::pair<std::string, std::string>("TransportLineNeumann", "LineNeumann"));
-      conditions_to_copy.insert(
-          std::pair<std::string, std::string>("TransportSurfaceNeumann", "SurfaceNeumann"));
-      conditions_to_copy.insert(
-          std::pair<std::string, std::string>("TransportVolumeNeumann", "VolumeNeumann"));
+      const std::map<std::string, std::string> conditions_to_copy = {
+          {"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
+          {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
+          {"TransportVolumeNeumann", "VolumeNeumann"}};
 
       DRT::UTILS::DiscretizationCreatorBase creator;
       creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
@@ -234,9 +227,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
               "volmortar!");
 
         // allow TRANSPORT conditions, too
-        std::map<std::string, std::string> conditions_to_copy;
         SCATRA::ScatraFluidCloneStrategy clonestrategy;
-        conditions_to_copy = clonestrategy.ConditionsToCopy();
+        const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
         DRT::UTILS::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 

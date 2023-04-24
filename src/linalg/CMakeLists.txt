@@ -1,6 +1,5 @@
 set(OBJS_LINALG
     # cmake-format: sortable
-    linalg_ana.cpp
     linalg_blocksparsematrix.cpp
     linalg_downwindmatrix.cpp
     linalg_equilibrate.cpp
@@ -11,7 +10,6 @@ set(OBJS_LINALG
     linalg_mlapi_operator.cpp
     linalg_multiply.cpp
     linalg_nullspace.cpp
-    linalg_precond.cpp
     linalg_projected_operator.cpp
     linalg_projected_precond.cpp
     linalg_serialdensematrix.cpp
@@ -36,7 +34,8 @@ baci_add_library(linalg ${OBJS_LINALG})
 
 set(LIBS_LINALG
     # cmake-format: sortable
-    inpar
+    adapter
+    lib
     )
 
-target_link_libraries(linalg PUBLIC ${LIBS_LINALG})
+baci_add_dependency(linalg ${LIBS_LINALG})

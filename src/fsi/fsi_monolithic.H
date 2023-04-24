@@ -14,7 +14,7 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
-#include "ad_fld_base_algorithm.H"
+#include "adapter_fld_base_algorithm.H"
 #include "adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
@@ -96,9 +96,6 @@ namespace FSI
     the order in which the filters handle the Discretizations, which in turn
     defines the dof number ordering of the Discretizations... Don't get
     confused. Just always list structure, fluid, ale. In that order.
-
-    \author u.kue
-    \date 02/08
    */
   class MonolithicBase : public ADAPTER::AlgorithmBase
   {
@@ -273,9 +270,6 @@ namespace FSI
   /*!
 
     Monolithic FSI is a Netwon solver on a block matrix with field blocks.
-
-    \author u.kue
-    \date 02/08
    */
   class Monolithic : public MonolithicBase,
                      public MonolithicInterface,
@@ -603,8 +597,6 @@ namespace FSI
      *  Depending on the chosen method (fluid or structure split), only 3 of the
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual double SelectDtErrorBased() const = 0;
 
@@ -612,8 +604,6 @@ namespace FSI
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual bool SetAccepted() const = 0;
 
@@ -670,8 +660,6 @@ namespace FSI
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap() = 0;
 
@@ -681,8 +669,6 @@ namespace FSI
      *  for the entire FSI problem. This is done just by combining the
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void SetupDBCMapExtractor() = 0;
 
@@ -723,8 +709,6 @@ namespace FSI
      *  = \left((a-b)\lambda^n +
      * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
      * interpolation factors a and b.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CalculateInterfaceEnergyIncrement() { return; };
 
@@ -746,11 +730,11 @@ namespace FSI
      *  \sa SelectTimeStepSize
      *
      *  <h3> References </h3>
-     *  Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013
-     * (supervised by Matthias Mayr)
-     *
-     *  \author mayr.mt
-     *  \date 08/2013
+     *  - EK Wilhelm: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013
+     *    (supervised by Matthias Mayr)
+     *  - M Mayr, WA Wall, MW Gee: Adaptive time stepping for fluid-structure interaction solvers,
+     * Finite Elements in Analysis and Design, 141:55-69, 2018,
+     * https://doi.org/10.1016/j.finel.2017.12.002
      */
     void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
@@ -776,9 +760,6 @@ namespace FSI
     time and step in the fluid field, ALE field, and FSI algorithm
 
     \sa ResetStep()
-
-    \author mayr.mt
-    \date 10/2013
     */
     void ResetTime();
 
@@ -796,9 +777,6 @@ namespace FSI
      *    - Fluid: based on truncation error violation in fluid field
      *    - Newton: nonlinear solver did not converge and User wants to halve the
      *              time step size in such cases
-     *
-     *  \author mayr.mt
-     *  \date 10/2013
      */
     void DetermineAdaReason(const double dt);
 
@@ -845,8 +823,6 @@ namespace FSI
      *  limit it by upper and lower bounds
      *  and recompute the new time step size, if necessary. Finally, we make sure
      *  that the new time step size also satisfies upper and lower bounds.
-     *
-     *  \author mayr.mt \date 12/2013
      */
     double CalculateTimeStepSize(
         const double errnorm,  ///< length-scaled L2-norm of local discretization error
@@ -865,8 +841,6 @@ namespace FSI
      *  First, we select the error based time step size. Afterwards, we check
      *  whether it has to be overruled by the one based on the convergence of
      *  the nonlinear solver.
-     *
-     *  \author mayr.mt \date 01/2014
      */
     virtual double SelectDt() const;
 
@@ -1266,8 +1240,6 @@ namespace FSI
      *  the input file parameter 'REBUILDPRECEVERYSTEP = No' to account for
      *  cases where the setup of the preconditioner is very expensive, though
      *  results in a very good preconditioner, that can be reused very often.
-     *
-     *  \author mayr.mt \date 03/2015
      */
     virtual void PrepareTimeStepPreconditioner();
 

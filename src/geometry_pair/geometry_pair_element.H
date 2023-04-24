@@ -8,18 +8,18 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_ELEMENT_H_
-#define GEOMETRY_PAIR_ELEMENT_H_
+#ifndef GEOMETRY_PAIR_ELEMENT_H
+#define GEOMETRY_PAIR_ELEMENT_H
 
 
 #include "geometry_pair_element_classes.H"
 
-#include "element.H"
-#include "utils_fem_shapefunctions.H"
+#include "lib_element.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 #include "beam3.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "nurbs_utils.H"
-#include "globalproblem.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "lib_globalproblem.H"
 
 
 namespace GEOMETRYPAIR

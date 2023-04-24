@@ -52,4 +52,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_TURBULENCE_H
+#endif  // INPAR_TURBULENCE_H

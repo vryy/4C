@@ -10,14 +10,14 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_H
 
 
 #include <vector>
 
-#include "dserror.H"
-#include "Teuchos_RCP.hpp"
+#include "lib_dserror.H"
+#include <Teuchos_RCP.hpp>
 
 
 // Forward declarations.

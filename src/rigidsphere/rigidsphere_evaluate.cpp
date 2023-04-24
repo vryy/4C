@@ -9,25 +9,24 @@
 /*----------------------------------------------------------------------------*/
 
 #include "rigidsphere.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "exporter.H"
-#include "dserror.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_exporter.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
 #include "linalg_fixedsizematrix.H"
-#include "largerotations.H"
-#include "utils_integration.H"
+#include "fem_general_largerotations.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_structure.H"
 #include <Epetra_CrsMatrix.h>
 
 #include "inpar_browniandyn.H"
-#include "standardtypes_cpp.H"
-#include "str_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "geometric_search_params.H"
-#include "bounding_volume.H"
+#include "geometric_search_bounding_volume.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
@@ -181,7 +180,7 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
   // assemble massmatrix if requested
   if (massmatrix != NULL)
   {
-    double m = rho_ * 4.0 / 3.0 * PI * radius_ * radius_ * radius_;
+    double m = rho_ * 4.0 / 3.0 * M_PI * radius_ * radius_ * radius_;
     for (int i = 0; i < 3; ++i) (*massmatrix)(i, i) = m;
   }
 
@@ -318,7 +317,7 @@ double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
   double eta = ParamsInterface().GetBrownianDynParamInterface()->GetViscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
-  return 6 * PI * eta * radius_;
+  return 6 * M_PI * eta * radius_;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*

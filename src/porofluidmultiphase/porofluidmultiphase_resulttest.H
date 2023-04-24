@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_RESULTTEST_H_
-#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_RESULTTEST_H_
+#ifndef POROFLUIDMULTIPHASE_RESULTTEST_H
+#define POROFLUIDMULTIPHASE_RESULTTEST_H
 
 
 
@@ -15,7 +15,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
 
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 // forward declaration
 namespace DRT
@@ -79,4 +79,4 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASERESULTTEST_H_ */
+#endif  // POROFLUIDMULTIPHASE_RESULTTEST_H

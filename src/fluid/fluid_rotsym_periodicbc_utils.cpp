@@ -11,10 +11,9 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_rotsym_periodicbc_utils.H"
-#include "standardtypes_cpp.H"
-#include "discret.H"
-#include "node.H"
-#include "condition.H"
+#include "lib_discret.H"
+#include "lib_node.H"
+#include "lib_condition.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -64,7 +63,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
     if (*isslave == "Slave")
     {
       rotangle = GetRotAngleFromCondition(pbc[j]);
-      if (abs(rotangle) > EPS13)  // angle is not zero
+      if (abs(rotangle) > 1e-13)  // angle is not zero
       {
         if (isrotsymslave) dserror("Node is slave of more than one rot.sym. periodic bc");
         isrotsymslave = true;
@@ -81,7 +80,7 @@ double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
 {
   const double rotangle_deg = cond->GetDouble("Angle of rotation");
 
-  return rotangle_deg * PI / 180.0;  // angle of rotation (RAD);
+  return rotangle_deg * M_PI / 180.0;  // angle of rotation (RAD);
 }
 
 /*----------------------------------------------------------------------*/
@@ -106,7 +105,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
 
     // only slave nodes with non-zero angle of rotation require rotation
     // of vector results!
-    if ((*mymasterslavetoggle == "Slave") && (abs(rotangle) > EPS13))
+    if ((*mymasterslavetoggle == "Slave") && (abs(rotangle) > 1e-13))
     {
       const std::vector<int>* nodes = mypbccond[numcond]->Nodes();
       for (unsigned int inode = 0; inode < nodes->size(); inode++)

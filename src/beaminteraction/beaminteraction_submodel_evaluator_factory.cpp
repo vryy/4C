@@ -21,7 +21,7 @@
 #include "beaminteraction_submodel_evaluator_spherebeamlinking.H"
 
 // problem types
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

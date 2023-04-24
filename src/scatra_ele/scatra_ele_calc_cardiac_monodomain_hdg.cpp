@@ -11,24 +11,23 @@
 
 #include "scatra_ele_calc_hdg.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
-#include "standardtypes_cpp.H"  // for EPS13 and so on
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_std.H"
 
 #include "fiber_node.H"
 #include "fiber_utils.H"
-#include "nodal_fiber_holder.H"
+#include "fiber_nodal_fiber_holder.H"
 
-#include "myocard.H"
-#include "matlist.H"
+#include "mat_myocard.H"
+#include "mat_list.H"
 
-#include "utils_polynomial.H"
-#include "utils_integration.H"
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_polynomial.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
 
 /*----------------------------------------------------------------------*

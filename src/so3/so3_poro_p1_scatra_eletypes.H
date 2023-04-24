@@ -8,8 +8,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SO3_PORO_P1_SCATRA_ELETYPES_H_
-#define SO3_PORO_P1_SCATRA_ELETYPES_H_
+#ifndef SO3_PORO_P1_SCATRA_ELETYPES_H
+#define SO3_PORO_P1_SCATRA_ELETYPES_H
 
 #include "so3_poro_p1_eletypes.H"
 
@@ -77,4 +77,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SO3_PORO_P1_SCATRA_ELETYPES_H_ */
+#endif  // SO3_PORO_P1_SCATRA_ELETYPES_H

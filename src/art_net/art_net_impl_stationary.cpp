@@ -9,20 +9,20 @@
 
 
 #include "art_net_impl_stationary.H"
-#include "artery_ele_action.H"
+#include "art_net_artery_ele_action.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "io.H"
 #include "io_control.H"
-#include "artery_resulttest.H"
-#include "globalproblem.H"
+#include "art_net_artery_resulttest.H"
+#include "lib_globalproblem.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_resulttest.H"
-#include "cnst_1d_art.H"
+#include "mat_cnst_1d_art.H"
 #include <Epetra_Vector.h>
 
 

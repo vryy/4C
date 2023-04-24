@@ -52,7 +52,7 @@ RESULTSEVRY                     1
 ITEMAX                          500
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes
-COUPALGO                        ehl_Monolithic // ehl_IterStagg // ehl_Monolithic
+COUPALGO                        ehl_Monolithic
 DRY_CONTACT_MODEL	      	    no
 -----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
 CONVTOL                         1e-4

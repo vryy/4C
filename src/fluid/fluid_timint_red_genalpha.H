@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_RED_GENALPHA_H
-#define FLD_TIMINT_RED_GENALPHA_H
+#ifndef FLUID_TIMINT_RED_GENALPHA_H
+#define FLUID_TIMINT_RED_GENALPHA_H
 
 
 #include "fluid_timint_red.H"
@@ -53,4 +53,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_RED_GENALPHA_H
+#endif  // FLUID_TIMINT_RED_GENALPHA_H

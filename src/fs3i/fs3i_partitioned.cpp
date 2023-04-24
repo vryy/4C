@@ -24,24 +24,24 @@
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_utils.H"
-#include "condition_selector.H"
-#include "condition_utils.H"
-#include "colors.H"
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "condition_utils.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 // INPAR
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 // ALE
 #include "ale_utils_clonestrategy.H"
 // ADAPTER
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 #include "adapter_coupling_volmortar.H"
+#include "adapter_structure_scatra_ele.H"
 // SCATRA
 #include "scatra_algorithm.H"
 #include "scatra_timint_implicit.H"
@@ -49,8 +49,8 @@
 #include "scatra_ele.H"
 // FOR WSS CALCULATIONS
 #include "fluid_utils_mapextractor.H"
-#include "dofset_predefineddofnumber.H"
-#include "stru_aux.H"
+#include "lib_dofset_predefineddofnumber.H"
+#include "structure_aux.H"
 // CLONE SCATRA DISCRETIZATION FROM STRUCTURE DISCRETIZATION
 #include "ssi_clonestrategy.H"
 
@@ -214,15 +214,17 @@ void FS3I::PartFS3I::Init()
           "STRUCTSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
     // is the set ImplType for the STRUCTURE Elements reasonable in case they are not cloned?
-    SSI::ScatraStructureCloneStrategy clonestrategy;
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+      if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
+          INPAR::SCATRA::impltype_undefined)
+      {
         dserror(
             "Be aware that the ImplType defined for the STRUCTURE Elements will be ignored and the "
             "ImplType from the TRANSPORT2 ELMENTS section will be utilized. Use TYPE 'Undefined' "
             "if "
             "cloning the scatra discretization from structure discretization is not intended!");
+      }
     }
 
     volume_coupling_objects_.push_back(CreateVolMortarObject(structdis, structscatradis));
@@ -339,9 +341,8 @@ Teuchos::RCP<::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
   // copy conditions
   // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
   // as standard DIRICHLET/NEUMANN CONDITIONS
-  std::map<std::string, std::string> conditions_to_copy;
   SCATRA::ScatraFluidCloneStrategy clonestrategy;
-  conditions_to_copy = clonestrategy.ConditionsToCopy();
+  const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
   DRT::UTILS::DiscretizationCreatorBase creator;
   creator.CopyConditions(*slavedis, *slavedis, conditions_to_copy);
 
@@ -563,9 +564,7 @@ void FS3I::PartFS3I::SetupSystem()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
-      solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("aztec or belos solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
@@ -576,7 +575,7 @@ void FS3I::PartFS3I::SetupSystem()
   scatrasolver_ = Teuchos::rcp(new LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm(),
       DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  // get the solver number used for structural ScalarTransport solver
+  // get the solver number used for fluid ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
   const int linsolver2number = fs3idyn.get<int>("LINEAR_SOLVER2");

@@ -9,12 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_CONTACT_NOXINTERFACE_H_
-#define SRC_CONTACT_CONTACT_NOXINTERFACE_H_
+#ifndef CONTACT_NOXINTERFACE_H
+#define CONTACT_NOXINTERFACE_H
 
 #include <vector>
 
-#include "nox_nln_constraint_interface_required.H"
+#include "solver_nonlin_nox_constraint_interface_required.H"
 
 namespace CONTACT
 {
@@ -125,4 +125,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif /* SRC_CONTACT_CONTACT_NOXINTERFACE_H_ */
+#endif  // CONTACT_NOXINTERFACE_H

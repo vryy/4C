@@ -12,12 +12,12 @@ Pack, Unpack, NumDofPerNode etc.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_H_
+#ifndef LUBRICATION_ELE_H
+#define LUBRICATION_ELE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "element.H"
-#include "elementtype.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
 
 namespace DRT
 {
@@ -547,4 +547,4 @@ namespace DRT
 
 
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_H_ */
+#endif  // LUBRICATION_ELE_H

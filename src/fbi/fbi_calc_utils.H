@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_FBI_FBI_CALC_UTILS_H
-#define SRC_FBI_FBI_CALC_UTILS_H
+#ifndef FBI_CALC_UTILS_H
+#define FBI_CALC_UTILS_H
 
 #include <vector>
 #include <Epetra_FEVector.h>
@@ -84,4 +84,4 @@ namespace FBI
 
 
 
-#endif /* SRC_FBI_FBI_CALC_UTILS_H */
+#endif  // FBI_CALC_UTILS_H

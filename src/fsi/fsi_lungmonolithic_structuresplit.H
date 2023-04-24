@@ -9,8 +9,8 @@
 
 
 
-#ifndef FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
-#define FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
+#ifndef FSI_LUNGMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_LUNGMONOLITHIC_STRUCTURESPLIT_H
 
 #include "fsi_lungmonolithic.H"
 #include "linalg_matrixtransform.H"
@@ -20,10 +20,6 @@ namespace FSI
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a specific class of bio problems (FSI airway
   /// model with attached balloon built of lung parenchyma)
-  /*!
-    \author lw
-    \date 04/09
-   */
   class LungMonolithicStructureSplit : public LungMonolithic
   {
    public:
@@ -31,10 +27,10 @@ namespace FSI
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
-        1.) setup coupling; right now, we use matching meshes at the interface
-    2.) create combined map
-    3.) create block system matrix
-        */
+      1.) setup coupling; right now, we use matching meshes at the interface
+      2.) create combined map
+      3.) create block system matrix
+    */
     virtual void SetupSystem();
 
     /// setup composed system matrix from field solvers
@@ -73,8 +69,6 @@ namespace FSI
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap();
 
@@ -84,8 +78,6 @@ namespace FSI
      *  for the entire FSI problem. This is done just by combining the
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void SetupDBCMapExtractor() { dserror("Not implemented, yet."); }
 

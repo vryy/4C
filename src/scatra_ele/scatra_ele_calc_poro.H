@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_PORO_H_
-#define SCATRA_ELE_CALC_PORO_H_
+#ifndef SCATRA_ELE_CALC_PORO_H
+#define SCATRA_ELE_CALC_PORO_H
 
 #include "scatra_ele_calc.H"
 
@@ -36,6 +36,9 @@ namespace DRT
 
      private:
       typedef ScaTraEleCalc<distype> my;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       virtual ~ScaTraEleCalcPoro() {}
@@ -169,10 +172,10 @@ namespace DRT
       /*========================================================================*/
 
       //! initial node coordinates
-      LINALG::Matrix<my::nsd_, my::nen_> xyze0_;
+      LINALG::Matrix<nsd_, nen_> xyze0_;
 
       //! nodal porosity values at t_(n+1)
-      LINALG::Matrix<my::nen_, 1> eporosity_;
+      LINALG::Matrix<nen_, 1> eporosity_;
 
       //! flag indacting a node based porosity
       bool isnodalporosity_;
@@ -268,4 +271,4 @@ double zero_;
 }
 
 
-#endif /* SCATRA_ELE_CALC_PORO_H_ */
+#endif  // SCATRA_ELE_CALC_PORO_H

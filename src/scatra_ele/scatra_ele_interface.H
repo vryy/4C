@@ -12,10 +12,10 @@
 #define SCATRA_ELE_INTERFACE_H
 
 #include <vector>
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "element.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include "lib_element.H"
 
 namespace DRT
 {

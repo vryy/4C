@@ -14,27 +14,27 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 
-#include "position_array.H"
+#include "geometry_position_array.H"
 
 #include "inpar_fluid.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "mixfrac.H"
-#include "sutherland.H"
-#include "tempdepwater.H"
-#include "arrhenius_spec.H"
-#include "arrhenius_temp.H"
-#include "arrhenius_pv.H"
-#include "ferech_pv.H"
-#include "thermostvenantkirchhoff.H"
-#include "yoghurt.H"
+#include "mat_mixfrac.H"
+#include "mat_sutherland.H"
+#include "mat_tempdepwater.H"
+#include "mat_arrhenius_spec.H"
+#include "mat_arrhenius_temp.H"
+#include "mat_arrhenius_pv.H"
+#include "mat_ferech_pv.H"
+#include "mat_thermostvenantkirchhoff.H"
+#include "mat_yoghurt.H"
 
-#include "nurbs_utils.H"
-#include "singleton_owner.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -621,8 +621,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
 
   // set reaction flag to true, check whether reaction coefficient is positive
   // and set derivative of reaction coefficient
-  // if (reacoef > EPS14) reaction_ = true;
-  // if (reacoef < -EPS14)
+  // if (reacoef > 1e-14) reaction_ = true;
+  // if (reacoef < -1e-14)
   //  dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0,
   //  reacoef);
   // reacoeffderiv_[0] = reacoef;
@@ -735,20 +735,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const LINALG::Matrix<my::nsd_, 1>& convelint,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double vdiv, const double densnp,
+    const int k, const double timefacfac, const LINALG::Matrix<nsd_, 1>& convelint,
+    const LINALG::Matrix<nsd_, 1>& gradphi, const double vdiv, const double densnp,
     const double visc)
 {
   // convective term using current scalar value
   const double cons_conv_phi = convelint.Dot(gradphi);
 
   const double consfac = timefacfac * (densnp * vdiv + densgradfac_[k] * cons_conv_phi);
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = consfac * my::funct_(vi);
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
 
@@ -764,9 +764,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_Serial
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& conv_phi,
-    const int k, const LINALG::Matrix<my::nsd_, 1>& sgvelint,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double densnp, const double densn,
-    const double phinp, const double phin, const double vdiv)
+    const int k, const LINALG::Matrix<nsd_, 1>& sgvelint, const LINALG::Matrix<nsd_, 1>& gradphi,
+    const double densnp, const double densn, const double phinp, const double phin,
+    const double vdiv)
 {
   if (my::scatraparatimint_->IsIncremental())
   {

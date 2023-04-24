@@ -7,11 +7,11 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
 #include "contact_interface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_paramsinterface.H"
 #include "contact_noxinterface.H"
 #include "contact_utils_parallel.H"
@@ -22,8 +22,7 @@
 #include "inpar_contact.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "discret.H"
-#include "colors.H"
+#include "lib_discret.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -34,9 +33,9 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_multiply.H"
 #include "linalg_sparsematrix.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "nox_nln_group.H"
+#include "solver_nonlin_nox_group.H"
 
 
 /*----------------------------------------------------------------------*
@@ -901,7 +900,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::CoAbstractStrategy::CreateDeterministicLMDofRo
     my_lm_gids[slid] = interface_lmgid;
   }
   return Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(my_lm_gids.size()), &my_lm_gids[0], 0, Comm()));
+      new Epetra_Map(-1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0, Comm()));
 }
 
 
@@ -1254,9 +1253,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
 
   // global numbers
   std::vector<int> gsmpairs, gsmintpairs, gintcells;
-  LINALG::Gather<int>(smpairs, gsmpairs, numproc, &allproc[0], Comm());
-  LINALG::Gather<int>(smintpairs, gsmintpairs, numproc, &allproc[0], Comm());
-  LINALG::Gather<int>(intcells, gintcells, numproc, &allproc[0], Comm());
+  LINALG::Gather<int>(smpairs, gsmpairs, numproc, allproc.data(), Comm());
+  LINALG::Gather<int>(smintpairs, gsmintpairs, numproc, allproc.data(), Comm());
+  LINALG::Gather<int>(intcells, gintcells, numproc, allproc.data(), Comm());
 
   // output to screen
   if (Comm().MyPID() == 0)
@@ -1489,9 +1488,8 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate reference state                               gitterle 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
+void CONTACT::CoAbstractStrategy::EvaluateReferenceState()
 {
   // flag for initialization of contact with nodal gaps
   bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(), "INITCONTACTBYGAP");
@@ -1500,8 +1498,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
   // or for initialization of initial contact set with nodal gap
   if (!friction_ and !initcontactbygap) return;
 
-  // set state and do mortar calculation
-  SetState(MORTAR::state_new_displacement, *vec);
+  // do mortar calculation
   InitMortar();
   InitEvalInterface();
   AssembleMortar();
@@ -1511,21 +1508,21 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
   if (initcontactbygap)
   {
     // merge interface maps to global maps
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
+    for (const auto& interface : Interfaces())
     {
       // merge active sets and slip sets of all interfaces
       // (these maps are NOT allowed to be overlapping !!!)
-      Interfaces()[i]->BuildActiveSet(true);
-      gactivenodes_ = LINALG::MergeMap(gactivenodes_, Interfaces()[i]->ActiveNodes(), false);
-      gactivedofs_ = LINALG::MergeMap(gactivedofs_, Interfaces()[i]->ActiveDofs(), false);
-      gactiven_ = LINALG::MergeMap(gactiven_, Interfaces()[i]->ActiveNDofs(), false);
-      gactivet_ = LINALG::MergeMap(gactivet_, Interfaces()[i]->ActiveTDofs(), false);
+      interface->BuildActiveSet(true);
+      gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface->ActiveNodes(), false);
+      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface->ActiveDofs(), false);
+      gactiven_ = LINALG::MergeMap(gactiven_, interface->ActiveNDofs(), false);
+      gactivet_ = LINALG::MergeMap(gactivet_, interface->ActiveTDofs(), false);
 
       if (friction_)
       {
-        gslipnodes_ = LINALG::MergeMap(gslipnodes_, Interfaces()[i]->SlipNodes(), false);
-        gslipdofs_ = LINALG::MergeMap(gslipdofs_, Interfaces()[i]->SlipDofs(), false);
-        gslipt_ = LINALG::MergeMap(gslipt_, Interfaces()[i]->SlipTDofs(), false);
+        gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface->SlipNodes(), false);
+        gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface->SlipDofs(), false);
+        gslipt_ = LINALG::MergeMap(gslipt_, interface->SlipTDofs(), false);
       }
     }
 
@@ -2686,26 +2683,26 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(llmn, glmn, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(lgap, ggap, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<int>(lsta, gsta, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(llmn, glmn, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(lgap, ggap, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<int>(lsta, gsta, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), &allproc[0], Comm());
-  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
+  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
 
   // communicate some more data to proc 0 for friction
   if (friction_)
   {
-    LINALG::Gather<double>(llmt, glmt, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(ljtx, gjtx, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(ljte, gjte, (int)allproc.size(), &allproc[0], Comm());
-    LINALG::Gather<double>(lwear, gwear, (int)allproc.size(), &allproc[0], Comm());
+    LINALG::Gather<double>(llmt, glmt, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(ljtx, gjtx, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(ljte, gjte, (int)allproc.size(), allproc.data(), Comm());
+    LINALG::Gather<double>(lwear, gwear, (int)allproc.size(), allproc.data(), Comm());
   }
 
   // output is solely done by proc 0
@@ -2896,29 +2893,21 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   {
     if (nonsmooth)
     {
-      std::cout << BLUE2_LIGHT << "Total ACTIVE SURFACE nodes:\t" << gsurfacenodes << END_COLOR
-                << std::endl;
-      std::cout << BLUE2_LIGHT << "Total    ACTIVE EDGE nodes:\t" << gedgenodes << END_COLOR
-                << std::endl;
-      std::cout << BLUE2_LIGHT << "Total  ACTIVE CORNER nodes:\t" << gcornernodes << END_COLOR
-                << std::endl;
-      std::cout << RED_LIGHT << "Total       INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total ACTIVE SURFACE nodes:\t" << gsurfacenodes << std::endl;
+      std::cout << "Total    ACTIVE EDGE nodes:\t" << gedgenodes << std::endl;
+      std::cout << "Total  ACTIVE CORNER nodes:\t" << gcornernodes << std::endl;
+      std::cout << "Total       INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
     else if (friction_)
     {
-      std::cout << BLUE2_LIGHT << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << std::endl;
-      std::cout << BLUE2_LIGHT << "Total    STICK nodes:\t" << gactivenodes - gslipnodes
-                << END_COLOR << std::endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total     SLIP nodes:\t" << gslipnodes << std::endl;
+      std::cout << "Total    STICK nodes:\t" << gactivenodes - gslipnodes << std::endl;
+      std::cout << "Total INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
     else
     {
-      std::cout << BLUE2_LIGHT << "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR
-                << std::endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR
-                << std::endl;
+      std::cout << "Total   ACTIVE nodes:\t" << gactivenodes << std::endl;
+      std::cout << "Total INACTIVE nodes:\t" << ginactivenodes << std::endl;
     }
   }
 #endif  // #ifdef CONTACTASOUTPUT

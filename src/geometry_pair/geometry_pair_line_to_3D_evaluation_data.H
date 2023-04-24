@@ -8,15 +8,15 @@
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
-#define GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_GLOBAL_H
+#ifndef GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_H
+#define GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_H
 
 
 #include "geometry_pair_evaluation_data_base.H"
 #include "geometry_pair_utility_classes.H"
 
 #include "inpar_geometry_pair.H"
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 
 
 namespace GEOMETRYPAIR

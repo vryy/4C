@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
-#define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
+#ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H
+#define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H
 
 #include <Epetra_Operator.h>
 #include <Epetra_MultiVector.h>
@@ -33,18 +33,18 @@ namespace LINALG::SOLVER
 
     // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
-    virtual void Setup(
-        bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+    void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+        Epetra_MultiVector* b) override;
 
-    virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+    void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
     /// return the projecting operator
-    virtual Epetra_Operator* PrecOperator() const { return &*P_; }
+    Epetra_Operator* PrecOperator() const override { return &*P_; }
 
     /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return P_; }
 
-    virtual void Print(std::ostream& stream)
+    void Print(std::ostream& stream) const override
     {
       stream << "krylov projection(";
       preconditioner_->Print(stream);
@@ -52,7 +52,7 @@ namespace LINALG::SOLVER
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    virtual const std::string getParameterListName() const { return "unknown"; }
+    const std::string getParameterListName() const override { return "unknown"; }
 
    private:
     Teuchos::RCP<PreconditionerType> preconditioner_;

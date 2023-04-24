@@ -10,17 +10,17 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_COUPLING_BASE_H_
-#define XFEM_COUPLING_BASE_H_
+#ifndef XFEM_COUPLING_BASE_H
+#define XFEM_COUPLING_BASE_H
 
 
 #include <vector>
 #include <Teuchos_RCP.hpp>
 //
 #include "inpar_xfem.H"
-#include "dserror.H"
-#include "discret.H"
-#include "globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 
 #include <Epetra_Vector.h>
 
@@ -603,4 +603,4 @@ namespace XFEM
 
 }  // namespace XFEM
 
-#endif /*XFEM_COUPLING_BASE_H_*/
+#endif  // XFEM_COUPLING_BASE_H

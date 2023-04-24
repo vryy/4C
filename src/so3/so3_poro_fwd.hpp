@@ -1,3 +1,6 @@
+#ifndef SO3_SO3_PORO_FWD_HPP
+#define SO3_SO3_PORO_FWD_HPP
+
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief forward declarations (explicit instantiation) of the templated poro elements
@@ -10,3 +13,5 @@ template class DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet
 template class DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
 template class DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
 template class DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>;
+
+#endif
