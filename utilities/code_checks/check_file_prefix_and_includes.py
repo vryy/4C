@@ -5,6 +5,24 @@ import common_utils as utils
 import os
 import re
 
+# The name of files that indicate that a directory should be treated as module root directoy.
+module_root_maker_file_name = ".contains_modules"
+
+
+def find_all_module_roots(folder):
+    """
+    Recursively step through all directories and return all paths that contain module root marker files.
+    """
+
+    def is_module_root(files):
+        return any(f == module_root_maker_file_name for f in files)
+
+    return [
+        base
+        for base, dirs, files in os.walk(os.path.abspath(folder))
+        if is_module_root(files)
+    ]
+
 
 def is_prefixed_by_module(file, module):
     """
@@ -13,14 +31,27 @@ def is_prefixed_by_module(file, module):
     return file.startswith(module + "_") or file.startswith(module + ".")
 
 
-def has_valid_prefix(path, module_root):
+def most_specific_module_root(file, module_roots):
+    return next((m for m in module_roots if file.startswith(m)), None)
+
+
+def has_valid_prefix(path, module_roots):
     abs_path, file = os.path.split(os.path.abspath(path))
 
-    assert abs_path.startswith(os.path.abspath(module_root))
+    my_module_root = most_specific_module_root(abs_path, module_roots)
+
+    if my_module_root is None:
+        raise RuntimeError(
+            "File '"
+            + path
+            + "' is not located under any module root and cannot be analyzed."
+        )
+
+    assert abs_path.startswith(os.path.abspath(my_module_root))
     # The module name is the first directory in the file that can be reached from the module_root.
-    module = os.path.relpath(abs_path, os.path.abspath(module_root)).split(os.path.sep)[
-        0
-    ]
+    module = os.path.relpath(abs_path, os.path.abspath(my_module_root)).split(
+        os.path.sep
+    )[0]
     return is_prefixed_by_module(file, module)
 
 
@@ -94,25 +125,29 @@ def invalid_includes(path, module_names):
     return invalid_include_lines
 
 
-def check_cpp_files_for_prefix(look_cmd, module_root):
+def check_cpp_files_for_prefix(look_cmd, module_roots):
     wrongly_prefixed_files = [
         ff
         for ff in utils.files_changed(look_cmd)
-        if utils.is_source_file(ff) and not has_valid_prefix(ff, module_root)
+        if utils.is_source_file(ff) and not has_valid_prefix(ff, module_roots)
     ]
     return wrongly_prefixed_files
 
 
-def check_include_style(look_cmd, module_root):
-    module_names = [os.path.basename(x[0]) for x in os.walk(module_root)]
-    # first entry is the module directory itself
-    module_names.pop(0)
+def check_include_style(look_cmd, module_roots):
+    def get_module_names(module_root):
+        module_names = [
+            os.path.basename(f.path) for f in os.scandir(module_root) if f.is_dir()
+        ]
+        return module_names
+
+    all_module_names = [i for m in module_roots for i in get_module_names(m)]
 
     files_with_wrong_include_style = [
         output
         for ff in utils.files_changed(look_cmd)
         if utils.is_source_file(ff)
-        for output in invalid_includes(ff, module_names)
+        for output in invalid_includes(ff, all_module_names)
     ]
     return files_with_wrong_include_style
 
@@ -122,11 +157,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "path", help="The path in which to check source files for the correct prefix."
-    )
-    parser.add_argument(
-        "module_root",
-        help="The root folder that contains all the module folders. Every folder contained inside"
-        "module_root will be treated as a valid module name",
     )
 
     parser.add_argument(
@@ -149,9 +179,15 @@ def main():
     else:
         look_cmd = "git ls-files " + args.path
 
-    allerrors = check_cpp_files_for_prefix(look_cmd, args.module_root)
+    # Get all the module roots and sort them in reverse.
+    # This has the effect that longer paths come before shorter paths. If we match files to the module roots in this
+    # sorted order, we can abort at the first match and be sure to have the most specific match.
+    module_roots = find_all_module_roots(args.path)
+    module_roots.sort(reverse=True)
 
-    allerrors_include = check_include_style(look_cmd, args.module_root)
+    allerrors = check_cpp_files_for_prefix(look_cmd, module_roots)
+
+    allerrors_include = check_include_style(look_cmd, module_roots)
 
     utils.pretty_print_error_report(
         "The following files are not prefixed by the module they reside in:",
