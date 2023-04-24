@@ -15,9 +15,9 @@
 #include "adapter_ale_fluid.H"
 
 #include "fluid_utils_mapextractor.H"
-#include "adapter_coupling.H"
-#include "adapter_coupling_volmortar.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
+#include "coupling_adapter_mortar.H"
 #include "inpar_ale.H"
 #include "inpar_fsi.H"
 

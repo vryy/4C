@@ -11,7 +11,7 @@
 
 
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "io_control.H"
 

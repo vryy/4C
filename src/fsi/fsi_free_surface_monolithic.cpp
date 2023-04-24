@@ -10,7 +10,7 @@
 
 /*----------------------------------------------------------------------------*/
 #include "fsi_free_surface_monolithic.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_ale_fluid.H"
 
 #include "fsi_overlapprec_fsiamg.H"

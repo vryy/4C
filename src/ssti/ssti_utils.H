@@ -16,7 +16,7 @@
 #include "ssi_clonestrategy.H"
 #include "sti_clonestrategy.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 namespace ADAPTER
 {

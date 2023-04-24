@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef ADAPTER_COUPLING_VOLMORTAR_H
-#define ADAPTER_COUPLING_VOLMORTAR_H
+#ifndef COUPLING_ADAPTER_VOLMORTAR_H
+#define COUPLING_ADAPTER_VOLMORTAR_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/13 |
@@ -18,7 +18,7 @@
 #include <Epetra_Vector.h>
 #include "linalg_fixedsizematrix.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |
@@ -231,4 +231,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif  // ADAPTER_COUPLING_VOLMORTAR_H
+#endif  // COUPLING_ADAPTER_VOLMORTAR_H

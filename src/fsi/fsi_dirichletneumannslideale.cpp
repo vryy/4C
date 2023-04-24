@@ -19,8 +19,8 @@
 #include "mortar_interface.H"
 #include "inpar_fsi.H"
 #include "adapter_str_fsiwrapper.H"
-#include "adapter_coupling.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 #include "lib_globalproblem.H"
 
 #include "inpar_fsi.H"

@@ -12,7 +12,7 @@
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "inpar_s2i.H"

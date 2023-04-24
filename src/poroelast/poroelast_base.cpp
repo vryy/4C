@@ -16,8 +16,8 @@
 #include "poroelast_defines.H"
 #include "poroelast_utils.H"
 
-#include "adapter_coupling.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_fld_poro.H"
 #include "adapter_str_fpsiwrapper.H"

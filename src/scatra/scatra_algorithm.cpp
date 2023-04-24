@@ -11,7 +11,7 @@
 
 #include "scatra_algorithm.H"
 
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 #include "fluid_turbulence_statistic_manager.H"
 #include "lib_globalproblem.H"
 #include "scatra_timint_implicit.H"

@@ -12,8 +12,8 @@
 #include "fsi_structureale.H"
 
 #include "adapter_str_fsiwrapper.H"
-#include "adapter_coupling.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_ale_fluid.H"
 
 #include "fsi_utils.H"

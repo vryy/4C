@@ -257,6 +257,7 @@ set(BACI_LIBRARIES
     ${SINGLEFIELD_LIBRARIES}
     ${SUPPORT_LIBRARIES}
     adapter
+    baci::core
     cardiovascular0d
     comm
     constraint
@@ -276,7 +277,6 @@ set(BACI_LIBRARIES
     solver
     stru_multi
     timestepping
-    volmortar
     )
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)

@@ -13,7 +13,7 @@
 
 #include "ssti_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 

@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "volmortar_cell.H"
+#include "coupling_volmortar_cell.H"
 #include "linalg_serialdensematrix.H"
 #include "fem_general_utils_fem_shapefunctions.H"
 

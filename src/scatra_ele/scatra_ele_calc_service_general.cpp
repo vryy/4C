@@ -27,7 +27,7 @@
 
 #include "mat_scatra_mat_multiscale.H"
 
-#include "volmortar_shape.H"
+#include "coupling_volmortar_shape.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

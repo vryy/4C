@@ -14,7 +14,7 @@
 #define XFEM_XFIELD_FIELD_COUPLING_H
 
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_dserror.H"
 // due to enum use ...
 #include "xfem_multi_field_mapextractor.H"

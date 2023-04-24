@@ -11,8 +11,8 @@
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
-#include "adapter_coupling.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 
 #include "fluid_utils.H"
 #include "linalg_matrixtransform.H"
@@ -43,7 +43,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "volmortar_shape.H"
+#include "coupling_volmortar_shape.H"
 
 #include "linalg_multiply.H"
 #include "solver_linalg_solver.H"

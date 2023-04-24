@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_H
-#define ADAPTER_COUPLING_H
+#ifndef COUPLING_ADAPTER_H
+#define COUPLING_ADAPTER_H
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -755,4 +755,4 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-#endif  // ADAPTER_COUPLING_H
+#endif  // COUPLING_ADAPTER_H

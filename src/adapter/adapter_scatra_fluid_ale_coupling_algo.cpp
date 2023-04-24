@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 #include "lib_globalproblem.H"

@@ -17,7 +17,7 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_discret.H"
 #include "lib_globalproblem.H"

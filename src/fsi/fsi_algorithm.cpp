@@ -11,7 +11,7 @@
 
 #include "fsi_algorithm.H"
 #include "fsi_str_model_evaluator_partitioned.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "adapter_str_fsiwrapper.H"

@@ -19,7 +19,7 @@
 #include "adapter_str_structure_new.H"
 #include "adapter_str_factory.H"
 #include "adapter_str_wrapper.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "inpar_tsi.H"
 #include "lib_globalproblem.H"
 #include "io.H"
@@ -28,8 +28,8 @@
 #include "lib_discret.H"
 
 // for coupling of nonmatching meshes
-#include "adapter_coupling_volmortar.H"
-#include "volmortar_utils.H"
+#include "coupling_adapter_volmortar.H"
+#include "coupling_volmortar_utils.H"
 
 // contact
 #include "contact_lagrange_strategy.H"

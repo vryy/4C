@@ -32,7 +32,7 @@
 #include "lib_discret.H"
 #include "lib_periodicbc.H"
 
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |

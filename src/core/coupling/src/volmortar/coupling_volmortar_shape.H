@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef VOLMORTAR_SHAPE_H
-#define VOLMORTAR_SHAPE_H
+#ifndef COUPLING_VOLMORTAR_SHAPE_H
+#define COUPLING_VOLMORTAR_SHAPE_H
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
@@ -1990,4 +1990,4 @@ namespace VOLMORTAR
   }  // namespace UTILS
 }  // namespace VOLMORTAR
 
-#endif  // VOLMORTAR_SHAPE_H
+#endif  // COUPLING_VOLMORTAR_SHAPE_H
