@@ -19,6 +19,7 @@ set(OBJS_SOLVER
     solver_mlpreconditioner.cpp
     solver_muelupreconditioner.cpp
     solver_pointpreconditioner.cpp
+    solver_solverparameters.cpp
     )
 
 baci_add_library(solver ${OBJS_SOLVER})
