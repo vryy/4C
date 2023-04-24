@@ -54,7 +54,6 @@
 #include "inpar_validparameters.H"
 #include "inpar_contact.H"
 
-
 #include "so3_sh8p8.H"
 #include "so3_plast_ssn_eletypes.H"
 #include "so3_plast_ssn_sosh8.H"
