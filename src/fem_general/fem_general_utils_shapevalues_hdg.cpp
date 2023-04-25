@@ -9,7 +9,6 @@
 #include "fem_general_utils_shapevalues_hdg.H"
 #include "fem_general_utils_boundary_integration.H"
 #include "geometry_position_array.H"
-#include "fluid_ele.H"
 #include "headers_singleton_owner.H"
 
 
@@ -376,17 +375,6 @@ void DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
           }
           else
           {
-            std::cout << "element id: " << ele.Id() << " " << ele.Neighbor(face)->Id() << std::endl;
-            const DRT::ELEMENTS::FluidIntFace* faceel =
-                dynamic_cast<const DRT::ELEMENTS::FluidIntFace*>(ele.Faces()[face].getRawPtr());
-            if (faceel != NULL)
-            {
-              std::vector<int> trafo =
-                  const_cast<DRT::ELEMENTS::FluidIntFace*>(faceel)->GetLocalTrafoMap();
-              for (unsigned int i = 0; i < 4; ++i) std::cout << trafo[i] << " ";
-            }
-            for (unsigned int i = 0; i < 4; ++i) std::cout << trafomap[i] << " ";
-            std::cout << std::endl << std::flush;
             dserror("Unknown HEX face orientation in 3D");
           }
         }
