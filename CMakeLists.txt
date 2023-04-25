@@ -246,7 +246,6 @@ set(SUPPORT_LIBRARIES
     lib_xfem
     lib_xfem_manag
     particleengine
-    patspec
     red_airways
     )
 

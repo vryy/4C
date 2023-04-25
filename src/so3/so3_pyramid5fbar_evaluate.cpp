@@ -21,7 +21,6 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "so3_prestress.H"
-#include "patspec.H"
 
 #include "structure_new_elements_paramsinterface.H"
 
@@ -89,10 +88,6 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   else
     dserror("Unknown type of action for So_pyramid5fbar");
 
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)

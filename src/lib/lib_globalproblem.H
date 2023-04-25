@@ -311,10 +311,6 @@ namespace DRT
     {
       return getParameterList()->sublist("DESIGN DESCRIPTION");
     }
-    const Teuchos::ParameterList& PatSpecParams() const
-    {
-      return getParameterList()->sublist("PATIENT SPECIFIC");
-    }
     const Teuchos::ParameterList& StructuralDynamicParams() const
     {
       return getParameterList()->sublist("STRUCTURAL DYNAMIC");

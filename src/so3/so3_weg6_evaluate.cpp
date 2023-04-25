@@ -20,7 +20,6 @@
 #include "mat_elasthyper.H"
 #include "mat_constraintmixture.H"
 #include "mat_so3_material.H"
-#include "patspec.H"
 #include "lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -86,11 +85,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else
     dserror("Unknown type of action for So_weg6");
-
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)
@@ -381,18 +375,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      // determine new fiber directions
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec, "REMODEL");
-      if (remodel)
-      {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        sow6_remodel(lm, mydisp, params, Material());
-      }
       SolidMaterial()->Update();
     }
     break;

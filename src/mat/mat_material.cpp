@@ -821,7 +821,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_structuraltensorstratgy:
     case INPAR::MAT::mes_coupvarga:
     case INPAR::MAT::mes_isovarga:
-    case INPAR::MAT::mes_isovolHUdependentneohooke:
     case INPAR::MAT::mes_isovolaaagasser:
     case INPAR::MAT::mes_isotestmaterial:
     case INPAR::MAT::mes_coupmyocard:

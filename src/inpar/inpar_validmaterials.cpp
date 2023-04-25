@@ -1664,22 +1664,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-  // isochoric and volumetric contribution of HU dependent NeoHooke
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolHUDependentNeoHooke",
-        "isochoric and volumetric part of HU dependent neo-Hooke material",
-        INPAR::MAT::mes_isovolHUdependentneohooke));
-
-    AddNamedReal(m, "ALPHA_MAX", "");
-    AddNamedReal(m, "CT_MIN", "");
-    AddNamedReal(m, "CT_MAX", "");
-    AddNamedReal(m, "NUE", "");
-    AddNamedReal(m, "BETA", "");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
   // isochoric and volumetric contribution of AAAGasser
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolAAAGasser",

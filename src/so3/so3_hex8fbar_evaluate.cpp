@@ -25,7 +25,6 @@
 #include "fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "so3_prestress.H"
-#include "patspec.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "structure_new_enum_lists.H"
 #include "so3_utils.H"
@@ -99,10 +98,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     else
       dserror("Unknown type of action for So_hex8fbar");
   }
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)

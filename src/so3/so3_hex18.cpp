@@ -77,9 +77,7 @@ void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda");
+      .AddOptionalNamedDouble("STRENGTH");
 }
 
 /*----------------------------------------------------------------------*
