@@ -12,7 +12,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include <Sacado.hpp>
 using FAD = Sacado::Fad::DFad<double>;

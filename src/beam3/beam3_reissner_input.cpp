@@ -16,7 +16,7 @@
 
 #include "lib_linedefinition.H"
 
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

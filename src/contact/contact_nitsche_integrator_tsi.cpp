@@ -17,7 +17,7 @@
 
 #include <Epetra_FEVector.h>
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "mat_elasthyper.H"
 

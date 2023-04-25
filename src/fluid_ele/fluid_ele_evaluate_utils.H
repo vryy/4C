@@ -16,8 +16,8 @@
 #include "fluid_ele_parameter_std.H"
 #include "lib_element_integration_select.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 #include "geometry_position_array.H"
 

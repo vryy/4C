@@ -13,7 +13,7 @@
 #define CONTACT_AUG_INTEGRATOR_H
 
 #include "contact_integrator.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "contact_aug_integrator_policy.H"
 
 namespace MORTAR

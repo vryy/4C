@@ -17,7 +17,7 @@
 #include "io.H"
 #include "structure_new_model_evaluator_data.H"
 #include "structure_new_timint_basedataglobalstate.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

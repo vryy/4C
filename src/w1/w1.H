@@ -24,10 +24,10 @@
 #include "lib_parobjectfactory.H"
 #include "lib_node.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_structure.H"
 
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 #include "so3_base.H"
 

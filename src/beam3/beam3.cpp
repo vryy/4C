@@ -16,7 +16,7 @@
 #include "lib_element.H"
 #include "inpar_validparameters.H"
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "lib_linedefinition.H"
 #include "beaminteraction_periodic_boundingbox.H"
 

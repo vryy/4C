@@ -14,7 +14,7 @@
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "so3_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

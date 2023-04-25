@@ -29,12 +29,12 @@ For a detailed description see:
 #include "mat_service.H"
 #include "lib_linedefinition.H"
 #include "comm_utils.H"
-#include "io_gmsh.H"                               // for debug plotting with gmsh
-#include "io_control.H"                            // for debug plotting with gmsh
-#include "fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
-#include "fem_general_utils_integration.H"         // for debug plotting with gmsh
-#include "lib_utils.H"                             // for debug plotting with gmsh
-#include "inpar_structure.H"                       // for pstime
+#include "io_gmsh.H"                                              // for debug plotting with gmsh
+#include "io_control.H"                                           // for debug plotting with gmsh
+#include "discretization_fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
+#include "discretization_fem_general_utils_integration.H"         // for debug plotting with gmsh
+#include "lib_utils.H"                                            // for debug plotting with gmsh
+#include "inpar_structure.H"                                      // for pstime
 #include "lib_function_of_time.H"
 #include "lib_prestress_service.H"
 

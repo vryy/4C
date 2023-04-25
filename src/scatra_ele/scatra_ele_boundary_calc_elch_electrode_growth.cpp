@@ -16,7 +16,7 @@ growth, e.g., lithium plating
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "mat_electrode.H"
 #include "headers_singleton_owner.H"

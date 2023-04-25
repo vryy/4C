@@ -21,7 +21,7 @@
 #include "linalg_utils_nullspace.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "lib_linedefinition.H"
 #include "inpar_structure.H"
 #include "beaminteraction_periodic_boundingbox.H"

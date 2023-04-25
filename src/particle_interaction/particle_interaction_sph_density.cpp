@@ -26,7 +26,7 @@
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "lib_element.H"
 #include "lib_utils.H"

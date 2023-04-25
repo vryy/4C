@@ -13,7 +13,7 @@ equations
 #include "cut_tolerance.H"
 #include "cut_base.H"
 #include "cut_base_boundarycell.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include <cmath>
 #include <iostream>

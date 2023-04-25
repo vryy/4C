@@ -18,7 +18,7 @@
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "contact_element.H"
 #include "contact_node.H"

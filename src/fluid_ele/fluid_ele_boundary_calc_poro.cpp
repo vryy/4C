@@ -14,7 +14,7 @@
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "lib_globalproblem.H"
 

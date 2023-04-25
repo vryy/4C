@@ -10,7 +10,7 @@
 #include "scatra_ele_boundary_calc_sti_electrode.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "lib_discret.H"
 

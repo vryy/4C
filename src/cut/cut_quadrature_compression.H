@@ -11,7 +11,7 @@
 #ifndef CUT_QUADRATURE_COMPRESSION_H
 #define CUT_QUADRATURE_COMPRESSION_H
 
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 namespace Teuchos
 {

@@ -21,7 +21,7 @@
 #include "post_common.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "io_legacy_table_cpp.h"
 #include "thermo_ele_action.H"
 

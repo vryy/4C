@@ -29,7 +29,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "fluid_ele_parameter_intface.H"
 
 #include "lib_utils.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "headers_singleton_owner.H"
 

@@ -10,7 +10,7 @@
 
 #include "membrane_scatra.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "lib_discret.H"
 #include "lib_utils.H"

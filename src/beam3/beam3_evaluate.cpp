@@ -18,10 +18,10 @@
 #include "lib_dserror.H"
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_stvenantkirchhoff.H"
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "structure_new_elements_paramsinterface.H"
 
 

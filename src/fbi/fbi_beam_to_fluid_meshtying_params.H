@@ -12,7 +12,7 @@
 #define FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_H
 
 #include "beaminteraction_contact_params.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 namespace INPAR
 {

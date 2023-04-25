@@ -15,9 +15,9 @@
 
 #include "elemag_ele_interface.H"
 #include "elemag_diff_ele.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 #include "inpar_elemag.H"
-#include "fem_general_utils_shapevalues_hdg.H"
+#include "discretization_fem_general_utils_shapevalues_hdg.H"
 
 #include "headers_singleton_owner.H"
 

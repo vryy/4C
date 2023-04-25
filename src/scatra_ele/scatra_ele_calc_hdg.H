@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_calc.H"
 #include "inpar_scatra.H"
-#include "fem_general_utils_shapevalues_hdg.H"
+#include "discretization_fem_general_utils_shapevalues_hdg.H"
 
 
 

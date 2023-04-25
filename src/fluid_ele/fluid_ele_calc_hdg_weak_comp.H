@@ -14,7 +14,7 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "inpar_fluid.H"
-#include "fem_general_utils_shapevalues_hdg.H"
+#include "discretization_fem_general_utils_shapevalues_hdg.H"
 
 #include "headers_singleton_owner.H"
 

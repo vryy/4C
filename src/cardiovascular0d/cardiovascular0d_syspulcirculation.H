@@ -48,7 +48,7 @@ Res =                                                                           
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_FECrsMatrix.h>
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_cardiovascular0d.H"
 // class which is inherited from
 #include "cardiovascular0d.H"

@@ -21,7 +21,7 @@
 #include "lib_parobjectfactory.H"
 #include "lib_elementtype.H"
 #include "lib_node.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 
 // forward declarations

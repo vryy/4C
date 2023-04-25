@@ -17,7 +17,7 @@
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
 

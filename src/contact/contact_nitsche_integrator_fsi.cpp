@@ -13,7 +13,7 @@
 #include "contact_element.H"
 #include "contact_node.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "so3_hex8.H"
 #include "so3_poro.H"
