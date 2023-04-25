@@ -219,7 +219,6 @@ set(SINGLEFIELD_LIBRARIES
 
 set(SUPPORT_LIBRARIES
     # cmake-format: sortable
-    fem_general
     geometry_pair
     inpar
     io

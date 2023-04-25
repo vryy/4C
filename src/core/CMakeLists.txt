@@ -2,5 +2,6 @@
 baci_define_module(core)
 add_library(baci::core ALIAS core)
 
-target_link_libraries(core INTERFACE coupling)
+target_link_libraries(core INTERFACE coupling discretization)
 add_subdirectory(coupling)
+add_subdirectory(discretization)
