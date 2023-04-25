@@ -16,7 +16,7 @@ algorithms
 
 #include "adapter_str_wrapper.H"
 #include "adapter_lubrication.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_coupling_ehl_mortar.H"
 #include "contact_interface.H"
 #include "contact_node.H"

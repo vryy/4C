@@ -12,7 +12,7 @@
 #include "mortar_multifield_coupling.H"
 #include "linalg_blocksparsematrix.H"
 #include "lib_discret.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_utils.H"
 
 /*-----------------------------------------------------------------------*/

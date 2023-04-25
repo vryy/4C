@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_poro_wrapper.H"
 #include "adapter_fld_poro.H"
 #include "poroelast_monolithic.H"

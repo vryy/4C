@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef ADAPTER_COUPLING_MORTAR_H
-#define ADAPTER_COUPLING_MORTAR_H
+#ifndef COUPLING_ADAPTER_MORTAR_H
+#define COUPLING_ADAPTER_MORTAR_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 #include "lib_dserror.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace LINALG
@@ -372,4 +372,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif  // ADAPTER_COUPLING_MORTAR_H
+#endif  // COUPLING_ADAPTER_MORTAR_H

@@ -7,12 +7,12 @@
 
  *----------------------------------------------------------------------*/
 
-#include "volmortar_coupling.H"
+#include "coupling_volmortar.H"
 
 #include "lib_discret.H"
 #include "lib_utils.H"
 
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|

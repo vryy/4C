@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include "inpar_poroelast.H"
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 #include "lib_element.H"
 
 

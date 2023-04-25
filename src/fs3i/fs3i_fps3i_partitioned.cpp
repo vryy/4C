@@ -28,7 +28,7 @@
 #include "solver_linalg_solver.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "ale_utils_clonestrategy.H"
 #include "lib_condition_utils.H"

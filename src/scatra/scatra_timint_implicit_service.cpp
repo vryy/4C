@@ -12,7 +12,7 @@
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "scatra_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "fluid_turbulence_dyn_smag.H"

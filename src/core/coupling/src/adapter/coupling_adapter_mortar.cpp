@@ -8,7 +8,7 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
@@ -23,7 +23,6 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "solver_linalg_solver.H"
 #include "inpar_fluid.H"
 
 /*----------------------------------------------------------------------*

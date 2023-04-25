@@ -10,13 +10,13 @@
 #include "ssi_coupling.H"
 
 // for coupling of nonmatching meshes
-#include "adapter_coupling_volmortar.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_volmortar.H"
+#include "coupling_adapter_mortar.H"
 
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_str_wrapper.H"
 
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 
 #include "lib_condition_utils.H"
 #include "lib_dofset_definedmapping_wrapper.H"

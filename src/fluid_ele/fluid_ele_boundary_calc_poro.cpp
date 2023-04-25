@@ -29,7 +29,7 @@
 #include "fluid_ele_boundary_calc_poro.H"
 
 // for dual shape functions
-#include "volmortar_shape.H"
+#include "coupling_volmortar_shape.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*

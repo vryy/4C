@@ -27,7 +27,7 @@
 #include "ale_utils_clonestrategy.H"
 #include "ale_utils_mapextractor.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_ale_fsi.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"

@@ -11,10 +11,10 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "volmortar_integrator.H"
-#include "volmortar_shape.H"
-#include "volmortar_defines.H"
-#include "volmortar_cell.H"
+#include "coupling_volmortar_integrator.H"
+#include "coupling_volmortar_shape.H"
+#include "coupling_volmortar_defines.H"
+#include "coupling_volmortar_cell.H"
 
 #include "fem_general_utils_integration.H"
 

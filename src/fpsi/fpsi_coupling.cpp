@@ -30,7 +30,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "lib_condition_selector.H"
 //
 // ADAPTER includes
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
 #include "adapter_fld_fluid.H"

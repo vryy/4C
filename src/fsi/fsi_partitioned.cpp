@@ -14,8 +14,8 @@
 #include "fsi_utils.H"
 
 #include "adapter_str_fsiwrapper.H"
-#include "adapter_coupling.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_fld_fluid_xfem.H"
 #include "adapter_fld_fluid.H"
 #include "adapter_fld_fluid_xfsi.H"

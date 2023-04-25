@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------*
  | definitions                                             farah 01/14 |
  *---------------------------------------------------------------------*/
-#ifndef VOLMORTAR_CELL_H
-#define VOLMORTAR_CELL_H
+#ifndef COUPLING_VOLMORTAR_CELL_H
+#define COUPLING_VOLMORTAR_CELL_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
@@ -90,4 +90,4 @@ namespace VOLMORTAR
 
 }  // namespace VOLMORTAR
 
-#endif  // VOLMORTAR_CELL_H
+#endif  // COUPLING_VOLMORTAR_CELL_H

@@ -15,7 +15,7 @@
 #include "fluid_meshtying.H"
 #include "fluid_utils.H"
 #include "fluid_utils_mapextractor.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "mortar_node.H"
 #include "linalg_utils_sparse_algebra_create.H"

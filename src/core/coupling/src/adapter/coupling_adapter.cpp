@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_matchingoctree.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "lib_condition_utils.H"

@@ -11,7 +11,7 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_dserror.H"
 
 #include <NOX_Abstract_Vector.H>

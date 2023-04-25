@@ -9,7 +9,7 @@
 
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_condition_selector.H"
 #include "linalg_matrixtransform.H"
 

@@ -12,7 +12,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /// Adapters
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_fld_fluid_ale_xfem.H"
 #include "adapter_ale_fluid.H"
 #include "adapter_fld_fluid_xfsi.H"

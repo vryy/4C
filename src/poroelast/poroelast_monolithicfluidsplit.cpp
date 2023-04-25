@@ -13,7 +13,7 @@
 
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "fluid_utils_mapextractor.H"

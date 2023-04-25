@@ -21,7 +21,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_multiply.H"
 #include "inpar_thermo.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "contact_tsi_interface.H"
 
 #include "linalg_sparsematrix.H"

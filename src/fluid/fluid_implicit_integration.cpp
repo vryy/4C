@@ -51,7 +51,7 @@
 #include "lib_assemblestrategy.H"
 #include "lib_locsys.H"
 #include "comm_utils.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "nurbs_discret_apply_nurbs_initial_condition.H"
 #include "mat_par_bundle.H"
 #include "mat_newtonianfluid.H"

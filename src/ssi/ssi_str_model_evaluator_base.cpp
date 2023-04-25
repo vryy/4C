@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "ssi_str_model_evaluator_base.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_ssiwrapper.H"
 #include "lib_exporter.H"
 #include "lib_utils_gid_vector.H"
