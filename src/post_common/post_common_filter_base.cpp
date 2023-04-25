@@ -18,10 +18,10 @@
 #include "post_vtk_vti_writer.H"
 
 
-#include "pss_full_cpp.h"
+#include "io_legacy_table_cpp.h"
 extern "C"
 {
-#include "pss_full_table_iter.h"
+#include "io_legacy_table_iter.h"
 }
 
 

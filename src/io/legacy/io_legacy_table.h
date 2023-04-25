@@ -37,11 +37,10 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#ifndef PSS_FULL_TABLE_H
-#define PSS_FULL_TABLE_H
+#ifndef IO_LEGACY_TABLE_H
+#define IO_LEGACY_TABLE_H
 
-#include "pss_full_am.h"
-#include "pss_full_types.h"
+#include "io_legacy_types.h"
 #include <mpi.h> /* Be careful: this is the C mpi header */
 
 
@@ -71,62 +70,62 @@ void destroy_map(MAP* map);
 
 /* Find the first symbol with the given key. Use this if you have to
  * travel all symbols with that key. */
-SYMBOL* map_find_symbol(MAP* map, const CHAR* key);
+SYMBOL* map_find_symbol(MAP* map, const char* key);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Returns false on failure. */
-INT map_find_string(MAP* map, const CHAR* key, CHAR** string);
-INT map_find_int(MAP* map, const CHAR* key, INT* integer);
-INT map_find_real(MAP* map, const CHAR* key, DOUBLE* real);
-INT map_find_map(MAP* map, const CHAR* key, MAP** dir);
+int map_find_string(MAP* map, const char* key, char** string);
+int map_find_int(MAP* map, const char* key, int* integer);
+int map_find_real(MAP* map, const char* key, double* real);
+int map_find_map(MAP* map, const char* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Calls dserror on failture. */
-CHAR* map_read_string(MAP* map, const CHAR* key);
-INT map_read_int(MAP* map, const CHAR* key);
-DOUBLE map_read_real(MAP* map, const CHAR* key);
-MAP* map_read_map(MAP* map, const CHAR* key);
+char* map_read_string(MAP* map, const char* key);
+int map_read_int(MAP* map, const char* key);
+double map_read_real(MAP* map, const char* key);
+MAP* map_read_map(MAP* map, const char* key);
 
 
 /* Tell whether there is a symbol with given key and value. Only the
  * last symbol with that key is checked. */
-INT map_has_string(MAP* map, const CHAR* key, const CHAR* value);
-INT map_has_int(MAP* map, const CHAR* key, const INT value);
-INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value);
-INT map_has_map(MAP* map, const CHAR* key);
+int map_has_string(MAP* map, const char* key, const char* value);
+int map_has_int(MAP* map, const char* key, const int value);
+int map_has_real(MAP* map, const char* key, const double value);
+int map_has_map(MAP* map, const char* key);
 
 
 /* Insert a new symbol. */
-void map_insert_string(MAP* map, CHAR* string, CHAR* key);
-void map_insert_int(MAP* map, INT integer, CHAR* key);
-void map_insert_real(MAP* map, DOUBLE real, CHAR* key);
-void map_insert_map(MAP* map, MAP* dir, CHAR* key);
+void map_insert_string(MAP* map, char* string, char* key);
+void map_insert_int(MAP* map, int integer, char* key);
+void map_insert_real(MAP* map, double real, char* key);
+void map_insert_map(MAP* map, MAP* dir, char* key);
 
 
 /* Tell the number of symbols under this key. */
-INT map_symbol_count(MAP* map, const CHAR* key);
+int map_symbol_count(MAP* map, const char* key);
 
 
 /* Take a symbol chain out of the map. Leave the symbol alive. */
-void map_disconnect_symbols(MAP* map, const CHAR* key);
+void map_disconnect_symbols(MAP* map, const char* key);
 
 
 /* Prepend the symbol chain to one under the given key. */
-void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count);
+void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count);
 
 
 /* Tell whether this symbol has the given type. */
-INT symbol_is_map(const SYMBOL* symbol);
+int symbol_is_map(const SYMBOL* symbol);
 
 
 /* Extract the value of this symbol. Returns false on failture. */
-INT symbol_get_string(const SYMBOL* symbol, CHAR** string);
-INT symbol_get_int(const SYMBOL* symbol, INT* integer);
-INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real);
-INT symbol_get_real_as_float(const SYMBOL* symbol, float* real);
-INT symbol_get_map(const SYMBOL* symbol, MAP** map);
+int symbol_get_string(const SYMBOL* symbol, char** string);
+int symbol_get_int(const SYMBOL* symbol, int* integer);
+int symbol_get_real(const SYMBOL* symbol, double* real);
+int symbol_get_real_as_float(const SYMBOL* symbol, float* real);
+int symbol_get_map(const SYMBOL* symbol, MAP** map);
 
 
 /* Extract the value of this symbol. Call dserror on failure. */
@@ -134,12 +133,12 @@ MAP* symbol_map(const SYMBOL* symbol);
 
 
 /* Read the control file given by name. Put its contents into the map. */
-void parse_control_file(MAP* map, const CHAR* filename, MPI_Comm comm);
+void parse_control_file(MAP* map, const char* filename, MPI_Comm comm);
 
 
 /* Read the control file given by name. Put its contents into the map.
  * (serial only!)*/
-void parse_control_file_serial(MAP* map, const CHAR* filename);
+void parse_control_file_serial(MAP* map, const char* filename);
 
 
 #endif

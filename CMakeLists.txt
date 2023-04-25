@@ -271,7 +271,6 @@ set(BACI_LIBRARIES
     mortar
     nlnsolver_nox
     nurbs_discret
-    pss_full
     rebalance
     solver
     stru_multi
