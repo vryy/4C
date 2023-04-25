@@ -180,13 +180,13 @@ VARFUNCTION (-1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside(-(phi1-1.0e-6)/(4.2e-
 ----------------------------------------------------------------------FUNCT6 // transcapillary exchange of oxygen
 VARFUNCTION ((phi4-phi1)*4.2e-10*(VFP1-p3-1333.0)+2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1))*VF1
 ----------------------------------------------------------------------FUNCT7  // phi_necro*(tumor cells <--> IF)
-VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2 
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.2e-6
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------------------FUNCT9 // phi_oxy*(tumor cells <--> IF)
-VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1 
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1
 ----------------------------------------------------------------------FUNCT10 // production of TAF
 VARFUNCTION 1.0e-9*heaviside(4.0e-6-phi1)*(0.5+0.5*cos(pi*phi1/4.0e-6))*(1-phi2)*S2*porosity
 ----------------------------------------------------------------------FUNCT11 // phi_TAF*(tumor cells <--> IF)
@@ -221,19 +221,19 @@ VARFUNCTION 2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1)*VF1
 ----------------------------------------------------------------------FUNCT22 // mass of tumor
 VARFUNCTION porosity*S2*DENS2
 ----------------------------------------------------------------------FUNCT23 // oxygen
-VARFUNCTION phi1 
+VARFUNCTION phi1
 ----------------------------------------------------------------------FUNCT24 // mass of necrotic core
-VARFUNCTION porosity*S2*phi2*DENS2 
+VARFUNCTION porosity*S2*phi2*DENS2
 ----------------------------------------------------------------------FUNCT25 // neovasculature
-VARFUNCTION VF1 
+VARFUNCTION VF1
 ----------------------------------------------------------------------FUNCT26 // mass of living tumor cells
-VARFUNCTION porosity*S2*(1-phi2)*DENS2 
+VARFUNCTION porosity*S2*(1-phi2)*DENS2
 ----------------------------------------------------------------------FUNCT27 // area times density of volume fraction 1 (=1.0e-3)
-VARFUNCTION 1.0*VFDENS1 
+VARFUNCTION 1.0*VFDENS1
 ----------------------------------------------------------------------FUNCT28 // needed for calculation of x-coordinate center of mass of tumor
-VARFUNCTION porosity*S2*DENS2*x 
+VARFUNCTION porosity*S2*DENS2*x
 ----------------------------------------------------------------------FUNCT29 // needed for calculation of y-coordinate center of mass of tumor
-VARFUNCTION porosity*S2*DENS2*y 
+VARFUNCTION porosity*S2*DENS2*y
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  12

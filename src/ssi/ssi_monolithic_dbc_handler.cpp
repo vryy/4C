@@ -12,9 +12,9 @@
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 
-#include "locsys.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_implicit.H"
 

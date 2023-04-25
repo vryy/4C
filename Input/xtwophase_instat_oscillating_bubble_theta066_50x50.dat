@@ -43,20 +43,20 @@ RESTARTEVRY                     1
 TIMESTEP                        0.025
 RESULTSEVRY                           1
 ----------------------------------------------TWO PHASE FLOW/SURFACE TENSION
-SURFTENSAPPROX                  surface_tension_approx_nodal_curvature  //surface_tension_approx_nodal_curvature, surface_tension_approx_divgrad_normal
+SURFTENSAPPROX                  surface_tension_approx_nodal_curvature
 SMOOTHGRADPHI                   smooth_grad_phi_l2_projection
 L2_PROJECTION_SECOND_DERIVATIVES  No
 NODAL_CURVATURE                 l2_projected
 SMOOTHING_PARAMETER             0
 ---------------------------------------------------------------FLUID DYNAMIC
-PHYSICAL_TYPE                   Incompressible                //Stokes
+PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
-TIMEINTEGR                      One_Step_Theta                //One_Step_Theta
+TIMEINTEGR                      One_Step_Theta
 NEW_OST                         yes
-NONLINITER                      fixed_point_like              //Newton
-ITEMAX                          20                            // 20
+NONLINITER                      fixed_point_like
+ITEMAX                          20
 CONVCHECK                       L_2_norm
 RESULTSEVRY                           1
 RESTARTEVRY                     10
@@ -76,22 +76,22 @@ TOL_PRES_RES	  1.0E-10
 TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Taylor_Hughes_Zarins_Whiting_Jansen
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
-SUPG                            no                            //yes
+SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no                            //yes
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       //xfem_gp //std_eos //xfem_gp //std_eos //xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       //xfem_gp //std_eos //xfem_gp //xfem_gp //none
-EOS_CONV_CROSS                  none                          //xfem_gp, none
-EOS_DIV                         none                          //vel_jump_xfem_gp //none
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
@@ -102,25 +102,25 @@ GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    75.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
-MASS_CONSERVATION_SCALING       full                          //only_visc
+MASS_CONSERVATION_SCALING       full
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               none                          //abs_inflow //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_STAB    yes
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
+GHOST_PENALTY_TRANSIENT_FAC     0.005
 GHOST_PENALTY_2nd_STAB          no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      linear_full                   //nonlinear
+SOLVERTYPE                      linear_full
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 THETA                           0.5
@@ -135,8 +135,8 @@ DEFINITION_TAU                  Taylor_Hughes_Zarins
 SUGRVEL                         no
 ------------------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function
-REINITINTERVAL                  25                            //CHANGED!!! Before reinit
-REINIT_INITIAL                  no                            //yes
+REINITINTERVAL                  25
+REINIT_INITIAL                  no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
@@ -146,8 +146,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.07 // plus side
-MAT 4 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.07 // minus side
+MAT 3 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.07
+MAT 4 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.07
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1

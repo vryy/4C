@@ -6,11 +6,11 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_H_
-#define SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_H_
+#ifndef INPAR_POROMULTIPHASE_SCATRA_H
+#define INPAR_POROMULTIPHASE_SCATRA_H
 
 #include "inpar_parameterlist_utils.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // forward declaration
 namespace DRT
@@ -101,4 +101,4 @@ namespace INPAR
 
 
 
-#endif /* SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_H_ */
+#endif  // INPAR_POROMULTIPHASE_SCATRA_H

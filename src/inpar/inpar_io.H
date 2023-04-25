@@ -29,4 +29,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_IO_H
+#endif  // INPAR_IO_H

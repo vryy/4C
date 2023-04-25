@@ -17,9 +17,9 @@
 #include "linalg_mapextractor.H"
 #include "linalg_sparseoperator.H"
 
-#include "assemblestrategy.H"
-#include "discret.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_timint_meshtying_strategy_s2i.H"
 

@@ -51,12 +51,12 @@ TIMESTEP                        0.15
 NUMSTEP                         5
 RESTARTEVRY                     2000
 RESULTSEVRY                     1
-INF_PERM                        Yes //No
-SCATRA_SOLVERTYPE               nonlinear // linear
-COUPLED_LINEAR_SOLVER           4                             // FS3I problem
-LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
-LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
-STRUCTSCAL_CONVFORM             conservative //convective
+INF_PERM                        Yes
+SCATRA_SOLVERTYPE               nonlinear
+COUPLED_LINEAR_SOLVER           4
+LINEAR_SOLVER1                  5
+LINEAR_SOLVER2                  6
+STRUCTSCAL_CONVFORM             conservative
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           2
 FLUIDSCAL_SCATRATYPE            Loma
@@ -72,9 +72,9 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization //GLS //SUPG
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+STABTYPE                        no_stabilization
 SUGRVEL                         no
 ------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Loma
@@ -89,11 +89,11 @@ NONLINITER                      fixed_point_like
 PREDICTOR                       steady_state
 CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           No
-INITIALFIELD                    field_by_function // zero_field
+INITIALFIELD                    field_by_function
 OSEENFIELDFUNCNO                -1
 LIFTDRAG                        No
 CONVFORM                        convective
-NONLINEARBC                     no // yes
+NONLINEARBC                     no
 MESHTYING                       no
 GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
@@ -212,7 +212,7 @@ LINEAR_SOLVER                   3
 ALE_TYPE                        solid
 RESULTSEVRY                     1200
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      linear_incremental // nonlinear
+SOLVERTYPE                      linear_incremental
 TIMEINTEGR                      Gen_Alpha
 MAXTIME                         800
 NUMSTEP                         5
@@ -226,8 +226,8 @@ RESTARTEVRY                     2000
 MATID                           -1
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
-INITIALFIELD                    field_by_function // field_by_condition
-INITFUNCNO                      3 // -1
+INITIALFIELD                    field_by_function
+INITFUNCNO                      3
 SPHERICALCOORDS                 No
 CALCERROR                       No
 CALCERRORNO                     -1
@@ -236,11 +236,11 @@ CALCFLUX_DOMAIN_LUMPED          Yes
 CALCFLUX_BOUNDARY               diffusive
 CALCFLUX_BOUNDARY_LUMPED        No
 WRITEFLUX_IDS                   -1
-OUTPUTSCALARS                   entire_domain // none
+OUTPUTSCALARS                   entire_domain
 OUTINTEGRREAC                   No
 OUTPUT_GMSH                     No
 MATLAB_STATE_OUTPUT             No
-CONVFORM                        convective // conservative
+CONVFORM                        convective
 NEUMANNINFLOW                   no
 CONV_HEAT_TRANS                 yes
 SKIPINITDER                     no
@@ -277,65 +277,65 @@ CONSISTENCY                     no
 TAU_VALUE                       0
 -----------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            Belos    // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT          0            // output every so often, 0 no output
-AZSOLVE           GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC            MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE           5            // how often to recompute some preconditioners
-IFPACKGFILL       0            // graph fill for ILU
-AZTOL             1.0E-4       // tolerance in unscaled residual
-AZCONV            AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER            1000         // max iterations
-AZSUB             40           // size of krylov space for gmres
-AZOMEGA           1.0          // unused
-AZGRAPH           1            // unused
-IFPACKOVERLAP     0            // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL            none         // none sym infnorm scaling of the system
-ML_PRINT          0            // ML print-out level (0-10)
-ML_MAXCOARSESIZE  1000         // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       3            // ML max number of levels
-ML_COARSEN        UC           // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33         // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES  0.0          // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   SGS          // DGS SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS          // DGS SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES       2 2 1        // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       0.67         // damping fine grid
-ML_DAMPMED        0.67         // damping med grids
-ML_DAMPCOARSE     1.0          // damping coarse grid
+SOLVER            Belos
+AZOUTPUT          0
+AZSOLVE           GMRES
+AZPREC            MLFLUID2
+AZREUSE           5
+IFPACKGFILL       0
+AZTOL             1.0E-4
+AZCONV            AZ_r0
+AZITER            1000
+AZSUB             40
+AZOMEGA           1.0
+AZGRAPH           1
+IFPACKOVERLAP     0
+AZSCAL            none
+ML_PRINT          0
+ML_MAXCOARSESIZE  1000
+ML_MAXLEVEL       3
+ML_COARSEN        UC
+ML_AGG_SIZE       27
+ML_PROLONG_SMO    1.33
+ML_PROLONG_THRES  0.0
+ML_SMOOTHERFINE   SGS
+ML_SMOOTHERMED    SGS
+ML_SMOOTHERCOARSE Umfpack
+ML_SMOTIMES       2 2 1
+ML_DAMPFINE       0.67
+ML_DAMPMED        0.67
+ML_DAMPCOARSE     1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          Belos                      // Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                        // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         4                               // how often to recompute some preconditioners
-AZTOL                           1.0E-6                          // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
-AZITER                          1000                             // max iterations
-AZSUB                           50                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-AZSCAL                          none                            // none sym infnorm scaling of the system
-IFPACKGFILL                     0                               // graph fill for ILU and no. sweeps for GS and Jacobi
-IFPACKOVERLAP                   1                               // Additive Schwarz Overlap for ASM-ILU and ASM-GS and ASM-J
-IFPACKCOMBINE                   Zero                            // combine mode: Zero, Insert, Add
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                10000                           // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                       // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                       // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     5 5 5 5 1                    // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.79                            // damping fine grid
-ML_DAMPMED                      0.79                            // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         4
+AZTOL                           1.0E-6
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           50
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZSCAL                          none
+IFPACKGFILL                     0
+IFPACKOVERLAP                   1
+IFPACKCOMBINE                   Zero
+ML_PRINT                        0
+ML_MAXCOARSESIZE                10000
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     5 5 5 5 1
+ML_DAMPFINE                     0.79
+ML_DAMPMED                      0.79
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 3
 NAME                            Ale_Solver
 SOLVER                          Belos
@@ -361,27 +361,27 @@ ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack //Umfpack
+ML_SMOOTHERCOARSE               Umfpack
 ML_SMOTIMES                     3 3 3 3 1
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 4
 NAME                            COUPLED_FS3I_SOLVER
-SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     2                             // graph fill for ILU
-AZTOL                           1.0E-07                       // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          BGS2x2
+AZREUSE                         0
+IFPACKGFILL                     2
+AZTOL                           1.0E-07
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                10000
 ML_MAXLEVEL                     5
@@ -391,7 +391,7 @@ ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack //Umfpack
+ML_SMOOTHERCOARSE               Umfpack
 ML_SMOTIMES                     5 5 5 5 1
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
@@ -436,7 +436,6 @@ BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
 SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
@@ -480,7 +479,6 @@ BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
 MUELU_XML_ENFORCE               No
 SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
@@ -523,11 +521,13 @@ DSURF  1
 // ConvectionSurface
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 2
+DPOINT 3
 // FluidInflowBottomPoints
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 4 0 0 0
 // FluidInflowTopPoints
 E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+// DBC consistency
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  7
 // FluidInflowBottomLine
@@ -639,6 +639,18 @@ NODE    6 DNODE 2
 NODE    2004 DNODE 2
 NODE    103 DNODE 3
 NODE    2053 DNODE 3
+NODE    2294 DNODE 4
+NODE    2295 DNODE 4
+NODE    2391 DNODE 4
+NODE    2392 DNODE 4
+NODE    2395 DNODE 4
+NODE    2444 DNODE 4
+NODE    2836 DNODE 4
+NODE    2837 DNODE 4
+NODE    2885 DNODE 4
+NODE    2886 DNODE 4
+NODE    2887 DNODE 4
+NODE    2912 DNODE 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    521 DLINE 1
 NODE    523 DLINE 1
@@ -7583,9 +7595,9 @@ NODE      2912 COORD  5.0000000000000000e-01  2.0000000000000001e-01 -2.00000000
    2099 FLUID HEX8  2261 2260 2286 2287 1975 1974 2000 2001    MAT 1 NA ALE
    2100 FLUID HEX8  2262 2261 2287 2288 1976 1975 2001 2002    MAT 1 NA ALE
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94504363872015062e+02 TOLERANCE 5.5e-6
-STRUCTURE DIS structure NODE 2627 QUANTITY dispy VALUE -5.98911737547906117e-05 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 1418 QUANTITY phi VALUE 2.92999992597311973e+02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.07308276556975984e-02 TOLERANCE 1.5e-6
+SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94492044833711589e+02 TOLERANCE 5.5e-6
+STRUCTURE DIS structure NODE 2627 QUANTITY dispy VALUE -4.80974755517966148e-05 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 1418 QUANTITY phi VALUE 2.92999992604131194e+02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.05645088924995256e-02 TOLERANCE 1.5e-6
 ---------------------------------------------------------------END
 // END

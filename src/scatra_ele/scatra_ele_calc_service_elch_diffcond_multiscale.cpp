@@ -12,12 +12,12 @@ multi-scale framework
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "newman_multiscale.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_newman_multiscale.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   double intdomain(0.0);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -97,17 +97,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       Teuchos::rcp_dynamic_cast<MAT::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  if (intpoints.IP().nquad != my::nen_)
+  if (intpoints.IP().nquad != nen_)
     dserror("number of element nodes must equal number of Gauss points for reasonable projection");
 
   // matrix of shape functions evaluated at Gauss points
-  Epetra_SerialDenseMatrix N(my::nen_, my::nen_);
+  Epetra_SerialDenseMatrix N(nen_, nen_);
 
   // Gauss point concentration of electrode
-  Epetra_SerialDenseMatrix conc_gp(my::nen_, 1);
+  Epetra_SerialDenseMatrix conc_gp(nen_, 1);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -120,8 +120,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     conc_gp(iquad, 0) = concentration_gp;
 
     // build matrix of shape functions
-    for (int node = 0; node < static_cast<int>(my::nen_); ++node)
-      N(iquad, node) = my::funct_(node, 0);
+    for (int node = 0; node < static_cast<int>(nen_); ++node) N(iquad, node) = my::funct_(node, 0);
   }
 
   // conc_gp = N * conc --> conc = N^-1 * conc_gp
@@ -151,7 +150,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Calcu
   double intconcentration(0.0);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -188,7 +187,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
   {
     case SCATRA::Action::micro_scale_initialize:
     {
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
@@ -203,10 +202,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
     case SCATRA::Action::micro_scale_solve:
     {
       // extract state variables at element nodes
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(
           *discretization.GetState("phinp"), my::ephinp_, la[0].lm_);
 
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
@@ -243,7 +242,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
     case SCATRA::Action::micro_scale_update:
     {
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
@@ -256,7 +255,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
     case SCATRA::Action::micro_scale_output:
     {
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
@@ -269,7 +268,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
     case SCATRA::Action::micro_scale_read_restart:
     {
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
@@ -281,7 +280,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
     }
     case SCATRA::Action::micro_scale_set_time:
     {
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         newmanmultiscale->SetTimeStepping(

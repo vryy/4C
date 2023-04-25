@@ -12,9 +12,9 @@
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 
-#include "discret.H"
+#include "lib_discret.H"
 #include "linalg_blocksparsematrix.H"
 #include "inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -180,22 +180,22 @@ namespace FLD
             if (rowblock == 0)
             {  // rowblock 0
               errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
-                  rlid0, nnode * numdim_, &values0[0], &localcol00[0]);
+                  rlid0, nnode * numdim_, values0.data(), localcol00.data());
               if (errone)
                 dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
               errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
-                  rlid1, nnode, &values1[0], &localcol01[0]);
+                  rlid1, nnode, values1.data(), localcol01.data());
               if (errone)
                 dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
             }
             else
             {  // rowblock 1
               errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
-                  rlid0, nnode * numdim_, &values0[0], &localcol10[0]);
+                  rlid0, nnode * numdim_, values0.data(), localcol10.data());
               if (errone)
                 dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
               errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
-                  rlid1, nnode, &values1[0], &localcol11[0]);
+                  rlid1, nnode, values1.data(), localcol11.data());
               if (errone)
                 dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
             }
@@ -569,4 +569,4 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-#endif  // #ifndef FLUID_UTILS_H
+#endif  // FLUID_UTILS_H

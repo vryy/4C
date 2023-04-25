@@ -58,7 +58,7 @@ PARALLEL_REDIST                 static
 GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                         // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
 ----------------------------------------------------------------------FUNCT1

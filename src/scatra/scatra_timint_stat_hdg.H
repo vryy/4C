@@ -75,4 +75,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef SCATRA_TIMINT_STAT_HDG_H
+#endif  // SCATRA_TIMINT_STAT_HDG_H

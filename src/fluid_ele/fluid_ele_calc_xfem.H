@@ -12,13 +12,13 @@
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
-#include "utils.H"
+#include "lib_utils.H"
 
 #include "fluid_ele_calc.H"
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "xfem_condition_manager.H"
 
-#include "singleton_owner.H"
+#include "headers_singleton_owner.H"
 
 namespace XFEM
 {
@@ -77,6 +77,9 @@ namespace DRT
       FluidEleCalcXFEM& operator=(FluidEleCalcXFEM const& copy);
 
       typedef FluidEleCalc<distype> my;
+      using my::nen_;
+      using my::nsd_;
+      using my::numdofpernode_;
 
      private:
       /// pointer to the cast object, fluid parameter list for XFEM
@@ -217,28 +220,27 @@ namespace DRT
 
      private:
       //! evaluate analytical reference solution
-      void AnalyticalReference(const int calcerr,      ///< which reference solution
-          const int calcerrfunctno,                    ///< error function number
-          LINALG::Matrix<my::nsd_, 1>& u,              ///< exact jump vector (coupled)
-          LINALG::Matrix<my::nsd_, my::nsd_>& grad_u,  ///< exact velocity gradient
-          double& p,                                   ///< exact pressure
-          LINALG::Matrix<my::nsd_, 1>& xyzint,         ///< xyz position of gaussian point
-          const double& t,                             ///< time
+      void AnalyticalReference(const int calcerr,  ///< which reference solution
+          const int calcerrfunctno,                ///< error function number
+          LINALG::Matrix<nsd_, 1>& u,              ///< exact jump vector (coupled)
+          LINALG::Matrix<nsd_, nsd_>& grad_u,      ///< exact velocity gradient
+          double& p,                               ///< exact pressure
+          LINALG::Matrix<nsd_, 1>& xyzint,         ///< xyz position of gaussian point
+          const double& t,                         ///< time
           Teuchos::RCP<MAT::Material> mat = Teuchos::null);
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point
       void GetInterfaceJumpVectors(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
           Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
-          LINALG::Matrix<my::nsd_, 1>&
-              ivelint_jump,  ///< prescribed interface jump vector for velocity
-          LINALG::Matrix<my::nsd_, 1>&
+          LINALG::Matrix<nsd_, 1>& ivelint_jump,  ///< prescribed interface jump vector for velocity
+          LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface jump vector for traction
-          LINALG::Matrix<my::nsd_, my::nsd_>& proj_tangential,  ///< tangential projection matrix
-          LINALG::Matrix<my::nsd_, my::nsd_>&
+          LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
+          LINALG::Matrix<nsd_, nsd_>&
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const LINALG::Matrix<my::nsd_, 1>& x,       ///< global coordinates of Gaussian point
-          const LINALG::Matrix<my::nsd_, 1>& normal,  ///< normal vector at Gaussian point
+          const LINALG::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
+          const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
           Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
               si,                           ///< side implementation for cutter element
           LINALG::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
@@ -255,12 +257,12 @@ namespace DRT
       void GetInterfaceJumpVectorsOldState(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
           Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
-          LINALG::Matrix<my::nsd_, 1>&
+          LINALG::Matrix<nsd_, 1>&
               ivelintn_jump,  ///< prescribed interface jump vector for velocity
-          LINALG::Matrix<my::nsd_, 1>&
-              itractionn_jump,                   ///< prescribed interface jump vector for traction
-          const LINALG::Matrix<my::nsd_, 1>& x,  ///< global coordinates of Gaussian point
-          const LINALG::Matrix<my::nsd_, 1>& normal,  ///< normal vector at Gaussian point
+          LINALG::Matrix<nsd_, 1>&
+              itractionn_jump,                    ///< prescribed interface jump vector for traction
+          const LINALG::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
+          const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
           Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
               si,                    ///< side implementation for cutter element
           const double& presn_m,     ///< coupling master pressure
@@ -299,17 +301,17 @@ namespace DRT
       );
 
       //! evaluate Neumann boundary condition
-      void EvaluateNeumann(const double& timefacfac,   ///< theta*dt
-          const LINALG::Matrix<my::nen_, 1>& funct_m,  ///< coupling master shape functions
-          const LINALG::Matrix<my::nsd_, 1>&
+      void EvaluateNeumann(const double& timefacfac,  ///< theta*dt
+          const LINALG::Matrix<nen_, 1>& funct_m,     ///< coupling master shape functions
+          const LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
           Epetra_SerialDenseMatrix& elevec1_epetra  ///< element vector
       );
 
       //! build traction vector w.r.t fluid domain
-      void BuildTractionVector(LINALG::Matrix<my::nsd_, 1>& traction,  ///< traction vector
-          double& press,                       ///< pressure at gaussian point
-          LINALG::Matrix<my::nsd_, 1>& normal  ///< normal vector
+      void BuildTractionVector(LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
+          double& press,                                           ///< pressure at gaussian point
+          LINALG::Matrix<nsd_, 1>& normal                          ///< normal vector
       );
 
       //! assemble side's interface force
@@ -327,52 +329,44 @@ namespace DRT
       //! LM-coupling \author kruse \date 06/14
       void HybridLM_Build_VolBased(const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
           const GEO::CUT::plain_volumecell_set& cells,
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,  ///< element velocity
-          const LINALG::Matrix<my::nen_, 1>& epreaf,         ///< element pressure
-          LINALG::Matrix<my::nen_, my::nen_>& bK_ss,         ///< block K_ss matrix
-          LINALG::Matrix<my::nen_, my::nen_>& invbK_ss,      ///< inverse of block K_ss matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, numstressdof_,
-              my::numdofpernode_>& K_su,  ///< K_su matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, numstressdof_, 1>&
-              rhs_s,  ///< rhs_s vector
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::numdofpernode_,
-              numstressdof_>& K_us,  ///< K_us matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::nsd_, my::nsd_>&
-              K_uu,  ///< K_uu matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, my::nsd_, 1>&
-              rhs_uu,                    ///< rhs_u(u) vector
+          const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
+          const LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
+          LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
+          LINALG::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_,
+              numdofpernode_>& K_su,                                              ///< K_su matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,  ///< rhs_s vector
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numdofpernode_,
+              numstressdof_>& K_us,                                           ///< K_us matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,  ///< K_uu matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,      ///< rhs_u(u) vector
           const bool is_MHVS = false,    ///< viscous (true) or Cauchy (false) stress-based LM
           const double mhvs_param = 1.0  ///< stabilizing parameter for viscous stress-based LM
       );
 
       //! evaluate matrices from volume-based terms for Cauchy stress-based mixed/hybrid LM coupling
       //! at current Gauss-point
-      void MHCS_Evaluate_VolBased(
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,  ///< element velocity
-          const LINALG::Matrix<my::nen_, 1>& epreaf,         ///< element pressure
-          LINALG::Matrix<my::nen_, my::nen_>& bK_ss,         ///< block K_ss matrix
-          LINALG::Matrix<my::nen_, my::nen_>& invbK_ss,      ///< inverse of block K_ss matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, numstressdof_,
-              my::numdofpernode_>& K_su,  ///< K_su matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, numstressdof_, 1>&
-              rhs_s  ///< rhs_s vector
+      void MHCS_Evaluate_VolBased(const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
+          const LINALG::Matrix<nen_, 1>& epreaf,                             ///< element pressure
+          LINALG::Matrix<nen_, nen_>& bK_ss,                                 ///< block K_ss matrix
+          LINALG::Matrix<nen_, nen_>& invbK_ss,  ///< inverse of block K_ss matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_,
+              numdofpernode_>& K_su,                                             ///< K_su matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s  ///< rhs_s vector
       );
 
       //! evaluate matrices from volume-based terms for viscous stress-based mixed/hybrid LM
       //! coupling at current Gauss-point \author kruse \date 06/14
-      void MHVS_Evaluate_VolBased(
-          const LINALG::Matrix<my::nsd_, my::nen_>& evelaf,  ///< element velocity
-          LINALG::Matrix<my::nen_, my::nen_>& bK_ss,         ///< block K_ss matrix
-          LINALG::Matrix<my::nen_, my::nen_>& invbK_ss,      ///< inverse of block K_ss matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, numstressdof_,
-              my::numdofpernode_>& K_su,  ///< K_su matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, numstressdof_, 1>&
-              rhs_s,  ///< rhs_s vector
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::numdofpernode_,
-              numstressdof_>& K_us,  ///< K_us matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::nsd_, my::nsd_>&
-              K_uu,                                                               ///< K_uu matrix
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, my::nsd_, 1>& rhs_uu,  ///< rhs_uu vector
+      void MHVS_Evaluate_VolBased(const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
+          LINALG::Matrix<nen_, nen_>& bK_ss,                                 ///< block K_ss matrix
+          LINALG::Matrix<nen_, nen_>& invbK_ss,  ///< inverse of block K_ss matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_,
+              numdofpernode_>& K_su,                                              ///< K_su matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,  ///< rhs_s vector
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numdofpernode_,
+              numstressdof_>& K_us,                                           ///< K_us matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,  ///< K_uu matrix
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,      ///< rhs_uu vector
           const double& mhvs_param  ///< stabilizing parameter
       );
 
@@ -380,21 +374,19 @@ namespace DRT
       //! LM coupling at current Gauss-point \author kruse \date 06/14
       void HybridLM_Evaluate_SurfBased(
           Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
-          const LINALG::Matrix<my::nen_, my::nen_>& bK_ss,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, numstressdof_,
-              my::numdofpernode_>& K_su,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::numdofpernode_,
-              numstressdof_>& K_us,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, numstressdof_, 1>& rhs_s,
-          const LINALG::Matrix<my::nen_, 1>& epreaf,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::nsd_, my::nsd_>& K_uu,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, my::nsd_, 1>& rhs_uu,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::nsd_, 1>& G_up,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, 1, my::nsd_>& G_pu,
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_, 1>, my::nsd_, 1>& rhs_up,
-          LINALG::Matrix<my::nen_, 1>& rhs_pu, const LINALG::Matrix<my::nsd_, 1>& normal,
-          const double& timesurffac, const LINALG::Matrix<my::nsd_, 1>& ivelint_jump,
-          const LINALG::Matrix<my::nsd_, 1>& itraction_jump, const bool eval_side_coupling,
+          const LINALG::Matrix<nen_, nen_>& bK_ss,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>& K_su,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>& K_us,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,
+          const LINALG::Matrix<nen_, 1>& epreaf,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, nsd_, 1>& G_up,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, 1, nsd_>& G_pu,
+          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_up,
+          LINALG::Matrix<nen_, 1>& rhs_pu, const LINALG::Matrix<nsd_, 1>& normal,
+          const double& timesurffac, const LINALG::Matrix<nsd_, 1>& ivelint_jump,
+          const LINALG::Matrix<nsd_, 1>& itraction_jump, const bool eval_side_coupling,
           const bool is_MHVS);
 
       //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
@@ -416,45 +408,43 @@ namespace DRT
       double gamma_m_;  ///< surface tension coefficient at master side
       double gamma_s_;  ///< surface tension coefficient at master side
 
-      LINALG::Matrix<my::nsd_, my::nen_>
+      LINALG::Matrix<nsd_, nen_>
           evelaf_;  ///< element velocity at time t^n+af, implemented also in base class, not
                     ///< accessable via ExtractValuesFromGlobalVector
-      LINALG::Matrix<my::nen_, 1>
+      LINALG::Matrix<nen_, 1>
           epreaf_;  ///< element pressure at time t^n+af, implemented also in base class, not
                     ///< accessable via ExtractValuesFromGlobalVector
 
-      LINALG::Matrix<my::nsd_, my::nen_>
+      LINALG::Matrix<nsd_, nen_>
           eveln_;  ///< element velocity at time t^n, implemented also in base class, not accessable
                    ///< via ExtractValuesFromGlobalVector
-      LINALG::Matrix<my::nen_, 1>
-          epren_;  ///< element velocity at time t^n, implemented also in base class, not accessable
-                   ///< via ExtractValuesFromGlobalVector
+      LINALG::Matrix<nen_, 1> epren_;  ///< element velocity at time t^n, implemented also in base
+                                       ///< class, not accessable via ExtractValuesFromGlobalVector
 
-      LINALG::Matrix<my::nsd_, 1> ivelint_jump_;    ///< interface velocity jump at t^n+1
-      LINALG::Matrix<my::nsd_, 1> itraction_jump_;  ///< interface traction jump at t^n+1
-      LINALG::Matrix<my::nsd_, my::nsd_>
-          proj_tangential_;  ///< tangential projection matrix at t^n+1
-      LINALG::Matrix<my::nsd_, my::nsd_>
+      LINALG::Matrix<nsd_, 1> ivelint_jump_;        ///< interface velocity jump at t^n+1
+      LINALG::Matrix<nsd_, 1> itraction_jump_;      ///< interface traction jump at t^n+1
+      LINALG::Matrix<nsd_, nsd_> proj_tangential_;  ///< tangential projection matrix at t^n+1
+      LINALG::Matrix<nsd_, nsd_>
           LB_proj_matrix_;  ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
 
       std::vector<Epetra_SerialDenseMatrix>
           solid_stress_;  ///< hold information about solid stress ([0]...traction,
                           ///< [1]...dtraction_dv, [2-4]...d2traction_dv2)
 
-      LINALG::Matrix<my::nsd_, 1> ivelintn_jump_;    ///< interface velocity jump at t^n
-      LINALG::Matrix<my::nsd_, 1> itractionn_jump_;  ///< interface traction jump at t^n
+      LINALG::Matrix<nsd_, 1> ivelintn_jump_;    ///< interface velocity jump at t^n
+      LINALG::Matrix<nsd_, 1> itractionn_jump_;  ///< interface traction jump at t^n
 
-      LINALG::Matrix<my::nsd_, 1>
+      LINALG::Matrix<nsd_, 1>
           velint_s_;  ///< velocity of slave side at time t^n+1 at integration point
-      LINALG::Matrix<my::nsd_, 1>
+      LINALG::Matrix<nsd_, 1>
           velintn_s_;  ///< velocity of slave side at time t^n at integration point
 
-      LINALG::Matrix<my::nsd_, 1>
+      LINALG::Matrix<nsd_, 1>
           rst_;  ///< local coordinates of Gaussian point w.r.t background element
 
-      LINALG::Matrix<my::nsd_, 1> normal_;    ///< normal vector
-      LINALG::Matrix<my::nsd_, 1> x_side_;    ///< gauss-point coordinates
-      LINALG::Matrix<my::nsd_, 1> x_gp_lin_;  ///< gauss-point in xyz-system on linearized interface
+      LINALG::Matrix<nsd_, 1> normal_;    ///< normal vector
+      LINALG::Matrix<nsd_, 1> x_side_;    ///< gauss-point coordinates
+      LINALG::Matrix<nsd_, 1> x_gp_lin_;  ///< gauss-point in xyz-system on linearized interface
     };
 
 

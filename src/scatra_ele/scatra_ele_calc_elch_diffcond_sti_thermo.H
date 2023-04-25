@@ -13,7 +13,7 @@
 #include "scatra_ele_sti_thermo.H"
 #include "scatra_ele_calc_elch_diffcond.H"
 
-#include "material.H"
+#include "mat_material.H"
 
 namespace DRT
 {
@@ -41,6 +41,9 @@ namespace DRT
       using myelectrode = ScaTraEleCalcElchElectrode<distype>;
       using mydiffcond = ScaTraEleCalcElchDiffCond<distype>;
       using mythermo = ScaTraEleSTIThermo<distype>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
       //! private constructor for singletons
       ScaTraEleCalcElchDiffCondSTIThermo(
@@ -88,7 +91,7 @@ namespace DRT
                                     //!< times time integration factor
           const double rhstaufac,   //!< domain integration factor times stabilization parameter
                                     //!< times time integration factor for right-hand side vector
-          LINALG::Matrix<my::nen_, 1>&
+          LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< body force value
       );
@@ -102,11 +105,10 @@ namespace DRT
       void SetInternalVariablesForMatAndRHS();
 
       //! get internal variable manager for thermodynamic diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_, my::nen_>>
-      VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>> VarManager()
       {
         return Teuchos::rcp_static_cast<
-            ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_, my::nen_>>(
+            ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 

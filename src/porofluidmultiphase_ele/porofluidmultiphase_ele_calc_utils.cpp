@@ -9,10 +9,10 @@
 
 #include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "fluidporo_multiphase.H"
-#include "fluidporo_singlephase.H"
-#include "fluidporo_multiphase_reactions.H"
-#include "fluidporo_multiphase_singlereaction.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_fluidporo_singlephase.H"
+#include "mat_fluidporo_multiphase_reactions.H"
+#include "mat_fluidporo_multiphase_singlereaction.H"
 
 /*-----------------------------------------------------------------------------------------*
  * get the single phase material from the element multiphase reaction material   vuong 08/16 |

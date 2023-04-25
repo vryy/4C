@@ -12,8 +12,8 @@
 #define FSI_OVERLAPPREC_FSIAMG_H
 
 #include "fsi_overlapprec.H"
-#include "MLAPI_Operator.h"
-#include "MLAPI_LoadBalanceInverseOperator.h"
+#include <MLAPI_Operator.h>
+#include <MLAPI_LoadBalanceInverseOperator.h>
 
 #define FSIAMG_STRENGTH \
   0.85                     ///< emphasis on strength instead of speed on a 0...1 scale in analysis

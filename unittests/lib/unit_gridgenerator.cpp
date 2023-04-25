@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
-#include "globalproblem.H"
-#include "discret.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
-#include "gridgenerator.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
+#include "lib_gridgenerator.H"
 #include "io_pstream.H"
 
 namespace

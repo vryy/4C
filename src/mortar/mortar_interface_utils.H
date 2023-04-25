@@ -37,4 +37,4 @@ namespace MORTAR
   }  // namespace INTERFACEUTILS
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_INTERFACE_UTILS_H
+#endif  // MORTAR_INTERFACE_UTILS_H

@@ -50,8 +50,8 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      Stationary
-NONLINITER                      fixed_point_like  //Newton
-ITEMAX                          20                              // 20
+NONLINITER                      fixed_point_like
+ITEMAX                          20
 CONVCHECK                       L_2_norm
 RESULTSEVRY                     1
 RESTARTEVRY                     10
@@ -79,24 +79,24 @@ TOL_PRES_RES	  1.0E-10
 TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt   //Taylor_Hughes_Zarins_Whiting_Jansen
+DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
-SUPG                            no   //yes
+SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no   //yes
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        none //std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 none //std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         none //div_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        none
+EOS_CONV_STREAM                 none
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo_wo_dt
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -137,9 +137,9 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
-MAT 2 MAT_scatra DIFFUSIVITY 0.000000001 // 1*10E-9
-MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus side
-MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus side
+MAT 2 MAT_scatra DIFFUSIVITY 0.000000001
+MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07
+MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
@@ -161,7 +161,7 @@ E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 //DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2 //6
+DSURF                           2
 // surface top
 //E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface bottom

@@ -19,8 +19,8 @@
 
 #include "mor_pod.H"
 
-#include "dofset.H"
-#include "discret.H"
+#include "lib_dofset.H"
+#include "lib_discret.H"
 
 namespace UTILS
 {
@@ -97,4 +97,4 @@ namespace UTILS
 std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
 
 
-#endif  // #ifndef DOFSET_H
+#endif  // CARDIOVASCULAR0D_DOFSET_H

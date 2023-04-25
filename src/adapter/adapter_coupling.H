@@ -354,6 +354,17 @@ namespace ADAPTER
         const bool matchall = true, const double tolerance = 1.0e-3, const int nds_master = 0,
         const int nds_slave = 0);
 
+    /*! Setup coupling based on dof maps. This can be used if no search is required anymore and all
+     * dof maps are known already
+     *
+     * \param slavedofmap       (i) slave side dof map
+     * \param permslavedofmap   (i) permuted dofs on slave side to match dofs on master side
+     * \param masterdofmap      (i) master side dof map
+     * \param permmasterdofmap  (i) permuted dofs on master side to match dofs on slave side
+     */
+    void SetupCoupling(Teuchos::RCP<const Epetra_Map> slavedofmap,
+        Teuchos::RCP<const Epetra_Map> permslavedofmap, Teuchos::RCP<const Epetra_Map> masterdofmap,
+        Teuchos::RCP<const Epetra_Map> permmasterdofmap);
     //@}
 
     /** \name Conversion between master and slave */
@@ -744,4 +755,4 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_H */
+#endif  // ADAPTER_COUPLING_H

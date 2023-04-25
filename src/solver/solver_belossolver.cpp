@@ -26,12 +26,12 @@
 #include <MueLu_VerboseObject.hpp>
 
 // Belos headers
-#include "BelosConfigDefs.hpp"
-#include "BelosLinearProblem.hpp"
-#include "BelosEpetraAdapter.hpp"
-#include "BelosBlockCGSolMgr.hpp"
-#include "BelosBlockGmresSolMgr.hpp"
-#include "BelosBiCGStabSolMgr.hpp"
+#include <BelosConfigDefs.hpp>
+#include <BelosLinearProblem.hpp>
+#include <BelosEpetraAdapter.hpp>
+#include <BelosBlockCGSolMgr.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosBiCGStabSolMgr.hpp>
 
 // BACI headers
 #include "solver_belossolver.H"
@@ -41,7 +41,7 @@
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -119,8 +119,7 @@ void LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Setup(Teuchos::RCP<Mat
   ////////////////////////////////////// permutation stuff
   if (this->bAllowPermutation_)
   {
-    // extract (user-given) additional information about linear system from
-    // "Aztec Parameters" -> "Linear System properties"
+    // extract (user-given) additional information about linear system
     Teuchos::RCP<Epetra_Map> epSlaveDofMap =
         this->ExtractPermutationMap("Belos Parameters", "contact slaveDofMap");
 
@@ -211,11 +210,19 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   if (this->preconditioner_ != Teuchos::null)
     this->preconditioner_->Finish(this->A_.get(), this->x_.get(), this->b_.get());
 
+  // communicate non convergence to proc 0 and print warning
+  int my_error = 0;
   if (ret != Belos::Converged)
   {
-    std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
+    my_error = 1;
     we_have_a_problem = true;
   }
+
+  int glob_error = 0;
+  this->comm_.SumAll(&my_error, &glob_error, 1);
+
+  if (glob_error > 0 and this->comm_.MyPID() == 0)
+    std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
 
   GlobalOrdinal rowperm = 0;
   GlobalOrdinal colperm = 0;
@@ -226,7 +233,6 @@ int LINALG::SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   int PermutedZeros = 0;
   int PermutedNearZeros = 0;
   int NonPermutedNearZeros = 0;
-
 
   if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
   {

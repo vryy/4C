@@ -8,17 +8,17 @@
 // End doxygen header.
 
 
-#ifndef UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_H_
-#define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_H_
+#ifndef UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_H
+#define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_H
 
 
 #include <vector>
 #include <unordered_map>
 #include <Teuchos_RCP.hpp>
 
-#include "discret.H"
-#include "so_hex8.H"
-#include "so_surface.H"
+#include "lib_discret.H"
+#include "so3_hex8.H"
+#include "so3_surface.H"
 #include "geometry_pair_element_faces.H"
 
 

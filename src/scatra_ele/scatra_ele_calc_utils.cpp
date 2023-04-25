@@ -10,8 +10,7 @@
 
 
 #include "scatra_ele_calc_utils.H"
-#include "standardtypes_cpp.H"
-#include "condition_utils.H"
+#include "lib_condition_utils.H"
 
 namespace SCATRA
 {
@@ -22,7 +21,7 @@ namespace SCATRA
     int numions(0);
     for (size_t k = 0; k < valence.size(); k++)
     {
-      if (abs(valence[k]) > EPS10) numions++;
+      if (abs(valence[k]) > 1e-10) numions++;
     }
     return (numions == 2);
   }
@@ -37,7 +36,7 @@ namespace SCATRA
     for (size_t k = 0; k < valence.size(); k++)
     {
       // is there some charge?
-      if (abs(valence[k]) > EPS10) indices.push_back(k);
+      if (abs(valence[k]) > 1e-10) indices.push_back(k);
     }
     if (indices.size() != 2) dserror("Found no binary electrolyte!");
 
@@ -52,10 +51,10 @@ namespace SCATRA
     if (indices.size() != 2) dserror("Non-matching number of indices!");
     const int first = indices[0];
     const int second = indices[1];
-    if ((valence[first] * valence[second]) > EPS10)
+    if ((valence[first] * valence[second]) > 1e-10)
       dserror("Binary electrolyte has no opposite charges.");
     const double n = ((diffus[first] * valence[first]) - (diffus[second] * valence[second]));
-    if (abs(n) < EPS12) dserror("denominator in resulting diffusion coefficient is nearly zero");
+    if (abs(n) < 1e-12) dserror("denominator in resulting diffusion coefficient is nearly zero");
 
     return diffus[first] * diffus[second] * (valence[first] - valence[second]) / n;
   }

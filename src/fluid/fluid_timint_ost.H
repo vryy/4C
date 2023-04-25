@@ -13,7 +13,7 @@
 #define FLUID_TIMINT_OST_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 
 namespace FLD
@@ -217,4 +217,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // #ifndef FLD_TIMINT_OST_H
+#endif  // FLUID_TIMINT_OST_H

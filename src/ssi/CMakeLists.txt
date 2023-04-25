@@ -26,8 +26,9 @@ baci_add_library(alg_ssi ${OBJS_SSI})
 set(LIBS_ALG_SSI
     # cmake-format: sortable
     ele_membrane
+    fem_general
     inpar
     lib
     )
 
-target_link_libraries(alg_ssi PUBLIC ${LIBS_ALG_SSI})
+baci_add_dependency(alg_ssi ${LIBS_ALG_SSI})

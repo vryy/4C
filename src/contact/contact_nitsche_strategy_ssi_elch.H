@@ -49,4 +49,4 @@ namespace CONTACT
     CoNitscheStrategySsiElch(const CoNitscheStrategySsiElch& old) = delete;
   };
 }  // namespace CONTACT
-#endif  //  CONTACT_NITSCHE_STRATEGY_SSI_ELCH_H
+#endif  // CONTACT_NITSCHE_STRATEGY_SSI_ELCH_H

@@ -1,9 +1,9 @@
 set(OBJS_STRU_MULTI
     # cmake-format: sortable
-    convert_mat.cpp
-    microstatic.cpp
-    microstatic_npsupport.cpp
-    microstatic_service.cpp
+    stru_multi_convert_mat.cpp
+    stru_multi_microstatic.cpp
+    stru_multi_microstatic_npsupport.cpp
+    stru_multi_microstatic_service.cpp
     )
 
 baci_add_library(stru_multi ${OBJS_STRU_MULTI})
@@ -14,4 +14,4 @@ set(LIBS_STRU_MULTI
     lib
     )
 
-target_link_libraries(stru_multi PUBLIC ${LIBS_STRU_MULTI})
+baci_add_dependency(stru_multi ${LIBS_STRU_MULTI})

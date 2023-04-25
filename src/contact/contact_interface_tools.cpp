@@ -10,14 +10,14 @@
 #include "contact_interface.H"
 #include "contact_integrator.H"
 #include "contact_defines.H"
-#include "friction_node.H"
-#include "selfcontact_binarytree.H"
+#include "contact_friction_node.H"
+#include "contact_selfcontact_binarytree.H"
 #include "mortar_element.H"
 #include "mortar_dofset.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_contact.H"
 #include "io_gmsh.H"
 #include "io_control.H"
@@ -1097,9 +1097,9 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1111,9 +1111,9 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];
@@ -1370,9 +1370,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1384,9 +1384,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];
@@ -1581,9 +1581,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       newtetaz[k] = kcnode->CoData().teta()[2];
 
       // get reference normal / tangent
-      double refn[3] = {0.0, 0.0, 0.0};
-      double reftxi[3] = {0.0, 0.0, 0.0};
-      double refteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> refn = {0.0, 0.0, 0.0};
+      std::array<double, 3> reftxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> refteta = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
       refn[2] = refnz[k];
@@ -1595,9 +1595,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       refteta[2] = reftetaz[k];
 
       // get modified normal / tangent
-      double newn[3] = {0.0, 0.0, 0.0};
-      double newtxi[3] = {0.0, 0.0, 0.0};
-      double newteta[3] = {0.0, 0.0, 0.0};
+      std::array<double, 3> newn = {0.0, 0.0, 0.0};
+      std::array<double, 3> newtxi = {0.0, 0.0, 0.0};
+      std::array<double, 3> newteta = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
       newn[2] = newnz[k];
@@ -5086,8 +5086,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -5111,7 +5111,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -5301,8 +5301,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -5326,7 +5326,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -5664,8 +5664,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -5689,7 +5689,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -5903,8 +5903,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -5928,7 +5928,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -6141,8 +6141,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -6166,7 +6166,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {

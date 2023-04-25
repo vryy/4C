@@ -17,28 +17,28 @@
 
 // adapters
 #include "adapter_coupling_volmortar.H"
-#include "ad_fld_base_algorithm.H"
-#include "ad_fld_poro.H"
-#include "ad_str_fpsiwrapper.H"
+#include "adapter_fld_base_algorithm.H"
+#include "adapter_fld_poro.H"
+#include "adapter_str_fpsiwrapper.H"
 
 // contact
 #include "contact_poro_lagrange_strategy.H"
-#include "meshtying_poro_lagrange_strategy.H"
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_poro_lagrange_strategy.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "contact_nitsche_strategy_poro.H"
 
 #include "fluid_ele_action.H"
 #include "fluid_utils_mapextractor.H"
 
 // include this header for coupling stiffness terms
-#include "assemblestrategy.H"
-#include "globalproblem.H"
-#include "condition_utils.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_condition_utils.H"
 
 #include "io_control.H"
 #include "inpar_solver.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include "mortar_manager_base.H"
 
@@ -46,12 +46,15 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
-#include "elements_paramsminimal.H"
+#include "lib_elements_paramsminimal.H"
 
-POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : PoroBase(comm, timeparams),
+
+
+POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    : PoroBase(comm, timeparams, porosity_splitter),
       printscreen_(true),   // ADD INPUT PARAMETER
       printiter_(true),     // ADD INPUT PARAMETER
       printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
@@ -87,7 +90,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       normincstruct_(0.0),
       normrhsporo_(0.0),
       normincporo_(0.0),
-      timer_(comm),
+      timer_("", false),
       iter_(-1),
       iterinc_(Teuchos::null),
       directsolve_(true),
@@ -182,9 +185,9 @@ void POROELAST::Monolithic::Solve()
   // equilibrium iteration loop (loop over k)
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
-    timer_.ResetStartTime();
-    // Epetra_Time timer(Comm());
-
+    timer_.start();
+    Teuchos::Time timer("eval", true);
+    timer.start();
     // compute residual forces #rhs_ and tangent #tang_
     // whose components are globally oriented
     // build linear system stiffness matrix and rhs/force residual for each
@@ -193,9 +196,8 @@ void POROELAST::Monolithic::Solve()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_, iter_ == 1);
-
-    // std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
-    // timer.ResetStartTime();
+    // std::cout << "  time for Evaluate : " <<  timer.totalElapsedTime(true) << "\n";
+    // timer.reset();
 
     // if (iter_>1 and Step()>2 )
     // PoroFDCheck();
@@ -207,8 +209,8 @@ void POROELAST::Monolithic::Solve()
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
       // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
       LinearSolve();
-      // std::cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
-      // timer.ResetStartTime();
+      // std::cout << "  time for Evaluate LinearSolve: " << timer.totalElapsedTime(true) << "\n";
+      // timer.reset();
 
       // reset solver tolerance
       solver_->ResetTolerance();
@@ -302,7 +304,6 @@ void POROELAST::Monolithic::UpdateStateIncrementally(
   // structural field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  // Epetra_Time timerstructure(Comm());
 
   // apply current velocity and pressures to structure
   SetFluidSolution();
@@ -319,7 +320,6 @@ void POROELAST::Monolithic::UpdateStateIncrementally(
 
   // fluid Evaluate
   // (builds tangent, residual and applies DBC and recent coupling values)
-  // Epetra_Time timerfluid(Comm());
 
   // set structure displacements onto the fluid
   SetStructSolution();
@@ -495,7 +495,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
-  // Epetra_Time timerstrcoupl(Comm());
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
 
@@ -521,7 +520,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
 
   if (nopen_handle_->HasCond())
   {
-    // Epetra_Time timernopen(Comm());
     // Evaluate poroelasticity specific conditions
     EvaluateCondition(k_ff);
   }
@@ -659,8 +657,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(porosolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -669,7 +666,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(porosolverparams, "AZPREC");
@@ -909,7 +906,7 @@ void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
   PrintNewtonIterTextStream(oss);
 
   // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.totalElapsedTime(true);
   // finish oss
   oss << std::ends;
 
@@ -1145,7 +1142,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
   FluidField()->Discretization()->ClearState();
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
+[[maybe_unused]] void POROELAST::Monolithic::PoroFDCheck()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
@@ -1304,7 +1301,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> errorindices(errorlength);
             // int errorextractionstatus =
             error_crs->ExtractGlobalRowCopy(
-                i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+                i, errorlength, errornumentries, errorvalues.data(), errorindices.data());
             for (int k = 0; k < errorlength; ++k)
             {
               if (errorindices[k] == j)
@@ -1325,7 +1322,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> sparseindices(sparselength);
             // int sparseextractionstatus =
             sparse_crs->ExtractGlobalRowCopy(
-                i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+                i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
             for (int k = 0; k < sparselength; ++k)
             {
               if (sparseindices[k] == j)
@@ -1346,7 +1343,7 @@ __attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
             std::vector<int> approxindices(approxlength);
             // int approxextractionstatus =
             stiff_approx->ExtractGlobalRowCopy(
-                i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+                i, approxlength, approxnumentries, approxvalues.data(), approxindices.data());
             for (int k = 0; k < approxlength; ++k)
             {
               if (approxindices[k] == j)
@@ -1682,7 +1679,7 @@ void POROELAST::Monolithic::Aitken()
   iterinc_->Scale(1.0 - mu_);
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::AitkenReset()
+[[maybe_unused]] void POROELAST::Monolithic::AitkenReset()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {

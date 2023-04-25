@@ -119,4 +119,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_LEVELSET_H
+#endif  // INPAR_LEVELSET_H

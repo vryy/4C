@@ -14,30 +14,31 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_dyn.H"
-#include "fs_monolithic.H"
+#include "fsi_free_surface_monolithic.H"
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
-#include "condition_selector.H"
-#include "condition_utils.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "fsi_utils.H"
 
-#include "condition_selector.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "inpar_fs3i.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_structure_scatra_ele.H"
 
 #include "scatra_algorithm.H"
 #include "scatra_timint_implicit.H"
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 #include "fluid_utils.H"
-#include "fluidresulttest.H"
+#include "fluid_result_test.H"
 
 #include "ssi_clonestrategy.H"
 
@@ -45,7 +46,7 @@
 
 #include "linalg_matrixtransform.H"
 
-#include "prestress_service.H"
+#include "lib_prestress_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -244,11 +245,10 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   {
     // get structure discretization
     Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-    SSI::ScatraStructureCloneStrategy clonestrategy;
 
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) !=
+      if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
           INPAR::SCATRA::impltype_refconcreac)
         dserror(
             "Your scalar fields have to be calculated in conservative form, "

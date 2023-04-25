@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_mor.H"
 
 void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

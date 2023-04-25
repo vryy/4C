@@ -9,13 +9,13 @@
 #ifndef MORTAR_STRATEGY_BASE_H
 #define MORTAR_STRATEGY_BASE_H
 
-#include "nox_nln_constraint_interface_preconditioner.H"  // interface specifications
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Operator.h"
-#include "Epetra_Vector.h"
+#include "solver_nonlin_nox_constraint_interface_preconditioner.H"  // interface specifications
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
 
 #include "mortar_interface.H"  // for the enum state type
 #include "inpar_contact.H"     // for the INPAR::CONTACT enums
@@ -273,7 +273,7 @@ namespace MORTAR
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) = 0;
+    virtual void EvaluateReferenceState() = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() const = 0;
@@ -413,4 +413,4 @@ namespace MORTAR
   };  // class StrategyBase
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_STRATEGY_BASE_H
+#endif  // MORTAR_STRATEGY_BASE_H

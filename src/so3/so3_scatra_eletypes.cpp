@@ -10,7 +10,7 @@
 
 #include "so3_scatra.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |

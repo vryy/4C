@@ -7,46 +7,40 @@
 
 cmake_minimum_required(VERSION 3.17)
 
+# try to prevent modification of source directory
+# note: some files may still be written before CMake can abort and need to be removed manually
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+  message(
+    FATAL_ERROR
+      "In-source build not allowed. "
+      "Please create a new directory, preferably next to the source directory, and run CMake from there. "
+      "You may want to remove CMakeCache.txt and CMakeFiles/ which were created in the source directory."
+    )
+endif()
+
 project(baci CXX C Fortran)
 
 # Print CMake version to screen
-message("II Using CMake ${CMAKE_VERSION}")
+message(STATUS "Using CMake ${CMAKE_VERSION}")
 
 # The version number.
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/compile_settings.h.in"
-  "${PROJECT_BINARY_DIR}/src/headers/compile_settings.h"
-  )
-
-# add the binary tree to the search path for include files
-# so that we will find TutorialConfig.h
-include_directories("${PROJECT_BINARY_DIR}/src/headers")
-
 # specify where our own cmake modules are located
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-
-# get current Baci revision from git
-include(GetGitRevision)
-get_git_revision_information()
-
-# configure revision file to pass git revision information to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/headers/revision.H.in" "${PROJECT_BINARY_DIR}/src/headers/revision.H"
-  )
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 include(FetchContent)
 
-# include our own macros
-include(BACILinkDefaultLibraries)
-include(BACIAddLibrary)
+# include our own functions and macros
+file(GLOB _function_files "cmake/functions/*.cmake")
+foreach(_file ${_function_files})
+  message(STATUS "Include ${_file}")
+  include(${_file})
+endforeach()
 
 #
 ### Build in default values
@@ -60,7 +54,9 @@ if(NOT CMAKE_BUILD_TYPE)
       )
 endif(NOT CMAKE_BUILD_TYPE)
 
-#
+###------------------------------------------------------------------- Default cmake settings
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 ### compile time options
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
@@ -99,11 +95,6 @@ endif(IGNORE_UNSTABLE_CUTTEST)
 
 # fancy stuff
 
-option(COLOROUTPUT "use colored output to the terminal" OFF)
-if(COLOROUTPUT)
-  add_definitions("-DCOLOROUTPUT")
-endif(COLOROUTPUT)
-
 option(DSERROR_DUMP "dserror creates a core file" OFF)
 if(DSERROR_DUMP)
   add_definitions("-DDSERROR_DUMP")
@@ -113,11 +104,6 @@ option(TRAP_FE "crash baci if a nan of inf occurs" ON)
 if(TRAP_FE)
   add_definitions("-DTRAP_FE")
 endif(TRAP_FE)
-
-option(THROWELEMENTERRORS "throw errors at element level so all element error can be found" OFF)
-if(THROWELEMENTERRORS)
-  add_definitions("-DTHROWELEMENTERRORS")
-endif(THROWELEMENTERRORS)
 
 # Run some system checks
 file(GLOB _check_files "cmake/checks/*.cmake")
@@ -149,6 +135,7 @@ find_package(FFTW)
 find_package(ACML)
 find_package(AMDLIBM)
 find_package(CLN REQUIRED)
+find_package(MIRCO)
 
 ###------------------------------------------------------------------ List of files
 
@@ -194,6 +181,7 @@ set(MULTIFIELD_LIBRARIES
     alg_loma
     alg_pasi
     alg_poroelast
+    alg_poroelast_scatra
     alg_poromultiphase
     alg_poromultiphase_scatra
     alg_ssi
@@ -273,7 +261,6 @@ set(BACI_LIBRARIES
     cardiovascular0d
     comm
     constraint
-    fortran
     geometry
     headers
     linalg
@@ -285,7 +272,6 @@ set(BACI_LIBRARIES
     mortar
     nlnsolver_nox
     nurbs_discret
-    opti
     pss_full
     rebalance
     solver
@@ -318,6 +304,7 @@ set(FULL_TARGETS
     post_s8convert
     pre_exodus
     pre_locsys
+    create_rtd
     cut_test
     )
 
@@ -327,11 +314,15 @@ add_subdirectory(src)
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
+# NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to
+# https://github.com/open-mpi/ompi/issues/8510#issuecomment-1329297350
+set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
+    "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
+    )
 
 enable_testing()
 include(CTest)
 
-###------------------------------------------------------------------ Unit Tests
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
 include(UnittestingFramework.cmake)

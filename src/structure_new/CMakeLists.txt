@@ -1,60 +1,59 @@
 set(OBJS_STRUCTURE_NEW
     # cmake-format: sortable
-    gauss_point_data_output_manager.cpp
-    nox_nln_str_linearsystem.cpp
-    str_dbc.cpp
-    str_discretization_runtime_vtu_output_params.cpp
-    str_factory.cpp
-    str_functions.cpp
-    str_impl_gemm.cpp
-    str_impl_genalpha.cpp
-    str_impl_genalpha_liegroup.cpp
-    str_impl_generic.cpp
-    str_impl_ost.cpp
-    str_impl_prestress.cpp
-    str_impl_statics.cpp
-    str_integrator.cpp
-    str_model_evaluator.cpp
-    str_model_evaluator_cardiovascular0d.cpp
-    str_model_evaluator_contact.cpp
-    str_model_evaluator_contactdata.cpp
-    str_model_evaluator_data.cpp
-    str_model_evaluator_factory.cpp
-    str_model_evaluator_generic.cpp
-    str_model_evaluator_lagpenconstraint.cpp
-    str_model_evaluator_meshtying.cpp
-    str_model_evaluator_multiphysics.cpp
-    str_model_evaluator_springdashpot.cpp
-    str_model_evaluator_structure.cpp
-    str_monitor_dbc.cpp
-    str_nln_linearsystem_scaling.cpp
-    str_nln_solver_factory.cpp
-    str_nln_solver_fullnewton.cpp
-    str_nln_solver_generic.cpp
-    str_nln_solver_nox.cpp
-    str_nln_solver_ptc.cpp
-    str_nln_solver_utils.cpp
-    str_predict_constdisvelaccpress.cpp
-    str_predict_factory.cpp
-    str_predict_generic.cpp
-    str_predict_tangdis.cpp
-    str_resulttest.cpp
-    str_solver_factory.cpp
-    str_timint_base.cpp
-    str_timint_basedataglobalstate.cpp
-    str_timint_basedataio.cpp
-    str_timint_basedataio_monitor_dbc.cpp
-    str_timint_basedataio_runtime_vtk_output.cpp
-    str_timint_basedataio_runtime_vtp_output.cpp
-    str_timint_basedatasdyn.cpp
-    str_timint_explicit.cpp
-    str_timint_factory.cpp
-    str_timint_implicit.cpp
-    str_timint_implicitbase.cpp
-    str_timint_loca_continuation.cpp
-    str_timint_locainterface.cpp
-    str_timint_noxinterface.cpp
-    str_utils.cpp
+    structure_new_dbc.cpp
+    structure_new_discretization_runtime_vtu_output_params.cpp
+    structure_new_factory.cpp
+    structure_new_functions.cpp
+    structure_new_gauss_point_data_output_manager.cpp
+    structure_new_impl_gemm.cpp
+    structure_new_impl_genalpha.cpp
+    structure_new_impl_genalpha_liegroup.cpp
+    structure_new_impl_generic.cpp
+    structure_new_impl_ost.cpp
+    structure_new_impl_prestress.cpp
+    structure_new_impl_statics.cpp
+    structure_new_integrator.cpp
+    structure_new_model_evaluator.cpp
+    structure_new_model_evaluator_contact.cpp
+    structure_new_model_evaluator_contactdata.cpp
+    structure_new_model_evaluator_data.cpp
+    structure_new_model_evaluator_factory.cpp
+    structure_new_model_evaluator_generic.cpp
+    structure_new_model_evaluator_lagpenconstraint.cpp
+    structure_new_model_evaluator_meshtying.cpp
+    structure_new_model_evaluator_multiphysics.cpp
+    structure_new_model_evaluator_springdashpot.cpp
+    structure_new_model_evaluator_structure.cpp
+    structure_new_monitor_dbc.cpp
+    structure_new_nln_linearsystem_scaling.cpp
+    structure_new_nln_solver_factory.cpp
+    structure_new_nln_solver_fullnewton.cpp
+    structure_new_nln_solver_generic.cpp
+    structure_new_nln_solver_nox.cpp
+    structure_new_nln_solver_ptc.cpp
+    structure_new_nln_solver_utils.cpp
+    structure_new_nox_nln_str_linearsystem.cpp
+    structure_new_predict_constdisvelaccpress.cpp
+    structure_new_predict_factory.cpp
+    structure_new_predict_generic.cpp
+    structure_new_predict_tangdis.cpp
+    structure_new_resulttest.cpp
+    structure_new_solver_factory.cpp
+    structure_new_timint_base.cpp
+    structure_new_timint_basedataglobalstate.cpp
+    structure_new_timint_basedataio.cpp
+    structure_new_timint_basedataio_monitor_dbc.cpp
+    structure_new_timint_basedataio_runtime_vtk_output.cpp
+    structure_new_timint_basedataio_runtime_vtp_output.cpp
+    structure_new_timint_basedatasdyn.cpp
+    structure_new_timint_explicit.cpp
+    structure_new_timint_factory.cpp
+    structure_new_timint_implicit.cpp
+    structure_new_timint_implicitbase.cpp
+    structure_new_timint_loca_continuation.cpp
+    structure_new_timint_locainterface.cpp
+    structure_new_timint_noxinterface.cpp
+    structure_new_utils.cpp
     )
 
 baci_add_library(alg_structure_new ${OBJS_STRUCTURE_NEW})
@@ -62,6 +61,7 @@ baci_add_library(alg_structure_new ${OBJS_STRUCTURE_NEW})
 set(LIBS_ALG_STRUCTURE_NEW
     # cmake-format: sortable
     adapter
+    fem_general
     inpar
     lib
     lib_browniandyn
@@ -70,4 +70,4 @@ set(LIBS_ALG_STRUCTURE_NEW
     timestepping
     )
 
-target_link_libraries(alg_structure_new PUBLIC ${LIBS_ALG_STRUCTURE_NEW})
+baci_add_dependency(alg_structure_new ${LIBS_ALG_STRUCTURE_NEW})

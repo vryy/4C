@@ -70,7 +70,7 @@ RESTARTEVRY                     1
 NUMSTEP                         10000
 MAXTIME                         0.5
 TIMESTEP                        0.1
-COUPALGO                        ssi_OneWay_ScatraToSolid //IterStagg //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra
+COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          10
 SCATRATIMINTTYPE                Cardiac_Monodomain
 SCATRA_FROM_RESTART_FILE        yes

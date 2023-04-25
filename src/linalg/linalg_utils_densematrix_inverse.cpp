@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fortran_definitions.h"
+#include "linalg_fortran_definitions.h"
 #include "linalg_utils_densematrix_inverse.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
@@ -29,10 +29,10 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
   int n = dim;
   int m = dim;
 
-  dsytrf(uplo, &m, a, &n, &(ipiv[0]), &(work[0]), &lwork, &info);
+  dsytrf(uplo, &m, a, &n, ipiv.data(), work.data(), &lwork, &info);
   if (info) dserror("dsytrf returned info=%d", info);
 
-  dsytri(uplo, &m, a, &n, &(ipiv[0]), &(work[0]), &info);
+  dsytri(uplo, &m, a, &n, ipiv.data(), work.data(), &info);
   if (info) dserror("dsytri returned info=%d", info);
 
   for (int i = 0; i < dim; ++i)

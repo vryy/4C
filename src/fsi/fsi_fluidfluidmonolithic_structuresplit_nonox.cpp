@@ -10,24 +10,23 @@ using XFEM
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "colors.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "inpar_fsi.H"
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_fld_fluid_fluid_fsi.H"
-#include "ad_ale_xffsi.H"
+#include "adapter_fld_fluid_fluid_fsi.H"
+#include "adapter_ale_xffsi.H"
 #include "inpar_xfem.H"
 
 #include "io_control.H"
@@ -586,7 +585,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector& f,
   // scv: structure fsi dofs
   Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
 
-  if (fabs(fluidscale) > EPS15)
+  if (fabs(fluidscale) > 1e-15)
   {
     // modfv: whole embedded fluid map but entries at fsi dofs
     Teuchos::RCP<Epetra_Vector> modfv =

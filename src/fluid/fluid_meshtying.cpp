@@ -21,9 +21,9 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_krylov_projector.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -181,7 +181,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
         std::string inv = "BMatMerged";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = *(mergedmap_);
-        LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_.Params());
+        LINALG::NULLSPACE::FixNullSpace(inv.data(), oldmap, newmap, solver_.Params());
         std::cout << std::endl;
       }
       else if (msht_ == INPAR::FLUID::condensed_bmat)
@@ -192,7 +192,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(0, 0).EpetraMatrix()->RowMap();
           LINALG::NULLSPACE::FixNullSpace(
-              &inv[0], oldmap, newmap, solver_.Params().sublist("Inverse1"));
+              inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse1"));
           std::cout << std::endl;
         }
         // fixing length of Inverse2 nullspace (solver/preconditioner ML)
@@ -201,7 +201,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(1, 1).EpetraMatrix()->RowMap();
           LINALG::NULLSPACE::FixNullSpace(
-              &inv[0], oldmap, newmap, solver_.Params().sublist("Inverse2"));
+              inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse2"));
           std::cout << std::endl;
         }
       }
@@ -1526,7 +1526,7 @@ void FLD::Meshtying::AnalyzeMatrix(Teuchos::RCP<LINALG::SparseMatrix> sparsematr
       std::vector<double> values(maxnumentries, 0.0);
 
       int error =
-          matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
+          matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, values.data(), indices.data());
       if (error != 0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", error);
 
       for (int ii = 0; ii < numOfNonZeros; ii++)

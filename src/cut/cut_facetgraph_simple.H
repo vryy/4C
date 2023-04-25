@@ -10,8 +10,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SRC_CUT_CUT_FACETGRAPH_SIMPLE_H_
-#define SRC_CUT_CUT_FACETGRAPH_SIMPLE_H_
+#ifndef CUT_FACETGRAPH_SIMPLE_H
+#define CUT_FACETGRAPH_SIMPLE_H
 
 #include "cut_facetgraph.H"
 
@@ -56,4 +56,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif /* SRC_CUT_CUT_FACETGRAPH_SIMPLE_H_ */
+#endif  // CUT_FACETGRAPH_SIMPLE_H

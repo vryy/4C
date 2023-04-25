@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "mixture_prestress_strategy_constant.H"
 #include "mixture_prestress_strategy_isocyl.H"
 #include "mixture_prestress_strategy_iterative.H"
-#include "material_service.H"
-#include "dserror.H"
+#include "mat_service.H"
+#include "lib_dserror.H"
 #include "inpar_material.H"
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id

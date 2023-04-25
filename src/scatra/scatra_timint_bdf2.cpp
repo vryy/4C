@@ -9,14 +9,14 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_meshtying_strategy_base.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 
 #include "io.H"
 
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
-#include "utils_parameter_list.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_ele_action.H"
 

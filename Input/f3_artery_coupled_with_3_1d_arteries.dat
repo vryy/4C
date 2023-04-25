@@ -21,8 +21,8 @@ NUMARTNETDIS                    1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
-STRUCT_STRAIN                   ea                            // ea gl
+STRUCT_STRESS                   Cauchy
+STRUCT_STRAIN                   ea
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -40,18 +40,18 @@ LINEAR_SOLVER                   2
 LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-TIMEINTEGR                      Af_Gen_Alpha //BDF2
+TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         1000
-NUMSTASTEPS                     1 //0
-START_THETA                     1.0 //0.67
-ALPHA_F                         1.00 //BDF2
-ALPHA_M                         1.50 //BDF2
-GAMMA                           1.00 //BDF2
+NUMSTASTEPS                     1
+START_THETA                     1.0
+ALPHA_F                         1.00
+ALPHA_M                         1.50
+GAMMA                           1.00
 MAXTIME                         0.4
 TIMESTEP                        0.01
 THETA                           0.66
@@ -113,8 +113,6 @@ NDPOINT                         26
 NDLINE                          5
 NDSURF                          8
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0   0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
@@ -127,10 +125,6 @@ E 2 - 1 POLYNOMIAL FORCED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
 ----------------------------------DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS
 DPOINT                          8
 E 1 - inlet
@@ -146,16 +140,6 @@ DPOINT                          3
 E 2  - 1 0.1
 E 20 - 1 0.2
 E 22 - 1 0.3
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
 ------------------------DESIGN SURF 3D To REDUCED D FLOW COUPLING CONDITIONS
 DSURF                           1
 E 3 - 1 flow Tolerance 0.001 MaximumIterations 10
@@ -174,30 +158,12 @@ E 25 - 0.0 none
 ----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF                           1
 E 3 -
----------------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT                          0
 ------------------DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS
 DSURF  1
 E 3 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 16 Val 1.0 Funct 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ----------------DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES
 DLINE  1
 E 2 - 2
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1514 DNODE 1
 NODE 1519 DNODE 2

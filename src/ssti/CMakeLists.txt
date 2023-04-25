@@ -17,4 +17,4 @@ set(LIBS_ALG_SSTI
     alg_sti
     )
 
-target_link_libraries(alg_ssti PUBLIC ${LIBS_ALG_SSTI})
+baci_add_dependency(alg_ssti ${LIBS_ALG_SSTI})

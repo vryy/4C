@@ -9,9 +9,8 @@
 
 #include "fsi_xfem_fluid.H"
 
-#include "colors.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "io_pstream.H"
 
 /*----------------------------------------------------------------------*/
@@ -46,7 +45,8 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::fluid_xfem)
   {
     if (Comm().MyPID() == 0)
-      std::cout << YELLOW_LIGHT << "Integrate routine for MOVING INTERFACES" << END_COLOR << "\n"
+      std::cout << "Integrate routine for MOVING INTERFACES"
+                << "\n"
                 << std::endl;
 
 

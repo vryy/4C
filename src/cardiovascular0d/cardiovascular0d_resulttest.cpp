@@ -11,8 +11,8 @@
 #include "cardiovascular0d_resulttest.H"
 #include "cardiovascular0d_manager.H"
 #include "cardiovascular0d.H"
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

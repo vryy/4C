@@ -17,9 +17,9 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
 
-#include "discret_xfem.H"
-#include "exporter.H"
-#include "utils.H"
+#include "lib_discret_xfem.H"
+#include "lib_exporter.H"
+#include "lib_utils.H"
 
 #include "io_gmsh.H"
 #include "io_pstream.H"
@@ -27,8 +27,8 @@
 #include "cut_boundingbox.H"
 #include "cut_position.H"
 
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
@@ -568,7 +568,7 @@ void XFEM::MeshProjector::SendBlock(
   // << topid << IO::endl;
 #endif
 
-  exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
+  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
   // for safety
   exporter.Comm().Barrier();

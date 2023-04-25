@@ -9,8 +9,8 @@ with condensed structure interface displacements
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
-#define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
+#ifndef FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
+#define FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"
@@ -54,9 +54,7 @@ namespace FSI
     ADAPTER::FluidFSI::VelocityToDisplacement().
 
     \sa MortarMonolithicStructureSplit
-    \author tk
-    \date 06/08
-   */
+  */
   class MortarMonolithicStructureSplit : public BlockMonolithic
   {
     friend class FSI::FSIResultTest;
@@ -133,8 +131,6 @@ namespace FSI
      *  = \left((a-b)\lambda^n +
      * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
      * interpolation factors a and b.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CalculateInterfaceEnergyIncrement();
 
@@ -151,8 +147,6 @@ namespace FSI
      *
      *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving
      * the condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     *  \author mayr.mt \date 10/2012
      */
     virtual void CheckKinematicConstraint();
 
@@ -164,8 +158,6 @@ namespace FSI
      *
      *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving
      * the condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     *  \author mayr.mt \date 10/2012
      */
     virtual void CheckDynamicEquilibrium();
 
@@ -177,8 +169,6 @@ namespace FSI
      *  Depending on the chosen method (fluid or structure split), only 3 of the
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual double SelectDtErrorBased() const;
 
@@ -186,8 +176,6 @@ namespace FSI
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
-     *
-     *  \author mayr.mt \date 08/2013
      */
     virtual bool SetAccepted() const;
 
@@ -251,8 +239,6 @@ namespace FSI
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap();
 
@@ -262,8 +248,6 @@ namespace FSI
      *  for the entire FSI problem. This is done just by combining the
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
-     *
-     *  \author mayr.mt \date 05/2014
      */
     virtual void SetupDBCMapExtractor();
 

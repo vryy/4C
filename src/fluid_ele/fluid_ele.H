@@ -21,11 +21,11 @@ of errors, turbulence statistics etc.).
 #define FLUID_ELE_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
-#include "elementtype.H"
-#include "utils_local_connectivity_matrices.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 
 // forward declarations
@@ -1021,4 +1021,4 @@ namespace DRT
 
 
 
-#endif  // #ifndef FLUID3_H
+#endif  // FLUID_ELE_H

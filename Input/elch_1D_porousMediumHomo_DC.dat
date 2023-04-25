@@ -23,7 +23,7 @@ MAXTIME                         10
 NUMSTEP                         20
 RESTARTEVRY                     10
 THETA                           0.66
-TIMEINTEGR                      Gen_Alpha //One_Step_Theta
+TIMEINTEGR                      Gen_Alpha
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
@@ -37,7 +37,7 @@ SKIPINITDER                     Yes
 CONVTOL                         1e-12
 ABSTOLRES                       1e-16
 ITEMAX                          20
-EXPLPREDICT                     no                              // yes -> oscillations for neutral
+EXPLPREDICT                     no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

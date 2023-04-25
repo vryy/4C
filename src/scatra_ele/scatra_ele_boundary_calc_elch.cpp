@@ -12,10 +12,9 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "function_of_time.H"
-#include "standardtypes_cpp.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |
@@ -98,8 +97,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
 {
   // state and history variables at element nodes
   my::ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<my::nen_, 1>> ehist(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen_, 1>> ehist(my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(ehist, discretization, la, "hist");
 
   // get current condition
@@ -190,8 +188,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   else
   {
     // extract local values from the global vector
-    std::vector<LINALG::Matrix<my::nen_, 1>> ephidtnp(
-        my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+    std::vector<LINALG::Matrix<nen_, 1>> ephidtnp(
+        my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
     my::ExtractNodeValues(ephidtnp, discretization, la, "phidtnp");
 
     if (not is_stationary)
@@ -276,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
       /*----------------------------------------------------------------------*
        |               start loop over integration points                     |
        *----------------------------------------------------------------------*/
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
       {
@@ -290,11 +288,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
         // el. potential at integration point
         const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
-        if (c0 < EPS12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
+        if (c0 < 1e-12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
 
-        for (int vi = 0; vi < my::nen_; ++vi)
+        for (int vi = 0; vi < nen_; ++vi)
         {
-          for (int ui = 0; ui < my::nen_; ++ui)
+          for (int ui = 0; ui < nen_; ++ui)
           {
             elemat1_epetra(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
                 fac * my::funct_(vi) / (frt * conint[k] * nume) * my::funct_(ui);
@@ -332,7 +330,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
   double intdomain(0.);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -342,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, iquad);
 
     // calculate potential and domain integrals
-    for (int vi = 0; vi < my::nen_; ++vi)
+    for (int vi = 0; vi < nen_; ++vi)
       // potential integral
       intpotential += my::ephinp_[my::numscal_](vi, 0) * my::funct_(vi) * fac;
 
@@ -370,17 +368,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
     const DRT::Element* ele,         ///< current element
     Epetra_SerialDenseMatrix& emat,  ///< element matrix
     Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
-    const std::vector<LINALG::Matrix<my::nen_, 1>>&
+    const std::vector<LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist,  ///< nodal history vector
-    double timefac,                                         ///< time factor
-    Teuchos::RCP<const MAT::Material> material,             ///< material
-    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                     ///< number of transferred electrons
-    const std::vector<int> stoich,      ///< stoichiometry of the reaction
-    const int kinetics,                 ///< desired electrode kinetics model
-    const double pot0,                  ///< electrode potential on metal side
-    const double frt,                   ///< factor F/RT
+    const std::vector<LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+    double timefac,                                     ///< time factor
+    Teuchos::RCP<const MAT::Material> material,         ///< material
+    Teuchos::RCP<DRT::Condition> cond,                  ///< electrode kinetics boundary condition
+    const int nume,                                     ///< number of transferred electrons
+    const std::vector<int> stoich,                      ///< stoichiometry of the reaction
+    const int kinetics,                                 ///< desired electrode kinetics model
+    const double pot0,                                  ///< electrode potential on metal side
+    const double frt,                                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -388,7 +386,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
   const double faraday = elchparams_->Faraday();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -442,16 +440,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
     Epetra_SerialDenseVector& scalars,  ///< scalars to be integrated
     Teuchos::ParameterList& params,     ///< parameter list
     Teuchos::RCP<DRT::Condition> cond,  ///< condition
-    const std::vector<LINALG::Matrix<my::nen_, 1>>&
+    const std::vector<LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<LINALG::Matrix<my::nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
-    const int kinetics,                                        ///< desired electrode kinetics model
-    const std::vector<int> stoich,                             ///< stoichiometry of the reaction
-    const int nume,                                            ///< number of transferred electrons
-    const double pot0,     ///< electrode potential on metal side
-    const double frt,      ///< factor F/RT
-    const double timefac,  ///< time factor
-    const double scalar    ///< scaling factor for current related quantities
+    const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+    const int kinetics,                                    ///< desired electrode kinetics model
+    const std::vector<int> stoich,                         ///< stoichiometry of the reaction
+    const int nume,                                        ///< number of transferred electrons
+    const double pot0,                                     ///< electrode potential on metal side
+    const double frt,                                      ///< factor F/RT
+    const double timefac,                                  ///< time factor
+    const double scalar  ///< scaling factor for current related quantities
 )
 {
   // Warning:
@@ -475,7 +473,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
     dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   bool statistics = false;

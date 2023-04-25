@@ -32,7 +32,7 @@ PREDICTOR                       steady_state
 TIMEINTEGR                      Stationary
 LINEAR_SOLVER                   3
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic 
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -118,13 +118,13 @@ DSURF   1
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF   1
-E 1 - 
+E 1 -
 ------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE   4
-E 1 - 
-E 2 - 
-E 3 - 
-E 4 - 
+E 1 -
+E 2 -
+E 3 -
+E 4 -
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
@@ -153,7 +153,7 @@ NODE 7 DNODE 2
 NODE 8 DNODE 3
 NODE 6 DNODE 4
 -------------------------------------------------------NODE COORDS
-NODE 1 COORD 0.0 0.0 0.0 
+NODE 1 COORD 0.0 0.0 0.0
 NODE 2 COORD 0.5 0.0 0.0
 NODE 3 COORD 1.0 0.0 0.0
 NODE 4 COORD 1.0 0.5 0.0

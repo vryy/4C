@@ -16,8 +16,8 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
  |  includes                                                  ager 10/15|
  *----------------------------------------------------------------------*/
 // lib
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 // contact
 #include "contact_element.H"
@@ -25,9 +25,9 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 #include "contact_interface.H"
 
 // nurbs
-#include "control_point.H"
+#include "nurbs_discret_control_point.H"
 #include "nurbs_discret.H"
-#include "knotvector.H"
+#include "nurbs_discret_knotvector.H"
 
 // linalg
 #include "linalg_sparsematrix.H"
@@ -264,10 +264,10 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
 
   // wait for all processors to determine if they have poro or structural master or slave elements
   comm_->Barrier();
-  int slaveTypeList[comm_->NumProc()];
-  int masterTypeList[comm_->NumProc()];
-  comm_->GatherAll(&slavetype_, &slaveTypeList[0], 1);
-  comm_->GatherAll(&mastertype_, &masterTypeList[0], 1);
+  std::vector<int> slaveTypeList(comm_->NumProc());
+  std::vector<int> masterTypeList(comm_->NumProc());
+  comm_->GatherAll(&slavetype_, slaveTypeList.data(), 1);
+  comm_->GatherAll(&mastertype_, masterTypeList.data(), 1);
   comm_->Barrier();
 
   for (int i = 0; i < comm_->NumProc(); ++i)

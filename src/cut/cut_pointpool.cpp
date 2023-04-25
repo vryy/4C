@@ -11,7 +11,7 @@ created
 
 #include "cut_pointpool.H"
 #include "cut_output.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 
 /*-----------------------------------------------------------------------------------------*

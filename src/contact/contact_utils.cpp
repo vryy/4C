@@ -12,9 +12,9 @@
 
 #include "contact_utils.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "every_iteration_writer.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "io_every_iteration_writer.H"
 
 #include "inpar_mortar.H"
 #include "inpar_contact.H"

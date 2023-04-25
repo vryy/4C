@@ -8,9 +8,9 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_nonconforming.H"
-#include "utils_parallel.H"
-#include "utils.H"
-#include "globalproblem.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils.H"
+#include "lib_globalproblem.H"
 #include "linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
 
@@ -22,7 +22,7 @@
 #include "linalg_utils_sparse_algebra_print.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
-#include "cnst_1d_art.H"
+#include "mat_cnst_1d_art.H"
 
 
 
@@ -464,9 +464,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     const std::vector<double> seglengths = GetEleSegmentLengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
-    const double integrated_diam =
-        coupl_elepairs_[i]->Evaluate(&eleforce[0], &eleforce[1], &elestiff[0][0], &elestiff[0][1],
-            &elestiff[1][0], &elestiff[1][1], &D_ele, &M_ele, &Kappa_ele, seglengths);
+    const double integrated_diam = coupl_elepairs_[i]->Evaluate(&(eleforce[0]), &(eleforce[1]),
+        &(elestiff[0][0]), &(elestiff[0][1]), &(elestiff[1][0]), &(elestiff[1][1]), &D_ele, &M_ele,
+        &Kappa_ele, seglengths);
 
     // assemble
     FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
@@ -532,8 +532,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   FEmat_->FEAssemble(elemat[1][0], lmrow2, lmrow1);
   FEmat_->FEAssemble(elemat[1][1], lmrow2, lmrow2);
 
-  FErhs_->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
-  FErhs_->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+  FErhs_->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
+  FErhs_->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
 }
 
 /*----------------------------------------------------------------------*
@@ -557,7 +557,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
 
   D_->FEAssemble(D_ele, lmrow1, lmrow1);
   M_->FEAssemble(M_ele, lmrow1, lmrow2);
-  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), &lmrow1[0], Kappa_ele.Values());
+  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), lmrow1.data(), Kappa_ele.Values());
 }
 
 /*----------------------------------------------------------------------*

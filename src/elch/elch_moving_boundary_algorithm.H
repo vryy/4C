@@ -34,7 +34,7 @@ namespace ELCH
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~MovingBoundaryAlgorithm();
+    virtual ~MovingBoundaryAlgorithm() = default;
 
     /// setup
     virtual void Setup();
@@ -53,6 +53,9 @@ namespace ELCH
 
     /// read restart data
     void ReadRestart(int step);
+
+    /// Add tests to global problem and start tests
+    void TestResults();
 
    protected:
     /// start a new time step

@@ -23,8 +23,8 @@ additional static parameters required for scalar transport element evaluation.
 #include "inpar_elch.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "dserror.H"
-#include "singleton_owner.H"
+#include "lib_dserror.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

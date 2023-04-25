@@ -14,19 +14,19 @@
 #include "particle_wall_discretization_runtime_vtu_writer.H"
 
 #include "particle_engine_interface.H"
-#include "particle_enums.H"
-#include "particle_container_bundle.H"
-#include "particle_container.H"
+#include "particle_engine_enums.H"
+#include "particle_engine_container_bundle.H"
+#include "particle_engine_container.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
 #include "inpar_particle.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "condition_utils.H"
-#include "utils_factory.H"
-#include "dofset_transparent.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_condition_utils.H"
+#include "lib_utils_factory.H"
+#include "lib_dofset_transparent.H"
 
 #include "io.H"
 #include "io_pstream.H"
@@ -34,7 +34,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "searchtree_geometry_service.H"
+#include "geometry_searchtree_service.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -700,7 +700,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, &nodepos[0], myrank_)));
+      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, nodepos.data(), myrank_)));
 
       // add node id
       nodeids.push_back(nodeid++);
@@ -735,7 +735,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
             DRT::UTILS::Factory("BELE3_3", "Polynomial", eleid, myrank_);
 
         // set node ids to element
-        wallele->SetNodeIds(4, &(nodeidsofelements[dim * 2 + sign])[0]);
+        wallele->SetNodeIds(4, nodeidsofelements[dim * 2 + sign].data());
 
         // create material for current wall element
         if (not(mat < 0)) wallele->SetMaterial(mat);
@@ -753,15 +753,15 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
   }
 
   // node row map of wall elements
-  std::shared_ptr<Epetra_Map> noderowmap =
-      std::make_shared<Epetra_Map>(-1, nodeids.size(), &nodeids[0], 0, walldiscretization_->Comm());
+  std::shared_ptr<Epetra_Map> noderowmap = std::make_shared<Epetra_Map>(
+      -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping node column map
   Teuchos::RCP<Epetra_Map> nodecolmap = LINALG::AllreduceEMap(*noderowmap);
 
   // element row map of wall elements
-  std::shared_ptr<Epetra_Map> elerowmap =
-      std::make_shared<Epetra_Map>(-1, eleids.size(), &eleids[0], 0, walldiscretization_->Comm());
+  std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
+      -1, eleids.size(), eleids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping element column map
   Teuchos::RCP<Epetra_Map> elecolmap = LINALG::AllreduceEMap(*elerowmap);

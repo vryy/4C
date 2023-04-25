@@ -71,4 +71,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_ALE_H
+#endif  // INPAR_ALE_H

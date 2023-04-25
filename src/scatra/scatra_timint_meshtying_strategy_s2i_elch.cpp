@@ -11,12 +11,12 @@
 
 #include "adapter_coupling.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
-#include "electrode.H"
-#include "soret.H"
+#include "mat_electrode.H"
+#include "mat_soret.H"
 
 #include "mortar_element.H"
 
@@ -30,8 +30,11 @@
 
 #include "linalg_mapextractor.H"
 #include "linalg_sparseoperator.H"
-#include "linalg_solver.H"
-#include "singleton_owner.H"
+#include "solver_linalg_solver.H"
+#include "headers_singleton_owner.H"
+
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -615,8 +618,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal temperature values
-  LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -651,8 +654,8 @@ template <DRT::Element::DiscretizationType distypeS, DRT::Element::Discretizatio
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
     const MORTAR::MortarNode& slavenode, const double& lumpedarea,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
-    const std::vector<LINALG::Matrix<my::nen_slave_, 1>>& ephinp_slave,
-    const std::vector<LINALG::Matrix<my::nen_master_, 1>>& ephinp_master,
+    const std::vector<LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
+    const std::vector<LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
     Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
@@ -675,8 +678,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
   my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
   // dummy matrix of nodal temperature values
-  LINALG::Matrix<my::nen_slave_, 1> dummy_slave_temp(true);
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -848,8 +851,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal master temperature values and shape derivatives
-  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
-  LINALG::Matrix<my::nsd_slave_ + 1, my::nen_slave_> dummy_shapederivatives(true);
+  LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<nsd_slave_ + 1, nen_slave_> dummy_shapederivatives(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -962,8 +965,8 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
       my::MortarCellCalc(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
 
       // initialize member variables
-      eelchnp_slave_(2, LINALG::Matrix<my::nen_slave_, 1>(true)),
-      eelchnp_master_(2, LINALG::Matrix<my::nen_master_, 1>(true))
+      eelchnp_slave_(2, LINALG::Matrix<nen_slave_, 1>(true)),
+      eelchnp_master_(2, LINALG::Matrix<nen_master_, 1>(true))
 {
 }
 
@@ -1142,7 +1145,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for shape derivatives
-  LINALG::Matrix<3, my::nen_slave_> dummy_shape_deriv;
+  LINALG::Matrix<3, nen_slave_> dummy_shape_deriv;
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -1188,6 +1191,74 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::ExtractNodeValues(
   my::ExtractNodeValues(
       eelchnp_slave_, eelchnp_master_, idiscret, la_slave, la_master, "scatra", 1);
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SCATRA::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
+    SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
+    : MeshtyingStrategyS2IElch(elchtimint, parameters)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
+{
+  // extract scatra-scatra coupling conditions from discretization
+  std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+
+  std::vector<int> islavenodegidvec;
+  std::vector<int> imasternodegidvec;
+
+  for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
+  {
+    if (s2imeshtying_condition->GetInt("S2IKineticsID") != -1)
+      dserror("No kinetics condition is allowed for the coupled space-charge layer problem.");
+
+    switch (s2imeshtying_condition->GetInt("interface side"))
+    {
+      case INPAR::S2I::side_slave:
+      {
+        DRT::UTILS::AddOwnedNodeGIDVector(
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidvec);
+        break;
+      }
+      case INPAR::S2I::side_master:
+      {
+        DRT::UTILS::AddOwnedNodeGIDVector(
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidvec);
+        break;
+      }
+      default:
+      {
+        dserror("interface side must bee slave or master");
+        break;
+      }
+    }
+  }
+
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+
+  icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
+      imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
+}
+
+/*------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<LINALG::Solver>& solver,
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
+    const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
+    const Teuchos::RCP<LINALG::KrylovProjector>& projector) const
+{
+  solver->Solve(
+      systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
+}
+
 
 
 // forward declarations

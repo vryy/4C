@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ART_NET_IMPL_STATIC_H_
-#define SRC_ART_NET_ART_NET_IMPL_STATIC_H_
+#ifndef ART_NET_IMPL_STATIONARY_H
+#define ART_NET_IMPL_STATIONARY_H
 
 #include "art_net_timint.H"
 
@@ -147,4 +147,4 @@ namespace ART
 }  // namespace ART
 
 
-#endif /* SRC_ART_NET_ART_NET_IMPL_STATIC_H_ */
+#endif  // ART_NET_IMPL_STATIONARY_H

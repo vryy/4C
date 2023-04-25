@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef STIFFNESS_GROWTH_STRATEGY_H
-#define STIFFNESS_GROWTH_STRATEGY_H
+#ifndef MIXTURE_GROWTH_STRATEGY_STIFFNESS_H
+#define MIXTURE_GROWTH_STRATEGY_STIFFNESS_H
 
 #include "mixture_growth_strategy.H"
 
@@ -64,4 +64,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // STIFFNESS_GROWTH_STRATEGY_H
+#endif  // MIXTURE_GROWTH_STRATEGY_STIFFNESS_H

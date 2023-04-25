@@ -7,12 +7,12 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef POROELAST_MONOLITHIC_H_
-#define POROELAST_MONOLITHIC_H_
+#ifndef POROELAST_MONOLITHIC_H
+#define POROELAST_MONOLITHIC_H
 
 #include "inpar_poroelast.H"
 #include "inpar_structure.H"
-#include "poro_base.H"
+#include "poroelast_base.H"
 #include "poroelast_utils.H"
 
 namespace LINALG
@@ -27,6 +27,11 @@ namespace LINALG
   enum class EquilibrationMethod;
 }  // namespace LINALG
 
+namespace Teuchos
+{
+  class Time;
+}
+
 namespace POROELAST
 {
   //! base class of all monolithic Poroelasticity algorithms
@@ -34,7 +39,8 @@ namespace POROELAST
   {
    public:
     //! create using a Epetra_Comm
-    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -209,7 +215,7 @@ namespace POROELAST
     //!@}
 
     //! finite difference check of stiffness matrix
-    __attribute__((unused)) void PoroFDCheck();
+    [[maybe_unused]] void PoroFDCheck();
 
     //! Evaluate no penetration condition
     void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
@@ -234,7 +240,7 @@ namespace POROELAST
     void Aitken();
 
     //! Aitken Reset
-    __attribute__((unused)) void AitkenReset();
+    [[maybe_unused]] void AitkenReset();
 
     //! @name Apply current field state to system
 
@@ -388,7 +394,7 @@ namespace POROELAST
     double normrhsporo_;  //!< norm of residual forces (porosity)
     double normincporo_;  //!< norm of residual unknowns (porosity)
 
-    Epetra_Time timer_;  //!< timer for solution technique
+    Teuchos::Time timer_;  //!< timer for solution technique
 
     int iter_;  //!< iteration step
 
@@ -432,4 +438,4 @@ namespace POROELAST
 
 
 /*----------------------------------------------------------------------*/
-#endif /* POROELAST_MONOLITHIC_H_ */
+#endif  // POROELAST_MONOLITHIC_H

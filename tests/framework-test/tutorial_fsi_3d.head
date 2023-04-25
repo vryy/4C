@@ -41,7 +41,6 @@ NUMAIRWAYSDIS                   1
 //     Fluid_Structure_Interaction_Lung
 //     Fluid_Structure_Interaction_RedModels
 //     Fluid_Structure_Interaction_XFEM
-//     Fluid_Top_Opt
 //     Fluid_XFEM
 //     Fluid_XFEM_LevelSet
 //     Immersed_FSI
@@ -227,7 +226,7 @@ NUMSTEP                         200
 MAXTIME                         5
 //
 // type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
-//     no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
+//     no,No,NO,yes,Yes,YES,Rayleigh,Material
 DAMPING                         No
 //
 M_DAMP                          -1
@@ -389,7 +388,6 @@ PARALLEL_REDIST                 Static
 //     Varying_density
 //     Loma
 //     Boussinesq
-//     Topology_optimization
 //     Stokes
 //     Oseen
 PHYSICAL_TYPE                   Incompressible
@@ -496,7 +494,6 @@ ALLDOFCOUPLED                   Yes
 //     kimmoin_instat_stokes
 //     kimmoin_instat_navier_stokes
 //     fsi_fluid_pusher
-//     topopt_channel
 CALCERROR                       no
 //
 // Function for Error Calculation
@@ -1219,9 +1216,6 @@ PERMUTE_SYSTEM                  none
 //
 // matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
 NON_DIAGDOMINANCE_RATIO         1
-//
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
 //
 // User specified name for solver block
 NAME                            Fluid solver

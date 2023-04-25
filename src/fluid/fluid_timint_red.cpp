@@ -12,9 +12,9 @@
 #include "fluid_timint_red.H"
 #include "fluid_coupling_red_models.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "ad_art_net.H"
+#include "adapter_art_net.H"
 #include "fluid_meshtying.H"
-#include "locsys.H"
+#include "lib_locsys.H"
 #include "io.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 

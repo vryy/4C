@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_FSI_H
-#define CONTACT_INTEGRATOR_NITSCHE_FSI_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_FSI_H
+#define CONTACT_NITSCHE_INTEGRATOR_FSI_H
 
 #include "contact_nitsche_integrator.H"
 
@@ -150,4 +150,4 @@ namespace CONTACT
     );
   }  // namespace UTILS
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_FSI_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_FSI_H

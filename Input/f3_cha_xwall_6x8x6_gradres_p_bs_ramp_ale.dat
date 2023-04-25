@@ -61,7 +61,7 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  4
 SAMPLING_STOP                   5
 DUMPING_PERIOD                  0
-CANONICAL_FLOW                  no//channel_flow_of_height_2
+CANONICAL_FLOW                  no
 HOMDIR                          xz
 CHA_NUMSUBDIVISIONS             5
 ------------------------------------FLUID DYNAMIC/WALL MODEL
@@ -84,7 +84,7 @@ TIMESTEP                        0.05
 NUMSTEP                         5
 ------------------------------------------------------SOLVER 1
 NAME              Fluid_Solver
-SOLVER            UMFPACK//Belos
+SOLVER            UMFPACK
 AZOUTPUT          0
 AZSOLVE           GMRES
 AZPREC            ILU

@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_ADVANCED_REACTION_H_
-#define SCATRA_ELE_CALC_ADVANCED_REACTION_H_
+#ifndef SCATRA_ELE_CALC_ADVANCED_REACTION_H
+#define SCATRA_ELE_CALC_ADVANCED_REACTION_H
 
 #include "scatra_ele_calc.H"
 
@@ -42,6 +42,10 @@ namespace DRT
 
      private:
       typedef ScaTraEleCalc<distype, probdim> my;
+
+     protected:
+      using my::nen_;
+      using my::nsd_;
 
      public:
       virtual ~ScaTraEleCalcAdvReac() { return; };
@@ -90,10 +94,10 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double taufac,                        //!< domain-integration factor times tau
-          const double densnp,                        //!< density at time_(n+1)
-          const LINALG::Matrix<my::nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<my::nen_, 1>& diff     //!< laplace term
+          const double taufac,                    //!< domain-integration factor times tau
+          const double densnp,                    //!< density at time_(n+1)
+          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
 
@@ -107,7 +111,7 @@ namespace DRT
       virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
       //! array for shape function at element center
-      LINALG::Matrix<my::nen_, 1> funct_elementcenter_;
+      LINALG::Matrix<nen_, 1> funct_elementcenter_;
 
       //! get current Gauss-point coordinates
       virtual const double* GetGpCoord() const { return gpcoord_; }
@@ -247,4 +251,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_ADVANCED_REACTION_H_ */
+#endif  // SCATRA_ELE_CALC_ADVANCED_REACTION_H

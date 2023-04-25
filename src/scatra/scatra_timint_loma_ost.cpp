@@ -13,13 +13,13 @@
 #include "scatra_timint_loma_ost.H"
 
 #include "scatra_ele_action.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 #include "io.H"
-#include "linalg_solver.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "solver_linalg_solver.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

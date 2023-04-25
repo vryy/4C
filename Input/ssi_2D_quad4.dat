@@ -80,7 +80,7 @@ SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 1.00
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1

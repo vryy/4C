@@ -8,19 +8,18 @@
 /*-----------------------------------------------------------*/
 
 #include "spring3.H"
-#include "beam3eb.H"
-#include "beam3contact_utils.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "utils.H"
+#include "beam3_euler_bernoulli.H"
+#include "beaminteraction_beam3contact_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
 #include "inpar_structure.H"
-#include "standardtypes_cpp.H"
 
-#include "Sacado.hpp"
-#include "FAD_utils.H"
+#include <Sacado.hpp>
+#include "headers_FAD_utils.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -58,8 +57,6 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
     act = Spring3::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
     act = Spring3::calc_struct_reset_istep;
-  else if (action == "postprocess_stress")
-    act = Spring3::postprocess_stress;
   else if (action == "calc_struct_ptcstiff")
     act = Spring3::calc_struct_ptcstiff;
   else if (action == "calc_struct_energy")
@@ -254,12 +251,7 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
       // no stress calculation implemented! Do not crash simulation and just keep quiet!
     }
     break;
-    case postprocess_stress:
-    {
-      // no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Spring3!");
-    }
-    break;
+      break;
     default:
       dserror("Unknown type of action for Spring3 %d", act);
       break;

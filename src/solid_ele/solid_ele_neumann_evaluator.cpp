@@ -6,13 +6,13 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "solid_ele_neumann_evaluator.H"
-#include "element.H"
-#include "element_integration_select.H"
-#include "function.H"
-#include "globalproblem.H"
+#include "lib_element.H"
+#include "lib_element_integration_select.H"
+#include "lib_function.H"
+#include "lib_globalproblem.H"
 #include "solid_ele_calc_lib.H"
-#include "utils_gausspoints.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_gausspoints.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,

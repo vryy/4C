@@ -59,7 +59,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithicstructuresplit poro_monolithic
+COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -129,16 +129,6 @@ NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // Surface x-
@@ -153,8 +143,6 @@ E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
 //E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -

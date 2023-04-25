@@ -8,8 +8,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef INPAR_SSI_H_
-#define INPAR_SSI_H_
+#ifndef INPAR_SSI_H
+#define INPAR_SSI_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -72,4 +72,4 @@ namespace INPAR
 
 }  // namespace INPAR
 
-#endif /* INPAR_SSI_H_ */
+#endif  // INPAR_SSI_H

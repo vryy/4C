@@ -11,16 +11,16 @@
 
 #include <iostream>
 
-#include "globalproblem.H"
-#include "utils.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "so_surface.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "so3_surface.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 
 
 
@@ -58,7 +58,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
   double theta = params.get("scale_theta", 1.0);
   double ts_size = params.get("time_step_size", 1.0);
 
-  int numdof_per_cond = 3;
+  const int numdof_per_cond = 3;
 
   std::vector<bool> havegid(numdof_per_cond);
   for (int j = 0; j < numdof_per_cond; j++)
@@ -273,7 +273,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
 
   params.set("action", "calc_struct_constrvol");
 
-  int numdof_per_cond = 3;
+  const int numdof_per_cond = 3;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

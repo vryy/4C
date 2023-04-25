@@ -18,8 +18,8 @@
 #include "ssi_monolithic_meshtying_strategy.H"
 #include "ssi_utils.H"
 
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "contact_nitsche_strategy_ssi.H"
@@ -28,25 +28,23 @@
 
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "globalproblem.H"
-#include "locsys.H"
+#include "lib_assemblestrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_locsys.H"
 
 #include "scatra_timint_elch.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "str_model_evaluator_contact.H"
+#include "structure_new_model_evaluator_contact.H"
 
 #include "linalg_mapextractor.H"
 #include "linalg_matrixtransform.H"
 #include "linalg_equilibrate.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
-
-#include <Epetra_Time.h>
 
 
 /*--------------------------------------------------------------------------*
@@ -82,7 +80,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       strategy_equilibration_(Teuchos::null),
       strategy_manifold_meshtying_(Teuchos::null),
       strategy_meshtying_(Teuchos::null),
-      timer_(Teuchos::rcp(new Epetra_Time(comm)))
+      timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
 }
 
@@ -149,6 +147,7 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
  *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: apply mesh tying");
   if (SSIInterfaceMeshtying())
   {
     // check if matrices are filled because they have to be for the below methods
@@ -248,6 +247,8 @@ void SSI::SSIMono::ApplyManifoldMeshtying()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: assemble global system");
+
   AssembleMatScaTra();
 
   AssembleMatStructure();
@@ -323,6 +324,8 @@ void SSI::SSIMono::AssembleMatStructure()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::EvaluateSubproblems()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: evaluate sub problems");
+
   // clear all matrices and residuals from previous Newton iteration
   ssi_matrices_->ClearMatrices();
   ssi_vectors_->ClearResiduals();
@@ -406,7 +409,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       scatrablockstr << ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
-      blocksmootherparamsscatra.sublist("Aztec Parameters");
+      blocksmootherparamsscatra.sublist("Belos Parameters");
       blocksmootherparamsscatra.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -419,7 +422,7 @@ void SSI::SSIMono::BuildNullSpaces() const
         scatramanifoldblockstr << ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0) + 1;
         Teuchos::ParameterList& blocksmootherparamsscatramanifold =
             solver_->Params().sublist("Inverse" + scatramanifoldblockstr.str());
-        blocksmootherparamsscatramanifold.sublist("Aztec Parameters");
+        blocksmootherparamsscatramanifold.sublist("Belos Parameters");
         blocksmootherparamsscatramanifold.sublist("MueLu Parameters");
 
         // equip smoother for scatra matrix block with null space associated with all degrees of
@@ -446,7 +449,7 @@ void SSI::SSIMono::BuildNullSpaces() const
   // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->Params().sublist("Inverse" + iblockstr.str());
-  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("Belos Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   // equip smoother for structural matrix block with null space associated with all degrees of
@@ -614,14 +617,15 @@ void SSI::SSIMono::PrepareTimeLoop()
 {
   SetStructSolution(
       StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
-  ScaTraField()->Output();
-  if (IsScaTraManifold()) ScaTraManifold()->Output();
 
   // calculate initial potential field if needed
   if (DoCalculateInitialPotentialField()) CalcInitialPotentialField();
 
   // calculate initial time derivatives
   CalcInitialTimeDerivative();
+
+  ScaTraField()->Output();
+  if (IsScaTraManifold()) ScaTraManifold()->Output();
 }
 
 /*--------------------------------------------------------------------------*
@@ -857,6 +861,7 @@ void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) co
  *---------------------------------------------------------------------------------*/
 void SSI::SSIMono::SolveLinearSystem()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve linear system");
   strategy_equilibration_->EquilibrateSystem(
       ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), BlockMapSystemMatrix());
 
@@ -872,6 +877,7 @@ void SSI::SSIMono::SolveLinearSystem()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::NewtonLoop()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve Newton loop");
   // reset counter for Newton-Raphson iteration
   ResetIterationCount();
 
@@ -882,10 +888,10 @@ void SSI::SSIMono::NewtonLoop()
     IncrementIterationCount();
 
     // reset timer
-    timer_->ResetStartTime();
+    timer_->reset();
 
     // store time before evaluating elements and assembling global system of equations
-    double time = timer_->WallTime();
+    double time = timer_->wallTime();
 
     // set solution from last Newton step to all fields
     DistributeSolutionAllFields();
@@ -904,7 +910,7 @@ void SSI::SSIMono::NewtonLoop()
 
     // determine time needed for evaluating elements and assembling global system of
     // equations, and take maximum over all processors via communication
-    double mydtele = timer_->WallTime() - time;
+    double mydtele = timer_->wallTime() - time;
     Comm().MaxAll(&mydtele, &dtele_, 1);
 
     // safety check
@@ -918,13 +924,13 @@ void SSI::SSIMono::NewtonLoop()
     ssi_vectors_->ClearIncrement();
 
     // store time before solving global system of equations
-    time = timer_->WallTime();
+    time = timer_->wallTime();
 
     SolveLinearSystem();
 
     // determine time needed for solving global system of equations,
     // and take maximum over all processors via communication
-    double mydtsolve = timer_->WallTime() - time;
+    double mydtsolve = timer_->wallTime() - time;
     Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if
@@ -937,8 +943,7 @@ void SSI::SSIMono::NewtonLoop()
     // update states for next Newton iteration
     UpdateIterScaTra();
     UpdateIterStructure();
-
-  }  // Newton-Raphson iteration
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -950,18 +955,19 @@ void SSI::SSIMono::Timeloop()
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
   {
+    TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve time step");
     // prepare time step
     PrepareTimeStep();
 
     // store time before calling nonlinear solver
-    const double time = timer_->WallTime();
+    const double time = timer_->wallTime();
 
     // evaluate time step
     NewtonLoop();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
-    double mydtnonlinsolve(timer_->WallTime() - time), dtnonlinsolve(0.);
+    double mydtnonlinsolve(timer_->wallTime() - time), dtnonlinsolve(0.);
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if
@@ -978,6 +984,7 @@ void SSI::SSIMono::Timeloop()
     // output solution to screen and files
     Output();
   }
+  strategy_convcheck_->PrintNonConvergedSteps(Comm().MyPID());
 }
 
 /*--------------------------------------------------------------------------------------*

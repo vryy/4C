@@ -7,13 +7,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_KRYLOVSOLVER_H_
-#define SOLVER_KRYLOVSOLVER_H_
+#ifndef SOLVER_KRYLOVSOLVER_H
+#define SOLVER_KRYLOVSOLVER_H
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MapFactory.hpp>
@@ -28,7 +28,7 @@
 
 namespace LINALG::SOLVER
 {
-  //! krylov subspace linear solvers (aztec) with right-side preconditioning
+  //! krylov subspace linear solvers with right-side preconditioning
   template <class MatrixType, class VectorType>
   class KrylovSolver : public SolverType<MatrixType, VectorType>
   {
@@ -36,22 +36,7 @@ namespace LINALG::SOLVER
     //! Constructor
     KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    /*! \brief Setup the solver object
-     *
-     * @param A Matrix of the linear system
-     * @param x Solution vector of the linear system
-     * @param b Right-hand side vector of the linear system
-     * @param refactor Boolean flag to enforce a refactorization of the matrix
-     * @param reset Boolean flag to enforce a full reset of the solver object
-     * @param projector Krylov projector
-     */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
-
-    virtual int Solve() = 0;
-
-    int ApplyInverse(const VectorType& X, VectorType& Y);
+    int ApplyInverse(const VectorType& X, VectorType& Y) override;
 
     int Ncall() { return ncall_; }
 
@@ -84,11 +69,11 @@ namespace LINALG::SOLVER
 
     /*! \brief Function for creating preconditioner object
      *
-     * @param azlist Aztec parameter list
+     * @param solverlist liner solver parameter list
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    void CreatePreconditioner(Teuchos::ParameterList& azlist, const bool isCrsMatrix,
+    void CreatePreconditioner(Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
         Teuchos::RCP<LINALG::KrylovProjector> projector);
 
     //! a communicator

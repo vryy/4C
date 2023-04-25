@@ -20,22 +20,22 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes               // No
-STRUCT_DISP                     Yes                // Yes,No,yes,no,YES,NO
-STRUCT_VEL_ACC                  Yes                // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   No                 // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   No             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          No             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Current            // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current            // None,No,NO,no,Current,Initial
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_VEL_ACC                  Yes
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
+STRUCT_COUPLING_STRESS          No
+THERM_HEATFLUX                  Current
+THERM_TEMPERATURE               Yes
+THERM_TEMPGRAD                  Current
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics  //
+DYNAMICTYP                      Statics
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
-NLNSOL                          fullnewton         // ptc,fullnewton
+NLNSOL                          fullnewton
 PREDICT                         ConstVel
 MAXTIME                       8000
 MAXITER                       100

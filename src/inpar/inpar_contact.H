@@ -402,4 +402,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_CONTACT_H
+#endif  // INPAR_CONTACT_H

@@ -23,4 +23,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_SOLVER_NONLIN_H
+#endif  // INPAR_SOLVER_NONLIN_H

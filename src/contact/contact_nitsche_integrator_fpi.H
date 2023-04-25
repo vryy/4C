@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_INTEGRATOR_NITSCHE_FPI_H
-#define CONTACT_INTEGRATOR_NITSCHE_FPI_H
+#ifndef CONTACT_NITSCHE_INTEGRATOR_FPI_H
+#define CONTACT_NITSCHE_INTEGRATOR_FPI_H
 
 #include "contact_nitsche_integrator_poro.H"
 
@@ -147,4 +147,4 @@ namespace CONTACT
     Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
   };
 }  // namespace CONTACT
-#endif  // CONTACT_INTEGRATOR_NITSCHE_FPI_H
+#endif  // CONTACT_NITSCHE_INTEGRATOR_FPI_H

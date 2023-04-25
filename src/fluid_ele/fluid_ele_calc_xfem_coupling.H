@@ -27,7 +27,7 @@
  * kruse, 08/14
  */
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "linalg_fixedsizeblockmatrix.H"
 
@@ -508,4 +508,4 @@ namespace DRT
   }    // end namespace ELEMENTS
 }  // end namespace DRT
 
-#endif /* FLUID_ELE_CALC_XFEM_COUPLING_H_ */
+#endif  // FLUID_ELE_CALC_XFEM_COUPLING_H

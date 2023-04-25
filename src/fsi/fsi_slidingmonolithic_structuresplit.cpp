@@ -15,8 +15,8 @@ with condensed structure interface displacements
 
 #include "adapter_coupling_mortar.H"
 #include "adapter_coupling.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
 
 #include "fsi_slidingmonolithic_structuresplit.H"
 #include "fsi_debugwriter.H"
@@ -26,16 +26,16 @@ with condensed structure interface displacements
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_utils.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "inpar_fsi.H"
 #include "linalg_multiply.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_matrixtransform.H"
 #include "fluid_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "ale_utils_mapextractor.H"
-#include "ad_ale_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "constraint_manager.H"
 
@@ -1855,8 +1855,8 @@ void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
     stowner = -1;
 
     int NumEntries = 0;
-    double Values[numFluidDofs];
-    int fldofGID[numFluidDofs];
+    std::vector<double> Values(numFluidDofs);
+    std::vector<int> fldofGID(numFluidDofs);
 
     if (NumMyElements > 0)
     {
@@ -1866,7 +1866,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
       stnode = re[0];
       stowner = re[1];
 
-      P_->ExtractGlobalRowCopy(stdofGID, numFluidDofs, NumEntries, Values, fldofGID);
+      P_->ExtractGlobalRowCopy(stdofGID, numFluidDofs, NumEntries, Values.data(), fldofGID.data());
     }
 
     // Loop over related structure dofs and get related nodes.

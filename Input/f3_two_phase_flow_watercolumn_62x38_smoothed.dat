@@ -16,18 +16,18 @@ RESTART                         0
 -------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-07
 MAXTIME                         2.0
-NUMSTEP                         5 //10
+NUMSTEP                         5
 RESTARTEVRY                     1
-TIMESTEP                        8.0e-04  //6.0e-04 XFEM
+TIMESTEP                        8.0e-04
 RESULTSEVRY                           1
 RESTART_SCATRA_INPUT            no
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
-INTERFACE_THICKNESS             0.028258064516129035  //0.028258064516129035 (3eps) //0.018838709677419355 //(2eps)  //0.009419354838709678
+INTERFACE_THICKNESS             0.028258064516129035
 ------------------------------------------------------FLUID DYNAMIC
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD                    zero_field
 //STARTFUNCNO  2
 ITEMAX                          20
 LINEAR_SOLVER                   2
@@ -65,7 +65,7 @@ EOS_CONV_STREAM                 none
 EOS_CONV_CROSS                  none
 EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        convective
 INITFUNCNO                      1
@@ -86,7 +86,7 @@ VELOCITYFIELD                   Navier_Stokes
 //ABSTOLRES                       1e-5
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONVTOL                         1e-07  //1e-05
+CONVTOL                         1e-07
 EXPLPREDICT                     no
 ITEMAX                          10
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -95,21 +95,21 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-REINITIALIZATION                None //Signed_Distance_Function
-REINITINTERVAL                  5 //10 //15
+REINITIALIZATION                None
+REINITINTERVAL                  5
 REINIT_INITIAL                  no
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 -----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos //UMFPACK //Belos
+SOLVER                          Belos
 AZPREC                          ILU
 AZTOL                           1.0e-6
 -----------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK //Belos //UMFPACK //Belos
+SOLVER                          UMFPACK
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2 //ILU
+AZPREC                          MLFLUID2
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
 IFPACKCOMBINE                   Add
@@ -125,14 +125,14 @@ AZSCAL                          none
 AZOUTPUT                        50
 -----------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos //UMFPACK //Belos
+SOLVER                          Belos
 AZPREC                          ILU
 AZTOL                           1.0e-10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
-MAT 3 MAT_fluid DYNVISCOSITY 0.00001 DENSITY 1.0 GAMMA 0.0 //plus
-MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0 //minus
+MAT 3 MAT_fluid DYNVISCOSITY 0.00001 DENSITY 1.0 GAMMA 0.0
+MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------FUNCT1

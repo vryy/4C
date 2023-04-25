@@ -7,13 +7,13 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_UTILS_H_
-#define SSI_UTILS_H_
+#ifndef SSI_UTILS_H
+#define SSI_UTILS_H
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <set>
 
 namespace ADAPTER
@@ -506,4 +506,4 @@ namespace SSI
   }  // namespace UTILS
 }  // namespace SSI
 
-#endif /* SSI_UTILS_H_ */
+#endif  // SSI_UTILS_H

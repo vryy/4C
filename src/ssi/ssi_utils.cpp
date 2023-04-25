@@ -13,21 +13,21 @@
 
 #include "ssi_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "inpar_s2i.H"
 
-#include "utils_createdis.H"
-#include "utils_gid_vector.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_gid_vector.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "matchingoctree.H"
+#include "lib_matchingoctree.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -204,17 +204,18 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 
   return *scatra_manifold_params;
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::ParameterList SSI::UTILS::ModifyScaTraParams(const Teuchos::ParameterList& scatraparams)
 {
-  auto* scatraparams_mutable = new Teuchos::ParameterList(scatraparams);
+  auto scatraparams_mutable = Teuchos::ParameterList(scatraparams);
 
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
-    scatraparams_mutable->set<bool>("output_file_name_discretization", true);
+    scatraparams_mutable.set<bool>("output_file_name_discretization", true);
 
-  return *scatraparams_mutable;
+  return scatraparams_mutable;
 }
 
 /*----------------------------------------------------------------------*/
@@ -941,8 +942,8 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(
 void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition)
 {
-  auto timer = Teuchos::rcp(new Epetra_Time(comm_));
-  const double t0 = timer->WallTime();
+  auto timer = Teuchos::rcp(new Teuchos::Time("MeshtypingHandlers", true));
+  const double t0 = timer->wallTime();
 
   if (do_print_)
   {
@@ -1046,7 +1047,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
         coupling_adapter, coupling_map_extractor, slave_slave_transformation)));
   }
 
-  const double total_time = timer->WallTime() - t0;
+  const double total_time = timer->wallTime() - t0;
   if (do_print_)
   {
     std::cout << "|--------------------------------|" << std::endl;
@@ -1147,8 +1148,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
   }
 
   // communicate to all other procs
-  std::vector<std::pair<int, int>> all_coupling_pairs;
-  DRT::UTILS::BroadcastPairVector(my_coupling_pairs, all_coupling_pairs, comm_);
+  const auto all_coupling_pairs = DRT::UTILS::BroadcastPairVector(my_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1319,8 +1319,8 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  DRT::UTILS::BroadcastVector(my_master_gids, master_gids, comm_);
-  DRT::UTILS::BroadcastMap(my_slave_master_pair, slave_master_pair, comm_);
+  master_gids = DRT::UTILS::BroadcastVector(my_master_gids, comm_);
+  slave_master_pair = DRT::UTILS::BroadcastMap(my_slave_master_pair, comm_);
 
 #ifdef DEBUG
   // check if everything worked fine
@@ -1367,8 +1367,8 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
   }
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
-  DRT::UTILS::BroadcastVector(
-      my_coupled_original_slave_gids, all_coupled_original_slave_gids, comm_);
+  all_coupled_original_slave_gids =
+      DRT::UTILS::BroadcastVector(my_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*

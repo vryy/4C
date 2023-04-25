@@ -8,15 +8,14 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_MANIFOLD_UTILS_H_
-#define SSI_MANIFOLD_UTILS_H_
+#ifndef SSI_MANIFOLD_UTILS_H
+#define SSI_MANIFOLD_UTILS_H
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <set>
-#include "memory"
-
-class RuntimeCsvWriter;
+#include <memory>
+#include "io_runtime_csv_writer.H"
 
 namespace ADAPTER
 {
@@ -278,7 +277,7 @@ namespace SSI
     //@}
 
     // writes evaluated data to output
-    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
@@ -446,4 +445,4 @@ namespace SSI
 
 }  // namespace SSI
 
-#endif /* SSI_MANIFOLD_UTILS_H_ */
+#endif  // SSI_MANIFOLD_UTILS_H

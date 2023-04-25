@@ -10,8 +10,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_LUBRICATION_LUBRICATION_TIMINT_IMPLICIT_H_
-#define SRC_LUBRICATION_LUBRICATION_TIMINT_IMPLICIT_H_
+#ifndef LUBRICATION_TIMINT_IMPLICIT_H
+#define LUBRICATION_TIMINT_IMPLICIT_H
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
@@ -21,7 +21,7 @@
 
 #include "inpar_lubrication.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -503,4 +503,4 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
-#endif /* SRC_LUBRICATION_LUBRICATION_TIMINT_IMPLICIT_H_ */
+#endif  // LUBRICATION_TIMINT_IMPLICIT_H

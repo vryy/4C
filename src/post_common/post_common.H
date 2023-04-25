@@ -25,12 +25,12 @@ specific output operations can be done by the elements themselves.
 #include <vector>
 #include <string>
 
-#include "globalproblem_enums.H"
+#include "lib_globalproblem_enums.H"
 #include "io_hdf.H"
 
 extern "C"
 {
-#include "pss_types.h"
+#include "pss_full_types.h"
 }
 
 #include <Teuchos_RCP.hpp>

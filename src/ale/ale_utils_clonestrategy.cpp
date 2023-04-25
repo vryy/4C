@@ -10,48 +10,29 @@
 
 /*----------------------------------------------------------------------------*/
 #include "ale_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 
 // we need to know all element types for the ale mesh creation
 #include "fluid_ele.H"
-#include "ale2.H"
-#include "ale2_nurbs.H"
-#include "ale3.H"
-#include "ale3_nurbs.H"
+#include "ale_ale2.H"
+#include "ale_ale2_nurbs.H"
+#include "ale_ale3.H"
+#include "ale_ale3_nurbs.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ALEDirichlet", "Dirichlet"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FSICoupling", "FSICoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("FPSICoupling", "FPSICoupling"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("FREESURFCoupling", "FREESURFCoupling"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ALEUPDATECoupling", "ALEUPDATECoupling"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("StructAleCoupling", "StructAleCoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("LinePeriodic", "LinePeriodic"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SurfacePeriodic", "SurfacePeriodic"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ElchBoundaryKinetics", "ElchBoundaryKinetics"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("XFEMSurfFluidFluid", "XFEMSurfFluidFluid"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("FluidFluidCoupling", "FluidFluidCoupling"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("AleWear", "AleWear"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("AleLocsys", "Locsys"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Mortar", "Mortar"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("UncertainSurface", "UncertainSurface"));
-
-  return conditions_to_copy;
+  return {{"ALEDirichlet", "Dirichlet"}, {"FSICoupling", "FSICoupling"},
+      {"FPSICoupling", "FPSICoupling"}, {"FREESURFCoupling", "FREESURFCoupling"},
+      {"ALEUPDATECoupling", "ALEUPDATECoupling"}, {"StructAleCoupling", "StructAleCoupling"},
+      {"LinePeriodic", "LinePeriodic"}, {"SurfacePeriodic", "SurfacePeriodic"},
+      {"ElchBoundaryKinetics", "ElchBoundaryKinetics"},
+      {"XFEMSurfFluidFluid", "XFEMSurfFluidFluid"}, {"FluidFluidCoupling", "FluidFluidCoupling"},
+      {"AleWear", "AleWear"}, {"AleLocsys", "Locsys"}, {"Mortar", "Mortar"},
+      {"UncertainSurface", "UncertainSurface"}};
 }
 
 /*----------------------------------------------------------------------------*/

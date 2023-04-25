@@ -52,7 +52,7 @@ FILESTEPS                       1000
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0
-VERBOSITY                       debug
+VERBOSITY                       standard
 RESTARTWALLTIMEINTERVAL         -1
 RESTARTEVRY                     -1
 -------------------------------------------------IO/EVERY ITERATION
@@ -229,7 +229,7 @@ Zero Initial Guess              = Yes
 Computing Scaling Manually      = No
 Output Solver Details           = Yes
 ---------------------------------------------STRUCT NOX/Line Search
-Method                          = Backtrack // Full Step
+Method                          = Backtrack
 Inner Status Test Check Type    = Minimal
 -----------------------------------STRUCT NOX/Line Search/Full Step
 Full Step                       = 1

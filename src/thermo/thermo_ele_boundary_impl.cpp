@@ -13,14 +13,14 @@
 #include "thermo_ele_boundary_impl.H"
 #include "thermo_ele_action.H"
 #include "inpar_thermo.H"
-#include "globalproblem.H"
-#include "discret.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_function_of_time.H"
 
-#include "utils_fem_shapefunctions.H"
-#include "utils_boundary_integration.H"
-#include "position_array.H"
-#include "utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
+#include "geometry_position_array.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 
@@ -247,8 +247,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(&(mytempnp[0]), true);  // view only!
-        etemp_.Update(etemp);                                 // copy
+        LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+        etemp_.Update(etemp);                                  // copy
       }  // discretization.HasState("temperature")
       else
         dserror("No old temperature T_n+1 available");
@@ -265,8 +265,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(&(mytempn[0]), true);  // view only!
-        etemp_.Update(etemp);                                // copy
+        LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+        etemp_.Update(etemp);                                 // copy
       }  // discretization.HasState("old temperature")
       else
         dserror("No old temperature T_n available");
@@ -460,8 +460,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(&(mytempnp[0]), true);  // view only!
-            etemp_.Update(etemp);                                 // copy
+            LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+            etemp_.Update(etemp);                                  // copy
           }  // discretization.HasState("temperature")
           else
             dserror("No old temperature T_n+1 available");
@@ -478,8 +478,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(&(mytempn[0]), true);  // view only!
-            etemp_.Update(etemp);                                // copy
+            LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+            etemp_.Update(etemp);                                 // copy
           }  // discretization.HasState("old temperature")
           else
             dserror("No old temperature T_n available");

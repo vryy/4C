@@ -15,21 +15,21 @@
 #include "adapter_coupling.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
-#include "dyn_smag.H"
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_smag.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 
 #include "nurbs_discret.H"
 
 #include "scatra_ele_action.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 
 // for AVM3 solver:
 #include <MLAPI_Workspace.h>
@@ -40,7 +40,7 @@
 #include "io_control.H"
 #include "io_gmsh.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
 
 /*==========================================================================*
@@ -468,7 +468,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // care for the parallel case
     std::vector<double> parnormfluxintegral(NumDofPerNode());
-    discret_->Comm().SumAll(&normfluxintegral[0], &parnormfluxintegral[0], NumDofPerNode());
+    discret_->Comm().SumAll(normfluxintegral.data(), parnormfluxintegral.data(), NumDofPerNode());
     double parboundaryint = 0.0;
     discret_->Comm().SumAll(&boundaryint, &parboundaryint, 1);
 
@@ -951,7 +951,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
     double z = (*zcomp)[i];
     double norm = sqrt(x * x + y * y + z * z);
     // form the unit normal vector
-    if (norm > EPS15)
+    if (norm > 1e-15)
     {
       normal->ReplaceMyValue(i, 0, x / norm);
       normal->ReplaceMyValue(i, 1, y / norm);
@@ -2197,7 +2197,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, values.data(), indices.data());
       for (int ientry = 0; ientry < length; ++ientry)
       {
         if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)
@@ -2669,6 +2669,8 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
 
   // write evaluated data to file
   PassToCSVWriter();
+
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
   runtime_csvwriter_->ResetTimeAndTimeStep(scatratimint->Time(), scatratimint->Step());
   runtime_csvwriter_->WriteFile();
 }
@@ -2679,7 +2681,6 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
 void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatratimint)
 {
   myrank_ = scatratimint->myrank_;
-  runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(myrank_);
 
   output_mean_grad_ = DRT::INPUT::IntegralValue<bool>(
       *scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
@@ -2693,10 +2694,8 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   else
     filename = "scalarvalues";
 
-  runtime_csvwriter_->Init(filename);
+  runtime_csvwriter_.emplace(myrank_, filename);
   InitStrategySpecific(scatratimint);
-
-  runtime_csvwriter_->Setup();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2721,6 +2720,8 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
   meanscalars_[dummy_domain_id_].resize(numdofpernode_, 0.0);
   meangradients_[dummy_domain_id_].resize(numscal_, 0.0);
   domainintegral_[dummy_domain_id_] = 0.0;
+
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
   // register output in csv writer
   runtime_csvwriter_->RegisterDataVector("Integral of entire domain", 1, 16);
@@ -2774,6 +2775,8 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
  *----------------------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
 {
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
   runtime_csvwriter_->AppendDataVector(
       "Integral of entire domain", {domainintegral_[dummy_domain_id_]});
   for (int k = 0; k < numdofpernode_; ++k)
@@ -2879,6 +2882,8 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     // micro dis has only one dof
     if (output_micro_dis_) micrototalscalars_[condid].resize(1, 0.0);
 
+    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
     // register all data vectors
     runtime_csvwriter_->RegisterDataVector("Integral of domain " + std::to_string(condid), 1, 16);
     for (int k = 0; k < numdofpernodepercondition_[condid]; ++k)
@@ -2975,6 +2980,8 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
   {
     // extract condition ID
     const int condid = condition->GetInt("ConditionID");
+
+    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
     runtime_csvwriter_->AppendDataVector(
         "Integral of domain " + std::to_string(condid), {domainintegral_[condid]});
@@ -3222,8 +3229,8 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
   std::vector<int> vecnumdofpernode(maxsize * discret->Comm().NumProc(), 0);
 
   // communicate
-  discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
+  discret->Comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)
@@ -3280,8 +3287,8 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   std::vector<int> vecnumdofpernode(maxsize * discret->Comm().NumProc(), 0);
 
   // communicate
-  discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
+  discret->Comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+      static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)

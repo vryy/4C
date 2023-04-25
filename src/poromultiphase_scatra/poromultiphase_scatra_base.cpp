@@ -8,10 +8,10 @@
 
 #include "poromultiphase_scatra_base.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
-#include "ad_poromultiphase.H"
+#include "adapter_poromultiphase.H"
 #include "poromultiphase_utils.H"
 #include "poromultiphase_scatra_utils.H"
 
@@ -19,13 +19,13 @@
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_poromulti.H"
 
-#include "ad_art_net.H"
-#include "ad_porofluidmultiphase_wrapper.H"
+#include "adapter_art_net.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "scatra_ele.H"
-#include "fluidporo_multiphase.H"
-#include "scatra_mat_multiporo.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_scatra_mat_multiporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       scatra_(Teuchos::null),
       fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
       ndsporofluid_scatra_(-1),
-      timertimestep_(comm),
+      timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
       divcontype_(DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
           globaltimeparams, "DIVERCONT")),
@@ -162,7 +162,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   std::vector<int> mydirichdofs(0);
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(
-      -1, 0, &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      -1, 0, mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // done.
 }
@@ -196,13 +196,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
     PrepareTimeStep();
 
     // reset timer
-    timertimestep_.ResetStartTime();
+    timertimestep_.reset();
     // *********** time measurement ***********
-    double dtcpu = timertimestep_.WallTime();
+    double dtcpu = timertimestep_.wallTime();
     // *********** time measurement ***********
     TimeStep();
     // *********** time measurement ***********
-    double mydttimestep = timertimestep_.WallTime() - dtcpu;
+    double mydttimestep = timertimestep_.wallTime() - dtcpu;
     Comm().MaxAll(&mydttimestep, &dttimestep_, 1);
     // *********** time measurement ***********
 
@@ -408,7 +408,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
   // build map
   int nummydirichvals = mydirichdofs.size();
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals,
-      &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // add the condition
   ScatraAlgo()->ScaTraField()->AddDirichCond(add_dirichmaps_volfrac_spec_);

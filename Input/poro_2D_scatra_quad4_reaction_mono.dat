@@ -16,7 +16,7 @@ should give same results as corresponding partitioned test
 //NODES                         154
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport //Poroelastic_scalar_transport Poroelasticity
+PROBLEMTYP                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -37,8 +37,8 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -56,7 +56,7 @@ RESTARTEVRY                     10
 NUMSTEP                         50
 MAXTIME                         4000.0
 TIMESTEP                        0.01
-COUPALGO                        monolithic //two_way monolithic
+COUPALGO                        monolithic
 LINEAR_SOLVER                   1
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
@@ -64,44 +64,44 @@ TOLRES_GLOBAL                   1e-07
 TOLINC_GLOBAL                   1e-06
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
---------------------------------------------------------SOLVER 1 //poroelast
-SOLVER                          UMFPACK //UMFPACK Belos
+--------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
 AZTOL                           1.0E-9
 AZPREC                          BGS2x2
---------------------------------------------------------SOLVER 2 //structure
+--------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
-------------------------------------------------------------SOLVER 3 //porofluid
-SOLVER                          UMFPACK //UMFPACK
+------------------------------------------------------------SOLVER 3
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           40                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-9
+AZITER                          1000
+AZSUB                           40
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+AZCONV                          AZ_r0
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta

@@ -13,6 +13,7 @@
 #include "fluid_utils_mapextractor.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_elch.H"
 
@@ -32,19 +33,11 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
       theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA")),
       elch_params_(elchcontrol)
 {
-  return;
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm() { return; }
-
-
-
 /*----------------------------------------------------------------------*
-| Setup                                                     rauch 08/16 |
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::Init(
     const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
     const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
@@ -72,8 +65,7 @@ void ELCH::MovingBoundaryAlgorithm::Init(
 
 
 /*----------------------------------------------------------------------*
-| Setup                                                     rauch 08/16 |
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::Setup()
 {
   // call init in base class
@@ -99,8 +91,6 @@ void ELCH::MovingBoundaryAlgorithm::Setup()
 
   // initialize the multivector for all possible cases
   fluxn_ = ScaTraField()->CalcFluxAtBoundary(false);
-
-  return;
 }
 
 
@@ -140,16 +130,16 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // prepare next time step
     PrepareTimeStep();
 
-    Teuchos::RCP<Epetra_Vector> incr(FluidField()->ExtractInterfaceVeln());
+    auto incr = FluidField()->ExtractInterfaceVeln();
     incr->PutScalar(0.0);
-    double incnorm(0.0);
-    int iter(0);
-    bool stopiter(false);
+    double incnorm = 0.0;
+    int iter = 0;
+    bool stopiter = false;
 
     // ToDo
     // improve this convergence test
     // (better check increment of ivel ????, test relative value etc.)
-    while (stopiter == false)  // do at least one step
+    while (!stopiter)  // do at least one step
     {
       iter++;
 
@@ -204,10 +194,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 
     // write output to screen and files
     Output();
-
-  }  // time loop
-
-  return;
+  }
 }
 
 
@@ -239,8 +226,6 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
    * such as the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField()->PrepareTimeStep();
-
-  return;
 }
 
 
@@ -259,8 +244,6 @@ void ELCH::MovingBoundaryAlgorithm::SolveFluidAle()
 
   // solve nonlinear Navier-Stokes system on a moving mesh
   FluidAleNonlinearSolve(idispnp_, iveln_, pseudotransient_);
-
-  return;
 }
 
 
@@ -303,8 +286,6 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 
   // solve coupled electrochemistry equations
   ScaTraField()->Solve();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -319,8 +300,6 @@ void ELCH::MovingBoundaryAlgorithm::Update()
   idispn_->Update(1.0, *idispnp_, 0.0);
   // perform time shift of interface mass flux vectors
   fluxn_->Update(1.0, *fluxnp_, 0.0);
-
-  return;
 }
 
 
@@ -343,8 +322,6 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   // now the other physical fiels
   ScaTraField()->Output();
   AleField()->Output();
-
-  return;
 }
 
 
@@ -393,7 +370,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
       }
 
       // now insert only the first numdim entries (pressure dof is not inserted!)
-      int error = iveln_->ReplaceGlobalValues(numdim, &Values[0], &fluidnodedofs[0]);
+      int error = iveln_->ReplaceGlobalValues(numdim, Values.data(), fluidnodedofs.data());
       if (error > 0) dserror("Could not insert values into vector iveln_: error %d", error);
     }
   }
@@ -402,10 +379,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   // id^{n+1} = id^{n} + \delta t vel_i
   idispnp->Update(1.0, *idispn_, 0.0);
   idispnp->Update(Dt(), *iveln_, 1.0);
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -420,6 +394,15 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
   reader.ReadVector(idispn_, "idispn");
   // read same result into vector isdispnp_ as a 'good guess'
   reader.ReadVector(idispnp_, "idispn");
+}
 
-  return;
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::TestResults()
+{
+  auto* problem = DRT::Problem::Instance();
+  problem->AddFieldTest(FluidField()->CreateFieldTest());
+  problem->AddFieldTest(AleField()->CreateFieldTest());
+  problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());
+  problem->TestAll(ScaTraField()->Discretization()->Comm());
 }

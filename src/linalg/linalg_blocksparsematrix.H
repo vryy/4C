@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef LINALG_BLOCKSPARSEMATRIX_H_
-#define LINALG_BLOCKSPARSEMATRIX_H_
+#ifndef LINALG_BLOCKSPARSEMATRIX_H
+#define LINALG_BLOCKSPARSEMATRIX_H
 
 #include "linalg_sparsematrix.H"
 

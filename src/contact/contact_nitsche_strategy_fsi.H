@@ -105,4 +105,4 @@ namespace CONTACT
     );
   }  // namespace UTILS
 }  // namespace CONTACT
-#endif  //  CONTACT_NITSCHE_STRATEGY_FSI_H
+#endif  // CONTACT_NITSCHE_STRATEGY_FSI_H

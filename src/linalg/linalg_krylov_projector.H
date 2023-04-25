@@ -11,12 +11,12 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef LINALG_KRYLOV_PROJECTOR_H_
-#define LINALG_KRYLOV_PROJECTOR_H_
+#ifndef LINALG_KRYLOV_PROJECTOR_H
+#define LINALG_KRYLOV_PROJECTOR_H
 
 #include <vector>
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_MultiVector;
@@ -237,4 +237,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif  // LINALG_KRYLOV_PROJECTOR_H_
+#endif  // LINALG_KRYLOV_PROJECTOR_H

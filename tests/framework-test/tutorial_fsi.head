@@ -173,7 +173,6 @@ NUMSTEP                         1
 //                              Loma
 //                              Boussinesq
 //                              Poro
-//                              Topology_optimization
 PHYSICAL_TYPE                   Incompressible
 //
 // Predictor for first guess in nonlinear iteration
@@ -694,7 +693,6 @@ MIN_ELEPROC                     0
 //                              Fluid_Structure_Interaction
 //                              Fluid_Structure_Interaction_Lung
 //                              Fluid_Structure_Interaction_XFEM
-//                              Fluid_Top_Opt
 //                              Fluid_XFEM2
 //                              Gas_Fluid_Structure_Interaction
 //                              Low_Mach_Number_Flow
@@ -935,9 +933,6 @@ SUB_SOLVER1                     -1
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
 //
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
-//
 // solver parameters for solver block 2
 --------------------------------------------------------------------SOLVER 2
 //
@@ -1153,9 +1148,6 @@ SUB_SOLVER1                     -1
 //
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
-//
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
 //
 // solver parameters for solver block 3
 --------------------------------------------------------------------SOLVER 3
@@ -1373,9 +1365,6 @@ SUB_SOLVER1                     -1
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
 //
-// verbosity level (0=no output,... 10=extreme), for Belos only
-VERBOSITY                       0
-//
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //
 INT_STRATEGY                    Standard
@@ -1390,7 +1379,7 @@ ADAPTCONV_BETTER                0.1
 //                              Yes,No,yes,no,YES,NO
 //
 // type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
-//                              no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
+//                              no,No,NO,yes,Yes,YES,Rayleigh,Material
 DAMPING                         No
 //
 // What to do in time integration even if Newton-Raphson iteration failed

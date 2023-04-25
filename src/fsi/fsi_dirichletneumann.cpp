@@ -10,10 +10,10 @@
 
 
 #include "fsi_dirichletneumann.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "fsi_debugwriter.H"
-#include "globalproblem.H"  // todo remove as soon as possible, only needed for dserror
-#include "io_control.H"     // todo remove as soon as possible, only needed for dserror
+#include "lib_globalproblem.H"  // todo remove as soon as possible, only needed for dserror
+#include "io_control.H"         // todo remove as soon as possible, only needed for dserror
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

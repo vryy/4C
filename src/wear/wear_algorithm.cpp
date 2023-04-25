@@ -14,30 +14,30 @@
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
 #include "wear_algorithm.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "mortar_manager_base.H"
 
-#include "ad_ale.H"
-#include "ad_ale_wear.H"
+#include "adapter_ale.H"
+#include "adapter_ale_wear.H"
 
-#include "meshtying_contact_bridge.H"
+#include "contact_meshtying_contact_bridge.H"
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_wear_interface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_element.H"
-#include "contact_augmented_interface.H"
+#include "contact_aug_interface.H"
 #include "contact_strategy_factory.H"
 #include "contact_utils.H"
 
-#include "ad_str_structure.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_structure.H"
+#include "adapter_str_fsiwrapper.H"
 
 #include "inpar_wear.H"
 #include "inpar_ale.H"
 
-#include "control_point.H"
+#include "nurbs_discret_control_point.H"
 #include "nurbs_discret.H"
-#include "knotvector.H"
+#include "nurbs_discret_knotvector.H"
 
 
 /*----------------------------------------------------------------------*

@@ -20,13 +20,13 @@
 #include "particle_interaction_dem_adhesion.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -263,16 +263,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetupParticleInteractionWriter
     particleinteractionwriter_->RegisterSpecificRuntimeCsvWriter("particle-energy");
 
     // get specific runtime csv writer
-    RuntimeCsvWriter* runtime_csv_writer =
+    IO::RuntimeCsvWriter* runtime_csv_writer =
         particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
 
     // register all data vectors
     runtime_csv_writer->RegisterDataVector("kin_energy", 1, 10);
     runtime_csv_writer->RegisterDataVector("grav_pot_energy", 1, 10);
     runtime_csv_writer->RegisterDataVector("elast_pot_energy", 1, 10);
-
-    // setup the csv writer object
-    runtime_csv_writer->Setup();
   }
 }
 
@@ -552,7 +549,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localkinenergy(1, 0.0);
     EvaluateParticleKineticEnergy(localkinenergy[0]);
-    comm_.SumAll(&localkinenergy[0], &kinenergy[0], 1);
+    comm_.SumAll(localkinenergy.data(), kinenergy.data(), 1);
   }
 
   // evaluate particle gravitational potential energy contribution
@@ -560,7 +557,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localgravpotenergy(1, 0.0);
     EvaluateParticleGravitationalPotentialEnergy(localgravpotenergy[0]);
-    comm_.SumAll(&localgravpotenergy[0], &gravpotenergy[0], 1);
+    comm_.SumAll(localgravpotenergy.data(), gravpotenergy.data(), 1);
   }
 
   // evaluate elastic potential energy contribution
@@ -568,11 +565,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleEnergy() const
   {
     std::vector<double> localelastpotenergy(1, 0.0);
     contact_->EvaluateElasticPotentialEnergy(localelastpotenergy[0]);
-    comm_.SumAll(&localelastpotenergy[0], &elastpotenergy[0], 1);
+    comm_.SumAll(localelastpotenergy.data(), elastpotenergy.data(), 1);
   }
 
   // get specific runtime csv writer
-  RuntimeCsvWriter* runtime_csv_writer =
+  IO::RuntimeCsvWriter* runtime_csv_writer =
       particleinteractionwriter_->GetSpecificRuntimeCsvWriter("particle-energy");
 
   // append data vector
@@ -651,6 +648,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalP
 
     // add gravitational potential energy contribution
     for (int i = 0; i < particlestored; ++i)
-      gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(&gravity_[0], &pos[statedim * i]);
+      gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(gravity_.data(), &pos[statedim * i]);
   }
 }

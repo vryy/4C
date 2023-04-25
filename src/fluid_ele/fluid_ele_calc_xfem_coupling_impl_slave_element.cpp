@@ -12,7 +12,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "cut_position.H"
-#include "utils.H"
+#include "lib_utils.H"
 #include "xfem_interface_utils.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 

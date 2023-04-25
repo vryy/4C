@@ -25,7 +25,7 @@ LINEAR_SOLVER                   1
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
-MAXTIME                         0.54//0.9
+MAXTIME                         0.54
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
 NLNSOL                          newtonlinuzawa
@@ -55,7 +55,7 @@ RHO_INF                         0.8
 THETA                           0.66
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
-KIND                            None//AdamsBashforth2
+KIND                            None
 LOCERRNORM                      Rms
 LOCERRTOL                       0
 OUTENEPERIOD                    0

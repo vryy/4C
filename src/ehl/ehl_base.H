@@ -8,8 +8,8 @@ algorithms
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_EHL_EHL_BASE_H_
-#define SRC_EHL_EHL_BASE_H_
+#ifndef EHL_BASE_H
+#define EHL_BASE_H
 
 
 #include "adapter_algorithmbase.H"
@@ -166,4 +166,4 @@ namespace EHL
 }  // namespace EHL
 
 
-#endif /* SRC_EHL_EHL_BASE_H_ */
+#endif  // EHL_BASE_H

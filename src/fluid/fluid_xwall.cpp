@@ -10,26 +10,26 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_xwall.H"
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 #include "fluid_utils.H"
 #include "fluid_ele_xwall.H"
-#include "condition.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_condition.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
-#include "dofset_transparent.H"
-#include "utils_rebalancing.H"
+#include "lib_dofset_transparent.H"
+#include "rebalance.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io_control.H"
-#include "matpar_bundle.H"
-#include "newtonianfluid.H"
-#include "linalg_solver.H"
+#include "mat_par_bundle.H"
+#include "mat_newtonianfluid.H"
+#include "solver_linalg_solver.H"
 #include "fluid_ele_action.H"
 #include "fluid_utils.H"
-#include "periodicbc.H"
-#include "transfer_turb_inflow.H"
+#include "lib_periodicbc.H"
+#include "fluid_turbulence_transfer_turb_inflow.H"
 #include "io.H"
 
 #include <MLAPI_Workspace.h>
@@ -309,7 +309,7 @@ void FLD::XWall::InitXWallMaps()
     }
 
     xwallrownodemap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)rowvec.size(), &rowvec[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, (int)rowvec.size(), rowvec.data(), 0, discret_->Comm()));
   }
 
   // get Dirichlet conditions
@@ -335,7 +335,7 @@ void FLD::XWall::InitXWallMaps()
     int gcount;
     (discret_->Comm()).SumAll(&count, &gcount, 1);
     dircolnodemap_ =
-        Teuchos::rcp(new Epetra_Map(gcount, count, &testcollect[0], 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(gcount, count, testcollect.data(), 0, discret_->Comm()));
   }  // end loop this conditions
   else
     dserror("You need DESIGN FLUID STRESS CALC SURF CONDITIONS for xwall");
@@ -419,7 +419,7 @@ void FLD::XWall::InitWallDist()
   }
   int count = (int)colvec.size();
 
-  xwallcolnodemap_ = Teuchos::rcp(new Epetra_Map(count, count, &colvec[0], 0, discret_->Comm()));
+  xwallcolnodemap_ = Teuchos::rcp(new Epetra_Map(count, count, colvec.data(), 0, discret_->Comm()));
 
   for (int j = 0; j < xwallcolnodemap_->NumMyElements(); ++j)
   {
@@ -630,11 +630,15 @@ void FLD::XWall::SetupXWallDis()
   {
     // redistribute
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
-    Teuchos::RCP<Epetra_Map> rownodes;
-    Teuchos::RCP<Epetra_Map> colnodes;
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
-    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-        xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
+
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(xwdiscret_, elemap);
+
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
+
+    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 
@@ -695,7 +699,7 @@ void FLD::XWall::SetupL2Projection()
     }
 
     enrdofrowmap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), &enrdf[0], 0, xwdiscret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->Comm()));
 
     massmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
 
@@ -787,7 +791,7 @@ void FLD::XWall::SetupL2Projection()
             // allocate dimns times the local length of the rowmap
             const int lrows = enrdofrowmap_->NumMyElements();
             ns = Teuchos::rcp(new std::vector<double>(3 * lrows));
-            double* nullsp = &((*ns)[0]);
+            double* nullsp = ns->data();
             mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
             mllist.set("null space: vectors", nullsp);
 

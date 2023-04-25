@@ -11,14 +11,14 @@ and Gauss point loop as well as some additional service routines.
 \level 1
 */
 
-#ifndef SO_ELE_H
-#define SO_ELE_H
+#ifndef SOLID_ELE_H
+#define SOLID_ELE_H
 
 #include <memory>
-#include "elementtype.H"
+#include "lib_elementtype.H"
 #include "inpar_structure.H"
-#include "element.H"
-#include "str_elements_paramsinterface.H"
+#include "lib_element.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "solid_ele_calc.H"
 #include "solid_ele_calc_fbar.H"
 #include "solid_ele_eas_utils.H"
@@ -361,4 +361,4 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
-#endif  // SO_ELE_H
+#endif  // SOLID_ELE_H

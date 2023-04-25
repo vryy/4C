@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 #include "linalg_mlapi_operator.H"
-#include "Epetra_Vector.h"
+#include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -304,7 +304,7 @@ int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X, Epetra_Multi
   space.Reshape(bmap.NumGlobalElements(), bmap.NumMyElements(), bmap.MyGlobalElements());
 
   // wrap incoming and outgoing vectors as MLAPI::MultiVector
-  // note: Aztec might pass X and Y as physically identical objects,
+  // note: iterative solver might pass X and Y as physically identical objects,
   // so we deep copy here
   MLAPI::MultiVector in(space, X.Pointers(), 1);
   MLAPI::MultiVector out(space, Y.Pointers(), 1);
@@ -338,7 +338,7 @@ MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(MLAPI::Operator& A)
   for (int i = 0; i < nummyrows; ++i)
   {
     int numentries;
-    int err = B->ExtractMyRowCopy(i, maxnumentries, numentries, &vals[0], &indices[0]);
+    int err = B->ExtractMyRowCopy(i, maxnumentries, numentries, vals.data(), indices.data());
     if (err) dserror("Epetra_RowMatrix::ExtractMyRowCopy returned err=%d", err);
     double sum = 0.0;
     for (int j = 0; j < numentries; ++j) sum += abs(vals[j]);

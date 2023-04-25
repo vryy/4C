@@ -7,7 +7,7 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "so_hex8_determinant_analysis.H"
+#include "so3_hex8_determinant_analysis.H"
 
 namespace
 {

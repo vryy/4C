@@ -12,7 +12,7 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "condition.H"
+#include "lib_condition.H"
 
 /*----------------------------------------------------------------------*/
 
@@ -108,4 +108,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_BEAMCONTACT_H
+#endif  // INPAR_BEAMCONTACT_H

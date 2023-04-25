@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_
-#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_
+#ifndef POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H
+#define POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H
 
 
 
@@ -18,10 +18,10 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "discret.H"
+#include "lib_discret.H"
 
-#include "ad_porofluidmultiphase.H"
-#include "ad_art_net.H"
+#include "adapter_porofluidmultiphase.H"
+#include "adapter_art_net.H"
 
 #include "inpar_porofluidmultiphase.H"
 
@@ -692,4 +692,4 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_ */
+#endif  // POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H

@@ -9,9 +9,9 @@
 #ifndef MORTAR_NODE_H
 #define MORTAR_NODE_H
 
-#include "node.H"
-#include "parobjectfactory.H"
-#include "pairedvector.H"
+#include "lib_node.H"
+#include "lib_parobjectfactory.H"
+#include "headers_pairedvector.H"
 
 namespace MORTAR
 {
@@ -484,7 +484,7 @@ namespace MORTAR
     /*!
      \brief Get predefined degrees of freedom
      */
-    const int* Dofs() const { return &dofs_[0]; }
+    const int* Dofs() const { return dofs_.data(); }
 
     /*!
      \brief Return current configuration (length 3)
@@ -717,4 +717,4 @@ namespace MORTAR
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& cnode);
 
 
-#endif  // #ifndef MORTAR_NODE_H
+#endif  // MORTAR_NODE_H

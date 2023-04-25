@@ -11,7 +11,7 @@
 #ifndef INPAR_REBALANCE_H
 #define INPAR_REBALANCE_H
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 namespace INPAR::REBALANCE
 {

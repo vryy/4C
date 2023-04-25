@@ -772,7 +772,7 @@ namespace GEO
         LINALG::Matrix<numNodesElement, 1> funct;
         DRT::UTILS::shape_function<elementtype>(rst, funct);
 
-        LINALG::Matrix<numNodesElement, 1> scalar(&ns[0]);
+        LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
         LINALG::Matrix<1, 1> res;
         res.MultiplyTN(funct, scalar);
         return res(0);

@@ -12,7 +12,7 @@
 
 #include "inpar_particle.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "io.H"
 #include "io_control.H"

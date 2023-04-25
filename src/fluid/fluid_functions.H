@@ -9,13 +9,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "function.H"
-#include "newtonianfluid.H"
-#include "fluid_weakly_compressible.H"
-#include "stvenantkirchhoff.H"
+#include "lib_function.H"
+#include "mat_newtonianfluid.H"
+#include "mat_fluid_weakly_compressible.H"
+#include "mat_stvenantkirchhoff.H"
 
-#ifndef FLUID_FUNCTION_H
-#define FLUID_FUNCTION_H
+#ifndef FLUID_FUNCTIONS_H
+#define FLUID_FUNCTIONS_H
 
 namespace DRT
 {
@@ -34,8 +34,7 @@ namespace FLD
 
   /// try to create fluid-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateFluidFunction(
-      Teuchos::RCP<DRT::INPUT::LineDefinition> function_lin_def,
-      DRT::UTILS::FunctionManager& manager, const int index_current_funct_in_manager);
+      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
 
   /// special implementation for beltrami flow (velocity, pressure)
   class BeltramiUP : public DRT::UTILS::FunctionOfSpaceTime

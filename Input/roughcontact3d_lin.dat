@@ -36,7 +36,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.02
 NUMSTEP                         2
 MAXTIME                         0.04
@@ -70,9 +70,6 @@ NDPOINT                         16
 NDLINE                          24
 NDSURF                          12
 NDVOL                           2
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4

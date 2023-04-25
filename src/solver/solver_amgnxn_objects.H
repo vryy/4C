@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef AMGNXN_OBJECTS_H
-#define AMGNXN_OBJECTS_H
+#ifndef SOLVER_AMGNXN_OBJECTS_H
+#define SOLVER_AMGNXN_OBJECTS_H
 
 // Trilinos includes
-#include "Epetra_MultiVector.h"
-#include "Teuchos_RCP.hpp"
+#include <Epetra_MultiVector.h>
+#include <Teuchos_RCP.hpp>
 
 // Baci includes
 #include "linalg_blocksparsematrix.H"
@@ -120,20 +120,20 @@ namespace LINALG::SOLVER::AMGNXN
       cols_ = rows;
     }
 
-    virtual void SetMatrix(Teuchos::RCP<SparseMatrix> A, int i, int j)
+    void SetMatrix(Teuchos::RCP<SparseMatrix> A, int i, int j) override
     {
       if (i != j) dserror("You can only set diagonal blocks");
       matrices_[i] = A;
     }
 
-    virtual Teuchos::RCP<SparseMatrix> GetMatrix(int i, int j) const
+    Teuchos::RCP<SparseMatrix> GetMatrix(int i, int j) const override
     {
       if (i != j) dserror("You can only get diagonal blocks");
       return matrices_[i];
     }
 
-    virtual BlockedMatrix GetBlockedMatrix(
-        const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const
+    BlockedMatrix GetBlockedMatrix(
+        const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const override
     {
       dserror("Function not implemented yet.");
       return *this;
@@ -145,11 +145,11 @@ namespace LINALG::SOLVER::AMGNXN
       return Teuchos::null;
     }
 
-    virtual void Apply(const BlockedVector& in, BlockedVector& out) const;
+    void Apply(const BlockedVector& in, BlockedVector& out) const override;
 
-    virtual Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const;
+    Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const override;
 
-    virtual Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const;
+    Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const override;
   };
 
   // class BlockAggrupator
@@ -169,4 +169,4 @@ namespace LINALG::SOLVER::AMGNXN
 
 }  // namespace LINALG::SOLVER::AMGNXN
 
-#endif  // AMGNXN_OBJECTS_H
+#endif  // SOLVER_AMGNXN_OBJECTS_H

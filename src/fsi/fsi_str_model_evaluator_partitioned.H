@@ -10,10 +10,10 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
-#define FSI_STR_MODEL_EVALUATOR_PARTITIONED_H_
+#ifndef FSI_STR_MODEL_EVALUATOR_PARTITIONED_H
+#define FSI_STR_MODEL_EVALUATOR_PARTITIONED_H
 
-#include "str_model_evaluator_generic.H"
+#include "structure_new_model_evaluator_generic.H"
 
 namespace ADAPTER
 {
@@ -171,4 +171,4 @@ namespace STR
 }  // namespace STR
 
 
-#endif /* FSI_STR_MODEL_EVALUATOR_PARTITIONED_H_ */
+#endif  // FSI_STR_MODEL_EVALUATOR_PARTITIONED_H

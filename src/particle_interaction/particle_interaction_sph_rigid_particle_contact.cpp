@@ -16,18 +16,18 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "utils_fem_shapefunctions.H"
+#include "fem_general_utils_fem_shapefunctions.H"
 
-#include "element.H"
-#include "utils.H"
-#include "dserror.H"
+#include "lib_element.H"
+#include "lib_utils.H"
+#include "lib_dserror.H"
 
-#include "runtime_vtp_writer.H"
+#include "io_runtime_vtp_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -281,7 +281,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     }
 
     // velocity of wall contact point j
-    double vel_j[3] = {0.0};
+    double vel_j[3] = {0.0, 0.0, 0.0};
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
@@ -306,7 +306,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     if (force_i) UTILS::VecAddScale(force_i, -fac, particlewallpair.e_ij_);
 
     // calculation of wall contact force
-    double wallcontactforce[3] = {0.0};
+    double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
       UTILS::VecSetScale(wallcontactforce, fac, particlewallpair.e_ij_);
 
@@ -332,14 +332,14 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
       // determine nodal forces
-      double nodal_force[numnodes * 3];
+      std::vector<double> nodal_force(numnodes * 3);
       for (int node = 0; node < numnodes; ++node)
         for (int dim = 0; dim < 3; ++dim)
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
-          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+          numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }

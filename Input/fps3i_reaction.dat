@@ -52,11 +52,11 @@ LINEAR_SOLVER                   3
 WSS_ML_AGR_SOLVER               -1
 MAXTIME                         1000
 MESHTYING                       no
-NONLINITER                      Newton //Newton fixed_point_like
+NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         3
-PHYSICAL_TYPE                   Incompressible //Poro
-PREDICTOR                       steady_state //explicit_second_order_midpoint
+PHYSICAL_TYPE                   Incompressible
+PREDICTOR                       steady_state
 RESTARTEVRY                     1
 SIMPLER                         no
 SIMPLER_SOLVER                  -1
@@ -80,8 +80,8 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -92,23 +92,23 @@ CROSS-STRESS                    no_cross
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
-STABTYPE                        residual_based //residual_based no_stabilization
+STABTYPE                        residual_based
 SUPG                            yes
-RSTAB                           rstab_gls //rstab_gls no_rstab
+RSTAB                           rstab_gls
 TDS                             quasistatic
 TRANSIENT                       no_transient
-VSTAB                           no_vstab // no_vstab vstab_gls
+VSTAB                           no_vstab
 GRAD_DIV                        yes
 CHARELELENGTH_PC                volume_equivalent_diameter
 CHARELELENGTH_U                 streamlength
 -------------------------------------------------------FPSI DYNAMIC
 CONVTOL                         1e-06
 COUPALGO                        fpsi_monolithic_plain
-PARTITIONED                     monolithic // monolithic  RobinNeumann nocoupling
+PARTITIONED                     monolithic
 ITEMAX                          100
 NUMSTEP                         3
 RESTARTEVRY                     1
-SHAPEDERIVATIVES                Yes // linearization with respect to ale mesh motion (obligatory for fpsi-problems)
+SHAPEDERIVATIVES                Yes
 USESHAPEDERIVATIVES             Yes
 TIMESTEP                        0.1
 RESULTSEVRY                           1
@@ -121,7 +121,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFINC               And
 RESTOL                          1.0e-10 1.0e-8
 INCTOL                          1.0e-10 1.0e-8
-LineSearch                      No  // Yes No
+LineSearch                      No
 FDCheck                         No
 FDCheck_row                     -1
 FDCheck_column                  -1
@@ -133,17 +133,17 @@ RESTARTEVRY                     1
 RESULTSEVRY                     1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear
-COUPLED_LINEAR_SOLVER           6                             // FS3I problem
-LINEAR_SOLVER1                  4                             // ScaTra FLUID solver
-LINEAR_SOLVER2                  3                             // ScaTra STRUCT solver
+COUPLED_LINEAR_SOLVER           6
+LINEAR_SOLVER1                  4
+LINEAR_SOLVER2                  3
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point //element_center
-EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization //GLS //SUPG //
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   6
@@ -152,16 +152,16 @@ TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         3
-MAXTIME                         4.0 //hill reaches point of departure (x0=2/15)
-TIMESTEP                        0.1                          // Cr = 1.5
+MAXTIME                         4.0
+TIMESTEP                        0.1
 THETA                           0.9
-VELOCITYFIELD                   zero //zero //Navier_Stokes
+VELOCITYFIELD                   zero
 VELFUNCNO                       -1
-INITIALFIELD                    zero_field //zero_field//field_by_function
+INITIALFIELD                    zero_field
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 MATID                           -1
-CONVFORM                        conservative //convective
+CONVFORM                        conservative
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
@@ -199,7 +199,7 @@ FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         Yes //needs to be YES is WSS dependend permeability!
+FLUID_WALL_SHEAR_STRESS         Yes
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
@@ -246,7 +246,7 @@ MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -255,7 +255,7 @@ NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         3
-PREDICT                         ConstDis //VelAcc
+PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
@@ -281,7 +281,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          BGS2x2                          // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -312,7 +312,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2                        // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -343,7 +343,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-AZPREC                          MLFLUID2                  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -369,50 +369,50 @@ ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            SCAT_FLUID
-SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         0
+IFPACKGFILL                     0
+AZTOL                           1.0E-7
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 0 0 0 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 6
 NAME                            COUPLED_FS3I_SOLVER
-SOLVER                          Belos                     // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-IFPACKGFILL                     2                             // graph fill for ILU
-AZTOL                           1.0E-07                       // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          BGS2x2
+AZREUSE                         0
+IFPACKGFILL                     2
+AZTOL                           1.0E-07
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          infnorm
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.2
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
@@ -3420,15 +3420,15 @@ NODE    4225 DSURFACE 16
 NODE    4246 DSURFACE 16
 
 // whole fluid interface \y- nodes
-NODE    1 DSURFACE 17 //
-NODE    4 DSURFACE 17 //
+NODE    1 DSURFACE 17
+NODE    4 DSURFACE 17
 NODE    5 DSURFACE 17
 NODE    8 DSURFACE 17
-NODE    22 DSURFACE 17 //
+NODE    22 DSURFACE 17
 NODE    24 DSURFACE 17
-NODE    32 DSURFACE 17 //
+NODE    32 DSURFACE 17
 NODE    34 DSURFACE 17
-NODE    42 DSURFACE 17 //
+NODE    42 DSURFACE 17
 NODE    44 DSURFACE 17
 NODE    51 DSURFACE 17
 NODE    54 DSURFACE 17
@@ -3475,15 +3475,15 @@ NODE    254 DSURFACE 17
 NODE    262 DSURFACE 17
 NODE    267 DSURFACE 17
 NODE    272 DSURFACE 17
-NODE    17 DSURFACE 17 //
-NODE    18 DSURFACE 17 //
+NODE    17 DSURFACE 17
+NODE    18 DSURFACE 17
 NODE    19 DSURFACE 17
 NODE    20 DSURFACE 17
-NODE    29 DSURFACE 17 //
+NODE    29 DSURFACE 17
 NODE    30 DSURFACE 17
-NODE    39 DSURFACE 17 //
+NODE    39 DSURFACE 17
 NODE    40 DSURFACE 17
-NODE    49 DSURFACE 17 //
+NODE    49 DSURFACE 17
 NODE    50 DSURFACE 17
 NODE    59 DSURFACE 17
 NODE    60 DSURFACE 17
@@ -3557,10 +3557,10 @@ NODE    274 DSURFACE 17
 NODE    275 DSURFACE 17
 
 // channel interface \ y- nodes
-NODE    2901 DSURFACE 18 //
+NODE    2901 DSURFACE 18
 NODE    2902 DSURFACE 18
 NODE    2903 DSURFACE 18
-NODE    2904 DSURFACE 18 //
+NODE    2904 DSURFACE 18
 NODE    2909 DSURFACE 18
 NODE    2910 DSURFACE 18
 NODE    2913 DSURFACE 18
@@ -3580,7 +3580,7 @@ NODE    2938 DSURFACE 18
 NODE    2941 DSURFACE 18
 NODE    2942 DSURFACE 18
 NODE    2985 DSURFACE 18
-NODE    2986 DSURFACE 18 //
+NODE    2986 DSURFACE 18
 NODE    2989 DSURFACE 18
 NODE    2991 DSURFACE 18
 NODE    2993 DSURFACE 18
@@ -3591,7 +3591,7 @@ NODE    3001 DSURFACE 18
 NODE    3003 DSURFACE 18
 NODE    3005 DSURFACE 18
 NODE    3027 DSURFACE 18
-NODE    3028 DSURFACE 18 //
+NODE    3028 DSURFACE 18
 NODE    3031 DSURFACE 18
 NODE    3033 DSURFACE 18
 NODE    3035 DSURFACE 18
@@ -3602,7 +3602,7 @@ NODE    3043 DSURFACE 18
 NODE    3045 DSURFACE 18
 NODE    3047 DSURFACE 18
 NODE    3069 DSURFACE 18
-NODE    3070 DSURFACE 18 //
+NODE    3070 DSURFACE 18
 NODE    3073 DSURFACE 18
 NODE    3075 DSURFACE 18
 NODE    3077 DSURFACE 18
@@ -3612,10 +3612,10 @@ NODE    3083 DSURFACE 18
 NODE    3085 DSURFACE 18
 NODE    3087 DSURFACE 18
 NODE    3089 DSURFACE 18
-NODE    2796 DSURFACE 18 //
+NODE    2796 DSURFACE 18
 NODE    2797 DSURFACE 18
 NODE    2798 DSURFACE 18
-NODE    2799 DSURFACE 18 //
+NODE    2799 DSURFACE 18
 NODE    2800 DSURFACE 18
 NODE    2801 DSURFACE 18
 NODE    2802 DSURFACE 18
@@ -3635,7 +3635,7 @@ NODE    2815 DSURFACE 18
 NODE    2816 DSURFACE 18
 NODE    2817 DSURFACE 18
 NODE    2838 DSURFACE 18
-NODE    2839 DSURFACE 18 //
+NODE    2839 DSURFACE 18
 NODE    2840 DSURFACE 18
 NODE    2841 DSURFACE 18
 NODE    2842 DSURFACE 18
@@ -3646,7 +3646,7 @@ NODE    2846 DSURFACE 18
 NODE    2847 DSURFACE 18
 NODE    2848 DSURFACE 18
 NODE    2859 DSURFACE 18
-NODE    2860 DSURFACE 18 //
+NODE    2860 DSURFACE 18
 NODE    2861 DSURFACE 18
 NODE    2862 DSURFACE 18
 NODE    2863 DSURFACE 18
@@ -3657,7 +3657,7 @@ NODE    2867 DSURFACE 18
 NODE    2868 DSURFACE 18
 NODE    2869 DSURFACE 18
 NODE    2880 DSURFACE 18
-NODE    2881 DSURFACE 18 //
+NODE    2881 DSURFACE 18
 NODE    2882 DSURFACE 18
 NODE    2883 DSURFACE 18
 NODE    2884 DSURFACE 18

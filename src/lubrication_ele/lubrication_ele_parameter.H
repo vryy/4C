@@ -15,8 +15,8 @@ parameters required for Lubrication element evaluation.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_
+#ifndef LUBRICATION_ELE_PARAMETER_H
+#define LUBRICATION_ELE_PARAMETER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -77,4 +77,4 @@ namespace DRT
 
 
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_ */
+#endif  // LUBRICATION_ELE_PARAMETER_H

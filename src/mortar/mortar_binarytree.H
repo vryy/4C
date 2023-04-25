@@ -9,9 +9,9 @@
 #ifndef MORTAR_BINARYTREE_H
 #define MORTAR_BINARYTREE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "base_binarytree.H"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include "mortar_base_binarytree.H"
 #include "inpar_mortar.H"
 
 // forward declarations
@@ -364,4 +364,4 @@ namespace MORTAR
   };  // class BinaryTree
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_BINARYTREE_H
+#endif  // MORTAR_BINARYTREE_H

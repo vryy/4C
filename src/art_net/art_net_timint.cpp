@@ -10,9 +10,9 @@
 
 #include "art_net_timint.H"
 #include "inpar_bio.H"
-#include "globalproblem.H"
-#include "linalg_solver.H"
-#include "artery_resulttest.H"
+#include "lib_globalproblem.H"
+#include "solver_linalg_solver.H"
+#include "art_net_artery_resulttest.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

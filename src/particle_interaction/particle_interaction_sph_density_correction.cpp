@@ -12,7 +12,7 @@
 
 #include "inpar_particle.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

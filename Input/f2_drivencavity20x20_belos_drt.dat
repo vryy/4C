@@ -38,17 +38,17 @@ TOL_VEL_INC	  1.0E-9
 TOL_PRES_RES	  1.0E-9
 TOL_PRES_INC	  1.0E-9
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
-TDS                             quasistatic                     // quasistatic time_dependent
+STABTYPE                        residual_based
+TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                             // no yes
-PSPG                            yes                             // no_pspg yes
-VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                             // no yes cstab_td
-CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient
+SUPG                            yes
+PSPG                            yes
+VSTAB                           no_vstab
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
@@ -78,7 +78,7 @@ ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 3 1 
+ML_SMOTIMES                     2 3 1
 ML_DAMPFINE                     0.89
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
@@ -123,30 +123,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 332 DNODE 1
 NODE 1 DNODE 2
@@ -195,7 +171,6 @@ NODE 241 DLINE 2
 NODE 271 DLINE 2
 NODE 301 DLINE 2
 NODE 333 DLINE 2
-NODE 333 DLINE 3
 NODE 337 DLINE 3
 NODE 339 DLINE 3
 NODE 342 DLINE 3
@@ -215,7 +190,6 @@ NODE 431 DLINE 3
 NODE 434 DLINE 3
 NODE 438 DLINE 3
 NODE 439 DLINE 3
-NODE 441 DLINE 3
 NODE 441 DLINE 4
 NODE 440 DLINE 4
 NODE 437 DLINE 4

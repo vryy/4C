@@ -17,14 +17,14 @@
 #include <functional>
 
 #include "fsi_utils.H"
-#include "globalproblem.H"
-#include "utils.H"
-#include "condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_utils.H"
+#include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_RowMatrixOut.h>
@@ -32,17 +32,17 @@
 #include <NOX_Epetra.H>
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "so_surface.H"
-#include "so_line.H"
+#include "so3_surface.H"
+#include "so3_line.H"
 
 #include "fsi_debugwriter.H"
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
-#include "ad_fld_fluid_ale.H"
+#include "geometry_searchtree.H"
+#include "geometry_searchtree_service.H"
+#include "adapter_fld_fluid_ale.H"
 #include "adapter_coupling_mortar.H"
 #include "mortar_interface.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_ale_fsi.H"
 #include "adapter_coupling.H"
 
 #include "io.H"
@@ -127,27 +127,6 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
 
   EpetraExt::RowMatrixToMatlabFile(filename.c_str(), *jacobian);
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
-    const std::vector<Teuchos::RCP<const Epetra_Map>>& vecSpaces)
-{
-  int maxgid = 0;
-  for (unsigned i = 0; i < vecSpaces.size(); ++i)
-  {
-    maxgid = std::max(maxgid, vecSpaces[i]->MaxAllGID());
-  }
-
-  std::vector<int> gids;
-  gids.reserve(emap->NumMyElements());
-  std::transform(emap->MyGlobalElements(), emap->MyGlobalElements() + emap->NumMyElements(),
-      std::back_inserter(gids), std::bind2nd(std::plus<int>(), maxgid + 1 - emap->MinAllGID()));
-
-  return Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, emap->Comm()));
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -245,7 +224,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
     //      complain in DEBUG if (structdis->Comm().MyPID()==(*eit).second->Owner())
     //        slideeleidvector.push_back((*eit).first);
     //    }
-    //    const Epetra_Map slideelemap (-1, slideeleidvector.size(), &slideeleidvector[0], 0,
+    //    const Epetra_Map slideelemap (-1, slideeleidvector.size(), slideeleidvector.data(), 0,
     //    structdis->Comm()); slideeleredmap_[meit->first] = LINALG::AllreduceEMap(slideelemap);
     if (meit->first > max_id) max_id = meit->first;
   }
@@ -351,7 +330,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
 
     for (int p = 0; p < dim; p++) finaldxyz[p] = (*idispale)[(lids[p])];
 
-    int err = iprojdispale->ReplaceMyValues(dim, &finaldxyz[0], &lids[0]);
+    int err = iprojdispale->ReplaceMyValues(dim, finaldxyz.data(), lids.data());
     if (err == 1) dserror("error while replacing values");
   }
 
@@ -482,7 +461,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
 
   // Communicate to 'assemble' length and center displacements
   comm.SumAll(&mylengthcirc, &lengthcirc, 1);
-  comm.SumAll(&mycenterdisp[0], &centerdisp[0], dim);
+  comm.SumAll(mycenterdisp.data(), centerdisp.data(), dim);
 
   if (lengthcirc <= 1.0E-6) dserror("Zero interface length!");
 
@@ -681,7 +660,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
       }
 
       // store displacement into parallel vector
-      int err = iprojdispale->ReplaceMyValues(dim, &finaldxyz[0], &lids[0]);
+      int err = iprojdispale->ReplaceMyValues(dim, finaldxyz.data(), lids.data());
       if (err == 1) dserror("error while replacing values");
     }
   }
@@ -738,7 +717,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements(
 
     comm.SumAll(&partsum, &globsum, 1);
     // map with ele ids
-    Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), &(vstruslideleids[0]), 0, comm);
+    Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0, comm);
     // redundant version of it
     Epetra_Map redmstruslideleids(*LINALG::AllreduceEMap(mstruslideleids));
 

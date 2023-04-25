@@ -36,6 +36,9 @@ namespace DRT
       //! abbreviation
       using my = ScaTraEleCalc<distype, probdim>;
       using mydiffcond = ScaTraEleCalcElchDiffCond<distype, probdim>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
       //! constructor
       ScaTraEleCalcElchDiffCondMultiScale(

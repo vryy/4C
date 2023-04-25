@@ -12,8 +12,8 @@
 #include <Epetra_ConfigDefs.h>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include "dserror.H"
-#include "matpar_material.H"
+#include "lib_dserror.H"
+#include "mat_par_material.H"
 #include "mixture_constituent.H"
 #include <iosfwd>
 #include "linalg_fixedsizematrix.H"

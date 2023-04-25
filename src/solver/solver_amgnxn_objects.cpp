@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <iostream>
-#include "Teuchos_TimeMonitor.hpp"
+#include <Teuchos_TimeMonitor.hpp>
 #include "solver_amgnxn_objects.H"
 
 /*------------------------------------------------------------------------------*/

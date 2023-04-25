@@ -14,10 +14,10 @@
 
 #include "inpar_levelset.H"
 
-#include "utils.H"
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "position_array.H"
-#include "discret.H"
+#include "lib_utils.H"
+
+#include "geometry_position_array.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,10 +45,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
-      std::vector<LINALG::Matrix<my::nen_, 1>> ephizero(my::numscal_);
+      std::vector<LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
 
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phizero, ephizero, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
       if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -74,7 +74,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, const std::vector<LINALG::Matrix<my::nen_, 1>>& ephizero,
+    const DRT::Element* ele, const std::vector<LINALG::Matrix<nen_, 1>>& ephizero,
     Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
 {
   // get element volume
@@ -82,12 +82,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
 
   // get elemet length
   // cast dimension to a double varibale -> pow()
-  const double dim = double(my::nsd_);
+  const double dim = static_cast<double>(nsd_);
   const double h = std::pow(vol, 1.0 / dim);
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype =
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::SmoothHeavisideFunction(
   else if (phi > epsilon)
     smoothH = 1.0;
   else
-    smoothH = 0.5 * (1.0 + phi / epsilon + sin(phi * PI / epsilon) / PI);
+    smoothH = 0.5 * (1.0 + phi / epsilon + sin(phi * M_PI / epsilon) / M_PI);
 
   return;
 }

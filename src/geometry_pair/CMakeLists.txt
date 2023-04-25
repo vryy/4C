@@ -25,4 +25,4 @@ set(LIBS_GEOMETRY_PAIR
     nurbs_discret
     )
 
-target_link_libraries(geometry_pair PUBLIC ${LIBS_GEOMETRY_PAIR})
+baci_add_dependency(geometry_pair ${LIBS_GEOMETRY_PAIR})

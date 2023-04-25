@@ -95,7 +95,7 @@ namespace MORTAR
       if (parele_->Shape() != DRT::Element::nurbs9)
         return DRT::Element::Nodes();
       else
-        return &(nodes_ptr_[0]);
+        return nodes_ptr_.data();
     }
 
     /*!
@@ -531,4 +531,4 @@ namespace MORTAR
 
 }  // namespace MORTAR
 
-#endif  // #ifndef MORTAR_COUPLING3D_CLASSES_H
+#endif  // MORTAR_COUPLING3D_CLASSES_H

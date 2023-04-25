@@ -9,28 +9,27 @@
 /*----------------------------------------------------------------------*/
 
 #include "fsi_overlapprec_fsiamg.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid.H"
-#include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid.H"
+#include "solver_linalg_precond.H"
+#include "solver_linalg_solver.H"
 
 #include "fsi_overlapprec_hybrid.H"
 
 // needed for dserror nested parallelism AMG FSI
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "comm_utils.H"
 
-#include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>
-#include "MLAPI_LoadBalanceOperator.h"
-#include "MLAPI_LoadBalanceInverseOperator.h"
-#include "MLAPI_Operator_Utils.h"
-#include "MLAPI_CompObject.h"
-#include "MLAPI_MultiVector.h"
-#include "MLAPI_Expressions.h"
-#include "MLAPI_Workspace.h"
+#include <MLAPI_LoadBalanceOperator.h>
+#include <MLAPI_LoadBalanceInverseOperator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_Workspace.h>
 
-#include "EpetraExt_SolverMap_CrsMatrix.h"
+#include <EpetraExt_SolverMap_CrsMatrix.h>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -69,7 +68,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       verbosity_(verbosity),
       hybridPrec_(hybridPrec)
 {
-  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov)
+  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov &&
+      strategy_ != INPAR::FSI::LinalgSolver)
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
@@ -185,21 +185,28 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    if (strategy_ == INPAR::FSI::FSIAMG)
+    switch (strategy_)
     {
-      printf(
-          "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
-    }
-    else if (strategy_ == INPAR::FSI::PreconditionedKrylov)
-    {
-      printf(
-          "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-          "%d\n",
-          snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-      fflush(stdout);
+      case INPAR::FSI::FSIAMG:
+      {
+        printf(
+            "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      case INPAR::FSI::PreconditionedKrylov:
+      {
+        printf(
+            "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
+            "%d\n",
+            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
+        fflush(stdout);
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -260,7 +267,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   AAF_.resize(maxnlevel_);
 
   //---------------------------------------------------------- timing
-  Epetra_Time etime((hybridPrec_ == NULL) ? Matrix(0, 0).Comm() : hybridPrec_->Matrix(0, 0).Comm());
+  Teuchos::Time etime("", true);
   //------------------------------------------------------- Structure
   {
     // fine space matching Epetra objects
@@ -684,8 +691,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
-    printf(
-        "       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n", etime.ElapsedTime());
+    printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",
+        etime.totalElapsedTime(true));
   }
 
   //---------------------------------- preconditioner analysis if desired
@@ -1453,6 +1460,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
             const_cast<std::vector<MLAPI::Operator>&>(Raa_), ASF_, AFS_, AFA_, AAF_, true, false,
             true);
 
+      break;
+    }
+    case INPAR::FSI::LinalgSolver:
+    {
+      // Do nothing. Will be done by LINALG::Solver internally.
       break;
     }
     default:

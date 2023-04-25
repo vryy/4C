@@ -8,13 +8,13 @@
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_artery.H"
-#include "globalproblem.H"
-#include "ad_art_net.H"
+#include "lib_globalproblem.H"
+#include "adapter_art_net.H"
 #include "inpar_bio.H"
 #include "art_net_utils.H"
 #include "poromultiphase_scatra_artery_coupling_base.H"
 #include "poromultiphase_scatra_utils.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
@@ -159,9 +159,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
-    dserror("aztec solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -183,13 +181,13 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
   // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
   // computation
   Teuchos::ParameterList& blocksmootherparams1 = solver->Params().sublist("Inverse1");
-  blocksmootherparams1.sublist("Aztec Parameters");
+  blocksmootherparams1.sublist("Belos Parameters");
   blocksmootherparams1.sublist("MueLu Parameters");
 
   porofluidmultitimint_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Aztec Parameters");
+  blocksmootherparams2.sublist("Belos Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
 
   arterydis_->ComputeNullSpaceIfNecessary(blocksmootherparams2);

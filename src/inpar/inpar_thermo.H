@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 06/09 |
  *----------------------------------------------------------------------*/
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
@@ -387,4 +387,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_THERMO_H
+#endif  // INPAR_THERMO_H

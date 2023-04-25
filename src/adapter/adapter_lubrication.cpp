@@ -10,13 +10,13 @@
 
 #include "adapter_lubrication.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
 #include "io_control.H"
 #include "io.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 #include "lubrication_resulttest.H"
 

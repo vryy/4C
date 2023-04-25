@@ -10,17 +10,17 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "beam3eb.H"
-#include "beam_to_fluid_meshtying_pair_gauss_point.H"
-#include "beam_to_fluid_meshtying_params.H"
+#include "beam3_euler_bernoulli.H"
+#include "fbi_beam_to_fluid_meshtying_pair_gauss_point.H"
+#include "fbi_beam_to_fluid_meshtying_params.H"
 #include "fluid_ele.H"
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_line_to_3D_evaluation_data.H"
-#include "globalproblem.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_element.H"
 #include "linalg_serialdensevector.H"
-#include "beam_contact_pair.H"
+#include "beaminteraction_contact_pair.H"
 
 namespace
 {

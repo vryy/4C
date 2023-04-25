@@ -16,24 +16,23 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 
-#include "ad_str_fsiwrapper.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_ale_fsi.H"
 
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 
-#include "colors.H"
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 #include "linalg_sparsematrix.H"
 #include "inpar_fsi.H"
 
 #include "io_control.H"
 
 #include "constraint_manager.H"
-#include "ad_str_structure.H"
+#include "adapter_str_structure.H"
 #include "adapter_coupling.H"
 
 
@@ -292,17 +291,15 @@ void FSI::ConstrMonolithic::UnscaleSolution(
   ar->Norm2(&na);
   Utils()->out() << std::scientific << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "\n";
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "\n";
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
   Utils()->out() << "L_inf-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "\n";
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "\n";
 
   Utils()->out().flags(flags);
 }

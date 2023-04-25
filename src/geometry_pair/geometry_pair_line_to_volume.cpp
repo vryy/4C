@@ -13,7 +13,7 @@
 #include "geometry_pair_constants.H"
 
 #include "linalg_utils_densematrix_inverse.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 
 /**

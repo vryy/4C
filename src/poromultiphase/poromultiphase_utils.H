@@ -6,14 +6,14 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_
+#ifndef POROMULTIPHASE_UTILS_H
+#define POROMULTIPHASE_UTILS_H
 
 #include <set>
 
 #include "inpar_poromultiphase.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 namespace DRT
@@ -59,4 +59,4 @@ namespace POROMULTIPHASE
 
 
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_H_ */
+#endif  // POROMULTIPHASE_UTILS_H

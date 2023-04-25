@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_
-#define SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_
+#ifndef SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
+#define SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H
 
 #include "scatra_ele_calc.H"
 #include "scatra_ele_calc_aniso.H"
@@ -34,6 +34,9 @@ namespace DRT
       typedef ScaTraEleCalc<distype, probdim> my;
       typedef ScaTraEleCalcAniso<distype, probdim> aniso;
       typedef ScaTraEleCalcAdvReac<distype, probdim> advreac;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       virtual ~ScaTraEleCalcCardiacMonodomain() {}
@@ -93,4 +96,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H_ */
+#endif  // SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_H

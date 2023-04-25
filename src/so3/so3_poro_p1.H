@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef SO3_PORO_P1_H_
-#define SO3_PORO_P1_H_
+#ifndef SO3_PORO_P1_H
+#define SO3_PORO_P1_H
 
 #include "so3_poro.H"
 
@@ -274,4 +274,4 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
-#endif /* SO3_PORO_P1_H_ */
+#endif  // SO3_PORO_P1_H

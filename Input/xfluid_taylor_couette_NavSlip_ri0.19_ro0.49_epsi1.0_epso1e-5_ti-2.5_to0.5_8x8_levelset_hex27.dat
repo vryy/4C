@@ -20,10 +20,10 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    field_by_function //zero_field
+INITIALFIELD                    field_by_function
 STARTFUNCNO                     5
 TIMEINTEGR                      Stationary
-NONLINITER                      Newton //fixed_point_like
+NONLINITER                      Newton
 ITEMAX                          20
 CONVCHECK                       L_2_norm
 RESULTSEVRY                     1
@@ -63,7 +63,7 @@ EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
 EOS_PRES                        std_eos
 EOS_CONV_STREAM                 std_eos
-EOS_CONV_CROSS                  none                          //xfem_gp
+EOS_CONV_CROSS                  none
 EOS_DIV                         div_jump_std_eos
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
@@ -82,16 +82,16 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    10.0
-NIT_STAB_FAC_TANG               10.0                          //75.0
+NIT_STAB_FAC_TANG               10.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 MASS_CONSERVATION_SCALING       only_visc
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes
 CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05
 GHOST_PENALTY_TRANSIENT_STAB    no
-GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
+GHOST_PENALTY_TRANSIENT_FAC     0.005
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           0.05
 GHOST_PENALTY_PRESSURE_2nd_FAC  0.05
@@ -106,7 +106,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 IFPACKOVERLAP                   3
 IFPACKGFILL                     3
-VERBOSITY                       5
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver_Large_Systems
 SOLVER                          Belos
@@ -118,7 +117,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 IFPACKOVERLAP                   3
 IFPACKGFILL                     3
-VERBOSITY                       5
 --------------------------------------------------------------------SOLVER 3
 NAME                            L2_Projection
 SOLVER                          UMFPACK

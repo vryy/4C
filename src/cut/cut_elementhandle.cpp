@@ -19,7 +19,7 @@
 #include "cut_volumecell.H"
 #include "cut_mesh.H"
 #include "cut_tolerance.H"
-#include "quadrature_compression.H"
+#include "cut_quadrature_compression.H"
 
 
 #include "inpar_xfem.H"

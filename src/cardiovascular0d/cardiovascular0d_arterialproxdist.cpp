@@ -9,16 +9,16 @@
 
 #include <iostream>
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "so_surface.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "so3_surface.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 #include "cardiovascular0d_arterialproxdist.H"
 
 
@@ -63,7 +63,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
   const double tim = params.get("total time", -1.0);
   if (tim < 0.0) usetime = false;
 
-  int numdof_per_cond = 4;
+  const int numdof_per_cond = 4;
 
   std::vector<bool> havegid(numdof_per_cond);
   for (int j = 0; j < numdof_per_cond; j++)
@@ -348,7 +348,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
 
   params.set("action", "calc_struct_constrvol");
 
-  int numdof_per_cond = 4;
+  const int numdof_per_cond = 4;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

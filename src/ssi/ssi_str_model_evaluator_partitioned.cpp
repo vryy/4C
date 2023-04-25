@@ -13,7 +13,7 @@
 
 #include "ssi_utils.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
 
@@ -21,11 +21,11 @@
 
 #include "ssi_partitioned.H"
 
-#include "str_dbc.H"
-#include "str_impl_generic.H"
-#include "str_timint_implicit.H"
+#include "structure_new_dbc.H"
+#include "structure_new_impl_generic.H"
+#include "structure_new_timint_implicit.H"
 
-#include "nox_nln_group.H"
+#include "solver_nonlin_nox_group.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 

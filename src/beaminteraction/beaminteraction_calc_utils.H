@@ -7,10 +7,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BEAMINTERACTION_CALC_UTILS_H_
-#define BEAMINTERACTION_CALC_UTILS_H_
+#ifndef BEAMINTERACTION_CALC_UTILS_H
+#define BEAMINTERACTION_CALC_UTILS_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"
 #include "linalg_mapextractor.H"
 #include "inpar_beaminteraction.H"

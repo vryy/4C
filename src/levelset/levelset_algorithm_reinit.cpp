@@ -12,14 +12,13 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "periodicbc.H"
-#include "utils_parameter_list.H"
+#include "lib_periodicbc.H"
+#include "lib_utils_parameter_list.H"
 #include "io_control.H"
 #include "io_pstream.H"
 #include "scatra_ele_action.H"
-#include "standardtypes_cpp.H"  // for EPS13 and so on
 #include "linalg_utils_sparse_algebra_create.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include <list>
 
 
@@ -682,7 +681,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
       }
     }
 
-    discret_->Comm().SumAll(&(nodecoords[0]), &(allnodecoords[0]), (int)nodecoords.size());
+    discret_->Comm().SumAll(nodecoords.data(), allnodecoords.data(), (int)nodecoords.size());
   }
 
   //================================================================

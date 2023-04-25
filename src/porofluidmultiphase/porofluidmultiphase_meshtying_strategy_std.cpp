@@ -7,7 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_std.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
 
 /*----------------------------------------------------------------------*

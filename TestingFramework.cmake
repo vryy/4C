@@ -414,20 +414,17 @@ macro(
 endmacro(baci_test_Nested_Par_CopyDat_prepost)
 
 ###########
-# FRAMEWORK TESTS - testing the whole framework: Cubit, pre_exodus, BACI, and post-filter
+# FRAMEWORK TESTS - testing the whole framework: pre_exodus, BACI, and post-filter
 # Usage in TestingFrameworkListOfTests.cmake: "baci_framework_test(<name_of_input_file> <num_proc> <xml_filename>)"
-# <name_of_input_file>: must equal the name of a .jou/.bc/.head file in directory tests/framework-test
+# <name_of_input_file>: must equal the name of a .e/.bc/.head file in directory tests/framework-test
 # <num_proc>: number of processors the test should use
 # <xml_filename>: copy any xml-file to the build directory. May also be ""
 macro(baci_framework_test name_of_input_file num_proc xml_filename)
   set(name_of_test ${name_of_input_file}-p${num_proc}-fw)
   set(test_directory framework_test_output/${name_of_input_file})
 
-  set(RUNCUBIT
-      ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.jou
-      ) # cubit is run to generate an exo file
   set(RUNPREEXODUS
-      ./pre_exodus\ --exo=${test_directory}/xxx_${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.head\ --dat=${test_directory}/xxx.dat
+      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.head\ --dat=${test_directory}/xxx.dat
       ) # pre_exodus is run to generate a Dat file
 
   if(NOT ${xml_filename} STREQUAL "")
@@ -449,7 +446,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
     )
 
   require_fixture(${name_of_test} test_cleanup)

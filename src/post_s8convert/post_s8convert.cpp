@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "post_common.H"
-#include "shell8.H"
-#include "so_hex8.H"
+#include "s8.H"
+#include "so3_hex8.H"
 #include "io.H"
 #include "io_control.H"
 
@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <vector>
 
-#include "pss_cpp.h"
+#include "pss_full_cpp.h"
 
 class Converter
 {
@@ -132,7 +132,7 @@ Converter::Converter(PostField* field) : field_(field)
     }
     Teuchos::RCP<DRT::ELEMENTS::So_hex8> h8 =
         Teuchos::rcp(new DRT::ELEMENTS::So_hex8(actshell->Id(), 0));
-    h8->SetNodeIds(8, &h8nodeids[0]);
+    h8->SetNodeIds(8, h8nodeids.data());
     h8dis_->AddElement(h8);
   }
 

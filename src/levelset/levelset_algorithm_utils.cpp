@@ -12,8 +12,8 @@
 
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
 #include "io_control.H"
 #include "io_pstream.H"
 #include "scatra_ele_action.H"
@@ -21,7 +21,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -480,7 +480,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
 
   const int numproc = discret_->Comm().NumProc();
-  int allproc[numproc];
+  std::vector<int> allproc(numproc);
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   //--------------------------------------------------------------------------------------------------
@@ -684,7 +684,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     {
       Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
       LINALG::Gather<int>(
-          *allcollectednodes, *globalcollectednodes, numproc, allproc, discret_->Comm());
+          *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->Comm());
 
       allcollectednodes->clear();
       std::set<int>::const_iterator gnodesit;
@@ -744,7 +744,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 2>>);
 
     LINALG::Gather<LINALG::Matrix<3, 2>>(
-        *mysurfacenodes, *surfacenodes, numproc, allproc, discret_->Comm());
+        *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->Comm());
   }
 
   //----------------------------------------------------------------------------------------------

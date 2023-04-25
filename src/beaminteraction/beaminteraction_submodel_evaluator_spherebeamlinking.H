@@ -10,14 +10,14 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H
 
 #include "inpar_beaminteraction.H"
 #include "linalg_fixedsizematrix.H"
 #include <Epetra_MpiComm.h>
 
-#include "binning_strategy_utils.H"
+#include "binstrategy_utils.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 #include <unordered_set>
 

@@ -56,4 +56,4 @@ namespace ELEMAG
 }  // namespace ELEMAG
 
 
-#endif /* ELEMAG_ELE_ACTION_H */
+#endif  // ELEMAG_ELE_ACTION_H

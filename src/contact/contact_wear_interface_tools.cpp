@@ -13,8 +13,8 @@
 #include "contact_wear_interface.H"
 #include "contact_integrator.H"
 #include "contact_defines.H"
-#include "friction_node.H"
-#include "selfcontact_binarytree.H"
+#include "contact_friction_node.H"
+#include "contact_selfcontact_binarytree.H"
 #include "mortar_element.H"
 #include "mortar_dofset.H"
 #include "mortar_integrator.H"
@@ -556,8 +556,8 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -685,8 +685,8 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -871,8 +871,8 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1000,8 +1000,8 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1192,8 +1192,8 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1383,8 +1383,8 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1707,8 +1707,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1732,7 +1732,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -1946,8 +1946,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -1971,7 +1971,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -2185,8 +2185,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -2210,7 +2210,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {
@@ -2412,8 +2412,8 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(
-          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+          sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
       {
@@ -2437,7 +2437,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
       sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
-          &sparsevalues2[0], &sparseindices2[0]);
+          sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
       {

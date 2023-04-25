@@ -93,22 +93,22 @@ DSURF  1
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-// left_block 
+// left_block
 E 1 - ScaTra 1
-// right_block 
+// right_block
 E 2 - ScaTra 2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 0 Slave KineticModel ConstantPermeability numscal 1 permeabilities 1.0 is_pseudo_contact 1
+E 2 - 0 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 1.0 IS_PSEUDO_CONTACT 1
 // right_block_side_of_interface
 E 3 - 0 Master
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 0 Slave S2IKineticsID 0
+E 2 - 0 Slave S2I_KINETICS_ID  0
 // right_block_side_of_interface
-E 3 - 0 Master S2IKineticsID 0
+E 3 - 0 Master S2I_KINETICS_ID  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    13 DNODE 1

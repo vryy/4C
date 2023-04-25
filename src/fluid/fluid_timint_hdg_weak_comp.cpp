@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------------*/
 
 #include "fluid_timint_hdg_weak_comp.H"
-#include "discret_hdg.H"
-#include "globalproblem.H"
+#include "lib_discret_hdg.H"
+#include "lib_globalproblem.H"
 #include "fluid_ele_hdg_weak_comp.H"
 #include "fluid_ele_action.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 #include "io_control.H"
-#include "fluid_weakly_compressible.H"
-#include "matpar_bundle.H"
+#include "mat_fluid_weakly_compressible.H"
+#include "mat_par_bundle.H"
 
 
 /*----------------------------------------------------------------------*
@@ -68,7 +68,7 @@ void FLD::TimIntHDGWeakComp::Init()
   dofmapvec_r.assign(dofset_r.begin(), dofset_r.end());
   dofset_r.clear();
   Teuchos::RCP<Epetra_Map> dofmap_r =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec_r.size(), &dofmapvec_r[0], 0, hdgdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec_r.size(), dofmapvec_r.data(), 0, hdgdis->Comm()));
 
   // define momentum dof map
   std::vector<int> dofmapvec_w;
@@ -76,7 +76,7 @@ void FLD::TimIntHDGWeakComp::Init()
   dofmapvec_w.assign(dofset_w.begin(), dofset_w.end());
   dofset_w.clear();
   Teuchos::RCP<Epetra_Map> dofmap_w =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec_w.size(), &dofmapvec_w[0], 0, hdgdis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->Comm()));
 
   // build density/momentum (actually velocity/pressure) splitter
   velpressplitter_->Setup(*hdgdis->DofRowMap(), dofmap_r, dofmap_w);
@@ -348,7 +348,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
       std::vector<int> localDofs = discret_->Dof(1, ele);
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelincnp->ReplaceMyValues(localDofs.size(), elemintinc.A(), &localDofs[0]);
+      intvelincnp->ReplaceMyValues(localDofs.size(), elemintinc.A(), localDofs.data());
     }
   }
 
@@ -462,9 +462,9 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
       dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-      intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-      intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
+      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+      intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+      intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
     }
   }
 

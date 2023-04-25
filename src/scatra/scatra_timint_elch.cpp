@@ -6,17 +6,15 @@
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#include "fluid_utils.H"  // for splitter
-
 #include "io_control.H"
 #include "io.H"
 
-#include "globalproblem.H"
-#include "utils_parameter_list.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parameter_list.H"
+#include "lib_function_of_time.H"
 
-#include "ion.H"
-#include "matlist.H"
+#include "mat_ion.H"
+#include "mat_list.H"
 
 #include "nurbs_discret.H"
 
@@ -27,13 +25,21 @@
 #include "scatra_ele_action.H"
 
 #include "linalg_krylov_projector.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
+#include "linalg_matrixtransform.H"
+#include "linalg_equilibrate.H"
+
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
+#include "scatra_resulttest_elch.H"
+
+#include "adapter_coupling.H"
+
+#include "lib_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -308,10 +314,10 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
   // transform sets to maps
   std::vector<int> conddofmapvec(conddofset.begin(), conddofset.end());
   const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(conddofmapvec.size()), &conddofmapvec[0], 0, discret_->Comm()));
+      -1, static_cast<int>(conddofmapvec.size()), conddofmapvec.data(), 0, discret_->Comm()));
   std::vector<int> otherdofmapvec(otherdofset.begin(), otherdofset.end());
   const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(otherdofmapvec.size()), &otherdofmapvec[0], 0, discret_->Comm()));
+      -1, static_cast<int>(otherdofmapvec.size()), otherdofmapvec.data(), 0, discret_->Comm()));
 
   // set up concentration-potential splitter
   splitter_ =
@@ -346,14 +352,14 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
   // transform sets to maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(3, Teuchos::null);
   std::vector<int> dofmapvec_conc_el(dofset_conc_el.begin(), dofset_conc_el.end());
-  maps[0] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_conc_el.size()), &dofmapvec_conc_el[0], 0, discret_->Comm()));
+  maps[0] = Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dofmapvec_conc_el.size()),
+      dofmapvec_conc_el.data(), 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_el(dofset_pot_el.begin(), dofset_pot_el.end());
   maps[1] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_el.size()), &dofmapvec_pot_el[0], 0, discret_->Comm()));
+      -1, static_cast<int>(dofmapvec_pot_el.size()), dofmapvec_pot_el.data(), 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_ed(dofset_pot_ed.begin(), dofset_pot_ed.end());
   maps[2] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_ed.size()), &dofmapvec_pot_ed[0], 0, discret_->Comm()));
+      -1, static_cast<int>(dofmapvec_pot_ed.size()), dofmapvec_pot_ed.data(), 0, discret_->Comm()));
 
   // set up concentration-potential-potential splitter
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
@@ -1614,7 +1620,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   // calculate mean concentration
   const double domint = (*scalars)[NumDofPerNode()];
 
-  if (std::abs(domint) < EPS15) dserror("Division by zero!");
+  if (std::abs(domint) < 1e-15) dserror("Division by zero!");
 
   for (int k = 0; k < NumScal(); k++) c0_[k] = (*scalars)[k] / domint;
 
@@ -2346,7 +2352,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         }
 
         // safety check
-        if (abs((*currtangent)[condid_cathode]) < EPS13)
+        if (abs((*currtangent)[condid_cathode]) < 1e-13)
           dserror(
               "Tangent in galvanostatic control is near zero: %lf", (*currtangent)[condid_cathode]);
       }
@@ -2443,10 +2449,10 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       potinc_ohm = -1.0 * resistance * residual / timefacrhs;
 
       // Do not update the cell potential for small currents
-      if (abs((*actualcurrent)[condid_cathode]) < EPS10) potinc_ohm = 0.0;
+      if (abs((*actualcurrent)[condid_cathode]) < 1e-10) potinc_ohm = 0.0;
 
       // the current flow at both electrodes has to be the same within the solution tolerances
-      if (abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode]) > EPS8)
+      if (abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode]) > 1e-8)
       {
         if (myrank_ == 0)
         {
@@ -2454,7 +2460,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
                     << std::endl;
           std::cout << "| is "
                     << abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode])
-                    << " larger than " << EPS8 << "!                             |" << std::endl;
+                    << " larger than " << 1e-8 << "!                             |" << std::endl;
           std::cout << "+-----------------------------------------------------------------------+"
                     << std::endl;
         }
@@ -2463,7 +2469,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = residual / ((-1) * currtangent_cathode);
       double potinc_anode = 0.0;
-      if (abs(currtangent_anode) > EPS13)  // anode surface overpotential is optional
+      if (abs(currtangent_anode) > 1e-13)  // anode surface overpotential is optional
       {
         potinc_anode = residual / ((-1) * currtangent_anode);
       }
@@ -2752,10 +2758,10 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
     for (int k = 0; k < NumScal(); k++)
     {
       const int lid = discret_->DofRowMap()->LID(dofs[k]);
-      if (((*vec)[lid]) < EPS13)
+      if (((*vec)[lid]) < 1e-13)
       {
         numfound[k]++;
-        if (makepositive) ((*vec)[lid]) = EPS13;
+        if (makepositive) ((*vec)[lid]) = 1e-13;
       }
     }
   }
@@ -2856,7 +2862,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
       const Teuchos::RCP<const Epetra_Map> dbcmap =
-          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), &dbcgidsvec[0],
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), dbcgidsvec.data(),
               DofRowMap()->IndexBase(), DofRowMap()->Comm()));
 
       // merge map with existing map for Dirichlet boundary conditions
@@ -3213,7 +3219,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
           dofidvec.reserve(dofids[iset].size());
           dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
           nummyelements = static_cast<int>(dofidvec.size());
-          myglobalelements = &(dofidvec[0]);
+          myglobalelements = dofidvec.data();
         }
         blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
             myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
@@ -3313,4 +3319,11 @@ double SCATRA::ScaTraTimIntElch::GetCurrentTemperature() const
     temperature = ComputeTemperatureFromFunction();
 
   return temperature;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElch::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp(this, false)));
 }

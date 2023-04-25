@@ -9,14 +9,15 @@
 #include "ssi_str_model_evaluator_base.H"
 
 #include "adapter_coupling.H"
-#include "ad_str_ssiwrapper.H"
-#include "exporter.H"
-#include "utils_gid_vector.H"
-#include "Epetra_IntVector.h"
-#include "Epetra_Vector.h"
+#include "adapter_str_ssiwrapper.H"
+#include "lib_exporter.H"
+#include "lib_utils_gid_vector.H"
+#include <Epetra_IntVector.h>
+#include <Epetra_Vector.h>
 #include "io.H"
-#include "str_model_evaluator_data.H"
-#include "str_timint_basedataglobalstate.H"
+#include "structure_new_model_evaluator_data.H"
+#include "structure_new_timint_basedataglobalstate.H"
+#include "fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -51,15 +52,14 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors
-  auto nodal_stresses_source = Teuchos::rcp(new Epetra_MultiVector(*Discret().NodeRowMap(), 6));
+  Epetra_MultiVector nodal_stresses_source(*Discret().NodeRowMap(), 6);
 
-  Teuchos::ParameterList parameters;
-  parameters.set("action", "postprocess_stress");
-  parameters.set("gpstressmap", stresses);
-  parameters.set("stresstype", "ndxyz");
-  parameters.set("poststress", nodal_stresses_source);
   Discret().Evaluate(
-      parameters, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      [&](DRT::Element& ele)
+      {
+        DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+            ele, *stresses->at(ele.Id()), nodal_stresses_source);
+      });
 
   const auto* nodegids = Discret().NodeRowMap();
   for (int i = 0; i < nodegids->NumMyElements(); ++i)
@@ -75,12 +75,12 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
     const int doflid_epetra = mechanical_stress_state_->Map().LID(dofgid_epetra);
     if (doflid_epetra < 0) dserror("Local ID not found in epetra vector!");
 
-    (*mechanical_stress_state_)[doflid_epetra] = (*(*nodal_stresses_source)(0))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 1] = (*(*nodal_stresses_source)(1))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 2] = (*(*nodal_stresses_source)(2))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 3] = (*(*nodal_stresses_source)(3))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 4] = (*(*nodal_stresses_source)(4))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 5] = (*(*nodal_stresses_source)(5))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra] = (*nodal_stresses_source(0))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 1] = (*nodal_stresses_source(1))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 2] = (*nodal_stresses_source(2))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 3] = (*nodal_stresses_source(3))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 4] = (*nodal_stresses_source(4))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 5] = (*nodal_stresses_source(5))[nodelid];
   }
 }
 

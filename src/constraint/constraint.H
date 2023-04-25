@@ -171,4 +171,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CONSTRAINT_H*/
+#endif  // CONSTRAINT_H

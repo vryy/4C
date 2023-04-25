@@ -11,7 +11,7 @@
 #define SOLID_ELE_NEUMANN_EVALUATOR_H
 #include <Epetra_SerialDenseVector.h>
 #include <vector>
-#include "element.H"
+#include "lib_element.H"
 
 namespace DRT
 {

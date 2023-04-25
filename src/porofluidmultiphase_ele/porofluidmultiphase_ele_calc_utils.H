@@ -6,11 +6,11 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
-#define SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_
+#ifndef POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H
+#define POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H
 
-#include "element.H"
-#include "utils_integration.H"
+#include "lib_element.H"
+#include "fem_general_utils_integration.H"
 
 namespace MAT
 {
@@ -386,4 +386,4 @@ namespace POROFLUIDMULTIPHASE
 
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H_ */
+#endif  // POROFLUIDMULTIPHASE_ELE_CALC_UTILS_H

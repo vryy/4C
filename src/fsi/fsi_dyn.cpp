@@ -46,42 +46,44 @@
 #include "fsi_xfem_fluid.H"
 #include "fsi_xfem_monolithic.H"
 
-#include "fs_monolithic.H"
+#include "fsi_free_surface_monolithic.H"
 
-#include "xfluid.H"
-#include "xfluidfluid.H"
+#include "fluid_xfluid.H"
+#include "fluid_xfluid_fluid.H"
 
 #include "ale_utils_clonestrategy.H"
 
 #include "inpar_fsi.H"
 #include "inpar_fbi.H"
-#include "resulttest.H"
+#include "lib_resulttest.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_parallel.H"
 
-#include "condition_utils.H"
-#include "condition_selector.H"
+#include "lib_condition_utils.H"
+#include "lib_condition_selector.H"
 
-#include "dofset_fixed_size.H"
+#include "lib_dofset_fixed_size.H"
 
-#include "ad_str_structure.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_str_fpsiwrapper.H"
+#include "adapter_str_structure.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_str_fpsiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_mortar.H"
-#include "ad_fld_fluid_fsi.H"
-#include "ad_fld_moving_boundary.H"
-#include "ad_fld_fluid_xfsi.H"
-#include "ad_ale_fsi.H"
+#include "adapter_fld_fluid_fsi.H"
+#include "adapter_fld_moving_boundary.H"
+#include "adapter_fld_fluid_xfsi.H"
+#include "adapter_ale_fsi.H"
 
-#include "discret_xfem.H"
+#include "lib_discret_xfem.H"
 
-#include "binning_strategy.H"
+#include "binstrategy.H"
 
-#include "poro_utils_clonestrategy.H"
+#include "adapter_str_poro_wrapper.H"
+#include "lib_utils_createdis.H"
+#include "poroelast_utils_clonestrategy.H"
 #include "poroelast_utils_setup.H"
-#include "ad_str_poro_wrapper.H"
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
@@ -339,7 +341,17 @@ void fsi_immersed_drt()
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
 
-  structdis->FillComplete();
+  // Redistribute beams in the case of point coupling conditions
+
+  if (structdis->GetCondition("PointCoupling") != NULL)
+  {
+    structdis->FillComplete(false, false, false);
+    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+  }
+  else if (not structdis->Filled() || not structdis->HaveDofs())
+  {
+    structdis->FillComplete();
+  }
 
   problem->GetDis("fluid")->FillComplete();
 
@@ -428,7 +440,15 @@ void fsi_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  structdis->FillComplete();
+  if (structdis->GetCondition("PointCoupling") != NULL)
+  {
+    structdis->FillComplete(false, false, false);
+    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+  }
+  else if (not structdis->Filled() || not structdis->HaveDofs())
+  {
+    structdis->FillComplete();
+  }
 
   if (DRT::INPUT::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))

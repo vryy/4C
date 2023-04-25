@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_
-#define SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_
+#ifndef POROFLUIDMULTIPHASE_DYN_H
+#define POROFLUIDMULTIPHASE_DYN_H
 
 
 /*! entry point for the solution of Lubrication problems */
@@ -15,4 +15,4 @@ void porofluidmultiphase_dyn(int restart /* do we have to perform a restart?  */
 );
 
 
-#endif /* SRC_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_ */
+#endif  // POROFLUIDMULTIPHASE_DYN_H

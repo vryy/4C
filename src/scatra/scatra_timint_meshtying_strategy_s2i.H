@@ -12,7 +12,7 @@
 
 #include "scatra_timint_meshtying_strategy_base.H"
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
@@ -1275,4 +1275,4 @@ namespace SCATRA
     const int nds_cols_;
   };  // class MortarCellAssembleStrategy
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
+#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

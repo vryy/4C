@@ -18,10 +18,9 @@ between the xfluid class and the cut-library
 #include "xfem_discretization_utils.H"
 #include "xfem_xfluid_contact_communicator.H"
 
-#include "colors.H"
-#include "utils_parallel.H"
-#include "utils_createdis.H"
-#include "dofset_transparent_independent.H"
+#include "lib_utils_parallel.H"
+#include "lib_utils_createdis.H"
+#include "lib_dofset_transparent_independent.H"
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_xfem.H"
@@ -39,12 +38,12 @@ between the xfluid class and the cut-library
 #include "io_pstream.H"
 
 // Needed for Slave Solid XFSI --> should go to xfem_coulpling_mesh_fsi
-#include "so_hex8.H"
-#include "so_surface.H"
-#include "elasthyper.H"
+#include "so3_hex8.H"
+#include "so3_surface.H"
+#include "mat_elasthyper.H"
 
 // Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
-#include "newtonianfluid.H"
+#include "mat_newtonianfluid.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -447,10 +446,10 @@ void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
 
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, cond_dis_->Comm()));
+    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, full_nodes.size(), full_nodes.data(), 0, cond_dis_->Comm()));
     Teuchos::RCP<const Epetra_Map> full_elecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, cond_dis_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), full_eles.data(), 0, cond_dis_->Comm()));
 
     // redistribute nodes and elements to column (ghost) map
     cond_dis_->ExportColumnNodes(*full_nodecolmap);
@@ -606,14 +605,14 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
     // (expected by Epetra_Map ctor)
     std::vector<int> rownodes(adjacent_row.begin(), adjacent_row.end());
     // build noderowmap for new distribution of nodes
-    newnoderowmap =
-        Teuchos::rcp(new Epetra_Map(-1, rownodes.size(), &rownodes[0], 0, aux_coup_dis_->Comm()));
+    newnoderowmap = Teuchos::rcp(
+        new Epetra_Map(-1, rownodes.size(), rownodes.data(), 0, aux_coup_dis_->Comm()));
 
     std::vector<int> colnodes(adjacent_col.begin(), adjacent_col.end());
 
     // build nodecolmap for new distribution of nodes
-    newnodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, aux_coup_dis_->Comm()));
+    newnodecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->Comm()));
 
     aux_coup_dis_->Redistribute(*newnoderowmap, *newnodecolmap, false, false, false);
 
@@ -1270,7 +1269,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
     // evaluate interface velocity (given by weak Dirichlet condition)
     robin_id_dirch = cond->GetInt("robin_id_dirch");
     // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
-    if (!std::signbit(robin_id_dirch))
+    if (!std::signbit(static_cast<double>(robin_id_dirch)))
       EvaluateDirichletFunction(
           ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
@@ -1285,7 +1284,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
 
   // evaluate interface traction (given by Neumann condition)
   robin_id_dirch = cond->GetInt("robin_id_neumann");
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
     // sliplenght twice (also done in UpdateConfigurationMap_GP ... as soon as this gets relevant we
@@ -1323,7 +1322,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
 
 // Safety checks
 #ifdef DEBUG
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) == conditionsmap_robin_neumann_.end())
     {
@@ -1357,13 +1356,13 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditionsOldState(LINALG::Ma
   // evaluate interface velocity (given by weak Dirichlet condition)
   int robin_id_dirch = cond->GetInt("robin_id_dirch");
   // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateDirichletFunction(
         ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_ - dt_);
 
   // evaluate interface traction (given by Neumann condition)
   robin_id_dirch = cond->GetInt("robin_id_neumann");
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateNeumannFunction(
         itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_ - dt_);
 }
@@ -1499,7 +1498,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
     DRT::Condition* tmp_cond = *i;
 
     const int tmp_robin_id = tmp_cond->GetInt("robin_id_dirch");
-    if (!std::signbit(tmp_robin_id))
+    if (!std::signbit(static_cast<double>(tmp_robin_id)))
     {
       if ((*conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype"))
               .compare(*(tmp_cond->Get<std::string>("evaltype"))) != 0)

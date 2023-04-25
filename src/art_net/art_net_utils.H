@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_ART_NET_ART_NET_UTILS_H_
-#define SRC_ART_NET_ART_NET_UTILS_H_
+#ifndef ART_NET_UTILS_H
+#define ART_NET_UTILS_H
 
 #include "io.H"
 #include "inpar_bio.H"
@@ -57,7 +57,7 @@ namespace ART
     void CheckMaterialType(const int matid);
 
     /// returns conditions names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy();
+    std::map<std::string, std::string> ConditionsToCopy() const;
   };  // class ArteryScatraCloneStrategy
 
   namespace UTILS
@@ -80,4 +80,4 @@ namespace ART
 
 
 
-#endif /* SRC_ART_NET_ART_NET_UTILS_H_ */
+#endif  // ART_NET_UTILS_H

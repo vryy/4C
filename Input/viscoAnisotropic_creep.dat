@@ -1,7 +1,3 @@
-//
-//
-// necessary defines: D_SOLID3 BINIO
-//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -75,10 +71,6 @@ NDPOINT                         1
 NDLINE                          3
 NDSURF                          4
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // neum surface x

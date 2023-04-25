@@ -11,9 +11,9 @@
 #include "contact_interface.H"
 
 #include "contact_element.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
@@ -52,9 +52,9 @@ void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
   }
 
   Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::rcp(new Epetra_Map(
-      -1, (int)element_GIDs_to_be_ghosted.size(), &element_GIDs_to_be_ghosted[0], 0, Comm()));
+      -1, (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::rcp(new Epetra_Map(
-      -1, (int)node_GIDs_to_be_ghosted.size(), &node_GIDs_to_be_ghosted[0], 0, Comm()));
+      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, Comm()));
 
   if (firstevaluation)
   {
@@ -176,7 +176,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
 
   // send the information
   MPI_Request request;
-  exporter.ISend(myrank, torank, &(sdataeles[0]), (int)sdataeles.size(), 1234, request);
+  exporter.ISend(myrank, torank, sdataeles.data(), (int)sdataeles.size(), 1234, request);
 
   // receive the information
   int length = rdataeles.size();
@@ -315,7 +315,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
 
   // ---- send ----
   MPI_Request requestn;
-  exportern.ISend(myrank, torank, &(sdatanodes[0]), (int)sdatanodes.size(), 1234, requestn);
+  exportern.ISend(myrank, torank, sdatanodes.data(), (int)sdatanodes.size(), 1234, requestn);
 
   // ---- receive ----
   int lengthn = rdatanodes.size();
@@ -390,14 +390,14 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
 
   // create maps from sending
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)nrow.size(), &nrow[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)nrow.size(), nrow.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)ncol.size(), &ncol[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)ncol.size(), ncol.data(), 0, Comm()));
 
   Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)erow.size(), &erow[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)erow.size(), erow.data(), 0, Comm()));
   Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), &ecol[0], 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, Comm()));
 
   // Merge s/m column maps for eles and nodes
   Teuchos::RCP<Epetra_Map> colnodesfull = LINALG::MergeMap(nodecolmap, SCN, true);

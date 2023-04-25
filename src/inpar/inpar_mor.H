@@ -25,4 +25,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_MOR_H
+#endif  // INPAR_MOR_H

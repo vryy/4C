@@ -11,7 +11,7 @@ ELEMENTS                        4153
 NODES                           928
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction // Cardiac_Monodomain //      // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
+PROBLEMTYP                      Structure_Scalar_Interaction
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
@@ -102,7 +102,7 @@ NDPOINT                         3
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
------------------------------------DESIGN POINT NEUMANN CONDITIONS  // This is for scatra for the pure Scatra case
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
 E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 3 3 3 3 3 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
@@ -9923,8 +9923,8 @@ NODE 950 COORD 1.9021   -0.6180    5.0000
 4151 TRANSP TET4 363 250 365 313 MAT 101 TYPE CardMono FIBER1 0.0 0.0 1.0
 4152 TRANSP TET4 107 210 198 196 MAT 101 TYPE CardMono FIBER1 0.0 0.0 1.0
 4153 TRANSP TET4 325 447 333 335 MAT 101 TYPE CardMono FIBER1 0.0 0.0 1.0
-4172 TRANSP LINE2 948 949 MAT 102 TYPE CardMono FIBER1 1.0 0.0 0.0 // small line
-4173 TRANSP LINE2 949 348 MAT 102 TYPE CardMono FIBER1 1.0 0.0 0.0 // small line
+4172 TRANSP LINE2 948 949 MAT 102 TYPE CardMono FIBER1 1.0 0.0 0.0
+4173 TRANSP LINE2 949 348 MAT 102 TYPE CardMono FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
 STRUCTURE DIS structure NODE 348 QUANTITY dispz VALUE -2.24671720732493550e-03 TOLERANCE 1e-6

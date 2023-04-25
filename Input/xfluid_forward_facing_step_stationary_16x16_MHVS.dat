@@ -74,7 +74,7 @@ NUMSTEP                         2
 STEADYSTEP                      -1
 NUMSTASTEPS                     0
 STARTFUNCNO                     -1
-ITEMAX                          10                            //10
+ITEMAX                          10
 INITSTATITEMAX                  5
 TIMESTEP                        0.01
 MAXTIME                         1000
@@ -89,13 +89,13 @@ TOL_VEL_INC	  1e-12
 TOL_PRES_RES	  1e-12
 TOL_PRES_INC	  1e-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
+STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes                           //No //Yes
-SUPG                            Yes                           //No //Yes
-GRAD_DIV                        Yes                           //No //Yes
+PSPG                            Yes
+SUPG                            Yes
+GRAD_DIV                        Yes
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
@@ -106,10 +106,10 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       //std_eos //xfem_gp
-EOS_CONV_STREAM                 none                          //xfem_gp //none
-EOS_CONV_CROSS                  none                          //xfem_gp, none
-EOS_DIV                         vel_jump_xfem_gp              //none
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 none
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo_wo_dt
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
@@ -120,14 +120,14 @@ GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_viscous_stress
 CONV_STAB_SCALING               abs_inflow
-GHOST_PENALTY_STAB              yes                           //yes
+GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_2nd_FAC           1.0
 GHOST_PENALTY_PRESSURE_2nd_FAC  1.0
@@ -157,7 +157,7 @@ NDLINE 12
 NDSURF 6
 NDVOL 2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 1//2
+DVOL 1
 // xfluid
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // embedded
@@ -207,7 +207,7 @@ E 11 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // top_east_line
 E 12 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 5//6
+DSURF 5
 // bottom
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // top
@@ -294,7 +294,6 @@ NODE 50 DLINE 5
 NODE 54 DLINE 5
 NODE 58 DLINE 5
 NODE 62 DLINE 5
-NODE 66 DLINE 5
 NODE 2 DLINE 6
 NODE 3 DLINE 6
 NODE 9 DLINE 6
@@ -311,7 +310,6 @@ NODE 49 DLINE 6
 NODE 53 DLINE 6
 NODE 57 DLINE 6
 NODE 61 DLINE 6
-NODE 65 DLINE 6
 NODE 545 DLINE 7
 NODE 548 DLINE 7
 NODE 550 DLINE 7
@@ -519,8 +517,6 @@ NODE 57 DSURFACE 4
 NODE 58 DSURFACE 4
 NODE 61 DSURFACE 4
 NODE 62 DSURFACE 4
-NODE 65 DSURFACE 4
-NODE 66 DSURFACE 4
 NODE 1 DSURFACE 5
 NODE 2 DSURFACE 5
 NODE 3 DSURFACE 5

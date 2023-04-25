@@ -10,9 +10,8 @@
 
 #include "fsi_fluid_ale.H"
 
-#include "colors.H"
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "io_pstream.H"
 
 /*----------------------------------------------------------------------*/
@@ -69,8 +68,8 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
   if (Comm().MyPID() == 0)
     std::cout << "\n"
               << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_ << "     STEP = " YELLOW_LIGHT
-              << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_ << "\n\n";
+              << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_
+              << "/" << std::setw(4) << nstep_ << "\n\n";
 
   MBFluidField()->PrepareTimeStep();
 }

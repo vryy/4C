@@ -1,13 +1,13 @@
 set(OBJS_GEOMETRY
     # cmake-format: sortable
-    integrationcell.cpp
-    intersection_interfacepoint.cpp
-    intersection_math.cpp
-    intersection_service.cpp
-    position_array.cpp
-    searchtree.cpp
-    searchtree_geometry_service.cpp
-    searchtree_nearestobject.cpp
+    geometry_integrationcell.cpp
+    geometry_intersection_interfacepoint.cpp
+    geometry_intersection_math.cpp
+    geometry_intersection_service.cpp
+    geometry_position_array.cpp
+    geometry_searchtree.cpp
+    geometry_searchtree_nearestobject.cpp
+    geometry_searchtree_service.cpp
     )
 
 baci_add_library(geometry ${OBJS_GEOMETRY})
@@ -18,4 +18,4 @@ set(LIBS_GEOMETRY
     linalg
     )
 
-target_link_libraries(geometry PUBLIC ${LIBS_GEOMETRY})
+baci_add_dependency(geometry ${LIBS_GEOMETRY})

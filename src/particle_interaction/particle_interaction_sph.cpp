@@ -29,7 +29,7 @@
 #include "particle_interaction_sph_rigid_particle_contact.H"
 
 #include "particle_engine_interface.H"
-#include "particle_container.H"
+#include "particle_engine_container.H"
 
 #include "particle_wall_interface.H"
 

@@ -13,15 +13,15 @@
 
 #include "lubrication_ele_action.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "inpar_lubrication.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -367,7 +367,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
   // prepare time loop
   PrepareTimeLoop();
 
-  while ((step_ < stepmax_) and ((time_ + EPS12) < maxtime_))
+  while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step

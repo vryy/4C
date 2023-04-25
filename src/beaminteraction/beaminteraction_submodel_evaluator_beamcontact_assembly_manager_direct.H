@@ -11,8 +11,8 @@ be directly assembled into the global matrices.
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_DIRECT_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_DIRECT_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_DIRECT_H
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_DIRECT_H
 
 
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"

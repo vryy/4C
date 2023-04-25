@@ -11,12 +11,12 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef SRC_XFEM_XFEM_MULTI_FIELD_MAPEXTRACTOR_H_
-#define SRC_XFEM_XFEM_MULTI_FIELD_MAPEXTRACTOR_H_
+#ifndef XFEM_MULTI_FIELD_MAPEXTRACTOR_H
+#define XFEM_MULTI_FIELD_MAPEXTRACTOR_H
 
 #include <set>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
@@ -715,4 +715,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* SRC_XFEM_XFEM_MULTI_FIELD_MAPEXTRACTOR_H_ */
+#endif  // XFEM_MULTI_FIELD_MAPEXTRACTOR_H

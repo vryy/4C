@@ -11,11 +11,11 @@
 #include "particle_rigidbody_affiliation_pairs.H"
 
 #include "particle_engine_interface.H"
-#include "particle_communication_utils.H"
+#include "particle_engine_communication_utils.H"
 
 #include "io.H"
-#include "pack_buffer.H"
-#include "parobject.H"
+#include "lib_pack_buffer.H"
+#include "lib_parobject.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

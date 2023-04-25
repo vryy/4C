@@ -14,17 +14,16 @@
 #include "mortar_element.H"
 #include "mortar_utils.H"
 #include "mortar_coupling3d_classes.H"
-#include "condition_utils.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "colors.H"
+#include "lib_condition_utils.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 #include "linalg_multiply.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "inpar_fluid.H"
 
 /*----------------------------------------------------------------------*
@@ -446,7 +445,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
       Teuchos::RCP<MORTAR::MortarElement> mrtrele =
           Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
-              ele->NumNode(), &(nidsoff[0]), true, nurbs));
+              ele->NumNode(), nidsoff.data(), true, nurbs));
 
       interface_->AddMortarElement(mrtrele);
     }
@@ -898,9 +897,9 @@ void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> s
     }
 
     // old and new nodal position and problem dimension
-    double Xold[3] = {0.0, 0.0, 0.0};
-    double Xnew[3] = {0.0, 0.0, 0.0};
-    double Xnewglobal[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xold = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xnew = {0.0, 0.0, 0.0};
+    std::array<double, 3> Xnewglobal = {0.0, 0.0, 0.0};
 
     //******************************************************************
     // compute new nodal position
@@ -953,7 +952,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> s
     // communicate new position Xnew to all procs
     // (we can use SumAll here, as Xnew will be zero on all processors
     // except for the owner processor of the current node)
-    comm.SumAll(&Xnew[0], &Xnewglobal[0], 3);
+    comm.SumAll(Xnew.data(), Xnewglobal.data(), 3);
 
     // const_cast to force modifed X() into mtnode
     // const_cast to force modifed xspatial() into mtnode

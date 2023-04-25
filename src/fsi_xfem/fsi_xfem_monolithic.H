@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef FSI_MONOLITHIC_XFEM_H
-#define FSI_MONOLITHIC_XFEM_H
+#ifndef FSI_XFEM_MONOLITHIC_H
+#define FSI_XFEM_MONOLITHIC_H
 
 
 #include "inpar_xfem.H"

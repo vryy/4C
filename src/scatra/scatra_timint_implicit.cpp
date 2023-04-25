@@ -21,40 +21,41 @@
 
 #include "scatra_timint_implicit.H"
 
+#include "scatra_resulttest.H"
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 #include "scatra_timint_meshtying_strategy_fluid.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_std.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
+#include "scatra_turbulence_hit_initial_scalar_field.H"
+#include "scatra_turbulence_hit_scalar_forcing.H"
 #include "scatra_utils.H"
-#include "turbulence_hit_initial_scalar_field.H"
-#include "turbulence_hit_scalar_forcing.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
 
-#include "dyn_vreman.H"
+#include "fluid_turbulence_dyn_vreman.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "io.H"
 #include "io_pstream.H"
 #include "io_control.H"
 
-#include "assemblestrategy.H"
-#include "condition_selector.H"
-#include "globalproblem.H"
-#include "periodicbc.H"
-#include "utils_gid_vector.H"
-#include "utils_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_selector.H"
+#include "lib_globalproblem.H"
+#include "lib_periodicbc.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_vector.H"
+#include "lib_utils_parameter_list.H"
 
-#include "elchmat.H"
-#include "electrode.H"
-#include "matlist.H"
-#include "matpar_bundle.H"
-#include "scatra_mat.H"
+#include "mat_elchmat.H"
+#include "mat_electrode.H"
+#include "mat_list.H"
+#include "mat_par_bundle.H"
+#include "mat_scatra_mat.H"
 
-#include "apply_nurbs_initial_condition.H"
+#include "nurbs_discret_apply_nurbs_initial_condition.H"
 #include "nurbs_discret.H"
 
 #include "scatra_ele_action.H"
@@ -62,7 +63,7 @@
 
 #include "linalg_krylov_projector.H"
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -296,8 +297,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
         "Set the parameter SOLVERTYPE in SCALAR TRANSPORT DYNAMIC section to 'nonlinear' or "
         "'linear_incremental'!");
   }
-  if (s2imeshtying_)
-    SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition("S2IMeshtying", Discretization());
+
+  SCATRAUTILS::CheckConsistencyOfS2IConditions(Discretization());
 
   // create strategy
   CreateMeshtyingStrategy();
@@ -676,7 +677,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // calculate mean concentrations
   const double domint = (*scalars)[NumScal()];
-  if (std::abs(domint) < EPS15) dserror("Domain has zero volume!");
+  if (std::abs(domint) < 1e-15) dserror("Domain has zero volume!");
   for (int k = 0; k < NumScal(); ++k) c0_[k] = (*scalars)[k] / domint;
 
   // initialization of the densification coefficient vector
@@ -1836,7 +1837,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
 
           double initialval = 0.0;
-          if (x > -EPS10) initialval = 1.0;
+          if (x > -1e-10) initialval = 1.0;
 
           int err = 0;
           err += phin_->ReplaceMyValues(1, &initialval, &doflid);
@@ -1894,9 +1895,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
 
-          if (x2 < loc12 - EPS10)
+          if (x2 < loc12 - 1e-10)
             initialval = (1.0 - (1.0 / beta1)) * exp((x2 - trans1) / delta1);
-          else if (x2 > loc23 + EPS10)
+          else if (x2 > loc23 + 1e-10)
             initialval = 1.0 - (exp((1.0 - beta3) * (x2 - trans3) / delta3) / beta3);
           else
             initialval = fac2 * (x2 - trans2) + abs2;
@@ -2617,7 +2618,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     {
       printf("+-------------------------------+-------------+\n");
       {
-        if (scalnorm_L2 > EPS10)
+        if (scalnorm_L2 > 1e-10)
           printf("|  relative increment (L2 norm) | %10.3E  |", incnorm_L2 / scalnorm_L2);
         else  // prevent division by an almost zero value
           printf("|  absolute increment (L2 norm) | %10.3E  |\n", incnorm_L2);
@@ -3404,7 +3405,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
         dofidvec.reserve(dofids.size());
         dofidvec.assign(dofids.begin(), dofids.end());
         nummyelements = static_cast<int>(dofidvec.size());
-        myglobalelements = &(dofidvec[0]);
+        myglobalelements = dofidvec.data();
       }
       blockmaps[icond] = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
           discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
@@ -3444,7 +3445,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
     // computation
     Teuchos::ParameterList& blocksmootherparams =
         solver->Params().sublist("Inverse" + iblockstr.str());
-    blocksmootherparams.sublist("Aztec Parameters");
+    blocksmootherparams.sublist("Belos Parameters");
     blocksmootherparams.sublist("MueLu Parameters");
 
     // equip smoother for current matrix block with null space associated with all degrees of
@@ -3706,4 +3707,19 @@ void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntImpl::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false)));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::TestResults()
+{
+  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  DRT::Problem::Instance()->TestAll(discret_->Comm());
 }

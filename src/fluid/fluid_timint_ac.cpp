@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "fluid_timint_ac.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "io.H"
 
 

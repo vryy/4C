@@ -18,22 +18,22 @@
 
 #include "adapter_coupling.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "ad_str_factory.H"
-#include "ad_str_ssiwrapper.H"
-#include "ad_str_structure_new.H"
+#include "adapter_str_factory.H"
+#include "adapter_str_ssiwrapper.H"
+#include "adapter_str_structure_new.H"
 
 #include "inpar_volmortar.H"
 #include "inpar_ssi.H"
 
 #include "io_control.H"
 
-#include "inputreader.H"
-#include "globalproblem.H"
-#include "utils_createdis.H"
-#include "utils_parallel.H"
-#include "function_of_time.H"
+#include "lib_inputreader.H"
+#include "lib_globalproblem.H"
+#include "lib_utils_createdis.H"
+#include "lib_utils_parallel.H"
+#include "lib_function_of_time.H"
 
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -320,7 +320,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         my_node_ids.resize(max_num_nodes, -1);
 
         std::vector<int> glob_node_ids(max_num_nodes * Comm().NumProc(), -1);
-        Comm().GatherAll(&my_node_ids[0], &glob_node_ids[0], static_cast<int>(my_node_ids.size()));
+        Comm().GatherAll(
+            my_node_ids.data(), glob_node_ids.data(), static_cast<int>(my_node_ids.size()));
 
         // remove place holders (-1)
         glob_node_ids.erase(
@@ -354,9 +355,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     // copy conditions
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
     // as standard DIRICHLET/NEUMANN CONDITIONS
-    std::map<std::string, std::string> conditions_to_copy;
     SSI::ScatraStructureCloneStrategy clonestrategy;
-    conditions_to_copy = clonestrategy.ConditionsToCopy();
+    const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
     DRT::UTILS::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 

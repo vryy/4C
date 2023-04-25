@@ -1,0 +1,162 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief  Definition of classes to calculate the isochoric and volumetric contribution of the HU
+dependent Neo Hooke material.
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
+
+#ifndef MATELAST_ISOVOLHUDEPENDENTNEOHOOKE_H
+#define MATELAST_ISOVOLHUDEPENDENTNEOHOOKE_H
+
+#include "matelast_summand.H"
+#include "mat_par_parameter.H"
+
+namespace MAT
+{
+  namespace ELASTIC
+  {
+    namespace PAR
+    {
+      /*!
+       * @brief Definition of classes to calculate the isochoric and volumetric contribution of the
+       * HU dependent Neo Hooke material. The Hounsfield Units (HU) of e.g. CT data are used to
+       * determine the material stiffness for each finite element. The input line for the
+       * consideration of calcifications in AAA simulation reads:
+       *
+       * MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49
+       * BETA -2.0
+       *
+       * An Neo Hooke material is chosen for the isochoric contribution with varying stiffness
+       * parameters according to the HU and the underlaying function given in Marc Hirschvogels
+       * Semesterarbeit (available in LNM library) The volumetric contribution is modeled by an
+       * Ogden-Simo-Miehe type SEF  \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$
+       * (see: Doll and Schweizerhof, On the Development of Volumetric Strain Energy Functions,
+       * Journal of Applied Mechanics, 2000). The Poisson ratio NUE has to be given in the material
+       * input line and the bulk modulus for each element is then calculated according to the
+       * isochoric stiffness.
+       *
+       * Strain energy function is given by
+       * \f[
+       *   \Psi = \alpha (\overline{I}_1 -3)
+       *          + \frac{\kappa}{\beta^2} \big(\beta log(J) + J^{-\beta} -1 \big)
+       * \f]
+       *
+       * with
+       * \f[
+       *   \kappa = \frac{2 \alpha}{1-2 \nu}
+       * \f]
+       */
+      class IsoVolHUDependentNeoHooke : public MAT::PAR::Parameter
+      {
+       public:
+        /// standard constructor
+        IsoVolHUDependentNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+
+        /// @name material parameters
+        //@{
+
+        ///
+        double alphamax_;
+        ///
+        double ctmin_;
+        ///
+        double ctmax_;
+        ///
+        double nue_;
+        ///
+        double beta_;
+
+        //@}
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
+
+      };  // class IsoVolHUDependentNeoHooke
+
+    }  // namespace PAR
+
+
+    class IsoVolHUDependentNeoHooke : public Summand
+    {
+     public:
+      /// constructor with given material parameters
+      IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params);
+
+      ///@name Packing and Unpacking
+      //@{
+
+      void PackSummand(DRT::PackBuffer& data) const override;
+
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+
+      //@}
+
+      /// @name Access material constants
+      //@{
+
+      /// material type
+      INPAR::MAT::MaterialType MaterialType() const override
+      {
+        return INPAR::MAT::mes_isovolHUdependentneohooke;
+      }
+
+      //@}
+
+      /// Setup of summand
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      // add strain energy
+      void AddStrainEnergy(double& psi,       ///< strain energy function
+          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+          int gp,                                ///< Gauss point
+          const int eleGID                       ///< element GID
+          ) override;
+
+      // Add derivatives with respect to modified invariants.
+      void AddDerivativesModified(
+          LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
+          LINALG::Matrix<6, 1>&
+              ddmodPII,  ///< second derivative with respect to modified invariants
+          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+          int gp,                              ///< Gauss point
+          const int eleGID                     ///< element GID
+          ) override;
+
+      /// Indicator for formulation
+      void SpecifyFormulation(
+          bool& isoprinc,     ///< global indicator for isotropic principal formulation
+          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
+          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
+          ) override
+      {
+        isomod = true;
+        return;
+      };
+
+
+     private:
+      /// my material parameters
+      MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params_;
+
+      /// factor for material parameter
+      double alpha_{};
+    };
+
+  }  // namespace ELASTIC
+}  // namespace MAT
+
+
+#endif

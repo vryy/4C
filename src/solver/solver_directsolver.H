@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_DIRECTSOLVER_H_
-#define SOLVER_DIRECTSOLVER_H_
+#ifndef SOLVER_DIRECTSOLVER_H
+#define SOLVER_DIRECTSOLVER_H
 
 #include <Amesos_BaseSolver.h>
 

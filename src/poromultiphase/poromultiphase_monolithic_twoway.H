@@ -7,11 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
+#ifndef POROMULTIPHASE_MONOLITHIC_TWOWAY_H
+#define POROMULTIPHASE_MONOLITHIC_TWOWAY_H
 
 #include "poromultiphase_monolithic.H"
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
 #include "inpar_solver.H"
 #include "inpar_poromultiphase.H"
@@ -267,9 +267,9 @@ namespace POROMULTIPHASE
     enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
 
-    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
-    double dtsolve_;           //!< linear solver time
-    double dtele_;             //!< time for element evaluation + build-up of system matrix
+    Teuchos::Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;             //!< linear solver time
+    double dtele_;               //!< time for element evaluation + build-up of system matrix
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
@@ -335,4 +335,4 @@ namespace POROMULTIPHASE
 
 }  // namespace POROMULTIPHASE
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_ */
+#endif  // POROMULTIPHASE_MONOLITHIC_TWOWAY_H

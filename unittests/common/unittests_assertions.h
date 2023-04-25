@@ -3,8 +3,8 @@
 \brief special assertions for BACI code
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H
-#define UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H
+#ifndef UNITTESTS_ASSERTIONS_H
+#define UNITTESTS_ASSERTIONS_H
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

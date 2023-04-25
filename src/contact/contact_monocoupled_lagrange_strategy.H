@@ -16,7 +16,7 @@ to be called!
 #define CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 namespace ADAPTER
 {
@@ -141,4 +141,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H

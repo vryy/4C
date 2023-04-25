@@ -12,11 +12,11 @@
 
 #include "particle_wall_datastate.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "io.H"
 #include "io_control.H"
-#include "discretization_runtime_vtu_writer.H"
+#include "io_discretization_runtime_vtu_writer.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

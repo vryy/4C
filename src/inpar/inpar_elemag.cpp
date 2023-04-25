@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_elemag.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 #include "linalg_equilibrate.H"
 
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

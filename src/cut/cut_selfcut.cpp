@@ -18,7 +18,7 @@
 #include "cut_options.H"
 #include "cut_output.H"
 
-#include "searchtree.H"
+#include "geometry_searchtree.H"
 
 #include "cut_selfcut.H"
 
@@ -636,7 +636,7 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
     for (IMPL::PointGraph::hole_iterator i = pointgraph.hbegin(); i != pointgraph.hend(); ++i)
     {
       std::vector<Cycle> oldholecycles = *i;
-      Cycle* holecycle = &oldholecycles[0];
+      Cycle* holecycle = oldholecycles.data();
       holenormalconservation = CheckNormal(cutsideplane, *holecycle);
       break;
     }

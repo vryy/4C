@@ -10,14 +10,15 @@
 
 #include "xfem_discretization_utils.H"
 
-#include "discret_faces.H"
-#include "discret_xfem.H"
+#include "lib_discret_faces.H"
+#include "lib_discret_xfem.H"
 
-#include "utils.H"
-#include "utils_parallel.H"
-#include "condition_utils.H"
-#include "utils_rebalancing.H"
-#include "dofset_fixed_size.H"
+#include "lib_utils.H"
+#include "lib_utils_parallel.H"
+#include "lib_condition_utils.H"
+#include "rebalance.H"
+#include "rebalance_utils.H"
+#include "lib_dofset_fixed_size.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -225,8 +226,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 
   SetupXFEMDiscretization(xgen_params, xdis, numdof);
 
-  DRT::UTILS::PrintParallelDistribution(*dis);
-  DRT::UTILS::PrintParallelDistribution(*embedded_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*embedded_dis);
 
   return;
 }
@@ -271,8 +272,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(target_dis).is_null())
     SetupXFEMDiscretization(xgen_params, target_dis, num_dof_per_node);
 
-  DRT::UTILS::PrintParallelDistribution(*src_dis);
-  DRT::UTILS::PrintParallelDistribution(*target_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*src_dis);
+  REBALANCE::UTILS::PrintParallelDistribution(*target_dis);
 
   return num_dof_per_node;
 }
@@ -458,19 +459,20 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(dis->Comm().Clone());
 
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::rcp(new Epetra_Map(-1, noderowvec.size(), &noderowvec[0], 0, *comm));
+      Teuchos::rcp(new Epetra_Map(-1, noderowvec.size(), noderowvec.data(), 0, *comm));
 
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, nodecolvec.size(), &nodecolvec[0], 0, *comm));
+      Teuchos::rcp(new Epetra_Map(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm));
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
-      dis, elerowmap, noderowmap, nodecolmap, comm, false, comm->NumProc());
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis, elerowmap);
 
-  Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;
-  dis->BuildElementRowColumn(*noderowmap, *nodecolmap, roweles, coleles);
+  Teuchos::ParameterList rebalanceParams;
+  rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
+  std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+
+  auto const& [roweles, coleles] = dis->BuildElementRowColumn(*noderowmap, *nodecolmap);
 
   dis->ExportRowNodes(*noderowmap);
   dis->ExportRowElements(*roweles);

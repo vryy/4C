@@ -22,11 +22,11 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "adapter_lubrication.H"
-#include "ad_str_structure.H"
-#include "assemblestrategy.H"
-#include "discret.H"
-#include "globalproblem.H"
-#include "locsys.H"
+#include "adapter_str_structure.H"
+#include "lib_assemblestrategy.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_locsys.H"
 
 #include "adapter_coupling_ehl_mortar.H"
 #include "contact_interface.H"
@@ -39,7 +39,7 @@
 
 #include "linalg_blocksparsematrix.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -50,7 +50,7 @@
 
 #include "io_control.H"
 
-#include "lubrication_mat.H"
+#include "mat_lubrication_mat.H"
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
@@ -98,7 +98,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       iternorm_(DRT::INPUT::IntegralValue<INPAR::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(structparams),
-      timernewton_(comm)
+      timernewton_("EHL_Monolithic_newton", true)
 {
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_) printerrfile_ = true;
@@ -190,8 +190,7 @@ void EHL::Monolithic::CreateLinearSolver()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(ehlsolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr and
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -200,7 +199,7 @@ void EHL::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(ehlsolverparams, "AZPREC");
@@ -402,7 +401,7 @@ void EHL::Monolithic::NewtonFull()
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // reset timer
-    timernewton_.ResetStartTime();
+    timernewton_.reset();
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
@@ -431,13 +430,13 @@ void EHL::Monolithic::NewtonFull()
       ApplyDBC();
     }
     // *********** time measurement ***********
-    double dtcpu = timernewton_.WallTime();
+    double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
     // *********** time measurement ***********
-    dtsolve_ = timernewton_.WallTime() - dtcpu;
+    dtsolve_ = timernewton_.wallTime() - dtcpu;
     // *********** time measurement ***********
 
     // vector of displacement and pressure increments
@@ -1421,7 +1420,8 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << dtsolve_;
-  oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
+  oss << std::setw(12) << std::setprecision(2) << std::scientific
+      << timernewton_.totalElapsedTime(true);
 
   // finish oss
   oss << std::ends;

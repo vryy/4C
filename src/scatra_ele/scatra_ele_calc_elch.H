@@ -37,6 +37,9 @@ namespace DRT
       ScaTraEleCalcElch(const int numdofpernode, const int numscal, const std::string& disname);
 
       using my = ScaTraEleCalc<distype, probdim>;
+      using my::nen_;
+      using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       /// In this class we do not define a static ScaTraEle...* Instance
@@ -80,7 +83,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<my::nen_, 1>&
+          LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
           ) = 0;
@@ -125,7 +128,7 @@ namespace DRT
       //! Calculate quantities used for stabilization
       virtual void PrepareStabilization(
           std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
-          std::vector<LINALG::Matrix<my::nen_, 1>>&
+          std::vector<LINALG::Matrix<nen_, 1>>&
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
@@ -163,10 +166,9 @@ namespace DRT
       //! evaluate an electrode boundary kinetics point condition
       virtual void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
           Epetra_SerialDenseMatrix& emat,                                      ///< element matrix
-          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
+          Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+          const std::vector<LINALG::Matrix<nen_, 1>>&
               ehist,                          ///< history variables at element nodes
           double timefac,                     ///< time factor
           Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
@@ -184,10 +186,8 @@ namespace DRT
           Epetra_SerialDenseVector& scalars,                      ///< scalars to be integrated
           Teuchos::ParameterList& params,                         ///< parameter list
           Teuchos::RCP<DRT::Condition> cond,                      ///< condition
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephidtnp,                   ///< nodal time derivative vector
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
           const int kinetics,             ///< desired electrode kinetics model
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int nume,                 ///< number of transferred electrons
@@ -207,15 +207,15 @@ namespace DRT
           ) = 0;
 
       //! calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                 //!< type fo flux
-          const int k                                             //!< index of current scalar
+      virtual void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,             //!< type fo flux
+          const int k                                         //!< index of current scalar
           ) = 0;
 
       //! calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateCurrent(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
-          const double fac                                           //!< integration factor
+      virtual void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                //!< type fo flux
+          const double fac                                       //!< integration factor
       ){};
 
       //! calculate error of numerical solution with respect to analytical solution

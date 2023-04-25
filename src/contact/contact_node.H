@@ -1336,4 +1336,4 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode);
 
-#endif  // #ifndef CNODE_H
+#endif  // CONTACT_NODE_H

@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_LUBRICATION_LUBRICATION_TIMINT_STAT_H_
-#define SRC_LUBRICATION_LUBRICATION_TIMINT_STAT_H_
+#ifndef LUBRICATION_TIMINT_STAT_H
+#define LUBRICATION_TIMINT_STAT_H
 
 
 #include "lubrication_timint_implicit.H"
@@ -74,4 +74,4 @@ namespace LUBRICATION
 
 }  // namespace LUBRICATION
 
-#endif /* SRC_LUBRICATION_LUBRICATION_TIMINT_STAT_H_ */
+#endif  // LUBRICATION_TIMINT_STAT_H

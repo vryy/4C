@@ -12,19 +12,19 @@
 
 #include "fsi_str_model_evaluator_partitioned.H"
 
-#include "str_model_evaluator.H"
-#include "str_dbc.H"
-#include "str_impl_generic.H"
-#include "str_timint_implicit.H"
-#include "str_nln_solver_generic.H"
-#include "str_timint_basedataglobalstate.H"
+#include "structure_new_model_evaluator.H"
+#include "structure_new_dbc.H"
+#include "structure_new_impl_generic.H"
+#include "structure_new_timint_implicit.H"
+#include "structure_new_nln_solver_generic.H"
+#include "structure_new_timint_basedataglobalstate.H"
 
-#include "nox_nln_group.H"
-#include "nox_nln_aux.H"
+#include "solver_nonlin_nox_group.H"
+#include "solver_nonlin_nox_aux.H"
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 
-#include "Epetra_Comm.h"
+#include <Epetra_Comm.h>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

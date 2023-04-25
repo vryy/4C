@@ -16,7 +16,7 @@
 #include "io.H"
 #include "io_pstream.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

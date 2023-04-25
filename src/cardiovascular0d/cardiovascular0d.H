@@ -16,8 +16,8 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
-#include "Epetra_FECrsMatrix.h"
-#include "utils_integration.H"
+#include <Epetra_FECrsMatrix.h>
+#include "fem_general_utils_integration.H"
 #include "inpar_cardiovascular0d.H"
 
 
@@ -161,4 +161,4 @@ namespace UTILS
   };  // class
 }  // namespace UTILS
 
-#endif /*CARDIOVASCULAR0D_H*/
+#endif  // CARDIOVASCULAR0D_H

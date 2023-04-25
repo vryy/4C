@@ -21,4 +21,4 @@ void printwelcomemessage();
 
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef TUTORIAL_DYN_H*/
+#endif  // TUTORIAL_DYN_H

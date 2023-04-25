@@ -11,11 +11,11 @@
 #include "scatra_ele_calc_elch_diffcond.H"
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
 
-#include "elchmat.H"
-#include "elchphase.H"
-#include "newman.H"
-#include "newman_multiscale.H"
-#include "singleton_owner.H"
+#include "mat_elchmat.H"
+#include "mat_elchphase.H"
+#include "mat_newman.H"
+#include "mat_newman_multiscale.H"
+#include "headers_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -50,9 +50,9 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
-    const Teuchos::RCP<const MAT::Material>& material, const std::vector<double>& concentrations,
+    Teuchos::RCP<const MAT::Material> material, const std::vector<double>& concentrations,
     const double temperature, const INPAR::ELCH::EquPot equpot, const double ffrt,
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,
+    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
     INPAR::ELCH::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte material
@@ -78,9 +78,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
-    const Teuchos::RCP<const MAT::Material>& material, const std::vector<double>& concentrations,
+    Teuchos::RCP<const MAT::Material> material, const std::vector<double>& concentrations,
     const double temperature, const INPAR::ELCH::EquPot& equpot, const double& ffrt,
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager,
+    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
     INPAR::ELCH::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte phase
@@ -155,8 +155,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
-    const Teuchos::RCP<const MAT::Material>& material, const double concentration,
-    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager)
+    Teuchos::RCP<const MAT::Material> material, const double concentration,
+    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager)
 {
   // cast material to Newman material
   const Teuchos::RCP<const MAT::Newman> matnewman =
@@ -206,8 +206,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewmanMultiScale(
-    const Teuchos::RCP<const MAT::Material>& material, const double concentration,
-    const double temperature, const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& diffmanager)
+    Teuchos::RCP<const MAT::Material> material, const double concentration,
+    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager)
 {
   // evaluate standard Newman material
   MatNewman(material, concentration, temperature, diffmanager);

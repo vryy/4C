@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_STRATEGY_H
-#define CONTACT_STRATEGY_H
+#ifndef CONTACT_ABSTRACT_STRATEGY_H
+#define CONTACT_ABSTRACT_STRATEGY_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
@@ -18,7 +18,7 @@
 #include "mortar_strategy_base.H"
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
-#include "utils_matrix_vector_enums.H"
+#include "lib_utils_matrix_vector_enums.H"
 
 // forward declarations
 namespace NOX
@@ -1298,8 +1298,11 @@ namespace CONTACT
 
      for frictional contact we need history values (relative velocity) and
      therefore we store the nodal entries of mortar matrices (reference
-     configuration) before the first time step */
-    virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
+     configuration) before the first time step
+
+     \pre SetState() has been called.
+     */
+    void EvaluateReferenceState() override;
 
     /*! \brief Evaluate matrix of nodal normals
 
@@ -2311,4 +2314,4 @@ namespace CONTACT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
 
-#endif  // #ifndef CONTACT_STRATEGY_H
+#endif  // CONTACT_ABSTRACT_STRATEGY_H

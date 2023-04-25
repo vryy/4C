@@ -18,22 +18,22 @@ set(LIBS_ALG_ALE
     inpar
     )
 
-target_link_libraries(alg_ale PUBLIC ${LIBS_ALG_ALE})
+baci_add_dependency(alg_ale ${LIBS_ALG_ALE})
 
 set(OBJS_ELE_ALE
     # cmake-format: sortable
-    ale2.cpp
-    ale2_evaluate.cpp
-    ale2_input.cpp
-    ale2_line.cpp
-    ale2_line_evaluate.cpp
-    ale2_nurbs.cpp
-    ale3.cpp
-    ale3_evaluate.cpp
-    ale3_input.cpp
-    ale3_nurbs.cpp
-    ale3_surface.cpp
-    ale3_surface_evaluate.cpp
+    ale_ale2.cpp
+    ale_ale2_evaluate.cpp
+    ale_ale2_input.cpp
+    ale_ale2_line.cpp
+    ale_ale2_line_evaluate.cpp
+    ale_ale2_nurbs.cpp
+    ale_ale3.cpp
+    ale_ale3_evaluate.cpp
+    ale_ale3_input.cpp
+    ale_ale3_nurbs.cpp
+    ale_ale3_surface.cpp
+    ale_ale3_surface_evaluate.cpp
     )
 
 baci_add_library(ele_ale ${OBJS_ELE_ALE})
@@ -46,4 +46,4 @@ set(LIBS_ELE_ALE
     nurbs_discret
     )
 
-target_link_libraries(ele_ale PUBLIC ${LIBS_ELE_ALE})
+baci_add_dependency(ele_ale ${LIBS_ELE_ALE})

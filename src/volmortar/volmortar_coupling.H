@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef VOLMORTAR_COUPLING_H_
-#define VOLMORTAR_COUPLING_H_
+#ifndef VOLMORTAR_COUPLING_H
+#define VOLMORTAR_COUPLING_H
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
@@ -474,4 +474,4 @@ namespace VOLMORTAR
 }  // namespace VOLMORTAR
 
 
-#endif /* VOLMORTAR_COUPLING_H_ */
+#endif  // VOLMORTAR_COUPLING_H

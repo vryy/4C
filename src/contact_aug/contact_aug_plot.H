@@ -8,8 +8,8 @@ MATLAB, PGFPlot or other tools.
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_CONTACT_AUG_CONTACT_AUG_PLOT_H_
-#define SRC_CONTACT_AUG_CONTACT_AUG_PLOT_H_
+#ifndef CONTACT_AUG_PLOT_H
+#define CONTACT_AUG_PLOT_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -318,4 +318,4 @@ namespace NOX
 }  // namespace NOX
 
 
-#endif /* SRC_CONTACT_AUG_CONTACT_AUG_PLOT_H_ */
+#endif  // CONTACT_AUG_PLOT_H

@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include "comm_utils.H"
-#include "utils.H"
+#include "lib_utils.H"
 #include "io_pstream.H"
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>

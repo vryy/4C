@@ -22,7 +22,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 -------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta
 DAMPING                         Material
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
@@ -44,7 +44,7 @@ PHYSICAL_TYPE                   Poro
 EQUILIBRATION                   rows_full
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta
 PREDICTOR                       steady_state
 CONVFORM                        convective
 GRIDVEL                         BE
@@ -70,7 +70,7 @@ EVALUATION_MAT                  integration_point
 STAB_BIOT                       yes
 STAB_BIOT_SCALING               3.0
 -----------------------------------------------------------SOLVER 1
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         AMGnxn
 AZSUB                          300
@@ -78,12 +78,11 @@ AZCONV                         AZ_r0
 AZOUTPUT                       10
 AZITER                         400
 AZTOL                          1e-9
-VERBOSITY                      0
 NAME                           Poro_solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No
@@ -92,7 +91,7 @@ ML_SMOOTHERFINE                 GS
 ML_SMOOTHERMED                  GS
 ML_SMOOTHERCOARSE               GS
 -----------------------------------------------------------SOLVER 3
-SOLVER                         Belos // UMFPACK Belos
+SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
 MUELU_XML_ENFORCE              No

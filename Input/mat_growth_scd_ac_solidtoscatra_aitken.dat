@@ -39,7 +39,7 @@ SHAPEFCT                        Polynomial
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
-CONVFORM                        conservative //convective
+CONVFORM                        conservative
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -84,7 +84,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //Statics
+DYNAMICTYP                      OneStepTheta
 MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -119,7 +119,7 @@ UZAWATOL                        1e-08
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.666666
 --------------------------------------------------------SSI CONTROL
-COUPALGO                        ssi_IterStaggAitken_SolidToScatra //ssi_IterStaggAitken_ScatraToSolid //ssi_IterStagg //ssi_IterStaggFixedRel_SolidToScatra //
+COUPALGO                        ssi_IterStaggAitken_SolidToScatra
 ITEMAX                          20
 MAXTIME                         100.0
 NUMSTEP                         3
@@ -148,7 +148,7 @@ AZSUB                           300
 AZTOL                           1e-08
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
+IFPACKCOMBINE                   Add
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
@@ -168,8 +168,8 @@ SOLVER                          UMFPACK
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 0.2
 
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
-MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
-MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0 //KAPPA 2.2116e6 BETA -2.0
+MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
+MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0
 
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 //MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
@@ -195,18 +195,6 @@ NDPOINT                         8
 NDLINE                          9
 NDSURF                          2
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

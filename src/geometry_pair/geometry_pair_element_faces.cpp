@@ -11,7 +11,7 @@
 #include "geometry_pair_element_faces.H"
 
 #include "geometry_pair_scalar_types.H"
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 #include "inpar_geometry_pair.H"
 
 

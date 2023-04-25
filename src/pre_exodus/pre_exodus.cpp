@@ -20,17 +20,17 @@ its parameters and conditions.
 #include "pre_exodus.H"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include "Epetra_Time.h"
-#include "Teuchos_TimeMonitor.hpp"
-#include "globalproblem.H"
-#include "resulttest.H"
-#include "utils_createdis.H"
-#include "validparameters.H"
-#include "validmaterials.H"
-#include "validconditions.H"
-#include "conditiondefinition.H"
-#include "elementdefinition.H"
-#include "parobjectregister.H"
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include "lib_globalproblem.H"
+#include "lib_resulttest.H"
+#include "lib_utils_createdis.H"
+#include "inpar_validparameters.H"
+#include "inpar_validmaterials.H"
+#include "inpar_validconditions.H"
+#include "lib_conditiondefinition.H"
+#include "lib_elementdefinition.H"
+#include "module_registry_parobjectregister.H"
 #include "comm_utils.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
@@ -48,6 +48,8 @@ int main(int argc, char** argv)
   // communication
   MPI_Init(&argc, &argv);
 
+  DRT::ForceRegistrationOfParObjectTypes();
+
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // create default communicators
@@ -64,8 +66,6 @@ int main(int argc, char** argv)
     std::string headfile;
     std::string datfile;
     std::string cline;
-
-    int printparobjecttypes = 0;
 
     // related to solid shell extrusion
     double soshthickness = 0.0;
@@ -121,10 +121,6 @@ int main(int argc, char** argv)
     My_CLP.setOption(
         "quadtri", "noquadtri", &quadtri, "transform quads to tris by cutting in two halves");
 
-    // print parobject types (needed for making automatic object registration working)
-    My_CLP.setOption("printparobjecttypes", &printparobjecttypes,
-        "print names of parobject types (registration hack)");
-
     Teuchos::CommandLineProcessor::EParseCommandLineReturn parseReturn = My_CLP.parse(argc, argv);
 
     if (parseReturn == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED)
@@ -136,16 +132,6 @@ int main(int argc, char** argv)
     if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
     {
       dserror("CommandLineProcessor reported an error");
-    }
-
-    if (printparobjecttypes)
-    {
-      // hack so that the parobject types are registered!!!
-      PrintParObjectList();
-
-      // free the global problem instance
-      problem->Done();
-      return 0;
     }
 
     // create error file (enforce the file opening!)
@@ -286,7 +272,7 @@ int main(int argc, char** argv)
       {
         Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> mlist =
             DRT::INPUT::ValidMaterials();
-        DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist, false);
+        DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
@@ -351,7 +337,7 @@ int main(int argc, char** argv)
         timer->start();
         ValidateMeshElementJacobians(mymesh);
         timer->stop();
-        std::cout << "        in...." << timer->totalElapsedTime() << " secs" << std::endl;
+        std::cout << "        in...." << timer->totalElapsedTime(true) << " secs" << std::endl;
         timer->reset();
       }
 
@@ -367,7 +353,8 @@ int main(int argc, char** argv)
           timer->start();
           CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh, condefs);
           timer->stop();
-          std::cout << "               in...." << timer->totalElapsedTime() << " secs" << std::endl;
+          std::cout << "               in...." << timer->totalElapsedTime(true) << " secs"
+                    << std::endl;
           timer->reset();
         }
       }
@@ -379,7 +366,7 @@ int main(int argc, char** argv)
         timer->start();
         EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs, elecenterlineinfo);
         timer->stop();
-        std::cout << "                         in...." << timer->totalElapsedTime() << " secs"
+        std::cout << "                         in...." << timer->totalElapsedTime(true) << " secs"
                   << std::endl;
         timer->reset();
       }
@@ -510,7 +497,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
       DRT::INPUT::ValidConditions();
-  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist, false);
+  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
 
   // print valid element lines as proposal (parobjects have to be registered for doing this!)
   defaultbc << std::endl << std::endl;

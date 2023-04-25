@@ -39,4 +39,4 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace EP
 }  // namespace INPAR
-#endif  // #ifndef INPAR_CARDIAC_MONODOMAIN_H
+#endif  // INPAR_CARDIAC_MONODOMAIN_H

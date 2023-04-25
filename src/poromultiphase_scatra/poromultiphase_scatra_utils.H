@@ -6,16 +6,16 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_
-#define SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_
+#ifndef POROMULTIPHASE_SCATRA_UTILS_H
+#define POROMULTIPHASE_SCATRA_UTILS_H
 
 #include <set>
 
 #include "inpar_poromultiphase_scatra.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Comm.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 
 // forward declarations
 namespace LINALG
@@ -119,4 +119,4 @@ namespace POROMULTIPHASESCATRA
 
 
 
-#endif /* SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_ */
+#endif  // POROMULTIPHASE_SCATRA_UTILS_H

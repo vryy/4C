@@ -8,8 +8,8 @@
 #ifndef FIBER_NODE_H
 #define FIBER_NODE_H
 
-#include "node.H"
-#include "parobjectfactory.H"
+#include "lib_node.H"
+#include "lib_parobjectfactory.H"
 
 namespace DRT
 {
@@ -159,4 +159,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // #ifndef FIBER_NODE_H
+#endif  // FIBER_NODE_H

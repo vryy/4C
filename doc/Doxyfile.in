@@ -69,6 +69,7 @@ PREDEFINED             =
 #---------------------------------------------------------------------------
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doc/index.doc \
+                         @CMAKE_SOURCE_DIR@/doc/namespaces.doc \
                          @CMAKE_SOURCE_DIR@/src
 
 FILE_PATTERNS          = *.H \

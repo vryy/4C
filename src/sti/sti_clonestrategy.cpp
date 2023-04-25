@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "sti_clonestrategy.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 
 #include "scatra_ele.H"
 
@@ -38,28 +38,14 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToCopy() const
 {
-  // initialize map
-  std::map<std::string, std::string> conditions;
-
-  // insert thermo conditions
-  conditions.insert(std::pair<std::string, std::string>("PointThermoCoupling", "PointCoupling"));
-  conditions.insert(std::pair<std::string, std::string>("S2IKinetics", "S2IKinetics"));
-  conditions.insert(std::pair<std::string, std::string>("S2IMeshtying", "S2IMeshtying"));
-  conditions.insert(std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoDirichlet", "Dirichlet"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoPointNeumann", "PointNeumann"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoLineNeumann", "LineNeumann"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoSurfaceNeumann", "SurfaceNeumann"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoVolumeNeumann", "VolumeNeumann"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoInitfield", "Initfield"));
-  conditions.insert(std::pair<std::string, std::string>("ThermoRobin", "TransportRobin"));
-  conditions.insert(
-      std::pair<std::string, std::string>("ScatraPartitioning", "ScatraPartitioning"));
-
-  // return map
-  return conditions;
+  return {{"PointThermoCoupling", "PointCoupling"}, {"S2IKinetics", "S2IKinetics"},
+      {"S2IMeshtying", "S2IMeshtying"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
+      {"ThermoDirichlet", "Dirichlet"}, {"ThermoPointNeumann", "PointNeumann"},
+      {"ThermoLineNeumann", "LineNeumann"}, {"ThermoSurfaceNeumann", "SurfaceNeumann"},
+      {"ThermoVolumeNeumann", "VolumeNeumann"}, {"ThermoInitfield", "Initfield"},
+      {"ThermoRobin", "TransportRobin"}, {"ScatraPartitioning", "ScatraPartitioning"}};
 }  // STI::ScatraThermoCloneStrategy::ConditionsToCopy()
 
 /*--------------------------------------------------------------------------------*

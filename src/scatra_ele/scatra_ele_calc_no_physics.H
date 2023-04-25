@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_ELE_CALC_NO_PHYSICS_H
-#define BACI_SCATRA_ELE_CALC_NO_PHYSICS_H
+#ifndef SCATRA_ELE_CALC_NO_PHYSICS_H
+#define SCATRA_ELE_CALC_NO_PHYSICS_H
 
 #include "scatra_ele_calc.H"
 
@@ -55,4 +55,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // BACI_SCATRA_ELE_CALC_NO_PHYSICS_H
+#endif  // SCATRA_ELE_CALC_NO_PHYSICS_H

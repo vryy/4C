@@ -88,94 +88,88 @@ GHOSTING_STRATEGY               redundant_all
 LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Meshtying_Solver
-SOLVER                          Belos                       // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                              // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         5                               // how often to recompute some preconditioners
+SOLVER                          Belos
+AZOUTPUT                        50
+AZSOLVE                         GMRES
+AZPREC                          ILU
+AZREUSE                         5
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           100                             // size of krylov space for gmres
-AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                               // unused
-AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                             // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     2                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                               // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                            // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES   1 0 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.8                            // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+AZTOL                           1.0E-9
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           100
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     2
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES   1 0 0
+ML_DAMPFINE                     0.8
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 3.5e-6 DENSITY 1.0e-6 GAMMA 1.0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 -------------------------------------------------RESULT DESCRIPTION
 // node is located in the outer volume (HEX)
-FLUID DIS fluid NODE 4566 QUANTITY velx VALUE  5.38710522478107190e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4566 QUANTITY vely VALUE -1.04409485019534357e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4566 QUANTITY velz VALUE  1.05712561842625430e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4566 QUANTITY pressure VALUE 1.78695017278607049e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 5034 QUANTITY velx VALUE  1.30948444459712786e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 5034 QUANTITY vely VALUE -6.97284891885944363e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 5034 QUANTITY velz VALUE  1.05724091133339448e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 5034 QUANTITY pressure VALUE 1.91239539763613257e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4566 QUANTITY velx VALUE  1.48849597745127037e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4566 QUANTITY vely VALUE -4.49723650404923458e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4566 QUANTITY velz VALUE  3.00027485063126464e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4566 QUANTITY pressure VALUE 1.27144378341953674e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 5034 QUANTITY velx VALUE  -1.63633137949190099e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 5034 QUANTITY vely VALUE -1.78754328882733265e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 5034 QUANTITY velz VALUE  2.99660137185942066e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 5034 QUANTITY pressure VALUE 1.36116036314237461e-04 TOLERANCE 1e-10
 // node is located in the inner volume (TET)
-FLUID DIS fluid NODE 10480 QUANTITY velx VALUE -8.47275801748654731e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 10480 QUANTITY vely VALUE -2.29256086056618125e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 10480 QUANTITY velz VALUE  3.99004397230254959e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 10480 QUANTITY pressure VALUE 2.92163692507394163e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12368 QUANTITY velx VALUE  4.44019620518566749e-02 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12368 QUANTITY vely VALUE  5.44779644488353337e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12368 QUANTITY velz VALUE  3.17122338266726134e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12368 QUANTITY pressure VALUE 3.22373646579201352e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 10480 QUANTITY velx VALUE -1.72884764017233478e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 10480 QUANTITY vely VALUE 2.91054521414535472e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 10480 QUANTITY velz VALUE  3.00003220477564936e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 10480 QUANTITY pressure VALUE 2.07871557170226720e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12368 QUANTITY velx VALUE  4.13068536712409007e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12368 QUANTITY vely VALUE  2.56977409930084222e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12368 QUANTITY velz VALUE 3.00148713732518635e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12368 QUANTITY pressure VALUE 2.29007171795009545e-04 TOLERANCE 1e-10
 // node is located at the slave side of internal interface
-FLUID DIS fluid NODE 1001 QUANTITY velx VALUE -6.83446322434181318e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 1001 QUANTITY vely VALUE  3.02170834493620082e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1001 QUANTITY velz VALUE  1.76703262991787113e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1001 QUANTITY pressure VALUE 3.84093056934369312e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1001 QUANTITY velx VALUE -3.58730996581627885e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1001 QUANTITY vely VALUE  2.42792548638012676e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1001 QUANTITY velz VALUE  3.00144707271809352e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1001 QUANTITY pressure VALUE 2.72351575845439612e-05 TOLERANCE 1e-9
 // node is located at the master side of internal interface
-FLUID DIS fluid NODE 11400 QUANTITY velx VALUE -7.54771187584995888e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 11400 QUANTITY vely VALUE -1.98938640703619045e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 11400 QUANTITY velz VALUE  1.75483040467488705e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 11400 QUANTITY pressure VALUE 6.89345349808242086e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 11400 QUANTITY velx VALUE 2.07755234869406741e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11400 QUANTITY vely VALUE 5.70357776313310146e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 11400 QUANTITY velz VALUE  2.99841798553355643e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 11400 QUANTITY pressure VALUE 4.90692272648936723e-05 TOLERANCE 1e-9
 // node is located at the slave side of the Dirichlet condition
 FLUID DIS fluid NODE 10045 QUANTITY velx VALUE -3.71893992866908306e-12 TOLERANCE 1e-11
 FLUID DIS fluid NODE 10045 QUANTITY vely VALUE  0.00000000000000000e+00 TOLERANCE 1e-11
 FLUID DIS fluid NODE 10045 QUANTITY velz VALUE  3.00000000000149791e+00 TOLERANCE 1e-11
-FLUID DIS fluid NODE 10045 QUANTITY pressure VALUE 4.07924760580700735e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 10045 QUANTITY pressure VALUE 2.81160202661120007e-04 TOLERANCE 1e-9
 // node is located at the master side of the Dirichlet condition
 FLUID DIS fluid NODE 10707 QUANTITY velx VALUE -3.78532598479657271e-12 TOLERANCE 1e-11
 FLUID DIS fluid NODE 10707 QUANTITY vely VALUE  0.00000000000000000e+00 TOLERANCE 1e-11
 FLUID DIS fluid NODE 10707 QUANTITY velz VALUE  3.00000000000000044e+00 TOLERANCE 1e-11
-FLUID DIS fluid NODE 10707 QUANTITY pressure VALUE 4.10851501217745422e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 10707 QUANTITY pressure VALUE 2.81124544877500433e-04 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
 NDSURF  7
 NDVOL   1
------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF  0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // inflow
 E 2 - NUMDOF 4  ONOFF 1 1 1 0  VAL 0.0 0.0 10.0 0.0 FUNCT 0 0 1 0
 // wall
-E 5 - NUMDOF 4  ONOFF 1 1 1 0  VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  0
---------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL   0
+E 5 - NUMDOF 4  ONOFF 1 1 0 0  VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 // internal interface fluid boundary layer

@@ -15,9 +15,9 @@
 #include <Teuchos_RCP.hpp>
 #include <unordered_map>
 
-#include "utils_local_connectivity_matrices.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
 
-#include "utils_matrix_vector_enums.H"
+#include "lib_utils_matrix_vector_enums.H"
 
 #include "mortar_element.H"
 

@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSTI_ALGORITHM_H_
-#define SSTI_ALGORITHM_H_
+#ifndef SSTI_ALGORITHM_H
+#define SSTI_ALGORITHM_H
 
 #include "adapter_algorithmbase.H"
 
@@ -177,4 +177,4 @@ namespace SSTI
   Teuchos::RCP<SSTI::SSTIAlgorithm> BuildSSTI(INPAR::SSTI::SolutionScheme coupling,
       const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
-#endif /* SSTI_ALGORITHM_H_ */
+#endif  // SSTI_ALGORITHM_H

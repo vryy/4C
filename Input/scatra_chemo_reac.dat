@@ -47,8 +47,8 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      nonlinear // linear_full
-TIMEINTEGR                      One_Step_Theta //Gen_Alpha
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
 MAXTIME                         100
 NUMSTEP                         50
 TIMESTEP                        0.01
@@ -59,7 +59,7 @@ GAMMA                           0.666666666666667
 RESULTSEVRY                     10
 RESTARTEVRY                     10000
 MATID                           -1
-VELOCITYFIELD                   zero //function
+VELOCITYFIELD                   zero
 VELFUNCNO                       2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
@@ -130,7 +130,6 @@ BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
 MUELU_XML_ENFORCE               No
 NAME                            ScaTraSolver
 SIMPLE_DAMPING                  1
@@ -173,7 +172,6 @@ BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
 MUELU_XML_ENFORCE               No
 NAME                            No_name
 SIMPLE_DAMPING                  1

@@ -26,7 +26,7 @@
 
 #include <set>
 
-#include "ad_scatra_wrapper.H"
+#include "adapter_scatra_wrapper.H"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
@@ -35,6 +35,8 @@
 #include "inpar_scatra.H"
 
 #include <memory>
+
+#include "io_runtime_csv_writer.H"
 
 
 /*==========================================================================*/
@@ -52,14 +54,13 @@
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-class RuntimeCsvWriter;
-
 namespace DRT
 {
   class Discretization;
   class DofSet;
   class Condition;
   class Problem;
+  class ResultTest;
 }  // namespace DRT
 
 namespace IO
@@ -67,6 +68,7 @@ namespace IO
   class DiscretizationReader;
   class DiscretizationWriter;
   class InputControl;
+  class RuntimeCsvWriter;
 }  // namespace IO
 
 namespace LINALG
@@ -283,6 +285,12 @@ namespace SCATRA
     {
       macro_micro_rea_coeff_ = macro_micro_rea_coeff;
     }
+
+    //! create result test for scalar transport field
+    virtual Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
+
+    //! Add tests to global problem and start tests
+    virtual void TestResults();
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -1641,7 +1649,7 @@ namespace SCATRA
     bool output_micro_dis_;
 
     //! writes evaluated data to output
-    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! total values of transported scalars
     std::map<const int, std::vector<double>> totalscalars_;
@@ -1765,4 +1773,4 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
-#endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H
+#endif  // SCATRA_TIMINT_IMPLICIT_H

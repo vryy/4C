@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef INPAR_IMMERSED_H_
-#define INPAR_IMMERSED_H_
+#ifndef INPAR_IMMERSED_H
+#define INPAR_IMMERSED_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -84,4 +84,4 @@ namespace INPAR
   }  // namespace IMMERSED
 }  // namespace INPAR
 /*----------------------------------------------------------------------*/
-#endif /* INPAR_IMMERSED_H_ */
+#endif  // INPAR_IMMERSED_H

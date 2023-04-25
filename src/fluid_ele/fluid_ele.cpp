@@ -11,10 +11,10 @@
 
 #include "fluid_ele.H"
 #include "fluid_ele_tds.H"
-#include "discret.H"
-#include "utils_factory.H"
-#include "linedefinition.H"
-#include "globalproblem.H"
+#include "lib_discret.H"
+#include "lib_utils_factory.H"
+#include "lib_linedefinition.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_nullspace.H"
 

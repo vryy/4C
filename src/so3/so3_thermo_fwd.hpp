@@ -1,3 +1,6 @@
+#ifndef SO3_SO3_THERMO_FWD_HPP
+#define SO3_SO3_THERMO_FWD_HPP
+
 /*----------------------------------------------------------------------*/
 /*! \file
 
@@ -16,3 +19,5 @@ template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::
 template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
 template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
 template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>;
+
+#endif

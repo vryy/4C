@@ -6,15 +6,15 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_
-#define SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_
+#ifndef INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
+#define INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
 
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_scatra.H"
 #include "inpar_poroelast.H"
-#include "conditiondefinition.H"
+#include "lib_conditiondefinition.H"
 
 #include "linalg_equilibrate.H"
 
@@ -193,4 +193,4 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
 }
 
 
-#endif /* SRC_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_ */
+#endif  // INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP

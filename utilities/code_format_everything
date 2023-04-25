@@ -50,9 +50,9 @@ source "${PYTHON_VENV}"/bin/activate
 # set the field separator to new line
 IFS=$'\n'
 
-if [[ $STAGED_ONLY ]]
+if [[ $STAGED_ONLY -eq 1 ]]
 then
-  FILES_TO_CHECK=$(git diff --name-only --staged)
+  FILES_TO_CHECK=$(git diff --name-only --staged --diff-filter=d)
   echo "Run clang-format on all staged source files in the repository."
 else
   FILES_TO_CHECK=$(git ls-files)
@@ -99,3 +99,4 @@ fi
 
 done
 echo "Done."
+

@@ -1,65 +1,72 @@
 set(OBJS_LIB_BEAMINTERACTION
     # cmake-format: sortable
-    beam3contact_tangentsmoothing.cpp
-    beam3contact_utils.cpp
-    beam_contact_pair.cpp
-    beam_contact_params.cpp
-    beam_contact_runtime_vtk_output_params.cpp
-    beam_crosslinker_handler.cpp
-    beam_link.cpp
-    beam_link_beam3r_line2_pinjointed.cpp
-    beam_link_beam3r_line2_rigidjointed.cpp
-    beam_link_pinjointed.cpp
-    beam_link_rigidjointed.cpp
-    beam_link_truss.cpp
-    beam_potential_pair.cpp
-    beam_potential_params.cpp
-    beam_potential_runtime_vtk_output_params.cpp
-    beam_to_beam_contact_condition.cpp
-    beam_to_beam_contact_pair.cpp
-    beam_to_beam_contact_params.cpp
-    beam_to_beam_contact_variables.cpp
-    beam_to_beam_point_coupling_pair.cpp
-    beam_to_beam_point_coupling_pair_condition.cpp
-    beam_to_beam_potential_pair.cpp
-    beam_to_solid_conditions.cpp
-    beam_to_solid_mortar_manager.cpp
-    beam_to_solid_pair_base.cpp
-    beam_to_solid_params_base.cpp
-    beam_to_solid_surface_contact_pair.cpp
-    beam_to_solid_surface_contact_pair_base.cpp
-    beam_to_solid_surface_contact_params.cpp
-    beam_to_solid_surface_meshtying_pair_base.cpp
-    beam_to_solid_surface_meshtying_pair_gauss_point.cpp
-    beam_to_solid_surface_meshtying_pair_gauss_point_base.cpp
-    beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
-    beam_to_solid_surface_meshtying_pair_mortar.cpp
-    beam_to_solid_surface_meshtying_pair_mortar_base.cpp
-    beam_to_solid_surface_meshtying_pair_mortar_FAD.cpp
-    beam_to_solid_surface_meshtying_params.cpp
-    beam_to_solid_surface_vtk_output_params.cpp
-    beam_to_solid_surface_vtk_output_writer.cpp
-    beam_to_solid_utils.cpp
-    beam_to_solid_volume_meshtying_pair_2d-3d_base.cpp
-    beam_to_solid_volume_meshtying_pair_2d-3d_full.cpp
-    beam_to_solid_volume_meshtying_pair_2d-3d_plane.cpp
-    beam_to_solid_volume_meshtying_pair_base.cpp
-    beam_to_solid_volume_meshtying_pair_gauss_point.cpp
-    beam_to_solid_volume_meshtying_pair_mortar.cpp
-    beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
-    beam_to_solid_volume_meshtying_params.cpp
-    beam_to_solid_volume_meshtying_vtk_output_params.cpp
-    beam_to_solid_volume_meshtying_vtk_output_writer.cpp
-    beam_to_solid_vtu_output_writer_base.cpp
-    beam_to_solid_vtu_output_writer_utils.cpp
-    beam_to_solid_vtu_output_writer_visualization.cpp
-    beam_to_sphere_contact_pair.cpp
-    beam_to_sphere_contact_params.cpp
-    beam_to_sphere_potential_pair.cpp
+    beaminteraction_beam3contact_tangentsmoothing.cpp
+    beaminteraction_beam3contact_utils.cpp
+    beaminteraction_beam_to_beam_contact_condition.cpp
+    beaminteraction_beam_to_beam_contact_pair.cpp
+    beaminteraction_beam_to_beam_contact_params.cpp
+    beaminteraction_beam_to_beam_contact_variables.cpp
+    beaminteraction_beam_to_beam_point_coupling_pair.cpp
+    beaminteraction_beam_to_beam_point_coupling_pair_condition.cpp
+    beaminteraction_beam_to_beam_potential_pair.cpp
+    beaminteraction_beam_to_solid_conditions.cpp
+    beaminteraction_beam_to_solid_mortar_manager.cpp
+    beaminteraction_beam_to_solid_pair_base.cpp
+    beaminteraction_beam_to_solid_params_base.cpp
+    beaminteraction_beam_to_solid_surface_contact_pair.cpp
+    beaminteraction_beam_to_solid_surface_contact_pair_base.cpp
+    beaminteraction_beam_to_solid_surface_contact_params.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_base.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_base.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_mortar.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.cpp
+    beaminteraction_beam_to_solid_surface_meshtying_params.cpp
+    beaminteraction_beam_to_solid_surface_vtk_output_params.cpp
+    beaminteraction_beam_to_solid_surface_vtk_output_writer.cpp
+    beaminteraction_beam_to_solid_utils.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_full.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_plane.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_base.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_gauss_point.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_params.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.cpp
+    beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.cpp
+    beaminteraction_beam_to_solid_vtu_output_writer_base.cpp
+    beaminteraction_beam_to_solid_vtu_output_writer_utils.cpp
+    beaminteraction_beam_to_solid_vtu_output_writer_visualization.cpp
+    beaminteraction_beam_to_sphere_contact_pair.cpp
+    beaminteraction_beam_to_sphere_contact_params.cpp
+    beaminteraction_beam_to_sphere_potential_pair.cpp
     beaminteraction_calc_utils.cpp
     beaminteraction_conditions.cpp
+    beaminteraction_contact_pair.cpp
+    beaminteraction_contact_params.cpp
+    beaminteraction_contact_runtime_vtk_output_params.cpp
+    beaminteraction_crosslinker_handler.cpp
+    beaminteraction_crosslinker_node.cpp
+    beaminteraction_crosslinking_params.cpp
     beaminteraction_data.cpp
     beaminteraction_geometry_utils.cpp
+    beaminteraction_link.cpp
+    beaminteraction_link_beam3_reissner_line2_pinjointed.cpp
+    beaminteraction_link_beam3_reissner_line2_rigidjointed.cpp
+    beaminteraction_link_pinjointed.cpp
+    beaminteraction_link_rigidjointed.cpp
+    beaminteraction_link_truss.cpp
+    beaminteraction_periodic_boundingbox.cpp
+    beaminteraction_potential_pair.cpp
+    beaminteraction_potential_params.cpp
+    beaminteraction_potential_runtime_vtk_output_params.cpp
+    beaminteraction_spherebeamlinking_params.cpp
+    beaminteraction_str_model_evaluator.cpp
+    beaminteraction_str_model_evaluator_beamdata.cpp
+    beaminteraction_str_model_evaluator_datastate.cpp
     beaminteraction_submodel_evaluator_beamcontact.cpp
     beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
     beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
@@ -69,14 +76,7 @@ set(OBJS_LIB_BEAMINTERACTION
     beaminteraction_submodel_evaluator_generic.cpp
     beaminteraction_submodel_evaluator_potential.cpp
     beaminteraction_submodel_evaluator_spherebeamlinking.cpp
-    crosslinker_node.cpp
-    crosslinking_params.cpp
-    periodic_boundingbox.cpp
-    spherebeamlinking_params.cpp
-    str_model_evaluator_beamdata.cpp
-    str_model_evaluator_beaminteraction.cpp
-    str_model_evaluator_beaminteraction_datastate.cpp
-    utils_parallel_proctoproc.cpp
+    beaminteraction_utils_parallel_proctoproc.cpp
     )
 
 baci_add_library(lib_beaminteraction ${OBJS_LIB_BEAMINTERACTION})
@@ -94,4 +94,4 @@ set(LIBS_LIB_BEAMINTERACTION
     timestepping
     )
 
-target_link_libraries(lib_beaminteraction PUBLIC ${LIBS_LIB_BEAMINTERACTION})
+baci_add_dependency(lib_beaminteraction ${LIBS_LIB_BEAMINTERACTION})

@@ -28,7 +28,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      OneStepTheta //OneStepTheta
+DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 LOADLIN                         no
 TOLRES                          1.000e-04
@@ -41,7 +41,7 @@ THETA                           1.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
-TIMEINTEGR                      One_Step_Theta // One_Step_Theta
+TIMEINTEGR                      One_Step_Theta
 THETA                           1.0
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
@@ -67,7 +67,7 @@ RESTARTEVRY                     1
 NUMSTEP                         30
 MAXTIME                         2.0
 TIMESTEP                        0.1
-COUPALGO                        ssi_IterStagg // ssi_OneWay_SolidToScatra ssi_IterStagg
+COUPALGO                        ssi_IterStagg
 ITEMAX                          5
 SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
@@ -78,10 +78,10 @@ CONVTOL                         1.000e-02
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END    //surface scatra material (slave)
-MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END    // volume scatra material (master)
+MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END
+MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END
 // first slave dofs and then master dofs in reaction list
-MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 11 10 10 NUMREAC 1 REACIDS 20 END    //surface-volume reaction material
+MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 11 10 10 NUMREAC 1 REACIDS 20 END
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.35 DENS 0.1
 MAT 10 MAT_scatra DIFFUSIVITY 0.1
 MAT 11 MAT_scatra DIFFUSIVITY 0.1

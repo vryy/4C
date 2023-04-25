@@ -1,26 +1,26 @@
 set(OBJS_STRUCTURE
     # cmake-format: sortable
-    strtimada.cpp
-    strtimada_create.cpp
-    strtimada_zienxie.cpp
-    strtimint.cpp
-    strtimint_ab2.cpp
-    strtimint_centrdiff.cpp
-    strtimint_create.cpp
-    strtimint_expl.cpp
-    strtimint_expleuler.cpp
-    strtimint_gemm.cpp
-    strtimint_genalpha.cpp
-    strtimint_impl.cpp
-    strtimint_impl_nox.cpp
-    strtimint_noxgroup.cpp
-    strtimint_noxlinsys.cpp
-    strtimint_ost.cpp
-    strtimint_prestress.cpp
-    strtimint_statics.cpp
-    stru_aux.cpp
-    stru_dyn_nln_drt.cpp
-    stru_resulttest.cpp
+    structure_aux.cpp
+    structure_dyn_nln_drt.cpp
+    structure_resulttest.cpp
+    structure_timada.cpp
+    structure_timada_create.cpp
+    structure_timada_zienxie.cpp
+    structure_timint.cpp
+    structure_timint_ab2.cpp
+    structure_timint_centrdiff.cpp
+    structure_timint_create.cpp
+    structure_timint_expl.cpp
+    structure_timint_expleuler.cpp
+    structure_timint_gemm.cpp
+    structure_timint_genalpha.cpp
+    structure_timint_impl.cpp
+    structure_timint_impl_nox.cpp
+    structure_timint_noxgroup.cpp
+    structure_timint_noxlinsys.cpp
+    structure_timint_ost.cpp
+    structure_timint_prestress.cpp
+    structure_timint_statics.cpp
     )
 
 baci_add_library(alg_structure ${OBJS_STRUCTURE})
@@ -35,4 +35,4 @@ set(LIBS_ALG_STRUCTURE
     timestepping
     )
 
-target_link_libraries(alg_structure PUBLIC ${LIBS_ALG_STRUCTURE})
+baci_add_dependency(alg_structure ${LIBS_ALG_STRUCTURE})

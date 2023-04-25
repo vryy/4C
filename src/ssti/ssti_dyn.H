@@ -6,10 +6,10 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSTI_DYN_H_
-#define SSTI_DYN_H_
+#ifndef SSTI_DYN_H
+#define SSTI_DYN_H
 
 //! global control routine for Structure - Scatra - Thermo - Interaction problem.
 void ssti_drt();
 
-#endif /* SSTI_DYN_H_ */
+#endif  // SSTI_DYN_H

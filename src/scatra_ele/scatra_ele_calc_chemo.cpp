@@ -11,14 +11,14 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
-#include "matlist_chemotaxis.H"
-#include "scatra_mat.H"
-#include "matlist.H"
-#include "singleton_owner.H"
+#include "mat_list_chemotaxis.H"
+#include "mat_scatra_mat.H"
+#include "mat_list.H"
+#include "headers_singleton_owner.H"
 
 //! note for chemotaxis in BACI:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
@@ -73,8 +73,8 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double densnp, const double scatrares, const LINALG::Matrix<my::nen_, 1>& sgconv,
-    const LINALG::Matrix<my::nen_, 1>& diff)
+    const double densnp, const double scatrares, const LINALG::Matrix<nen_, 1>& sgconv,
+    const LINALG::Matrix<nen_, 1>& diff)
 {
   Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
 
@@ -87,24 +87,24 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     {
       // Standard Galerkin terms
 
-      LINALG::Matrix<my::nen_, my::nen_> gradgradmatrix(true);
-      LINALG::Matrix<my::nen_, 1> bigterm(true);
+      LINALG::Matrix<nen_, nen_> gradgradmatrix(true);
+      LINALG::Matrix<nen_, 1> bigterm(true);
 
       const double chemofac = timefacfac * densnp;
       const int partner = GetPartner(pair);  // Get attracting partner ID
 
-      const LINALG::Matrix<my::nsd_, 1> gradattractant =
+      const LINALG::Matrix<nsd_, 1> gradattractant =
           varmanager->GradPhi(partner);  // Gradient of attracting parnter
 
       bigterm.MultiplyTN(my::derxy_, gradattractant);
       gradgradmatrix.MultiplyTN(
           my::derxy_, my::derxy_);  // N1,x*N1,x+N1,y*N1,y+... ; N1,x*N2,x+N1,y*N2,y+...
 
-      for (unsigned vi = 0; vi < my::nen_; vi++)
+      for (unsigned vi = 0; vi < nen_; vi++)
       {
         const int fvi = vi * my::numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < my::nen_; ui++)
+        for (unsigned ui = 0; ui < nen_; ui++)
         {
           const int fui = ui * my::numdofpernode_ + k;
 
@@ -112,11 +112,11 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
         }
       }
 
-      for (unsigned vi = 0; vi < my::nen_; vi++)
+      for (unsigned vi = 0; vi < nen_; vi++)
       {
         const int fvi = vi * my::numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < my::nen_; ui++)
+        for (unsigned ui = 0; ui < nen_; ui++)
         {
           const int fui = ui * my::numdofpernode_ + partner;
           emat(fvi, fui) -=
@@ -156,14 +156,14 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
 
       const int partner = GetPartner(pair);
 
-      LINALG::Matrix<my::nen_, 1> gradfunctattr(true);
-      LINALG::Matrix<my::nsd_, 1> attractant = varmanager->GradPhi(partner);
+      LINALG::Matrix<nen_, 1> gradfunctattr(true);
+      LINALG::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
 
       gradfunctattr.MultiplyTN(my::derxy_, attractant);
 
       const double decoyed = varmanager->Phinp(k);
 
-      for (unsigned vi = 0; vi < my::nen_; vi++)
+      for (unsigned vi = 0; vi < nen_; vi++)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         erhs[fvi] += rhsfac * chemocoeff * decoyed * gradfunctattr(vi);
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
       if (my::use2ndderiv_)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        LINALG::Matrix<my::nen_, 1> laplace(true);
+        LINALG::Matrix<nen_, 1> laplace(true);
         ;
         my::GetLaplacianStrongForm(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);

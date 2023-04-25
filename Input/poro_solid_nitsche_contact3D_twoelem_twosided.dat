@@ -83,7 +83,7 @@ INTTYPE                         Segments
 NUMGP_PER_DIM                   16
 TRIANGULATION                   Center
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-PARALLEL_REDIST                 none//Static//dynamic//Static
+PARALLEL_REDIST                 none
 MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 GHOSTING_STRATEGY               redundant_master
@@ -91,7 +91,7 @@ GHOSTING_STRATEGY               redundant_master
 LINEAR_SOLVER                   4
 RESTART_WITH_CONTACT            Yes
 ADHESION                        None
-FRICTION                        None//Coulomb
+FRICTION                        None
 FRLESS_FIRST                    No
 GP_SLIP_INCR                    No
 STRATEGY                        Nitsche
@@ -165,7 +165,7 @@ RSTAB                           rstab_gls
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
-CHARELELENGTH_U                 volume_equivalent_diameter//streamlength
+CHARELELENGTH_U                 volume_equivalent_diameter
 CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
@@ -232,11 +232,11 @@ E 2 -
 -------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // zp
-E 2 - 1 Master//Slave
+E 2 - 1 Master
 // s_contact
-E 3 - 1 Slave//
+E 3 - 1 Slave
 ------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
-DSURF 1// 4
+DSURF 1
 // all
 E 5 -
 //E 3 -

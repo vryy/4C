@@ -12,8 +12,8 @@
 #include "lubrication_timint_implicit.H"
 #include "lubrication_resulttest.H"
 
-#include "linedefinition.H"
-#include "discret.H"
+#include "lib_linedefinition.H"
+#include "lib_discret.H"
 
 
 /*----------------------------------------------------------------------*

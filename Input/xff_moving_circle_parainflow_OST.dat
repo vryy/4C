@@ -52,7 +52,7 @@ RESTARTEVRY                     1
 SIMPLER                         no
 STARTFUNCNO                     1
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta                //BDF2
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
 RESULTSEVRY                           1
 NONLINEARBC                     no
@@ -74,12 +74,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         none                          // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   //EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        springs_spatial
@@ -126,50 +126,22 @@ NDPOINT 2
 NDLINE 0
 NDSURF 3
 NDVOL 4
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.2 0.0 0.0 0.0 0.0 FUNCT 0 2 0 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE 0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF 0
---------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT 0
----------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE 0
----------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF 0
-----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // xFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // xFluid upper and lower surface
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 2
 // XFluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // Fluid xfem
@@ -182,8 +154,6 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 FUNCT 3 0 0 0
 DSURF 1
 // Fluid xfem
 E 2 - COUPLINGID 1 xfluid
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF 0
 ------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid volume

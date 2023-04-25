@@ -15,24 +15,24 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "globalproblem.H"
-#include "discret.H"
-#include "element.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
+#include "lib_element.H"
 
-#include "globalproblem.H"      // for time curve in body force
-#include "standardtypes_cpp.H"  // for EPS13 and so on
-#include "utils.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_nurbs_shapefunctions.H"
-#include "nurbs_utils.H"
-#include "utils_gder2.H"
-#include "position_array.H"
-#include "condition_utils.H"
+#include "lib_globalproblem.H"  // for time curve in body force
 
-#include "matlist.H"
-#include "newtonianfluid.H"
-#include "scatra_mat_aniso.H"
-#include "singleton_owner.H"
+#include "lib_utils.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "nurbs_discret_nurbs_utils.H"
+#include "fem_general_utils_gder2.H"
+#include "geometry_position_array.H"
+#include "lib_condition_utils.H"
+
+#include "mat_list.H"
+#include "mat_newtonianfluid.H"
+#include "mat_scatra_mat_aniso.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
     : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<my::nsd_>(my::numscal_));
+  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<nsd_>(my::numscal_));
 }
 
 
@@ -106,10 +106,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
 
   // get constant diffusivity
-  LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+  LINALG::Matrix<nsd_, nsd_> difftensor(true);
   LINALG::Matrix<3, 1> diff = actmat->Diffusivity();
 
-  for (unsigned i = 0; i < my::nsd_; i++) difftensor(i, i) = diff(i);
+  for (unsigned i = 0; i < nsd_; i++) difftensor(i, i) = diff(i);
 
   DiffManager()->SetAnisotropicDiff(difftensor, k);
 
@@ -124,9 +124,9 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
 {
-  const LINALG::Matrix<my::nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
@@ -145,11 +145,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);

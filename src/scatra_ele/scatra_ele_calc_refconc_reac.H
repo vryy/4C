@@ -8,8 +8,8 @@ concentrations and with advanced reaction terms
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_REFCONC_REAC_H_
-#define SCATRA_ELE_CALC_REFCONC_REAC_H_
+#ifndef SCATRA_ELE_CALC_REFCONC_REAC_H
+#define SCATRA_ELE_CALC_REFCONC_REAC_H
 
 #include "scatra_ele_calc_advanced_reaction.H"
 
@@ -28,6 +28,8 @@ namespace DRT
 
       typedef ScaTraEleCalc<distype> my;
       typedef ScaTraEleCalcAdvReac<distype> advreac;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       virtual ~ScaTraEleCalcRefConcReac() {}
@@ -62,16 +64,16 @@ namespace DRT
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,                     //!< ?
-          const LINALG::Matrix<my::nsd_, my::nsd_>& difftensor,  //!< ?
-          const int vi,                                          //!< ?
-          const int ui                                           //!< ?
+      void GetLaplacianWeakForm(double& val,             //!< ?
+          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const int vi,                                  //!< ?
+          const int ui                                   //!< ?
       )
       {
         val = 0.0;
-        for (unsigned j = 0; j < my::nsd_; j++)
+        for (unsigned j = 0; j < nsd_; j++)
         {
-          for (unsigned i = 0; i < my::nsd_; i++)
+          for (unsigned i = 0; i < nsd_; i++)
           {
             val += my::derxy_(j, vi) * difftensor(j, i) * my::derxy_(i, ui);
           }
@@ -86,16 +88,16 @@ namespace DRT
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,                  //!< ?
-          const LINALG::Matrix<my::nsd_, my::nsd_>& difftensor,  //!< ?
-          const LINALG::Matrix<my::nsd_, 1>& gradphi,            //!< ?
-          const int vi                                           //!< ?
+      void GetLaplacianWeakFormRHS(double& val,          //!< ?
+          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const int vi                                   //!< ?
       )
       {
         val = 0.0;
-        for (unsigned j = 0; j < my::nsd_; j++)
+        for (unsigned j = 0; j < nsd_; j++)
         {
-          for (unsigned i = 0; i < my::nsd_; i++)
+          for (unsigned i = 0; i < nsd_; i++)
           {
             val += my::derxy_(j, vi) * difftensor(j, i) * gradphi(i);
           }
@@ -114,10 +116,10 @@ namespace DRT
       double J_;
 
       /// inverse of cauchy-green deformation gradient
-      LINALG::Matrix<my::nsd_, my::nsd_> C_inv_;
+      LINALG::Matrix<nsd_, nsd_> C_inv_;
 
       /// derivative dJ/dX by finite differences
-      LINALG::Matrix<my::nsd_, 1> dJdX_;
+      LINALG::Matrix<nsd_, 1> dJdX_;
 
     };  // end ScaTraEleCalcRefConcReac
 
@@ -127,4 +129,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* SCATRA_ELE_CALC_REFCONC_REAC_H_ */
+#endif  // SCATRA_ELE_CALC_REFCONC_REAC_H

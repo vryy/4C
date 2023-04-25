@@ -11,21 +11,21 @@
 
 
 #include "patspec.H"
-#include "material.H"
-#include "elasthyper.H"
+#include "mat_material.H"
+#include "mat_elasthyper.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include <iostream>
 #include "io_pstream.H"  // has to go before io.H
 #include "io.H"
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 
-#include "matpar_bundle.H"
-#include "matpar_parameter.H"
-#include "elast_summand.H"
-#include "elast_isovolaaagasser.H"
+#include "mat_par_bundle.H"
+#include "mat_par_parameter.H"
+#include "matelast_summand.H"
+#include "matelast_isovolaaagasser.H"
 
 
 /*----------------------------------------------------------------------*
@@ -253,8 +253,8 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   if (!conds.size()) dserror("There is no orthopressure nor FSI condition in this discretization");
 
   // measure time as there is a brute force search in here
-  Epetra_Time timer(dis->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   // start building the distance function
   std::set<int> allnodes;
@@ -284,7 +284,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
     lcoords[count * 3 + 2] = node->X()[2];
     count++;
   }
-  dis->Comm().SumAll(&lcoords[0], &gcoords[0], nnodes * 3);
+  dis->Comm().SumAll(lcoords.data(), gcoords.data(), nnodes * 3);
   lcoords.clear();
   allnodes.clear();
 
@@ -395,7 +395,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   if (filled && !dis->Filled()) dis->FillComplete();
 
   if (!dis->Comm().MyPID())
-    IO::cout << "Normalized ILT thickness computed in " << timer.ElapsedTime() << " sec"
+    IO::cout << "Normalized ILT thickness computed in " << timer.totalElapsedTime(true) << " sec"
              << IO::endl;
 
 
@@ -554,7 +554,7 @@ void PATSPEC::InitializeMappingInnerSurface(Teuchos::RCP<DRT::Discretization> di
     lcoords[count * 3 + 2] = node->X()[2];
     count++;
   }
-  dis->Comm().SumAll(&lcoords[0], &gcoords[0], nnodes * 3);
+  dis->Comm().SumAll(lcoords.data(), gcoords.data(), nnodes * 3);
   lcoords.clear();
   allnodes.clear();
 
@@ -741,7 +741,7 @@ void PATSPEC::ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis)
     linnerradius[count] = mindist;
     count++;
   }
-  dis->Comm().SumAll(&linnerradius[0], &ginnerradius[0], nnodes);
+  dis->Comm().SumAll(linnerradius.data(), ginnerradius.data(), nnodes);
 
   // add inner radius to condition
   for (unsigned int j = 0; j < mypatspeccond.size(); ++j)
@@ -1015,7 +1015,7 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
     count_lum_ilt++;
   }
   dis->Comm().Barrier();
-  dis->Comm().SumAll(&lcoords_lum_ilt[0], &gcoords_lum_ilt[0], n_lum_itl_nodes * 3);
+  dis->Comm().SumAll(lcoords_lum_ilt.data(), gcoords_lum_ilt.data(), n_lum_itl_nodes * 3);
   lcoords_lum_ilt.clear();
   // because we have all nodes of luminal side stored redundant on all procs,
   // we only need to loop over local nodes of the wall surface

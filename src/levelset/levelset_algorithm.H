@@ -17,9 +17,9 @@
 
 #include "scatra_timint_implicit.H"
 #include "inpar_levelset.H"
-#include "geo_utils.H"
+#include "geometry_geo_utils.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_fixedsizematrix.H"
 
@@ -87,8 +87,7 @@ namespace SCATRA
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
-    /// perform result test
-    void TestResults();
+    void TestResults() override;
 
     /// set time and step value
     void SetTimeStep(const double time, const int step);
@@ -363,4 +362,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // #ifndef LEVELSET_ALGORITHM_H
+#endif  // LEVELSET_ALGORITHM_H

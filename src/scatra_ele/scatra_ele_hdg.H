@@ -14,11 +14,11 @@ of the usual Lagrangian polynomials for standard transport elements
 #define SCATRA_ELE_HDG_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 #include "scatra_ele.H"
-#include "utils_polynomial.H"
+#include "fem_general_utils_polynomial.H"
 
 namespace DRT
 {
@@ -945,4 +945,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif  // #ifndef SCATRA_ELE_HDG_H
+#endif  // SCATRA_ELE_HDG_H

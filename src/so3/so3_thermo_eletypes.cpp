@@ -8,7 +8,7 @@
 #include "so3_thermo_eletypes.H"
 #include "so3_thermo.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------------*
  *  HEX8 element

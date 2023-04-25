@@ -14,20 +14,20 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "contact_paramsinterface.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
 #include "mortar_coupling3d_classes.H"
 #include "mortar_calc_utils.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
-#include "utils_integration.H"
+#include "fem_general_utils_integration.H"
 #include "inpar_contact.H"
 #include "inpar_wear.H"
 
 // headers for poro contact integration
-#include "structporo.H"
-#include "utils_boundary_integration.H"
+#include "mat_structporo.H"
+#include "fem_general_utils_boundary_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
@@ -748,7 +748,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
   for (int gp = 0; gp < nGP(); ++gp)
   {
     // coordinates and weight
-    double eta[2] = {Coordinate(gp, 0), 0.0};
+    std::array<double, 2> eta = {Coordinate(gp, 0), 0.0};
     double wgt = Weight(gp);
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
@@ -827,7 +827,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
     // frequently reused quantities
     //**********************************************************************
     double gpn[2] = {0.0, 0.0};  // normalized normal at gp
-    double gap[1] = {0.0};       // gap
+    double gap = 0.0;            // gap
     GEN::pairedvector<int, double> dgapgp(
         linsize + ndof * ncol);  // gap lin without weighting and jac
     std::vector<GEN::pairedvector<int, double>> dnmap_unit(
@@ -844,14 +844,14 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
       LINALG::SerialDenseMatrix sderivgap(nrow, 1);
       sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
-      Gap_2D(sele, mele, svalgap, mval, sderivgap, mderiv, gap, gpn, dsxigp, dmxigp, dgapgp,
+      Gap_2D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp,
           dnmap_unit);
     }
     else
-      Gap_2D(sele, mele, sval, mval, sderiv, mderiv, gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
+      Gap_2D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
 
     IntegrateGP_2D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
-        derivjac, gpn, dnmap_unit, *gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
+        derivjac, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
 
   }  // gp-loop
 
@@ -1532,7 +1532,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
     {
       int iter_proj = 0;
       // coordinates and weight
-      double eta[2] = {Coordinate(gp, 0), Coordinate(gp, 1)};
+      std::array<double, 2> eta = {Coordinate(gp, 0), Coordinate(gp, 1)};
       double wgt = Weight(gp);
 
       // note that the third component of sxi is necessary!
@@ -1623,7 +1623,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
           double gpn[3] = {0.0, 0.0, 0.0};
           GEN::pairedvector<int, double> dgapgp(
               (nmnode * ndof) + linsize);  // gap lin. without lm and jac.
-          double gap[1] = {0.0};
+          double gap = 0.0;
           std::vector<GEN::pairedvector<int, double>> dnmap_unit(
               3, ((nmnode * ndof) + linsize));  // deriv of x,y and z comp. of gpn (unit)
 
@@ -1638,19 +1638,19 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
             LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
             sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
-            Gap_3D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, gap, gpn, dsxigp,
+            Gap_3D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
                 dmxigp, dgapgp, dnmap_unit);
           }
           else
-            Gap_3D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, gap, gpn, dsxigp, dmxigp,
+            Gap_3D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
                 dgapgp, dnmap_unit);
 
           if (algo_ == INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::CoElement&>(sele).PrepareMderiv(meles, nummaster);
 
           IntegrateGP_3D(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
-              dualmap, wgt, jacslave, jacslavemap, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi,
-              dsxigp, dmxigp);
+              dualmap, wgt, jacslave, jacslavemap, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp,
+              dmxigp);
 
           // assemble m-matrix for this slave/master pair
           if (algo_ == INPAR::MORTAR::algorithm_mortar)
@@ -1902,10 +1902,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     //**********************************************************************
     double gpn[3] = {0.0, 0.0, 0.0};
     GEN::pairedvector<int, double> dgapgp((ncol * ndof) + linsize);  // gap lin. without lm and jac.
-    double gap[1] = {0.0};
+    double gap = 0.0;
     std::vector<GEN::pairedvector<int, double>> dnmap_unit(
         3, linsize);  // deriv of x,y and z comp. of gpn (unit)
-    Gap_3D(sele, mele, sval, mval, sderiv, mderiv, gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
+    Gap_3D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
 
     // integrate for area scaling:
     for (int i = 0; i < sele.NumNode(); ++i)
@@ -1919,13 +1919,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     //**********************************************************************
     if (!nonsmoothselfcontactsurface_)
       IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
-          jacintcellmap, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi, dsxigp, dmxigp);
+          jacintcellmap, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
     // for non-smooth (self) contact surfaces we do not use the smoothed normal, but instead we use
     // the normal that is already used for the projection
     else
       IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
-          jacintcellmap, cell->Auxn(), cell->GetDerivAuxn(), gap[0], dgapgp, sxi, mxi, dsxigp,
-          dmxigp);
+          jacintcellmap, cell->Auxn(), cell->GetDerivAuxn(), gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
 
   }  // end gp loop
   //**********************************************************************
@@ -2164,18 +2163,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     //**********************************************************************
     // geometric quantities
     //**********************************************************************
-    double gpn[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> gpn = {0.0, 0.0, 0.0};
     GEN::pairedvector<int, double> dgapgp(
         (ncolL * ndof) + 10 * linsize);  // gap lin. without lm and jac.
-    double gap[1] = {0.0};
+    double gap = 0.0;
     std::vector<GEN::pairedvector<int, double>> dnmap_unit(
         3, 10 * linsize);  // deriv of x,y and z comp. of gpn (unit)
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    double sgpx[3] = {0.0, 0.0, 0.0};
-    double mgpx[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+    std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < nrow; ++i)
     {
@@ -2204,7 +2203,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
     // build gap function at current GP
-    for (int i = 0; i < Dim(); ++i) gap[0] += (mgpx[i] - sgpx[i]) * gpn[i];
+    for (int i = 0; i < Dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
     // **************************
     // Linearization
@@ -2357,10 +2356,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
+      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
       // usual standard or dual LM approach
       else
-        prod = lmval[j] * gap[0] * jac * wgt;
+        prod = lmval[j] * gap * jac * wgt;
 
       // do not process slave side boundary nodes
       // (their row entries would be zero anyway!)
@@ -2392,7 +2391,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
         // (2) Lin(N) - slave GP coordinates
         for (int d = 0; d < Dim() - 1; ++d)
         {
-          fac = wgt * sderiv(iter, d) * gap[0] * jac;
+          fac = wgt * sderiv(iter, d) * gap * jac;
           for (_CI p = dsxigp[d].begin(); p != dsxigp[d].end(); ++p)
             dgmap[p->first] += fac * (p->second);
         }
@@ -2402,7 +2401,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
         for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p) dgmap[p->first] += fac * (p->second);
 
         // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt * sval[iter] * gap[0];
+        fac = wgt * sval[iter] * gap;
         for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
           dgmap[p->first] += fac * (p->second);
       }
@@ -2416,7 +2415,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
         // (2) Lin(Phi) - slave GP coordinates
         for (int d = 0; d < Dim() - 1; ++d)
         {
-          fac = wgt * lmderiv(iter, d) * gap[0] * jac;
+          fac = wgt * lmderiv(iter, d) * gap * jac;
           for (_CI p = dsxigp[d].begin(); p != dsxigp[d].end(); ++p)
             dgmap[p->first] += fac * (p->second);
         }
@@ -2426,7 +2425,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
         for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p) dgmap[p->first] += fac * (p->second);
 
         // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt * lmval[iter] * gap[0];
+        fac = wgt * lmval[iter] * gap;
         for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
           dgmap[p->first] += fac * (p->second);
       }
@@ -2937,18 +2936,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     //**********************************************************************
     // geometric quantities
     //**********************************************************************
-    double gpn[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> gpn = {0.0, 0.0, 0.0};
     GEN::pairedvector<int, double> dgapgp(
         (ncol * ndof) + 10 * linsize);  // gap lin. without lm and jac.
-    double gap[1] = {0.0};
+    double gap = 0.0;
     std::vector<GEN::pairedvector<int, double>> dnmap_unit(
         3, 10 * linsize);  // deriv of x,y and z comp. of gpn (unit)
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    double sgpx[3] = {0.0, 0.0, 0.0};
-    double mgpx[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+    std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < nrowL; ++i)
     {
@@ -2977,7 +2976,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
     // build gap function at current GP
-    for (int i = 0; i < Dim(); ++i) gap[0] += (mgpx[i] - sgpx[i]) * gpn[i];
+    for (int i = 0; i < Dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
     // **************************
     // Linearization
@@ -3118,10 +3117,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
+      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
       // usual standard or dual LM approach
       else
-        prod = lmval[j] * gap[0] * jac * wgt;
+        prod = lmval[j] * gap * jac * wgt;
 
       // do not process slave side boundary nodes
       // (their row entries would be zero anyway!)
@@ -3155,7 +3154,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         // (2) Lin(N) - slave GP coordinates
         for (int d = 0; d < Dim() - 2; ++d)
         {
-          fac = wgt * sderiv(iter, d) * gap[0] * jac;
+          fac = wgt * sderiv(iter, d) * gap * jac;
           for (_CI p = dlxigp[d].begin(); p != dlxigp[d].end(); ++p)
             dgmap[p->first] += fac * (p->second);
         }
@@ -3165,7 +3164,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p) dgmap[p->first] += fac * (p->second);
 
         // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt * sval[iter] * gap[0];
+        fac = wgt * sval[iter] * gap;
         for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
           dgmap[p->first] += fac * (p->second);
       }
@@ -3179,7 +3178,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         // (2) Lin(Phi) - slave GP coordinates
         for (int d = 0; d < Dim() - 2; ++d)
         {
-          fac = wgt * lmderiv(iter, d) * gap[0] * jac;
+          fac = wgt * lmderiv(iter, d) * gap * jac;
           for (_CI p = dlxigp[d].begin(); p != dlxigp[d].end(); ++p)
             dgmap[p->first] += fac * (p->second);
         }
@@ -3189,7 +3188,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p) dgmap[p->first] += fac * (p->second);
 
         // (4) Lin(dsxideta) - intcell GP Jacobian
-        fac = wgt * lmval[iter] * gap[0];
+        fac = wgt * lmval[iter] * gap;
         for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
           dgmap[p->first] += fac * (p->second);
       }
@@ -4057,11 +4056,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
     // frequently reused quantities
     //**********************************************************************
     double gpn[3] = {0.0, 0.0, 0.0};
-    double gap[1] = {0.0};
-    double jumpval[2] = {0.0, 0.0};  // jump for wear
-    // double jumpvalv[2] = {0.0,0.0};  // jump for slipincr --> equal to jumpval
-    double wearval[1] = {0.0};  // wear value
-    double lengthn[1] = {0.0};  // length of gp normal gpn
+    double gap = 0.0;
+    double jumpval[2] = {
+        0.0, 0.0};  // jump for wear
+                    // double jumpvalv[2] = {0.0,0.0};  // jump for slipincr --> equal to jumpval
+    double wearval = 0.0;  // wear value
+    double lengthn = 0.0;  // length of gp normal gpn
     GEN::pairedvector<int, double> dsliptmatrixgp(
         (ncol * ndof) + linsize);                                    // deriv. of slip for wear
     GEN::pairedvector<int, double> dgapgp((ncol * ndof) + linsize);  // gap lin. without lm and jac.
@@ -4080,9 +4080,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
         (lmtype == INPAR::MORTAR::lagmult_const && algo_ == INPAR::MORTAR::algorithm_mortar))
     {
       Gap_3D(
-          sele, mele, sval, mval, sderiv, mderiv, gap, gpn, dpsxigp, dpmxigp, dgapgp, dnmap_unit);
+          sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp, dnmap_unit);
       IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
-          jacintcellmap, gpn, dnmap_unit, gap[0], dgapgp, psxi, pmxi, dpsxigp, dpmxigp);
+          jacintcellmap, gpn, dnmap_unit, gap, dgapgp, psxi, pmxi, dpsxigp, dpmxigp);
     }
     // special treatment for quadratic elements
     else
@@ -4091,7 +4091,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
       if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_pwlin)
       {
         GP_3D_G_Quad_pwlin(sele, sintele, mele, sval, mval, lmintval, scoord, mcoord, sderiv,
-            mderiv, gap, gpn, lengthn, jac, wgt, dsxigp, dmxigp, dgapgp, dnmap_unit);
+            mderiv, &gap, gpn, &lengthn, jac, wgt, dsxigp, dmxigp, dgapgp, dnmap_unit);
       }
       else
       {
@@ -4103,14 +4103,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
           LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
           sele.EvaluateShape(psxi, svalgap, sderivgap, nrow);
 
-          Gap_3D(sele, mele, svalgap, mval, sderivgap, mderiv, gap, gpn, dpsxigp, dpmxigp, dgapgp,
+          Gap_3D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
               dnmap_unit);
         }
         else
-          Gap_3D(sele, mele, sval, mval, sderiv, mderiv, gap, gpn, dpsxigp, dpmxigp, dgapgp,
+          Gap_3D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
               dnmap_unit);
 
-        GP_3D_wGap(sele, sval, lmval, gap, jac, wgt, true);
+        GP_3D_wGap(sele, sval, lmval, &gap, jac, wgt, true);
       }
 
       // compute cell D/M matrix *******************************************
@@ -4123,7 +4123,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
       // std. wear for all wear-algorithm types
       if (wear)
         GP_3D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, gpn, jac, wgt,
-            jumpval, wearval, dsliptmatrixgp, dweargp, dsxigp, dmxigp, dnmap_unit, dualmap);
+            jumpval, &wearval, dsliptmatrixgp, dweargp, dsxigp, dmxigp, dnmap_unit, dualmap);
 
       // integrate T and E matrix for discr. wear
       if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, jumpval);
@@ -4140,7 +4140,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
               lmintderiv, wgt, jac, dsxigp, dpsxigp, dpmxigp, jacintcellmap);
 
           // Lin gap
-          GP_3D_G_Quad_pwlin_Lin(iter, sintele, sval, lmintval, sderiv, lmintderiv, *gap, gpn, jac,
+          GP_3D_G_Quad_pwlin_Lin(iter, sintele, sval, lmintval, sderiv, lmintderiv, gap, gpn, jac,
               wgt, dgapgp, jacintcellmap, dsxigp);
         }
       }
@@ -4153,7 +4153,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
         for (int iter = 0; iter < nrow; ++iter)
         {
           // Lin gap
-          GP_3D_G_Quad_Lin(iter, sele, mele, sval, svalmod, lmval, sderiv, lmderiv, *gap, gpn, jac,
+          GP_3D_G_Quad_Lin(iter, sele, mele, sval, svalmod, lmval, sderiv, lmderiv, gap, gpn, jac,
               wgt, duallin, dgapgp, jacintcellmap, dpsxigp, dualmap, dualquad3d);
 
           // Lin wear matrices T and E for discr. wear
@@ -4309,7 +4309,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
       bool kink_projection = false;
 
       // coordinates and weight
-      double eta[2] = {Coordinate(gp, 0), 0.0};
+      std::array<double, 2> eta = {Coordinate(gp, 0), 0.0};
       double wgt = Weight(gp);
 
       // coordinate transformation sxi->eta (slave MortarElement->Overlap)
@@ -4390,7 +4390,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           double gpn[2] = {0.0, 0.0};  // normalized normal at gp
           std::vector<GEN::pairedvector<int, double>> dnmap_unit(
               2, (linsize + ndof * ncol));  // deriv of x and y comp. of gpn (unit)
-          double gap[1] = {0.0};            // gap
+          double gap = 0.0;                 // gap
           GEN::pairedvector<int, double> dgapgp(
               linsize + ndof * ncol);  // gap lin without weighting and jac
 
@@ -4405,16 +4405,16 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
             LINALG::SerialDenseMatrix sderivgap(nrow, 1);
             sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
-            Gap_2D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, gap, gpn, dsxigp,
+            Gap_2D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
                 dmxigp, dgapgp, dnmap_unit);
           }
           else
-            Gap_2D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, gap, gpn, dsxigp, dmxigp,
+            Gap_2D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
                 dgapgp, dnmap_unit);
 
           // integrate and lin gp gap
           IntegrateGP_2D(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
-              dualmap, wgt, dxdsxi, derivjac, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi, dsxigp,
+              dualmap, wgt, dxdsxi, derivjac, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp,
               dmxigp);
         }
       }  // End Loop over all Master Elements
@@ -4499,7 +4499,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   for (int gp = 0; gp < nGP(); ++gp)
   {
     // coordinates and weight
-    double eta[2] = {Coordinate(gp, 0), 0.0};
+    std::array<double, 2> eta = {Coordinate(gp, 0), 0.0};
     double wgt = Weight(gp);
     if (ndof == 3) eta[1] = Coordinate(gp, 1);
 
@@ -5268,8 +5268,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
 
   // we also need the GP slave coordinates + normal
-  double sgpn[3] = {0.0, 0.0, 0.0};
-  double sgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
   for (int i = 0; i < numsnode; ++i)
   {
     sgpn[0] += valsxigp[i] * smrtrnodes[i]->MoData().n()[0];
@@ -5341,7 +5341,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   GEN::pairedvector<int, double> dmap_nxsl_gp(linsize + nummnode * ndof);
   GEN::pairedvector<int, double> dmap_nysl_gp(linsize + nummnode * ndof);
 
-  double sgpnmod[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpnmod = {0.0, 0.0, 0.0};
   for (int i = 0; i < 3; ++i) sgpnmod[i] = sgpn[i] * length;
 
   GEN::pairedvector<int, double> dmap_nxsl_gp_mod(linsize + nummnode * ndof);
@@ -5459,8 +5459,8 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
   mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
 
   // we also need the GP slave coordinates + normal
-  double sgpn[3] = {0.0, 0.0, 0.0};
-  double sgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
   for (int i = 0; i < numsnode; ++i)
     for (int k = 0; k < 3; ++k)
     {
@@ -5799,7 +5799,7 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
           linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
 
         double jumpval[2] = {0.0, 0.0};  // jump for wear
-        double wearval[1] = {0.0};       // wear value
+        double wearval = 0.0;            // wear value
         GEN::pairedvector<int, double> dsliptmatrixgp(
             (mele.NumNode() * Dim()) + linsize);  // deriv. of slip for wear
         GEN::pairedvector<int, double> dweargp(
@@ -5809,12 +5809,12 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
         sele.GetNodalLagMult(*lagmult);
 
         GP_3D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
-            wgt, jumpval, wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
+            wgt, jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
         if (WearType() == INPAR::WEAR::wear_intstate and wearimpl_ == true)
           for (int j = 0; j < sele.NumNode(); ++j)
-            GP_3D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, *wearval,
+            GP_3D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
                 jumpval, dweargp, derivjac, derivsxi, dualmap);
 
         // integrate T and E matrix for discr. wear
@@ -5876,16 +5876,16 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
           poroprob = true;
       if (poroprob)
       {
-        double ncoup[1] = {0.0};
+        double ncoup = 0.0;
         std::map<int, double> dncoupgp;      // ncoup lin. without lm and jac.
         std::map<int, double> dvelncoupgp;   // velocity ncoup lin. without lm and jac.
         std::map<int, double> dpresncoupgp;  // pressure ncoup lin. without lm and jac.
 
-        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, ncoup, normal, jac, wgt, sxi,
+        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
             derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
         // Lin ncoup condition
         for (int j = 0; j < sele.NumNode(); ++j)
-          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, *ncoup, normal, jac, wgt,
+          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
               dncoupgp, dvelncoupgp, dpresncoupgp, derivjac, derivsxi, derivmxi, dualmap);
       }
       break;
@@ -5973,16 +5973,16 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
           linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
         linsize = linsize * 2;
 
-        double jumpvalv[1] = {0.0};  // jump for slipincr --> equal to jumpval
+        double jumpvalv = 0.0;  // jump for slipincr --> equal to jumpval
         GEN::pairedvector<int, double> dslipgp(
             linsize + Dim() * mele.NumNode());  // deriv. of slip for slipincr
 
-        GP_2D_SlipIncr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, jumpvalv, derivsxi,
+        GP_2D_SlipIncr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, &jumpvalv, derivsxi,
             derivmxi, dslipgp, linsize);
 
         for (int iter = 0; iter < sele.NumNode(); ++iter)
-          GP_2D_SlipIncr_Lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpvalv, derivsxi,
-              dslipgp, derivjac, dualmap);
+          GP_2D_SlipIncr_Lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpvalv,
+              derivsxi, dslipgp, derivjac, dualmap);
       }
 
       // wear specific stuff
@@ -5998,8 +5998,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
           linsize += dynamic_cast<CoNode*>(sele.Nodes()[i])->GetLinsize();
         linsize = linsize * 2;
 
-        double jumpval[1] = {0.0};  // jump for wear
-        double wearval[1] = {0.0};  // wear value
+        double jumpval = 0.0;  // jump for wear
+        double wearval = 0.0;  // wear value
         GEN::pairedvector<int, double> dsliptmatrixgp(
             linsize + Dim() * mele.NumNode());  // deriv. of slip for wear
         GEN::pairedvector<int, double> dweargp(
@@ -6007,11 +6007,11 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 
         // std. wear for all wear-algorithm types
         GP_2D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
-            wgt, jumpval, wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
+            wgt, &jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
         // integrate T and E matrix for discr. wear
-        if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, jumpval);
+        if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, &jumpval);
 
         // both-sided discr wear specific stuff
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
@@ -6020,7 +6020,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
           LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
           mele.EvaluateShapeLagMult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.NumNode());
 
-          GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, jumpval, Comm_);
+          GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, &jumpval, Comm_);
         }
 
         // both-sided map wear specific stuff
@@ -6036,13 +6036,13 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
         // Lin wear for impl. alg.
         if (wearimpl_ == true and WearType() == INPAR::WEAR::wear_intstate)
           for (int j = 0; j < sele.NumNode(); ++j)
-            GP_2D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval[0],
-                jumpval, dweargp, derivjac, derivsxi, dualmap);
+            GP_2D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
+                &jumpval, dweargp, derivjac, derivsxi, dualmap);
 
         // Lin wear T and E matrix
         if (wearimpl_ == true and WearType() == INPAR::WEAR::wear_primvar)
           for (int j = 0; j < sele.NumNode(); ++j)
-            GP_2D_TE_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpval, derivsxi,
+            GP_2D_TE_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpval, derivsxi,
                 derivjac, dsliptmatrixgp, dualmap);
 
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar and
@@ -6058,7 +6058,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 
           for (int iter = 0; iter < mele.NumNode(); ++iter)
             GP_3D_TE_Master_Lin(iter, sele, mele, sval, mval, lmval, lm2val, sderiv, mderiv,
-                lmderiv, lm2deriv, jac, wgt, jumpval, derivsxi, derivmxi, derivjac, dsliptmatrixgp,
+                lmderiv, lm2deriv, jac, wgt, &jumpval, derivsxi, derivmxi, derivjac, dsliptmatrixgp,
                 dualmap, dual2map, Comm_);
         }
       }  // if wear
@@ -6073,16 +6073,16 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
           poroprob = true;
       if (poroprob)
       {
-        double ncoup[1] = {0.0};
+        double ncoup = 0.0;
         std::map<int, double> dncoupgp;      // ncoup lin. without lm and jac.
         std::map<int, double> dvelncoupgp;   // velocity ncoup lin. without lm and jac.
         std::map<int, double> dpresncoupgp;  // pressure ncoup lin. without lm and jac.
 
-        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, ncoup, normal, jac, wgt, sxi,
+        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
             derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
         // Lin ncoup condition
         for (int j = 0; j < sele.NumNode(); ++j)
-          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, *ncoup, normal, jac, wgt,
+          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
               dncoupgp, dvelncoupgp, dpresncoupgp, derivjac, derivsxi, derivmxi, dualmap);
       }
 
@@ -6619,8 +6619,8 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   const int nrow = sele.NumNode();
   const int ncol = mele.NumNode();
 
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < nrow; ++i)
   {
@@ -6945,8 +6945,8 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   LINALG::SerialDenseMatrix mcoord(3, ncol);
   mele.GetNodalCoords(mcoord);
 
-  double sgpx[2] = {0.0, 0.0};
-  double mgpx[2] = {0.0, 0.0};
+  std::array<double, 2> sgpx = {0.0, 0.0};
+  std::array<double, 2> mgpx = {0.0, 0.0};
 
   for (int i = 0; i < nrow; ++i)
   {
@@ -7168,8 +7168,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   const int nintrow = sintele.NumNode();
   const int ncol = mele.NumNode();
 
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpx = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < nrow; ++i)
   {
@@ -9679,11 +9679,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
   // The wearcoefficient is not included in this calculation
   //***********************************************************************
   // for wearval
-  double gpt[2] = {0.0, 0.0};
-  double gplm[2] = {0.0, 0.0};
-  double sgpjump[2] = {0.0, 0.0};
-  double mgpjump[2] = {0.0, 0.0};
-  double jump[2] = {0.0, 0.0};
+  std::array<double, 2> gpt = {0.0, 0.0};
+  std::array<double, 2> gplm = {0.0, 0.0};
+  std::array<double, 2> sgpjump = {0.0, 0.0};
+  std::array<double, 2> mgpjump = {0.0, 0.0};
+  std::array<double, 2> jump = {0.0, 0.0};
 
   // for linearization
   double lm_lin = 0.0;
@@ -10013,7 +10013,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
   LINALG::Matrix<3, 1> lmtan;
   LINALG::Matrix<3, 3> tanplane;
 
-  double gplm[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> gplm = {0.0, 0.0, 0.0};
   double lm_lin = 0.0;
 
   // tangent plane
@@ -10028,7 +10028,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
   tanplane(2, 2) = 1.0 - (gpn[2] * gpn[2]);
 
   // interpolation of slave GP jumps (relative displacement increment)
-  double sgpjump[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpjump = {0.0, 0.0, 0.0};
   for (int i = 0; i < nrow; ++i)
   {
     sgpjump[0] += sval[i] * (sele.GetNodalCoords(0, i) - sele.GetNodalCoordsOld(0, i));
@@ -10037,7 +10037,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
   }
 
   // interpolation of master GP jumps (relative displacement increment)
-  double mgpjump[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpjump = {0.0, 0.0, 0.0};
   for (int i = 0; i < ncol; ++i)
   {
     mgpjump[0] += mval[i] * (mele.GetNodalCoords(0, i) - mele.GetNodalCoordsOld(0, i));
@@ -11417,10 +11417,10 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
   GEN::pairedvector<int, double> dmap_tysl_gp(ncol * ndof + linsize);
 
   // build interpolation of slave GP normal and coordinates
-  double sjumpv[2] = {0.0, 0.0};
-  double mjumpv[2] = {0.0, 0.0};
-  double jumpv[2] = {0.0, 0.0};
-  double tanv[2] = {0.0, 0.0};
+  std::array<double, 2> sjumpv = {0.0, 0.0};
+  std::array<double, 2> mjumpv = {0.0, 0.0};
+  std::array<double, 2> jumpv = {0.0, 0.0};
+  std::array<double, 2> tanv = {0.0, 0.0};
 
   double tanlength = 0.0;
   for (int i = 0; i < nrow; ++i)
@@ -11591,11 +11591,11 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
   }
 
   // build interpolation of slave GP normal and coordinates
-  double sjumpv[3] = {0.0, 0.0, 0.0};
-  double mjumpv[3] = {0.0, 0.0, 0.0};
-  double jumpv[3] = {0.0, 0.0, 0.0};
-  double tanv1[3] = {0.0, 0.0, 0.0};
-  double tanv2[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sjumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> mjumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> jumpv = {0.0, 0.0, 0.0};
+  std::array<double, 3> tanv1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> tanv2 = {0.0, 0.0, 0.0};
 
   double jumpvalv1 = 0.0;
   double jumpvalv2 = 0.0;
@@ -12323,11 +12323,11 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   int ncol = mele.NumNode();  // not used for onesided porocontact!!!
 
   // get fluid velocities in GP
-  double sgpfvel[3] = {0.0, 0.0, 0.0};
-  double sgpsvel[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpfvel = {0.0, 0.0, 0.0};
+  std::array<double, 3> sgpsvel = {0.0, 0.0, 0.0};
 
-  double mgpfvel[3] = {0.0, 0.0, 0.0};
-  double mgpsvel[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpfvel = {0.0, 0.0, 0.0};
+  std::array<double, 3> mgpsvel = {0.0, 0.0, 0.0};
 
   // fill local vectors for corresponding problem dimension
   for (int k = 0; k < Dim(); ++k)

@@ -11,7 +11,7 @@
 #ifndef CUT_CLNWRAPPER_H
 #define CUT_CLNWRAPPER_H
 #include <stddef.h>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include <unordered_map>
 #include "cut_memory_manager.H"
 #include <sstream>
@@ -743,4 +743,4 @@ inline GEO::CUT::ClnWrapper pow(const GEO::CUT::ClnWrapper& base, int exponent)
 }
 #endif
 
-#endif /* CUT_CLNWRAPPER_H */
+#endif  // CUT_CLNWRAPPER_H

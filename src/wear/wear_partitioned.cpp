@@ -16,55 +16,55 @@
 #include "wear_partitioned.H"
 #include "wear_utils.H"
 
-#include "discret.H"
-#include "globalproblem.H"
-#include "elementtype.H"
-#include "element.H"
+#include "lib_discret.H"
+#include "lib_globalproblem.H"
+#include "lib_elementtype.H"
+#include "lib_element.H"
 
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_contact.H"
 #include "inpar_wear.H"
 #include "inpar_ale.H"
 
-#include "wall1.H"
-#include "so_hex8.H"
-#include "so_hex20.H"
-#include "so_hex27.H"
-#include "so_tet4.H"
-#include "so_tet10.H"
+#include "w1.H"
+#include "so3_hex8.H"
+#include "so3_hex20.H"
+#include "so3_hex27.H"
+#include "so3_tet4.H"
+#include "so3_tet10.H"
 
 #include "contact_manager.H"
 #include "contact_abstract_strategy.H"
 #include "contact_interface.H"
 #include "contact_node.H"
 #include "contact_defines.H"
-#include "meshtying_manager.H"
+#include "contact_meshtying_manager.H"
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_wear_interface.H"
 #include "contact_integrator.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "contact_element.H"
 #include "mortar_manager_base.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 #include "ale_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
 #include "adapter_coupling.H"
 #include "adapter_coupling_volmortar.H"
-#include "ad_str_fsiwrapper.H"
-#include "ad_ale_wear.H"
+#include "adapter_str_fsiwrapper.H"
+#include "adapter_ale_wear.H"
 
-#include "biofilm_fsi_utils.H"
+#include "fs3i_biofilm_fsi_utils.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
@@ -453,8 +453,8 @@ void WEAR::Partitioned::UpdateSpatConf()
       const int numdof = StructureField()->Discretization()->NumDof(node);
 
       // create Xmat for 3D problems
-      double Xspatial[numdof];
-      double Xmat[numdof];
+      std::vector<double> Xspatial(numdof);
+      std::vector<double> Xmat(numdof);
 
       for (int dof = 0; dof < numdof; ++dof)
       {
@@ -464,7 +464,7 @@ void WEAR::Partitioned::UpdateSpatConf()
       }
 
       // create updated  Xspatial --> via nonlinear interpolation between nodes (like gp projection)
-      AdvectionMap(Xspatial, Xmat, ElementPtr, numelement, false);
+      AdvectionMap(Xspatial.data(), Xmat.data(), ElementPtr, numelement, false);
 
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)
@@ -1440,8 +1440,8 @@ void WEAR::Partitioned::UpdateMatConf()
       const int numdof = StructureField()->Discretization()->NumDof(node);
 
       // create Xmat for 3D problems
-      double XMat[numdof];
-      double XMesh[numdof];
+      std::vector<double> XMat(numdof);
+      std::vector<double> XMesh(numdof);
 
       for (int dof = 0; dof < numdof; ++dof)
       {
@@ -1451,7 +1451,7 @@ void WEAR::Partitioned::UpdateMatConf()
       }
 
       // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
-      AdvectionMap(XMat, XMesh, ElementPtr, numelement, true);
+      AdvectionMap(XMat.data(), XMesh.data(), ElementPtr, numelement, true);
 
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)

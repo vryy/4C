@@ -11,7 +11,7 @@
 #ifndef FSI_FLUID_ALE_H
 #define FSI_FLUID_ALE_H
 
-#include "ad_fld_fluid_ale.H"
+#include "adapter_fld_fluid_ale.H"
 
 namespace FSI
 {

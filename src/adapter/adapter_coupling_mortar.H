@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "adapter_coupling.H"
 
 // forward declarations
@@ -372,4 +372,4 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-#endif /* ADAPTER_COUPLING_MORTAR_H */
+#endif  // ADAPTER_COUPLING_MORTAR_H

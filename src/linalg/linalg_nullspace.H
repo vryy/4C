@@ -9,10 +9,10 @@
 #ifndef LINALG_NULLSPACE_H
 #define LINALG_NULLSPACE_H
 
-#include "discret.H"
-#include "dserror.H"
-#include "exporter.H"
-#include "elementtype.H"
+#include "lib_discret.H"
+#include "lib_dserror.H"
+#include "lib_exporter.H"
+#include "lib_elementtype.H"
 
 namespace LINALG::NULLSPACE
 {

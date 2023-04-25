@@ -9,11 +9,11 @@ interface
 */
 /*---------------------------------------------------------------------*/
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_defines.H"
-#include "friction_node.H"
+#include "contact_friction_node.H"
 #include "mortar_utils.H"
 #include "inpar_contact.H"
 #include "io.H"
@@ -23,12 +23,12 @@ interface
 
 #include "adapter_coupling.H"
 #include "linalg_matrixtransform.H"
-#include "utils.H"
+#include "lib_utils.H"
 
 // this is not nice, but since there is no chance at them moment to set the
 // full displacement during a restart from outside before the contact tries to
 // evaluate I'm force to do this atm...
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|

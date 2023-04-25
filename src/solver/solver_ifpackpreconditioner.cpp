@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 #include "solver_ifpackpreconditioner.H"
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 LINALG::SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& azlist)
-    : PreconditionerType(outfile), ifpacklist_(ifpacklist), azlist_(azlist)
+    FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist)
+    : PreconditionerType(outfile), ifpacklist_(ifpacklist), solverlist_(solverlist)
 {
   return;
 }
@@ -41,9 +41,9 @@ void LINALG::SOLVER::IFPACKPreconditioner::Setup(
     // so we can reuse the preconditioner
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
-    // get the type of ifpack preconditioner from aztec parameter list
-    std::string prectype = azlist_.get("Preconditioner Type", "ILU");
-    const int overlap = azlist_.get("AZ_overlap", 0);
+    // get the type of ifpack preconditioner from solver parameter list
+    std::string prectype = solverlist_.get("Preconditioner Type", "ILU");
+    const int overlap = ifpacklist_.get("IFPACKOVERLAP", 0);
 
     // create the preconditioner
     Ifpack Factory;

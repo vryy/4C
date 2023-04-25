@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_GENALPHA_H
-#define FLD_TIMINT_GENALPHA_H
+#ifndef FLUID_TIMINT_GENALPHA_H
+#define FLUID_TIMINT_GENALPHA_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 
 namespace FLD
@@ -252,4 +252,4 @@ namespace FLD
 
 }  // namespace FLD
 
-#endif  // #ifndef FLD_TIMINT_GENALPHA_H
+#endif  // FLUID_TIMINT_GENALPHA_H

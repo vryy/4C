@@ -7,19 +7,19 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_PRECONDITIONERTYPE_H_
-#define SOLVER_PRECONDITIONERTYPE_H_
+#ifndef SOLVER_PRECONDITIONERTYPE_H
+#define SOLVER_PRECONDITIONERTYPE_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Operator.h"
-#include "Epetra_LinearProblem.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_LinearProblem.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Vector.h>
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 namespace LINALG::SOLVER
 {
@@ -44,7 +44,7 @@ namespace LINALG::SOLVER
 
     /// linear problem created (managed) by this preconditioner
     /*!
-       This is how aztec sees the linear problem that needs to be solved.
+       This is how the iterative solver sees the linear problem that needs to be solved.
     */
     virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
 
@@ -76,7 +76,7 @@ namespace LINALG::SOLVER
 
     /// linear operator used for preconditioning
     /*!
-      This is how aztec sees the linear operator to be used for preconditioning.
+      This is how the iterative solver sees the linear operator to be used for preconditioning.
     */
     virtual Epetra_Operator* PrecOperator() const = 0;
 
@@ -90,7 +90,7 @@ namespace LINALG::SOLVER
     }
 
     /// debug output
-    virtual void Print(std::ostream& stream) = 0;
+    virtual void Print(std::ostream& stream) const = 0;
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     /// e.g. "IFPACK parameters" for an Ifpack preconditioner

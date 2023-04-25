@@ -12,7 +12,7 @@
 #include "fluid_timint_poro.H"
 #include "fluid_ele_action.H"
 #include "poroelast_utils.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 
@@ -120,7 +120,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
                                 .Evaluate(lnode->X(), time_, 0);
 
         // check whether there are invalid values of porosity
-        if (initialval < EPS15) dserror("zero or negative initial porosity");
+        if (initialval < 1e-15) dserror("zero or negative initial porosity");
         if (initialval > 1.0) dserror("initial porosity greater than 1");
         for (int k = 0; k < numdofs; ++k)
         {

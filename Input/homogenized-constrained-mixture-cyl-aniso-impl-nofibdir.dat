@@ -86,9 +86,9 @@ MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
 GEOMETRY                        full
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK //Belos
+SOLVER                          UMFPACK
 AZSOLVE                         GMRES
-AZPREC                          ILU //MLFLUID2
+AZPREC                          ILU
 IFPACKOVERLAP                   0
 IFPACKGFILL                     0
 IFPACKCOMBINE                   Add
@@ -124,7 +124,6 @@ BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
 MUELU_XML_ENFORCE               No
 NAME                            No_name
 SIMPLE_DAMPING                  1

@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_
+#ifndef LINALG_UTILS_DENSEMATRIX_EIGEN_H
+#define LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_LAPACK.hpp>
-#include "Teuchos_RCP.hpp"
-#include "exporter.H"
+#include <Teuchos_RCP.hpp>
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG
@@ -92,7 +92,7 @@ namespace LINALG
     int info;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, &(w[0]), &(work[0]), lwork, &info);
+    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, w.data(), work.data(), lwork, &info);
 
     if (info) dserror("Lapack's SYEV returned %d", info);
 
@@ -108,4 +108,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_EIGEN_H_ */
+#endif  // LINALG_UTILS_DENSEMATRIX_EIGEN_H

@@ -21,10 +21,10 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLUID_DYN_NLN_H
-#define FLUID_DYN_NLN_H
+#ifndef FLUID_DYN_NLN_DRT_H
+#define FLUID_DYN_NLN_DRT_H
 
 
 void dyn_fluid_drt(const int restart);
 
-#endif /* #ifndef FLUID_DYN_NLN_H */
+#endif  // FLUID_DYN_NLN_DRT_H

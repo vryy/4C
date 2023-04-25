@@ -21,7 +21,7 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-INITIALFIELD                    zero_field                    //field_by_function
+INITIALFIELD                    zero_field
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -31,9 +31,9 @@ NUMSTEP                         1
 RESTARTEVRY                     5
 SIMPLER                         no
 STEADYSTEP                      -1
-THETA                           1.0//0.66
-TIMEINTEGR                      One_Step_Theta                //Stationary
-TIMESTEP                        0.01//0.003125                //0.00625
+THETA                           1.0
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.01
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
@@ -52,18 +52,18 @@ GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_xfem_gp              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha//OneStepTheta
+DYNAMICTYP                      GenAlpha
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
@@ -93,7 +93,7 @@ RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
+LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          40
 CONVTOL                         1.0E-10
 PRECONDREUSE                    0
@@ -104,15 +104,15 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
-GMSH_DISCRET_OUT                no//yes
+GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                    21.97015825                   // 35/CT(3d)
+NIT_STAB_FAC                    21.97015825
 VISC_STAB_HK                    vol_equivalent
 MASS_CONSERVATION_SCALING       full
 XFF_CONV_STAB_SCALING           none

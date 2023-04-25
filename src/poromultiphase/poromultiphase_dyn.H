@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_DYN_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_DYN_H_
+#ifndef POROMULTIPHASE_DYN_H
+#define POROMULTIPHASE_DYN_H
 
 /*! entry point for the solution of poro multiphase problems problems */
 void poromultiphase_dyn(int restart /* do we have to perform a restart?  */
@@ -15,4 +15,4 @@ void poromultiphase_dyn(int restart /* do we have to perform a restart?  */
 
 
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_DYN_H_ */
+#endif  // POROMULTIPHASE_DYN_H

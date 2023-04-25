@@ -11,14 +11,14 @@
 
 #include "ssi_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_scatra_base_algorithm.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 #include "scatra_timint_implicit.H"
 
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

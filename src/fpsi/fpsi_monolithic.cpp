@@ -21,20 +21,20 @@
 
 // LINALG includes
 #include "linalg_nullspace.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 // lib includes
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 // adapter includes
-#include "ad_str_fpsiwrapper.H"
-#include "ad_fld_poro.H"
+#include "adapter_str_fpsiwrapper.H"
+#include "adapter_fld_poro.H"
 
 // STRUCTURE includes
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 // OTHER includes
 #include "io_control.H"
@@ -68,7 +68,8 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
 
   // create instance of poroelast subproblem
-  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams));
+  poroelast_subproblem_ =
+      Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams, Teuchos::null));
   // ask base algorithm for the fluid time integrator
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
@@ -217,7 +218,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       printiter_(true),
       printerrfile_(true),
       errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
-      timer_(comm),
+      timer_("FPSI Monolithic", true),
       isfirsttimestep_(true),
       islinesearch_(false),
       firstcall_(true)
@@ -371,8 +372,8 @@ void FPSI::Monolithic::TimeStep()
          islinesearch_ == true)
   {
     // start time measurement
-    timer_.ResetStartTime();
-    Epetra_Time timer(Comm());
+    timer_.reset();
+    Teuchos::Time timer("FPSI Time Step", true);
     Evaluate(iterinc_);
     // create full monolithic FPSI right-hand-side vector
     // moved to evaluate()
@@ -633,8 +634,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::aztec_msr &&
-      solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != INPAR::SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -643,7 +643,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
+    dserror("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fpsisolverparams, "AZPREC");
@@ -700,7 +700,8 @@ void FPSI::Monolithic::CreateLinearSolver()
     const Epetra_Map& oldmap = *(PoroField()->StructureField()->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
-    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse1"));
+    LINALG::NULLSPACE::FixNullSpace(
+        inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse1"));
   }
   // fixing length of Inverse2 nullspace (solver/preconditioner ML)
   {
@@ -708,7 +709,8 @@ void FPSI::Monolithic::CreateLinearSolver()
     const Epetra_Map& oldmap = *(PoroField()->FluidField()->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(porofluid_block_, porofluid_block_).EpetraMatrix()->RowMap();
-    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse2"));
+    LINALG::NULLSPACE::FixNullSpace(
+        inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse2"));
   }
   // fixing length of Inverse3 nullspace (solver/preconditioner ML)
   {
@@ -716,7 +718,8 @@ void FPSI::Monolithic::CreateLinearSolver()
     const Epetra_Map& oldmap = *(FluidField()->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(fluid_block_, fluid_block_).EpetraMatrix()->RowMap();
-    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse3"));
+    LINALG::NULLSPACE::FixNullSpace(
+        inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse3"));
   }
   // fixing length of Inverse4 nullspace (solver/preconditioner ML)
   {
@@ -725,7 +728,8 @@ void FPSI::Monolithic::CreateLinearSolver()
     ;
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(ale_i_block_, ale_i_block_).EpetraMatrix()->RowMap();
-    LINALG::NULLSPACE::FixNullSpace(&inv[0], oldmap, newmap, solver_->Params().sublist("Inverse4"));
+    LINALG::NULLSPACE::FixNullSpace(
+        inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse4"));
   }
 }
 
@@ -1416,9 +1420,6 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       break;
   }
 
-  // add solution time
-  // oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
-
   // finish oss
   oss << std::ends;
 
@@ -1635,14 +1636,14 @@ void FPSI::Monolithic::FPSIFDCheck()
     int numentries = sparse_crs->NumGlobalEntries(i);
     std::vector<double> values(numentries);
     std::vector<int> indices(numentries);
-    sparse_crs->ExtractGlobalRowCopy(i, numentries, length, &values[0], &indices[0]);
+    sparse_crs->ExtractGlobalRowCopy(i, numentries, length, values.data(), indices.data());
 
     for (int k = 0; k < numentries; k++)
     {
       values[k] = -values[k];
     }
 
-    stiff_approx_sparse->SumIntoGlobalValues(i, numentries, &values[0], &indices[0]);
+    stiff_approx_sparse->SumIntoGlobalValues(i, numentries, values.data(), indices.data());
   }
   stiff_approx_sparse->FillComplete();
   sparse_crs->FillComplete();
@@ -1672,7 +1673,7 @@ void FPSI::Monolithic::FPSIFDCheck()
           std::vector<double> errorvalues(errorlength);
           std::vector<int> errorindices(errorlength);
           stiff_approx_sparse->ExtractGlobalRowCopy(
-              i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+              i, errorlength, errornumentries, errorvalues.data(), errorindices.data());
           for (int k = 0; k < errorlength; ++k)
           {
             if (errorindices[k] == j)
@@ -1690,7 +1691,7 @@ void FPSI::Monolithic::FPSIFDCheck()
           std::vector<double> sparsevalues(sparselength);
           std::vector<int> sparseindices(sparselength);
           sparse_crs->ExtractGlobalRowCopy(
-              i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+              i, sparselength, sparsenumentries, sparsevalues.data(), sparseindices.data());
           for (int k = 0; k < sparselength; ++k)
           {
             if (sparseindices[k] == j)
@@ -1707,7 +1708,7 @@ void FPSI::Monolithic::FPSIFDCheck()
           std::vector<double> approxvalues(approxlength);
           std::vector<int> approxindices(approxlength);
           stiff_approx->ExtractGlobalRowCopy(
-              i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+              i, approxlength, approxnumentries, approxvalues.data(), approxindices.data());
           for (int k = 0; k < approxlength; ++k)
           {
             if (approxindices[k] == j)
@@ -1781,7 +1782,7 @@ void FPSI::Monolithic::ExtractColumnsfromSparse(Teuchos::RCP<Epetra_CrsMatrix> s
     int length = src->NumGlobalEntries(g_row);
     std::vector<double> values(length);
     std::vector<int> indices(length);
-    src->ExtractGlobalRowCopy(g_row, length, numentries, &values[0], &indices[0]);
+    src->ExtractGlobalRowCopy(g_row, length, numentries, values.data(), indices.data());
     for (int col = 0; col < length; ++col)  // loop over non-zero columns in active row
     {
       if (colmap->LID(indices[col]) != -1)

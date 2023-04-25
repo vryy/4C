@@ -7,12 +7,12 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_BASE_H_
-#define SSI_BASE_H_
+#ifndef SSI_BASE_H
+#define SSI_BASE_H
 
 #include "adapter_algorithmbase.H"
-#include "discret.H"
-#include "Epetra_Vector.h"
+#include "lib_discret.H"
+#include <Epetra_Vector.h>
 #include "ssi_str_model_evaluator_base.H"
 
 // forward declarations
@@ -421,4 +421,4 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> zeros_structure_;
   };  // SSI_Base
 }  // namespace SSI
-#endif /* SSI_BASE_H_ */
+#endif  // SSI_BASE_H

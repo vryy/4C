@@ -10,27 +10,23 @@
 
 /*----------------------------------------------------------------------------*/
 #include "elemag_utils_clonestrategy.H"
-#include "globalproblem.H"
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "lib_globalproblem.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 
 // we need to know all element types for the scatra mesh creation
 #include "elemag_ele.H"
 #include "scatra_ele.H"
 #include "scatra_ele_hdg.H"
 
-#include "globalproblem_enums.H"
+#include "lib_globalproblem_enums.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <ShapeFunctionType sft>
-std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy()
+std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy() const
 {
-  std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(std::pair<std::string, std::string>("Dirichlet", "Dirichlet"));
-
-  return conditions_to_copy;
+  return {{"Dirichlet", "Dirichlet"}};
 }
 
 /*----------------------------------------------------------------------------*/

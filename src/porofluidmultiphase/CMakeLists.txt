@@ -15,4 +15,4 @@ set(LIBS_ALG_POROFLUIDMULTIPHASE
     inpar
     )
 
-target_link_libraries(alg_porofluidmultiphase PUBLIC ${LIBS_ALG_POROFLUIDMULTIPHASE})
+baci_add_dependency(alg_porofluidmultiphase ${LIBS_ALG_POROFLUIDMULTIPHASE})

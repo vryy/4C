@@ -12,14 +12,14 @@
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_EpetraOperator.hpp>
-#include "EpetraExt_RowMatrixOut.h"
-#include "dserror.H"
+#include <EpetraExt_RowMatrixOut.h>
+#include "lib_dserror.H"
 #include "solver_amgnxn_hierarchies.H"
 #include "solver_amgnxn_vcycle.H"
 #include "linalg_multiply.H"
@@ -314,8 +314,8 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
 
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
 
-  Epetra_Time timer(A_eop->Comm());
-  timer.ResetStartTime();
+  Teuchos::Time timer("", true);
+  timer.reset();
 
   Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H = Teuchos::null;
   bool create_uncoarsened_hierarchy =
@@ -446,7 +446,7 @@ LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(Teuchos::ParameterList 
     }
   }
 
-  double elaptime = timer.ElapsedTime();
+  double elaptime = timer.totalElapsedTime(true);
   if (verbosity_ == "on" and A_eop->Comm().MyPID() == 0)
     std::cout << "       Calling LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;

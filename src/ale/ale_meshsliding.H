@@ -7,8 +7,8 @@
 \level 3
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_ALE_ALE_MESHSLIDING_H_
-#define SRC_ALE_ALE_MESHSLIDING_H_
+#ifndef ALE_MESHSLIDING_H
+#define ALE_MESHSLIDING_H
 
 #include "ale_meshtying.H"
 
@@ -91,4 +91,4 @@ namespace ALE
 
 }  // namespace ALE
 
-#endif /* SRC_ALE_ALE_MESHSLIDING_H_ */
+#endif  // ALE_MESHSLIDING_H

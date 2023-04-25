@@ -7,13 +7,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SRC_LINALG_LINALG_UTILS_DENSEMATRIX_SVD_H_
-#define SRC_LINALG_LINALG_UTILS_DENSEMATRIX_SVD_H_
+#ifndef LINALG_UTILS_DENSEMATRIX_SVD_H
+#define LINALG_UTILS_DENSEMATRIX_SVD_H
 
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_LAPACK.hpp>
-#include "exporter.H"
+#include "lib_exporter.H"
 
 namespace LINALG
 {
@@ -57,8 +57,8 @@ namespace LINALG
     double rwork;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), &s[0], Q.A(), Q.M(), VT.A(), VT.M(),
-        &work[0], lwork, &rwork, &info);
+    lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), s.data(), Q.A(), Q.M(), VT.A(), VT.M(),
+        work.data(), lwork, &rwork, &info);
 
     if (info) dserror("Lapack's dgesvd returned %d", info);
 
@@ -74,4 +74,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_DENSEMATRIX_SVD_H_ */
+#endif  // LINALG_UTILS_DENSEMATRIX_SVD_H

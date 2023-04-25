@@ -7,12 +7,12 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H_
-#define SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H_
+#ifndef POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H
+#define POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H
 
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -159,4 +159,4 @@ namespace POROMULTIPHASESCATRA
 
 
 
-#endif /* SRC_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H_ */
+#endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H

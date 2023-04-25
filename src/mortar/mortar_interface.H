@@ -18,8 +18,8 @@
 #include <Epetra_Vector.h>
 
 #include "inpar_mortar.H"
-#include "dserror.H"
-#include "pairedvector.H"
+#include "lib_dserror.H"
+#include "headers_pairedvector.H"
 #include "mortar_paramsinterface.H"
 
 // forward declarations
@@ -1771,4 +1771,4 @@ namespace MORTAR
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarInterface& interface);
 
 
-#endif  // #ifndef MORTAR_INTERFACE_H
+#endif  // MORTAR_INTERFACE_H

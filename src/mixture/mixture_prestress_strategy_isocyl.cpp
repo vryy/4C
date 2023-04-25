@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy_isocyl.H"
-#include "matpar_bundle.H"
+#include "mat_par_bundle.H"
 #include "mixture_constituent_elasthyper.H"
-#include "elast_isoneohooke.H"
-#include "elast_volsussmanbathe.H"
-#include "anisotropy.H"
-#include "material_service.H"
-#include "anisotropy_coordinate_system_provider.H"
+#include "matelast_isoneohooke.H"
+#include "matelast_volsussmanbathe.H"
+#include "mat_anisotropy.H"
+#include "mat_service.H"
+#include "mat_anisotropy_coordinate_system_provider.H"
 #include "mixture_rule.H"
 #include "mixture_rule_growthremodel.H"
 

@@ -10,16 +10,16 @@
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_twowaycoup.H"
 
-#include "ad_str_pasiwrapper.H"
+#include "adapter_str_pasiwrapper.H"
 
 #include "particle_algorithm.H"
 
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 

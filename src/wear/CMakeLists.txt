@@ -13,4 +13,4 @@ set(LIBS_ALG_WEAR
     alg_fs3i
     )
 
-target_link_libraries(alg_wear PUBLIC ${LIBS_ALG_WEAR})
+baci_add_dependency(alg_wear ${LIBS_ALG_WEAR})

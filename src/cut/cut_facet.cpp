@@ -19,7 +19,6 @@
 
 #include "cut_output.H"
 
-#include "colors.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -201,10 +200,9 @@ void GEO::CUT::Facet::AddHole(Facet* hole)
     {
       std::reverse(hole->corner_points_.begin(), hole->corner_points_.end());
       std::reverse(hole->points_.begin(), hole->points_.end());
-      std::cout << RED
-                << "WARNING:: Facet::AddHole: points_ and hole->points_ are not alighned correct "
+      std::cout << "WARNING:: Facet::AddHole: points_ and hole->points_ are not alighned correct "
                    "(other direction)! "
-                << END_COLOR << std::endl;
+                << std::endl;
     }
   }
 
@@ -807,10 +805,10 @@ bool GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
     // 3// if there are more than 2 matching points, remove points at the end of the common edge(s)!
     if (matchingppoints.size() > 2)
     {
-      std::cout << RED << "WARNING: Got " << matchingppoints.size()
+      std::cout << "WARNING: Got " << matchingppoints.size()
                 << " common points of two facets! --> but just two points are used to check the "
                    "orientation!"
-                << "-- if you see any problems, look into this!" << END_COLOR << std::endl;
+                << "-- if you see any problems, look into this!" << std::endl;
 
       std::map<unsigned int, unsigned int>::iterator bmatchingppoints1 = matchingppoints.begin();
       std::map<unsigned int, unsigned int>::iterator bmatchingppoints2 = matchingppoints.begin();

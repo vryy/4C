@@ -27,9 +27,9 @@ namespace GEOMETRICSEARCH::UTILS
     my_predicate_size[myrank] = info.predicate_size;
     my_coupling_pair_size[myrank] = info.coupling_pair_size;
 
-    comm.SumAll(&my_primitive_size[0], &primitive_size[0], numproc);
-    comm.SumAll(&my_predicate_size[0], &predicate_size[0], numproc);
-    comm.SumAll(&my_coupling_pair_size[0], &coupling_pair_size[0], numproc);
+    comm.SumAll(my_primitive_size.data(), primitive_size.data(), numproc);
+    comm.SumAll(my_predicate_size.data(), predicate_size.data(), numproc);
+    comm.SumAll(my_coupling_pair_size.data(), coupling_pair_size.data(), numproc);
 
     if (myrank == 0)
     {

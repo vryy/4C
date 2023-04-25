@@ -184,8 +184,6 @@ E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           4
 // Line y+z+

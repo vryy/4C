@@ -12,7 +12,7 @@
 
 #include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"
 
-#include "beam_contact_pair.H"
+#include "beaminteraction_contact_pair.H"
 
 
 /**

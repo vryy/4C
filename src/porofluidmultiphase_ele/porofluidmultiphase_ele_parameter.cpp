@@ -9,8 +9,8 @@
 
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "dserror.H"
-#include "singleton_owner.H"
+#include "lib_dserror.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |

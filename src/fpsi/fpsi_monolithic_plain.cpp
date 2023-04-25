@@ -18,8 +18,8 @@
 #include "fpsi_utils.H"
 
 // POROELAST includes
-#include "poro_base.H"
-#include "ad_fld_poro.H"
+#include "poroelast_base.H"
+#include "adapter_fld_poro.H"
 #include "adapter_coupling.H"
 #include "poroelast_monolithic.H"
 
@@ -28,14 +28,13 @@
 #include "fsi_statustest.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "colors.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 // FLUID includes
 #include "fluid_utils_mapextractor.H"
 
 // STRUCTURE includes
-#include "stru_aux.H"
+#include "structure_aux.H"
 
 // ALE includes
 #include "ale_utils_mapextractor.H"
@@ -43,7 +42,7 @@
 // LINALG includes
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_matrixtransform.H"
 
 // IO includes
@@ -52,8 +51,8 @@
 
 // OTHERS
 #include "constraint_manager.H"
-#include "assemblestrategy.H"
-#include "ad_str_fpsiwrapper.H"
+#include "lib_assemblestrategy.H"
+#include "adapter_str_fpsiwrapper.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -11,20 +11,20 @@
 
 
 #include "fsi_dirichletneumann_vel.H"
-#include "ad_str_fbiwrapper.H"
-#include "binning_strategy.H"
-#include "globalproblem.H"
-#include "dserror.H"
+#include "adapter_str_fbiwrapper.H"
+#include "binstrategy.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
 
 #include "inpar_fsi.H"
 #include "inpar_fbi.H"
 
-#include "constraintenforcer_fbi.H"
-#include "constraintenforcer_fbi_factory.H"
-#include "beam_to_fluid_meshtying_vtk_output_writer.H"
-#include "ad_fbi_constraintbridge.H"
-#include "beam_to_fluid_meshtying_params.H"
-#include "ad_fld_fbi_movingboundary.H"
+#include "fbi_constraintenforcer.H"
+#include "fbi_constraintenforcer_factory.H"
+#include "fbi_beam_to_fluid_meshtying_vtk_output_writer.H"
+#include "fbi_adapter_constraintbridge.H"
+#include "fbi_beam_to_fluid_meshtying_params.H"
+#include "adapter_fld_fbi_movingboundary.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>

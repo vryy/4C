@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_interface.H"
 
-#include "particle_typedefs.H"
+#include "particle_engine_typedefs.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>

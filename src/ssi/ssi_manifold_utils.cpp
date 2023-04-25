@@ -18,14 +18,14 @@
 #include "inpar_s2i.H"
 #include "inpar_ssi.H"
 
-#include "runtime_csv_writer.H"
+#include "io_runtime_csv_writer.H"
 
-#include "assemblestrategy.H"
-#include "condition_utils.H"
-#include "globalproblem.H"
-#include "matchingoctree.H"
-#include "utils_gid_vector.H"
-#include "utils_parameter_list.H"
+#include "lib_assemblestrategy.H"
+#include "lib_condition_utils.H"
+#include "lib_globalproblem.H"
+#include "lib_matchingoctree.H"
+#include "lib_utils_gid_vector.H"
+#include "lib_utils_parameter_list.H"
 
 #include "scatra_timint_implicit.H"
 
@@ -113,7 +113,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       matrix_scatra_structure_(Teuchos::null),
       rhs_manifold_(Teuchos::null),
       rhs_scatra_(Teuchos::null),
-      runtime_csvwriter_(nullptr),
       scatra_(ssi_mono.ScaTraBaseAlgorithm()),
       scatra_manifold_(ssi_mono.ScaTraManifoldBaseAlgorithm()),
       scatra_manifold_couplings_(Teuchos::null),
@@ -203,9 +202,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   // Prepare runtime csv writer
   if (DoOutput())
   {
-    runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(ssi_mono.Comm().MyPID());
-
-    runtime_csvwriter_->Init("manifold_inflow");
+    runtime_csvwriter_.emplace(ssi_mono.Comm().MyPID(), "manifold_inflow");
 
     for (const auto& condition_manifold : conditions_manifold)
     {
@@ -223,8 +220,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
             "Mean flux of scalar " + std::to_string(k + 1) + " into " + manifold_string, 1, 16);
       }
     }
-
-    runtime_csvwriter_->Setup();
   }
 }
 
@@ -686,8 +681,6 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
   scatra_->ScaTraField()->Discretization()->EvaluateScalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
 
-  inflow_cond->Print(std::cout << std::scientific << std::setprecision(16));
-
   for (int i = 0; i < inflow_cond->Length(); ++i)
     inflow_.at(kineticsID).at(i) += inflow_cond->Values()[i];
 }
@@ -754,6 +747,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 {
+  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+
   for (const auto& inflow_comp : inflow_)
   {
     const std::string manifold_string = "manifold " + std::to_string(inflow_comp.first);
@@ -1063,8 +1058,8 @@ std::vector<std::pair<int, int>> SSI::ManifoldMeshTyingStrategyBase::ConstructCo
     }
     vec_1.resize(size_1);
     vec_2.resize(size_2);
-    comm.Broadcast(&vec_1[0], size_1, iproc);
-    comm.Broadcast(&vec_2[0], size_2, iproc);
+    comm.Broadcast(vec_1.data(), size_1, iproc);
+    comm.Broadcast(vec_2.data(), size_2, iproc);
 
     // reassemble to coupling map on this proc
     for (int i = 0; i < static_cast<int>(size_1); ++i)

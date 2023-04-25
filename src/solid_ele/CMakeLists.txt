@@ -5,7 +5,7 @@ set(OBJS_ELE_SOLID
     solid_ele_factory.cpp
     solid_ele_neumann_evaluator.cpp
     solid_ele.cpp
-    solid_utils.cpp
+    solid_ele_utils.cpp
     )
 
 baci_add_library(ele_solid ${OBJS_ELE_SOLID})

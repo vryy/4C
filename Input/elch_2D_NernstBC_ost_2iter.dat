@@ -36,7 +36,7 @@ RESTARTEVRY                     10
 CONVTOL                         1e-09
 ABSTOLRES                       1e-16
 ITEMAX                          2
-EXPLPREDICT                     no // yes -> oscillations for neutral
+EXPLPREDICT                     no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -86,9 +86,9 @@ NDVOL   0
 -----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE  2
 // anode
-E 3 - ID 0 pot -0.15 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Nernst e0 0.0 c0 0.1 dl_spec_cap 0.0 END
+E 3 - ID 0 POT -0.15 FUNCT none NUMSCAL 1 STOICH -1  E- 1 EPSILON -1 ZERO_CUR 0 Nernst E0 0.0 C0 0.1 DL_SPEC_CAP 0.0
 // cathode
-E 4 - ID 1 pot  0.0 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Nernst e0 0.0 c0 0.1 dl_spec_cap 0.0 END
+E 4 - ID 1 POT  0.0 FUNCT none NUMSCAL 1 STOICH -1  E- 1 EPSILON -1 ZERO_CUR 0 Nernst E0 0.0 C0 0.1 DL_SPEC_CAP 0.0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  2
 E 3 -

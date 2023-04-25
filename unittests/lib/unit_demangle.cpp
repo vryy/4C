@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "demangle.H"
-#include "Teuchos_RCPDecl.hpp"
+#include "lib_demangle.H"
+#include <Teuchos_RCPDecl.hpp>
 
 namespace DEMANGLE_TEST
 {

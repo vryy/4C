@@ -23,15 +23,15 @@ RESULTSEVRY                           10
 RESTARTEVRY                     1
 MAXTIME                         1.0
 NUMSTEP                         1000
-TIMESTEP                        0.05 //0.05
-THETA                           0.5 //0.66
-NONLINITER                      Newton //fixed_point_like
+TIMESTEP                        0.05
+THETA                           0.5
+NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 NUMSTASTEPS                     0
-START_THETA                     0.5 //0.66
-INITIALFIELD                    zero_field //field_by_function //zero_field
-STARTFUNCNO                     -1 //4
+START_THETA                     0.5
+INITIALFIELD                    zero_field
+STARTFUNCNO                     -1
 SIMPLER                         no
 GMSH_OUTPUT                     yes
 NEW_OST                         yes
@@ -41,20 +41,20 @@ TOL_VEL_INC	  1.0E-13
 TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
-TDS                             quasistatic                     // quasistatic time_dependent
+STABTYPE                        residual_based
+TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                             // no yes
-PSPG                            yes                             // no_pspg yes
-VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                             // no yes cstab_td
-CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient
+SUPG                            yes
+PSPG                            yes
+VSTAB                           no_vstab
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK //Belos
+SOLVER                          UMFPACK
 //AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0
@@ -79,7 +79,7 @@ NDLINE                          4
 NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          4//2//4
+DPOINT                          4
 //bottom_west
 E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //bottom_east
@@ -89,7 +89,7 @@ E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 //top_west
 E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           3//4
+DLINE                           3
 //bottom
 E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //east
@@ -98,10 +98,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 //west
 E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 2 0 0 0 0 Live Mid

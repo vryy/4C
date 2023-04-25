@@ -5,12 +5,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
+#ifndef MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
+#define MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
 
 
 #include <memory>
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 
 namespace MIXTURE
 {
@@ -77,4 +77,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
+#endif  // MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H

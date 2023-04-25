@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 namespace
 {

@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_calc.H"
 #include "inpar_scatra.H"
-#include "utils_shapevalues_hdg.H"
+#include "fem_general_utils_shapevalues_hdg.H"
 
 
 
@@ -354,4 +354,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SCATRA_ELE_CALC_HDG_H_ */
+#endif  // SCATRA_ELE_CALC_HDG_H

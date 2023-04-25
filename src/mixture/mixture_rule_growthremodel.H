@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_RULE_GROWTHREMODEL_H
-#define BACI_MIXTURE_RULE_GROWTHREMODEL_H
+#ifndef MIXTURE_RULE_GROWTHREMODEL_H
+#define MIXTURE_RULE_GROWTHREMODEL_H
 
 #include "mixture_rule.H"
 #include <Teuchos_RCPDecl.hpp>
@@ -131,4 +131,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_RULE_GROWTHREMODEL_H
+#endif  // MIXTURE_RULE_GROWTHREMODEL_H

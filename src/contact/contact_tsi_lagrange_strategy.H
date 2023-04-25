@@ -11,7 +11,7 @@
 #define CONTACT_TSI_LAGRANGE_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 #include "contact_defines.H"
 #include <Epetra_Operator.h>
 
@@ -223,4 +223,4 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-#endif  // #ifndef CONTACT_TSI_LAGRANGE_STRATEGY_H
+#endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H

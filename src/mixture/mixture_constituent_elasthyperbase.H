@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_BASE_H
-#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_BASE_H
+#ifndef MIXTURE_CONSTITUENT_ELASTHYPERBASE_H
+#define MIXTURE_CONSTITUENT_ELASTHYPERBASE_H
 
-#include "matpar_parameter.H"
+#include "mat_par_parameter.H"
 #include "mixture_constituent.H"
-#include "elasthyper_service.H"
+#include "mat_elasthyper_service.H"
 #include "mixture_prestress_strategy.H"
-#include "anisotropy_extension_cylinder_cosy.H"
+#include "mat_anisotropy_extension_cylinder_cosy.H"
 
 namespace MAT
 {
@@ -57,12 +57,12 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
+   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituent_ElastHyperBase : public MIXTURE::MixtureConstituent
   {
    public:
-    /// Constructor for the materiak given the material parameters
+    /// Constructor for the material given the material parameters
     explicit MixtureConstituent_ElastHyperBase(
         MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params, int id);
 
@@ -206,4 +206,4 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_ELASTHYPER_BASE_H
+#endif  // MIXTURE_CONSTITUENT_ELASTHYPERBASE_H

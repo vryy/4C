@@ -5,17 +5,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#ifndef MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#define MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
 
 #include <Teuchos_RCPDecl.hpp>
 #include <cmath>
-#include "matpar_material.H"
-#include "growth_evolution.H"
+#include "mat_par_material.H"
+#include "mixture_growth_evolution.H"
 #include "mixture_constituent.H"
 #include "mixture_constituent_remodelfiber_material.H"
-#include "anisotropy_extension_default.H"
-#include "remodelfiber.H"
+#include "mat_anisotropy_extension_default.H"
+#include "mixture_remodelfiber.H"
 
 namespace MIXTURE
 {
@@ -124,4 +124,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H
+#endif  // MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_H

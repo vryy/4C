@@ -25,6 +25,8 @@ namespace DRT
       ScaTraEleCalcLS(const int numdofpernode, const int numscal, const std::string& disname);
 
       typedef ScaTraEleCalc<distype> my;
+      using my::nen_;
+      using my::nsd_;
 
      public:
       virtual ~ScaTraEleCalcLS() {}
@@ -42,7 +44,7 @@ namespace DRT
      private:
       // calculate error compared to analytical solution
       void CalErrorComparedToAnalytSolution(const DRT::Element* ele,
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& ephizero, Teuchos::ParameterList& params,
+          const std::vector<LINALG::Matrix<nen_, 1>>& ephizero, Teuchos::ParameterList& params,
           Epetra_SerialDenseVector& errors);
 
       // smoothed heaviside function

@@ -18,7 +18,7 @@
 #include "mortar_coupling3d_classes.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "inpar_contact.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
@@ -649,7 +649,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   // compute factor Z
-  double crossZ[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
   crossZ[0] = (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
               (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossZ[1] = (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -659,7 +659,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   double Zfac = crossZ[0] * Auxn()[0] + crossZ[1] * Auxn()[1] + crossZ[2] * Auxn()[2];
 
   // compute factor N
-  double crossN[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossN = {0.0, 0.0, 0.0};
   crossN[0] = (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
               (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossN[1] = (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -669,13 +669,13 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   double Nfac = crossN[0] * Auxn()[0] + crossN[1] * Auxn()[1] + crossN[2] * Auxn()[2];
 
   // slave edge vector
-  double sedge[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> sedge = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k) sedge[k] = sv2->Coord()[k] - sv1->Coord()[k];
 
   // prepare linearization derivZ
-  double crossdZ1[3] = {0.0, 0.0, 0.0};
-  double crossdZ2[3] = {0.0, 0.0, 0.0};
-  double crossdZ3[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdZ3 = {0.0, 0.0, 0.0};
   crossdZ1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
                 (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
   crossdZ1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
@@ -696,9 +696,9 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
                 (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
 
   // prepare linearization derivN
-  double crossdN1[3] = {0.0, 0.0, 0.0};
-  double crossdN2[3] = {0.0, 0.0, 0.0};
-  double crossdN3[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN1 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN2 = {0.0, 0.0, 0.0};
+  std::array<double, 3> crossdN3 = {0.0, 0.0, 0.0};
   crossdN1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
                 (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
   crossdN1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
@@ -858,15 +858,15 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
   double fac = 0.0;
 
   // first we need node averaged center
-  double nac[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> nac = {0.0, 0.0, 0.0};
   for (int i = 0; i < clipsize; ++i)
     for (int k = 0; k < 3; ++k) nac[k] += (Clip()[i].Coord()[k] / clipsize);
 
   // loop over all triangles of polygon (1st round: preparations)
   for (int i = 0; i < clipsize; ++i)
   {
-    double xi_i[3] = {0.0, 0.0, 0.0};
-    double xi_ip1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_i = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_ip1 = {0.0, 0.0, 0.0};
 
     // standard case
     if (i < clipsize - 1)
@@ -882,12 +882,12 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
     }
 
     // triangle area
-    double diff1[3] = {0.0, 0.0, 0.0};
-    double diff2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k) diff1[k] = xi_ip1[k] - xi_i[k];
     for (int k = 0; k < 3; ++k) diff2[k] = xi_i[k] - nac[k];
 
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = diff1[1] * diff2[2] - diff1[2] * diff2[1];
     cross[1] = diff1[2] * diff2[0] - diff1[0] * diff2[2];
     cross[2] = diff1[0] * diff2[1] - diff1[1] * diff2[0];
@@ -900,7 +900,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
   }
 
   // build factors for linearization
-  double z[3] = {0.0, 0.0, 0.0};
+  std::array<double, 3> z = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k) z[k] = clipcenter[k];
   double n = fac;
 
@@ -916,8 +916,8 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
   // loop over all triangles of polygon (2nd round: linearization)
   for (int i = 0; i < clipsize; ++i)
   {
-    double xi_i[3] = {0.0, 0.0, 0.0};
-    double xi_ip1[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_i = {0.0, 0.0, 0.0};
+    std::array<double, 3> xi_ip1 = {0.0, 0.0, 0.0};
     int iplus1 = 0;
 
     // standard case
@@ -936,12 +936,12 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
     }
 
     // triangle area
-    double diff1[3] = {0.0, 0.0, 0.0};
-    double diff2[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff1 = {0.0, 0.0, 0.0};
+    std::array<double, 3> diff2 = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k) diff1[k] = xi_ip1[k] - xi_i[k];
     for (int k = 0; k < 3; ++k) diff2[k] = xi_i[k] - nac[k];
 
-    double cross[3] = {0.0, 0.0, 0.0};
+    std::array<double, 3> cross = {0.0, 0.0, 0.0};
     cross[0] = diff1[1] * diff2[2] - diff1[2] * diff2[1];
     cross[1] = diff1[2] * diff2[0] - diff1[0] * diff2[2];
     cross[2] = diff1[0] * diff2[1] - diff1[1] * diff2[0];

@@ -6,7 +6,7 @@
 simple, academic test case for monolithic scalar-structure interaction involving
 scatra-scatra interface coupling and nitsche contact:
 - two container with constant but different initial condition
-- the two block-shaped containers are meshed with hex8 elements 
+- the two block-shaped containers are meshed with hex8 elements
 - contact area of containers is modeled to be a membrane with constant permeability
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    35
@@ -105,16 +105,16 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL -1.0e-1 0.0 0.0 FUNCT 3 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-// left_block 
+// left_block
 E 1 - ScaTra 1
-// right_block 
+// right_block
 E 2 - ScaTra 2
 -----------------------DESIGN SSI INTERFACE CONTACT SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 0 S2IKineticsID 1 ContactConditionID 1
+E 2 - 0 Slave S2I_KINETICS_ID 1 CONTACT_CONDITION_ID 1
 // right_block_side_of_interface
-E 3 - 0 S2IKineticsID 1 ContactConditionID 1
+E 3 - 0 Master S2I_KINETICS_ID 1 CONTACT_CONDITION_ID 1
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // left_block_side_of_interface
@@ -124,7 +124,7 @@ E 3 - 1 Master Inactive
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface
-E 2 - 1 Slave KineticModel ConstantPermeability numscal 1 permeabilities 5.0e-2 is_pseudo_contact 0
+E 2 - 1 Slave KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 5.0e-2 IS_PSEUDO_CONTACT 0
 // right_block_side_of_interface
 E 3 - 1 Master
 -----------------------------------------------DSURF-NODE TOPOLOGY

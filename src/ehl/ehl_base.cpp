@@ -14,26 +14,26 @@ algorithms
 #include "ehl_partitioned.H"
 #include "ehl_utils.H"
 
-#include "ad_str_wrapper.H"
+#include "adapter_str_wrapper.H"
 #include "adapter_lubrication.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_ehl_mortar.H"
 #include "contact_interface.H"
 #include "contact_node.H"
-#include "dofset_predefineddofnumber.H"
+#include "lib_dofset_predefineddofnumber.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "lubrication_timint_implicit.H"
-#include "lubrication_mat.H"
+#include "mat_lubrication_mat.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "matchingoctree.H"
+#include "lib_matchingoctree.H"
 
 #include "io.H"
 #include "io_gmsh.H"
 
-#include "Epetra_MultiVector.h"
+#include <Epetra_MultiVector.h>
 
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 12/15 |

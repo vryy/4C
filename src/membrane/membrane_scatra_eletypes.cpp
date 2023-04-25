@@ -11,7 +11,7 @@
 #include "membrane_scatra.H"
 #include "membrane_scatra_eletypes.H"
 
-#include "linedefinition.H"
+#include "lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          sfuchs 05/18 |

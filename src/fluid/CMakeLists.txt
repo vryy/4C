@@ -5,8 +5,11 @@ set(OBJS_FLUID
     fluid_discretization_runtime_vtu_output_params.cpp
     fluid_dyn_nln_drt.cpp
     fluid_functions.cpp
+    fluid_impedancecondition.cpp
+    fluid_implicit_integration.cpp
     fluid_meshtying.cpp
     fluid_MHD_evaluate.cpp
+    fluid_result_test.cpp
     fluid_rotsym_periodicbc_utils.cpp
     fluid_timint.cpp
     fluid_timint_ac.cpp
@@ -31,11 +34,6 @@ set(OBJS_FLUID
     fluid_timint_red_stat.cpp
     fluid_timint_stat.cpp
     fluid_timint_stat_hdg.cpp
-    fluid_timint_topopt.cpp
-    fluid_timint_topopt_bdf2.cpp
-    fluid_timint_topopt_genalpha.cpp
-    fluid_timint_topopt_ost.cpp
-    fluid_timint_topopt_stat.cpp
     fluid_timint_two_phase.cpp
     fluid_timint_two_phase_genalpha.cpp
     fluid_timint_two_phase_ost.cpp
@@ -45,9 +43,6 @@ set(OBJS_FLUID
     fluid_utils_mapextractor.cpp
     fluid_volumetric_surfaceFlow_condition.cpp
     fluid_xwall.cpp
-    fluidimpedancecondition.cpp
-    fluidimplicitintegration.cpp
-    fluidresulttest.cpp
     )
 
 baci_add_library(alg_fluid ${OBJS_FLUID})
@@ -60,4 +55,4 @@ set(LIBS_ALG_FLUID
     red_airways
     )
 
-target_link_libraries(alg_fluid PUBLIC ${LIBS_ALG_FLUID})
+baci_add_dependency(alg_fluid ${LIBS_ALG_FLUID})

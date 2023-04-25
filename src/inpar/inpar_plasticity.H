@@ -22,4 +22,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_PLASTICITY_H
+#endif  // INPAR_PLASTICITY_H

@@ -11,7 +11,7 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "inpar_pasi.H"
-#include "validparameters.H"
+#include "inpar_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*

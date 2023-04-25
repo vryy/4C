@@ -8,20 +8,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Epetra_Time.h>
-
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
 
-#include "ad_ale_fsi.H"
-#include "ad_fld_fluid.H"
-#include "ad_str_fsiwrapper.H"
+#include "adapter_ale_fsi.H"
+#include "adapter_fld_fluid.H"
+#include "adapter_str_fsiwrapper.H"
 
-#include "discret.H"
+#include "lib_discret.H"
 
 #include "linalg_nullspace.H"
-#include "linalg_precond.H"
-#include "linalg_solver.H"
+#include "solver_linalg_precond.H"
+#include "solver_linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

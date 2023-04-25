@@ -11,11 +11,11 @@
 #ifndef ELEMAG_ELE_INTERFACE_H
 #define ELEMAG_ELE_INTERFACE_H
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
 
 
 #include "cut_utils.H"
@@ -67,4 +67,4 @@ namespace DRT
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_INTERFACE_H */
+#endif  // ELEMAG_ELE_INTERFACE_H

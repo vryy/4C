@@ -15,13 +15,13 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_Import.h"
-#include "Epetra_Map.h"
-#include "dserror.H"
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Import.h>
+#include <Epetra_Map.h>
+#include "lib_dserror.H"
 
 /* ====================================================================
     public
@@ -415,7 +415,7 @@ int LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   // vector index is zero
   if (Y.NumVectors() != 1)
   {
-    dserror("expecting only one solution vector during AZTEC Apply call\n");
+    dserror("expecting only one solution vector during iterative solver Apply call\n");
   }
 
   /*

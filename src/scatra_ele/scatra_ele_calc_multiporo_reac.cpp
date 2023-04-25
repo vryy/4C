@@ -15,16 +15,16 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "discret.H"
-#include "utils.H"
+#include "lib_discret.H"
+#include "lib_utils.H"
 
-#include "scatra_mat_multiporo.H"
-#include "fluidporo_multiphase.H"
-#include "scatra_mat.H"
-#include "structporo.H"
-#include "matlist.H"
-#include "matlist_reactions.H"
-#include "singleton_owner.H"
+#include "mat_scatra_mat_multiporo.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_scatra_mat.H"
+#include "mat_structporo.H"
+#include "mat_list.H"
+#include "mat_list_reactions.H"
+#include "headers_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(
 {
   // replace internal variable manager by internal variable manager for muliporo
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerMultiPoro<my::nsd_, my::nen_>(my::numscal_));
+      Teuchos::rcp(new ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>(my::numscal_));
 
   return;
 }
@@ -362,16 +362,16 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
-    const int numdispdofpernode = la[ndsdisp].lm_.size() / my::nen_;
+    const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
 
     // construct location vector for displacement related dofs
-    std::vector<int> lmdisp(my::nsd_ * my::nen_, -1);
-    for (unsigned inode = 0; inode < my::nen_; ++inode)
-      for (unsigned idim = 0; idim < my::nsd_; ++idim)
-        lmdisp[inode * my::nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
+    std::vector<int> lmdisp(nsd_ * nen_, -1);
+    for (unsigned inode = 0; inode < nen_; ++inode)
+      for (unsigned idim = 0; idim < nsd_; ++idim)
+        lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_, my::nen_>>(*dispnp, my::edispnp_, lmdisp);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*dispnp, my::edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     my::UpdateNodeCoordinates();
@@ -393,15 +393,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*hist, my::ehist_, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phinp, my::ephinp_, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_, 1>>(*phin, my::ephin_, lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   //---------------------------------------------------------------------------------------------
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(DRT::E
     if (convel == Teuchos::null) dserror("Cannot get state vector %s", statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_, my::nen_>>(
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(
         *convel, efluxnp_[curphase], la[ndsvel].lm_);
   }
 
@@ -838,8 +838,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::GetRhsInt(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatReact(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double taufac, const double densnp, const LINALG::Matrix<my::nen_, 1>& sgconv,
-    const LINALG::Matrix<my::nen_, 1>& diff)
+    const double taufac, const double densnp, const LINALG::Matrix<nen_, 1>& sgconv,
+    const LINALG::Matrix<nen_, 1>& diff)
 {
   // only difference is the inverse scaling with density
   advreac::CalcMatReact(
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(Epetra_SerialDenseMatrix& emat,
     const int k, const double timefacfac, const double densnp,
-    const LINALG::Matrix<my::nen_, 1>& sgconv)
+    const LINALG::Matrix<nen_, 1>& sgconv)
 {
   // case of zero saturation/volfrac
   // no convective term for species in solid
@@ -978,7 +978,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
       // cells, the whole equation will be equal to zero since it is scaled with the density
       // In that case also the mass fraction of the species (necrotic tumor cells) has to be zero
       // --> here we explicitly force it to be zero through a "Dirichlet" boundary condition
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         emat(fvi, fvi) += penalty_;
@@ -1008,7 +1008,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddCons(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::RecomputeConvPhiForRhs(const int k,
-    const LINALG::Matrix<my::nsd_, 1>& sgvelint, const double densnp, const double densn,
+    const LINALG::Matrix<nsd_, 1>& sgvelint, const double densnp, const double densn,
     const double vdiv)
 {
   // the only difference to the base class version is, that there is no scaling with the density
@@ -1023,30 +1023,30 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsfac, const double densnp, const double J,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1>& convelint)
+    const LINALG::Matrix<nsd_, 1>& gradphi, const LINALG::Matrix<nsd_, 1>& convelint)
 {
   // case of zero saturation/volfrac
   // no convective term for species in solid
   if (VarManager()->EvaluateScalar(k) &&
       VarManager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
   {
-    static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
-    static LINALG::Matrix<my::nsd_, 1> refgradpres(true);
+    static LINALG::Matrix<nsd_, nsd_> difftensor(true);
+    static LINALG::Matrix<nsd_, 1> refgradpres(true);
 
     // linearization of mesh motion
     //--------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds) in our case: rhsfac = J * dt * theta --> d(rhsfac)/dd = rhsfac * N_x
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const int fvi = vi * my::numdofpernode_ + k;
       const double v = rhsfac * my::funct_(vi) * (-1.0) * VarManager()->ConvPhi(k);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
-        for (unsigned idim = 0; idim < my::nsd_; ++idim)
+        for (unsigned idim = 0; idim < nsd_; ++idim)
         {
-          const int fui = ui * my::nsd_ + idim;
+          const int fui = ui * nsd_ + idim;
           emat(fvi, fui) += v * my::derxy_(idim, ui);
         }
       }
@@ -1120,7 +1120,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
     const double fac, const double densam, const double densnp, const double phinp,
-    const double hist, const double J, const LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dmesh)
+    const double hist, const double J, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
@@ -1142,7 +1142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
-    const double rhsint, const double J, const LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dmesh,
+    const double rhsint, const double J, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
 {
   // case of zero saturation/volfrac
@@ -1175,18 +1175,18 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
                                VarManager()->FluidPhaseManager()->JacobianDefGrad() *
                                VarManager()->FluidPhaseManager()->PorosityDerivWrtJacobianDefGrad();
 
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         // TODO: gen-alpha
         const double v = my::funct_(vi) * poroderiv * my::scatraparatimint_->TimeFac() * fac *
                          (-1.0) / VarManager()->Density(k);
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
-          for (unsigned idim = 0; idim < my::nsd_; ++idim)
+          for (unsigned idim = 0; idim < nsd_; ++idim)
           {
-            const int fui = ui * my::nsd_ + idim;
+            const int fui = ui * nsd_ + idim;
 
             emat(fvi, fui) += v * my::derxy_(idim, ui);
           }
@@ -1204,9 +1204,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double diffcoeff,
-    const double fac, const double rhsfac, const double J,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1>& convelint,
-    const LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dmesh)
+    const double fac, const double rhsfac, const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
+    const LINALG::Matrix<nsd_, 1>& convelint, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
@@ -1220,18 +1219,18 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
 
     if (fabs(myfac) > 1.0e-12)
     {
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
 
         double laplawf(0.0);
         my::GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
         const double v = myfac * laplawf;
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
-          for (unsigned idim = 0; idim < my::nsd_; ++idim)
+          for (unsigned idim = 0; idim < nsd_; ++idim)
           {
-            const int fui = ui * my::nsd_ + idim;
+            const int fui = ui * nsd_ + idim;
 
             emat(fvi, fui) += v * my::derxy_(idim, ui);
           }
@@ -1248,7 +1247,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double rea_phi, const double J, const LINALG::Matrix<1, my::nsd_ * my::nen_>& dJ_dmesh)
+    const double rea_phi, const double J, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
@@ -1272,7 +1271,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
     const int ndofpernodefluid,      //!< number of dofs per node of fluid element
     const double rhsfac,             //!< domain-integration factor times time-integration factor
     const double densnp,             //!< density at time_(n+1)
-    const LINALG::Matrix<my::nsd_, 1>& gradphi  //!< scalar gradient
+    const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
 )
 {
   // case of zero saturation/volfrac
@@ -1283,20 +1282,20 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
     {
       const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
-      static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+      static LINALG::Matrix<nsd_, nsd_> difftensor(true);
       VarManager()->GetDiffTensorFluid(k, difftensor, VarManager()->GetPhaseID(k));
 
       // gradphi^T * difftensor
       // TODO: not sure if this works for anisotropic fluid difftensor
-      static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
+      static LINALG::Matrix<1, nsd_> gradphiTdifftensor(true);
       gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         const double v = rhsfac * my::funct_(vi) * (-1.0);
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
           // get pre-fac vector for this scalar
           static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
@@ -1327,23 +1326,23 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
       {
         const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
-        static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+        static LINALG::Matrix<nsd_, nsd_> difftensor(true);
         VarManager()->GetDiffTensorFluid(k, difftensor, phase);
 
         // gradphi^T * difftensor
-        static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
+        static LINALG::Matrix<1, nsd_> gradphiTdifftensor(true);
         gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
         // calculate density*heatcapacity
         double densheatcapacity =
             VarManager()->GetHeatCapacity(phase) * VarManager()->Density()[phase];
 
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const int fvi = vi * my::numdofpernode_ + k;
           const double v = rhsfac * my::funct_(vi) * (-1.0) * densheatcapacity;
 
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned ui = 0; ui < nen_; ++ui)
           {
             // get pre-fac vector for this scalar
             static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
@@ -1432,12 +1431,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassMatrixTypeOD
     Epetra_SerialDenseMatrix& emat, const int k, const std::vector<double>* prefaclinmassodfluid,
     const int totalnummultiphasedofpernode, double prefac)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = prefac * my::funct_(vi);
     const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (unsigned ui = 0; ui < nen_; ++ui)
     {
       const double vfunct = v * my::funct_(ui);
       for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
@@ -1518,14 +1517,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
       }
 
       // fill matrix
-      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         // TODO: gen-alpha?
         const double v = my::funct_(vi) * my::scatraparatimint_->TimeFac() * fac * (-1.0) /
                          VarManager()->Density(k);
 
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
+        for (unsigned ui = 0; ui < nen_; ++ui)
         {
           const double vfunct = v * my::funct_(ui);
 
@@ -1577,7 +1576,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
     const int k,                     //!< index of current scalar
     const int ndofpernodemesh,       //!< number of dofs per node of ale element
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const LINALG::Matrix<my::nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+    const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
 )
 {
   // case of zero saturation/volfrac
@@ -1591,14 +1590,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
         k, rhsfac, my::diffmanager_->GetIsotropicDiff(k), &prefacdiffodfluid);
 
 
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const int fvi = vi * my::numdofpernode_ + k;
 
       double laplawf(0.0);
       my::GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
         const double functlaplawf = laplawf * my::funct_(ui);
 
@@ -1622,9 +1621,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressureGrad(
     Epetra_SerialDenseMatrix& emat, const int k, const double vrhs,
-    const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1> refgradpres)
+    const LINALG::Matrix<nsd_, 1>& gradphi, const LINALG::Matrix<nsd_, 1> refgradpres)
 {
-  if (my::nsd_ == 3)
+  if (nsd_ == 3)
   {
     const double xjm_0_0 = my::xjm_(0, 0);
     const double xjm_0_1 = my::xjm_(0, 1);
@@ -1645,7 +1644,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressur
       const double gradphi_1 = gradphi(1);
       const double gradphi_2 = gradphi(2);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
         const double v00 =
             +gradphi_1 *
@@ -1675,7 +1674,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressur
                     refgradpres_1 * (my::deriv_(2, ui) * xjm_0_0 - my::deriv_(0, ui) * xjm_2_0) +
                     refgradpres_2 * (my::deriv_(0, ui) * xjm_1_0 - my::deriv_(1, ui) * xjm_0_0));
 
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const int fvi = vi * my::numdofpernode_ + k;
           const double v = vrhs * my::funct_(vi);
@@ -1687,7 +1686,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressur
       }
     }
   }
-  else if (my::nsd_ == 2)
+  else if (nsd_ == 2)
   {
     {
       const double refgradpres_0 = refgradpres(0);
@@ -1696,14 +1695,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressur
       const double gradphi_0 = gradphi(0);
       const double gradphi_1 = gradphi(1);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (unsigned ui = 0; ui < nen_; ++ui)
       {
         const double v00 =
             +gradphi_1 * (-refgradpres_0 * my::deriv_(1, ui) + refgradpres_1 * my::deriv_(0, ui));
         const double v01 =
             +gradphi_0 * (refgradpres_0 * my::deriv_(1, ui) - refgradpres_1 * my::deriv_(0, ui));
 
-        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        for (unsigned vi = 0; vi < nen_; ++vi)
         {
           const int fvi = vi * my::numdofpernode_ + k;
           const double v = vrhs * my::funct_(vi);

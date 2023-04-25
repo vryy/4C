@@ -8,12 +8,12 @@ distributions
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
-#define SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_
+#ifndef MORTAR_MATRIX_TRANSFORM_H
+#define MORTAR_MATRIX_TRANSFORM_H
 
-#include "dserror.H"
-#include "pairedvector.H"
-#include "utils_matrix_vector_enums.H"
+#include "lib_dserror.H"
+#include "headers_pairedvector.H"
+#include "lib_utils_matrix_vector_enums.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -102,4 +102,4 @@ namespace MORTAR
 
 
 
-#endif /* SRC_MORTAR_MORTAR_MATRIX_TRANSFORM_H_ */
+#endif  // MORTAR_MATRIX_TRANSFORM_H

@@ -13,14 +13,14 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "surfstress_manager.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "io.H"
 #include "io_control.H"
 #include "inpar_structure.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "linalg_sparsematrix.H"
-#include "utils_createdis.H"
-#include "function_of_time.H"
+#include "lib_utils_createdis.H"
+#include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
@@ -65,9 +65,8 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     con_last_ = Teuchos::rcp(new Epetra_Vector(*surfcolmap, true));
     gamma_current_ = Teuchos::rcp(new Epetra_Vector(*surfcolmap, true));
 
-    std::vector<std::string> conditions_to_copy;
-    std::string condname = "SurfaceStress";
-    conditions_to_copy.push_back(condname);
+    const std::string condname = "SurfaceStress";
+    const std::vector<std::string> conditions_to_copy = {condname};
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());

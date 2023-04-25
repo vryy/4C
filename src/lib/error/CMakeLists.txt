@@ -6,11 +6,11 @@ target_include_directories(
   )
 
 # Define the production implementation.
-add_library(lib_error dserror.cpp)
+add_library(lib_error lib_dserror.cpp)
 
 set(LIBS_LIB_ERROR
     # cmake-format: sortable
     lib_error_interface
     )
 
-target_link_libraries(lib_error PUBLIC ${LIBS_LIB_ERROR})
+baci_add_dependency(lib_error ${LIBS_LIB_ERROR})

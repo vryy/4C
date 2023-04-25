@@ -16,20 +16,20 @@ set(LIBS_ELE_THERMO
     lib
     )
 
-target_link_libraries(ele_thermo PUBLIC ${LIBS_ELE_THERMO})
+baci_add_dependency(ele_thermo ${LIBS_ELE_THERMO})
 
 set(OBJS_THERMO
     # cmake-format: sortable
-    thr_aux.cpp
-    thr_dyn.cpp
-    thr_resulttest.cpp
-    thrtimint.cpp
-    thrtimint_expl.cpp
-    thrtimint_expleuler.cpp
-    thrtimint_genalpha.cpp
-    thrtimint_impl.cpp
-    thrtimint_ost.cpp
-    thrtimint_statics.cpp
+    thermo_aux.cpp
+    thermo_dyn.cpp
+    thermo_resulttest.cpp
+    thermo_timint.cpp
+    thermo_timint_expl.cpp
+    thermo_timint_expleuler.cpp
+    thermo_timint_genalpha.cpp
+    thermo_timint_impl.cpp
+    thermo_timint_ost.cpp
+    thermo_timint_statics.cpp
     )
 
 baci_add_library(alg_thermo ${OBJS_THERMO})
@@ -41,4 +41,4 @@ set(LIBS_ALG_THERMO
     inpar
     )
 
-target_link_libraries(alg_thermo PUBLIC ${LIBS_ALG_THERMO})
+baci_add_dependency(alg_thermo ${LIBS_ALG_THERMO})

@@ -1,3 +1,6 @@
+#ifndef SCATRA_ELE_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
+#define SCATRA_ELE_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
+
 /*----------------------------------------------------------------------*/
 /*! \file
 
@@ -33,3 +36,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<DRT::Element::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<DRT::Element::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<DRT::Element::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<DRT::Element::nurbs27>;
+#endif

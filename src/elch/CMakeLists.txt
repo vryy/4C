@@ -12,4 +12,4 @@ set(LIBS_ALG_ELCH
     linalg
     )
 
-target_link_libraries(alg_elch PUBLIC ${LIBS_ALG_ELCH})
+baci_add_dependency(alg_elch ${LIBS_ALG_ELCH})

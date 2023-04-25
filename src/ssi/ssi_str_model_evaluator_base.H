@@ -6,10 +6,10 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef SSI_STR_MODEL_EVALUATOR_BASE_H_
-#define SSI_STR_MODEL_EVALUATOR_BASE_H_
+#ifndef SSI_STR_MODEL_EVALUATOR_BASE_H
+#define SSI_STR_MODEL_EVALUATOR_BASE_H
 
-#include "str_model_evaluator_generic.H"
+#include "structure_new_model_evaluator_generic.H"
 
 namespace STR::MODELEVALUATOR
 {

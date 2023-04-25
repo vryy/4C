@@ -1,0 +1,25 @@
+/*---------------------------------------------------------------------*/
+/*!
+
+\brief the configured options and settings for baci, populated by cmake
+
+\level 0
+
+
+*/
+/*---------------------------------------------------------------------*/
+
+#define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
+#define BACI_VERSION_MINOR @baci_VERSION_MINOR@
+
+#ifndef DEBUG
+#cmakedefine DEBUG
+#endif
+
+#ifndef DSERROR_DUMP
+#cmakedefine DSERROR_DUMP
+#endif
+
+#ifndef TRAP_FE
+#cmakedefine TRAP_FE
+#endif

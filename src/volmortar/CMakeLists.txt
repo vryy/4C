@@ -15,4 +15,4 @@ set(LIBS_VOLMORTAR
     mortar
     )
 
-target_link_libraries(volmortar PUBLIC ${LIBS_VOLMORTAR})
+baci_add_dependency(volmortar ${LIBS_VOLMORTAR})

@@ -163,7 +163,7 @@ void LINALG::BlockSparseMatrixBase::Complete()
     colmapentries.erase(
         std::unique(colmapentries.begin(), colmapentries.end()), colmapentries.end());
     fullcolmap_ =
-        Teuchos::rcp(new Epetra_Map(-1, colmapentries.size(), &colmapentries[0], 0, Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, colmapentries.size(), colmapentries.data(), 0, Comm()));
   }
 }
 
@@ -619,7 +619,8 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
   std::vector<int> cpidlist(cgidlist.size());
 
-  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(), &cgidlist[0], &cpidlist[0], nullptr);
+  int err =
+      mat_.FullDomainMap().RemoteIDList(cgidlist.size(), cgidlist.data(), cpidlist.data(), nullptr);
   if (err != 0) dserror("RemoteIDList failed");
 
   const Epetra_Comm& comm = mat_.FullRangeMap().Comm();

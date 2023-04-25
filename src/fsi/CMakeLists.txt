@@ -1,6 +1,5 @@
 set(OBJS_FSI
     # cmake-format: sortable
-    fs_monolithic.cpp
     fsi_algorithm.cpp
     fsi_constr_overlapprec.cpp
     fsi_constrmonolithic.cpp
@@ -19,6 +18,7 @@ set(OBJS_FSI
     fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp
     fsi_fluidfluidmonolithic_structuresplit.cpp
     fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
+    fsi_free_surface_monolithic.cpp
     fsi_lung_overlapprec.cpp
     fsi_lungmonolithic.cpp
     fsi_lungmonolithic_fluidsplit.cpp
@@ -37,6 +37,7 @@ set(OBJS_FSI
     fsi_nox_fixpoint.cpp
     fsi_nox_group.cpp
     fsi_nox_jacobian.cpp
+    fsi_nox_linearsystem.cpp
     fsi_nox_linearsystem_gcr.cpp
     fsi_nox_mpe.cpp
     fsi_nox_newton.cpp
@@ -69,4 +70,4 @@ set(LIBS_ALG_FSI
     solver
     )
 
-target_link_libraries(alg_fsi PUBLIC ${LIBS_ALG_FSI})
+baci_add_dependency(alg_fsi ${LIBS_ALG_FSI})

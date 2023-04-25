@@ -13,23 +13,22 @@
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
 
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_mortar.H"
-#include "ad_fld_fluid_xfem.H"
-#include "ad_fld_fluid.H"
-#include "ad_fld_fluid_xfsi.H"
-#include "ad_ale_fluid.H"
-#include "ad_fld_fluid_immersed.H"
-#include "xfluid.H"
+#include "adapter_fld_fluid_xfem.H"
+#include "adapter_fld_fluid.H"
+#include "adapter_fld_fluid_xfsi.H"
+#include "adapter_ale_fluid.H"
+#include "adapter_fld_fluid_immersed.H"
+#include "fluid_xfluid.H"
 
-#include "globalproblem.H"
-#include "validparameters.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
 #include "inpar_fsi.H"
-#include "colors.H"
 
 #include "io_control.H"
-#include "stru_aux.H"
+#include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "fsi_debugwriter.H"
 
@@ -41,11 +40,10 @@
 #include "fsi_nox_mpe.H"
 
 #include <string>
-#include <Epetra_Time.h>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "ad_fld_fbi_movingboundary.H"
+#include "adapter_fld_fbi_movingboundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -494,7 +492,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     if (Comm().MyPID() == 0)
     {
-      (*log) << Step() << "\t" << Time() << "\t" << timer.totalElapsedTime() << "\t"
+      (*log) << Step() << "\t" << Time() << "\t" << timer.totalElapsedTime(true) << "\t"
              << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << "\t"
              << nlParams.sublist("Output").get("2-Norm of Residual", 0.) << "\t"
              << lsParams.sublist("Output").get("Total Number of Linear Iterations", 0);
@@ -785,8 +783,8 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 {
   const char* flags[] = {"Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL};
 
-  Epetra_Time timer(x.Comm());
-  const double startTime = timer.WallTime();
+  Teuchos::Time timer("FSI_computeF", true);
+  const double startTime = timer.wallTime();
 
   if (Comm().MyPID() == 0)
   {
@@ -808,7 +806,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 
   if (debugwriter_ != Teuchos::null) debugwriter_->WriteVector("F", F);
 
-  const double endTime = timer.WallTime();
+  const double endTime = timer.wallTime();
   if (Comm().MyPID() == 0)
     utils_->out() << "\nTime for residual calculation: " << endTime - startTime << " secs\n\n";
   return true;

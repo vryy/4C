@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef INPAR_SEARCHTREE_H_
-#define INPAR_SEARCHTREE_H_
+#ifndef INPAR_SEARCHTREE_H
+#define INPAR_SEARCHTREE_H
 
 #include "inpar_parameterlist_utils.H"
 
@@ -32,4 +32,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // /*INPAR_SEARCHTREE_H_*/
+#endif  // INPAR_SEARCHTREE_H

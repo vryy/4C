@@ -61,7 +61,7 @@ AZPREC                          ILU
 AZREUSE                         0
 IFPACKGFILL                     1
 AZTOL                           1.0E-12
-AZCONV                          AZ_rhs
+AZCONV                          AZ_r0
 AZITER                          2500
 AZSUB                           50
 AZOMEGA                         1.0
@@ -105,27 +105,6 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 28 DNODE 1
 NODE 56 DNODE 2
@@ -249,18 +228,6 @@ NODE 50 DSURFACE 4
 NODE 53 DSURFACE 4
 NODE 37 DSURFACE 4
 NODE 47 DSURFACE 4
-NODE 28 DSURFACE 5
-NODE 55 DSURFACE 5
-NODE 1 DSURFACE 5
-NODE 25 DSURFACE 5
-NODE 42 DSURFACE 5
-NODE 33 DSURFACE 5
-NODE 11 DSURFACE 5
-NODE 4 DSURFACE 5
-NODE 10 DSURFACE 5
-NODE 3 DSURFACE 5
-NODE 43 DSURFACE 5
-NODE 31 DSURFACE 5
 NODE 16 DSURFACE 5
 NODE 21 DSURFACE 5
 NODE 6 DSURFACE 5

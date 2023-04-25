@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FSIRESULTTEST_H
-#define FSIRESULTTEST_H
+#ifndef FSI_RESULTTEST_H
+#define FSI_RESULTTEST_H
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include "resulttest.H"
+#include "lib_resulttest.H"
 
 // forward declarations
 namespace DRT
@@ -90,4 +90,4 @@ namespace FSI
     Teuchos::RCP<FSI::Monolithic> fsi_;
   };
 }  // namespace FSI
-#endif /* #ifndef FSIRESULTTEST_H */
+#endif  // FSI_RESULTTEST_H

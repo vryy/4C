@@ -13,4 +13,4 @@
 void scatra_dyn(int restart /* do we have to perform a restart?  */
 );
 
-#endif /* #ifndef SCATRA_DYN_H */
+#endif  // SCATRA_DYN_H

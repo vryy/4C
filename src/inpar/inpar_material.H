@@ -64,7 +64,6 @@ namespace INPAR
                                                          ///< deformation modes
       m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_cnst_art,            ///< 1D_Artery constant material properties
-      m_compogden,           ///< compressible Ogden material (with shell8)
       m_constraintmixture,   ///< growth and remodeling of arteries
       m_crosslinkermat,      ///< material for crosslinker in biopolymer networks
       m_crystplast,          ///< crystal plasticity
@@ -146,16 +145,17 @@ namespace INPAR
       m_matlist_chemoreac,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of chemotactic pairs AND reactions
       m_mixfrac,            ///< material according to mixture-fraction approach
-      m_mixture_elasthyper,  ///< material for solid mixtures with homogenized stress response
-      m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
+      m_mixture,            ///< material for solid mixtures with homogenized stress response
+      m_modpowerlaw,        ///< fluid with nonlinear viscosity according to a modified power law
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
+      m_muscle_giantesio,                         ///< Giantesio active strain muscle material
+      m_muscle_weickenmeier,                      ///< Weickenmeier muscle material
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
       m_newman,                 ///< properties of an ion species in an electrolyte solution
       m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
                                 ///< multi-scale approach
-      m_opti_dens,              ///< density field for topology optimization
       m_particle_sph_fluid,     ///< particle material for SPH fluid
       m_particle_sph_boundary,  ///< particle material for SPH boundary
       m_particle_dem,           ///< particle material for DEM
@@ -194,6 +194,7 @@ namespace INPAR
                                        ///< porous ECM
       m_scatra_reaction,               ///< reaction definition and parameters
       m_scatra_chemotaxis,             ///< chemotaxis definition parameters
+      m_scl,     ///< material for modeling space charge layers in solid electrolytes
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
       m_spring,  ///< elastic spring (translational or rotational)
@@ -301,16 +302,16 @@ namespace INPAR
       mix_elasthyper_damage,             ///< Elast hyper toolbox with temporal damage
       mix_elasthyper_elastin_membrane,   ///< Elast Hyper toolbox with temporal damage and 2D
                                          ///< membrane material
-      mix_muscle_weickenmeier,           ///< Weickenmeier muscle material for Constituents
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with implicit solution of the growth and remodel equations
       mix_remodelfiber_material_exponential,  ///< material for a remodel fiber with exponential
                                               ///< strain energy function
-      mix_remodelfiber_material_exponential_active  ///< material for a remodel fiber with
-                                                    ///< exponential strain energy and an active
-                                                    ///< contribution
+      mix_remodelfiber_material_exponential_active,  ///< material for a remodel fiber with
+                                                     ///< exponential strain energy and an active
+                                                     ///< contribution
+      mix_solid_material                             ///< Solid material for Constituents
     };
 
     /*----------------------------------------------------------------------*
@@ -336,4 +337,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_MATERIAL_H
+#endif  // INPAR_MATERIAL_H

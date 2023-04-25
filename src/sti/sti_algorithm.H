@@ -12,9 +12,9 @@
 
 #include "adapter_algorithmbase.H"
 #include "adapter_scatra_base_algorithm.H"
+#include <Teuchos_Time.hpp>
 
 // forward declarations
-class Epetra_Time;
 class Epetra_Vector;
 
 namespace ADAPTER
@@ -114,7 +114,7 @@ namespace STI
 
     //! timer for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration
     //! (partitioned algorithm)
-    Teuchos::RCP<Epetra_Time> timer_;
+    Teuchos::RCP<Teuchos::Time> timer_;
 
    private:
     //! modify field parameters for thermo field

@@ -81,4 +81,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_STATINVANALYSIS_H
+#endif  // INPAR_STATINVANALYSIS_H

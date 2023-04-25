@@ -48,8 +48,8 @@ CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 -------------------------------------------------------FSI DYNAMIC
 TIMESTEP              0.01
-NUMSTEP               50   // 150
-MAXTIME               0.5  // 1.5
+NUMSTEP               50
+MAXTIME               0.5
 COUPALGO              iter_stagg_AITKEN_rel_param
 RESTARTEVRY           2
 SECONDORDER           yes

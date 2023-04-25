@@ -19,21 +19,21 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"
 
-#include "ad_str_structure.H"
+#include "adapter_str_structure.H"
 #include "cardiovascular0d_dofset.H"
 #include "io.H"
-#include "globalproblem.H"
-#include "condition.H"
+#include "lib_globalproblem.H"
+#include "lib_condition.H"
 #include "mor_pod.H"
 #include "cardiovascular0d.H"
 #include "cardiovascular0d_4elementwindkessel.H"
 #include "cardiovascular0d_arterialproxdist.H"
 #include "cardiovascular0d_resulttest.H"
 #include "cardiovascular0d_syspulcirculation.H"
-#include "cardiovascularrespiratory0d_syspulperiphcirculation.H"
+#include "cardiovascular0d_respiratory_syspulperiphcirculation.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
@@ -1098,13 +1098,13 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<LINALG::SparseMatrix> mat
     break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn:
     {
-      solver_->Params().sublist("Inverse1").sublist("Aztec Parameters");
+      solver_->Params().sublist("Inverse1").sublist("Belos Parameters");
       solver_->Params().sublist("Inverse1").sublist("MueLu Parameters");
       actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("Inverse1"), true);
 
       // this does not make sense: nullspace for 0D-block is calculated from structural
       // discretization
-      solver_->Params().sublist("Inverse2").sublist("Aztec Parameters");
+      solver_->Params().sublist("Inverse2").sublist("Belos Parameters");
       solver_->Params().sublist("Inverse2").sublist("MueLu Parameters");
       actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("Inverse2"), true);
     }

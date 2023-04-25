@@ -15,8 +15,8 @@
  *      Author: hiermeier
  */
 
-#ifndef SRC_INPAR_INPAR_LOCA_CONTINUATION_H_
-#define SRC_INPAR_INPAR_LOCA_CONTINUATION_H_
+#ifndef INPAR_LOCA_CONTINUATION_H
+#define INPAR_LOCA_CONTINUATION_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -40,4 +40,4 @@ namespace INPAR
 }  // namespace INPAR
 
 
-#endif /* SRC_INPAR_INPAR_LOCA_CONTINUATION_H_ */
+#endif  // INPAR_LOCA_CONTINUATION_H

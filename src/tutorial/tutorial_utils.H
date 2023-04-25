@@ -144,4 +144,4 @@ namespace TUTORIAL
 }  // namespace TUTORIAL
 
 /*----------------------------------------------------------------------*/
-#endif /* #ifndef TUTORIAL_UTILS_H*/
+#endif  // TUTORIAL_UTILS_H

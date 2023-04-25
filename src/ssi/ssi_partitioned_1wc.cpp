@@ -8,11 +8,11 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned_1wc.H"
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "ad_str_wrapper.H"
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_wrapper.H"
+#include "adapter_str_ssiwrapper.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "scatra_timint_implicit.H"

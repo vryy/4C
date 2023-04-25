@@ -58,7 +58,7 @@ TOL_PRES_RES	  1.0E-13
 TOL_PRES_INC	  1.0E-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
@@ -68,12 +68,12 @@ GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_xfem_gp              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        xfem_gp
+EOS_CONV_STREAM                 xfem_gp
+EOS_CONV_CROSS                  none
+EOS_DIV                         vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
@@ -81,17 +81,17 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          DirectDivergence//Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                    24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
-VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
-VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
+NIT_STAB_FAC                    24.40282794
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    vol_equivalent
+CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

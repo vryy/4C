@@ -11,4 +11,4 @@ set(LIBS_ALG_LOMA
     linalg
     )
 
-target_link_libraries(alg_loma PUBLIC ${LIBS_ALG_LOMA})
+baci_add_dependency(alg_loma ${LIBS_ALG_LOMA})

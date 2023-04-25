@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef SRC_XFEM_XFEM_ENUM_LISTS_H_
-#define SRC_XFEM_XFEM_ENUM_LISTS_H_
+#ifndef XFEM_ENUM_LISTS_H
+#define XFEM_ENUM_LISTS_H
 
 namespace XFEM
 {
@@ -78,4 +78,4 @@ namespace XFEM
 }  // namespace XFEM
 
 
-#endif /* SRC_XFEM_XFEM_ENUM_LISTS_H_ */
+#endif  // XFEM_ENUM_LISTS_H

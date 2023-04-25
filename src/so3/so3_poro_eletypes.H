@@ -7,14 +7,14 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef SO3_PORO_ELETYPES_H_
-#define SO3_PORO_ELETYPES_H_
+#ifndef SO3_PORO_ELETYPES_H
+#define SO3_PORO_ELETYPES_H
 
-#include "so_hex8.H"
-#include "so_tet4.H"
-#include "so_hex27.H"
-#include "so_tet10.H"
-#include "so_nurbs27.H"
+#include "so3_hex8.H"
+#include "so3_tet4.H"
+#include "so3_hex27.H"
+#include "so3_tet10.H"
+#include "so3_nurbs27.H"
 
 namespace DRT
 {
@@ -170,4 +170,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SO3_PORO_ELETYPES_H_ */
+#endif  // SO3_PORO_ELETYPES_H

@@ -84,34 +84,34 @@ LINEAR_SOLVER                   2
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------SOLVER 2
-SOLVER         Belos          // Belos vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0                  // output every so often, 0 no output
-AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0                  // how often to recompute some preconditioners
+SOLVER         Belos
+AZOUTPUT       0
+AZSOLVE        GMRES
+AZPREC         ILU
+AZREUSE        0
 IFPACKGFILL    0
 IFPACKOVERLAP  0
-AZTOL          1.0E-9             // tolerance in (un)scaled residual
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         1000               // max iterations
-AZSUB          1000                 // size of krylov space for gmres
-AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1                  // unused
-AZSCAL         none               // none sym infnorm scaling of the system
-ML_PRINT          0               // ML print-out level (0-10)
-ML_MAXCOARSESIZE  125            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       3               // ML max number of levels
-ML_COARSEN        UC              // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    0.0             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE Umfpack             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       1 1 0       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       0.35            // damping fine grid
-ML_DAMPMED        0.85             // damping med grids
-ML_DAMPCOARSE     1.0             // damping coarse grid
+AZTOL          1.0E-9
+AZCONV         AZ_r0
+AZITER         1000
+AZSUB          1000
+AZOMEGA        1.0
+AZGRAPH        1
+AZSCAL         none
+ML_PRINT          0
+ML_MAXCOARSESIZE  125
+ML_MAXLEVEL       3
+ML_COARSEN        UC
+ML_AGG_SIZE       27
+ML_PROLONG_SMO    0.0
+ML_PROLONG_THRES  0.0
+ML_SMOOTHERFINE   SGS
+ML_SMOOTHERMED    SGS
+ML_SMOOTHERCOARSE Umfpack
+ML_SMOTIMES       1 1 0
+ML_DAMPFINE       0.35
+ML_DAMPMED        0.85
+ML_DAMPCOARSE     1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500
@@ -120,17 +120,17 @@ MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.01017753003363275e-04 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.40765015472248088e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY velx VALUE -2.90636129962287201e-02 TOLERANCE 1e-11
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE 1.70744605936503924e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.21923858299081464e-01 TOLERANCE 1e-11
-ALE DIS ale NODE 841 QUANTITY dispx VALUE 3.85463933121492840e-04 TOLERANCE 1e-12
-ALE DIS ale NODE 841 QUANTITY dispy VALUE 3.86679312549452221e-03 TOLERANCE 1e-11
-FSI NODE 37 QUANTITY lambdax VALUE -1.55854924722673800e-03 TOLERANCE 1e-11
-FSI NODE 37 QUANTITY lambday VALUE 8.46254362036182872e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE 5.02304888689268246e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -7.71586522203315806e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY velx VALUE -1.55745561166669593e-03 TOLERANCE 1e-11
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE -1.82702409144880548e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 5.23934669170441139e-02 TOLERANCE 1e-11
+ALE DIS ale NODE 841 QUANTITY dispx VALUE -1.82421149675019822e-04 TOLERANCE 1e-12
+ALE DIS ale NODE 841 QUANTITY dispy VALUE -2.16734663397616378e-03 TOLERANCE 1e-11
+FSI NODE 37 QUANTITY lambdax VALUE -4.10635493650445514e-04 TOLERANCE 1e-11
+FSI NODE 37 QUANTITY lambday VALUE -2.98442116879459596e-02 TOLERANCE 1e-10
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
 ------------------------------------------------DESIGN DESCRIPTION
@@ -178,8 +178,6 @@ E 2 - 1
 E 8 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
-NODE    2 DNODE 1
-NODE    101 DNODE 1
 NODE    102 DNODE 1
 NODE    2 DNODE 2
 NODE    101 DNODE 2
@@ -332,7 +330,6 @@ NODE    218 DLINE 4
 NODE    222 DLINE 4
 NODE    226 DLINE 4
 NODE    139 DLINE 5
-NODE    140 DLINE 5
 NODE    141 DLINE 5
 NODE    142 DLINE 5
 NODE    139 DLINE 6

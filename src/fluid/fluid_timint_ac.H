@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef FLD_TIMINT_AC_H
-#define FLD_TIMINT_AC_H
+#ifndef FLUID_TIMINT_AC_H
+#define FLUID_TIMINT_AC_H
 
 
-#include "fluidimplicitintegration.H"
+#include "fluid_implicit_integration.H"
 
 namespace FLD
 {
@@ -42,4 +42,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif  // #ifndef FLD_TIMINT_AC_H
+#endif  // FLUID_TIMINT_AC_H

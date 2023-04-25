@@ -11,10 +11,10 @@
 #define TRUSS3_H
 
 #include <Teuchos_SerialDenseMatrix.hpp>
-#include "elementtype.H"
-#include "utils_integration.H"
+#include "lib_elementtype.H"
+#include "fem_general_utils_integration.H"
 
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 using FAD = Sacado::Fad::DFad<double>;
 
 namespace STR
@@ -334,4 +334,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // #ifndef TRUSS3_H
+#endif  // TRUSS3_H

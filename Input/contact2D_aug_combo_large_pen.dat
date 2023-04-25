@@ -105,7 +105,7 @@ Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Belos // Belos // UMFPACK
+SOLVER                          Belos
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZGRAPH                         0
@@ -138,7 +138,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
-VERBOSITY                       0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Belos
@@ -222,7 +221,6 @@ ML_SMOTIMES                     6 6 6 6 1
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
 SOLVER                          Belos
-VERBOSITY                       1
 PERMUTE_SYSTEM                  local
 ----------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3 THEXPANS 0.0
@@ -235,14 +233,18 @@ MAT 4   ELAST_CoupNeoHooke YOUNG 25000 NUE 0.25
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 5.0 VALUES 0 -7.0 -7.0
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11248889091607461e-01 TOLERANCE 1.0e-08
-STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44648943704649380e+00 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11253384497276397e-01 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44650315129529305e+00 TOLERANCE 1.0e-08
 STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 11.0 TOLERANCE 1.0e-20
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
+NDPOINT 2
 NDLINE  6
 NDSURF  0
 NDVOL   0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT  2
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // left_edge_1
@@ -259,6 +261,9 @@ DLINE  2
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.0
 // inclined_edge_2
 E 6 - 1 Master Inactive FrCoeffOrBound 0.0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE   61 DNODE 1
+NODE 1428 DNODE 2
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1

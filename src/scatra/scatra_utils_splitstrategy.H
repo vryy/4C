@@ -166,11 +166,11 @@ namespace SCATRA
 
             // assemble
             errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
-                rlid0, nnode, &values00[0], &(localcol00map[scalarid])[0]);
+                rlid0, nnode, values00.data(), localcol00map[scalarid].data());
             if (errone)
               dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00", errone);
             errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
-                rlid1, nnode, &values1[0], &localcol01[0]);
+                rlid1, nnode, values1.data(), localcol01.data());
             if (errone)
               dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A01", errone);
           }
@@ -203,11 +203,11 @@ namespace SCATRA
 
             // assemble
             errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
-                rlid0, nnode * numscal_, &values0[0], &localcol10[0]);
+                rlid0, nnode * numscal_, values0.data(), localcol10.data());
             if (errone)
               dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10", errone);
             errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
-                rlid1, nnode, &values1[0], &localcol11[0]);
+                rlid1, nnode, values1.data(), localcol11.data());
             if (errone)
               dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A11", errone);
           }

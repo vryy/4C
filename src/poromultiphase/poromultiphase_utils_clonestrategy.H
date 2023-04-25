@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_CLONESTRATEGY_H_
-#define SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_CLONESTRATEGY_H_
+#ifndef POROMULTIPHASE_UTILS_CLONESTRATEGY_H
+#define POROMULTIPHASE_UTILS_CLONESTRATEGY_H
 
 #include <vector>
 
@@ -37,7 +37,7 @@ namespace POROMULTIPHASE
       virtual ~PoroFluidMultiPhaseCloneStrategy() {}
 
       /// returns conditions names to be copied (source and target name)
-      virtual std::map<std::string, std::string> ConditionsToCopy();
+      virtual std::map<std::string, std::string> ConditionsToCopy() const;
 
      protected:
       /// determine element type std::string and whether element is copied or not
@@ -57,4 +57,4 @@ namespace POROMULTIPHASE
   }  // namespace UTILS
 }  // namespace POROMULTIPHASE
 
-#endif /* SRC_POROMULTIPHASE_POROMULTIPHASE_UTILS_CLONESTRATEGY_H_ */
+#endif  // POROMULTIPHASE_UTILS_CLONESTRATEGY_H

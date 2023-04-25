@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef INPAR_IO_MONITOR_STRUCTURE_DBC
-#define INPAR_IO_MONITOR_STRUCTURE_DBC
+#ifndef INPAR_IO_MONITOR_STRUCTURE_DBC_H
+#define INPAR_IO_MONITOR_STRUCTURE_DBC_H
 
 
 /*----------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 /*----------------------------------------------------------------------*/
 namespace INPAR

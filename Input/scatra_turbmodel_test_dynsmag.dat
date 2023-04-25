@@ -59,7 +59,7 @@ REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             CLASSICAL_LES                   // DNS_OR_RESVMM_LES CLASSICAL_LES RANS
+TURBULENCE_APPROACH             CLASSICAL_LES
 PHYSICAL_MODEL                  Dynamic_Smagorinsky
 CANONICAL_FLOW                  scatra_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
@@ -119,67 +119,67 @@ EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         5                               // how often to recompute some preconditioners
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-12                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           40                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE ILU //SGS // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                            // damping fine grid
-ML_DAMPMED                      0.67                            // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         5
+IFPACKGFILL                     0
+AZTOL                           1.0E-12
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           40
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1000
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE ILU
+ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES 2 2 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      0.67
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Belos                       // vm3 Belos SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         5                               // how often to recompute some preconditioners
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-12                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           40                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE ILU //SGS // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                            // damping fine grid
-ML_DAMPMED                      0.67                            // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        0
+AZSOLVE                         GMRES
+AZPREC                          ML
+AZREUSE                         5
+IFPACKGFILL                     0
+AZTOL                           1.0E-12
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           40
+AZOMEGA                         1.0
+AZGRAPH                         1
+IFPACKOVERLAP                   0
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1000
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  0.0
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE ILU
+ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES 2 2 1
+ML_DAMPFINE                     0.67
+ML_DAMPMED                      0.67
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0055556 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0 SCNUM 3.0 // Sc=3
+MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0 SCNUM 3.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1

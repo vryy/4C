@@ -1,0 +1,94 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Creating patches from inputfile
+
+\level 3
+
+*/
+
+
+/*----------------------------------------------------------------------*/
+/* definitions */
+#ifndef INV_ANALYSIS_MATPAR_MANAGER_UNIFORM_H
+#define INV_ANALYSIS_MATPAR_MANAGER_UNIFORM_H
+
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "inv_analysis_matpar_manager_elementwise.H"
+
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace INVANA
+{
+  /*! \class MatParManagerUniform
+   *  \brief Class to have patchwise constant parameters
+   *
+   *  Patches are created as the material blocks given
+   *  in the input file.
+   *
+   *  \author kehl \date 08/2016
+   */
+  class MatParManagerUniform : public MatParManagerPerElement
+  {
+   public:
+    //! constructor
+    MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
+
+    //! destructor
+    virtual ~MatParManagerUniform(){};
+
+    //! Setup specific parametrization layout
+    virtual void Setup();
+
+    //! Account for distributed chain-rule application
+    virtual void Finalize(
+        Teuchos::RCP<Epetra_MultiVector> source, Teuchos::RCP<Epetra_MultiVector> target);
+
+    //! Return initial covariance guess
+    virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
+
+
+   protected:
+    //! Get current material parameters
+    virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
+
+    //! apply projection to INVANA::DcsMatrix and get diagonal
+    virtual void ApplyParametrization(
+        DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
+
+    //! Initialize optimization parameters
+    virtual void InitParameters();
+
+    //! Chain rule application
+    virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos,
+        int paraposglobal, int paraposlocal);
+
+   private:
+    //! @name Setup the parametrization
+    //@{
+
+    //! Create projection to patch-wise atoms
+    void CreateProjection();
+    //@}
+
+    //! @name Parameters of the initial elementwise distribution
+    //@{
+
+    //! elementwise set of optimization parameters
+    Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
+
+    //! elementwise layout
+    Teuchos::RCP<Epetra_Map> elewise_map_;
+    //@}
+
+    //! global optimization parameter id to patch id
+    std::map<int, int> pidtopatch_;
+  };
+}  // namespace INVANA
+
+#endif

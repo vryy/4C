@@ -7,10 +7,10 @@
 
 */
 
-#ifndef FSI_FLUID_XFEM_H
-#define FSI_FLUID_XFEM_H
+#ifndef FSI_XFEM_FLUID_H
+#define FSI_XFEM_FLUID_H
 
-#include "ad_fld_fluid_xfem.H"
+#include "adapter_fld_fluid_xfem.H"
 
 namespace FSI
 {

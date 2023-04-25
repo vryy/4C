@@ -7,6 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
+#ifndef LINALG_MULTIPLY_H
+#define LINALG_MULTIPLY_H
 
 #include <Epetra_CrsMatrix.h>
 
@@ -112,3 +114,5 @@ namespace LINALG
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput);
 
 }  // namespace LINALG
+
+#endif

@@ -7,17 +7,17 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef SOLVER_CHEAPSIMPLE_H
-#define SOLVER_CHEAPSIMPLE_H
+#ifndef SOLVER_CHEAPSIMPLEPRECONDITIONER_H
+#define SOLVER_CHEAPSIMPLEPRECONDITIONER_H
 
 #include "solver_preconditionertype.H"
 
-#include "linalg_ana.H"
+#include "solver_linalg_ana.H"
 #include "linalg_blocksparsematrix.H"
-#include "linalg_solver.H"
+#include "solver_linalg_solver.H"
 #include "linalg_mapextractor.H"
 
-#include "dserror.H"
+#include "lib_dserror.H"
 
 namespace LINALG::SOLVER
 {
@@ -127,7 +127,7 @@ namespace LINALG::SOLVER
     /*
      *  \brief Returns the label of this class.
      */
-    const char* Label() const { return &label_[0]; }
+    const char* Label() const { return label_.data(); }
 
     /*!
      \brief get Comm of this class

@@ -1,8 +1,46 @@
 set(OBJS_SOH8_LIB
     # cmake-format: sortable
-    inversedesign.cpp
-    inversedesign_evaluate.cpp
-    prestress.cpp
+    so3_base.cpp
+    so3_element_service.cpp
+    so3_hex18.cpp
+    so3_hex20.cpp
+    so3_hex20_evaluate.cpp
+    so3_hex20_input.cpp
+    so3_hex20_multiscale.cpp
+    so3_hex20_service.cpp
+    so3_hex27.cpp
+    so3_hex27_evaluate.cpp
+    so3_hex27_input.cpp
+    so3_hex27_multiscale.cpp
+    so3_hex27_service.cpp
+    so3_hex8.cpp
+    so3_hex8_determinant_analysis.cpp
+    so3_hex8_eas.cpp
+    so3_hex8_evaluate.cpp
+    so3_hex8_input.cpp
+    so3_hex8_multiscale.cpp
+    so3_hex8_service.cpp
+    so3_hex8fbar.cpp
+    so3_hex8fbar_evaluate.cpp
+    so3_hex8fbar_input.cpp
+    so3_hex8p1j1.cpp
+    so3_hex8p1j1_evaluate.cpp
+    so3_hex8p1j1_input.cpp
+    so3_line.cpp
+    so3_line_evaluate.cpp
+    so3_nstet.cpp
+    so3_nstet5.cpp
+    so3_nstet5_evaluate.cpp
+    so3_nstet5_input.cpp
+    so3_nstet5_multiscale.cpp
+    so3_nstet5_nodalstrain.cpp
+    so3_nstet_evaluate.cpp
+    so3_nstet_input.cpp
+    so3_nstet_multiscale.cpp
+    so3_nstet_nodalstrain.cpp
+    so3_nurbs27.cpp
+    so3_nurbs27_evaluate.cpp
+    so3_nurbs27_input.cpp
     so3_poro.cpp
     so3_poro_eletypes.cpp
     so3_poro_evaluate.cpp
@@ -13,93 +51,53 @@ set(OBJS_SOH8_LIB
     so3_poro_p1_scatra_eletypes.cpp
     so3_poro_scatra.cpp
     so3_poro_scatra_eletypes.cpp
+    so3_prestress.cpp
+    so3_pyramid5.cpp
+    so3_pyramid5_evaluate.cpp
+    so3_pyramid5_input.cpp
+    so3_pyramid5_multiscale.cpp
+    so3_pyramid5_service.cpp
+    so3_pyramid5fbar.cpp
+    so3_pyramid5fbar_evaluate.cpp
+    so3_pyramid5fbar_input.cpp
     so3_scatra.cpp
     so3_scatra_eletypes.cpp
     so3_scatra_evaluate.cpp
+    so3_sh18.cpp
+    so3_sh18_evaluate.cpp
+    so3_sh18_input.cpp
+    so3_sh8.cpp
+    so3_sh8_evaluate.cpp
+    so3_sh8_input.cpp
+    so3_sh8_service.cpp
+    so3_sh8p8.cpp
+    so3_sh8p8_auxiliar.cpp
+    so3_sh8p8_eas.cpp
+    so3_sh8p8_evaluate.cpp
+    so3_sh8p8_input.cpp
+    so3_shw6.cpp
+    so3_shw6_evaluate.cpp
+    so3_shw6_input.cpp
+    so3_surface.cpp
+    so3_surface_evaluate.cpp
+    so3_surface_traceestimate.cpp
+    so3_tet10.cpp
+    so3_tet10_evaluate.cpp
+    so3_tet10_input.cpp
+    so3_tet4.cpp
+    so3_tet4_evaluate.cpp
+    so3_tet4_input.cpp
+    so3_tet4_multiscale.cpp
+    so3_tet4av.cpp
+    so3_tet4av_evaluate.cpp
+    so3_tet4av_input.cpp
     so3_thermo.cpp
     so3_thermo_eletypes.cpp
     so3_thermo_evaluate.cpp
-    so_base.cpp
-    so_element_service.cpp
-    so_hex18.cpp
-    so_hex20.cpp
-    so_hex20_evaluate.cpp
-    so_hex20_input.cpp
-    so_hex20_multiscale.cpp
-    so_hex20_service.cpp
-    so_hex27.cpp
-    so_hex27_evaluate.cpp
-    so_hex27_input.cpp
-    so_hex27_multiscale.cpp
-    so_hex27_service.cpp
-    so_hex8.cpp
-    so_hex8_determinant_analysis.cpp
-    so_hex8_eas.cpp
-    so_hex8_evaluate.cpp
-    so_hex8_input.cpp
-    so_hex8_multiscale.cpp
-    so_hex8_service.cpp
-    so_hex8fbar.cpp
-    so_hex8fbar_evaluate.cpp
-    so_hex8fbar_input.cpp
-    so_hex8p1j1.cpp
-    so_hex8p1j1_evaluate.cpp
-    so_hex8p1j1_input.cpp
-    so_line.cpp
-    so_line_evaluate.cpp
-    so_nstet.cpp
-    so_nstet5.cpp
-    so_nstet5_evaluate.cpp
-    so_nstet5_input.cpp
-    so_nstet5_multiscale.cpp
-    so_nstet5_nodalstrain.cpp
-    so_nstet_evaluate.cpp
-    so_nstet_input.cpp
-    so_nstet_multiscale.cpp
-    so_nstet_nodalstrain.cpp
-    so_nurbs27.cpp
-    so_nurbs27_evaluate.cpp
-    so_nurbs27_input.cpp
-    so_pyramid5.cpp
-    so_pyramid5_evaluate.cpp
-    so_pyramid5_input.cpp
-    so_pyramid5_multiscale.cpp
-    so_pyramid5_service.cpp
-    so_pyramid5fbar.cpp
-    so_pyramid5fbar_evaluate.cpp
-    so_pyramid5fbar_input.cpp
-    so_sh18.cpp
-    so_sh18_evaluate.cpp
-    so_sh18_input.cpp
-    so_sh8.cpp
-    so_sh8_evaluate.cpp
-    so_sh8_input.cpp
-    so_sh8_service.cpp
-    so_sh8p8.cpp
-    so_sh8p8_auxiliar.cpp
-    so_sh8p8_eas.cpp
-    so_sh8p8_evaluate.cpp
-    so_sh8p8_input.cpp
-    so_shw6.cpp
-    so_shw6_evaluate.cpp
-    so_shw6_input.cpp
-    so_surface.cpp
-    so_surface_evaluate.cpp
-    so_surface_traceestimate.cpp
-    so_tet10.cpp
-    so_tet10_evaluate.cpp
-    so_tet10_input.cpp
-    so_tet4.cpp
-    so_tet4_evaluate.cpp
-    so_tet4_input.cpp
-    so_tet4_multiscale.cpp
-    so_tet4av.cpp
-    so_tet4av_evaluate.cpp
-    so_tet4av_input.cpp
-    so_utils.cpp
-    so_weg6.cpp
-    so_weg6_evaluate.cpp
-    so_weg6_input.cpp
+    so3_utils.cpp
+    so3_weg6.cpp
+    so3_weg6_evaluate.cpp
+    so3_weg6_input.cpp
     )
 
 add_subdirectory(so3_plast)
@@ -112,4 +110,4 @@ set(LIBS_ELE_SO
     patspec
     )
 
-target_link_libraries(ele_so PUBLIC ${LIBS_ELE_SO})
+baci_add_dependency(ele_so ${LIBS_ELE_SO})

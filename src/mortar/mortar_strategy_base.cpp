@@ -14,7 +14,7 @@
 #include "mortar_defines.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_sparsematrix.H"
-#include "discret.H"
+#include "lib_discret.H"
 #include "inpar_mortar.H"
 #include "inpar_structure.H"
 

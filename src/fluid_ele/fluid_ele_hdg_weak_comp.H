@@ -10,11 +10,11 @@
 #ifndef FLUID_ELE_HDG_WEAK_COMP_H
 #define FLUID_ELE_HDG_WEAK_COMP_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 #include "fluid_ele.H"
-#include "utils_polynomial.H"
+#include "fem_general_utils_polynomial.H"
 
 namespace DRT
 {

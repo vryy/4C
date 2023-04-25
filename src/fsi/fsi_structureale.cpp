@@ -11,21 +11,19 @@
 
 #include "fsi_structureale.H"
 
-#include "ad_str_fsiwrapper.H"
+#include "adapter_str_fsiwrapper.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_mortar.H"
-#include "ad_ale_fluid.H"
+#include "adapter_ale_fluid.H"
 
 #include "fsi_utils.H"
 #include "fluid_utils_mapextractor.H"
-#include "globalproblem.H"
-#include "validparameters.H"
-#include "stru_aux.H"
+#include "lib_globalproblem.H"
+#include "inpar_validparameters.H"
+#include "structure_aux.H"
 
-#include "colors.H"
 
 #include <string>
-#include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*/

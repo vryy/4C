@@ -7,16 +7,16 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
-#define SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
+#ifndef LUBRICATION_ELE_CALC_H
+#define LUBRICATION_ELE_CALC_H
 
 
-#include "element.H"
+#include "lib_element.H"
 
-#include "utils_local_connectivity_matrices.H"
-#include "utils_integration.H"
-#include "utils_fem_shapefunctions.H"
-#include "utils_boundary_integration.H"
+#include "fem_general_utils_local_connectivity_matrices.H"
+#include "fem_general_utils_integration.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "fem_general_utils_boundary_integration.H"
 #include "lubrication_ele_interface.H"
 
 #include "lubrication_ele_action.H"
@@ -466,4 +466,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif /* SRC_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_ */
+#endif  // LUBRICATION_ELE_CALC_H

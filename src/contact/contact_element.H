@@ -271,4 +271,4 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoElement& ele);
 
-#endif  // #ifndef CONTACT_ELEMENT_H
+#endif  // CONTACT_ELEMENT_H

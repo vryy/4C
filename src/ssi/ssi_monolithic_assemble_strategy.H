@@ -265,4 +265,4 @@ namespace SSI
       LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI
-#endif  // #ifndef SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
+#endif  // SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H

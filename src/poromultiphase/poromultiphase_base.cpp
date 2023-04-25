@@ -12,16 +12,16 @@
 
 #include "inpar_porofluidmultiphase.H"
 
-#include "globalproblem.H"
-#include "discret.H"
+#include "lib_globalproblem.H"
+#include "lib_discret.H"
 
-#include "ad_porofluidmultiphase_wrapper.H"
+#include "adapter_porofluidmultiphase_wrapper.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 
 // new structural time integration
-#include "ad_str_structure_new.H"
-#include "ad_str_factory.H"
+#include "adapter_str_structure_new.H"
+#include "adapter_str_factory.H"
 
 #include "io_control.H"
 #include "io.H"

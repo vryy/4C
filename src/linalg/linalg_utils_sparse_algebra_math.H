@@ -6,18 +6,18 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MATH_H_
-#define SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MATH_H_
+#ifndef LINALG_UTILS_SPARSE_ALGEBRA_MATH_H
+#define LINALG_UTILS_SPARSE_ALGEBRA_MATH_H
 
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Teuchos_RCP.hpp"
-#include "exporter.H"
+#include <Epetra_Map.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Export.h>
+#include <Epetra_Import.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Teuchos_RCP.hpp>
+#include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 namespace LINALG
@@ -250,4 +250,4 @@ namespace LINALG
 
 }  // namespace LINALG
 
-#endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_MATH_H_ */
+#endif  // LINALG_UTILS_SPARSE_ALGEBRA_MATH_H

@@ -10,14 +10,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "truss3cl.H"
-#include "globalproblem.H"
-#include "dserror.H"
-#include "utils.H"
-#include "function_of_time.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
+#include "lib_utils.H"
+#include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "utils_fem_shapefunctions.H"
-#include "stvenantkirchhoff.H"
-#include "standardtypes_cpp.H"
+#include "fem_general_utils_fem_shapefunctions.H"
+#include "mat_stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) mukherjee 01/14|
@@ -55,8 +54,6 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList& params,
     act = Truss3CL::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
     act = Truss3CL::calc_struct_reset_istep;
-  else if (action == "postprocess_stress")
-    act = Truss3CL::postprocess_stress;
   else if (action == "calc_struct_ptcstiff")
     act = Truss3CL::calc_struct_ptcstiff;
   else if (action == "calc_struct_energy")
@@ -171,12 +168,6 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_stress:
     {
       // no stress calculation implemented! Do not crash simulation and just keep quiet!
-    }
-    break;
-    case postprocess_stress:
-    {
-      // no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Truss3CL!");
     }
     break;
     default:
@@ -817,8 +808,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyDampingConstants(
     Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma)
 {
   // translational damping coefficients according to Howard, p. 107, table 6.2;
-  gamma(0) = 2 * PI * params.get<double>("ETA", 0.0);
-  gamma(1) = 4 * PI * params.get<double>("ETA", 0.0);
+  gamma(0) = 2 * M_PI * params.get<double>("ETA", 0.0);
+  gamma(1) = 4 * M_PI * params.get<double>("ETA", 0.0);
   // no rotational damping as no rotaional degrees of freedom
   gamma(2) = 0;
 

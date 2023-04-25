@@ -14,9 +14,9 @@
 
 #include "ssti_monolithic.H"
 
-#include "ad_str_ssiwrapper.H"
+#include "adapter_str_ssiwrapper.H"
 
-#include "globalproblem.H"
+#include "lib_globalproblem.H"
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -26,10 +26,10 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 
-#include "matpar_material.H"
-#include "matpar_bundle.H"
+#include "mat_par_material.H"
+#include "mat_par_bundle.H"
 #include "scatra_ele.H"
-#include "so_nurbs27.H"
+#include "so3_nurbs27.H"
 
 
 
@@ -682,28 +682,20 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::ConditionsToCopy() const
 {
   // call base class
   std::map<std::string, std::string> conditions_to_copy =
       SSI::ScatraStructureCloneStrategy::ConditionsToCopy();
 
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoDirichlet", "ThermoDirichlet"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoPointNeumann", "ThermoPointNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoLineNeumann", "ThermoLineNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoSurfaceNeumann", "ThermoSurfaceNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoVolumeNeumann", "ThermoVolumeNeumann"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ThermoInitfield", "ThermoInitfield"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSTIInterfaceMeshtying", "S2IMeshtying"));
+  conditions_to_copy.insert({"ThermoDirichlet", "ThermoDirichlet"});
+  conditions_to_copy.insert({"ThermoPointNeumann", "ThermoPointNeumann"});
+  conditions_to_copy.insert({"ThermoLineNeumann", "ThermoLineNeumann"});
+  conditions_to_copy.insert({"ThermoSurfaceNeumann", "ThermoSurfaceNeumann"});
+  conditions_to_copy.insert({"ThermoVolumeNeumann", "ThermoVolumeNeumann"});
+  conditions_to_copy.insert({"ThermoInitfield", "ThermoInitfield"});
+  conditions_to_copy.insert({"SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"});
+  conditions_to_copy.insert({"SSTIInterfaceMeshtying", "S2IMeshtying"});
 
   return conditions_to_copy;
 }
@@ -757,18 +749,15 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::ConditionsToCopy() const
 {
   // call base class
   std::map<std::string, std::string> conditions_to_copy =
       STI::ScatraThermoCloneStrategy::ConditionsToCopy();
 
-  conditions_to_copy.insert(std::pair<std::string, std::string>(
-      "Meshtying3DomainIntersection", "Meshtying3DomainIntersection"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSTIInterfaceMeshtying", "S2IMeshtying"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("TotalAndMeanScalar", "TotalAndMeanScalar"));
+  conditions_to_copy.insert({"Meshtying3DomainIntersection", "Meshtying3DomainIntersection"});
+  conditions_to_copy.insert({"SSTIInterfaceMeshtying", "S2IMeshtying"});
+  conditions_to_copy.insert({"TotalAndMeanScalar", "TotalAndMeanScalar"});
 
   return conditions_to_copy;
 }

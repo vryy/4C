@@ -12,38 +12,38 @@
 
 #include "beaminteraction_submodel_evaluator_spherebeamlinking.H"
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
-#include "crosslinker_node.H"
-#include "periodic_boundingbox.H"
-#include "beam_link_pinjointed.H"
-#include "beam_link_beam3r_line2_pinjointed.H"
+#include "beaminteraction_str_model_evaluator_datastate.H"
+#include "beaminteraction_crosslinker_node.H"
+#include "beaminteraction_periodic_boundingbox.H"
+#include "beaminteraction_link_pinjointed.H"
+#include "beaminteraction_link_beam3_reissner_line2_pinjointed.H"
 #include "beaminteraction_calc_utils.H"
-#include "spherebeamlinking_params.H"
+#include "beaminteraction_spherebeamlinking_params.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "globalproblem.H"
-#include "dserror.H"
+#include "lib_globalproblem.H"
+#include "lib_dserror.H"
 
 #include "inpar_beaminteraction.H"
 
 #include "io.H"
 #include "io_pstream.H"
-#include "runtime_vtp_writer.H"
-#include "str_timint_basedataio_runtime_vtp_output.H"
+#include "io_runtime_vtp_writer.H"
+#include "structure_new_timint_basedataio_runtime_vtp_output.H"
 #include "io_control.H"
 
 #include "beam3_base.H"
 #include "rigidsphere.H"
-#include "str_timint_basedataglobalstate.H"
-#include "str_timint_basedataio.H"
+#include "structure_new_timint_basedataglobalstate.H"
+#include "structure_new_timint_basedataio.H"
 
-#include "crosslinkermat.H"
+#include "mat_crosslinkermat.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "beam_crosslinker_handler.H"
+#include "beaminteraction_crosslinker_handler.H"
 
 
 
@@ -403,7 +403,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
   UpdateLinkerLength();
 
   // build sum over all procs
-  MPI_Reduce(&num_local[0], &num_global[0], 3, MPI_INT, MPI_SUM, 0,
+  MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   if (GState().GetMyRank() == 0)

@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FLUID_TIMINT_PORO_GENALPHA_H_
-#define FLUID_TIMINT_PORO_GENALPHA_H_
+#ifndef FLUID_TIMINT_PORO_GENALPHA_H
+#define FLUID_TIMINT_PORO_GENALPHA_H
 
 
 #include "fluid_timint_poro.H"
@@ -56,4 +56,4 @@ namespace FLD
 }  // namespace FLD
 
 
-#endif /* FLUID_TIMINT_PORO_GENALPHA_H_ */
+#endif  // FLUID_TIMINT_PORO_GENALPHA_H

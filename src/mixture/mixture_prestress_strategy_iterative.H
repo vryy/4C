@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
+#ifndef MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
+#define MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
 
-#include "matpar_parameter.H"
-#include "pack_buffer.H"
+#include "mat_par_parameter.H"
+#include "lib_pack_buffer.H"
 #include "linalg_fixedsizematrix.H"
 #include "mixture_prestress_strategy.H"
 
@@ -82,4 +82,4 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-#endif  // BACI_MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H
+#endif  // MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H

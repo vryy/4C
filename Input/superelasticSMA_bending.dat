@@ -46,7 +46,7 @@ PREDICT                         ConstVel
 
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Superlu//UMFPACK
+SOLVER                          Superlu
 
 -------------------------------------------------------------------MATERIALS
 // Exponential model

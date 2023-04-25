@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef CONTACT_WEAR_INTERFACE_H_
-#define CONTACT_WEAR_INTERFACE_H_
+#ifndef CONTACT_WEAR_INTERFACE_H
+#define CONTACT_WEAR_INTERFACE_H
 
 #include "inpar_contact.H"
 #include "inpar_wear.H"
@@ -465,4 +465,4 @@ namespace WEAR
 
 }  // namespace WEAR
 
-#endif /* CONTACT_WEAR_INTERFACE_H_ */
+#endif  // CONTACT_WEAR_INTERFACE_H

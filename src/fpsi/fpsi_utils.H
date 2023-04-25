@@ -4,16 +4,16 @@
 \level 3
 
  *-----------------------------------------------------------------------*/
-#ifndef FPSI_UTILS_H_
-#define FPSI_UTILS_H_
+#ifndef FPSI_UTILS_H
+#define FPSI_UTILS_H
 
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include <Epetra_Time.h>
+#include <Teuchos_Time.hpp>
 #include <Epetra_Vector.h>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
@@ -134,4 +134,4 @@ namespace FPSI
   }  // namespace UTILS
 }  // namespace FPSI
 
-#endif /* FPSI_UTILS_H_ */
+#endif  // FPSI_UTILS_H

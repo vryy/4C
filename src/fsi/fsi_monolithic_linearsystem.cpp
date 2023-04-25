@@ -10,33 +10,34 @@
 
 
 #include "fsi_monolithic_linearsystem.H"
-#include "dserror.H"
+#include "lib_dserror.H"
 
 // NOX includes
-#include "NOX_Epetra_Interface_Required.H"
-#include "NOX_Epetra_Interface_Jacobian.H"
-#include "NOX_Epetra_Interface_Preconditioner.H"
-#include "Teuchos_ParameterList.hpp"
-#include "NOX_Epetra_Scaling.H"
-#include "NOX_Utils.H"
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <Teuchos_ParameterList.hpp>
+#include <NOX_Epetra_Scaling.H>
+#include <NOX_Utils.H>
 
 // External include files for Epetra
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_LinearProblem.h"
-#include "AztecOO.h"
-#include "AztecOO_Operator.h"
-#include "AztecOO_StatusTest.h"
-#include "AztecOO_StatusTestCombo.h"
-#include "AztecOO_StatusTestMaxIters.h"
-#include "AztecOO_StatusTestResNorm.h"
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_LinearProblem.h>
+#include <AztecOO.h>
+#include <AztecOO_Operator.h>
+#include <AztecOO_StatusTest.h>
+#include <AztecOO_StatusTestCombo.h>
+#include <AztecOO_StatusTestMaxIters.h>
+#include <AztecOO_StatusTestResNorm.h>
 
 
-#include "AztecOO.h"
+#include <AztecOO.h>
 
 #include <typeinfo>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*/
@@ -79,7 +80,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   isPrecConstructed = isprec;
   solvePrecOpPtr = prec;
 
-  double startTime = timer.WallTime();
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLinearSystem::applyJacobianInverse");
 
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
@@ -198,9 +199,6 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
-
-  double endTime = timer.WallTime();
-  timeApplyJacbianInverse += (endTime - startTime);
 
   if (aztecStatus != 0) return false;
 
