@@ -1330,12 +1330,12 @@ void MAT::Robinson::CalculateCondensedSystem(
   //                [ kvv  kva ]
   // kvvkvakavkaa = [          ] and its inverse after factorisation
   //                [ kav  kaa ]
-  // CCARAT: DOUBLE* kvvvaavaa = (DOUBLE*) CCACALLOC(numstr_2*numstr_2, sizeof(DOUBLE));
+  // CCARAT: DOUBLE* kvvvaavaa = (DOUBLE*) calloc(numstr_2*numstr_2, sizeof(DOUBLE));
   LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kvvkvakavkaa(true);
 
   // build the matrix kevea (6x12)
   // kevea = [ kev  kea ] stored in column-major order
-  // CCARAT: DOUBLE* kevea = (DOUBLE*) CCACALLOC(numstr*numstr_2, sizeof(DOUBLE));
+  // CCARAT: DOUBLE* kevea = (DOUBLE*) calloc(numstr*numstr_2, sizeof(DOUBLE));
   LINALG::Matrix<MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kevea(true);
 
   // ------------------ build tangent and right hand side to reduce

@@ -12,7 +12,7 @@
 
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 
 #include "fluid_turbulence_statistic_manager.H"
 #include "io.H"

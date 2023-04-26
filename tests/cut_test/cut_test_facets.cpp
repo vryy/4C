@@ -14,7 +14,7 @@
 #include "cut_test_utils.H"
 
 #include "cut_meshintersection.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 unsigned FindNextCornerPoint(const std::vector<LINALG::Matrix<3, 1>>& points,
     LINALG::Matrix<3, 1>& x1, LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3,

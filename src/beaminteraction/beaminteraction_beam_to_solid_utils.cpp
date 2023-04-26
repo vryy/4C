@@ -20,7 +20,7 @@
 #include "geometry_pair_scalar_types.H"
 #include "headers_FAD_utils.H"
 #include "geometry_pair_element_functions.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "inpar_beam_to_solid.H"
 #include "beam3_reissner.H"
 #include "beam3_triad_interpolation_local_rotation_vectors.H"

@@ -22,9 +22,9 @@
 #include "mat_scatra_mat.H"
 #include "mat_list.H"
 
-#include "fem_general_utils_polynomial.H"
-#include "fem_general_utils_boundary_integration.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>

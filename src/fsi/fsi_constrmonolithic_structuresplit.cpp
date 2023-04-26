@@ -11,7 +11,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_structuresplit.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "lib_globalproblem.H"

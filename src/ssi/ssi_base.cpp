@@ -16,7 +16,7 @@
 #include "ssi_str_model_evaluator_partitioned.H"
 #include "ssi_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_str_factory.H"
 #include "adapter_str_ssiwrapper.H"

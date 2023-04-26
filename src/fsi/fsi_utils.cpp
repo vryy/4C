@@ -39,11 +39,11 @@
 #include "geometry_searchtree.H"
 #include "geometry_searchtree_service.H"
 #include "adapter_fld_fluid_ale.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_ale_fsi.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "io.H"
 #include "io_control.H"

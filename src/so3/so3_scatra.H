@@ -13,8 +13,8 @@
 
 #include "so3_scatra_eletypes.H"
 
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "inpar_scatra.H"
 

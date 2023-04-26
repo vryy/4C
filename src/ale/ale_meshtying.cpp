@@ -15,7 +15,7 @@
 #include "ale_meshtying.H"
 #include "ale_utils.H"
 #include "ale_utils_mapextractor.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "mortar_node.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

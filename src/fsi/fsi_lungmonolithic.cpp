@@ -11,7 +11,7 @@
 #include "fsi_overlapprec_amgnxn.H"
 #include "adapter_str_lung.H"
 #include "adapter_fld_lung.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "linalg_blocksparsematrix.H"
 #include "fsi_statustest.H"
 #include "io_control.H"

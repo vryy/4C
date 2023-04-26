@@ -22,10 +22,10 @@
 #include <string>
 #include <numeric>
 
-#include "pss_full_cpp.h"
+#include "io_legacy_table_cpp.h"
 extern "C"
 {
-#include "pss_full_table_iter.h"
+#include "io_legacy_table_iter.h"
 }
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface

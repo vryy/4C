@@ -16,7 +16,7 @@ vectors and matrices.
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_multiply.H"
 #include "lib_globalproblem.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "beaminteraction_calc_utils.H"
 
 

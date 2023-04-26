@@ -37,7 +37,7 @@
 #include "scatra_timint_elch_service.H"
 #include "scatra_resulttest_elch.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_utils_parallel.H"
 

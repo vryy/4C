@@ -36,11 +36,11 @@
 // ALE
 #include "ale_utils_clonestrategy.H"
 // ADAPTER
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid_fsi.H"
 #include "adapter_ale_fsi.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_structure_scatra_ele.H"
 // SCATRA
 #include "scatra_algorithm.H"

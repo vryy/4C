@@ -13,7 +13,7 @@
 #include "so3_thermo_fwd.hpp"
 
 #include "lib_globalproblem.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 #include "lib_voigt_notation.H"

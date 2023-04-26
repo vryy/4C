@@ -19,7 +19,7 @@
 #include "lib_dserror.H"
 #include "lib_prestress_service.H"
 #include "mat_so3_material.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
@@ -87,8 +87,6 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
       .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 

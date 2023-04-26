@@ -263,14 +263,12 @@ namespace INPAR
       mes_isovarga,          ///< isotropic isochoric Varga material
       mes_isovolaaagasser,   ///< isochoric and volumetric summands for thrombus material (variable
                              ///< stiffness)
-      mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent
-                                      ///< material
-      mes_isoyeoh,                    ///< isochoric Yeoh hyperelastic potential summand
-      mes_remodelfiber,               ///< general fiber material for remodeling
-      mes_vologden,         ///< Ogden volumetric part of the  hyperelastic potential summand
-      mes_volpenalty,       ///< Penalty volumetric part of the  hyperelastic potential summand
-      mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
-      mes_volpow,           ///< volumetric power law hyperelastic potential summand
+      mes_isoyeoh,           ///< isochoric Yeoh hyperelastic potential summand
+      mes_remodelfiber,      ///< general fiber material for remodeling
+      mes_vologden,          ///< Ogden volumetric part of the  hyperelastic potential summand
+      mes_volpenalty,        ///< Penalty volumetric part of the  hyperelastic potential summand
+      mes_volsussmanbathe,   ///< volumetric SussmanBathe hyperelastic potential summand
+      mes_volpow,            ///< volumetric power law hyperelastic potential summand
       mes_structuraltensorstratgy,  ///< structural tensor in anisotropic materials
       mfi_lin_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                              ///< is a linear function of the scalar (in material configuration)

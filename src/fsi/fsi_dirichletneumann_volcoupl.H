@@ -15,7 +15,7 @@
 #define FSI_DIRICHLETNEUMANN_VOLCOUPL_H
 
 #include "fsi_dirichletneumann_disp.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 
 namespace GEO
 {

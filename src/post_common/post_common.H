@@ -30,7 +30,7 @@ specific output operations can be done by the elements themselves.
 
 extern "C"
 {
-#include "pss_full_types.h"
+#include "io_legacy_types.h"
 }
 
 #include <Teuchos_RCP.hpp>

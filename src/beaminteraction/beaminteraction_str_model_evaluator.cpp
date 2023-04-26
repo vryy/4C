@@ -30,7 +30,7 @@
 
 #include "inpar_beamcontact.H"
 #include "inpar_beam_to_solid.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "beam3_base.H"
 

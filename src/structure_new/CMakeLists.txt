@@ -61,7 +61,6 @@ baci_add_library(alg_structure_new ${OBJS_STRUCTURE_NEW})
 set(LIBS_ALG_STRUCTURE_NEW
     # cmake-format: sortable
     adapter
-    fem_general
     inpar
     lib
     lib_browniandyn

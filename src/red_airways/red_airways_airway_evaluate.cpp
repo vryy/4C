@@ -15,7 +15,7 @@
 #include "red_airways_airway_impl.H"
 
 #include "lib_discret.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_exporter.H"
 #include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_math.H"

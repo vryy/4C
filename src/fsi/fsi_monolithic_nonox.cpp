@@ -30,7 +30,7 @@
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "adapter_fld_fluid_fluid_fsi.H"

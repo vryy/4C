@@ -15,8 +15,8 @@
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "linalg_utils_nullspace.H"
 
@@ -77,9 +77,7 @@ void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda");
+      .AddOptionalNamedDouble("STRENGTH");
 }
 
 /*----------------------------------------------------------------------*

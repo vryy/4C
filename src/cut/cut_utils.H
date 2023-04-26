@@ -16,10 +16,10 @@
 #include <set>
 #include <cstring>
 
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 
 // #define CUT_DUMPCREATION    // dump object creation to generate test case

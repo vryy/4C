@@ -107,7 +107,6 @@ set(LIBS_ELE_SO
     # cmake-format: sortable
     ele_so_plast
     lib_contact
-    patspec
     )
 
 baci_add_dependency(ele_so ${LIBS_ELE_SO})

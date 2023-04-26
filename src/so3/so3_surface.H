@@ -12,8 +12,8 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_element.H"
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "lib_node.H"
 
 

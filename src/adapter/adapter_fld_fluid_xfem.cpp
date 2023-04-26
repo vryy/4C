@@ -12,7 +12,7 @@
 #include "inpar_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_fld_fluid_xfem.H"
 #include "fluid_utils_mapextractor.H"
 

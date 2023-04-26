@@ -12,7 +12,7 @@
 #define SCATRA_ELE_CALC_UTILS_H
 
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element.H"
 #include "inpar_scatra.H"
 

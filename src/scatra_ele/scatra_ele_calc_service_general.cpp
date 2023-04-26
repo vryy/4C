@@ -16,7 +16,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "lib_utils.H"
 #include "nurbs_discret_nurbs_utils.H"
@@ -27,7 +27,7 @@
 
 #include "mat_scatra_mat_multiscale.H"
 
-#include "volmortar_shape.H"
+#include "coupling_volmortar_shape.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

@@ -20,8 +20,8 @@
 #include "mat_elasthyper.H"
 #include "lib_globalproblem.H"
 #include "lib_linedefinition.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "linalg_utils_nullspace.H"
 

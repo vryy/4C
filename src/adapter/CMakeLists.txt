@@ -9,12 +9,9 @@ set(OBJS_ADAPT
     adapter_ale_wrapper.cpp
     adapter_ale_xffsi.cpp
     adapter_algorithmbase.cpp
-    adapter_coupling.cpp
     adapter_coupling_ehl_mortar.cpp
-    adapter_coupling_mortar.cpp
     adapter_coupling_nonlin_mortar.cpp
     adapter_coupling_poro_mortar.cpp
-    adapter_coupling_volmortar.cpp
     adapter_field_wrapper.cpp
     adapter_fld_base_algorithm.cpp
     adapter_fld_fbi_movingboundary.cpp
@@ -84,6 +81,7 @@ set(LIBS_ADAPTER
     alg_structure_new
     alg_thermo
     alg_xfluid
+    baci::core
     comm
     constraint
     ele_fluid
@@ -101,7 +99,6 @@ set(LIBS_ADAPTER
     mat
     nurbs_discret
     solver
-    volmortar
     )
 
 baci_add_dependency(adapter ${LIBS_ADAPTER})

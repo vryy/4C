@@ -49,7 +49,6 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
-#include "patspec.H"
 #include "io_pstream.H"
 #include "io_control.H"
 #include "so3_hex8.H"
@@ -884,11 +883,6 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
   params.set("damping", damping_);
   if (pressure_ != Teuchos::null) params.set("volume", 0.0);
 
-  // compute new inner radius
-  discret_->ClearState();
-  discret_->SetState(0, "displacement", dis);
-  PATSPEC::ComputeEleInnerRadius(discret_);
-
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState(0, "residual displacement", disi);
@@ -951,11 +945,6 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
     params.set("rot_alphaf", alphaf);
     params.set("rot_alpham", alpham);
   }
-
-  // compute new inner radius
-  discret_->ClearState();
-  discret_->SetState(0, "displacement", dis);
-  PATSPEC::ComputeEleInnerRadius(discret_);
 
   discret_->ClearState();
   discret_->SetState(0, "residual displacement", disi);
@@ -4242,11 +4231,6 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
       p.set("timintfac_dis", 0.0);  // dummy!
       p.set("timintfac_vel", 0.0);  // dummy!
     }
-
-    // compute new inner radius
-    discret_->ClearState();
-    discret_->SetState("displacement", (*dis_)(0));
-    PATSPEC::ComputeEleInnerRadius(discret_);
 
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements

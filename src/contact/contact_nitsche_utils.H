@@ -15,7 +15,7 @@
 #include <Teuchos_RCP.hpp>
 #include <unordered_map>
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "lib_utils_matrix_vector_enums.H"
 

@@ -38,7 +38,6 @@
 #include "matelast_isoogden.H"
 #include "matelast_isotestmaterial.H"
 #include "matelast_isovarga.H"
-#include "matelast_isovolHUdependentneohooke.H"
 #include "matelast_isovolaaagasser.H"
 #include "matelast_isoyeoh.H"
 #include "matelast_remodelfiber.H"
@@ -362,14 +361,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
         curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolAAAGasser(curmat));
       auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoVolAAAGasser*>(curmat->Parameter());
       return Teuchos::rcp(new IsoVolAAAGasser(params));
-    }
-    case INPAR::MAT::mes_isovolHUdependentneohooke:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke(curmat));
-      auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke*>(curmat->Parameter());
-      return Teuchos::rcp(new IsoVolHUDependentNeoHooke(params));
     }
     case INPAR::MAT::mes_isoyeoh:
     {

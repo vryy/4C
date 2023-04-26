@@ -18,9 +18,9 @@
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 #include "lib_elementtype.H"
-#include "fem_general_largerotations.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "beaminteraction_calc_utils.H"
 

@@ -15,8 +15,8 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
-#include "fem_general_utils_boundary_integration.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_gder2.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

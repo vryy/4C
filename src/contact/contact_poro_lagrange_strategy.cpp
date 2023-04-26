@@ -21,7 +21,7 @@ interface
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "linalg_matrixtransform.H"
 #include "lib_utils.H"
 

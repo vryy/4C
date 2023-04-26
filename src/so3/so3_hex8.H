@@ -17,7 +17,7 @@
 #include "inpar_structure.H"
 #include "mat_material.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element_integration_select.H"
 
 

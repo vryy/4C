@@ -11,7 +11,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 /*======================================================================*/
 /*======================================================================*/

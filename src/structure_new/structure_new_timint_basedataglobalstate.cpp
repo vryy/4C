@@ -19,7 +19,7 @@
 #include "lib_utils_discret.H"
 #include "inpar_contact.H"
 #include "beam3_base.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "structure_new_utils.H"
 #include "contact_meshtying_abstract_strategy.H"
 

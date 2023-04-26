@@ -14,7 +14,7 @@
 #include <Epetra_Map.h>
 
 #include "adapter_str_ssiwrapper.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_locsys.H"
 

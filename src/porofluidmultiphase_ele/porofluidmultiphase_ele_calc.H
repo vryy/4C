@@ -14,8 +14,8 @@
 #include "porofluidmultiphase_ele_calc_utils.H"
 #include "porofluidmultiphase_ele_action.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_integration.H"
 
 
 namespace DRT

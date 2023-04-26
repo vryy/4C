@@ -9,7 +9,7 @@
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
 #include "lib_linedefinition.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 /*----------------------------------------------------------------------*

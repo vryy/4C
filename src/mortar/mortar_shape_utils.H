@@ -17,10 +17,10 @@
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_utils_densematrix_inverse.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 // nurbs specific
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |

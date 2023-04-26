@@ -25,7 +25,7 @@ of errors, turbulence statistics etc.).
 
 
 #include "lib_elementtype.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 // forward declarations

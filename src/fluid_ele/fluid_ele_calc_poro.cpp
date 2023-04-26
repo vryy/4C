@@ -16,8 +16,8 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "fem_general_utils_gder2.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 #include "geometry_position_array.H"
 

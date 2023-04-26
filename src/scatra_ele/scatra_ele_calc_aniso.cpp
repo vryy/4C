@@ -22,10 +22,10 @@
 #include "lib_globalproblem.H"  // for time curve in body force
 
 #include "lib_utils.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_gder2.H"
 #include "geometry_position_array.H"
 #include "lib_condition_utils.H"
 

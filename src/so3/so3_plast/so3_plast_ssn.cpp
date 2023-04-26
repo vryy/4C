@@ -12,7 +12,7 @@
 #include "so3_plast_ssn.H"
 
 #include "lib_linedefinition.H"
-#include "fem_general_utils_shapefunctions_service.H"
+#include "discretization_fem_general_utils_shapefunctions_service.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parameter_list.H"
 #include "mat_plasticelasthyper.H"

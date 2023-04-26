@@ -12,8 +12,8 @@ Here everything related with solid-shell body extrusion
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_validate.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "pre_exodus_centerline.H"
 
 

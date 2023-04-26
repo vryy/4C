@@ -21,7 +21,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "lib_dserror.H"
 #include "lib_functionvariables.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 #include "lib_function_manager.H"
 
 
@@ -112,16 +112,16 @@ namespace DRT
      * a_k(t) \f$ are time-dependent FunctionVariable objects.
      */
     template <int dim>
-    class ExprFunction : public FunctionOfSpaceTime
+    class SymbolicFunctionOfSpaceTime : public FunctionOfSpaceTime
     {
      public:
       /**
-       * Create an ExprFunction. Each entry in @p expressions corresponds to one component of the
-       * function, thus the resulting function will have `expressions.size()` components. Any
-       * time-dependent variables that appear in the expressions must be passed in the @p variables
-       * vector.
+       * Create an SymbolicFunctionOfSpaceTime. Each entry in @p expressions corresponds to one
+       * component of the function, thus the resulting function will have `expressions.size()`
+       * components. Any time-dependent variables that appear in the expressions must be passed in
+       * the @p variables vector.
        */
-      ExprFunction(const std::vector<std::string>& expressions,
+      SymbolicFunctionOfSpaceTime(const std::vector<std::string>& expressions,
           std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
       double Evaluate(const double* x, double t, std::size_t component) override;
@@ -266,7 +266,7 @@ namespace DRT
 
     /// create a vector function from multiple expressions
     template <int dim>
-    Teuchos::RCP<FunctionOfSpaceTime> TryCreateExprFunction(
+    Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
         const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
   }  // namespace UTILS
 

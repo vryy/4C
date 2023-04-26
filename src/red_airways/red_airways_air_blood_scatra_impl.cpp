@@ -22,8 +22,8 @@
 #include "lib_function.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
 #include <fstream>
 #include <iomanip>
 

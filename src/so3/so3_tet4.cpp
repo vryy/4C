@@ -19,7 +19,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "so3_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -97,8 +97,6 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 

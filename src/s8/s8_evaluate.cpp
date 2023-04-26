@@ -24,8 +24,6 @@
 extern "C"
 {
 #include "shell8/s8_shell8.h"
-#include "pss_full_am.h"
-#include "pss_full_prototypes.h"
 }
 
 #define DSQR(a) ((a) * (a))

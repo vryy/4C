@@ -33,7 +33,7 @@
 #include "scatra_resulttest_elch.H"
 
 #include "adapter_scatra_base_algorithm.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_utils_parallel.H"
 

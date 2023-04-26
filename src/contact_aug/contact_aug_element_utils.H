@@ -11,8 +11,8 @@
 #define CONTACT_AUG_ELEMENT_UTILS_H
 
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "mortar_element.H"
 
 namespace CONTACT

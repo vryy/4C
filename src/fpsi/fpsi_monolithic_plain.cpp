@@ -20,7 +20,7 @@
 // POROELAST includes
 #include "poroelast_base.H"
 #include "adapter_fld_poro.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "poroelast_monolithic.H"
 
 // FSI includes

@@ -18,7 +18,7 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "mat_elasthyper.H"
 #include "mat_structporo.H"

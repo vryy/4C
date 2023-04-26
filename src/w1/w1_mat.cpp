@@ -19,7 +19,7 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "lib_element.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 
 #include "mat_stvenantkirchhoff.H"

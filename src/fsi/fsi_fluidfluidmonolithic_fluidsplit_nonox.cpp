@@ -8,7 +8,7 @@
 
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fsi_debugwriter.H"

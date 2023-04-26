@@ -16,7 +16,7 @@ the routines called during the possible actions is contained in red_air_blood_sc
 #include "red_airways_air_blood_scatraLine3_impl.H"
 
 #include "lib_discret.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_exporter.H"
 #include "lib_dserror.H"
 #include "linalg_utils_sparse_algebra_math.H"

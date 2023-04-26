@@ -196,8 +196,6 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 

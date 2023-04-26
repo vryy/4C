@@ -3,8 +3,8 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "lib_element.H"
 #include "so3_element_service.H"
 #include "so3_tet10.H"
@@ -12,15 +12,14 @@
 #include "lib_dserror.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "patspec.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "contact_analytical.H"
 #include "lib_globalproblem.H"
 #include "mat_so3_material.H"
 #include <Epetra_SerialDenseSolver.h>
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "so3_utils.H"
 #include "fiber_node.H"
 
@@ -97,11 +96,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else
     dserror("Unknown type of action for So_tet10");
-
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)

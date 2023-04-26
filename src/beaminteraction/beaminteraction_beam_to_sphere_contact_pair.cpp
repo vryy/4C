@@ -25,7 +25,7 @@
 #include "inpar_beamcontact.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_sphere_contact_params.H"
