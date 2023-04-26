@@ -12,7 +12,7 @@
 
 #include "scatra_timint_meshtying_strategy_base.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"

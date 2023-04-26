@@ -12,7 +12,7 @@ materials
 #include "mat_par_material.H"
 #include "mat_service.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_voigt_notation.H"
 
 

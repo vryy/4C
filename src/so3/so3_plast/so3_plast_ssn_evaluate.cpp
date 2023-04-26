@@ -26,7 +26,7 @@
 #include "mat_fourieriso.H"
 #include "so3_element_service.H"
 
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 

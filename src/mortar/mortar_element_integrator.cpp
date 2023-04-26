@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "mortar_element.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|

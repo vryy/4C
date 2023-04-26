@@ -11,7 +11,7 @@
 #include <utility>
 #include "linalg_utils_densematrix_svd.H"
 #include "lib_element.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "fiber_node.H"
 #include "fiber_nodal_fiber_holder.H"
 #include "so3_prestress.H"

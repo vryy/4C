@@ -16,7 +16,7 @@
 
 
 #include "fluid_ele.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 
 namespace DRT
 {

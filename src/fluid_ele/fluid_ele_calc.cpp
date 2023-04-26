@@ -16,7 +16,7 @@
 #include "fluid_ele.H"
 #include "fluid_ele_tds.H"
 
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_gder2.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

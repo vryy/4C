@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_CALC_H
 #define SCATRA_ELE_CALC_H
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include <Epetra_IntSerialDenseVector.h>
 

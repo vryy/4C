@@ -11,7 +11,7 @@
 #include "so3_thermo.H"
 
 #include "lib_linedefinition.H"
-#include "fem_general_utils_shapefunctions_service.H"
+#include "discretization_fem_general_utils_shapefunctions_service.H"
 
 
 /*----------------------------------------------------------------------*

@@ -11,7 +11,7 @@
 #include "membrane.H"
 
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "structure_new_elements_paramsinterface.H"
 
 

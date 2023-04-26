@@ -18,7 +18,7 @@
 #include "lib_utils.H"
 #include "lib_discret.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "geometry_integrationcell_coordtrafo.H"
 #include "headers_singleton_owner.H"
 

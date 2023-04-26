@@ -17,9 +17,9 @@
 #include "mortar_calc_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_assemblestrategy.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 #include "lib_exporter.H"
 #include "cut_boundingbox.H"
 

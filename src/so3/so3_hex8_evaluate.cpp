@@ -10,7 +10,7 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "so3_element_service.H"
 #include "so3_hex8.H"
 #include "lib_discret.H"
@@ -37,9 +37,9 @@
 #include "contact_analytical.H"
 #include "lib_globalproblem.H"
 
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <impl/Kokkos_Traits.hpp>
@@ -54,7 +54,7 @@
 #include "so3_defines.H"
 #include "so3_hex8_determinant_analysis.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "so3_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;

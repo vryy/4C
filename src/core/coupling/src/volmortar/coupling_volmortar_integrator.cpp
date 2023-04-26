@@ -16,7 +16,7 @@
 #include "coupling_volmortar_defines.H"
 #include "coupling_volmortar_cell.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "mortar_coupling3d_classes.H"
 #include "mortar_calc_utils.H"

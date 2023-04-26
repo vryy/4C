@@ -10,7 +10,7 @@
 #include "elemag_ele_calc.H"
 #include "elemag_ele_action.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "geometry_position_array.H"
 #include "linalg_utils_sparse_algebra_math.H"

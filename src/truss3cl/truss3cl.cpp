@@ -17,7 +17,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_nullspace.H"
 #include "lib_linedefinition.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 DRT::ELEMENTS::Truss3CLType DRT::ELEMENTS::Truss3CLType::instance_;
 

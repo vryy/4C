@@ -14,8 +14,8 @@
 #include "mat_so3_material.H"
 #include "contact_analytical.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

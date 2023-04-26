@@ -13,7 +13,7 @@
 #include "lib_discret.H"
 #include "lib_dserror.H"
 #include "lib_linedefinition.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;

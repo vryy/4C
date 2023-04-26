@@ -16,8 +16,8 @@
 #include "beam3_base.H"
 #include "beam3_spatial_discretization_utils.H"
 
-#include "fem_general_utils_integration.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
 
 #include "inpar_beampotential.H"
 

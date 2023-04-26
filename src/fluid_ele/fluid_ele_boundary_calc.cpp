@@ -20,7 +20,7 @@
 
 #include "inpar_material.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "nurbs_discret_nurbs_utils.H"
 

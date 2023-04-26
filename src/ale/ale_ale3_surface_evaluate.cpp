@@ -16,8 +16,8 @@
 
 #include "geometry_position_array.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "inpar_parameterlist_utils.H"
 

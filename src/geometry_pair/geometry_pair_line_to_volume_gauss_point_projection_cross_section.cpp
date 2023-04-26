@@ -15,7 +15,7 @@ line.
 #include "geometry_pair_utility_classes.H"
 
 #include "lib_element.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "beam3_triad_interpolation_local_rotation_vectors.H"
 
 #include <math.h>

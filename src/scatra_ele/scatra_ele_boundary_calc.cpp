@@ -12,7 +12,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "lib_globalproblem.H"  // for curves and functions
 

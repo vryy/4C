@@ -17,8 +17,8 @@
 #include "mat_thermoplastichyperelast.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "so3_prestress.H"
 

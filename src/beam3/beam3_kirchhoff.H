@@ -50,7 +50,7 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include <Epetra_Vector.h>
 #include "lib_elementtype.H"
 #include "lib_node.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include <Sacado.hpp>
 #include "headers_FAD_utils.H"
 

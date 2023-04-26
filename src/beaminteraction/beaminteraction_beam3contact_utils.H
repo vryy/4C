@@ -19,7 +19,7 @@
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "lib_discret.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 typedef Sacado::Fad::DFad<double> FAD;
 

@@ -15,15 +15,15 @@
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
 #include "linalg_utils_nullspace.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_dserror.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "mat_so3_material.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "so3_prestress.H"
 #include "fiber_node.H"

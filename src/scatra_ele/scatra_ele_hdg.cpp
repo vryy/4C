@@ -13,7 +13,7 @@
 #include "scatra_ele_interface.H"
 #include "mat_list.H"
 #include "mat_myocard.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "scatra_ele_hdg_intfaces_calc.H"
 #include "scatra_ele_hdg_boundary_calc.H"
@@ -23,7 +23,7 @@
 #include "inpar_scatra.H"
 #include "lib_linedefinition.H"
 #include "lib_discret_faces.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 #include "lib_globalproblem.H"
 
 

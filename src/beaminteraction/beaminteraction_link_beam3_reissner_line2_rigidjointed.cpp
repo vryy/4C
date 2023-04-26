@@ -14,7 +14,7 @@ elements
 
 #include "beam3_reissner.H"
 
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 #include "linalg_serialdensematrix.H"
 

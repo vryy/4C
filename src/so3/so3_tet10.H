@@ -17,7 +17,7 @@
 
 #include "so3_base.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10 10       ///< number of nodes

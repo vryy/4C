@@ -18,7 +18,7 @@
 #include "lib_condition_utils.H"
 #include "lib_globalproblem.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lubrication_ele_parameter.H"
 
 #include "inpar_lubrication.H"

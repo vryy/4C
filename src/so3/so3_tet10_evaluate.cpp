@@ -3,8 +3,8 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "lib_element.H"
 #include "so3_element_service.H"
 #include "so3_tet10.H"
@@ -18,8 +18,8 @@
 #include "lib_globalproblem.H"
 #include "mat_so3_material.H"
 #include <Epetra_SerialDenseSolver.h>
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "so3_utils.H"
 #include "fiber_node.H"
 
