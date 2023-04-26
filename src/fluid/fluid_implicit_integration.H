@@ -1413,8 +1413,9 @@ namespace FLD
     */
     virtual void RecomputeMeanCsgsB();
 
-
-    //@}
+    /// prepares and evalutes egde-based internal face integrals
+    void EvaluateFluidEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
      *
