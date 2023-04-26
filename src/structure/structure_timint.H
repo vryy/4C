@@ -1057,6 +1057,10 @@ namespace STR
     /// Contract the dbc map by dofs provided in Epetra_Map maptoremove
     virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
+    /// prepares and evalutes egde-based internal face integrals
+    void EvaluateEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Epetra_Vector> systemvector1);
+
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation

@@ -13,7 +13,7 @@
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
 #include "lib_dserror.H"
-#include "lib_function.H"
+
 #include "lib_parobjectfactory.H"
 #include "lib_elements_paramsinterface.H"
 #include "linalg_utils_sparse_algebra_assemble.H"

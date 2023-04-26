@@ -27,9 +27,6 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "mat_par_parameter.H"
 
-#include "mat_par_bundle.H"
-#include "mat_newtonianfluid.H"
-
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
     : DiscretizationFaces(name, comm)
