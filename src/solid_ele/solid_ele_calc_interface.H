@@ -102,6 +102,10 @@ namespace DRT
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) = 0;
 
+      virtual double CalculateInternalEnergy(const DRT::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params) = 0;
+
       /*!
        * @brief The update routine of the element
        *
@@ -109,8 +113,8 @@ namespace DRT
        * @param solid_material (in) : Solid material of the element
        * @param discretization (in) : Reference to the discretization
        * @param lm (in) : The location array of the owned dofs
-       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to the
-       * elements/materials
+       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
+       * the elements/materials
        */
       virtual void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
