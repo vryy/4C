@@ -600,6 +600,7 @@ void STR::TimIntImpl::PredictConstDisVelAcc()
   disn_->Update(1.0, *(*dis_)(0), 0.0);
   veln_->Update(1.0, *(*vel_)(0), 0.0);
   accn_->Update(1.0, *(*acc_)(0), 0.0);
+  disi_->PutScalar(0.0);
 
   // see you next time step
   return;
