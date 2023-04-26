@@ -33,7 +33,7 @@
 
 #include "constraint_manager.H"
 #include "adapter_str_structure.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 
 /*----------------------------------------------------------------------*/

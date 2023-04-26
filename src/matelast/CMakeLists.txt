@@ -35,7 +35,6 @@ set(OBJS_MATELAST
     matelast_isotestmaterial.cpp
     matelast_isovarga.cpp
     matelast_isovolaaagasser.cpp
-    matelast_isovolHUdependentneohooke.cpp
     matelast_isoyeoh.cpp
     matelast_remodelfiber.cpp
     matelast_summand.cpp

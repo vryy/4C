@@ -22,7 +22,7 @@
 #include "cut_volumecell.H"
 #include "cut_combintersection.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 // Tests the new line implementation
 //(to sides with 3 common cut points - because of tolerances!)

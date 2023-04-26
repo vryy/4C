@@ -45,7 +45,7 @@
 #include "beam3_discretization_runtime_vtu_output_params.H"
 
 #include "lib_prestress_service.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -219,7 +219,6 @@ set(SINGLEFIELD_LIBRARIES
 
 set(SUPPORT_LIBRARIES
     # cmake-format: sortable
-    fem_general
     geometry_pair
     inpar
     io
@@ -246,7 +245,6 @@ set(SUPPORT_LIBRARIES
     lib_xfem
     lib_xfem_manag
     particleengine
-    patspec
     red_airways
     )
 
@@ -257,10 +255,10 @@ set(BACI_LIBRARIES
     ${SINGLEFIELD_LIBRARIES}
     ${SUPPORT_LIBRARIES}
     adapter
+    baci::core
     cardiovascular0d
     comm
     constraint
-    fortran
     geometry
     headers
     linalg
@@ -272,12 +270,10 @@ set(BACI_LIBRARIES
     mortar
     nlnsolver_nox
     nurbs_discret
-    pss_full
     rebalance
     solver
     stru_multi
     timestepping
-    volmortar
     )
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)

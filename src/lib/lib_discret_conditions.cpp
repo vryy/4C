@@ -309,7 +309,7 @@ bool DRT::Discretization::BuildLinesinCondition(
             {
               std::vector<int> nodes(actline->NumNode());
               transform(actline->Nodes(), actline->Nodes() + actline->NumNode(), nodes.begin(),
-                  std::mem_fun(&DRT::Node::Id));
+                  std::mem_fn(&DRT::Node::Id));
               sort(nodes.begin(), nodes.end());
 
               if (linemap.find(nodes) == linemap.end())
@@ -474,7 +474,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
               // get sorted vector of node ids
               std::vector<int> nodes(actsurf->NumNode());
               transform(actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(), nodes.begin(),
-                  std::mem_fun(&DRT::Node::Id));
+                  std::mem_fn(&DRT::Node::Id));
               sort(nodes.begin(), nodes.end());
 
               // special treatment of RedAirwayTissue and StructFluidSurfCoupling
@@ -522,7 +522,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
                       std::vector<int> nodesadj(adjacentvolelesurfs[n]->NumNode());
                       transform(adjacentvolelesurfs[n]->Nodes(),
                           adjacentvolelesurfs[n]->Nodes() + adjacentvolelesurfs[n]->NumNode(),
-                          nodesadj.begin(), std::mem_fun(&DRT::Node::Id));
+                          nodesadj.begin(), std::mem_fn(&DRT::Node::Id));
                       sort(nodesadj.begin(), nodesadj.end());
 
                       if (nodes.size() == nodesadj.size())
@@ -617,7 +617,7 @@ bool DRT::Discretization::BuildVolumesinCondition(
   std::set<int> mynodes;
 
   std::remove_copy_if(nodeids->begin(), nodeids->end(), std::inserter(mynodes, mynodes.begin()),
-      std::not1(DRT::UTILS::MyGID(colmap)));
+      std::not_fn(DRT::UTILS::MyGID(colmap)));
 
   // this is the map we want to construct
   Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom =
@@ -682,7 +682,7 @@ void DRT::Discretization::FindAssociatedEleIDs(
       std::set<int> mynodes;
 
       std::remove_copy_if(nodeids->begin(), nodeids->end(), std::inserter(mynodes, mynodes.begin()),
-          std::not1(DRT::UTILS::MyGID(colmap)));
+          std::not_fn(DRT::UTILS::MyGID(colmap)));
 
       for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator actele = element_.begin();
            actele != element_.end(); ++actele)

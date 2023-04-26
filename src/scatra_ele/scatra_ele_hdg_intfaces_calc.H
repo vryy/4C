@@ -12,7 +12,7 @@
 #define SCATRA_ELE_HDG_INTFACES_CALC_H
 
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "headers_singleton_owner.H"
 

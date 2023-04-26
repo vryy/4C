@@ -1269,7 +1269,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
     // evaluate interface velocity (given by weak Dirichlet condition)
     robin_id_dirch = cond->GetInt("robin_id_dirch");
     // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
-    if (!std::signbit(robin_id_dirch))
+    if (!std::signbit(static_cast<double>(robin_id_dirch)))
       EvaluateDirichletFunction(
           ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
@@ -1284,7 +1284,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
 
   // evaluate interface traction (given by Neumann condition)
   robin_id_dirch = cond->GetInt("robin_id_neumann");
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
     // sliplenght twice (also done in UpdateConfigurationMap_GP ... as soon as this gets relevant we
@@ -1322,7 +1322,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
 
 // Safety checks
 #ifdef DEBUG
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) == conditionsmap_robin_neumann_.end())
     {
@@ -1356,13 +1356,13 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditionsOldState(LINALG::Ma
   // evaluate interface velocity (given by weak Dirichlet condition)
   int robin_id_dirch = cond->GetInt("robin_id_dirch");
   // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateDirichletFunction(
         ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_ - dt_);
 
   // evaluate interface traction (given by Neumann condition)
   robin_id_dirch = cond->GetInt("robin_id_neumann");
-  if (!std::signbit(robin_id_dirch))
+  if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateNeumannFunction(
         itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_ - dt_);
 }
@@ -1498,7 +1498,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
     DRT::Condition* tmp_cond = *i;
 
     const int tmp_robin_id = tmp_cond->GetInt("robin_id_dirch");
-    if (!std::signbit(tmp_robin_id))
+    if (!std::signbit(static_cast<double>(tmp_robin_id)))
     {
       if ((*conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype"))
               .compare(*(tmp_cond->Get<std::string>("evaltype"))) != 0)

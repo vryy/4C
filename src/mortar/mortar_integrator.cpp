@@ -17,7 +17,7 @@ of two MortarElements in 1D and 2D
 #include "mortar_calc_utils.H"
 #include "mortar_shape_utils.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element.H"
 
 #include "linalg_serialdensevector.H"

@@ -21,7 +21,6 @@ baci_add_library(ele_beam3 ${OBJS_ELE_BEAM3})
 set(LIBS_ELE_BEAM3
     # cmake-format: sortable
     alg_structure_new
-    fem_general
     lib
     lib_beaminteraction
     linalg

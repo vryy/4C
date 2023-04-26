@@ -12,7 +12,7 @@
 #ifndef LIB_UTILS_REFERENCE_CONFIGURATION_H
 #define LIB_UTILS_REFERENCE_CONFIGURATION_H
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "linalg_fixedsizematrix.H"
 #include "lib_node.H"
 

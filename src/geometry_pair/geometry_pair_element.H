@@ -16,8 +16,8 @@
 
 #include "lib_element.H"
 #include "beam3_base.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
 #include "lib_globalproblem.H"
 

@@ -159,6 +159,7 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
 #endif
 }
 
+#ifdef TRAP_FE
 /*!
  * \brief FPE signal handle
  *
@@ -193,7 +194,7 @@ void sigfpe_handler(int sig)
   }
   dserror("Baci produced a %s floating point exception.", exception_string.c_str());
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

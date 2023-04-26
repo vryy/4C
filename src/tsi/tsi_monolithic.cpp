@@ -48,7 +48,7 @@
 #include "mortar_manager_base.H"
 
 // for coupling of nonmatching meshes
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 
 #include "structure_new_timint_base.H"
 #include "structure_new_model_evaluator_contact.H"

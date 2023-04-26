@@ -4,7 +4,7 @@ set(OBJS_POST_COMMON
     )
 
 baci_add_library(post_common ${OBJS_POST_COMMON})
-baci_add_dependency(post_common inpar fem_general module_registry)
+baci_add_dependency(post_common inpar module_registry)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable

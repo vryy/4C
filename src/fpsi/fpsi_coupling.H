@@ -16,7 +16,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "ale_utils_mapextractor.H"
 
 // ADAPTER includes
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 // LINALG includes
 #include "linalg_utils_sparse_algebra_manipulation.H"

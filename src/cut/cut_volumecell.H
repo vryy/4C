@@ -12,7 +12,7 @@
 #define CUT_VOLUMECELL_H
 
 #include "cut_facet.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "inpar_cut.H"
 

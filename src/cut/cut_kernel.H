@@ -23,7 +23,7 @@
 
 #include "linalg_gauss_templates.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 // activate debug intersection output in cut_kernel
 // #define DEBUG_CUTKERNEL_OUTPUT

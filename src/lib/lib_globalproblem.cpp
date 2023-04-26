@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <sys/time.h>
+#include <chrono>
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
@@ -154,9 +154,11 @@ int DRT::Problem::NDim() const
 /*----------------------------------------------------------------------*/
 double DRT::Problem::Walltime()
 {
-  struct timeval tp;
-  gettimeofday(&tp, nullptr);
-  return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
+  const std::chrono::time_point<std::chrono::high_resolution_clock> now =
+      std::chrono::high_resolution_clock::now();
+
+  return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() *
+         1.0e-3;
 }
 
 /*----------------------------------------------------------------------*/
@@ -186,7 +188,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/BEAMS", *list);
   reader.ReadGidSection("--IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
-  reader.ReadGidSection("--PATIENT SPECIFIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);

@@ -21,9 +21,9 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "nurbs_discret_nurbs_utils.H"
 #include "nurbs_discret.H"

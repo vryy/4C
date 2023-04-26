@@ -16,7 +16,7 @@
 #include "contact_element.H"
 #include "contact_paramsinterface.H"
 #include "mortar_coupling3d_classes.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "linalg_serialdensevector.H"
 
 #include <Epetra_Map.h>

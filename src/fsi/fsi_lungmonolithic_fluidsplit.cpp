@@ -14,7 +14,7 @@
 #include "lib_discret.H"
 #include "adapter_str_lung.H"
 #include "adapter_fld_lung.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "io_control.H"
 #include "structure_aux.H"
 #include "ale_utils_mapextractor.H"

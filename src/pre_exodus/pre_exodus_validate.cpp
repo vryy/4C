@@ -14,8 +14,8 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "pre_exodus_validate.H"
 #include "pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
 #include "io_control.H"                //for writing to the error file
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_globalproblem.H"
 #include "lib_inputreader.H"
 

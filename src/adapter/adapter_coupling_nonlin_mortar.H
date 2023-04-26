@@ -21,7 +21,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include "lib_dserror.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |

@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_discret.H"
 #include "lib_globalproblem.H"

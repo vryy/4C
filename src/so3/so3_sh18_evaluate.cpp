@@ -9,8 +9,8 @@
 #include "so3_sh18.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "mat_so3_material.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "structure_new_elements_paramsinterface.H"
 

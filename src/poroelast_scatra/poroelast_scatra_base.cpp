@@ -23,8 +23,8 @@
 #include "adapter_scatra_base_algorithm.H"
 
 // for coupling of nonmatching meshes
-#include "adapter_coupling_volmortar.H"
-#include "volmortar_utils.H"
+#include "coupling_adapter_volmortar.H"
+#include "coupling_volmortar_utils.H"
 
 #include "scatra_timint_implicit.H"
 #include "inpar_scatra.H"

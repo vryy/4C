@@ -11,7 +11,7 @@
 #define CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H
 
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "contact_aug_utils.H"
 #include <unordered_map>
 

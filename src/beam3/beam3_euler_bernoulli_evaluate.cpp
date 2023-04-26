@@ -18,7 +18,7 @@
 #include "lib_utils.H"
 #include "lib_function_of_time.H"
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "inpar_structure.H"
 #include "structure_new_elements_paramsinterface.H"
 

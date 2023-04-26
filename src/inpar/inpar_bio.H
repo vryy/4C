@@ -125,15 +125,6 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace BIOFILM
 
-  namespace PATSPEC
-  {
-    /// set the patient specific parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-
-    /// set specific patspec conditions (AAA)
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
-  }  // namespace PATSPEC
-
   namespace REDAIRWAYS
   {
     /// set the reduced airways parameters

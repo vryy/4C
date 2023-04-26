@@ -16,7 +16,7 @@
 #include "poroelast_defines.H"
 
 // adapters
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_fld_poro.H"
 #include "adapter_str_fpsiwrapper.H"
@@ -1142,7 +1142,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
   FluidField()->Discretization()->ClearState();
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::PoroFDCheck()
+[[maybe_unused]] void POROELAST::Monolithic::PoroFDCheck()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
@@ -1679,7 +1679,7 @@ void POROELAST::Monolithic::Aitken()
   iterinc_->Scale(1.0 - mu_);
 }
 
-__attribute__((unused)) void POROELAST::Monolithic::AitkenReset()
+[[maybe_unused]] void POROELAST::Monolithic::AitkenReset()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {

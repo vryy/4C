@@ -13,7 +13,7 @@
 
 #include "lib_globalproblem.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"

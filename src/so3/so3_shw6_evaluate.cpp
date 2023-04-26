@@ -13,8 +13,8 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "mat_viscoanisotropic.H"
 #include "mat_micromaterial.H"

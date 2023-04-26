@@ -151,7 +151,7 @@ fi
 ### Stage 2: Header check ####################################
 python ./utilities/code_checks/header_check.py --diff_only || exit 1
 
-python ./utilities/code_checks/check_file_prefix_and_includes.py src src --diff_only || exit 1
+python ./utilities/code_checks/check_file_prefix_and_includes.py src --diff_only || exit 1
 
 python ./utilities/code_checks/check_header_guards.py --diff_only || exit 1
 

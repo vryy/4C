@@ -1057,7 +1057,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
       // get corresponding nodeids
       std::vector<int> nodeids(nodes.size());
-      std::transform(nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun(&DRT::Node::Id));
+      std::transform(nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&DRT::Node::Id));
 
       // create the internal face element
       Teuchos::RCP<DRT::FaceElement> surf = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(

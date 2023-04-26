@@ -39,11 +39,11 @@
 #include "geometry_searchtree.H"
 #include "geometry_searchtree_service.H"
 #include "adapter_fld_fluid_ale.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_ale_fsi.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -127,27 +127,6 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
 
   EpetraExt::RowMatrixToMatlabFile(filename.c_str(), *jacobian);
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
-    const std::vector<Teuchos::RCP<const Epetra_Map>>& vecSpaces)
-{
-  int maxgid = 0;
-  for (unsigned i = 0; i < vecSpaces.size(); ++i)
-  {
-    maxgid = std::max(maxgid, vecSpaces[i]->MaxAllGID());
-  }
-
-  std::vector<int> gids;
-  gids.reserve(emap->NumMyElements());
-  std::transform(emap->MyGlobalElements(), emap->MyGlobalElements() + emap->NumMyElements(),
-      std::back_inserter(gids), std::bind2nd(std::plus<int>(), maxgid + 1 - emap->MinAllGID()));
-
-  return Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, emap->Comm()));
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

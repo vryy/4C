@@ -170,7 +170,7 @@ std::vector<double> MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::ModifyPh
   if (scale_phi != 1.0)
     // scale the vector and save the result in phinp_mod
     std::transform(phinp.begin(), phinp.end(), phinp_mod.begin(),
-        std::bind1st(std::multiplies<double>(), scale_phi));
+        [&](const double& ele) { return ele * scale_phi; });
 
   return phinp_mod;
 }

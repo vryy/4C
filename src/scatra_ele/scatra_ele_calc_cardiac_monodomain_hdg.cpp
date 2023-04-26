@@ -25,9 +25,9 @@
 #include "mat_myocard.H"
 #include "mat_list.H"
 
-#include "fem_general_utils_polynomial.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 
 /*----------------------------------------------------------------------*

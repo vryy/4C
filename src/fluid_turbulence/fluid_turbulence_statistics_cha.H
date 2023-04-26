@@ -61,7 +61,7 @@ output.
 #include <Teuchos_ParameterList.hpp>
 #include "lib_discret.H"
 #include "nurbs_discret.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_control_point.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "inpar_fluid.H"

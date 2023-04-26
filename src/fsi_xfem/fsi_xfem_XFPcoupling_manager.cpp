@@ -21,7 +21,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 // remove me
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)

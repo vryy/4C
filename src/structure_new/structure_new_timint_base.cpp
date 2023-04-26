@@ -581,12 +581,6 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   // ToDo write output on micro-scale (multi-scale analysis)
   //  if (HaveMicroMat())
   //    dserror("OutputMicro() is not yet implemented!"); // OutputMicro();
-
-  // write patient specific output
-  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
-  {
-    // ToDo OutputPatspec()
-  }
 }
 
 /*----------------------------------------------------------------------------*

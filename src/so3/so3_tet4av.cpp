@@ -14,7 +14,7 @@
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "so3_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -86,8 +86,7 @@ void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("CIR", 3)
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("HU");
+      .AddOptionalNamedDoubleVector("FIBER3", 3);
 }
 
 /*----------------------------------------------------------------------***

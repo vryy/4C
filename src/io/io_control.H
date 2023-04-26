@@ -15,7 +15,7 @@
 
 extern "C"
 {
-#include "pss_full_types.h"
+#include "io_legacy_types.h"
 }
 
 //  Forward declaration

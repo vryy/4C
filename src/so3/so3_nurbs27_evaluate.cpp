@@ -14,17 +14,17 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
 #include <Epetra_SerialDenseSolver.h>
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "mat_so3_material.H"
 #include "lib_globalproblem.H"
 #include "lib_elements_paramsinterface.H"
 #include "so3_utils.H"
 
 #include "lib_element_vtk_cell_type_register.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
 
 /*----------------------------------------------------------------------*

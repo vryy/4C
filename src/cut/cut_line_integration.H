@@ -17,7 +17,7 @@ equations
 #include "cut_clnwrapper.H"
 #include "linalg_fixedsizematrix.H"
 
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 /*!
 \brief Performs integration of  base functions along the line using the standard Gaussian rule

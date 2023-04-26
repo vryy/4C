@@ -11,7 +11,7 @@ concentrations and with advanced reaction terms
 #include "scatra_ele_parameter_std.H"
 #include "geometry_position_array.H"
 #include "lib_utils.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 #include "headers_singleton_owner.H"
 
 

@@ -12,7 +12,7 @@
 #define W1_PORO_H
 
 #include "inpar_structure.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "w1.H"
 #include "w1_poro_eletypes.H"

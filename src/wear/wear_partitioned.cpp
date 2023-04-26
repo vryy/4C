@@ -59,8 +59,8 @@
 #include "ale_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
-#include "adapter_coupling.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_ale_wear.H"
 

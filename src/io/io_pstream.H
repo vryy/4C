@@ -85,7 +85,7 @@ namespace IO
 
     /// This handles the actual printing to screen/writing to a file.
     template <typename CharT>
-    Pstream& stream(CharT s)  ///< text to be added
+    Pstream& stream(const CharT& s)  ///< text to be added
     {
       if (not is_initialized_) dserror("Setup the output before you use it!");
 
@@ -265,27 +265,28 @@ namespace IO
   /// Imitate the std::flush behavior
   Level& flush(Level& out);
 
+  /*====================================================================*/
+  /// Handle streaming to Pstream objects
+  template <typename charT>
+  Pstream& operator<<(Pstream& out, const charT& s)
+  {
+    return out.stream(s);
+  }
+
+  /// Handle streaming to Level objects
+  template <typename charT>
+  Level& operator<<(Level& out, charT s)
+  {
+    return out.stream(s);
+  }
+
+  /// Handle special manipulators (currently only IO::endl) that are streamed to Pstream
+  Pstream& operator<<(Pstream& out, Pstream& (*pf)(Pstream&));
+
+  /// Handle special manipulators (currently only IO::endl) that are streamed to Level
+  Level& operator<<(Level& out, Level& (*pf)(Level&));
+
 }  // namespace IO
-
-/// Handle streaming to Pstream objects
-template <typename charT>
-IO::Pstream& operator<<(IO::Pstream& out, charT s)
-{
-  return out.stream(s);
-}
-
-/// Handle streaming to Level objects
-template <typename charT>
-IO::Level& operator<<(IO::Level& out, charT s)
-{
-  return out.stream(s);
-}
-
-/// Handle special manipulators (currently only IO::endl) that are streamed to Pstream
-IO::Pstream& operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&));
-
-/// Handle special manipulators (currently only IO::endl) that are streamed to Level
-IO::Level& operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&));
 
 /*----------------------------------------------------------------------*/
 #endif  // IO_PSTREAM_H

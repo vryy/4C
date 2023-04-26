@@ -29,7 +29,7 @@
 #include "inpar_validparameters.H"
 #include "inpar_fs3i.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_structure_scatra_ele.H"
 

@@ -13,15 +13,18 @@
 #include "solver_nonlin_nox_floating_point_exception.H"
 
 #include <NOX_Utils.H>
+#ifdef TRAP_FE
 #include <fenv.h>
+#endif
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::FloatingPointException::disable() const
 {
   if (not shall_be_caught_) return;
-
+#ifdef TRAP_FE
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+#endif
 }
 
 /*----------------------------------------------------------------------------*
@@ -29,8 +32,9 @@ void NOX::NLN::FloatingPointException::disable() const
 void NOX::NLN::FloatingPointException::clear() const
 {
   if (not shall_be_caught_) return;
-
+#ifdef TRAP_FE
   feclearexcept(FE_ALL_EXCEPT);
+#endif
 }
 
 /*----------------------------------------------------------------------------*
@@ -38,6 +42,7 @@ void NOX::NLN::FloatingPointException::clear() const
 int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
 {
   int exception_occurred = 0;
+#ifdef TRAP_FE
   if (fetestexcept(FE_INVALID))
   {
     os << "Floating Point Exception: INVALID\n";
@@ -53,7 +58,7 @@ int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
     os << "Floating Point Exception: DIVISON BY ZERO\n";
     ++exception_occurred;
   }
-
+#endif
   return exception_occurred;
 }
 
@@ -62,8 +67,9 @@ int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
 void NOX::NLN::FloatingPointException::enable() const
 {
   if (not shall_be_caught_) return;
-
+#ifdef TRAP_FE
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+#endif
 }
 
 /*----------------------------------------------------------------------------*

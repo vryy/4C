@@ -74,7 +74,7 @@ namespace XFEM
         // evaluate interface velocity (given by weak Dirichlet condition)
         robin_id_dirch = cond->GetInt("robin_id_dirch");
         // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
-        if (!std::signbit(robin_id_dirch))
+        if (!std::signbit(static_cast<double>(robin_id_dirch)))
           EvaluateDirichletFunction(
               ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
@@ -89,7 +89,7 @@ namespace XFEM
 
       // evaluate interface traction (given by Neumann condition)
       robin_id_dirch = cond->GetInt("robin_id_neumann");
-      if (!std::signbit(robin_id_dirch))
+      if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
         // sliplenght twice (also done in UpdateConfigurationMap_GP ... as soon as this gets
@@ -129,7 +129,7 @@ namespace XFEM
 
 // Safety checks
 #ifdef DEBUG
-      if (!std::signbit(robin_id_dirch))
+      if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) ==
             conditionsmap_robin_neumann_.end())

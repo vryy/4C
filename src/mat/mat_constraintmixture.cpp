@@ -29,12 +29,12 @@ For a detailed description see:
 #include "mat_service.H"
 #include "lib_linedefinition.H"
 #include "comm_utils.H"
-#include "io_gmsh.H"                               // for debug plotting with gmsh
-#include "io_control.H"                            // for debug plotting with gmsh
-#include "fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
-#include "fem_general_utils_integration.H"         // for debug plotting with gmsh
-#include "lib_utils.H"                             // for debug plotting with gmsh
-#include "inpar_structure.H"                       // for pstime
+#include "io_gmsh.H"                                              // for debug plotting with gmsh
+#include "io_control.H"                                           // for debug plotting with gmsh
+#include "discretization_fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
+#include "discretization_fem_general_utils_integration.H"         // for debug plotting with gmsh
+#include "lib_utils.H"                                            // for debug plotting with gmsh
+#include "inpar_structure.H"                                      // for pstime
 #include "lib_function_of_time.H"
 #include "lib_prestress_service.H"
 
@@ -1302,14 +1302,6 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const LINALG::Matrix<NUM_STRESS
   // variables for stress and cmat
   double fac_cmat = 0.0;
   double fac_stress = 0.0;
-
-  //--------------------------------------------------------------------------------------
-  // prestress time
-  //  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  //  INPAR::STR::PreStress pstype =
-  //  Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS"); double pstime = -1.0 *
-  //  params_->lifetime_ - dt; if (pstype == INPAR::STR::PreStress::mulf)
-  //    pstime = pslist.get<double>("PRESTRESSTIME");
 
   //--------------------------------------------------------------------------------------
   // calculate stress and elasticity matrix

@@ -13,7 +13,7 @@
 #include "inpar_scatra.H"
 #include "inpar_validparameters.H"
 #include "io_control.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
 #include "lib_globalproblem.H"

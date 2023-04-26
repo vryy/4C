@@ -21,7 +21,7 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 #include "lib_element.H"
 #include "inpar_structure.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 // include header because number of Gauss points are determined dependent on distype
 #include "thermo_ele_impl_utils.H"

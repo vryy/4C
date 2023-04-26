@@ -79,8 +79,6 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 

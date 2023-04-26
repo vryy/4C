@@ -50,14 +50,12 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include <Epetra_Vector.h>
 #include "lib_elementtype.H"
 #include "lib_node.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include <Sacado.hpp>
 #include "headers_FAD_utils.H"
 
 #include "beam3_base.H"
 
-#include <unistd.h>
-#include <sys/times.h>
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;

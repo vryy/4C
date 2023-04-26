@@ -14,7 +14,7 @@
 #include "ssi_utils.H"
 
 #include "adapter_str_ssiwrapper.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_scatra_base_algorithm.H"
 
 #include "scatra_timint_implicit.H"

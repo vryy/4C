@@ -22,7 +22,10 @@
 #include <list>
 #include <random>
 #include <stdexcept>
+
+#ifdef TRAP_FE
 #include <cfenv>
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -166,7 +169,9 @@ void INVANA::ParticleGroup::DrawInitialStates()
       try
       {
         // clear exception being already signaled
+#ifdef TRAP_FE
         feclearexcept(FE_ALL_EXCEPT);
+#endif
 
         // get new proposal state
         loglikemixture_->DrawfromPrior(sample);
@@ -174,8 +179,10 @@ void INVANA::ParticleGroup::DrawInitialStates()
         // evaluate mixture loglikelihood at the sample
         err = EvaluateMixture(sample, posterior, prior);
 
+#ifdef TRAP_FE
         // test for occurence of these signals
         iraised = fetestexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
 
         // and make them known in the local world
         sample.Comm().SumAll(&iraised, &graised, 1);
@@ -249,8 +256,10 @@ int INVANA::ParticleGroup::EvaluateMixture(
 double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double scale_curr)
 {
   // in here i dont want SIGFPE but a more sensible treatment
+#ifdef TRAP_FE
   fedisableexcept(FE_ALL_EXCEPT);
   feclearexcept(FE_ALL_EXCEPT);
+#endif
   int raise = 0;
   int graise = 0;
 
@@ -315,7 +324,9 @@ double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double s
   //  --------------- END Compute ESS
 
   // test flags
+#ifdef TRAP_FE
   raise = fetestexcept(FE_UNDERFLOW | FE_OVERFLOW | FE_DIVBYZERO);
+#endif
   pcomm_->GComm().SumAll(&raise, &graise, 1);
 
   // suppose the step was just too large! If it
@@ -329,8 +340,8 @@ double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double s
   }
 
   // reset flags and enable traps in case
-  feclearexcept(FE_ALL_EXCEPT);
 #ifdef TRAP_FE
+  feclearexcept(FE_ALL_EXCEPT);
   feenableexcept(FE_INVALID | FE_DIVBYZERO);
 #endif
 

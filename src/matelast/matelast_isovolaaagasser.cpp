@@ -65,20 +65,12 @@ MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasse
 
 void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
 {
-  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-  //  int eleID =
-  //      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-  //          eleGID);
-
   // extend parameters to elecolmap_layout
   params_->ExpandParametersToEleColLayout();
   // new style
   double normdist_myele = params_->GetParameter(params_->normdist, eleGID);
   double cele_myele = -999.0;
-  if (normdist_myele == -999.0)
-    dserror(
-        "Aneurysm mean ilt distance not found. Did you switch on 'PATSPEC'? (besides other "
-        "possible errors of course)");
+  if (normdist_myele == -999.0) dserror("Aneurysm mean ilt distance not found.");
 
 
   if (0.0 <= normdist_myele and normdist_myele <= 0.5)
@@ -129,9 +121,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
 
 
     if (params_->GetParameter(params_->normdist, eleGID) == -999.0)
-      dserror(
-          "Aneurysm mean ilt distance not found. Did you switch on 'PATSPEC'? (besides other "
-          "possible errors of course)");
+      dserror("Aneurysm mean ilt distance not found.");
 
     // recalculate cele_
     CalcCele(eleGID);
@@ -144,12 +134,6 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::M
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
 {
-  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-  // get element lID incase we have element specific material parameters
-  //  int eleID =
-  //      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-  //          eleGID);
-
   if (params_->IsInit())
   {
     double my_cele = params_->GetParameter(params_->cele, eleGID);

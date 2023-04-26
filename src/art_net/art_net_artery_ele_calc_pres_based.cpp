@@ -16,7 +16,7 @@
 #include "mat_cnst_1d_art.H"
 #include "lib_function.H"
 #include "lib_utils.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "art_net_art_junction.H"
 #include "art_net_art_terminal_bc.H"

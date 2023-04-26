@@ -18,7 +18,7 @@
 #include "headers_pairedvector.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "inpar_wear.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "headers_singleton_owner.H"
 

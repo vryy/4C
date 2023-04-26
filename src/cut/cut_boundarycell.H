@@ -13,8 +13,8 @@
 #include "cut_tolerance.H"
 #include "cut_kernel.H"
 
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

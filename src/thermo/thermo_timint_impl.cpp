@@ -14,7 +14,7 @@
 #include "thermo_timint_impl.H"
 #include "thermo_aux.H"
 #include "thermo_ele_action.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "io_pstream.H"
 
 /*----------------------------------------------------------------------*

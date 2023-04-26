@@ -35,7 +35,7 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 #include "mat_service.H"
 #include "mat_par_bundle.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "io_control.H"
 

@@ -13,7 +13,6 @@
 #include "linalg_utils_densematrix_eigen.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "patspec.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "mat_elasthyper.H"
 #include "mat_stvenantkirchhoff.H"
@@ -26,7 +25,7 @@
 #include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_thermostvenantkirchhoff.H"
 #include "mat_thermoplastichyperelast.H"
 #include "mat_robinson.H"
@@ -136,11 +135,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else
     dserror("Unknown type of action for So_tet4");
-
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)
@@ -568,15 +562,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-
-      // determine new fiber directions
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec, "REMODEL");
-      if (remodel)
-      {
-        so_tet4_remodel(lm, mydisp, params, Material());
-      }
 
       if (SolidMaterial()->UsesExtendedUpdate())
       {

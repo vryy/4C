@@ -21,9 +21,9 @@
 
 // include header because number of Gauss points are determined
 // dependent on distype
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |

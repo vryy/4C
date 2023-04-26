@@ -21,13 +21,13 @@
 #include "mortar_calc_utils.H"
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_contact.H"
 #include "inpar_wear.H"
 
 // headers for poro contact integration
 #include "mat_structporo.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

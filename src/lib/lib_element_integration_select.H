@@ -14,7 +14,7 @@
 
 
 #include "lib_element.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 
 namespace DRT
