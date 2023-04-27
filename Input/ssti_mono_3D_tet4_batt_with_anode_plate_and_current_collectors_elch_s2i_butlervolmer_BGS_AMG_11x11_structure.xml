@@ -16,6 +16,7 @@
       <Parameter name="A" type="string" value="RAPFactory_List"/>
       <Parameter name="P" type="string" value="ProlongatorFactory_List"/>
       <Parameter name="R" type="string" value="RestrictorFactory_List"/>
+      <Parameter name="Coordinates" type="string" value="TentativePFactory_List"/>
     </ParameterList>
   </ParameterList>
   <ParameterList name="Factories">
