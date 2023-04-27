@@ -28,35 +28,7 @@
  * three flags refer to the tangent at the node (rotational degree of freedom). The flag of the
  * tangent in beam centerline direction must be set to 0, otherwise the axial tension at the
  * boundary would be prescribed.
- *
- * ARBITRARY PRECISSION: This element offers the method HighPrecissionCalc() which has to be
- * uncommented in Beam3eb::Evaluate. With this method the whole FEM calculation can be done (for
- * simple problems) in an element intern routine which calculates with a prescribed arbitrary
- * precision. This can be used for debugging reasons to identify the sources of ill-conditioning and
- * rounding errors. All intern methods with the ending ...prec belong to this high precission
- * calculation. The following facts have to be considered when doing a high precision calculation:
- *
- * - for high precision calculations the cln libraries (cln/float.h, cln/io.h, cln/float_io.h,
- * cln/real.h) have to be included which are standard linux libraries for f16 machines (and higher).
- * An instruction manual can be found at: "http://www.ginac.de/CLN/cln.html#SEC_Top". The libraries
- * can be found at "/usr/include/cln" at your f16 machine.
- *
- * - The cln libraries are not compatible with the Sacado library which offers the FAD (Forward
- * Automatic Differentiation) data type. Therefore automatic differentiation can not be done with
- * arbitrary precision!
- *
- * - Please make sure that the line -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl " is replaced by -D
- * CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl -lcln" in your do-configure file.
- *
- * - There may be some standard methods which are not compatible with arbitrary precision. The only
- * method for which this has been recognized so far is the method std::fill. Therefore the following
- * code block in linalg_fixedsizematrix.H has to be adapted:
- *
- *       //this line is needed for arbitrary precision (cln) data types
- *       std::memset(mat,0,i*j*sizeof(value_type));
- *       //this line is needed for FAD data type
- *       //std::fill(mat,mat+i*j,0); */
-
+ */
 
 // header file only included if not yet included!
 #ifndef BEAM3_EULER_BERNOULLI_H
@@ -66,19 +38,6 @@
 #include "lib_node.H"
 
 #include "beam3_base.H"
-
-/* Flag to switch on arbitrary precision calculation. To use this functionality, two
- * slight modification in the do-configure file and in linalg_fixesizematrix.H are
- * necessary. Read the text above for more information.
- * */
-// #define PRECISION ;
-#ifdef PRECISION
-#include <cln/float.h>
-#include <cln/io.h>
-#include <cln/float_io.h>
-#include <cln/real.h>
-using namespace cln;
-#endif
 
 // #define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
 //  tension case Default: Off
@@ -134,675 +93,524 @@ dserror(
 dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
 
-namespace DRT
+namespace DRT::ELEMENTS
 {
-  namespace ELEMENTS
+  class Beam3ebType : public DRT::ElementType
   {
-    class Beam3ebType : public DRT::ElementType
-    {
-     public:
-      std::string Name() const { return "Beam3ebType"; }
+   public:
+    std::string Name() const override { return "Beam3ebType"; }
 
-      static Beam3ebType& Instance();
+    static Beam3ebType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+        const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+    int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+    void NodalBlockInformation(
+        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+    Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+    void SetupElementDefinition(
+        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+        override;
 
-     private:
-      static Beam3ebType instance_;
-    };
+   private:
+    static Beam3ebType instance_;
+  };
+
+  /*!
+  \brief 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis
+  "Development of a finite element for nonlinear beams based on the formulas of Frenet-Serret" by
+  Christoph Meier. The current formulation is only able to display axial tension and bending
+  curvature based on the curve describing the centerline of an initially (i.e. stress free)
+  straight beam. There is no shear deformation and no torsion. Refer to 'beam3k' for a full
+  Kirchhoff type element.
+
+  */
+  class Beam3eb : public Beam3Base
+  {
+   public:
+    //! @name Friends
+    friend class Beam3ebType;
+
+
+    //! @name Constructors and destructors and related methods
 
     /*!
-    \brief 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis
-    "Development of a finite element for nonlinear beams based on the formulas of Frenet-Serret" by
-    Christoph Meier. The current formulation is only able to display axial tension and bending
-    curvature based on the curve describing the centerline of an initially (i.e. stress free)
-    straight beam. There is no shear deformation and no torsion. Refer to 'beam3k' for a full
-    Kirchhoff type element.
+    \brief Standard Constructor
+
+    \param id    (in): A globally unique element id
+    \param etype (in): Type of element
+    \param owner (in): owner processor of the element
+    */
+    Beam3eb(int id, int owner);
+
+    /*!
+    \brief Copy Constructor
+
+    Makes a deep copy of a Element
+    */
+    Beam3eb(const Beam3eb& old);
+
+    /*!
+    \brief Destructor
+    */
+    virtual ~Beam3eb() = default;
+
+    /*!
+    \brief Deep copy this instance of Beam3eb and return pointer to the copy
+
+    The Clone() method is used by the virtual base class Element in cases
+    where the type of the derived class is unknown and a copy-ctor is needed
+  .
+    */
+    DRT::Element* Clone() const override;
+
+    //! \brief Get shape type of element
+    DiscretizationType Shape() const override;
+
+    /*!
+    \brief Return unique ParObject id
+
+    Every class implementing ParObject needs a unique id defined at the
+    top of parobject.H
+    */
+    int UniqueParObjectId() const override { return Beam3ebType::Instance().UniqueParObjectId(); }
+
+    /*!
+    \brief Pack this class so it can be communicated
+
+    \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    class Beam3eb : public Beam3Base
-    {
-     public:
-      //! @name Friends
-      friend class Beam3ebType;
+    void Pack(DRT::PackBuffer& data) const override;
 
+    /*!
+    \brief Unpack data from a char vector into this class
 
-      //! @name Constructors and destructors and related methods
+    \ref Pack and \ref Unpack are used to communicate this element
 
-      /*!
-      \brief Standard Constructor
+    */
+    void Unpack(const std::vector<char>& data) override;
 
-      \param id    (in): A globally unique element id
-      \param etype (in): Type of element
-      \param owner (in): owner processor of the element
-      */
-      Beam3eb(int id, int owner);
+    DRT::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
 
-      /*!
-      \brief Copy Constructor
+    //@}
 
-      Makes a deep copy of a Element
-      */
-      Beam3eb(const Beam3eb& old);
+    //! \brief Return number of lines to this element
+    int NumLine() const override { return 1; }
 
-      /*!
-      \brief Destructor
-      */
-      virtual ~Beam3eb() = default;
+    //! \brief get number of nodes used for centerline interpolation
+    inline int NumCenterlineNodes() const override { return 2; }
 
-      /*!
-      \brief Deep copy this instance of Beam3eb and return pointer to the copy
+    //! \brief find out whether given node is used for centerline interpolation
+    inline bool IsCenterlineNode(const DRT::Node& node) const override { return true; }
 
-      The Clone() method is used by the virtual base class Element in cases
-      where the type of the derived class is unknown and a copy-ctor is needed
-    .
-      */
-      virtual DRT::Element* Clone() const;
+    //! \brief Get jacobian this element
+    const double& GetJacobi() const { return jacobi_; }
 
-      /*!
-     \brief Get shape type of element
+    //! \brief get access to the reference length
+    inline double RefLength() const override { return 2.0 * jacobi_; }
+
+    /** \brief get unit tangent vector in reference configuration at i-th node of beam element
+     * (element-internal numbering)
      */
-      virtual DiscretizationType Shape() const;
+    inline void GetRefTangentAtNode(LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
+    {
+      Tref_i = Tref()[i];
+    }
 
+    //! \brief Get maximal bending curvature occuring in this element
+    const double& GetKappaMax() const { return kappa_max_; }
 
-      /*!
-      \brief Return unique ParObject id
+    //! \brief Get material cross-section deformation measures, i.e. strain resultants
+    inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
+        std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
+        std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
+        std::vector<double>& curvature_3_GPs) const override
+    {
+      axial_strain_GPs = axial_strain_GP_;
+      // shear deformations are zero by definition for Kirchhoff beam formulation
+      shear_strain_2_GPs.clear();
+      shear_strain_3_GPs.clear();
 
-      Every class implementing ParObject needs a unique id defined at the
-      top of parobject.H
-      */
-      virtual int UniqueParObjectId() const { return Beam3ebType::Instance().UniqueParObjectId(); }
+      // twist deformation cannot be represented by this reduced Kirchhoff beam formulation
+      twist_GPs.clear();
+      // only one curvature component due to isotropic formulation of this reduced Kirchhoff beam
+      curvature_2_GPs = curvature_GP_;
+      curvature_3_GPs.clear();
+    }
 
-      /*!
-      \brief Pack this class so it can be communicated
+    //! \brief Get material cross-section stress resultants
+    inline void GetMaterialStressResultantsAtAllGPs(std::vector<double>& axial_force_GPs,
+        std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
+        std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
+        std::vector<double>& bending_moment_3_GPs) const override
+    {
+      axial_force_GPs = axial_force_GP_;
+      // note: shear deformations are zero by definition for Kirchhoff beam formulation
+      shear_force_2_GPs.clear();
+      shear_force_3_GPs.clear();
 
-      \ref Pack and \ref Unpack are used to communicate this element
+      // torsion moment cannot be represented by this reduced Kirchhoff beam formulation
+      torque_GPs.clear();
+      // only one bending moment component due to isotropic formulation of this reduced Kirchhoff
+      // beam
+      bending_moment_2_GPs = bending_moment_GP_;
+      bending_moment_3_GPs.clear();
+    }
 
-      */
-      virtual void Pack(DRT::PackBuffer& data) const;
+    //! \brief get centerline position at xi \in [-1,1] (element parameter space)
+    void GetPosAtXi(LINALG::Matrix<3, 1>& pos, const double& xi,
+        const std::vector<double>& disp) const override;
 
-      /*!
-      \brief Unpack data from a char vector into this class
+    //! \brief get triad at xi \in [-1,1] (element parameter space)
+    void GetTriadAtXi(LINALG::Matrix<3, 3>& triad, const double& xi,
+        const std::vector<double>& disp) const override;
 
-      \ref Pack and \ref Unpack are used to communicate this element
+    //! \brief Get axial strain at xi for given nodal displacements
+    double GetAxialStrain(double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
 
-      */
-      virtual void Unpack(const std::vector<char>& data);
+    //! get internal (elastic) energy of element
+    double GetInternalEnergy() const override { return Eint_; };
 
-      virtual DRT::ElementType& ElementType() const { return Beam3ebType::Instance(); }
+    //! get kinetic energy of element
+    double GetKineticEnergy() const override { return Ekin_; };
 
-      //@}
+    //! \brief Get vector of Teuchos::RCPs to the lines of this element
+    std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      /*!
-      \brief Return number of lines to this element
-      */
-      virtual int NumLine() const { return 1; }
-
-      /** \brief get number of nodes used for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual inline int NumCenterlineNodes() const { return 2; }
-
-      /** \brief find out whether given node is used for centerline interpolation
-       *
-       *  \author grill
-       *  \date 10/16 */
-      virtual inline bool IsCenterlineNode(const DRT::Node& node) const { return true; }
-
-      /*!
-       \brief Get jacobian this element
-       */
-      const double& GetJacobi() const { return jacobi_; }
-
-      /** \brief get access to the reference length
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual inline double RefLength() const { return 2.0 * jacobi_; }
-
-      /** \brief get unit tangent vector in reference configuration at i-th node of beam element
-       * (element-internal numbering)
-       *
-       *  \author grill
-       *  \date 06/16 */
-      virtual inline void GetRefTangentAtNode(LINALG::Matrix<3, 1>& Tref_i, const int& i) const
-      {
-        Tref_i = Tref()[i];
-      }
-
-      /*!
-       \brief Get maximal bending curvature occuring in this element
-       */
-      const double& GetKappaMax() const { return kappa_max_; }
-
-      /*!
-       \brief Get maximal axial tension occuring in this element
-       */
-      const double& GetEpsilonMax() const { return epsilon_max_; }
-
-      /** \brief Get material cross-section deformation measures, i.e. strain resultants
-       *
-       *  \author grill
-       *  \date 04/17 */
-      virtual inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
-          std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
-          std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
-          std::vector<double>& curvature_3_GPs) const
-      {
-        axial_strain_GPs = axial_strain_GP_;
-        // shear deformations are zero by definition for Kirchhoff beam formulation
-        shear_strain_2_GPs.clear();
-        shear_strain_3_GPs.clear();
-
-        // twist deformation cannot be represented by this reduced Kirchhoff beam formulation
-        twist_GPs.clear();
-        // only one curvature component due to isotropic formulation of this reduced Kirchhoff beam
-        curvature_2_GPs = curvature_GP_;
-        curvature_3_GPs.clear();
-      }
-
-      /** \brief Get material cross-section stress resultants
-       *
-       *  \author grill
-       *  \date 04/17 */
-      virtual inline void GetMaterialStressResultantsAtAllGPs(std::vector<double>& axial_force_GPs,
-          std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
-          std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
-          std::vector<double>& bending_moment_3_GPs) const
-      {
-        axial_force_GPs = axial_force_GP_;
-        // note: shear deformations are zero by definition for Kirchhoff beam formulation
-        shear_force_2_GPs.clear();
-        shear_force_3_GPs.clear();
-
-        // torsion moment cannot be represented by this reduced Kirchhoff beam formulation
-        torque_GPs.clear();
-        // only one bending moment component due to isotropic formulation of this reduced Kirchhoff
-        // beam
-        bending_moment_2_GPs = bending_moment_GP_;
-        bending_moment_3_GPs.clear();
-      }
-
-      /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      LINALG::Matrix<3, 1> GetPos(const double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
-
-      /** \brief get centerline position at xi \in [-1,1] (element parameter space)
-       *
-       *  \author grill
-       *  \date 06/16 */
-      virtual void GetPosAtXi(
-          LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const;
-
-      /** \brief get triad at xi \in [-1,1] (element parameter space)
-       *
-       *  \author grill
-       *  \date 01/17 */
-      virtual void GetTriadAtXi(
-          LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const;
-
-      /*!
-      \brief Get axial strain at xi for given nodal displacements
-      */
-      double GetAxialStrain(double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
-
-      /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      double GetAxialForce(double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
-
-      //! get internal (elastic) energy of element
-      double GetInternalEnergy() const { return Eint_; };
-
-      //! get kinetic energy of element
-      double GetKineticEnergy() const { return Ekin_; };
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
-
-
-      /*!
-      \brief Get number of degrees of freedom of a single node
-      */
-      virtual int NumDofPerNode(const DRT::Node& node) const
-      {
+    //! \brief Get number of degrees of freedom of a single node
+    int NumDofPerNode(const DRT::Node& node) const override
+    {
 /*note: this is not necessarily the number of DOF assigned to this node by the discretization
  *finally, but only the number of DOF requested for this node by this element; the discretization
  *will finally assign the maximal number of DOF to this node requested by any element connected to
  *this node*/
 #ifndef INEXTENSIBLE
-        return 3 * NODALDOFS;
+      return 3 * NODALDOFS;
 #else
-        if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
-        {
-          return 7;
-        }
-        else
-        {
-          return 1;
-        }
+      if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+      {
+        return 7;
+      }
+      else
+      {
+        return 1;
+      }
 #endif
-      }
+    }
 
-      /*!
-      \brief Get number of degrees of freedom per element not including nodal degrees of freedom
-      */
-      virtual int NumDofPerElement() const { return 0; }
+    //! \brief Get number of degrees of freedom per element not including nodal degrees of freedom
+    int NumDofPerElement() const override { return 0; }
 
-      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual inline bool HermiteCenterlineInterpolation() const { return true; }
+    //! \brief return flag whether Hermite polynomials are applied for centerline interpolation
+    inline bool HermiteCenterlineInterpolation() const override { return true; }
 
-      /*!
-      \brief Print this element
-      */
-      virtual void Print(std::ostream& os) const;
+    //! \brief Print this element
+    void Print(std::ostream& os) const override;
 
-      /*!
-      \brief get reference triad i.e. Tref_
-      */
-      std::vector<LINALG::Matrix<3, 1>> Tref() const;
+    //! \brief get reference triad i.e. Tref_
+    std::vector<LINALG::Matrix<3, 1>> Tref() const;
 
-      /*!
-      \brief get jacobi factor jacobi_
-      */
-      double jacobi() const;
+    //! \brief get jacobi factor jacobi_
+    double jacobi() const;
 
-      /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
-       *
-       *  \author grill
-       *  \date 06/16 */
-      inline virtual double GetJacobiFacAtXi(const double& xi) const
+    //! \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
+    inline double GetJacobiFacAtXi(const double& xi) const override
+    {
+      /* beam3eb elements are restricted to initially straight beams, for which the jacobi factor
+       * is constant along the entire element length */
+      return jacobi();
+    }
+
+    //! @name Construction
+
+    /*!
+    \brief Read input for this element
+
+    This class implements a dummy of this method that prints a warning and
+    returns false. A derived class would read one line from the input file and
+    store all necessary information.
+
+    */
+    // virtual bool ReadElement();
+
+    //! \brief Read input for this element
+    bool ReadElement(const std::string& eletype, const std::string& distype,
+        DRT::INPUT::LineDefinition* linedef) override;
+
+    //@}
+
+    //! @name Evaluation methods
+
+
+    /*!
+    \brief Evaluate an element
+
+    An element derived from this class uses the Evaluate method to receive commands
+    and parameters from some control routine in params and evaluates element matrices and
+    vectors accoring to the command in params.
+
+    \note This class implements a dummy of this method that prints a warning and
+          returns false.
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element depending on commands
+                                given in params
+    \param elemat2 (out)      : matrix to be filled by element depending on commands
+                                given in params
+    \param elevec1 (out)      : vector to be filled by element depending on commands
+                                given in params
+    \param elevec2 (out)      : vector to be filled by element depending on commands
+                                given in params
+    \param elevec3 (out)      : vector to be filled by element depending on commands
+                                given in params
+    \return 0 if successful, negative otherwise
+    */
+    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+        Epetra_SerialDenseVector& elevec3) override;
+
+    /*!
+    \brief Evaluate a Neumann boundary condition
+
+    An element derived from this class uses the EvaluateNeumann method to receive commands
+    and parameters from some control routine in params and evaluates a Neumann boundary condition
+    given in condition
+
+    \note This class implements a dummy of this method that prints a warning and
+          returns false.
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param condition (in)     : The condition to be evaluated
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : Force vector to be filled by element
+
+    \return 0 if successful, negative otherwise
+    */
+    int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+        Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+
+    /*!
+    \brief Evaluate PTC addition to stiffness for free Brownian motion
+
+    An element derived from this class uses the Evaluate method to receive commands
+    and parameters from some control routine in params and evaluates a  statistical Neumann
+    boundary condition as used in the problem type STATISTICAL MECHANICS
+
+    \param params (in/out)       : ParameterList for communication between control routine and
+    elements \param vector<double> mydisp : current nodal displacement \param elemat1 (out) :
+    artificial damping matrix to be filled by element
+
+    \return 0 if successful, negative otherwise
+    */
+    template <int nnode>
+    void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
+
+    //@}
+
+
+    //@}
+    //! sets up from current nodal position all geometric parameters (considering current position
+    //! as reference configuration)
+    void SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit = false);
+
+    /* computes the number of different random numbers required in each time step for generation
+     of stochastic forces                                                                    */
+    int HowManyRandomNumbersINeed() const override;
+
+    //! \brief add indices of those DOFs of a given node that are positions
+    inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const override
+    {
+      posdofs.push_back(0);
+      posdofs.push_back(1);
+      posdofs.push_back(2);
+    }
+
+    /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
+     * interpolation)
+     */
+    inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const override
+    {
+      tangdofs.push_back(3);
+      tangdofs.push_back(4);
+      tangdofs.push_back(5);
+    }
+
+    /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
+     * rotation vectors)
+     */
+    inline void RotationVecDofIndices(
+        std::vector<int>& rotvecdofs, const DRT::Node& node) const override
+    {
+    }
+
+    /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
+     *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
+     *          rotvec=false)
+     */
+    inline void Rotation1DDofIndices(
+        std::vector<int>& twistdofs, const DRT::Node& node) const override
+    {
+    }
+
+    /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
+     *         (additive, e.g. in case of beam3k with rotvec=true)
+     */
+    inline void TangentLengthDofIndices(
+        std::vector<int>& tangnormdofs, const DRT::Node& node) const override
+    {
+    }
+
+    //! \brief get element local indices of those Dofs that are used for centerline interpolation
+    inline void CenterlineDofIndicesOfElement(
+        std::vector<unsigned int>& centerlinedofindices) const override
+    {
+      centerlinedofindices.resize(12, 0);
+
+      for (unsigned int idof = 0; idof < 12; ++idof) centerlinedofindices[idof] = idof;
+    }
+
+    /** \brief extract values for those Dofs relevant for centerline-interpolation from total
+     * state vector
+     */
+    inline void ExtractCenterlineDofValuesFromElementStateVector(const std::vector<double>& dofvec,
+        std::vector<double>& dofvec_centerline, bool add_reference_values = false) const override
+    {
+      if (dofvec.size() != 12)
+        dserror(
+            "size mismatch: expected 12 values for element state vector and got %d", dofvec.size());
+
+      dofvec_centerline.resize(12, 0.0);
+      std::copy(dofvec.begin(), dofvec.end(), dofvec_centerline.begin());
+
+      if (add_reference_values)
       {
-        /* beam3eb elements are restricted to initially straight beams, for which the jacobi factor
-         * is constant along the entire element length */
-        return jacobi();
+        for (unsigned int dim = 0; dim < 3; ++dim)
+          for (unsigned int node = 0; node < 2; ++node)
+          {
+            dofvec_centerline[6 * node + dim] += Nodes()[node]->X()[dim];
+
+            // Hermite interpolation: add reference values for tangent DOFs as well
+            dofvec_centerline[6 * node + 3 + dim] += Tref_[node](dim);
+          }
       }
+    }
 
-      //! @name Construction
+   private:
+    //! vector storing the internal force vector
+    Epetra_SerialDenseVector internalforces_;
 
-      /*!
-      \brief Read input for this element
+    //! variable saving whether element has already been initialized (then isinit_ == true)
+    bool isinit_;
 
-      This class implements a dummy of this method that prints a warning and
-      returns false. A derived class would read one line from the input file and
-      store all necessary information.
+    //! Vector holding value of Jacobi determinant jacobi for each Gauss point for
+    //! underintegration
+    double jacobi_;
 
-      */
-      // virtual bool ReadElement();
+    //! bool recognizing first element call
+    bool firstcall_;
 
-      /*!
-      \brief Read input for this element
-      */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+    //! kinetic energy
+    double Ekin_;
 
-      //@}
+    //! internal energy
+    double Eint_;
+    //! internal energy stemming from axial tension
+    double Eint_axial_;
 
-      //! @name Evaluation methods
+    //! Matrix holding tangents at each node in reference configuration
+    std::vector<LINALG::Matrix<3, 1>> Tref_;
+    //! angular momentum of the element
+    LINALG::Matrix<3, 1> L_;
+    //! linear momentum of the element
+    LINALG::Matrix<3, 1> P_;
+    //! nodal tangents of last time step (necessary for PTC scheme)
+    LINALG::Matrix<3, 2> t0_;
+    //! nodal tangents of current time step (necessary for PTC scheme)
+    LINALG::Matrix<3, 2> t_;
+    //! norm of maximal curvature occuring in this element
+    double kappa_max_;
+    //! norm of maximal axial tension occuring in this element
+    double epsilon_max_;
 
+    //! strain resultant values at GPs
+    std::vector<double> axial_strain_GP_;
+    std::vector<double> curvature_GP_;
 
-      /*!
-      \brief Evaluate an element
-
-      An element derived from this class uses the Evaluate method to receive commands
-      and parameters from some control routine in params and evaluates element matrices and
-      vectors accoring to the command in params.
-
-      \note This class implements a dummy of this method that prints a warning and
-            returns false.
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element depending on commands
-                                  given in params
-      \param elemat2 (out)      : matrix to be filled by element depending on commands
-                                  given in params
-      \param elevec1 (out)      : vector to be filled by element depending on commands
-                                  given in params
-      \param elevec2 (out)      : vector to be filled by element depending on commands
-                                  given in params
-      \param elevec3 (out)      : vector to be filled by element depending on commands
-                                  given in params
-      \return 0 if successful, negative otherwise
-      */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
-
-      /*!
-      \brief Evaluate a Neumann boundary condition
-
-      An element derived from this class uses the EvaluateNeumann method to receive commands
-      and parameters from some control routine in params and evaluates a Neumann boundary condition
-      given in condition
-
-      \note This class implements a dummy of this method that prints a warning and
-            returns false.
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param condition (in)     : The condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : Force vector to be filled by element
-
-      \return 0 if successful, negative otherwise
-      */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-      /*!
-      \brief Evaluate PTC addition to stiffness for free Brownian motion
-
-      An element derived from this class uses the Evaluate method to receive commands
-      and parameters from some control routine in params and evaluates a  statistical Neumann
-      boundary condition as used in the problem type STATISTICAL MECHANICS
-
-      \param params (in/out)       : ParameterList for communication between control routine and
-      elements \param vector<double> mydisp : current nodal displacement \param elemat1 (out) :
-      artificial damping matrix to be filled by element
-
-      \return 0 if successful, negative otherwise
-      */
-      template <int nnode>
-      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
-
-      //@}
-
-
-      //@}
-      //! sets up from current nodal position all geometric parameters (considering current position
-      //! as reference configuration)
-      void SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit = false);
-
-      /* computes the number of different random numbers required in each time step for generation
-       of stochastic forces                                                                    */
-      virtual int HowManyRandomNumbersINeed() const;
-
-      /** \brief add indices of those DOFs of a given node that are positions
-       *
-       *  \author grill
-       *  \date 07/16 */
-      virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
-      {
-        posdofs.push_back(0);
-        posdofs.push_back(1);
-        posdofs.push_back(2);
-        return;
-      }
-
-      /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
-       * interpolation)
-       *
-       *  \author grill
-       *  \date 07/16 */
-      virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
-      {
-        tangdofs.push_back(3);
-        tangdofs.push_back(4);
-        tangdofs.push_back(5);
-        return;
-      }
-
-      /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
-       * rotation vectors)
-       *
-       *  \author grill
-       *  \date 07/16 */
-      virtual inline void RotationVecDofIndices(
-          std::vector<int>& rotvecdofs, const DRT::Node& node) const
-      {
-        return;
-      }
-
-      /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
-       *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
-       * rotvec=false)
-       *
-       *  \author grill
-       *  \date 07/16 */
-      virtual inline void Rotation1DDofIndices(
-          std::vector<int>& twistdofs, const DRT::Node& node) const
-      {
-        return;
-      }
-
-      /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
-       *         (additive, e.g. in case of beam3k with rotvec=true)
-       *
-       *  \author grill
-       *  \date 07/16 */
-      virtual inline void TangentLengthDofIndices(
-          std::vector<int>& tangnormdofs, const DRT::Node& node) const
-      {
-        return;
-      }
-
-      /** \brief get element local indices of those Dofs that are used for centerline interpolation
-       *
-       *  \author grill
-       *  \date 12/16 */
-      virtual inline void CenterlineDofIndicesOfElement(
-          std::vector<unsigned int>& centerlinedofindices) const
-      {
-        centerlinedofindices.resize(12, 0);
-
-        for (unsigned int idof = 0; idof < 12; ++idof) centerlinedofindices[idof] = idof;
-      }
-
-      /** \brief extract values for those Dofs relevant for centerline-interpolation from total
-       * state vector
-       *
-       *  \author grill
-       *  \date 11/16 */
-      virtual inline void ExtractCenterlineDofValuesFromElementStateVector(
-          const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
-          bool add_reference_values = false) const
-      {
-        if (dofvec.size() != 12)
-          dserror("size mismatch: expected 12 values for element state vector and got %d",
-              dofvec.size());
-
-        dofvec_centerline.resize(12, 0.0);
-        std::copy(dofvec.begin(), dofvec.end(), dofvec_centerline.begin());
-
-        if (add_reference_values)
-        {
-          for (unsigned int dim = 0; dim < 3; ++dim)
-            for (unsigned int node = 0; node < 2; ++node)
-            {
-              dofvec_centerline[6 * node + dim] += Nodes()[node]->X()[dim];
-
-              // Hermite interpolation: add reference values for tangent DOFs as well
-              dofvec_centerline[6 * node + 3 + dim] += Tref_[node](dim);
-            }
-        }
-      }
-
-     private:
-      //! vector storing the internal force vector
-      Epetra_SerialDenseVector internalforces_;
-
-      //! variable saving whether element has already been initialized (then isinit_ == true)
-      bool isinit_;
-
-      //! Vector holding value of Jacobi determinant jacobi for each Gauss point for
-      //! underintegration
-      double jacobi_;
-
-      //! bool recognizing first element call
-      bool firstcall_;
-
-      //! kinetic energy
-      double Ekin_;
-
-      //! internal energy
-      double Eint_;
-      //! internal energy stemming from axial tension
-      double Eint_axial_;
-
-      //! Matrix holding tangents at each node in reference configuration
-      std::vector<LINALG::Matrix<3, 1>> Tref_;
-      //! angular momentum of the element
-      LINALG::Matrix<3, 1> L_;
-      //! linear momentum of the element
-      LINALG::Matrix<3, 1> P_;
-      //! nodal tangents of last time step (necessary for PTC scheme)
-      LINALG::Matrix<3, 2> t0_;
-      //! nodal tangents of current time step (necessary for PTC scheme)
-      LINALG::Matrix<3, 2> t_;
-      //! norm of maximal curvature occuring in this element
-      double kappa_max_;
-      //! norm of maximal axial tension occuring in this element
-      double epsilon_max_;
-
-      //! strain resultant values at GPs
-      std::vector<double> axial_strain_GP_;
-      std::vector<double> curvature_GP_;
-
-      //! stress resultant values at GPs
-      std::vector<double> axial_force_GP_;
-      std::vector<double> bending_moment_GP_;
-
+    //! stress resultant values at GPs
+    std::vector<double> axial_force_GP_;
+    std::vector<double> bending_moment_GP_;
 
 #if NODALDOFS == 3
-      //! Matrix holding the derivatives of the tangents at each node in reference configuration
-      std::vector<LINALG::Matrix<3, 1>> Kref_;
+    //! Matrix holding the derivatives of the tangents at each node in reference configuration
+    std::vector<LINALG::Matrix<3, 1>> Kref_;
 #endif
 
+    //! @name Internal calculation methods
+
+    //! calculation of nonlinear stiffness and mass matrix
+    void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
+        std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
+        Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force);
+
+    template <unsigned int nnode, unsigned int dofpn>
+    void UpdateDispTotlag(
+        const std::vector<double>& disp, LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
+
+    //! lump mass matrix
+    void lumpmass(Epetra_SerialDenseMatrix* emass);
+
+    //! computes translational damping forces and stiffness
+    template <unsigned int nnode, unsigned int vpernode, int ndim>
+    void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+        const LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
+        const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Epetra_SerialDenseVector* force);       //!< element internal force vector
 
 
-// some quantities nessecary for high precission calculation
-#ifdef PRECISION
-      cl_F jacobiprec_;
-      cl_F crosssecprec_;
-      cl_F Izzprec_;
-      vector<cl_F> Xrefprec_;
-      cl_F Eprec_;
-      cl_F balkenradiusprec_;
-      LINALG::Matrix<3, 1, cl_F> Trefprec_;
-      LINALG::Matrix<12, 12, cl_F> stifftest_;
-      LINALG::Matrix<12, 1, cl_F> restest_;
+    //! computes stochastic forces and resulting stiffness
+    template <unsigned int nnode, unsigned int vpernode, unsigned int ndim,
+        unsigned int randompergauss>
+    void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+        const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Epetra_SerialDenseVector* force);       //!< element internal force vector
+
+
+    /*! \brief Assemble stochastic and viscous forces and respective stiffness according to
+     *         fluctuation dissipation
+     */
+    template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
+    void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+        std::vector<double>& vel,               //!< element velocity vector
+        std::vector<double>& disp,              //!< element displacement vector
+        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Epetra_SerialDenseVector* force);       //!< element internal force vector
+
+    // don't want = operator
+    Beam3eb& operator=(const Beam3eb& old) = delete;
+  };
+
+  // << operator
+  std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+
+}  // namespace DRT::ELEMENTS
+
 #endif
-
-      //! @name methods for initilization of the element
-
-      //@}
-
-      //! @name auxiliary computation methods for non-additive, large rotation variables
-
-
-
-      //@}
-
-      //! @name Internal calculation methods
-
-      //! calculation of nonlinear stiffness and mass matrix
-      void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
-          std::vector<double>& vel, std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector* force);
-
-#ifdef PRECISION
-      //! calculation of nonlinear stiffness matrix with high precision
-      void eb_nlnstiffmassprec(LINALG::Matrix<12, 1, cl_F>* displocal,
-          LINALG::Matrix<12, 12, cl_F>* stifflocal, LINALG::Matrix<12, 1, cl_F>* reslocal,
-          LINALG::Matrix<6, 1, cl_F>* xreflocal);
-
-      //! calculation of moment Neumann BC with high precision
-      void EvaluateNeumannPrec(LINALG::Matrix<3, 1, cl_F> tangentdisp,
-          LINALG::Matrix<3, 1, cl_F> mextvec, LINALG::Matrix<3, 1, cl_F>* fextm,
-          LINALG::Matrix<3, 3, cl_F>* stiffextm);
-
-      //! calculation of the entire problem with high precision
-      void HighPrecissionCalc();
-#endif
-
-      template <unsigned int nnode, unsigned int dofpn>
-      void UpdateDispTotlag(
-          const std::vector<double>& disp, LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
-
-      //! check of stiffness matrix via FAD
-      void FADCheckStiffMatrix(std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
-
-      //! check of stiffness terms stemming from Neumann Boundary Conditions via FAD
-      void FADCheckNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1);
-
-      //! lump mass matrix
-      void lumpmass(Epetra_SerialDenseMatrix* emass);
-
-      // computes translational damping forces and stiffness (private)
-      template <unsigned int nnode, unsigned int vpernode, int ndim>
-      void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
-          const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
-
-
-      /*-----------------------------------------------------------------------------------------------------------*
-       | computes stochastic forces and resulting stiffness (public) mukherjee   10/13|
-       *----------------------------------------------------------------------------------------------------------*/
-      template <unsigned int nnode, unsigned int vpernode, unsigned int ndim,
-          unsigned int randompergauss>
-      void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
-
-      /*-----------------------------------------------------------------------------------------------------------*
-       | Assemble stochastic and viscous forces and respective stiffness according to fluctuation
-       dissipation      | | theorem (public) Mukherjee 10/09|
-       *----------------------------------------------------------------------------------------------------------*/
-      template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
-      void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
-          std::vector<double>& vel,               //!< element velocity vector
-          std::vector<double>& disp,              //!< element displacement vector
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
-
-      // don't want = operator
-      Beam3eb& operator=(const Beam3eb& old) = delete;
-    };  // class Beam3eb
-
-
-
-    // << operator
-    std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
-
-
-  }  // namespace ELEMENTS
-}  // namespace DRT
-
-
-#endif  // BEAM3_EULER_BERNOULLI_H

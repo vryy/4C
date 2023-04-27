@@ -19,10 +19,16 @@
 
 #include "linalg_fixedsizematrix.H"
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ebType& DRT::ELEMENTS::Beam3ebType::Instance() { return instance_; }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Beam3eb* object = new DRT::ELEMENTS::Beam3eb(-1, -1);
@@ -30,6 +36,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data
   return object;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -41,13 +49,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(
   return Teuchos::null;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const int id, const int owner)
-
 {
   return Teuchos::rcp(new Beam3eb(id, owner));
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
@@ -56,7 +66,8 @@ void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
   dimns = 5;  // 3 translations + 2 rotations
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
@@ -189,6 +200,8 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
   return nullspace;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
@@ -198,7 +211,6 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
 }
 
 /*----------------------------------------------------------------------*
- |  Initialize (public)                                      meier 05/12|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 {
@@ -256,10 +268,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-
-
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
@@ -283,11 +292,9 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
   if (ANSVALUES != 3 or NODALDOFS != 2)
     dserror("Flag INEXTENSIBLE only possible in combination with ANSVALUES=3 and NODALDOFS=2!");
 #endif
-
-  return;
 }
+
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
     : DRT::ELEMENTS::Beam3Base(old),
@@ -307,11 +314,9 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
       axial_force_GP_(old.axial_force_GP_),
       bending_moment_GP_(old.bending_moment_GP_)
 {
-  return;
 }
+
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Beam3eb and return pointer to it (public) |
- |                                                            meier 05/12 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Beam3eb::Clone() const
 {
@@ -319,28 +324,19 @@ DRT::Element* DRT::ELEMENTS::Beam3eb::Clone() const
   return newelement;
 }
 
-
 /*----------------------------------------------------------------------*
- |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 {
   os << "beam3eb ";
   Element::Print(os);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const { return line2; }
 
-
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
 {
@@ -369,13 +365,9 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, curvature_GP_);
   AddtoPack(data, axial_force_GP_);
   AddtoPack(data, bending_moment_GP_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 {
@@ -408,11 +400,9 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3eb::Lines()
 {
@@ -427,7 +417,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3eb::Lines()
  | position; this method can be used by the register class or when ever
  | a new beam element is generated for which some reference configuration
  | has to be stored; prerequesite for applying this method is that the
- | element nodes are already known (public)                   meier 05/12|
+ | element nodes are already known
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
     const std::vector<double>& xrefe, const bool secondinit)
@@ -442,149 +432,92 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
 
   const int nnode = 2;
 
-  // low precission
-
+  if (!isinit_ || secondinit)
   {
-    if (!isinit_ || secondinit)
+    isinit_ = true;
+
+    // Get DiscretizationType
+    DRT::Element::DiscretizationType distype = Shape();
+
+    // Get integrationpoints for exact integration
+    DRT::UTILS::IntegrationPoints1D gausspoints =
+        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+
+    Tref_.resize(gausspoints.nquad);
+
+    // assure correct size of strain and stress resultant class variables and fill them
+    // with zeros (by definition, the reference configuration is undeformed and stress-free)
+    axial_strain_GP_.resize(gausspoints.nquad);
+    std::fill(axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0);
+
+    curvature_GP_.resize(gausspoints.nquad);
+    std::fill(curvature_GP_.begin(), curvature_GP_.end(), 0.0);
+
+    axial_force_GP_.resize(gausspoints.nquad);
+    std::fill(axial_force_GP_.begin(), axial_force_GP_.end(), 0.0);
+
+    bending_moment_GP_.resize(gausspoints.nquad);
+    std::fill(bending_moment_GP_.begin(), bending_moment_GP_.end(), 0.0);
+
+
+    // create Matrix for the derivates of the shapefunctions at the GP
+    LINALG::Matrix<1, nnode> shapefuncderiv;
+
+    // Loop through all GPs and compute jacobi at the GPs
+    for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
     {
-      isinit_ = true;
+      // Get position xi of GP
+      const double xi = gausspoints.qxg[numgp][0];
 
-      // Get DiscretizationType
-      DRT::Element::DiscretizationType distype = Shape();
+      // Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials
+      // instead of Hermite polynomials used to calculate the reference geometry. Since the
+      // reference geometry for this beam element must always be a straight line there is no
+      // difference between theses to types of interpolation functions.
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
-      // Get integrationpoints for exact integration
-      DRT::UTILS::IntegrationPoints1D gausspoints =
-          DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+      Tref_[numgp].Clear();
 
-      Tref_.resize(gausspoints.nquad);
-
-      // assure correct size of strain and stress resultant class variables and fill them
-      // with zeros (by definition, the reference configuration is undeformed and stress-free)
-      axial_strain_GP_.resize(gausspoints.nquad);
-      std::fill(axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0);
-
-      curvature_GP_.resize(gausspoints.nquad);
-      std::fill(curvature_GP_.begin(), curvature_GP_.end(), 0.0);
-
-      axial_force_GP_.resize(gausspoints.nquad);
-      std::fill(axial_force_GP_.begin(), axial_force_GP_.end(), 0.0);
-
-      bending_moment_GP_.resize(gausspoints.nquad);
-      std::fill(bending_moment_GP_.begin(), bending_moment_GP_.end(), 0.0);
-
-
-      // create Matrix for the derivates of the shapefunctions at the GP
-      LINALG::Matrix<1, nnode> shapefuncderiv;
-
-      // Loop through all GPs and compute jacobi at the GPs
-      for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
-      {
-        // Get position xi of GP
-        const double xi = gausspoints.qxg[numgp][0];
-
-        // Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials
-        // instead of Hermite polynomials used to calculate the reference geometry. Since the
-        // reference geometry for this beam element must always be a straight line there is no
-        // difference between theses to types of interpolation functions.
-        DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
-
-        Tref_[numgp].Clear();
-
-        // calculate vector dxdxi
-        for (int node = 0; node < nnode; node++)
-        {
-          for (int dof = 0; dof < 3; dof++)
-          {
-            Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3 * node + dof];
-          }  // for(int dof=0; dof<3 ; dof++)
-        }    // for(int node=0; node<nnode; node++)
-
-        // Store length factor for every GP
-        // note: the length factor jacobi replaces the determinant and refers to the reference
-        // configuration by definition
-        jacobi_ = Tref_[numgp].Norm2();
-
-        Tref_[numgp].Scale(1 / jacobi_);
-      }
-
-      // compute tangent at each node
-      double norm2 = 0.0;
-
-      Tref_.resize(nnode);
-#if NODALDOFS == 3
-      Kref_.resize(gausspoints.nquad);
-#endif
-
+      // calculate vector dxdxi
       for (int node = 0; node < nnode; node++)
       {
-        Tref_[node].Clear();
-#if NODALDOFS == 3
-        Kref_[node].Clear();
-#endif
         for (int dof = 0; dof < 3; dof++)
         {
-          Tref_[node](dof) = xrefe[3 + dof] - xrefe[dof];
-        }
-        norm2 = Tref_[node].Norm2();
-        Tref_[node].Scale(1 / norm2);
+          Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3 * node + dof];
+        }  // for(int dof=0; dof<3 ; dof++)
+      }    // for(int node=0; node<nnode; node++)
 
-        for (int i = 0; i < 3; i++) t0_(i, node) = Tref_[node](i);
-      }
+      // Store length factor for every GP
+      // note: the length factor jacobi replaces the determinant and refers to the reference
+      // configuration by definition
+      jacobi_ = Tref_[numgp].Norm2();
 
-    }  // if(!isinit_)
-  }
-  // end low precission
-  /*//begin high precission
-  {
-    if(!isinit_ || secondinit)
+      Tref_[numgp].Scale(1 / jacobi_);
+    }
+
+    // compute tangent at each node
+    double norm2;
+
+    Tref_.resize(nnode);
+#if NODALDOFS == 3
+    Kref_.resize(gausspoints.nquad);
+#endif
+
+    for (int node = 0; node < nnode; node++)
     {
-      isinit_ = true;
+      Tref_[node].Clear();
+#if NODALDOFS == 3
+      Kref_[node].Clear();
+#endif
+      for (int dof = 0; dof < 3; dof++)
+      {
+        Tref_[node](dof) = xrefe[3 + dof] - xrefe[dof];
+      }
+      norm2 = Tref_[node].Norm2();
+      Tref_[node].Scale(1 / norm2);
 
-        for (int i=0; i<3;i++)
-        {
-          Trefprec_(i)="0.0e+0_40";
-        }
-          Trefprec_(0) = "1.0e+0_40";
-          jacobiprec_ = "10.0_40";
-          Izzprec_ = "0.785398_40";
-          crosssecprec_ = "3.14159_40";
-
-  //Xrefprec_.resize(6);
-
-
-  for (int i=0;i<6;i++)
-  {
-
-    std::ostringstream strs;
-    strs << std::scientific << std::setw( 12 ) << xrefe[i];
-    std::string str = strs.str();
-    //std::string str2 = str.substr( 0, 8 )+ "_40";
-    std::string str2 = str + "_40";
-    //cout << "xrefe" << i << ": "<< xrefe[i] << endl;
-    //cout << "str2: " << str2 << endl;
-    if(xrefe[i]==0.0)
-      Xrefprec_[i]="0.0_40";
-    else
-    Xrefprec_[i]= str2.c_str();
-    //cout << "Xrefprec_: " << Xrefprec_[i] << endl;
-
+      for (int i = 0; i < 3; i++) t0_(i, node) = Tref_[node](i);
+    }
   }
-
-
-        jacobiprec_ = cl_float(0.0,float_format(40));
-        for (int i=0;i<3;i++)
-        {
-          jacobiprec_+= Trefprec_(i)*Trefprec_(i);
-        }
-        jacobiprec_= sqrt(jacobiprec_);
-
-        Trefprec_.Scale(cl_float(1.0,float_format(40))/jacobiprec_);
-
-
-
-    }//if(!isinit_)
-  }//end high precission*/
-  return;
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -610,13 +543,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
   LINALG::Matrix<12, 1> disp_totlag(true);
   UpdateDispTotlag<2, 6>(disp, disp_totlag);
 
-  // Todo @grill: rename this to GetPosAtXiFromDispTotlag and make it private; replace call from
-  // outside
-  //      by a call to this more general method (GetPosAtXi) based on displacement instead of
-  //      absolute values
-  pos = this->GetPos(xi, disp_totlag);
-
-  return;
+  Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag);
 }
 
 /*-----------------------------------------------------------------------------------------------*
