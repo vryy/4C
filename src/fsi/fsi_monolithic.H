@@ -1244,7 +1244,7 @@ namespace FSI
     virtual void PrepareTimeStepPreconditioner();
 
     /// create the composed system matrix
-    void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat, bool structuresplit);
+    void CreateSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
