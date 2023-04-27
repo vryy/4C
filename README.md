@@ -149,6 +149,8 @@ cd <someBaseDir>/<buildDir>
 A build configuration file needs to be passed to the configure script via the command line argument `--config`, as indicated above.
 Configuration files for a bunch of supported system environments are located in `<someBaseDir>/<sourceDir>/buildconfig/`. For more information on the provided configuration files please refer to [Configure BACI with correct configuration file](https://gitlab.lrz.de/baci/baci/wikis/Configure-BACI-with-correct-configuration-file).
 
+> **Note:** Currently, the configuring process is switched to cmake-presets, check out [this wiki page](https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets) for more information about presets.
+
 #### Build
 
 ```bash
