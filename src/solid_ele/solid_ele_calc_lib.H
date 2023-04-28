@@ -529,16 +529,15 @@ namespace DRT::ELEMENTS
    * @tparam distype The discretization type known at compile time.
    * @param nodal_coordinates (in) : The nodal coordinates of the element
    * @param integration (in) : The integration rule to be used.
-   * @param gp_integrator (in) : A function object that will be called for each integration point.
+   * @param gp_evaluator (in) : A callable object (e.g. lambda-function) with signature void(const
+   * LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi, const ShapeFunctionsAndDerivatives<distype>&
+   * shape_functions, const JacobianMapping<distype>& jacobian_mapping, double integration_factor,
+   * int gp) that will be called for each integration point.
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <DRT::Element::DiscretizationType distype, typename GaussPointEvaluator>
   inline void IterateJacobianMappingAtGaussPoints(
       const NodalCoordinates<distype>& nodal_coordinates,
-      const DRT::UTILS::GaussIntegration& integration,
-      const std::function<void(const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
-          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
-          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)>
-          gp_integrator)
+      const DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
     {
@@ -553,7 +552,7 @@ namespace DRT::ELEMENTS
 
       const double integration_factor = jacobian_mapping.determinant_ * integration.Weight(gp);
 
-      gp_integrator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
+      gp_evaluator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
     }
   }
 }  // namespace DRT::ELEMENTS
