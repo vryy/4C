@@ -164,6 +164,32 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
 }
 
 template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
+{
+  double intenergy = 0.0;
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains =
+            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+
+        double psi = 0.0;
+        solid_material.StrainEnergy(strains.gl_strain_, psi, gp, ele.Id());
+
+        intenergy += psi * integration_factor;
+      });
+
+  return intenergy;
+}
+
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,

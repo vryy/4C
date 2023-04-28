@@ -71,11 +71,11 @@ namespace
    *
    * @tparam distype : Discretization type
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @return Strains<distype> : Strain measures of the element evaluated at the centroid
+   * @return double : Determinant of the deformation gradient at the centroid
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DRT::ELEMENTS::DETAIL::nsd<distype> == 3, int> = 0>
-  DRT::ELEMENTS::Strains<distype> EvaluateStrainsCentroid(
+  double EvaluateDeformationGradientDeterminantCentroid(
       DRT::ELEMENTS::NodalCoordinates<distype> nodal_coordinates)
   {
     // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
@@ -94,7 +94,7 @@ namespace
     const DRT::ELEMENTS::Strains<distype> strains_centroid =
         DRT::ELEMENTS::EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping_centroid);
 
-    return strains_centroid;
+    return strains_centroid.defgrd_.Determinant();
   }
 
   /*!
@@ -187,6 +187,21 @@ namespace
     }
   }
 
+  template <DRT::Element::DiscretizationType distype>
+  DRT::ELEMENTS::Strains<distype> EvaluateStrainsBar(
+      const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates,
+      const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping, double detF_centroid)
+  {
+    const DRT::ELEMENTS::Strains<distype> strains =
+        DRT::ELEMENTS::EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+
+    // factor (detF0/detF)^1/3
+    const double fbar_factor = EvaluateFbarFactor(detF_centroid, strains.defgrd_.Determinant());
+
+    // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
+    return DRT::ELEMENTS::EvaluateStrains<distype>(
+        nodal_coordinates, jacobian_mapping, fbar_factor);
+  }
 }  // namespace
 
 template <DRT::Element::DiscretizationType distype>
@@ -341,7 +356,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // deformation gradient and strains at centroid of element
-  auto strains_centroid = EvaluateStrainsCentroid<distype>(nodal_coordinates);
+  auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
   // Loop over all Gauss points
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
@@ -349,16 +364,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-        // factor (detF0/detF)^1/3
-        const double fbar_factor = EvaluateFbarFactor(
-            strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
-
-        // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
         const Strains<distype> strains_bar =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
+            EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
 
         solid_material.Update(strains_bar.defgrd_, gp, params, ele.Id());
       });
@@ -385,7 +392,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   // deformation gradient and strains at centroid of element
-  auto strains_centroid = EvaluateStrainsCentroid<distype>(nodal_coordinates);
+  auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
   // Loop over all Gauss points
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
@@ -393,17 +400,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
-
-        // factor (detF0/detF)^1/3
-        const double fbar_factor = EvaluateFbarFactor(
-            strains_centroid.defgrd_.Determinant(), strains.defgrd_.Determinant());
-
-        // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
         const Strains<distype> strains_bar =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping, fbar_factor);
-
+            EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
 
         const Stress<distype> stress_bar =
             EvaluateMaterialStress(solid_material, strains_bar, params, gp, ele.Id());
@@ -414,6 +412,35 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
   Serialize(stress_data, serialized_stress_data);
   Serialize(strain_data, serialized_strain_data);
+}
+
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
+{
+  double intenergy = 0.0;
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+
+  // deformation gradient and strains at centroid of element
+  auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
+
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        const Strains<distype> strains_bar =
+            EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
+
+        double psi = 0.0;
+        solid_material.StrainEnergy(strains_bar.gl_strain_, psi, gp, ele.Id());
+
+        intenergy += psi * integration_factor;
+      });
+
+  return intenergy;
 }
 
 template <DRT::Element::DiscretizationType distype>

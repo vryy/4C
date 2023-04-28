@@ -60,6 +60,10 @@ namespace DRT
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) override;
 
+      double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params) override;
+
       void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) override;

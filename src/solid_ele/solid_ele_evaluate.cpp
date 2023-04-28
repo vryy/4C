@@ -9,6 +9,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
+#include "lib_elements_paramsinterface.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "solid_ele_neumann_evaluator.H"
 #include "structure_new_elements_paramsinterface.H"
@@ -154,6 +155,26 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
           StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
           discretization, lm, params);
+      return 0;
+    }
+    case DRT::ELEMENTS::struct_calc_energy:
+    {
+      double int_energy = DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->CalculateInternalEnergy(
+          *this, *SolidMaterial(), discretization, lm, params);
+
+      if (IsParamsInterface())
+      {
+        // new structural time integration
+        ParamsInterface().AddContributionToEnergyType(int_energy, STR::internal_energy);
+      }
+      else
+      {
+        // old structural time integration
+        // check length of elevec1
+        if (elevec1.Length() < 1) dserror("The given result vector is too short.");
+
+        elevec1(0) = int_energy;
+      }
       return 0;
     }
     case struct_init_gauss_point_data_output:
