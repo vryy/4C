@@ -189,6 +189,12 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
+    case ELEMENTS::struct_calc_reset_all:
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->ResetAll(*this, *SolidMaterial());
+      return 0;
+    case ELEMENTS::struct_calc_reset_istep:
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->ResetToLastConverged(*this, *SolidMaterial());
+      return 0;
     case DRT::ELEMENTS::struct_calc_predict:
       // do nothing for now
       return 0;

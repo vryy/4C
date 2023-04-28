@@ -151,6 +151,10 @@ namespace DRT
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const = 0;
 
+      virtual void ResetAll(const DRT::Element& ele, MAT::So3Material& solid_material) = 0;
+
+      virtual void ResetToLastConverged(
+          const DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
     };  // class SolidEleInterface
   }     // namespace ELEMENTS
