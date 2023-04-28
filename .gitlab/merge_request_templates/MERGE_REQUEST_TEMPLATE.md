@@ -1,67 +1,36 @@
 <!--
-Provide a general summary of your changes in the Title above. Use the prefix "WIP:" if this is a work-in-progress merge request.
--->
+* Title: Provide a general summary of your changes in the Title above.
 
-<!--
-Note that anything between these delimiters is a comment that will not appear in the merge request description once created.
--->
+* Assignees:  If you know anyone who should likely handle bringing this merge request to completion -- that's usually yourself -- select them from the Assignees drop-down on the right.
 
-<!--
-Assignees:  If you know anyone who should likely handle bringing this merge request to completion -- that's usually yourself -- select them from the Assignees drop-down on the right.
--->
-
-<!--
-Labels: Update the label of the issue(s) addressed by this merge request to "Under Review".
--->
-
-<!--
-Check the box "Delete source branch when merge request is accepted." when opening the merge request in order to automatically delete the feature branch from LRZ GitLab after it has been merged.  Note that this will just remove the feature branch from GitLab, but not from your local clone of the repository.
+* Labels: Update the label of the issue(s) addressed by this merge request to "Under Review".
 -->
 
 ## Description and Context
 <!--
-Provide a brief and concise description of your proposed change. Why is this change required?  What problem does it solve?
+Provide a brief and concise description of your proposed change. Questions you should think about:
+* Why is this change required?  What problem does it solve?
+* Is there a bigger picture? Is this MR a part of a larger set of changes? Which further steps are planned after merging this MR, if any?
+* How has the proposed implementation been verified and tested?
+
+Feel free to add supplementary material here (e.g. screen output, log files, screenshots).
+
+Should the context of the MR change (significantly) during review, please update the description to reflect that.
+The goal is to always provide an up-to-date and concise summary here.
 -->
 
 ## Related Issues and Merge Requests
 <!--
-If applicable, let us know how this merge request is related to any other open issues or merge requests:
+If applicable, let us know how this merge request is related to any other open issues or merge requests by linking to them here.
+Some suggestion for keywords:
+Closes (will automatically close mentioned issue if merged), Blocks, Related to
 -->
-* Closes
-* Blocks
-* Is blocked by
-* Follows
-* Precedes
-* Related to
-* Part of
-* Composed of
-
-## How Has This Been Tested?
-<!--
-Choose from these suggestions if applicable and fill the missing options.
-Feel free to provide further information if useful or necessary.
--->
-- [ ] I ran `ctest -L minimal` on my workstation.
-- [ ] I ran `ctest -R {...}` / `ctest -E {...}` / `ctest -E {...} -R {...}` on my workstation.
-- [ ] I ran a full release pipeline on GitLab.
-- [ ] I ran the following specialised pipelines (if applicable and necessary): {...}
 
 ## Checklist
 <!--
 Go over all the following points, and put an `x` in all the boxes that apply. If you are unsure about any of these, please ask; we are here to help.
 -->
-- [ ] My commit messages mention the appropriate GitLab issue numbers.
-- [ ] I have added/updated documentation where necessary.
-- [ ] I have read the [code contribution guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) for this project.
-- [ ] My code adheres to our [coding guidelines](https://gitlab.lrz.de/baci/baci/wikis/Baci-development-guidelines).
-- [ ] I have added as (few,) small and fast tests as possible to cover my changes.
 - [ ] These changes maintain backwards compatibility.
-
-## Additional Information
-<!--
-Is there anything else your fellow developers need to know in evaluating this merge request?
-Feel free to add supplementary material here (e.g. screen output, log files, screenshots)
--->
 
 ## Interested Parties / Possible Reviewers
 <!--
