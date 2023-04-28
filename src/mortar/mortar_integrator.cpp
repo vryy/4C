@@ -24,7 +24,7 @@ of two MortarElements in 1D and 2D
 #include "linalg_serialdensematrix.H"
 #include "linalg_sparsematrix.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  impl...                                                  farah 01/14|

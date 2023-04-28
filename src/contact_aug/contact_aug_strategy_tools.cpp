@@ -18,7 +18,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "linalg_matrixtransform.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 // #define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
 //  w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the

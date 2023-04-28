@@ -20,7 +20,7 @@
 #include "thermo_ele_impl_utils.H"
 #include "inpar_thermo.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |
