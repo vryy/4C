@@ -15,7 +15,7 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "headers_pairedvector.H"
+#include "utils_pairedvector.H"
 
 // forward declarations
 namespace LINALG
