@@ -1,0 +1,69 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": ".docker_base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
+        "CMAKE_C_COMPILER": "/usr/bin/mpicc",
+        "CMAKE_Fortran_COMPILER": "/usr/bin/mpif90",
+        "CMAKE_CXX_FLAGS": "-std=c++17 -Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3 -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_CXX_FLAGS_DEBUG": "-Og",
+        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3",
+        "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
+        "CMAKE_Fortran_FLAGS": "-Wall",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -funroll-all-loops -malign-double",
+        "INCLUDE_INSTALL_DIR": "/opt/baci-dependencies/include",
+        "LIB_INSTALL_DIR": "/opt/baci-dependencies/lib",
+        "Trilinos_PREFIX": "/opt/baci-dependencies",
+        "QHULL_LIBRARY_DIR": "/opt/baci-dependencies/lib",
+        "QHULL_INCLUDE_DIR": "/opt/baci-dependencies/include/libqhull",
+        "MPI_RUN": "/usr/bin/mpirun",
+        "PVPYTHON": "/opt/baci-dependencies-testing/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "BACI_WITH_GOOGLETEST": "ON",
+        "BUILD_DOXYGEN": "ON",
+        "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
+        "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/opt/baci-dependencies-testing/MathJax-2.7.9"
+      }
+    },
+    {
+      "name": "docker",
+      "displayName": "Release build for Docker image",
+      "description": "Build release version of BACI on a Docker image",
+      "inherits": [
+        ".docker_base"
+      ]
+    },
+    {
+      "name": "docker_debug",
+      "displayName": "Debug build for Docker image",
+      "description": "Build debug version of BACI on a Docker image",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "DEBUG"
+      }
+    },
+    {
+      "name": "docker_coverage",
+      "displayName": "Coverage report for Docker image",
+      "description": "Build unoptimized version of BACI with coverage instrumentation on a Docker image",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "COVERAGE",
+        "CMAKE_CXX_FLAGS_COVERAGE": "-O0 -g -fprofile-arcs -ftest-coverage",
+        "CMAKE_EXE_LINKER_FLAGS_COVERAGE": "-lopen-pal -fuse-ld=lld"
+      }
+    }
+  ]
+}
