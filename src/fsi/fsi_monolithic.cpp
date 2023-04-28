@@ -1141,7 +1141,7 @@ void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::CreateSystemMatrix(
-    Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat, bool structuresplit)
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1205,7 +1205,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   {
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
-    case INPAR::FSI::LinalgSolver:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
@@ -1238,6 +1237,12 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
           DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
           interfaceprocs_, verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
+      break;
+    }
+    case INPAR::FSI::LinalgSolver:
+    {
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          Extractor(), Extractor(), 81, false, true));
       break;
     }
     default:
