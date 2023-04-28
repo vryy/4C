@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef HEADERS_FAD_UTILS_H
-#define HEADERS_FAD_UTILS_H
+#ifndef LINALG_FAD_UTILS_H
+#define LINALG_FAD_UTILS_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
