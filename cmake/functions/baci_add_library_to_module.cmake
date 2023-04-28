@@ -5,7 +5,7 @@
 #   SOURCES list of all source files
 #   DEPENDENCIES list of all libraries that are required by the newly defined library
 function(baci_add_library_to_module)
-  set(options "")
+  set(options INTERFACE)
   set(oneValueArgs MODULE NAME)
   set(multiValueArgs SOURCES DEPENDENCIES)
   cmake_parse_arguments(
@@ -20,12 +20,22 @@ function(baci_add_library_to_module)
     message(SEND_ERROR "There are unparsed arguments: ${parsed_UNPARSED_ARGUMENTS}")
   endif()
 
-  if(DEFINED parsed_KEYWORDS_MISSING_VALUES)
-    message(SEND_ERROR "There are missing values for keywords: ${parsed_KEYWORDS_MISSING_VALUES}")
+  set(target_name "${parsed_MODULE}_${parsed_NAME}")
+
+  if(parsed_INTERFACE)
+    add_library(${target_name} INTERFACE)
+    target_include_directories(
+      ${target_name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      )
+    # link with external libraries
+    baci_link_default_libraries(${target_name} INTERFACE)
+  else()
+    baci_add_library(${target_name} ${parsed_SOURCES})
   endif()
 
-  set(target_name "${parsed_MODULE}_${parsed_NAME}")
-  baci_add_library(${target_name} ${parsed_SOURCES})
-  baci_add_dependency(${target_name} ${parsed_DEPENDENCIES})
+  if(parsed_DEPENDENCIES)
+    baci_add_dependency(${target_name} ${parsed_DEPENDENCIES})
+  endif()
+
   target_link_libraries(${parsed_MODULE} INTERFACE ${target_name})
 endfunction()
