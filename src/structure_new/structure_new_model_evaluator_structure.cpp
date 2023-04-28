@@ -1243,6 +1243,7 @@ void STR::MODELEVALUATOR::Structure::WriteRestart(
 {
   // write forces
   iowriter.WriteVector("fstructure_old", GState().GetFstructureOld());
+  iowriter.WriteVector("fint", GState().GetFintN());
 
   if (forced_writerestart) return;
 
@@ -1256,6 +1257,7 @@ void STR::MODELEVALUATOR::Structure::ReadRestart(IO::DiscretizationReader& iorea
   CheckInitSetup();
   // read structural force vector
   ioreader.ReadVector(GState().GetMutableFstructureOld(), "fstructure_old");
+  ioreader.ReadVector(GState().GetMutableFintN(), "fint");
   // read displacement field
   Teuchos::RCP<Epetra_Vector>& disnp = GState().GetMutableDisNp();
   ioreader.ReadVector(disnp, "displacement");
