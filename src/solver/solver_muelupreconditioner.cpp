@@ -124,6 +124,14 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
       H->GetLevel(0)->Set("Nullspace", nullspace);
       H->setlib(Xpetra::UseEpetra);
 
+      if (muelulist_.isParameter("Coordinates"))
+      {
+        Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> coordinates =
+            Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(
+                muelulist_.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
+        if (!coordinates.is_null()) H->GetLevel(0)->Set("Coordinates", coordinates);
+      }
+
       mueLuFactory.SetupHierarchy(*H);
 
       // set preconditioner

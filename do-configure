@@ -24,6 +24,9 @@ MIRCO_DEVELOP=OFF
 # ignore unstable cut test 
 IGNORE_UNSTABLE_CUTTEST=OFF
 
+# name of the preset that defines all cmake variables
+CMAKE_PRESET_NAME=
+
 # activate debug version: ./do-configure --debug
 
 # Info about profiling mode: ./do-configure --profiling
@@ -38,11 +41,11 @@ IGNORE_UNSTABLE_CUTTEST=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:dae -l help,config:,debug,debug-optimized,generator:,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
+OPTIONS=`getopt -o hc:dae -l help,config:,preset:,debug,debug-optimized,generator:,profiling,coverage,useACML,forceBuild,no-ccache,uselld,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--generator=make/ninja] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
+USAGEINFO="usage: do-configure --config=configurationfile [--preset=<name-of-preset>] [--debug] [--debug-optimized] [--generator=make/ninja] [--profiling] [--coverage] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
 
 eval set -- $OPTIONS
 
@@ -54,6 +57,10 @@ while true; do
       ;;
     -c|--config)
       CONFIGURATION_FILE="$2" ;
+      shift
+      ;;
+    -p|--preset)
+      CMAKE_PRESET_NAME="$2" ;
       shift
       ;;
     -d|--debug)
@@ -126,25 +133,6 @@ if [[ $CCACHE_COMMAND != "" ]]; then
 fi
 
 ##############################################################
-if [[ $USE_LLD == 1 ]]; then
-
-    # check if lld is installed
-    if ! command -v lld &> /dev/null
-    then
-        echo "lld is not installed and can therefore not be used for linking"
-        exit 2
-    fi
-
-    LINKER_EXECUTABLE=lld
-else
-    LINKER_EXECUTABLE=gold
-fi
-
-
-
-
-
-##############################################################
 # Print source and build folder locations to screen
 echo "Source and build directory:"
 echo "-- Path to source code:    " $BACI_HOME
@@ -164,6 +152,82 @@ else
   echo "Please provide a suitable configuration file via the command line argument --config="
   echo "A bunch of supported configuration files can be found in <BACI-dir>/buildconfig/."
   exit
+fi
+
+if [[ "$CMAKE_PRESET_NAME" ]]; then
+  echo "Using cmake preset $CMAKE_PRESET_NAME"
+  echo "NOTE: I'm ignoring any other command line parameter that may influence the build configuration (e.g. --debug)"
+  echo ""
+  echo "Consider to use a direct cmake call like: cmake --preset=$CMAKE_PRESET_NAME $BACI_HOME"
+  echo "NOTE: you need at least cmake 3.24 in your path. On your system, a recent version is installed at $CMAKE_COMMAND."
+elif [[ $CONFIGURATION_FILE == *lnm_*.config || $CONFIGURATION_FILE == *docker.config ]]; then
+
+  if [[ $COVERAGE == 1 ]]; then
+    CMAKE_PRESET_NAME="$CMAKE_PRESET_NAME_COVERAGE"
+  elif [[ $DEBUG_OPTIMIZED == 1 ]]; then
+    CMAKE_PRESET_NAME="$CMAKE_PRESET_NAME_DEBUG_OPTIMIZED"
+  elif [[ $BUILD_TYPE == "DEBUG" ]]; then
+    CMAKE_PRESET_NAME="$CMAKE_PRESET_NAME_DEBUG"
+  else
+    CMAKE_PRESET_NAME="$CMAKE_PRESET_NAME_RELEASE"
+  fi
+
+  if [[ $CMAKE_PRESET_NAME == "" ]]; then
+    echo "Could not get the cmake preset name from the configuration file."
+    echo "Probably your requested build type is not defined on your system."
+    echo "You can define your build configuration with a CMakeUserPresets.json in your source directory which looks like this:"
+    echo ""
+    echo "{"
+    echo "  \"version\": 5,"
+    echo "   \"configurePresets\": ["
+    echo "    {"
+    echo "      \"name\": \"<your-preset-name>\","
+    echo "      \"displayName\": \"A name that appears in your IDE\","
+    echo "      \"inherits\": [\"<your-base-preset>\"],"
+    echo "      \"binaryDir\": \"$BUILD_FOLDER\","
+    echo "      \"cacheVariables\": {"
+    echo "        \"SOME_CMAKE_VARIABLE\": \"myvalue\""
+    echo "      }"
+    echo "    }"
+    echo "  ]"
+    echo "}"
+    echo ""
+    echo "NOTE 1: Make sure to inherit from the correct cmake preset"
+    echo "NOTE 2: The binaryDir is optional, but makes handling with your IDE easier and you can configure from your source directory"
+    exit 1
+  fi
+
+  echo "Using cmake preset $CMAKE_PRESET_NAME"
+fi
+
+##############################################################
+if [[ $USE_LLD == 1 ]]; then
+    echo "The flag --use-lld is not supported anymore. If you want to use lld for linking, you need "
+    echo "to create your own cmake preset. Create the file CMakeUserPresets.json in your source directory "
+    echo "and paste the following content in there:"
+    echo ""
+    echo "{"
+    echo "  \"version\": 5,"
+    echo "   \"configurePresets\": ["
+    echo "    {"
+    echo "      \"name\": \"<your-preset-name>\","
+    echo "      \"displayName\": \"A name that appears in your IDE\","
+    echo "      \"inherits\": [\"$CMAKE_PRESET_NAME\"],"
+    echo "      \"binaryDir\": \"$BUILD_FOLDER\","
+    echo "      \"cacheVariables\": {"
+    echo "        \"CMAKE_EXE_LINKER_FLAGS_COVERAGE\": \"-lopen-pal -fuse-ld=lld\""
+    echo "      }"
+    echo "    }"
+    echo "  ]"
+    echo "}"
+    echo ""
+    echo "Then you can configure with \`do-configure --config=\"$CONFIGURATION_FILE\" --preset=<your-preset-name>\` "
+    echo "or by selecting the preset in your IDE."
+    echo ""
+    echo "NOTE 1: Make sure to inherit from the correct cmake preset"
+    echo "NOTE 2: The binaryDir is optional, but makes handling with your IDE easier and you can configure from your source directory"
+    echo "NOTE 3: Make sure to have lld installed on your system."
+    exit 2
 fi
 
 if [ $COVERAGE == 1 ]; then
@@ -195,54 +259,62 @@ fi
 ############################################################
 # run cmake
 
-# all arguments for cmake as array
-# note: it is crucial to escape quotes in here, otherwise we cannot pass them on correctly to the IDE scripts
-CMAKE_FULL_ARGS=(--no-warn-unused-cli \
-  -G \"$GENERATOR\" \
-  -D CMAKE_BUILD_TYPE:STRING=\"$BUILD_TYPE\" \
-  -D CMAKE_CXX_COMPILER:FILEPATH=\"$CXXCOMPILER\" \
-  -D CMAKE_C_COMPILER:FILEPATH=\"$CCOMPILER\" \
-  -D CMAKE_Fortran_COMPILER:FILEPATH=\"$FCOMPILER\" \
-  -D CMAKE_CXX_FLAGS:STRING=\"$CXXFLAGS\" \
-  -D CMAKE_CXX_FLAGS_RELEASE:STRING=\"$CXXFLAGSRELEASE\" \
-  -D CMAKE_CXX_FLAGS_DEBUG:STRING=\"$CXXFLAGSDEBUG\" \
-  -D CMAKE_C_FLAGS:STRING=\"$CFLAGS\" \
-  -D CMAKE_C_FLAGS_RELEASE:STRING=\"$CXXFLAGSRELEASE\" \
-  -D CMAKE_EXE_LINKER_FLAGS:STRING=\"$LINKERFLAGS\" \
-  -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=\"$LINKERFLAGSRELEASE\" \
-  -D CMAKE_Fortran_FLAGS:STRING=\"$FFLAGS\" \
-  -D CMAKE_Fortran_FLAGS_RELEASE:STRING=\"$FFLAGSRELEASE\" \
-  -D CMAKE_C_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
-  -D CMAKE_CXX_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
-  -D TRILINOS_DEVELOP:BOOL=$TRILINOS_EXPERIMENTAL \
-  -D INCLUDE_INSTALL_DIR:PATH=\"$INCLUDE_INSTALL_DIR\" \
-  -D LIB_INSTALL_DIR:PATH=\"$LIB_INSTALL_DIR\" \
-  -D Trilinos_PREFIX:PATH=\"$Trilinos_PREFIX\" \
-  -D SEARCH_CLN_LIBRARY_DIR:PATH=\"$CLN_LIBRARYDIR\" \
-  -D SEARCH_CLN_INCLUDE_DIR:PATH=\"$CLN_INCLUDEDIR\" \
-  -D BOOST_EXCLUDE_SYSTEM_PATHS:BOOL=\"$BOOST_EXCLUDE_SYSTEM_PATHS\" \
-  -D BOOST_LIBRARYDIR:PATH=\"$BOOST_LIBRARYDIR\" \
-  -D BOOST_INCLUDEDIR:PATH=\"$BOOST_INCLUDEDIR\" \
-  -D Boost_NO_BOOST_CMAKE:BOOL=\"$USE_USERSPECIFIED_BOOST\" \
-  -D QHULL_LIBRARY_DIR:PATH=\"$QHULL_LIBRARYDIR\" \
-  -D QHULL_INCLUDE_DIR:PATH=\"$QHULL_INCLUDEDIR\" \
-  -D BACI_WITH_ARBORX:BOOL=\"$BACI_WITH_ARBORX\" \
-  -D MPI_RUN:FILEPATH=\"$MPIRUN\" \
-  -D PVPYTHON:FILEPATH=\"$PARAVIEWPYTHON_PATH\" \
-  -D BLA_VENDOR:STRING=\"$BLA_VENDORSTRING\" \
-  -D BLAS_LIBRARIES:FILEPATH=\"$BLAS_LIBS\" \
-  -D LAPACK_LIBRARIES:FILEPATH=\"$LAPACK_LIBS\" \
-  -D ACMLDIR:STRING=\"$ACMLDIR_PATH\" \
-  -D AMDLIBMDIR:FILEPATH=\"$AMDLIBMDIR_PATH\" \
-  -D IGNORE_UNSTABLE_CUTTEST:BOOL=$IGNORE_UNSTABLE_CUTTEST \
-  -D BUILD_DOXYGEN:BOOL=\"$BUILD_DOXYGEN\" \
-  -D DOXYGEN_USE_LOCAL_MATHJAX:BOOL=\"$DOXYGEN_USE_LOCAL_MATHJAX\" \
-  -D DOXYGEN_LOCAL_MATHJAX_BASEPATH:BOOL=\"$DOXYGEN_LOCAL_MATHJAX_BASEPATH\"
-  -D BACI_WITH_MIRCO:BOOL=\"$BACI_WITH_MIRCO\" \
-  -D MIRCO_DEVELOP:BOOL=\"$MIRCO_DEVELOP\" \
-  -D MIRCO_DEVELOP_INSTALL_DIR:PATH=\"$MIRCO_DEVELOP_INSTALL_DIR\" \
-  -D BACI_WITH_GOOGLETEST:BOOL=\"$BACI_WITH_GOOGLETEST\"
-  \"${BACI_HOME}\")
+if [[ $CMAKE_PRESET_NAME != "" ]]; then
+  # we have given a name of the preset that we can pass to cmake
+  CMAKE_FULL_ARGS=(--preset=\"$CMAKE_PRESET_NAME\" \
+    -G \"$GENERATOR\" \
+    \"${BACI_HOME}\")
+else
+  # run legacy cmake call passing all arguments manually
+  # all arguments for cmake as array
+  # note: it is crucial to escape quotes in here, otherwise we cannot pass them on correctly to the IDE scripts
+  CMAKE_FULL_ARGS=(--no-warn-unused-cli \
+    -G \"$GENERATOR\" \
+    -D CMAKE_BUILD_TYPE:STRING=\"$BUILD_TYPE\" \
+    -D CMAKE_CXX_COMPILER:FILEPATH=\"$CXXCOMPILER\" \
+    -D CMAKE_C_COMPILER:FILEPATH=\"$CCOMPILER\" \
+    -D CMAKE_Fortran_COMPILER:FILEPATH=\"$FCOMPILER\" \
+    -D CMAKE_CXX_FLAGS:STRING=\"$CXXFLAGS\" \
+    -D CMAKE_CXX_FLAGS_RELEASE:STRING=\"$CXXFLAGSRELEASE\" \
+    -D CMAKE_CXX_FLAGS_DEBUG:STRING=\"$CXXFLAGSDEBUG\" \
+    -D CMAKE_C_FLAGS:STRING=\"$CFLAGS\" \
+    -D CMAKE_C_FLAGS_RELEASE:STRING=\"$CXXFLAGSRELEASE\" \
+    -D CMAKE_EXE_LINKER_FLAGS:STRING=\"$LINKERFLAGS\" \
+    -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=\"$LINKERFLAGSRELEASE\" \
+    -D CMAKE_Fortran_FLAGS:STRING=\"$FFLAGS\" \
+    -D CMAKE_Fortran_FLAGS_RELEASE:STRING=\"$FFLAGSRELEASE\" \
+    -D CMAKE_C_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
+    -D CMAKE_CXX_COMPILER_LAUNCHER:STRING=\"$CCACHE_COMMAND\" \
+    -D TRILINOS_DEVELOP:BOOL=$TRILINOS_EXPERIMENTAL \
+    -D INCLUDE_INSTALL_DIR:PATH=\"$INCLUDE_INSTALL_DIR\" \
+    -D LIB_INSTALL_DIR:PATH=\"$LIB_INSTALL_DIR\" \
+    -D Trilinos_PREFIX:PATH=\"$Trilinos_PREFIX\" \
+    -D SEARCH_CLN_LIBRARY_DIR:PATH=\"$CLN_LIBRARYDIR\" \
+    -D SEARCH_CLN_INCLUDE_DIR:PATH=\"$CLN_INCLUDEDIR\" \
+    -D BOOST_EXCLUDE_SYSTEM_PATHS:BOOL=\"$BOOST_EXCLUDE_SYSTEM_PATHS\" \
+    -D BOOST_LIBRARYDIR:PATH=\"$BOOST_LIBRARYDIR\" \
+    -D BOOST_INCLUDEDIR:PATH=\"$BOOST_INCLUDEDIR\" \
+    -D Boost_NO_BOOST_CMAKE:BOOL=\"$USE_USERSPECIFIED_BOOST\" \
+    -D QHULL_LIBRARY_DIR:PATH=\"$QHULL_LIBRARYDIR\" \
+    -D QHULL_INCLUDE_DIR:PATH=\"$QHULL_INCLUDEDIR\" \
+    -D BACI_WITH_ARBORX:BOOL=\"$BACI_WITH_ARBORX\" \
+    -D MPI_RUN:FILEPATH=\"$MPIRUN\" \
+    -D PVPYTHON:FILEPATH=\"$PARAVIEWPYTHON_PATH\" \
+    -D BLA_VENDOR:STRING=\"$BLA_VENDORSTRING\" \
+    -D BLAS_LIBRARIES:FILEPATH=\"$BLAS_LIBS\" \
+    -D LAPACK_LIBRARIES:FILEPATH=\"$LAPACK_LIBS\" \
+    -D ACMLDIR:STRING=\"$ACMLDIR_PATH\" \
+    -D AMDLIBMDIR:FILEPATH=\"$AMDLIBMDIR_PATH\" \
+    -D IGNORE_UNSTABLE_CUTTEST:BOOL=$IGNORE_UNSTABLE_CUTTEST \
+    -D BUILD_DOXYGEN:BOOL=\"$BUILD_DOXYGEN\" \
+    -D DOXYGEN_USE_LOCAL_MATHJAX:BOOL=\"$DOXYGEN_USE_LOCAL_MATHJAX\" \
+    -D DOXYGEN_LOCAL_MATHJAX_BASEPATH:BOOL=\"$DOXYGEN_LOCAL_MATHJAX_BASEPATH\"
+    -D BACI_WITH_MIRCO:BOOL=\"$BACI_WITH_MIRCO\" \
+    -D MIRCO_DEVELOP:BOOL=\"$MIRCO_DEVELOP\" \
+    -D MIRCO_DEVELOP_INSTALL_DIR:PATH=\"$MIRCO_DEVELOP_INSTALL_DIR\" \
+    -D BACI_WITH_GOOGLETEST:BOOL=\"$BACI_WITH_GOOGLETEST\"
+    \"${BACI_HOME}\")
+fi
 
 # expand all arguments into one long string, quotes are retained because they are escaped
 CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"

@@ -41,6 +41,7 @@ CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
 Makefile
+CMakeUserPresets.json
 
 # SVN
 .svn

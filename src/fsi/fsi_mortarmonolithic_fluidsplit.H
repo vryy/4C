@@ -301,7 +301,7 @@ namespace FSI
      *  \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta
      * d_I^{G,n+1}]\f$
      */
-    Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
     const Epetra_Comm& comm_;

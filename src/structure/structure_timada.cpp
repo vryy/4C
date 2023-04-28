@@ -151,6 +151,7 @@ int STR::TimAda::Integrate()
 
       // set current step size
       sti_->dt_->SetStep(0, stepsize_);
+      sti_->timen_ = time_ + stepsize_;
 
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
@@ -218,8 +219,8 @@ int STR::TimAda::Integrate()
 
     // update
     //    Update();
-    sti_->stepn_ = timestep_ += 1;
-    sti_->timen_ = time_ += stepsize_;
+    timestep_ += 1;
+    time_ += stepsize_;
     UpdateStepSize(stpsiznew);
 
     UpdatePeriod();
@@ -518,7 +519,8 @@ void STR::TimAda::AttachFileStepSize()
 void STR::TimAda::UpdateStepSize(const double dtnew)
 {
   UpdateStepSize();
-  stepsize_ = dtnew;
+  SetDt(dtnew);
+  sti_->UpdateStepTime();
 
   return;
 }

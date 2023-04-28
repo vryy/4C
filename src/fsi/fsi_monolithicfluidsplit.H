@@ -275,7 +275,7 @@ namespace FSI
     );
 
     /// block system matrix
-    Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

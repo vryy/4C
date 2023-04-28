@@ -107,6 +107,9 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
   // new end-point accelerations, these stay zero in static calculation
   accn_->PutScalar(0.0);
 
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
+
   // watch out
   return;
 }
@@ -132,6 +135,7 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
     accn_->Update(1.0, *(*acc_)(0), 0.0);
+    disi_->PutScalar(0.0);
     return;
   }
   return;
@@ -164,6 +168,7 @@ void STR::TimIntStatics::PredictConstAcc()
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
     accn_->Update(1.0, *(*acc_)(0), 0.0);
+    disi_->PutScalar(0.0);
     return;
   }
   return;
