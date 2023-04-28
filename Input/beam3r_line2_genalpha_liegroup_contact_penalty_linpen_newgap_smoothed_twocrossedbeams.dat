@@ -37,8 +37,8 @@ DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
-TIMESTEP                        0.5
-NUMSTEP                         2
+TIMESTEP                        0.1
+NUMSTEP                         10
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
@@ -108,7 +108,7 @@ MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.0e+05 SHEARMOD 5.0e+04 DENS 0.001 CROSS
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.38001788335375115e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.38016971744963862e-02 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  9.68881140078627068e-17 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -3.07626811366946251e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -3.07636783964296223e-01 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
