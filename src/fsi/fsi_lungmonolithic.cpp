@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------*/
 #include "fsi_lungmonolithic.H"
 #include "fsi_lung_overlapprec.H"
-#include "fsi_overlapprec_amgnxn.H"
 #include "adapter_str_lung.H"
 #include "adapter_fld_lung.H"
 #include "coupling_adapter.H"
@@ -605,7 +604,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSystem(
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::AMGnxn:
       linSys = Teuchos::rcp(new  // NOX::Epetra::LinearSystemAztecOO(
           FSI::MonolithicLinearSystem(printParams, *lsParams, Teuchos::rcp(iJac, false), J,
               Teuchos::rcp(iPrec, false), M, noxSoln));
@@ -969,25 +967,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
               pcomega[0], pciter[0], spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0],
               apciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
-    case INPAR::FSI::AMGnxn:
-    {
-      // Parse BLOCKSMOOTHER list
-      std::vector<std::string> blocksmoother;
-      std::string word;
-      std::istringstream blocksmootherstream(
-          Teuchos::getNumericStringParameter(fsimono, "BLOCKSMOOTHER"));
-      while (blocksmootherstream >> word) blocksmoother.push_back(word);
-      // We assume that the xml file is given in the first position of the BLOCKSMOOTHER list
-      std::string amgnxn_xml = "none";
-      if ((int)blocksmoother.size() > 0)
-        amgnxn_xml = blocksmoother[0];
-      else
-        dserror("Not found xml file in the first position of the BLOCKSMOOTHER list");
-      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixAMGnxn(Extractor(), *StructureField(),
-          *FluidField(), *AleField(), structuresplit, amgnxn_xml,
-          DRT::Problem::Instance()->ErrorFile()->Handle(), "LungFSI"));
-    }
-    break;
     case INPAR::FSI::FSIAMG:
     default:
       dserror("Unsupported type of monolithic solver");

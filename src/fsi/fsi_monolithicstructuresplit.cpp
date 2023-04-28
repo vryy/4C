@@ -18,7 +18,6 @@ with condensed structure interface displacements
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
-#include "fsi_overlapprec_amgnxn.H"
 #include "fsi_statustest.H"
 #include "lib_globalproblem.H"
 #include "adapter_str_structure.H"
