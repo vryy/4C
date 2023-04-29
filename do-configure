@@ -215,7 +215,7 @@ if [[ $USE_LLD == 1 ]]; then
     echo "      \"inherits\": [\"$CMAKE_PRESET_NAME\"],"
     echo "      \"binaryDir\": \"$BUILD_FOLDER\","
     echo "      \"cacheVariables\": {"
-    echo "        \"CMAKE_EXE_LINKER_FLAGS_COVERAGE\": \"-lopen-pal -fuse-ld=lld\""
+    echo "        \"CMAKE_EXE_LINKER_FLAGS_$BUILD_TYPE\": \"-fuse-ld=lld\""
     echo "      }"
     echo "    }"
     echo "  ]"
