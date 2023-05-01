@@ -76,6 +76,9 @@ namespace
     Teuchos::RCP<DRT::ELEMENTS::Beam3k> testele_;
   };
 
+  /**
+   * Test reference length calculation of Kirchhoff-Love beam
+   */
   TEST_F(Beam3k, RefLength)
   {
     EXPECT_NEAR(testele_->RefLength(), 0.61920435714496047, testTolerance);

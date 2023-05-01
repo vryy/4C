@@ -63,6 +63,9 @@ namespace
     Teuchos::RCP<DRT::ELEMENTS::Beam3r> testele_;
   };
 
+  /**
+   * Test reference length calculation of Simo-Reissner beam
+   */
   TEST_F(Beam3r, RefLength)
   {
     EXPECT_NEAR(testele_->RefLength(), 0.61920435714496047, testTolerance);

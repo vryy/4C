@@ -50,6 +50,9 @@ namespace
     Teuchos::RCP<DRT::ELEMENTS::Beam3eb> testele_;
   };
 
+  /**
+   * Test reference length calculation of Euler-Bernoulli beam
+   */
   TEST_F(Beam3eb, RefLength)
   {
     EXPECT_NEAR(testele_->RefLength(), 0.5477225575051661, testTolerance);
