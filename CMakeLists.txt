@@ -234,7 +234,6 @@ set(SUPPORT_LIBRARIES
     lib_contact_constitutivelaw
     lib_cut
     lib_fiber
-    lib_geometric_search
     lib_immersed
     lib_io
     lib_mortar

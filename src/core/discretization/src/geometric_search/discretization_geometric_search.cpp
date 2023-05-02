@@ -20,8 +20,8 @@
 #endif
 
 
-#include "geometric_search.H"
-#include "geometric_search_utils.H"
+#include "discretization_geometric_search.H"
+#include "discretization_geometric_search_utils.H"
 
 #ifdef HAVE_ARBORX
 namespace ArborX

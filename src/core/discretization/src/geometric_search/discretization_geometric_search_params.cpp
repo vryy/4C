@@ -12,7 +12,7 @@
 
 #include "lib_globalproblem.H"
 
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_params.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

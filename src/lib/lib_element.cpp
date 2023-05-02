@@ -24,8 +24,8 @@
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
-#include "geometric_search_bounding_volume.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

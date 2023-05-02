@@ -9,14 +9,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef GEOMETRIC_SEARCH_H
-#define GEOMETRIC_SEARCH_H
+#ifndef DISCRETIZATION_GEOMETRIC_SEARCH_H
+#define DISCRETIZATION_GEOMETRIC_SEARCH_H
 
 #include <vector>
 
 #include "io_pstream.H"
 
-#include "geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_bounding_volume.H"
 
 namespace GEOMETRICSEARCH
 {
