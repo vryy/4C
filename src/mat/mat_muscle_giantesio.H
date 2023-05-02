@@ -19,6 +19,7 @@
 #include "linalg_four_tensor.H"
 #include <Teuchos_RCP.hpp>
 #include "mat_muscle_utils.H"
+#include "utils_local_numeric_methods.H"
 
 namespace MAT
 {
@@ -187,7 +188,7 @@ namespace MAT
      * @param[in] currentTime Current time t_n
      * @param[out] omegaaAndDerivs Activation level and derivatives
      */
-    MAT::UTILS::MUSCLE::ValuesFunctAndFunctDerivs EvaluateActivationLevelAndDerivatives(
+    CORE::UTILS::ValuesFunctAndFunctDerivs EvaluateActivationLevelAndDerivatives(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -222,7 +223,7 @@ namespace MAT
      * @return equationValueAndDeriv Value of the activation level equation and its derivative for
      * the given omegaa, lambdaM and rhs
      */
-    MAT::UTILS::MUSCLE::ValuesFunctAndFunctDeriv EvaluateActivationLevelEquationAndDeriv(
+    CORE::UTILS::ValuesFunctAndFunctDeriv EvaluateActivationLevelEquationAndDeriv(
         double omegaa, const double& lambdaM, const double& rhs);
 
     /*!
