@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef HEADERS_PAIREDVECTOR_H
-#define HEADERS_PAIREDVECTOR_H
+#ifndef UTILS_PAIREDVECTOR_H
+#define UTILS_PAIREDVECTOR_H
 
 #include <vector>
 #include <utility>
@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <map>
 
-#include "headers_pairedobj_insert_policy.H"
+#include "utils_pairedobj_insert_policy.H"
 
 namespace GEN
 {
@@ -481,4 +481,4 @@ namespace GEN
 
 }  // namespace GEN
 
-#endif  // HEADERS_PAIREDVECTOR_H
+#endif

@@ -14,7 +14,7 @@
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

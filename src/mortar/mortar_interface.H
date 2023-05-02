@@ -19,7 +19,7 @@
 
 #include "inpar_mortar.H"
 #include "lib_dserror.H"
-#include "headers_pairedvector.H"
+#include "utils_pairedvector.H"
 #include "mortar_paramsinterface.H"
 
 // forward declarations

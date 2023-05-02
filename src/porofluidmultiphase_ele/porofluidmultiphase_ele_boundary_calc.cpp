@@ -18,7 +18,7 @@
 
 #include "lib_globalproblem.H"  // for curves and functions
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |

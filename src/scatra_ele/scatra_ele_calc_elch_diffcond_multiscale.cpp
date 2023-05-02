@@ -16,7 +16,7 @@ multi-scale framework
 #include "mat_elchmat.H"
 #include "mat_elchphase.H"
 #include "mat_newman_multiscale.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

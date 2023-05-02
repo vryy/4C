@@ -24,7 +24,7 @@
 #include "mat_structporo.H"
 #include "mat_list.H"
 #include "mat_list_reactions.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
