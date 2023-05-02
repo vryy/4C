@@ -506,30 +506,6 @@ pages: # job name needs to be pages
   - lnm-coverage-weekly
   - lnm-ubuntu
 
-lnm-buildtest_daily:
-  extends: .buildtest_daily
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-release-daily
-  - lnm-ubuntu
-  needs: [checkcode]
-
-lnm-buildtest_daily_debug:
-  extends: .buildtest_daily_debug
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-debug-daily
-  - lnm-ubuntu
-  needs: [checkcode]
-
 lnm-doxygen-web:
   extends: .doxygen
   variables:
