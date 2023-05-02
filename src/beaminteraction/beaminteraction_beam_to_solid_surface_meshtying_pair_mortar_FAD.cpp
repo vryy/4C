@@ -9,9 +9,7 @@ evaluated with FAD.
 
 #include "beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.H"
 
-#include "beam3_reissner.H"
-#include "beam3_kirchhoff.H"
-#include "beam3_euler_bernoulli.H"
+#include "beam3_base.H"
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"

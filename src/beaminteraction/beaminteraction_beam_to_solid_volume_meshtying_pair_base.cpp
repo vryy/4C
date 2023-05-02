@@ -20,10 +20,6 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "beam3_reissner.H"
-#include "beam3_kirchhoff.H"
-#include "beam3_euler_bernoulli.H"
-
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "geometry_pair_line_to_volume.H"

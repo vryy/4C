@@ -13,15 +13,12 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "beam3_reissner.H"
-#include "beam3_kirchhoff.H"
-#include "beam3_euler_bernoulli.H"
-
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "beaminteraction_beam_to_solid_utils.H"
 #include "geometry_pair_element_functions.H"
 #include "geometry_pair_line_to_volume.H"
+#include "beam3_reissner.H"
 #include "beam3_triad_interpolation_local_rotation_vectors.H"
 
 #include <Epetra_FEVector.h>
