@@ -684,28 +684,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case ELEMENTS::struct_calc_reset_istep:
     {
-      // do something with internal EAS, etc parameters
+      // restore EAS parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        switch (eastype_)
-        {
-          case DRT::ELEMENTS::So_hex8::soh8_easfull:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_easmild:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_easnone:
-            break;
-          default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
-            break;
-        }
+        soh8_easrestore();
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
@@ -719,7 +705,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (timestep == -1) dserror("Provide timestep number to be stored");
 
       // EAS
-      if (eastype_ != soh8_easnone) dserror("Storage of EAS stuff must be implemented first");
+      if (eastype_ != soh8_easnone) soh8_easupdate();
 
       // Material
       SolidMaterial()->StoreHistory(timestep);
@@ -733,7 +719,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (timestep == -1) dserror("Provide timestep number of the timestep to be recovered");
 
       // EAS
-      if (eastype_ != soh8_easnone) dserror("Recpvery of EAS stuff must be implemented first");
+      if (eastype_ != soh8_easnone) soh8_easrestore();
 
       // Material
       SolidMaterial()->SetHistory(timestep);
@@ -3454,29 +3440,14 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     }  // end loop over gauss points
   }
 
-  // do something with internal EAS, etc parameters
+  // store EAS parameters
   if (eastype_ != soh8_easnone)
   {
-    auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-    auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-    // alphao := alpha
-    switch (eastype_)
-    {
-      case DRT::ELEMENTS::So_hex8::soh8_easfull:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easmild:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easnone:
-        break;
-      default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
-        break;
-    }
+    soh8_easupdate();
+
+    // reset EAS internal force
+    Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldfeas->Scale(0.0);
   }
   SolidMaterial()->Update();
 

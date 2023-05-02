@@ -356,13 +356,26 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_update_istep:
     {
-      // do something with internal EAS, etc parameters
+      // update internal EAS parameters
       if (eastype_ == soh8_eassosh8)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");     // Alpha_{n+1}
         auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+
+        // store the EAS matrices
+        const auto* Kaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
+        auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
+
+        const auto* Kda = data_.Get<Epetra_SerialDenseMatrix>("Kda");     // Kda_{n+1}
+        auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");  // Kda_{n}
+        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
       }
       // Update of history for materials
       SolidMaterial()->Update();
@@ -371,6 +384,27 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_reset_istep:
     {
+      // restore internal EAS parameters
+      if (eastype_ == soh8_eassosh8)
+      {
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // Alpha_{n+1}
+        const auto* alphao = data_.Get<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        // alpha := alphao
+        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+
+        // restore the EAS matrices
+        auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
+        const auto* Kaainvo = data_.Get<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
+
+        auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");   // Kda_{n+1}
+        const auto* Kdao = data_.Get<Epetra_SerialDenseMatrix>("Kdao");  // Kda_{n}
+        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
+      }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
     }

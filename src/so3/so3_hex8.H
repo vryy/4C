@@ -610,6 +610,13 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
+
+      //! EAS technology, update
+      void soh8_easupdate();
+
+      //! EAS technology, restore
+      void soh8_easrestore();
+
       /*!
        * \brief Computes the deformation gradient at a Gauss point
        *

@@ -344,24 +344,36 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      // do something with internal EAS, etc parameters
+      // store internal EAS parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        // alphao := alpha
+        const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");       // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+        const auto* Kaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
+        auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        const auto* Kda = data_.Get<Epetra_SerialDenseMatrix>("Kda");           // Kda_{n+1}
+        auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+        // alphao := alpha, Kaa^-1_o = Kaa^-1, Kda_o = Kda
         if (eastype_ == soh8_eassosh8)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, 1>(*alphao, *alpha);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMEAS_SOSH8_>(*Kaainvo, *Kaainv);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMDOF_SOH8>(*Kdao, *Kda);
         }
         else if (eastype_ == soh8_easa)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, 1>(*alphao, *alpha);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMEAS_A_>(*Kaainvo, *Kaainv);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMDOF_SOH8>(*Kdao, *Kda);
         }
         else
         {
           dserror("Not impl.");
         }
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
       }
       SolidMaterial()->Update();
     }
@@ -369,24 +381,36 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_reset_istep:
     {
-      // do something with internal EAS, etc parameters
+      // restore internal EAS parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        // alpha := alphao
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");     // Alpha_{n+1}
+        const auto* alphao = data_.Get<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
+        auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
+        const auto* Kaainvo = data_.Get<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");         // Kda_{n+1}
+        const auto* Kdao = data_.Get<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+        // alpha := alphao, Kaa^-1 = Kaa^-1_o, Kda = Kda_o
         if (eastype_ == soh8_eassosh8)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, 1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMEAS_SOSH8_>(*Kaainv, *Kaainvo);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_SOSH8_, NUMDOF_SOH8>(*Kda, *Kdao);
         }
         else if (eastype_ == soh8_easa)
         {
           LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, 1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMEAS_A_>(*Kaainv, *Kaainvo);
+          LINALG::DENSEFUNCTIONS::update<double, NUMEAS_A_, NUMDOF_SOH8>(*Kda, *Kdao);
         }
         else
         {
           dserror("Not impl.");
         }
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
