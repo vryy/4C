@@ -61,12 +61,21 @@ variables:
   fi
 
 .build-only: &build-only
-- mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+- mkdir -p ${CI_PROJECT_DIR}/../baci-build
   # configure
-- if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized";
+- |
+  if [ -z $CTEST_BUILD_CONFIG_GITLAB ]; then
+    if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
+    cd ${CI_PROJECT_DIR}
+    ./create-baci-python-venv
+    cd ${CI_PROJECT_DIR}/../baci-build
+    # We override the launcher arguments here to ensure that ccache is not used during testing
+    ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
+  else
+    cd ${CI_PROJECT_DIR}/../baci-build
+    if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized"; fi
+    ${CI_PROJECT_DIR}/do-configure --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB} --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
   fi
-- ${CI_PROJECT_DIR}/do-configure --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-  --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
 - echo Building the following targets ${BUILD_TARGETS}
   # build (note: this works even with an older CMake since we directly call the native build tool
 - cmake --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS} 2>&1
@@ -345,8 +354,8 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
   extends: .buildtest_minimal
   variables:
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
   needs: [checkcode]
@@ -356,8 +365,9 @@ imcs-buildtest_full_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-full-ubuntu20
   needs: [checkcode]
@@ -367,8 +377,8 @@ imcs-buildtest_daily_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-full-ubuntu20
   needs: [checkcode]
@@ -378,8 +388,8 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
   needs: [checkcode]
@@ -389,8 +399,8 @@ imcs-buildtest_release_trilinos_develop:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
     TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
   tags:
