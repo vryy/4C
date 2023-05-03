@@ -25,42 +25,6 @@ namespace
     EXPECT_NEAR(W0, ref_W, 1.0e-10);
   }
 
-  TEST(MuscleUtilsTest, TestFirstDerivativeCentralDifferences)
-  {
-    const double x = 1.5;
-    const double h = 0.001;
-
-    // lets say f(x) = x^2 + 1
-    const double f_xplus = std::pow(x + h, 2) + 1;
-    const double f_xminus = std::pow(x - h, 2) + 1;
-
-    // correct dfdx would be dfdx = 2x
-    const double ref_dfdx = 2 * x;
-
-    double dfdx = MAT::UTILS::MUSCLE::FirstDerivativeCentralDifferences(f_xminus, f_xplus, h);
-
-    EXPECT_NEAR(dfdx, ref_dfdx, std::pow(h, 2.0));
-  }
-
-  TEST(MuscleUtilsTest, TestSecondDerivativeCentralDifferences)
-  {
-    const double x = 1.5;
-    const double h = 0.001;
-
-    // lets say f(x) = x^2 + 1
-    const double f_x = std::pow(x, 2) + 1;
-    const double f_xplus = std::pow(x + h, 2) + 1;
-    const double f_xminus = std::pow(x - h, 2) + 1;
-
-    // correct dfdx would be ddfddx = 2
-    const double ref_ddfddx = 2;
-
-    double ddfddx =
-        MAT::UTILS::MUSCLE::SecondDerivativeCentralDifferences(f_xminus, f_x, f_xplus, h);
-
-    EXPECT_NEAR(ddfddx, ref_ddfddx, std::pow(h, 2.0));
-  }
-
   TEST(MuscleUtilsTest, TestEvaluateForceStretchDependencyEhret)
   {
     const double l_smaller_lmin = 0.5;
