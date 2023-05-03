@@ -845,7 +845,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mfi_lin_scalar_iso:
     case INPAR::MAT::mfi_lin_temp_iso:
     case INPAR::MAT::mfi_no_growth:
-    case INPAR::MAT::mfi_funct_:
+    case INPAR::MAT::mfi_time_funct:
     case INPAR::MAT::mfi_poly_intercal_frac_aniso:
     case INPAR::MAT::mfi_poly_intercal_frac_iso:
     case INPAR::MAT::mix_rule_simple:

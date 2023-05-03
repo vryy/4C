@@ -2514,12 +2514,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
   /*----------------------------------------------------------------------*/
   {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradFunct",
-        "Temperature dependent growth law. Volume change linearly dependent on temperature",
-        INPAR::MAT::mfi_funct_));
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradTimeFunct",
+        "Time-dependent growth law. Determinant of volume change dependent on time function "
+        "defined "
+        "by 'FUNCT_NUM",
+        INPAR::MAT::mfi_time_funct));
 
-    AddNamedInt(
-        m, "FUNCT_NUM", "Function of the determinante of the inelastic deformation gradient");
+    AddNamedInt(m, "FUNCT_NUM",
+        "Time-dependent function of the determinant of the inelastic deformation gradient");
 
     AppendMaterialDefinition(matlist, m);
   }
