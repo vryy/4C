@@ -259,7 +259,6 @@ set(BACI_LIBRARIES
     comm
     constraint
     geometry
-    headers
     linalg
     locacontinuation
     mat

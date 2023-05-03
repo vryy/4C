@@ -16,7 +16,7 @@
 
 #include "so3_hex8.H"
 
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 

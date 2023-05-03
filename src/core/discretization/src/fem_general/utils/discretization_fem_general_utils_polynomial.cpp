@@ -15,7 +15,7 @@
 #include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace
 {

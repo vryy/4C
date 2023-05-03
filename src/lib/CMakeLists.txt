@@ -76,7 +76,6 @@ set(LIBS_LIB
     ele_discsh3
     ele_elemag
     ele_to3
-    headers
     lib_binstrategy
     lib_immersed
     linalg

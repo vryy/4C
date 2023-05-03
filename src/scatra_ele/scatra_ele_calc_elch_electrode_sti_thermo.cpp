@@ -11,7 +11,7 @@ within thermodynamic electrodes
 #include "scatra_ele_calc_elch_electrode_sti_thermo.H"
 
 #include "scatra_ele_parameter_timint.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |

@@ -34,7 +34,7 @@
 #include "mat_yoghurt.H"
 
 #include "nurbs_discret_nurbs_utils.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

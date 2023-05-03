@@ -16,7 +16,7 @@
 #include "mat_elchphase.H"
 #include "mat_ion.H"
 #include "mat_newman.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

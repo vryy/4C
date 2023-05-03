@@ -10,10 +10,10 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef HEADERS_PAIREDMATRIX_H
-#define HEADERS_PAIREDMATRIX_H
+#ifndef UTILS_PAIREDMATRIX_H
+#define UTILS_PAIREDMATRIX_H
 
-#include "headers_pairedvector.H"
+#include "utils_pairedvector.H"
 
 namespace GEN
 {
@@ -502,4 +502,4 @@ namespace GEN
 }  // namespace GEN
 
 
-#endif  // HEADERS_PAIREDMATRIX_H
+#endif
