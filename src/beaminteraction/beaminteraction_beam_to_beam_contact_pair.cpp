@@ -28,7 +28,7 @@
 #include "lib_globalproblem.H"
 
 #include "structure_timint_impl.H"
-#include "beam3.H"
+
 #include "beam3_kirchhoff.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
@@ -4932,10 +4932,6 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetJaco
   if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
     jacobi = (static_cast<const DRT::ELEMENTS::Beam3eb*>(element1))->GetJacobi();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
-  {
-    jacobi = (static_cast<const DRT::ELEMENTS::Beam3*>(element1))->GetJacobi();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {

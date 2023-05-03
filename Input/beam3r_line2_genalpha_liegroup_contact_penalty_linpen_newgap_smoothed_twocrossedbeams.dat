@@ -4,10 +4,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Small beam contact example with three beams in order to test the new gap function and the smoothing of the CPP
+Small 3D beam contact example with beam3r elements and penalty approach which tests the new gap function (BEAMS_NEWGAP: Yes)
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        3
-NODES                           5
+ELEMENTS                        2
+NODES                           4
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
@@ -33,23 +33,24 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
-TIMESTEP                        0.002
-NUMSTEP                         500
+TIMESTEP                        0.1
+NUMSTEP                         10
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDis
-TOLRES                          1.0E-06
-TOLDISP                         1.0E-10
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
+MASSLIN                         rotations
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5
@@ -59,7 +60,7 @@ ALPHA_F                         0.5
 RHO_INF                         -1.0
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_STRATEGY                  Penalty
-BEAMS_BTBPENALTYPARAM           1e+5
+BEAMS_BTBPENALTYPARAM           1e+01
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 cpp
 BEAMS_PENALTYLAW                LinPen
@@ -75,39 +76,39 @@ NDLINE                          2
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 2
-E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0 0 0
+DPOINT                          1
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 -0.4 0.0 0.0 0.0  FUNCT 0 1 1 0 0 0
+DLINE                           1
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0 -0.7 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
+DLINE 2
+E 1 - ID 0 TYPE arbitrary
+E 2 - ID 1 TYPE arbitrary
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 2
 NODE 3 DNODE 3
-NODE 5 DNODE 4
+NODE 4 DNODE 4
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
 NODE 3 DLINE 2
 NODE 4 DLINE 2
-NODE 5 DLINE 2
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD -0.500000000000000 -0.0000000000000 0.4000000000000000e+00
-NODE 2 COORD 0.500000000000000 -0.0000000000000 0.4000000000000000e+00
-NODE 3 COORD 0.000000000000000 -0.500000000000000 0.000000000000000e+00
-NODE 4 COORD 0.000000000000000 -0.00000000000000 0.1000000000000000e+00
-NODE 5 COORD 0.000000000000000 0.500000000000000 0.000000000000000e+00
+NODE 1 COORD -1.00000000000000e+00 0.100000000000000e+00 -0.000000000000000e+00
+NODE 2 COORD  1.00000000000000e+00 0.1000000000000000e+00 -0.000000000000000e+00
+NODE 3 COORD  0.2e-01 -1.0e+00 0.60000000000000e+00
+NODE 4 COORD  0.2e-01  1.0e+00 0.60000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 BEAM3 LINE2 1 2 MAT 1
-2 BEAM3 LINE2 3 4 MAT 1
-3 BEAM3 LINE2 4 5 MAT 1
+1 BEAM3R LINE2 1 2 MAT 1 TRIADS 0 0 0 0 0 0
+2 BEAM3R LINE2 3 4 MAT 1 TRIADS 0 0 1.570796327 0 0 1.570796327
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.0e+05 SHEARMOD 5.0e+04 DENS 0.001 CROSSAREA 0.03142 SHEARCORR 1.1 MOMINPOL 0.0001571 MOMIN2 0.00007854 MOMIN3 0.00007854
-----------------------------------------------------------------------FUNCT1
+MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.0e+05 SHEARMOD 5.0e+04 DENS 0.001 CROSSAREA 0.00282743 SHEARCORR 1.1 MOMINPOL 0.00000127235 MOMIN2 0.000000636173 MOMIN3 0.000000636173
+-------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE -2.89867310961424318e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.38016971744963862e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -3.07636783964296223e-01 TOLERANCE 1e-12
 -------------------------------------------------------------------------END

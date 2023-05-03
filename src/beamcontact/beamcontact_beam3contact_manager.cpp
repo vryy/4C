@@ -23,7 +23,6 @@
 #include "linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beam3_kirchhoff.H"
@@ -1688,7 +1687,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
               ele2_type != pair1_ele1_type))
       {
         dserror(
-            "All contacting beam elements have to be of the same type (beam3k, beam3eb, beam3 or "
+            "All contacting beam elements have to be of the same type (beam3k, beam3eb or "
             "beam3r). Check your input file!");
       }
     }
@@ -2840,7 +2839,6 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         // no output for solid elements here
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
-            eot != DRT::ELEMENTS::Beam3Type::Instance() and
             eot != DRT::ELEMENTS::Beam3rType::Instance() and
             eot != DRT::ELEMENTS::Beam3kType::Instance() and
             eot != DRT::ELEMENTS::RigidsphereType::Instance())
@@ -2850,8 +2848,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // BEAM3R
         //**********
         // standard procedure for Reissner beams or rigid spheres
-        if (eot == DRT::ELEMENTS::Beam3Type::Instance() or
-            eot == DRT::ELEMENTS::Beam3rType::Instance() or
+        if (eot == DRT::ELEMENTS::Beam3rType::Instance() or
             eot == DRT::ELEMENTS::RigidsphereType::Instance())
         {
           //*******************************************************************

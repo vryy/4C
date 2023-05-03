@@ -20,7 +20,6 @@
 #include "lib_globalproblem.H"
 
 #include "structure_timint_impl.H"
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "linalg_FAD_utils.H"

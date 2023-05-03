@@ -19,7 +19,6 @@
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beaminteraction_beam3contact_defines.H"
