@@ -10,7 +10,7 @@
 
 #include "io_pstream.H"
 
-#include "geometric_search_utils.H"
+#include "discretization_geometric_search_utils.H"
 
 namespace GEOMETRICSEARCH::UTILS
 {

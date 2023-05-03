@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef GEOMETRIC_SEARCH_PARAMS_H
-#define GEOMETRIC_SEARCH_PARAMS_H
+#ifndef DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_H
+#define DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_H
 
 #include "io_pstream.H"
 

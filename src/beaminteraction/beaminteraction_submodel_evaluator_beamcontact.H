@@ -15,7 +15,7 @@
 
 
 #include "binstrategy_utils.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_params.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 // forward declaration ...

@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef GEOMETRIC_SEARCH_UTILS_H
-#define GEOMETRIC_SEARCH_UTILS_H
+#ifndef DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
+#define DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 
 namespace GEOMETRICSEARCH::UTILS
 {

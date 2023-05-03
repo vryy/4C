@@ -78,7 +78,6 @@ set(LIBS_LIB
     ele_to3
     headers
     lib_binstrategy
-    lib_geometric_search
     lib_immersed
     linalg
     nurbs_discret
