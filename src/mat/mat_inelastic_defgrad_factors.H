@@ -82,6 +82,29 @@ namespace MAT
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
+    /*! \class InelasticDefgradScalar
+     *
+     * This is a parameter class holding parameters for evaluation of inelastic deformation (incl.
+     * linearization) induced by a scalar. Special quantities are hold in derived classes
+     */
+    class InelasticDefgradFunct : public Parameter
+    {
+     public:
+      /// standard constructor
+      explicit InelasticDefgradFunct(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
+
+      /// return scalar that causes growth
+      int FunctNum() const { return funct_num_; }
+
+     private:
+      /// scalar that causes growth
+      const int funct_num_;
+    };
+
+    /*----------------------------------------------------------------------
+     *----------------------------------------------------------------------*/
     /*! \class InelasticDefgradLinScalarAniso
      *
      * This is a specialized parameter class that can return the anisotropic growth direction
@@ -451,6 +474,49 @@ namespace MAT
    private:
     // identity tensor
     LINALG::Matrix<3, 3> identity_;
+  };
+
+  /*--------------------------------------------------------------------*/
+  /*! \class InelasticDefgradFunct
+
+  This class models materials in combination with the multiplicative split material that feature
+  isotropic volume changes based on a given function for the determinant of the inelasitc part.
+  */
+  class InelasticDefgradFunct : public InelasticDefgradFactors
+  {
+   public:
+    explicit InelasticDefgradFunct(MAT::PAR::Parameter* params);
+
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override{};
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override{};
+
+    void EvaluateInverseInelasticDefGrad(
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override{};
+
+    PAR::InelasticSource GetInelasticSource() override;
+
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_no_growth; }
+
+    MAT::PAR::InelasticDefgradFunct* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradFunct*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
+
+    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+
+   private:
+    // identity tensor
+    LINALG::Matrix<3, 3> identity_;
+
+    double time_;
   };
 
   class InelasticDefgradScalar : public InelasticDefgradFactors

@@ -865,6 +865,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
           (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
           (materialtype != INPAR::MAT::mfi_lin_temp_iso) and
           (materialtype != INPAR::MAT::mfi_no_growth) and
+          (materialtype != INPAR::MAT::mfi_funct_) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
       {

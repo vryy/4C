@@ -15,6 +15,7 @@
 #include "mat_multiplicative_split_defgrad_elasthyper.H"
 #include <utility>
 
+#include "lib_function_of_time.H"
 #include "lib_globalproblem.H"
 #include "lib_voigt_notation.H"
 
@@ -150,6 +151,13 @@ MAT::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
         "Do not use 'MAT_InelasticDefgradLinTempIso' with a growth factor of 0.0. Use "
         "'MAT_InelasticDefgradNoGrowth' instead!");
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradFunct::InelasticDefgradFunct(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), funct_num_(matdata->GetInt("FUNCT_NUM"))
+{
 }
 
 /*--------------------------------------------------------------------*
@@ -299,6 +307,15 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
       auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(curmat->Parameter());
       return Teuchos::rcp(new InelasticDefgradLinTempIso(params));
     }
+    case INPAR::MAT::mfi_funct_:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::InelasticDefgradFunct(curmat));
+
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradFunct*>(curmat->Parameter());
+      return Teuchos::rcp(new InelasticDefgradFunct(params));
+    }
+
     default:
       dserror("cannot deal with type %d", curmat->Type());
   }
@@ -1099,3 +1116,40 @@ MAT::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(MAT::PAR::Parameter* par
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradNoGrowth::PreEvaluate(Teuchos::ParameterList& params, int gp) {}
+
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradFunct::EvaluateInverseInelasticDefGrad(
+    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+{
+  const auto idetFin =
+      std::pow(DRT::Problem::Instance()
+                   ->FunctionById<DRT::UTILS::FunctionOfTime>(Parameter()->FunctNum() - 1)
+                   .Evaluate(time_),
+          -1.0 / 3.0);
+  iFinM.Update(idetFin, identity_, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticSource MAT::InelasticDefgradFunct::GetInelasticSource()
+{
+  return PAR::InelasticSource::none;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::InelasticDefgradFunct::InelasticDefgradFunct(MAT::PAR::Parameter* params)
+    : InelasticDefgradFactors(params), identity_(true), time_(0.0)
+{
+  // add 1.0 to main diagonal
+  identity_(0, 0) = identity_(1, 1) = identity_(2, 2) = 1.0;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradFunct::PreEvaluate(Teuchos::ParameterList& params, int gp)
+{
+  time_ = params.get<double>("total time");
+}

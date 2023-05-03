@@ -280,6 +280,7 @@ namespace INPAR
                            ///< linear function of the temperature
       mfi_no_growth,  ///< material with no volume change, i.e. inelastic deformation gradient is an
                       ///< identity tensor
+      mfi_funct_,     ///< growth evaluated by a function
       mfi_poly_intercal_frac_aniso,   ///< volume change due to (anisotropic) inelastic deformation
                                       ///< gradient is a polynomial function of the intercalation
                                       ///< fraction that causes the volume change

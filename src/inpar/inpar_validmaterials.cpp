@@ -2513,6 +2513,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradFunct",
+        "Temperature dependent growth law. Volume change linearly dependent on temperature",
+        INPAR::MAT::mfi_funct_));
+
+    AddNamedInt(
+        m, "FUNCT_NUM", "Function of the determinante of the inelastic deformation gradient");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
   {
     auto mm = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
