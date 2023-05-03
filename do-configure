@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "The do-configure mechanism to configure BACI is deprecated!"
+echo "Consider switching to CMake presets (https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets)"
+read -n1 -s -r -p $"Press any key to continue"
+
 BACI_HOME=`dirname $0`
 
 #default options which may be modified through command line arguments
