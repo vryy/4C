@@ -32,10 +32,6 @@ variables:
   # Select tests to exclude by regular expression.
   CTEST_EXCLUDE_STRING: ''
 
-  # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
-  GITLAB_SCHEDULER_LNM_SCHMARRN: '0'
-  GITLAB_SCHEDULER_LNM_DEEP: '0'
-  GITLAB_SCHEDULER_LNM_BRUTEFORCE: '0'
 
   # Variables for docker
   BACI_DOCKER_BUILD_IMAGES:
@@ -222,27 +218,6 @@ variables:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
-# A variant of buildtest_daily which only builds the project (and does not check for warnings!)
-# Use for LNM clusters
-.build_daily:
-  stage: buildtest
-  variables:
-    GIT_STRATEGY: fetch
-    BUILD_TARGETS: full
-  script:
-  - *clean-build-folder
-  - *build-only
-  after_script:
-  - cd ${CI_PROJECT_DIR}/../baci-build
-  - mv build.log ${CI_PROJECT_DIR}/
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - build.log
-    when: on_failure
-    expire_in: 1 day
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -468,18 +443,6 @@ lnm-buildtest_minimal:
   - lnm-ubuntu
   needs: [checkcode]
 
-lnm-buildtest_full:
-  extends: .buildtest_full
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-release-user
-  - lnm-ubuntu
-  needs: [checkcode]
-
 lnm-buildtest_coverage_weekly:
   extends: .buildtest_coverage_weekly
   variables:
@@ -542,70 +505,6 @@ pages: # job name needs to be pages
   tags: # must run on the same machine as the coverage report
   - lnm-coverage-weekly
   - lnm-ubuntu
-
-lnm-buildtest_daily:
-  extends: .buildtest_daily
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-release-daily
-  - lnm-ubuntu
-  needs: [checkcode]
-
-lnm-build_daily_bruteforce:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
-  before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-bruteforce
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
-  needs: [checkcode]
-
-lnm-build_daily_deep:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
-  before_script:
-  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-deep
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_DEEP == "1"
-  needs: [checkcode]
-
-lnm-build_daily_schmarrn:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: make
-    BUILD_TARGETS: baci-release post_processor
-    CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
-  before_script:
-  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-schmarrn
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
-  needs: [checkcode]
-
-lnm-buildtest_daily_debug:
-  extends: .buildtest_daily_debug
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-debug-daily
-  - lnm-ubuntu
-  needs: [checkcode]
 
 lnm-doxygen-web:
   extends: .doxygen

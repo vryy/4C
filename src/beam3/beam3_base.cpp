@@ -14,8 +14,8 @@
 
 #include "beaminteraction_periodic_boundingbox.H"
 #include "beaminteraction_calc_utils.H"
-#include "geometric_search_bounding_volume.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
 
 #include "structure_new_elements_paramsinterface.H"
 

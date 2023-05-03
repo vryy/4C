@@ -25,8 +25,8 @@
 
 #include "inpar_browniandyn.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "geometric_search_params.H"
-#include "geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
