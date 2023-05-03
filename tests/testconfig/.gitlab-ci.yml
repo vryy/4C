@@ -17,20 +17,11 @@ variables:
   # - "debug"
   CTEST_BUILD_TYPE_GITLAB: release
 
-  # Postfix for do-configure.
-  CONFIGURE_POSTFIX: ''
-
   # Number of threads to be used during build
   NUMBER_OF_BUILD_THREADS: '3'
 
   # Number of threads to be used during testing
   NUMBER_OF_TEST_THREADS: '1'
-
-  # Select specific test by regular expressen (".": all)
-  TEST_TAG: .
-
-  # Select tests to exclude by regular expression.
-  CTEST_EXCLUDE_STRING: ''
 
 
   # Variables for docker
@@ -61,16 +52,19 @@ variables:
   fi
 
 .build-only: &build-only
-- mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+- mkdir -p ${CI_PROJECT_DIR}/../baci-build
   # configure
-- if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized";
-  fi
-- ${CI_PROJECT_DIR}/do-configure --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-  --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
+- |
+  if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
+  cd ${CI_PROJECT_DIR}
+  ./create-baci-python-venv
+  cd ${CI_PROJECT_DIR}/../baci-build
+  # We override the launcher arguments here to ensure that ccache is not used during testing
+  ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
-  # build (note: this works even with an older CMake since we directly call the native build tool
-- cmake --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS} 2>&1
-  | tee build.log
+  # build
+- ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS}
+  2>&1 | tee build.log
 
 .build-and-test: &build-and-test
 - *build-only
@@ -92,7 +86,7 @@ variables:
 - cd ${CI_PROJECT_DIR}/../baci-build
 - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   test.log test.log
-    # Write selection of the output into the terminal and therefore to GITLAB
+  # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' test.log || true
 - sed -n '/tests passed,/,//p' test.log
@@ -161,7 +155,6 @@ variables:
   stage: buildtest
   variables:
     BUILD_TARGETS: full
-    CONFIGURE_POSTFIX: --coverage
   script:
   - *clean-build-folder
   - *build-and-test
@@ -186,7 +179,7 @@ variables:
     {} \;
   - *post-process-log-files
       # update (push) the cache of the weekly coverage report:
-      # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
+    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
     key: cache-weekly-coverage-report
@@ -280,9 +273,8 @@ variables:
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
 
     # Configure and build
-  - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-    --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
-  - cmake --build . --target documentation > ../doxygen.log
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+  - ${CMAKE_COMMAND} --build . --target documentation > ../doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
   - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
@@ -300,6 +292,9 @@ variables:
     doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
     # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../doxygen.log doxygen.log
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -345,8 +340,8 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
   extends: .buildtest_minimal
   variables:
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
   needs: [checkcode]
@@ -356,8 +351,9 @@ imcs-buildtest_full_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-full-ubuntu20
   needs: [checkcode]
@@ -367,8 +363,8 @@ imcs-buildtest_daily_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-full-ubuntu20
   needs: [checkcode]
@@ -378,8 +374,8 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
   needs: [checkcode]
@@ -389,8 +385,8 @@ imcs-buildtest_release_trilinos_develop:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
     TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
   tags:
@@ -405,7 +401,7 @@ lnm-codeclimate:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
-  - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
@@ -417,7 +413,8 @@ lnm-codeclimate:
     ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
   - cd ${CI_PROJECT_DIR}
   variables:
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   artifacts:
     paths: [codeclimate.json]
     reports:
@@ -436,8 +433,8 @@ lnm-buildtest_minimal:
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-release-minimal
   - lnm-ubuntu
@@ -453,8 +450,8 @@ lnm-buildtest_coverage_weekly:
     # enable coverage option of ctest
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation_coverage
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-coverage-weekly
   - lnm-ubuntu
@@ -509,8 +506,8 @@ pages: # job name needs to be pages
 lnm-doxygen-web:
   extends: .doxygen
   variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-doxygen
   - lnm-ubuntu
@@ -528,8 +525,8 @@ lnm-doxygen-web:
 lnm-doxygen:
   extends: .doxygen
   variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-doxygen
   - lnm-ubuntu
@@ -571,8 +568,8 @@ lnm-buildtest_full_docker:
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: docker.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
   - docker
   needs:

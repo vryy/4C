@@ -1,0 +1,68 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": ".imcs_workstation_base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
+        "CMAKE_C_COMPILER": "/usr/bin/mpicc",
+        "CMAKE_Fortran_COMPILER": "/usr/bin/mpif90",
+        "CMAKE_CXX_FLAGS": "-std=c++17 -Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3 -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_CXX_FLAGS_DEBUG": "-Og",
+        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3",
+        "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
+        "CMAKE_Fortran_FLAGS": "-Wall",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -funroll-all-loops -malign-double",
+        "Trilinos_PREFIX": "/imcs/public/compsim/lib/2023_1/build",
+        "QHULL_LIBRARY_DIR": "/imcs/public/compsim/lib/TPL/packages/qhull-2012.1/build/lib",
+        "QHULL_INCLUDE_DIR": "/imcs/public/compsim/lib/TPL/packages/qhull-2012.1/build/include/libqhull",
+        "MPI_RUN": "/usr/bin/mpirun",
+        "PVPYTHON": "/imcs/public/compsim/opt/ParaView-5.6.0-MPI-Linux-64bit/bin/pvpython",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "SEARCH_CLN_LIBRARY_DIR": "/imcs/public/compsim/lib/TPL/packages/CLN/build/install/lib",
+        "CLN_INCLUDE_DIR": "/imcs/public/compsim/lib/TPL/packages/CLN/build/install/include",
+        "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
+        "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/imcs/public/compsim/opt/mathjax-2.7.9",
+        "BACI_WITH_GOOGLETEST": "ON",
+        "BACI_WITH_ARBORX": "ON",
+        "BACI_WITH_MIRCO":"ON"
+      }
+    },
+    {
+      "name": "imcs_workstation",
+      "displayName": "Release build for an IMCS workstation",
+      "inherits": [
+        ".imcs_workstation_base"
+      ]
+    },
+    {
+      "name": "imcs_workstation_debug",
+      "displayName": "Debug build for an IMCS workstation",
+      "inherits": [
+        ".imcs_workstation_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "DEBUG"
+      }
+    },
+    {
+      "name": "imcs_workstation_trilinos",
+      "displayName": "Develop build with debug information for an IMCS workstation",
+      "generator": "Ninja",
+      "inherits": [
+        ".imcs_workstation_base"
+      ],
+      "cacheVariables": {
+        "Trilinos_PREFIX": "$env{TRILINOS_ROOT}",
+        "TRILINOS_EXPERIMENTAL": "ON",
+        "BACI_WITH_ARBORX": "OFF"
+      }
+    }
+  ]
+}

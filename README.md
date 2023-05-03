@@ -136,18 +136,19 @@ cd <buildDir>
 where `<buildDir>` is your build directory.
 
 #### Configure
-
-Run
+Run 
 
 ```bash
-cd <someBaseDir>/<buildDir>
-<someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-configuration-file.config> | tee config$(date +%y%m%d%H%M%N).log
+cmake --preset=<name-of-preset> ../<sourceDir> | tee config$(date +%y%m%d%H%M%N).log
 ```
 
 > **Note:**  When you see `command |& tee something$(date +%y%m%d%H%M%N).log`, that is just a means of running a command and sending the output both to the screen and to a timestamped log file.  This is by no means necessary, but if you run into problems, having these timestamped log files can be quite useful in debugging what's gone wrong.
 
-A build configuration file needs to be passed to the configure script via the command line argument `--config`, as indicated above.
-Configuration files for a bunch of supported system environments are located in `<someBaseDir>/<sourceDir>/buildconfig/`. For more information on the provided configuration files please refer to [Configure BACI with correct configuration file](https://gitlab.lrz.de/baci/baci/wikis/Configure-BACI-with-correct-configuration-file).
+A preset name needs to be passed to cmake via the command line argument `--preset`, as indicated above. Use `cmake ../<sourceDir> --list-presets` to get a list of all available presets.
+
+More information about the cmake presets can be found [in the wiki](https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets).
+
+**Note:** Make sure to use at least cmake 3.25. Install it in your path or use the ones provided on your institute's server.
 
 #### Build
 

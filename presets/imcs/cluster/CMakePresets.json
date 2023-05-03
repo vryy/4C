@@ -1,0 +1,49 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": ".imcs_cluster",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-std=c++17 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-local-typedefs -Wignored-qualifiers -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_C_FLAGS": "-Wall -march=native -Wno-unknown-pragmas -mfpmath=sse -msse3",
+        "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
+        "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib -fuse-ld=gold",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
+        "CMAKE_Fortran_FLAGS": "-Wall",
+        "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -funroll-all-loops -malign-double",
+        "BACI_WITH_ARBORX":"ON",
+        "BACI_WITH_GOOGLETEST": "OFF",
+        "BUILD_DOXYGEN": "OFF"
+      }
+    },
+    {
+      "name": "imcs_charon",
+      "displayName": "Release build for charon at IMCS",
+      "description": "Build release version of BACI on charon at IMCS",
+      "inherits": [
+        ".imcs_cluster"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_CXX_COMPILER": "$env{OPENMPI_ROOT}/bin/mpic++",
+        "CMAKE_C_COMPILER": "$env{OPENMPI_ROOT}/bin/mpicc",
+        "CMAKE_Fortran_COMPILER": "$env{OPENMPI_ROOT}/bin/mpif90",
+        "Trilinos_PREFIX": "$env{TRILINOS_ROOT}",
+        "QHULL_LIBRARY_DIR": "$env{QHULL_ROOT}/lib",
+        "QHULL_INCLUDE_DIR": "$env{QHULL_ROOT}/include/libqhull",
+        "BOOST_INCLUDE_DIR": "$env{BOOST_ROOT}/include",
+        "BOOST_LIBRARY_DIR": "$env{BOOST_ROOT}/lib",
+        "USE_USERSPECIFIED_BOOST":"ON",
+        "BOOST_EXCLUDE_SYSTEM_PATHS":"ON",
+        "BLAS_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
+        "LAPACK_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
+        "SEARCH_CLN_LIBRARY_DIR": "$env{CLN_ROOT}/lib",
+        "CLN_INCLUDE_DIR":"$env{CLN_ROOT}/include",
+        "BLA_VENDOR": "openBLAS.0.3.6",
+        "MPI_RUN": "$env{OPENMPI_ROOT}/bin/mpirun"
+      }
+    }
+  ]
+}
