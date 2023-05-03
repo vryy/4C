@@ -9,10 +9,10 @@
 DIM           3
 -------------------------------------------------------------TITLE
 simple, academic test case for monolithic scalar-structure interaction:
-- three-dimensional problem involving standard scalar transport
-- cubic domain discretized by 1 hex8 elements
-- constant initial value 43584.9 of transported scalar (due to validity bound of polynomial)
-- scalar controlled via Volume Dirichlet condition (linearly ramped from 43584.9 to 7772.7)
+- three-dimensional problem involving elch scalar transport
+- cubic domain discretized by 1 hex8 element
+- constant initial value of transported scalar (due to validity bound of polynomial)
+- scalar controlled via Volume Dirichlet condition (linearly ramped)
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
 - MAT_InelasticDefgradPolyIntercalFracAniso: anisotropic strain dependent on lithiation X according to the following equation:
 - polynomial from Koerver[2018] for NMC-811 using a polynomial fit of 7th order for best approximation
@@ -62,27 +62,25 @@ MAT 4 MAT_InelasticDefgradPolyIntercalFracAniso SCALAR1 1 SCALAR1_RefConc 43584.
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
+SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 43584.9 7772.7
 ------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 43584.9
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.6
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.74491658141857874e-02 TOLERANCE 1.7e-10
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.74491658141880251e-02 TOLERANCE 1.7e-10
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE -1.74491658141847708e-02 TOLERANCE 1.7e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -1.74491658141871959e-02 TOLERANCE 1.7e-10
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.41093596794073777e-02 TOLERANCE 1.4e-10
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.50321827049104181e-02 TOLERANCE 1.5e-10
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE -1.95301434730155016e-02 TOLERANCE 2.0e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -1.55536908921040003e-02 TOLERANCE 1.6e-10
 ------------------------------------------------DESIGN DESCRIPTION
-NDVOL   2
-NDLINE  1
-NDPOINT 1
+NDVOL   1
+NDPOINT 3
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT  1
+DPOINT  3
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
--------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  1
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT none none none
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 3.6 FUNCT 1 none
@@ -91,18 +89,8 @@ DVOL   1
 E 1 - ScaTra 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 2 DNODE 1
-NODE 3 DNODE 1
-NODE 4 DNODE 1
------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 1 DLINE 1
-NODE 2 DLINE 1
-NODE 3 DLINE 1
-NODE 4 DLINE 1
-NODE 5 DLINE 1
-NODE 6 DLINE 1
-NODE 7 DLINE 1
-NODE 8 DLINE 1
+NODE 2 DNODE 2
+NODE 4 DNODE 3
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
