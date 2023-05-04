@@ -221,7 +221,7 @@ macro(
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
+        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
