@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <Teuchos_SerialDenseMatrix.hpp>
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
 
@@ -213,6 +214,52 @@ namespace TESTING::INTERNAL
           for (int i = 0; i < mat1.RowDim(); ++i)
           {
             for (int j = 0; j < mat1.ColDim(); ++j)
+            {
+              if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
+              {
+                ss << "(" << i << "," << j << "): " << mat1(i, j) << " vs. " << mat2(i, j)
+                   << std::endl;
+              }
+            }
+          }
+          return ss.str();
+        });
+
+    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+  }
+
+  /**
+   * Compare two Teuchos::SerialDenseMatrix objects for double equality up to a tolerance. The
+   * signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
+   *
+   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   */
+  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+      const char* mat2Expr,  // NOLINT
+      const char* toleranceExpr, const Teuchos::SerialDenseMatrix<int, double>& mat1,
+      const Teuchos::SerialDenseMatrix<int, double>& mat2, double tolerance)
+  {
+    // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
+    (void)toleranceExpr;
+
+    const bool dimensionsMatch =
+        mat1.numRows() == mat2.numRows() and mat1.numCols() == mat2.numCols();
+    if (!dimensionsMatch)
+    {
+      return ::testing::AssertionFailure()
+             << "dimension mismatch: " << mat1Expr << " has dimension " << mat1.numRows() << "x"
+             << mat1.numCols() << " but " << mat2Expr << " has dimension " << mat2.numRows() << "x"
+             << mat2.numCols() << std::endl;
+    }
+
+    const std::string nonMatchingEntries = std::invoke(
+        [&]()
+        {
+          std::stringstream ss;
+          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          for (int i = 0; i < mat1.numRows(); ++i)
+          {
+            for (int j = 0; j < mat1.numCols(); ++j)
             {
               if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
               {
