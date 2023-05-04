@@ -123,6 +123,13 @@ Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wik
 
 ### Configure and Build
 
+#### Create python virtual environment for BACI development (optional)
+
+For testing and active development, you need to create a python virtual environment once. In the source directory, execute:
+```
+./create-baci-python-venv
+```
+
 #### Create the Build Directory
 
 BACI enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
