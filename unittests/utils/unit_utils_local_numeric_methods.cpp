@@ -17,8 +17,8 @@ namespace
   {
     std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> function = [](double x)
     {
-      return CORE::UTILS::ValuesFunctAndFunctDeriv{
-          .val_funct = std::pow(x, 2) - 1, .val_deriv_funct = 2 * x};
+      CORE::UTILS::ValuesFunctAndFunctDeriv fx_fdx = {std::pow(x, 2) - 1, 2 * x};
+      return fx_fdx;
     };
 
     double root = CORE::UTILS::NewtonScalar(function, 5.0, 1e-12, 200);
@@ -30,8 +30,8 @@ namespace
   {
     std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> function = [](double x)
     {
-      return CORE::UTILS::ValuesFunctAndFunctDeriv{
-          .val_funct = std::pow(x, 2) - 1, .val_deriv_funct = 0.0};
+      CORE::UTILS::ValuesFunctAndFunctDeriv fx_fdx = {std::pow(x, 2) - 1, 0.0};
+      return fx_fdx;
     };
 
     double root = CORE::UTILS::Bisection(function, 0.0, 5.0, 1e-12, 200);
