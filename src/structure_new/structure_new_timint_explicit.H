@@ -71,14 +71,6 @@ namespace STR
       //! Access to scaling matrix for STC
       Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override;
 
-      /// @name XFEM/XSTR related methods
-      ///@{
-
-      /// There is nothing to destroy in the explicit case
-      bool DestroyNoxState() override { return true; };
-
-      ///@}
-
       /// @name Access linear system of equation via adapter (implicit only!)
       ///@{
       /// initial guess of Newton's method

@@ -583,35 +583,6 @@ namespace STR
       [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetF() const = 0;
       /// @}
 
-      /// @name XFEM/XSTR related methods
-      ///@{
-
-      /// access the xfield state pointer
-      Teuchos::RCP<XFEM::XFieldState> XFieldState() override;
-      [[nodiscard]] Teuchos::RCP<const XFEM::XFieldState> XFieldState() const override;
-
-      /** \brief create a new XFieldState object by transferring the information to the new dofs
-       *
-       *  \author hiermeier \date 02/17 */
-      void CreateNewXFieldState(const Teuchos::RCP<XFEM::XFieldState>& new_xstate) const override;
-
-      /** \brief reset the non-standard / enrichment dofs of the xfield state object
-       *
-       *  \author hiermeier \date 02/17 */
-      void ResetXFieldNonStandardDofs() override;
-
-      /** \brief destroy the current state
-       *
-       *  \author hiermeier \date 02/17 */
-      bool DestroyState() override;
-
-      /** \brief destroy the nonlinear solver state
-       *
-       *  \author hiermeier \date 02/17 */
-      virtual bool DestroyNoxState() = 0;
-
-      ///@}
-
      public:
       /// @name External accessors for the class variables
       ///@{

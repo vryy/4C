@@ -214,7 +214,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_thermo
     alg_tutorial
     alg_xfluid
-    alg_xstructure
     )
 
 set(SUPPORT_LIBRARIES
