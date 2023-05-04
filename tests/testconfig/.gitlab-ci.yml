@@ -577,7 +577,9 @@ lnm-buildtest_full_docker:
   - job: build-base-dependencies
     optional: true
   # rules as .buildtest_full but never run when BACI_DOCKER_RUN_TEST == False
+  # Also make use of evaluation order to run test in nightly pipeline as well
   rules:
   - if: $BACI_DOCKER_RUN_TEST == "False"
     when: never
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
