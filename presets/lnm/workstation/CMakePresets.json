@@ -4,6 +4,7 @@
     {
       "name": ".lnm_workstation_base",
       "hidden": true,
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",

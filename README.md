@@ -160,12 +160,14 @@ More information about the cmake presets can be found [in the wiki](https://gitl
 #### Build
 
 ```bash
-make -j <numProcs> full |& tee make$(date +%y%m%d%H%M%N).log
+ninja -j <numProcs> full |& tee build$(date +%y%m%d%H%M%N).log
 ```
 
 where `<numProcs>` is the number of processors you want to use.
 
-> **Note:**  After the first build, it is not always necessary to rerun the configure script &mdash; only the `make` command is required.  Reconfiguring is required when new files have been added and no changes are made to the `CMakeLists.txt` files.  If changes are made to a `CMakeLists.txt` file, then calling `make` will *automatically* reconfigure as part of the build process.
+> **Note:**  After the first build, it is rarely necessary to reconfigure baci &mdash; only the build-command is required. `cmake` is invoked *automatically* during the build process if something changed within `CMakeLists.txt`.
+
+> **Note:** Make sure to have Ninja installed on your system.
 
 #### Run the Tests
 
