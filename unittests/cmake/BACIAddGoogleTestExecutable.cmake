@@ -81,6 +81,9 @@ function(baci_add_google_test_executable TESTNAME)
   add_test(NAME ${TESTNAME} COMMAND ${MPI_RUN} ${mpi_arguments})
   set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
   set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS ${TOTAL_NUM_PROCESSORS})
+  set_tests_properties(
+    ${TESTNAME} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    )
 
   add_dependencies(unittests ${TESTNAME})
 endfunction()

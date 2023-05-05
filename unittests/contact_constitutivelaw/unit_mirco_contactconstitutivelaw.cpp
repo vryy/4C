@@ -69,31 +69,19 @@ namespace
   //! test member function Evaluate
   TEST_F(MircoConstitutiveLawTest, TestEvaluate)
   {
-    // Set the number of threads to no more than THREADS defined for this unittest
-    omp_set_num_threads(6);
-
     // gap < 0
     EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
     // 0< gap < offset
     EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25));
     // offset < gap
     EXPECT_NEAR(coconstlaw_->Evaluate(-12.0), -0.0005942101230076477, 1.e-10);
-
-    // Unset the number of OpenMP threads
-    omp_set_num_threads(omp_get_num_procs());
   }
 
   //! test member function EvaluateDeriv
   TEST_F(MircoConstitutiveLawTest, TestEvaluateDeriv)
   {
-    // Set the number of threads to no more than THREADS defined for this unittest
-    omp_set_num_threads(6);
-
     EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12), 1.34284789678326e-04, 1.e-10);
     EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
-
-    // Unset the number of OpenMP threads
-    omp_set_num_threads(omp_get_num_procs());
   }
 }  // namespace
 
