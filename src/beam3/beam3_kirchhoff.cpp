@@ -460,9 +460,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3k::Lines()
 }
 
 /*----------------------------------------------------------------------*
- | Set the initial rotations based on nodal rotation (pseudo) vectors.
- | The nodal rotation vectors are independent of the subsequent used
- | rotational interpolation method.
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::SetUpInitialRotations(const std::vector<double>& nodal_thetas)
 {
@@ -595,7 +592,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
           disp_refe_centerline(3 * 2 * node + 3 + dim) = (T0_[node])(dim);
       }
     }
-    length_ = Calc_reflength<2, 2>(disp_refe_centerline);
+    length_ = CalcRefLength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -815,7 +812,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
           disp_refe_centerline(3 * 2 * node + 3 + dim) = (T0_[node])(dim);
       }
     }
-    length_ = Calc_reflength<2, 2>(disp_refe_centerline);
+    length_ = CalcRefLength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta

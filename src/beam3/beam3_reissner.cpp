@@ -880,7 +880,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      * ******************************/
 
     // note: in case of Hermite centerline interpolation: iteratively via Newton's method
-    reflength_ = Calc_reflength<nnodecl, vpernode>(disp_refe_centerline);
+    reflength_ = CalcRefLength<nnodecl, vpernode>(disp_refe_centerline);
 
     /************************ Compute quantities required for elasticity
      ***********************************

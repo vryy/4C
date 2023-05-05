@@ -520,6 +520,10 @@ namespace DRT
 
       /*!
       \brief Set rotations in the initial configuration
+
+       Set the initial rotations based on nodal rotation (pseudo) vectors.
+       The nodal rotation vectors are independent of the subsequent used
+       rotational interpolation method.
       */
       void SetUpInitialRotations(const std::vector<double>& nodal_thetas);
 
