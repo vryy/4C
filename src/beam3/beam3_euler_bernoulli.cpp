@@ -302,7 +302,6 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
       jacobi_(old.jacobi_),
       Ekin_(old.Ekin_),
       Eint_(old.Eint_),
-      Tref_(old.Tref_),
       L_(old.L_),
       P_(old.P_),
       t0_(old.t0_),

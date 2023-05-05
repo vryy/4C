@@ -283,7 +283,6 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
       stiff_ptc_(true),
       useFAD_(false),
-      centerline_hermite_(false),
       isinit_(false),
       jacobiGPelastf_(0),
       jacobiGPelastm_(0),
@@ -306,11 +305,9 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
 DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
     : DRT::ELEMENTS::Beam3Base(old),
       useFAD_(old.useFAD_),
-      centerline_hermite_(old.centerline_hermite_),
       isinit_(old.isinit_),
       reflength_(old.reflength_),
       theta0node_(old.theta0node_),
-      Trefnode_(old.Trefnode_),
       Tcurrnode_(old.Tcurrnode_),
       KrefGP_(old.KrefGP_),
       GammarefGP_(old.GammarefGP_),
@@ -436,7 +433,7 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, isinit_);
   AddtoPack(data, reflength_);
   AddtoPack<3, 1>(data, theta0node_);
-  AddtoPack<3, 1>(data, Trefnode_);
+  AddtoPack<3, 1>(data, Tref_);
   AddtoPack<3, 1>(data, Tcurrnode_);
   AddtoPack<3, 1>(data, KrefGP_);
   AddtoPack<3, 1>(data, GammarefGP_);
@@ -490,7 +487,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   isinit_ = ExtractInt(position, data);
   ExtractfromPack(position, data, reflength_);
   ExtractfromPack<3, 1>(position, data, theta0node_);
-  ExtractfromPack<3, 1>(position, data, Trefnode_);
+  ExtractfromPack<3, 1>(position, data, Tref_);
   ExtractfromPack<3, 1>(position, data, Tcurrnode_);
   ExtractfromPack<3, 1>(position, data, KrefGP_);
   ExtractfromPack<3, 1>(position, data, GammarefGP_);
@@ -854,7 +851,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     triad_interpolation_scheme_ptr->Reset(Qnewnode);
 
     LINALG::Matrix<3, 3> Gref;
-    Trefnode_.resize(nnodecl);
+    Tref_.resize(nnodecl);
 
     for (unsigned int node = 0; node < nnodecl; node++)
     {
@@ -865,14 +862,14 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Gref.Clear();
       LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
-      for (int i = 0; i < 3; i++) (Trefnode_[node])(i) = (Gref)(i, 0);
+      for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
       // fill disp_refe_centerline with reference nodal centerline positions and tangents
       for (int dim = 0; dim < 3; ++dim)
       {
         disp_refe_centerline(3 * vpernode * node + dim) = xrefe[3 * node + dim];
         if (centerline_hermite_)
-          disp_refe_centerline(3 * vpernode * node + 3 + dim) = (Trefnode_[node])(dim);
+          disp_refe_centerline(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
       }
     }
 
@@ -1237,12 +1234,12 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Treffirst() const
         "vector varies along centerline!");
 
   LINALG::Matrix<3, 1> Tref;
-  double norm = Trefnode_[0].Norm2();
+  double norm = Tref_[0].Norm2();
 
   if (norm <= 1e-14)
     dserror("beam3r: cannot normalize tangent vector because its norm is close to zero!");
 
-  Tref.Update(1.0 / norm, Trefnode_[0]);
+  Tref.Update(1.0 / norm, Tref_[0]);
 
   return Tref;
 }
@@ -1948,22 +1945,6 @@ void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& do
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template <unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(
-    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
-{
-  for (unsigned int dim = 0; dim < 3; ++dim)
-    for (unsigned int node = 0; node < nnodecl; ++node)
-    {
-      dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-
-      // have Hermite interpolation? then update tangent DOFs as well
-      if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += Trefnode_[node](dim);
-    }
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, typename T>
 void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
     const std::vector<LINALG::Matrix<3, 1, double>>& disptheta,
@@ -2157,16 +2138,6 @@ template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5, 5, 1, double>(
     const std::vector<double>&, std::vector<LINALG::Matrix<3, 1, double>>&) const;
 template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5, 2, 2, double>(
     const std::vector<double>&, std::vector<LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2, 1, double>(
-    LINALG::Matrix<6, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<3, 1, double>(
-    LINALG::Matrix<9, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<4, 1, double>(
-    LINALG::Matrix<12, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<5, 1, double>(
-    LINALG::Matrix<15, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2, 2, double>(
-    LINALG::Matrix<12, 1, double>&) const;
 template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<2, double>(
     const std::vector<LINALG::Matrix<3, 1, double>>&,
     std::vector<LINALG::Matrix<4, 1, double>>&) const;

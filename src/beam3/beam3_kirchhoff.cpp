@@ -187,7 +187,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
       useFAD_(false),
       isinit_(false),
-      T0_(0),
       T_(0),
       theta0_(0),
       Qrefconv_(0),
@@ -236,7 +235,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
     : DRT::ELEMENTS::Beam3Base(old),
       useFAD_(old.useFAD_),
       isinit_(old.isinit_),
-      T0_(old.T0_),
       T_(old.T_),
       theta0_(old.theta0_),
       Qrefconv_(old.Qrefconv_),
@@ -343,7 +341,7 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   // add all class variables
   AddtoPack(data, useFAD_);
   AddtoPack(data, isinit_);
-  AddtoPack<3, 1>(data, T0_);
+  AddtoPack<3, 1>(data, Tref_);
   AddtoPack<3, 1>(data, T_);
   AddtoPack<3, 1>(data, theta0_);
   AddtoPack<4, 1>(data, Qrefconv_);
@@ -404,7 +402,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   // extract all class variables of beam3k element
   useFAD_ = ExtractInt(position, data);
   isinit_ = ExtractInt(position, data);
-  ExtractfromPack<3, 1>(position, data, T0_);
+  ExtractfromPack<3, 1>(position, data, Tref_);
   ExtractfromPack<3, 1>(position, data, T_);
   ExtractfromPack<3, 1>(position, data, theta0_);
   ExtractfromPack<4, 1>(position, data, Qrefconv_);
@@ -534,13 +532,13 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
-    T0_.resize(2);
+    Tref_.resize(2);
     T_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
-      (T0_[0])(i) = (Gref[0])(i, 0);
-      (T0_[1])(i) = (Gref[1])(i, 0);
+      (Tref_[0])(i) = (Gref[0])(i, 0);
+      (Tref_[1])(i) = (Gref[1])(i, 0);
       (T_[0])(i) = (Gref[0])(i, 0);
       (T_[1])(i) = (Gref[1])(i, 0);
     }
@@ -579,19 +577,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     bending_moment_3_GP_.resize(gausspoints.nquad);
     std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
 
-
     // calculate the length of the element via Newton iteration
     LINALG::Matrix<12, 1> disp_refe_centerline;
-    for (unsigned int node = 0; node < 2; node++)
-    {
-      // fill disp_refe_centerline with reference nodal centerline positions and tangents
-      for (int dim = 0; dim < 3; ++dim)
-      {
-        disp_refe_centerline(3 * 2 * node + dim) = (xrefe[node])(dim);
-        if (HermiteCenterlineInterpolation())
-          disp_refe_centerline(3 * 2 * node + 3 + dim) = (T0_[node])(dim);
-      }
-    }
+    AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
     length_ = CalcRefLength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
@@ -628,8 +616,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       for (int i = 0; i < 3; i++)
       {
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
       }
 
       jacobi_cp_[ind] = r_xi.Norm2();
@@ -685,10 +673,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       for (int i = 0; i < 3; i++)
       {
-        r(i) +=
-            xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + T0_[0](i) * N_i(1) + T0_[1](i) * N_i(3);
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r(i) += xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + Tref_[0](i) * N_i(1) +
+                Tref_[1](i) * N_i(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
       }
 
       // calculate jacobi jacobi_=|r'_0|
@@ -755,13 +743,13 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
-    T0_.resize(2);
+    Tref_.resize(2);
     T_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
-      (T0_[0])(i) = (Gref[0])(i, 0);
-      (T0_[1])(i) = (Gref[1])(i, 0);
+      (Tref_[0])(i) = (Gref[0])(i, 0);
+      (Tref_[1])(i) = (Gref[1])(i, 0);
       (T_[0])(i) = (Gref[0])(i, 0);
       (T_[1])(i) = (Gref[1])(i, 0);
     }
@@ -802,16 +790,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
     // calculate the length of the element via Newton iteration
     LINALG::Matrix<12, 1> disp_refe_centerline;
-    for (unsigned int node = 0; node < 2; node++)
-    {
-      // fill disp_refe_centerline with reference nodal centerline positions and tangents
-      for (int dim = 0; dim < 3; ++dim)
-      {
-        disp_refe_centerline(3 * 2 * node + dim) = (xrefe[node])(dim);
-        if (HermiteCenterlineInterpolation())
-          disp_refe_centerline(3 * 2 * node + 3 + dim) = (T0_[node])(dim);
-      }
-    }
+    AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
     length_ = CalcRefLength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
@@ -859,10 +838,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       for (int i = 0; i < 3; i++)
       {
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
         r_xixi(i) += xrefe[0](i) * N_i_xixi(0) + xrefe[1](i) * N_i_xixi(2) +
-                     T0_[0](i) * N_i_xixi(1) + T0_[1](i) * N_i_xixi(3);
+                     Tref_[0](i) * N_i_xixi(1) + Tref_[1](i) * N_i_xixi(3);
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
@@ -939,12 +918,12 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       for (int i = 0; i < 3; i++)
       {
-        r(i) +=
-            xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + T0_[0](i) * N_i(1) + T0_[1](i) * N_i(3);
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r(i) += xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + Tref_[0](i) * N_i(1) +
+                Tref_[1](i) * N_i(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
         r_xixi(i) += xrefe[0](i) * N_i_xixi(0) + xrefe[1](i) * N_i_xixi(2) +
-                     T0_[0](i) * N_i_xixi(1) + T0_[1](i) * N_i_xixi(3);
+                     Tref_[0](i) * N_i_xixi(1) + Tref_[1](i) * N_i_xixi(3);
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
@@ -997,7 +976,7 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
     r_xi(dim) += Nodes()[0]->X()[dim] * N_i_xi(0) + Nodes()[1]->X()[dim] * N_i_xi(2) +
-                 T0_[0](dim) * N_i_xi(1) + T0_[1](dim) * N_i_xi(3);
+                 Tref_[0](dim) * N_i_xi(1) + Tref_[1](dim) * N_i_xi(3);
   }
 
   return r_xi.Norm2();
@@ -1702,22 +1681,6 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   }
 
   if (add_reference_values) AddRefValuesDispCenterline<nnodecl, vpernode, T>(dofvec_centerline);
-}
-
-/*------------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------------*/
-template <unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(
-    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
-{
-  for (unsigned int dim = 0; dim < 3; ++dim)
-    for (unsigned int node = 0; node < nnodecl; ++node)
-    {
-      dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-
-      // Hermite interpolation: update tangent DOFs as well
-      if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += T0_[node](dim);
-    }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -2625,11 +2588,6 @@ template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateV
 template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
     const LINALG::Matrix<12 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
     LINALG::Matrix<12, 1, double>&, bool) const;
-
-template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&) const;
-template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, double>(
-    LINALG::Matrix<12, 1, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDisp<2, double>(
     LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;

@@ -353,7 +353,7 @@ namespace DRT
       template <unsigned int nnode, unsigned int vpernode>
       CORE::UTILS::ValuesFunctAndFunctDeriv IntegrateCenterlineArcLengthAndArcLengthDerivative(
           const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
+          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
           const DRT::Element::DiscretizationType& distype, const double& reflength)
       {
         std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
@@ -368,18 +368,17 @@ namespace DRT
         {
           double deriv_int = 0;
 
-          CalcInterpolation<nnode, vpernode, 3, double>(
-              disp_totlag_centerline, H_i_xi[numgp], r_xi);
+          CalcInterpolation<nnode, vpernode, 3, double>(disp_centerline, H_i_xi[numgp], r_xi);
           int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
 
           if (vpernode == 2)
           {
             for (int dim = 0; dim < 3; dim++)
             {
-              deriv_int += (disp_totlag_centerline(3 + dim) * H_i_xi[numgp](1) / reflength +
-                               disp_totlag_centerline(3 * vpernode * 1 + 3 + dim) *
-                                   H_i_xi[numgp](3) / reflength) *
-                           r_xi(dim);
+              deriv_int +=
+                  (disp_centerline(3 + dim) * H_i_xi[numgp](1) / reflength +
+                      disp_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) / reflength) *
+                  r_xi(dim);
             }
             deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
           }

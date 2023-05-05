@@ -159,12 +159,6 @@ namespace DRT
        *  \date 10/16 */
       virtual bool IsCenterlineNode(const DRT::Node& node) const = 0;
 
-      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual bool HermiteCenterlineInterpolation() const = 0;
-
       /** \brief return GIDs of all additive DoFs for a given node
        *
        *  \author grill
@@ -396,7 +390,18 @@ namespace DRT
           const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
           bool add_reference_values = false) const = 0;
 
+      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+       */
+      inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_; }
+
      protected:
+      //! vector holding reference tangent at the centerline nodes
+      std::vector<LINALG::Matrix<3, 1>> Tref_;
+
+      //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange
+      //! interpolation)
+      bool centerline_hermite_;
+
       /** \brief get access to the interface
        *
        *  \author hiermeier
@@ -412,7 +417,30 @@ namespace DRT
         return *browndyn_interface_ptr_;
       }
 
+      /** \brief add reference positions and tangents to (centerline) displacement state vector
+       *
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
+       */
+      template <unsigned int nnodecl, unsigned int vpernode, typename T>
+      void AddRefValuesDispCenterline(
+          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
+      {
+        for (unsigned int dim = 0; dim < 3; ++dim)
+          for (unsigned int node = 0; node < nnodecl; ++node)
+          {
+            dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
+
+            // Hermite interpolation: update tangent DOFs as well // TODO: use
+            // HermiteCenterlineInterpolation()
+            if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
+          }
+      }
+
       /** \brief calculates the element length in reference configuration
+       *
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
        */
       template <unsigned int nnode, unsigned int vpernode>
       double CalcRefLength(

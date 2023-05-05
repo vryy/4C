@@ -311,9 +311,6 @@ namespace DRT::ELEMENTS
     //! \brief Get number of degrees of freedom per element not including nodal degrees of freedom
     int NumDofPerElement() const override { return 0; }
 
-    //! \brief return flag whether Hermite polynomials are applied for centerline interpolation
-    inline bool HermiteCenterlineInterpolation() const override { return true; }
-
     //! \brief Print this element
     void Print(std::ostream& os) const override;
 
@@ -534,8 +531,6 @@ namespace DRT::ELEMENTS
     //! internal energy stemming from axial tension
     double Eint_axial_;
 
-    //! Matrix holding tangents at each node in reference configuration
-    std::vector<LINALG::Matrix<3, 1>> Tref_;
     //! angular momentum of the element
     LINALG::Matrix<3, 1> L_;
     //! linear momentum of the element

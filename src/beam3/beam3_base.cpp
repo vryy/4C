@@ -31,6 +31,8 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
     : DRT::Element(id, owner),
+      Tref_(0),
+      centerline_hermite_(true),
       filamenttype_(INPAR::BEAMINTERACTION::filtype_arbitrary),
       interface_ptr_(Teuchos::null),
       browndyn_interface_ptr_(Teuchos::null)
@@ -41,7 +43,11 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
-    : DRT::Element(old), bspotposxi_(old.bspotposxi_), filamenttype_(old.filamenttype_)
+    : DRT::Element(old),
+      Tref_(old.Tref_),
+      centerline_hermite_(old.centerline_hermite_),
+      bspotposxi_(old.bspotposxi_),
+      filamenttype_(old.filamenttype_)
 {
   // empty
 }
