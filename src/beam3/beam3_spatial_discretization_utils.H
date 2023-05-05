@@ -356,8 +356,6 @@ namespace DRT
           const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
           const DRT::Element::DiscretizationType& distype, const double& reflength)
       {
-        if (vpernode != 2) dserror("No reference length for shape functions available!");
-
         std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
         LINALG::Matrix<3, 1> r_xi;
 
@@ -394,30 +392,27 @@ namespace DRT
       }
 
       /** \brief calculates the element length in reference configuration
+       *
+       * see "Meier, C.: Geometrically exact finite element formulations for slender beams and
+       * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
        */
       template <unsigned int nnode, unsigned int vpernode>
       double CalcReflength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
+          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline,
           const DRT::Element::DiscretizationType& distype)
       {
         if (vpernode == 2 and nnode != 2)
           dserror(
               "the function Calc_reflength is implemented for 3rd order Hermite interpolation of "
-              "the "
-              "centerline only!");
+              "the centerline only!");
 
-        double reflength;
+        LINALG::Matrix<3, 1> tempvec(true);
 
-        if (vpernode == 2 || (nnode == 2 && vpernode == 1))
-        {
-          LINALG::Matrix<3, 1> tempvec(true);
-          for (int dim = 0; dim < 3; dim++)
-            tempvec(dim) =
-                disp_totlag_centerline(3 * vpernode * 1 + dim) - disp_totlag_centerline(dim);
-          reflength = tempvec.Norm2();
-        }
-        else
-          reflength = 0.0;
+        for (int dim = 0; dim < 3; dim++)
+          tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
+
+        double reflength = tempvec.Norm2();
+
 
         if (!(nnode == 2 && vpernode == 1))
         {
@@ -425,10 +420,10 @@ namespace DRT
               DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
 
           std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> lengthEquationAndDerivative =
-              [&gausspoints, &disp_totlag_centerline, &distype](double reflength)
+              [&gausspoints, &disp_refe_centerline, &distype](double reflength)
           {
             return IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode, vpernode>(
-                gausspoints, disp_totlag_centerline, distype, reflength);
+                gausspoints, disp_refe_centerline, distype, reflength);
           };
 
           reflength = CORE::UTILS::NewtonScalar(lengthEquationAndDerivative, reflength, 1e-12, 200);
