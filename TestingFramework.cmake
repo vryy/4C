@@ -181,7 +181,7 @@ endmacro(baci_test_extended_timeout)
 # DEFAULT BACI TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
 # Usage in TestingFrameworkListOfTests.cmake: "baci_omp_test(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
-# <num_proc>: number of processors the test should use
+# <num_proc>: number of mpi-processors the test should use
 # <num_omp_threads>: number of OpenMP threads per proccessor the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
@@ -205,12 +205,13 @@ macro(
       "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
     )
 
+  # Calculate the total number of processors required
+  math(EXPR total_num_proc "${num_proc}*${num_omp_threads}")
+
   require_fixture(${name_of_test} test_cleanup)
-  set_processors(${name_of_test} ${num_proc})
+  set_processors(${name_of_test} ${total_num_proc})
   define_setup_fixture(${name_of_test} ${name_of_test})
   set_timeout(${name_of_test})
-  # This test is run in serial to avoid shared-memory threads and other tests to use same processors.
-  set_run_serial(${name_of_test})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_test} ${ARGN})
@@ -225,7 +226,7 @@ macro(
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
-    set_processors(${name_of_test}-restart ${num_proc})
+    set_processors(${name_of_test}-restart ${total_num_proc})
     set_timeout(${name_of_test}-restart)
   endif(${restart_step})
 endmacro(baci_omp_test)
