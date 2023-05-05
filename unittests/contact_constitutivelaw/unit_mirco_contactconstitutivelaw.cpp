@@ -69,8 +69,8 @@ namespace
   //! test member function Evaluate
   TEST_F(MircoConstitutiveLawTest, TestEvaluate)
   {
-    // Set the number of threads to 1 for serial execution
-    omp_set_num_threads(1);
+    // Set the number of threads to no more than THREADS defined for this unittest
+    omp_set_num_threads(6);
 
     // gap < 0
     EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
@@ -86,8 +86,8 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(MircoConstitutiveLawTest, TestEvaluateDeriv)
   {
-    // Set the number of threads to 1 for serial execution
-    omp_set_num_threads(1);
+    // Set the number of threads to no more than THREADS defined for this unittest
+    omp_set_num_threads(6);
 
     EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12), 1.34284789678326e-04, 1.e-10);
     EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
