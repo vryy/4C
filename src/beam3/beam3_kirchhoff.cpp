@@ -580,7 +580,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     // calculate the length of the element via Newton iteration
     LINALG::Matrix<12, 1> disp_refe_centerline;
     AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
-    length_ = CalcRefLength<2, 2>(disp_refe_centerline);
+    length_ = CalcReflength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -791,7 +791,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     // calculate the length of the element via Newton iteration
     LINALG::Matrix<12, 1> disp_refe_centerline;
     AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
-    length_ = CalcRefLength<2, 2>(disp_refe_centerline);
+    length_ = CalcReflength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta

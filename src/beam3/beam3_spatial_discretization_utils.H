@@ -359,76 +359,30 @@ namespace DRT
         std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
         LINALG::Matrix<3, 1> r_xi;
 
-        double int_length = 0.0;
-        double deriv_length = 0.0;
-
         EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, H_i_xi, distype, reflength);
+
+        double int_length = 0.0, deriv_length = 0.0;
 
         for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
         {
-          double deriv_int = 0;
+          double deriv_int = 0.0;
 
           CalcInterpolation<nnode, vpernode, 3, double>(disp_centerline, H_i_xi[numgp], r_xi);
           int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
 
-          if (vpernode == 2)
-          {
-            for (int dim = 0; dim < 3; dim++)
-            {
-              deriv_int +=
-                  (disp_centerline(3 + dim) * H_i_xi[numgp](1) / reflength +
-                      disp_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) / reflength) *
-                  r_xi(dim);
-            }
-            deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
-          }
+          for (int dim = 0; dim < 3; dim++)
+            deriv_int +=
+                (disp_centerline(3 + dim) * H_i_xi[numgp](1) / reflength +
+                    disp_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) / reflength) *
+                r_xi(dim);
+
+          deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
         }
 
         CORE::UTILS::ValuesFunctAndFunctDeriv equationValueAndDeriv{
             .val_funct = reflength - int_length, .val_deriv_funct = 1 - deriv_length};
 
         return equationValueAndDeriv;
-      }
-
-      /** \brief calculates the element length in reference configuration
-       *
-       * see "Meier, C.: Geometrically exact finite element formulations for slender beams and
-       * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
-       */
-      template <unsigned int nnode, unsigned int vpernode>
-      double CalcReflength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline,
-          const DRT::Element::DiscretizationType& distype)
-      {
-        if (vpernode == 2 and nnode != 2)
-          dserror(
-              "the function Calc_reflength is implemented for 3rd order Hermite interpolation of "
-              "the centerline only!");
-
-        LINALG::Matrix<3, 1> tempvec(true);
-
-        for (int dim = 0; dim < 3; dim++)
-          tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
-
-        double reflength = tempvec.Norm2();
-
-
-        if (!(nnode == 2 && vpernode == 1))
-        {
-          const auto gausspoints =
-              DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
-
-          std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> lengthEquationAndDerivative =
-              [&gausspoints, &disp_refe_centerline, &distype](double reflength)
-          {
-            return IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode, vpernode>(
-                gausspoints, disp_refe_centerline, distype, reflength);
-          };
-
-          reflength = CORE::UTILS::NewtonScalar(lengthEquationAndDerivative, reflength, 1e-12, 200);
-        }
-
-        return reflength;
       }
     }  // namespace BEAM
   }    // namespace UTILS

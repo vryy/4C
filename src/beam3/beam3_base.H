@@ -430,10 +430,8 @@ namespace DRT
           for (unsigned int node = 0; node < nnodecl; ++node)
           {
             dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-
-            // Hermite interpolation: update tangent DOFs as well // TODO: use
-            // HermiteCenterlineInterpolation()
-            if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
+            if (HermiteCenterlineInterpolation())
+              dofvec_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
           }
       }
 
@@ -441,13 +439,41 @@ namespace DRT
        *
        * @tparam nnode number of nodes
        * @tparam vpernode values per nodal direction
+       *
+       * For Lagrange centerline interpolation the difference between both boundary points is used
+       * as reference length. In the case of Hermite centerline interpolation the value is used as
+       * start for a newton iteration.
+       *
+       * see "Meier, C.: Geometrically exact finite element formulations for slender beams and
+       * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
        */
       template <unsigned int nnode, unsigned int vpernode>
-      double CalcRefLength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline)
+      double CalcReflength(
+          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline)
       {
-        return DRT::UTILS::BEAM::CalcReflength<nnode, vpernode>(
-            disp_totlag_centerline, this->Shape());
+        LINALG::Matrix<3, 1> tempvec(true);
+
+        for (int dim = 0; dim < 3; dim++)
+          tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
+        double reflength = tempvec.Norm2();
+
+        if (HermiteCenterlineInterpolation())
+        {
+          const auto gausspoints =
+              DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
+          const auto distype = this->Shape();
+
+          std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> lengthEquationAndDerivative =
+              [&gausspoints, &disp_refe_centerline, &distype](double reflength)
+          {
+            return DRT::UTILS::BEAM::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
+                vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
+          };
+
+          reflength = CORE::UTILS::NewtonScalar(lengthEquationAndDerivative, reflength, 1e-12, 200);
+        }
+
+        return reflength;
       }
 
       /*! \brief Get centerline position at given parameter coordinate xi
