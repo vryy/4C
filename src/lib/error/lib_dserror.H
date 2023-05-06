@@ -18,11 +18,8 @@
 #include <cstdio>
 #include <cstdarg>
 #include <string>
+#include <stdexcept>
 
-namespace std
-{
-  class runtime_error;
-}
 
 extern "C" void cpp_dserror_func(const char* string, ...);  // avoid constructing string from char*
 void cpp_dserror_func(const std::string string, ...);
