@@ -312,11 +312,6 @@ namespace DRT
       virtual inline double RefLength() const { return length_; }
 
       /*!
-      \brief Set bool indicating, if Kirchhoff constraint is enforced in a strong or weak manner
-      */
-      void SetWeakConstraint(const bool yesno);
-
-      /*!
       \brief Get jacobi factor of first Gauss point
       */
       const double& GetJacobi() const { return jacobi_[0]; }

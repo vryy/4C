@@ -82,7 +82,3 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
 
   return true;
 }
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::SetWeakConstraint(const bool yesno) { weakkirchhoff_ = yesno; }
