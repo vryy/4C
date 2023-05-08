@@ -545,13 +545,26 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // (1) do mortar coupling in reference configuration
     cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
 
-    // (2) perform mesh initialization for rotational invariance (interface)
-    // and return the modified slave node positions in vector Xslavemod
-    Teuchos::RCP<const Epetra_Vector> Xslavemod =
-        cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+    // perform mesh initialization if required by input parameter MESH_RELOCATION
+    auto mesh_relocation_parameter = DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+        DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
-    // (3) apply result of mesh initialization to underlying problem discretization
-    ApplyMeshInitialization(Xslavemod);
+    if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
+    {
+      // (2) perform mesh initialization for rotational invariance (interface)
+      // and return the modified slave node positions in vector Xslavemod
+      Teuchos::RCP<const Epetra_Vector> Xslavemod =
+          cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+
+      // (3) apply result of mesh initialization to underlying problem discretization
+      ApplyMeshInitialization(Xslavemod);
+    }
+    else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
+    {
+      dserror(
+          "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
+          "initial or MESH_RELOCATION no.");
+    }
   }
 
   // initialization of contact
