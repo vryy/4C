@@ -37,7 +37,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 
   const unsigned probdim = wrapper.Dim();
 
-  GEN_DATA::reset(msize, projInfo);
+  GEN::reset(msize, projInfo);
 
   std::vector<double> found_alpha(msize, 0.0);
   std::vector<LINALG::Matrix<2, 1>> found_mxi(msize, LINALG::Matrix<2, 1>(true));
@@ -364,8 +364,8 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
     Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv1stVecMap& d_avg_unit_normal = cnode.AugData().GetDeriv1st_N();
-  GEN_DATA::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
-  GEN_DATA::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
+  GEN::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
+  GEN::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
 
@@ -579,10 +579,10 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
     const Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv2ndVecMap& dd_avg_unit_normal = cnode.AugData().GetDeriv2nd_N();
-  GEN_DATA::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
+  GEN::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
 
   Deriv2ndVecMap dd_nodal_avg_normal;
-  GEN_DATA::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
+  GEN::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
   Deriv1stVecMap d_unit_normal;

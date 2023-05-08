@@ -15,8 +15,6 @@
 
 #include "utils_pairedmatrix.H"
 
-namespace GEN_DATA = GEN;
-
 // #define INSERT_AND_SORT
 #define QUICK_INSERT
 
@@ -41,16 +39,14 @@ namespace CONTACT
     typedef std::vector<INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
-    typedef GEN_DATA::pairedvector<int, double, GEN_DATA::insert_and_sort_policy<int, double>>
-        Deriv1stMap;
-    typedef GEN_DATA::pairedmatrix<int, double, GEN_DATA::insert_and_sort_policy<int, double>>
-        Deriv2ndMap;
+    typedef GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>> Deriv1stMap;
+    typedef GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>> Deriv2ndMap;
 #elif defined(QUICK_INSERT)
-    typedef GEN_DATA::quick_pairedvector<int, double> Deriv1stMap;
-    typedef GEN_DATA::quick_pairedmatrix<int, double> Deriv2ndMap;
+    typedef GEN::quick_pairedvector<int, double> Deriv1stMap;
+    typedef GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
 #else
-    typedef GEN_DATA::default_pairedvector<int, double> Deriv1stMap;
-    typedef GEN_DATA::default_pairedmatrix<int, double> Deriv2ndMap;
+    typedef GEN::default_pairedvector<int, double> Deriv1stMap;
+    typedef GEN::default_pairedmatrix<int, double> Deriv2ndMap;
 #endif
 
     typedef std::vector<Deriv1stMap> Deriv1stVecMap;

@@ -10,8 +10,6 @@
 #ifndef CONTACT_AUG_INTEGRATOR_POLICY_H
 #define CONTACT_AUG_INTEGRATOR_POLICY_H
 
-//#define SWITCH_2ND_DERIV_NORMAL_OFF
-
 #include "contact_aug_contact_integrator_utils.H"
 #include "contact_aug_timemonitor.H"
 
@@ -218,7 +216,7 @@ namespace CONTACT
           const Deriv1stMap& d_alpha, Deriv2ndVecMap& dd_mxigp) const
       {
         // do nothing
-        GEN_DATA::reset(2, 0, dd_mxigp);
+        GEN::reset(2, 0, dd_mxigp);
       }
 
       void Get_Deriv1st_GapN(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
