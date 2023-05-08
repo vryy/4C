@@ -12,7 +12,7 @@ set(SOURCE_LIST
 baci_add_google_test_executable(
   ${TESTNAME}
   THREADS
-  6
+  2
   SOURCE
   ${SOURCE_LIST}
   )
