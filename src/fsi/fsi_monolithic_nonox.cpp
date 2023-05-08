@@ -88,10 +88,10 @@ void FSI::MonolithicNoNOX::SetupSystem()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // structure to fluid
 

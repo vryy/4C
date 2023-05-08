@@ -525,7 +525,7 @@ void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetr
 
             // stiffness
             std::map<int, double> dgap = dgap_[node_gid];
-            std::vector<GEN::pairedvector<int, double>> dnormal = dnormals_[node_gid];
+            std::vector<CORE::GEN::pairedvector<int, double>> dnormal = dnormals_[node_gid];
 
             // check if projection exists
             if (!dnormal.empty() && !dgap.empty())
@@ -752,7 +752,7 @@ void UTILS::SpringDashpot::InitializeCurSurfNormal()
   // create temp vectors for gap initialization
   std::map<int, std::map<int, double>> tmpdgap_;
   std::map<int, std::vector<double>> tmpnormals_;
-  std::map<int, std::vector<GEN::pairedvector<int, double>>> tmpdnormals_;
+  std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>> tmpdnormals_;
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;

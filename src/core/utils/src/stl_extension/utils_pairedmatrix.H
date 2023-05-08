@@ -15,7 +15,7 @@
 
 #include "utils_pairedvector.H"
 
-namespace GEN
+namespace CORE::GEN
 {
   /// struct containing the base type of the pairedmatrix class
   template <typename Key, typename T, typename inner_insert_policy, typename outer_insert_policy>
@@ -181,7 +181,7 @@ namespace GEN
       pairedmatrix_type sorted_m(base_type::begin(), base_type::end());
       if (sort) std::sort(sorted_m.begin(), sorted_m.end(), pair_comp<pair_type>);
 
-      os << "GEN::pairedmatrix [size= " << base_type::size()
+      os << "CORE::GEN::pairedmatrix [size= " << base_type::size()
          << ", capacity=" << base_type::capacity()
          << ", max. capacity per row=" << maxRowCapacity(*this) << "]\n";
       if (sort) os << "sorted ";
@@ -499,7 +499,7 @@ namespace GEN
   template <typename Key, typename T>
   using quick_pairedmatrix = pairedmatrix<Key, T, quick_insert_policy<Key, T>,
       quick_insert_policy<Key, quick_pairedvector<Key, T>>>;
-}  // namespace GEN
+}  // namespace CORE::GEN
 
 
 #endif

@@ -33,7 +33,7 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
     case DRT::Element::quad4:
     {
       return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::quad4>::Instance(
-          ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -44,9 +44,9 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(

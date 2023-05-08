@@ -452,14 +452,14 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>*
 CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
     CONTACT::ParamsInterface* cparams, CONTACT::CoIntegrator* wrapper)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<Integrator<probdim, slavetype, mastertype, IntPolicy>>(
             new Integrator<probdim, slavetype, mastertype, IntPolicy>);
       });
 
-  auto instance = singleton_owner.Instance(::UTILS::SingletonAction::create);
+  auto instance = singleton_owner.Instance(CORE::UTILS::SingletonAction::create);
   instance->Init(cparams, wrapper);
   instance->IntPolicy::timer_.setComm(&wrapper->Comm());
 
@@ -1004,20 +1004,20 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::HardReset(
     const unsigned linsize)
 {
-  GEN::reset(my::SLAVEDIM, 0, dsxigp_);
+  CORE::GEN::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
-  GEN::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
-  GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
+  CORE::GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
+  CORE::GEN::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
+  CORE::GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
-  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
-  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
+  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
+  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
+  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
 
-  GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  CORE::GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  CORE::GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1027,20 +1027,20 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakReset(
     const unsigned linsize)
 {
-  GEN::reset(my::SLAVEDIM, 0, dsxigp_);
+  CORE::GEN::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  GEN::weak_reset(dmxigp_);
-  GEN::weak_reset(dalpha_);
-  GEN::weak_reset(ddmxigp_);
+  CORE::GEN::weak_reset(dmxigp_);
+  CORE::GEN::weak_reset(dalpha_);
+  CORE::GEN::weak_reset(ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  GEN::weak_reset(dn_non_unit_);
-  GEN::weak_reset(ddn_non_unit_);
-  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  GEN::weak_reset(ddn_unit_);
+  CORE::GEN::weak_reset(dn_non_unit_);
+  CORE::GEN::weak_reset(ddn_non_unit_);
+  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  CORE::GEN::weak_reset(ddn_unit_);
 
-  GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  CORE::GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  CORE::GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -16,6 +16,8 @@ with condensed fluid interface velocities
 #include "inpar_fsi.H"
 #include "adapter_fld_fluid_fsi_msht.H"
 #include "adapter_ale_fsi_msht.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 
 // forward declarations
 namespace ADAPTER
@@ -329,10 +331,10 @@ namespace FSI
     /// Handle row and column map exchange for matrix blocks
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
     Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;

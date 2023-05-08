@@ -20,6 +20,7 @@
 
 #include "adapter_fld_fluid_ale.H"
 #include "adapter_algorithmbase.H"
+#include "coupling_adapter.H"
 
 
 // forward declarations
@@ -99,10 +100,10 @@ namespace FSI
     //@}
 
     /// return the structure fluid coupling object
-    ADAPTER::Coupling& StructureFluidCoupling();
+    CORE::ADAPTER::Coupling& StructureFluidCoupling();
 
     /// return const version of structure fluid coupling object
-    const ADAPTER::Coupling& StructureFluidCoupling() const;
+    const CORE::ADAPTER::Coupling& StructureFluidCoupling() const;
 
    protected:
     /// underlying structure of the FSI problem
@@ -119,7 +120,7 @@ namespace FSI
 
    private:
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling> coupsf_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
   };
 }  // namespace FSI
 

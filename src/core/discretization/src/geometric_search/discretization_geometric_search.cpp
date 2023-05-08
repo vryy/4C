@@ -26,36 +26,40 @@
 namespace ArborX
 {
   template <>
-  struct AccessTraits<std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>, PrimitivesTag>
+  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
+      PrimitivesTag>
   {
     using memory_space = Kokkos::HostSpace;
 
     static std::size_t size(
-        const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector)
+        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
     {
       return vector.size();
     }
 
     static auto get(
-        const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector, std::size_t i)
+        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
+        std::size_t i)
     {
       return ArborX::Box{vector[i].second.bounding_volume_};
     }
   };
 
   template <>
-  struct AccessTraits<std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>, PredicatesTag>
+  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
+      PredicatesTag>
   {
     using memory_space = Kokkos::HostSpace;
 
     static std::size_t size(
-        const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector)
+        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
     {
       return vector.size();
     }
 
     static auto get(
-        const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector, std::size_t i)
+        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
+        std::size_t i)
     {
       return intersects(vector[i].second.bounding_volume_);
     }
@@ -64,7 +68,7 @@ namespace ArborX
 
 #endif
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
@@ -73,12 +77,12 @@ namespace GEOMETRICSEARCH
   {
 #ifndef HAVE_ARBORX
     dserror(
-        "GEOMETRICSEARCH::CollisionSearch can only be used with ArborX."
+        "CORE::GEOMETRICSEARCH::CollisionSearch can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");
     return {};
 #else
 
-    TEUCHOS_FUNC_TIME_MONITOR("GEOMETRICSEARCH::CollisionSearch");
+    TEUCHOS_FUNC_TIME_MONITOR("CORE::GEOMETRICSEARCH::CollisionSearch");
 
     std::vector<int> indices_final;
     std::vector<int> offsets_final;
@@ -133,12 +137,12 @@ namespace GEOMETRICSEARCH
 
     if (verbosity == IO::verbose)
     {
-      UTILS::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
+      CORE::GEOMETRICSEARCH::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
           static_cast<int>(predicates.size()), static_cast<int>(indices_final.size())};
-      UTILS::PrintGeometricSearchDetails(comm, info);
+      CORE::GEOMETRICSEARCH::PrintGeometricSearchDetails(comm, info);
     }
 
     return {indices_final, offsets_final};
 #endif
   }
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH

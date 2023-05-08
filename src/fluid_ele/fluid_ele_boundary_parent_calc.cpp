@@ -50,7 +50,8 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   {
     case DRT::Element::line2:
     {
-      return FluidBoundaryParent<DRT::Element::line2>::Instance(::UTILS::SingletonAction::create);
+      return FluidBoundaryParent<DRT::Element::line2>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
     /*case DRT::Element::line3:
     {
@@ -66,7 +67,8 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
     }
     case DRT::Element::quad4:
     {
-      return FluidBoundaryParent<DRT::Element::quad4>::Instance(::UTILS::SingletonAction::create);
+      return FluidBoundaryParent<DRT::Element::quad4>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::quad8:
     {
@@ -104,9 +106,9 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidBoundaryParent<distype>>(

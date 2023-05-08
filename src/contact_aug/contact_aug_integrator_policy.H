@@ -216,7 +216,7 @@ namespace CONTACT
           const Deriv1stMap& d_alpha, Deriv2ndVecMap& dd_mxigp) const
       {
         // do nothing
-        GEN::reset(2, 0, dd_mxigp);
+        CORE::GEN::reset(2, 0, dd_mxigp);
       }
 
       void Get_Deriv1st_GapN(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

@@ -32,8 +32,8 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
   {
@@ -99,7 +99,7 @@ void FSI::StructureALE::Solve()
 
 Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);

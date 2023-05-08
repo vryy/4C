@@ -194,8 +194,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>
         ref_triad_interpolation_scheme;
-    GetBeamTriadInterpolationScheme(*discret, displacement_vector, beam_ele[i_beam],
-        triad_interpolation_scheme, ref_triad_interpolation_scheme);
+    BEAMINTERACTION::GetBeamTriadInterpolationScheme(*discret, displacement_vector,
+        beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.
     LINALG::Matrix<4, 1, double> quaternion_double;
@@ -203,17 +203,17 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     LINALG::Matrix<3, 1, scalar_type_rot> psi;
     triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
         quaternion_double, position_in_parameterspace_[i_beam]);
-    LARGEROTATIONS::quaterniontoangle(quaternion_double, psi_double);
+    CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, psi_double);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       psi(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot>::apply(
           6, i_beam * rot_dim_ + i_dim, psi_double(i_dim));
-    LARGEROTATIONS::angletoquaternion(psi, quaternion[i_beam]);
+    CORE::LARGEROTATIONS::angletoquaternion(psi, quaternion[i_beam]);
 
     ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
         quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
 
     // Transformation matrix.
-    LINALG::Matrix<3, 3, double> T = LARGEROTATIONS::Tmatrix(psi_double);
+    LINALG::Matrix<3, 3, double> T = CORE::LARGEROTATIONS::Tmatrix(psi_double);
 
     // Interpolation matrices.
     std::vector<LINALG::Matrix<3, 3, double>> I_tilde;
@@ -233,13 +233,14 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
   LINALG::Matrix<4, 1, scalar_type_rot> temp_quaternion_1, temp_quaternion_2, quaternion_rel;
   LINALG::Matrix<3, 1, scalar_type_rot> psi_rel;
   LINALG::Matrix<4, 1, scalar_type_rot> quaternion_0_inv =
-      LARGEROTATIONS::inversequaternion(quaternion[0]);
+      CORE::LARGEROTATIONS::inversequaternion(quaternion[0]);
   LINALG::Matrix<4, 1, double> quaternion_1_ref_inv =
-      LARGEROTATIONS::inversequaternion(quaternion_ref[1]);
-  LARGEROTATIONS::quaternionproduct(quaternion_0_inv, quaternion_ref[0], temp_quaternion_1);
-  LARGEROTATIONS::quaternionproduct(temp_quaternion_1, quaternion_1_ref_inv, temp_quaternion_2);
-  LARGEROTATIONS::quaternionproduct(temp_quaternion_2, quaternion[1], quaternion_rel);
-  LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+      CORE::LARGEROTATIONS::inversequaternion(quaternion_ref[1]);
+  CORE::LARGEROTATIONS::quaternionproduct(quaternion_0_inv, quaternion_ref[0], temp_quaternion_1);
+  CORE::LARGEROTATIONS::quaternionproduct(
+      temp_quaternion_1, quaternion_1_ref_inv, temp_quaternion_2);
+  CORE::LARGEROTATIONS::quaternionproduct(temp_quaternion_2, quaternion[1], quaternion_rel);
+  CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
   // Evaluate and assemble the moment coupling terms.
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)

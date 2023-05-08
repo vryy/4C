@@ -130,14 +130,14 @@ template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType 
 CONTACT::AUG::ProjectorBase*
 CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance()
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<Projector<DebugPolicy, probdim, ref_type, tar_type>>(
             new Projector<DebugPolicy, probdim, ref_type, tar_type>);
       });
 
-  return singleton_owner.Instance(::UTILS::SingletonAction::create);
+  return singleton_owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
 /*----------------------------------------------------------------------------*

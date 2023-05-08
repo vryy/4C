@@ -424,16 +424,16 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3, 3>& triad
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
     const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       discret, this, result_data_dofbased, element_posdofvec);
-  GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
   LINALG::Matrix<3, 1, double> point;
 

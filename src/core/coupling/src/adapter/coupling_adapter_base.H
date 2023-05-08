@@ -19,7 +19,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   /*! \class CouplingBase
    *  \brief Abstract interface to coupling managers
@@ -103,6 +103,6 @@ namespace ADAPTER
 
     //!@}
   };
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #endif  // COUPLING_ADAPTER_BASE_H

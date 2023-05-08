@@ -328,9 +328,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  const ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
   if (s == Teuchos::null) dserror("expect structure block matrix");
@@ -368,16 +368,16 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   systemmatrix_->Assign(0, 0, LINALG::View, s->Matrix(0, 0));
 
   (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
-      ADAPTER::CouplingMasterConverter(coupsf), systemmatrix_->Matrix(0, 1));
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), systemmatrix_->Matrix(0, 1));
   (*sggtransform_)(s->Matrix(1, 1),
       ((1.0 - ftiparam) / (1.0 - stiparam)) * (1. / (scale * timescale)),
-      ADAPTER::CouplingMasterConverter(coupsf), ADAPTER::CouplingMasterConverter(coupsf), *f, true,
-      true);
+      CORE::ADAPTER::CouplingMasterConverter(coupsf),
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), *f, true, true);
 
   Teuchos::RCP<LINALG::SparseMatrix> lsgi =
       Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(), 81, false));
   (*sgitransform_)(s->Matrix(1, 0), ((1.0 - ftiparam) / (1.0 - stiparam)) * (1. / scale),
-      ADAPTER::CouplingMasterConverter(coupsf), *lsgi);
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), *lsgi);
 
   lsgi->Complete(s->Matrix(1, 0).DomainMap(), f->RangeMap());
 
@@ -385,7 +385,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   systemmatrix_->Assign(1, 0, LINALG::View, *lsgi);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      ADAPTER::CouplingSlaveConverter(icoupfa), systemmatrix_->Matrix(2, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(icoupfa), systemmatrix_->Matrix(2, 1));
 
   systemmatrix_->Assign(2, 2, LINALG::View, aii);
 
@@ -406,12 +406,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
     Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
         Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(), 81, false));
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa),
+        CORE::ADAPTER::CouplingMasterConverter(coupfa),
         // systemmatrix_->Matrix(1,2),
         *lfmgi, false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, true);
 
     lfmgi->Complete(aii.DomainMap(), f->RangeMap());
 

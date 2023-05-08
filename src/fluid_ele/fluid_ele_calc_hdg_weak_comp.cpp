@@ -873,9 +873,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(co
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
-DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(::UTILS::SingletonAction action)
+DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(

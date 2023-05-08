@@ -136,7 +136,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // initialize coupling adapter to transform matrices between the two discrets
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
-  coupsia_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsia_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   siatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
@@ -1143,7 +1143,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
   (*siatransform_)(*ia_state_ptr_->GetMutableStiff(), 1.0,
-      ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
+      CORE::ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
 }
 
 /*-----------------------------------------------------------------------------*

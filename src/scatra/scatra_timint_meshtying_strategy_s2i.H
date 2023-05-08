@@ -16,6 +16,8 @@
 
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
@@ -112,7 +114,7 @@ namespace SCATRA
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
+    const Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_; }
@@ -292,10 +294,10 @@ namespace SCATRA
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
-    Teuchos::RCP<ADAPTER::Coupling> icoup_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_;
 
     //! mortar interface coupling adapters
-    std::map<int, Teuchos::RCP<ADAPTER::CouplingMortar>> icoupmortar_;
+    std::map<int, Teuchos::RCP<CORE::ADAPTER::CouplingMortar>> icoupmortar_;
 
     //! mortar integration cells
     std::map<int, std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>, INPAR::SCATRA::ImplType>>>

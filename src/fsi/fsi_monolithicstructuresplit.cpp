@@ -162,7 +162,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   fsaigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
   fsmgitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   // Recovery of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
@@ -661,9 +661,9 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  const ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // get single field block matrices
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
@@ -712,22 +712,22 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   mat.Assign(0, 0, LINALG::View, s->Matrix(0, 0));
 
   (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
-      ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(0, 1));
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(0, 1));
   (*sggtransform_)(s->Matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale * timescale),
-      ADAPTER::CouplingMasterConverter(coupsf), ADAPTER::CouplingMasterConverter(coupsf), *f, true,
-      true);
+      CORE::ADAPTER::CouplingMasterConverter(coupsf),
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), *f, true, true);
 
   Teuchos::RCP<LINALG::SparseMatrix> lsgi =
       Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(), 81, false));
   (*sgitransform_)(s->Matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-      ADAPTER::CouplingMasterConverter(coupsf), *lsgi);
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), *lsgi);
 
   lsgi->Complete(s->Matrix(1, 0).DomainMap(), f->RangeMap());
 
   mat.Assign(1, 0, LINALG::View, *lsgi);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      ADAPTER::CouplingSlaveConverter(icoupfa), mat.Matrix(2, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(icoupfa), mat.Matrix(2, 1));
   mat.Assign(2, 2, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -747,10 +747,10 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
         Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(), 81, false));
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, true);
 
     lfmgi->Complete(aii.DomainMap(), f->RangeMap());
 
@@ -764,7 +764,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     LINALG::SparseMatrix& aig = a->Matrix(0, 2);
 
     (*fsaigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-        ADAPTER::CouplingSlaveConverter(*fscoupfa_), mat.Matrix(2, 1));
+        CORE::ADAPTER::CouplingSlaveConverter(*fscoupfa_), mat.Matrix(2, 1));
 
     if (mmm != Teuchos::null)
     {
@@ -781,7 +781,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
       mat.Matrix(1, 1).Add(fmig, false, 1. / timescale, 1.0);
 
       (*fsmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-          ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
+          CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
     }
   }
 

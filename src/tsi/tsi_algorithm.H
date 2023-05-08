@@ -18,6 +18,8 @@
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "adapter_algorithmbase.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 #include <Epetra_Vector.h>
 
 
@@ -136,7 +138,7 @@ namespace TSI
     void GetContactStrategy();
 
     //! Access to the dof coupling for matching grid TSI
-    ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }
+    CORE::ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }
     //@}
 
     //! @name Access methods
@@ -173,9 +175,9 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_;
 
-    Teuchos::RCP<ADAPTER::Coupling> coupST_;  // S: master, T: slave
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;  // S: master, T: slave
     //@}
 
 

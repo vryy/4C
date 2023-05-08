@@ -416,7 +416,9 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       {
         dserror(
             "Volmortar coupling only tested for consistent interpolation, "
-            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own "
+            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings "
+            "at "
+            "own "
             "risk.");
       }
     }

@@ -14,7 +14,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace UTILS
+namespace CORE::UTILS
 {
   //! Action types for the singleton owner
   enum class SingletonAction
@@ -116,7 +116,8 @@ namespace UTILS
      * call to SingletonOwner::Instance() e.g.
      *
      * @code
-     *   singleton_map[disname].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+     *   singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, numdofpernode,
+     * disname);
      * @endoce
      */
     SingletonOwner<T, CreationArgs...>& operator[](const Key& key);
@@ -288,7 +289,7 @@ namespace UTILS
     using T = typename detail::DeduceSingletonMap<KeyType, decltype(&Fn::operator())>::type;
     return T(std::forward<Fn>(creator));
   }
-}  // namespace UTILS
+}  // namespace CORE::UTILS
 
 
 #endif

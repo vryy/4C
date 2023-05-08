@@ -331,8 +331,8 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
       /**********************************************dual mass matrix ******/
       if (conode->MoData().GetD().size() > 0)
       {
-        const GEN::pairedvector<int, double>& dualMassmap = conode->MoData().GetD();
-        GEN::pairedvector<int, double>::const_iterator colcurr;
+        const CORE::GEN::pairedvector<int, double>& dualMassmap = conode->MoData().GetD();
+        CORE::GEN::pairedvector<int, double>::const_iterator colcurr;
 
         for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
         {
@@ -370,12 +370,12 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
       CONTACT::CoElement* coele = dynamic_cast<CONTACT::CoElement*>(conode->Elements()[0]);
       if (!coele) dserror("this should be a contact element");
 
-      GEN::pairedvector<int, double> derivArea(coele->NumNode() * Dim());
+      CORE::GEN::pairedvector<int, double> derivArea(coele->NumNode() * Dim());
       double area = coele->ComputeAreaDeriv(derivArea);
 
       dualMassGlobal.FEAssemble(area, conode->Dofs()[0], conode->Dofs()[0]);
 
-      for (GEN::pairedvector<int, double>::const_iterator p = derivArea.begin();
+      for (CORE::GEN::pairedvector<int, double>::const_iterator p = derivArea.begin();
            p != derivArea.end(); ++p)
         linDualMassGlobal.FEAssemble(p->second * thermo_lm, conode->Dofs()[0], p->first);
     }
@@ -558,7 +558,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
   if (!friction_) return;
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef GEN::pairedvector<int, double>::const_iterator _cip;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _cip;
 
   const double dt = InterfaceParams().get<double>("TIMESTEP");
 
@@ -603,7 +603,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
     {
       // get nodal jump and deriv
       const std::vector<std::map<int, double>>& derivJump = fnode->FriData().GetDerivJump();
-      const std::vector<GEN::pairedvector<int, double>>& derivN = cnode->CoData().GetDerivN();
+      const std::vector<CORE::GEN::pairedvector<int, double>>& derivN = cnode->CoData().GetDerivN();
 
       // calculate derivative of Dissipation *******************************
       std::map<int, double> derivDiss;
@@ -682,7 +682,7 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
   if (lin_disp == NULL) dserror("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef GEN::pairedvector<int, double>::const_iterator _cip;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _cip;
   typedef std::map<int, std::map<int, double>>::const_iterator _cimm;
 
   // loop over all LM slave nodes (row map)
@@ -760,7 +760,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
   if (DM_LMn == NULL) dserror("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef GEN::pairedvector<int, double>::const_iterator _cip;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _cip;
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)

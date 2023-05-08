@@ -18,6 +18,7 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include "coupling_adapter.H"
 
 
 // forward declarations
@@ -160,7 +161,7 @@ namespace FS3I
     std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
-    Teuchos::RCP<ADAPTER::Coupling> scatracoup_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> scatracoup_;
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 

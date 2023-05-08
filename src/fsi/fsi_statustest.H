@@ -16,9 +16,10 @@
 #include <NOX_Utils.H>
 
 #include "linalg_mapextractor.H"
+#include "coupling_adapter.H"
 
 // forward declarations
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class CouplingConverter;
 }
@@ -197,7 +198,7 @@ namespace NOX
      public:
       PartialSumNormF(std::string name, const LINALG::MapExtractor& extractor1, double scale1,
           const LINALG::MapExtractor& extractor2, double scale2,
-          Teuchos::RCP<ADAPTER::CouplingConverter> converter, double tolerance,
+          Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter, double tolerance,
           ScaleType stype = Scaled);
 
      protected:
@@ -208,7 +209,7 @@ namespace NOX
       const LINALG::MapExtractor extractor2_;
       double scale1_;
       double scale2_;
-      Teuchos::RCP<ADAPTER::CouplingConverter> converter_;
+      Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter_;
     };
 
 

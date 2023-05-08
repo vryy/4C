@@ -13,6 +13,8 @@
 #include "lib_discret.H"
 #include "scatra_timint_implicit.H"
 #include "ssi_base.H"
+#include "coupling_adapter_mortar.H"
+#include "coupling_adapter_volmortar.H"
 
 
 namespace ADAPTER
@@ -210,7 +212,7 @@ namespace SSI
 
    private:
     //! adapter to mortar framework
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! extractor for coupled surface of structure discretization with surface scatra
     Teuchos::RCP<LINALG::MapExtractor> extractor_;
@@ -301,7 +303,7 @@ namespace SSI
 
    private:
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
 
    private:
     //! flag indicating if class is setup

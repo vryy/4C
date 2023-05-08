@@ -309,7 +309,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       LINALG::Matrix<3, 3> currrotationmatrix;
 
       // Compute rotation matrix out of rotation angle
-      LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
+      CORE::LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
 
       // base vectors of local system
       LINALG::Matrix<3, 1> vec1;

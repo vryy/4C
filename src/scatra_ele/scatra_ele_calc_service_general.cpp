@@ -997,7 +997,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
               "additional diffusive term!");
         }
 
-        VOLMORTAR::UTILS::dual_shape_function<distype>(
+        CORE::VOLMORTAR::UTILS::dual_shape_function<distype>(
             dual_funct_, xsi_.A(), *ele, INPAR::VOLMORTAR::dualquad_no_mod);
         break;
       }

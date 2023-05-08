@@ -33,7 +33,7 @@
  |  ctor (public)                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS>
-VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(
+CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -47,7 +47,7 @@ VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS>
-void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
+void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 {
   // init shape of integration domain
   DRT::Element::DiscretizationType intshape = distypeS;
@@ -262,7 +262,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS>
-void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(DRT::Element& sele,
+void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(DRT::Element& sele,
     std::vector<int>& foundeles, LINALG::SparseMatrix& D, LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
@@ -422,28 +422,28 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(DRT::
 /*----------------------------------------------------------------------*
  |  possible elements for ele-based integration              farah 02/15|
  *----------------------------------------------------------------------*/
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad4>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad8>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad9>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad8>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad9>;
 
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri3>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri6>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri6>;
 
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex27>;
 
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet10>;
 
-template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::pyramid5>;
 
 
 /*----------------------------------------------------------------------*
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-bool VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele,
+bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele,
     std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
     double* Axi, double* AuxXi, double* globgp, INPAR::VOLMORTAR::DualQuad& dq,
     INPAR::VOLMORTAR::Shapefcn& shape, LINALG::SparseMatrix& D, LINALG::SparseMatrix& M,
@@ -605,54 +605,54 @@ bool VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele,
  |  possible slave/master element pairs                      farah 02/15|
  *----------------------------------------------------------------------*/
 ////slave quad4
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::quad4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::tri3>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::quad4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::tri3>;
 //
 ////slave tri3
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::quad4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::tri3>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::quad4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::tri3>;
 //
 ////slave hex8
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet10>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex8>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex27>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex20>;
 //
 ////slave hex20
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet10>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex8>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex27>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex20>;
 //
 ////slave hex27
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet10>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex8>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex27>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex20>;
 //
 ////slave tet4
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet10>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex8>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex27>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex20>;
 //
 ////slave tet10
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet4>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet10>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex8>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex27>;
-// template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex20>;
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
+CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -670,7 +670,7 @@ VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     bool integrateele, int domain, DRT::Element::DiscretizationType shape)
 {
   // init shape of integration domain
@@ -833,7 +833,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(DRT::Element& sele,
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(DRT::Element& sele,
     DRT::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, LINALG::SparseMatrix& dmatrix,
     LINALG::SparseMatrix& mmatrix, Teuchos::RCP<const DRT::Discretization> slavedis,
     Teuchos::RCP<const DRT::Discretization> masterdis, int sdofset, int mdofset)
@@ -994,8 +994,8 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(DRT::E
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(DRT::Element& Aele,
-    DRT::Element& Bele, Teuchos::RCP<VOLMORTAR::Cell> cell, LINALG::SparseMatrix& dmatrix_A,
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(DRT::Element& Aele,
+    DRT::Element& Bele, Teuchos::RCP<CORE::VOLMORTAR::Cell> cell, LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A, LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
@@ -1132,7 +1132,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(DRT::E
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_DirectDiveregence(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_DirectDiveregence(
     DRT::Element& Aele, DRT::Element& Bele, GEO::CUT::VolumeCell& vc,
     Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints, bool switched_conf,
     LINALG::SparseMatrix& dmatrix_A, LINALG::SparseMatrix& mmatrix_A,
@@ -1280,7 +1280,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_Direct
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADis(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADis(
     DRT::Element& Aele, std::vector<int>& foundeles, LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
@@ -1405,7 +1405,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADi
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_BDis(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_BDis(
     DRT::Element& Bele, std::vector<int>& foundeles, LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
@@ -1531,7 +1531,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_BDi
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int domain,
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int domain,
     DRT::Element& Aele, DRT::Element& Bele, LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A, LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
@@ -1677,7 +1677,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int doma
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-bool VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
+bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
     DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1741,7 +1741,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-bool VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
+bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
     DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1898,65 +1898,65 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
  |  possible slave/master element pairs                       farah 01/14|
  *----------------------------------------------------------------------*/
 // slave quad4
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3>;
 
 // slave tri3
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3>;
 
 // slave hex8
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8, DRT::Element::pyramid5>;
 
 // slave hex20
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20, DRT::Element::pyramid5>;
 
 // slave hex27
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27, DRT::Element::pyramid5>;
 
 // slave tet4
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4, DRT::Element::pyramid5>;
 
 // slave tet10
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10, DRT::Element::pyramid5>;
 
 // slave pyramid 5
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet4>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet10>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex8>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex27>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex20>;
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::pyramid5>;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
-VOLMORTAR::ConsInterpolator::ConsInterpolator()
+CORE::VOLMORTAR::ConsInterpolator::ConsInterpolator()
 {
   // empty
 }
@@ -1965,7 +1965,7 @@ VOLMORTAR::ConsInterpolator::ConsInterpolator()
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node, LINALG::SparseMatrix& pmatrix,
+void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node, LINALG::SparseMatrix& pmatrix,
     Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles,
     std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
@@ -2089,7 +2089,7 @@ void VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node, LINALG::SparseMat
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-bool VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
+bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
     LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
     int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
@@ -2167,16 +2167,16 @@ bool VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
 /*----------------------------------------------------------------------*
  |  possible elements for interpolation                      farah 06/14|
  *----------------------------------------------------------------------*/
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::quad4>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::quad8>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::quad9>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::quad4>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::quad8>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::quad9>;
 //
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::tri3>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::tri6>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::tri3>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::tri6>;
 //
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::hex8>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::hex20>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::hex27>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::hex8>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::hex20>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::hex27>;
 //
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::tet4>;
-// template class VOLMORTAR::ConsInterpolator<DRT::Element::tet10>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::tet4>;
+// template class CORE::VOLMORTAR::ConsInterpolator<DRT::Element::tet10>;

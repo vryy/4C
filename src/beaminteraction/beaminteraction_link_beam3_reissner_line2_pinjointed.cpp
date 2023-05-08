@@ -198,7 +198,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
   std::copy(
       third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A() + 3, &linkeletriad(0, 2));
 
-  LARGEROTATIONS::triadtoquaternion(linkeletriad, triad_);
+  CORE::LARGEROTATIONS::triadtoquaternion(linkeletriad, triad_);
 
   issetup_ = true;
 }
@@ -241,7 +241,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one
   LINALG::Matrix<3, 1> linkelerotvec(true);
-  LARGEROTATIONS::quaterniontoangle(triad_, linkelerotvec);
+  CORE::LARGEROTATIONS::quaterniontoangle(triad_, linkelerotvec);
 
   std::vector<double> refpos(6, 0.0);
   std::vector<double> refrotvec(6, 0.0);
@@ -570,7 +570,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   std::copy(
       third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A() + 3, &linkeletriad(0, 2));
 
-  LARGEROTATIONS::triadtoquaternion(linkeletriad, triad_);
+  CORE::LARGEROTATIONS::triadtoquaternion(linkeletriad, triad_);
 }
 
 /*----------------------------------------------------------------------------*

@@ -292,7 +292,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   // const ADAPTER::Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
@@ -321,17 +321,17 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   mat.Assign(0, 0, LINALG::View, s->Matrix(0, 0));
 
   (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
-      ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(0, 1));
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(0, 1));
   (*sggtransform_)(s->Matrix(1, 1), 1. / (scale * timescale),
-      ADAPTER::CouplingMasterConverter(coupsf), ADAPTER::CouplingMasterConverter(coupsf), *f, true,
-      true);
-  (*sgitransform_)(
-      s->Matrix(1, 0), 1. / scale, ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(1, 0));
+      CORE::ADAPTER::CouplingMasterConverter(coupsf),
+      CORE::ADAPTER::CouplingMasterConverter(coupsf), *f, true, true);
+  (*sgitransform_)(s->Matrix(1, 0), 1. / scale, CORE::ADAPTER::CouplingMasterConverter(coupsf),
+      mat.Matrix(1, 0));
 
   mat.Assign(1, 1, LINALG::View, *f);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
   mat.Assign(2, 2, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -348,13 +348,13 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
     mat.Matrix(1, 1).Add(fmgg, false, 1. / timescale, 1.0);
     mat.Matrix(1, 1).Add(fmig, false, 1. / timescale, 1.0);
 
-    const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+    const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
   }
 
 
@@ -377,13 +377,13 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   mat.Assign(0, 3, LINALG::View, scon.Matrix(0, 0));
 
-  (*scgitransform_)(
-      scon.Matrix(1, 0), 1. / scale, ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(1, 3));
+  (*scgitransform_)(scon.Matrix(1, 0), 1. / scale, CORE::ADAPTER::CouplingMasterConverter(coupsf),
+      mat.Matrix(1, 3));
 
   mat.Assign(3, 0, LINALG::View, sconT_->Matrix(0, 0));
 
   (*csigtransform_)(*coupsf.MasterDofMap(), sconT_->Matrix(0, 1).ColMap(), sconT_->Matrix(0, 1),
-      1. / timescale, ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(3, 1), true);
+      1. / timescale, CORE::ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(3, 1), true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

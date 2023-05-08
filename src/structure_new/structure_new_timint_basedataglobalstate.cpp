@@ -1233,15 +1233,15 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   {
     // create a LINALG::Matrix from reference to three x vector entries
     LINALG::Matrix<3, 1> theta(&x_rotvec[i], true);
-    LARGEROTATIONS::angletoquaternion(theta, Qold);
+    CORE::LARGEROTATIONS::angletoquaternion(theta, Qold);
 
     // same for relative rotation angle deltatheta
     LINALG::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
     deltatheta.Scale(step);
 
-    LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
-    LARGEROTATIONS::quaternionproduct(Qold, deltaQ, Qnew);
-    LARGEROTATIONS::quaterniontoangle(Qnew, theta);
+    CORE::LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(Qold, deltaQ, Qnew);
+    CORE::LARGEROTATIONS::quaterniontoangle(Qnew, theta);
   }
 
   // first update entire x vector in an additive manner

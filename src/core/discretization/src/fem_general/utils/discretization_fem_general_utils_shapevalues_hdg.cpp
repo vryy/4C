@@ -531,12 +531,12 @@ void DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesFaceCache<distype>& DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
 {
-  static ::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesFaceCache<distype>> owner(
+  static CORE::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesFaceCache<distype>> owner(
       []() {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
 
-  return *owner.Instance(::UTILS::SingletonAction::create);
+  return *owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -565,14 +565,14 @@ template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>&
 DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
-  static ::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>> owner(
+  static CORE::UTILS::SingletonOwner<DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>> owner(
       []()
       {
         return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
             new ShapeValuesInteriorOnFaceCache<distype>);
       });
 
-  return *owner.Instance(::UTILS::SingletonAction::create);
+  return *owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
 

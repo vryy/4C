@@ -591,9 +591,9 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupSystemMatrix");
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get info about STC feature
   INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
@@ -652,13 +652,13 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   s->UnComplete();
 
   (*fggtransform_)(fgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale * timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, true,
-      true);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+      *s, true, true);
 
   Teuchos::RCP<LINALG::SparseMatrix> lfgi =
       Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
   (*fgitransform_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-      ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
 
   lfgi->Complete(fgi.DomainMap(), s->RangeMap());
 
@@ -673,14 +673,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     Teuchos::RCP<LINALG::SparseMatrix> lfig =
         Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(), 81, false));
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), fig, timescale,
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
   }
   else
   {
     Teuchos::RCP<LINALG::SparseMatrix> lfig =
         Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(), 81, false));
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), fig, timescale,
-        ADAPTER::CouplingSlaveConverter(coupsf), *lfig);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfig);
 
     lfig->Complete(s->DomainMap(), fig.RangeMap());
 
@@ -697,14 +697,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   if (stcalgo == INPAR::STR::stc_none)
   {
     (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
+        CORE::ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
   }
   else
   {
     Teuchos::RCP<LINALG::SparseMatrix> laig =
         Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(), 81, false));
-    (*aigtransform_)(
-        a->FullRowMap(), a->FullColMap(), aig, 1., ADAPTER::CouplingSlaveConverter(coupsa), *laig);
+    (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
+        CORE::ADAPTER::CouplingSlaveConverter(coupsa), *laig);
 
     laig->Complete(s->DomainMap(), laig->RangeMap());
 
@@ -735,14 +735,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     if (stcalgo == INPAR::STR::stc_none)
     {
       (*figtransform_)(f->FullRowMap(), f->FullColMap(), fmig, 1.,
-          ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), false, true);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), false, true);
     }
     else
     {
       Teuchos::RCP<LINALG::SparseMatrix> lfmig =
           Teuchos::rcp(new LINALG::SparseMatrix(fmig.RowMap(), 81, false));
       (*figtransform_)(f->FullRowMap(), f->FullColMap(), fmig, 1.,
-          ADAPTER::CouplingSlaveConverter(coupsf), *lfmig, false, true);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfmig, false, true);
 
 
       lfmig->Complete(s->DomainMap(), fmig.RangeMap());
@@ -756,20 +756,20 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     }
 
     (*fmggtransform_)(fmgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, false,
-        true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), *s, false, true);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
 
     {
       Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
           Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
       (*fmgitransform_)(fmgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-          ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingMasterConverter(coupfa), *lfmgi,
-          false, false);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+          CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
       lfmgi->Complete(aii.DomainMap(), s->RangeMap());
 

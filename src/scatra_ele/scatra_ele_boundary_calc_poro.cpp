@@ -32,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype, probdim>>(
@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

@@ -39,11 +39,13 @@ namespace CONTACT
     typedef std::vector<INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
-    typedef GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>> Deriv1stMap;
-    typedef GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>> Deriv2ndMap;
+    typedef CORE::GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
+        Deriv1stMap;
+    typedef CORE::GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>>
+        Deriv2ndMap;
 #elif defined(QUICK_INSERT)
-    typedef GEN::quick_pairedvector<int, double> Deriv1stMap;
-    typedef GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
+    typedef CORE::GEN::quick_pairedvector<int, double> Deriv1stMap;
+    typedef CORE::GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
 #else
     typedef GEN::default_pairedvector<int, double> Deriv1stMap;
     typedef GEN::default_pairedmatrix<int, double> Deriv2ndMap;
