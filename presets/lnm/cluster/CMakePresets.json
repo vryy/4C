@@ -76,6 +76,7 @@
       "inherits": [
         ".lnm_cluster"
       ],
+      "generator": "Unix Makefiles",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/lnm/mpi407_gcc930/bin/mpic++",
