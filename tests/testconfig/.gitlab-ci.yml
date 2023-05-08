@@ -583,3 +583,23 @@ lnm-buildtest_full_docker:
     when: never
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
+
+lnm-buildtest_debug_full_docker:
+  extends: .buildtest_daily_debug
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - docker
+  needs:
+  - checkcode
+  - job: build-base-dependencies
+    optional: true
+  # rules as .buildtest_daily_debug but never run when BACI_DOCKER_RUN_TEST == False
+  rules:
+  - if: $BACI_DOCKER_RUN_TEST == "False"
+    when: never
+  - !reference [.buildtest_daily_debug, rules]
