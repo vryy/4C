@@ -16,8 +16,6 @@
 
 #include "mat_material.H"
 
-#include <Teuchos_Time.hpp>
-
 // #define PRINT_NSTET            ///< printout of setup
 #define NSTET_NUMGREEDY 2    ///< number of sweeps of greedy patching
 #define MIS_MIN_PATCHSIZE 3  ///< minimum MIS patch size required

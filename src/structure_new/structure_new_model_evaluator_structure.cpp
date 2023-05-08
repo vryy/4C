@@ -21,7 +21,6 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_Time.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "linalg_sparseoperator.H"

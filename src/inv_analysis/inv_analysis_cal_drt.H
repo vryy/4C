@@ -7,7 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 #include <Epetra_MpiComm.h>
-#include <Teuchos_Time.hpp>
 #include <Teuchos_RCP.hpp>
 
 #ifndef INV_ANALYSIS_CAL_DRT_H

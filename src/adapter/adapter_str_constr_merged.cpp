@@ -24,7 +24,6 @@
 // further includes for StructureBaseAlgorithm:
 #include "inpar_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 /*======================================================================*/
 /* constructor */

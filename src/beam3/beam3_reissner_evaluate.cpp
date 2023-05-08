@@ -32,7 +32,6 @@
 #include <iomanip>
 
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_Time.hpp>
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|

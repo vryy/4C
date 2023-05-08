@@ -22,11 +22,9 @@
 
 #include "scatra_ele.H"
 
-#include <Teuchos_Time.hpp>
 #include <iostream>
 #include <string>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "two_phase_flow_algorithm.H"
 #include "two_phase_flow_dyn.H"

@@ -25,7 +25,6 @@
 
 #include "io_pstream.H"
 
-#include <Teuchos_Time.hpp>
 #include <Epetra_IntVector.h>
 #include <Teuchos_TimeMonitor.hpp>
 

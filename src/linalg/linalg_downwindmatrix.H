@@ -16,7 +16,6 @@
 #include <EpetraExt_Reindex_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_Time.hpp>
 #include <Epetra_IntVector.h>
 
 #include "lib_dserror.H"

@@ -11,7 +11,6 @@
 #define FSI_MONOLITHIC_NONOX_H
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "fsi_monolithic.H"
 

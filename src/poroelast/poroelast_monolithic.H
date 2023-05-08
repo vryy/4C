@@ -14,6 +14,7 @@
 #include "inpar_structure.H"
 #include "poroelast_base.H"
 #include "poroelast_utils.H"
+#include <Teuchos_Time.hpp>
 
 namespace LINALG
 {

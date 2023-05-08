@@ -7,7 +7,6 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
 #include "lib_dserror.H"

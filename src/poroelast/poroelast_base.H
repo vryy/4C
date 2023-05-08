@@ -9,7 +9,6 @@
 #ifndef POROELAST_BASE_H
 #define POROELAST_BASE_H
 
-#include <Teuchos_Time.hpp>
 
 #include <utility>
 

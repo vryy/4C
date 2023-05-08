@@ -519,7 +519,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   Teuchos::RCP<Teuchos::Time> time3 = Teuchos::TimeMonitor::getNewTimer("Get Ele Conn");
   Teuchos::RCP<Teuchos::Time> time4 = Teuchos::TimeMonitor::getNewTimer("Get one Ele");
   Teuchos::RCP<Teuchos::Time> time5 = Teuchos::TimeMonitor::getNewTimer("Build one Side Conn");
-  Teuchos::RCP<Teuchos::Time> time6 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
   Teuchos::RCP<Teuchos::Time> time7 =
       Teuchos::TimeMonitor::getNewTimer("Get all Eblocks and Econns");
   Teuchos::RCP<Teuchos::TimeMonitor> tm_total = Teuchos::rcp(new Teuchos::TimeMonitor(*timetot));

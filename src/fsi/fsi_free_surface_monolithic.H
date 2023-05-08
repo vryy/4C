@@ -24,7 +24,6 @@
 #include <NOX_Direction_UserDefinedFactory.H>
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it

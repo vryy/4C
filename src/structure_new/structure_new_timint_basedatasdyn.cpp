@@ -21,7 +21,6 @@
 
 #include "solver_linalg_solver.H"
 
-#include <Teuchos_Time.hpp>
 
 #include "beaminteraction_periodic_boundingbox.H"
 
