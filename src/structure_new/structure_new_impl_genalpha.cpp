@@ -203,7 +203,10 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
         "Choose GenAlphaLieGroup instead!");
   }
 
-  EquilibrateInitialState();
+  if (not SDyn().NeglectInertia())
+  {
+    EquilibrateInitialState();
+  }
 }
 
 /*----------------------------------------------------------------------------*
