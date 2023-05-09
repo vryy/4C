@@ -42,6 +42,15 @@ namespace DRT
     */
     void WriteReadTheDocsCondition(const std::string& conditiondocumentationfilename);
 
+    /*!
+      \brief Create a restructuredText file containing all other reference sections
+      at this time, it includes: RESULT DESCRIPTION, FUNCTION
+
+      \param[in] string: filename for the the header parameters, should be furtherreference.rst
+
+    */
+    void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename);
+
 
     void PrintHelpMessage();
 

@@ -11,7 +11,11 @@
 #include "create_rtdfiles_utils.H"
 #include "lib_dserror.H"
 #include "lib_utils_reader.H"
+#include "lib_utils_createdis.H"
+#include "lib_linedefinition.H"
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 namespace DRT
 {
@@ -57,7 +61,7 @@ namespace DRT
     }
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    unsigned Table::GetRows() { return tablerows_.size(); }
+    unsigned Table::GetRows() const { return tablerows_.size(); }
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
     void Table::Print(std::ostream &stream) const
@@ -130,7 +134,7 @@ namespace DRT
     }
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void WriteHeader(std::ostream &stream, const unsigned level, const std::string &line)
+    void WriteHeader(std::ostream &stream, unsigned level, const std::string &line)
     {
       const std::vector<char> headerchar{'=', '-', '~', '^'};
       unsigned headerlength = line.length();
@@ -144,7 +148,7 @@ namespace DRT
     }
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void WriteParagraph(std::ostream &stream, std::string &paragraph, const size_t indent)
+    void WriteParagraph(std::ostream &stream, std::string &paragraph, size_t indent)
     {
       size_t mathstartpos = paragraph.find("\f$");
       size_t mathendpos = 0;
@@ -190,120 +194,469 @@ namespace DRT
       table.Print(stream);
       return stream;
     }
-  }  // namespace RTD
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void RTD::WriteMaterialReference(
-      std::ostream &stream, std::vector<Teuchos::RCP<INPUT::MaterialDefinition>> &matlist)
-  {
-    RTD::WriteLinktarget(stream, "materialsreference");
-    RTD::WriteHeader(stream, 0, "Material reference");
-
-    std::vector<std::string> materialsectionstring{std::string(58, '-') + "MATERIALS"};
-    RTD::WriteCode(stream, materialsectionstring);
-
-    for (auto &material : matlist)
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteMaterialReference(
+        std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>> &matlist)
     {
-      material->WriteReadTheDocs(stream);
-    }
-  }
+      WriteLinktarget(stream, "materialsreference");
+      WriteHeader(stream, 0, "Material reference");
 
+      std::vector<std::string> materialsectionstring{std::string(58, '-') + "MATERIALS"};
+      WriteCode(stream, materialsectionstring);
 
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void RTD::WriteHeaderReference(
-      std::ostream &stream, const Teuchos::ParameterList &list, std::string parentname)
-  {
-    // prevent invalid ordering of parameters caused by alphabetical output:
-    // in the first run, print out all list elements that are not a sublist
-    // in the second run, do the recursive call for all the sublists in the list
-
-    for (int j = 0; j < 2; ++j)
-    {
-      // bool loop_isEntry = (j == 0);
-      bool loop_isList = (j == 1);
-      for (Teuchos::ParameterList::ConstIterator it = list.begin(); it != list.end(); ++it)
+      for (auto &material : matlist)
       {
-        const Teuchos::ParameterEntry &entry = list.entry(it);
-        if (entry.isList() != loop_isList) continue;
-        const std::string &name = list.name(it);
-        if (name == INPUT::PrintEqualSign()) continue;
-        Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
+        WriteSingleMaterialReadTheDocs(stream, material);
+      }
+      //
+      // adding the section for the CLONING MATERIAL MAP
+      WriteLinktarget(stream, "cloningmaterialsreference");
+      WriteHeader(stream, 0, "Cloning material reference");
+      Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      std::stringstream cloningMatStream;
+      lines->Print(cloningMatStream);
+      std::vector<std::string> cloningMatList;
+      boost::split(cloningMatList, cloningMatStream.str(), boost::is_any_of("\n"));
+      // materialsectionstring = {std::string(58, '-') + "CLONING MATERIAL MAP"};
+      WriteCode(stream, cloningMatList);
+    }
 
-        std::string doc = (entry.docString() == "") ? "no description yet" : entry.docString();
 
-        std::string fullname = parentname;
-        bool issubsection = false;
-        if (fullname != "")
+    void WriteSingleMaterialReadTheDocs(
+        std::ostream &stream, const Teuchos::RCP<INPUT::MaterialDefinition> material)
+    {
+      /* Each entry consists of a number of fields:
+      - header
+      - description
+      - code line
+      - parameter description */
+
+      // the Material title
+      WriteLinktarget(stream, material->Name());
+      WriteHeader(stream, 1, material->Name());
+
+      // the description of the material
+      std::string materialDescription = material->Description();
+      WriteParagraph(stream, materialDescription);
+
+      // the material line as it occurs in the dat file
+      std::string parameter = "   MAT <matID>  " + material->Name();
+      std::vector<std::string> materialcode;
+      //
+      // Also: create the table from the parameter descriptions (based on the so-called
+      // separatorComponents) table header
+      const unsigned tablesize = 3;
+      Table parametertable(tablesize);
+      std::vector<std::string> tablerow(tablesize);
+      tablerow = {"Parameter", "optional", "Description"};
+      parametertable.AddRow(tablerow);
+
+      for (auto &parameterterm : material->Inputline())
+      {
+        if (auto *separator =
+                dynamic_cast<DRT::INPUT::SeparatorMaterialComponent *>(parameterterm.get()))
         {
-          fullname += "/";
-          issubsection = true;
-        }
-        fullname += name;
-        std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
-        linktarget = Teuchos::StrUtils::removeAllSpaces(UTILS::ToLower(linktarget));
+          parametertable.AddRow(separator->WriteReadTheDocs());
 
-        if (entry.isList())  // it is a section header
-        {
-          unsigned l = fullname.length();
-          // write link:
-          DRT::RTD::WriteLinktarget(stream, "SEC" + linktarget);
-          // write section header
-          unsigned level = (issubsection) ? 2 : 1;
-          DRT::RTD::WriteHeader(stream, level, fullname);
-
-          DRT::RTD::WriteParagraph(stream, doc);
-
-          std::vector<std::string> codelines;
-          codelines.push_back("--" + std::string(std::max<int>(65 - l, 0), '-') + fullname);
-          DRT::RTD::WriteCode(stream, codelines);
-
-          if (INPUT::NeedToPrintEqualSign(list))
+          if (parameter.length() > 60)
           {
-            DRT::RTD::WriteNote(stream,
-                "   The parameters in this section need an equal sign (=) "
-                "between the parameter name and its value!");
+            parameter += " \\";
+            materialcode.push_back(parameter);
+            parameter = "   ";
           }
-
-          WriteHeaderReference(stream, list.sublist(name), fullname);
         }
-        else  // it is a parameter entry
-        {
-          DRT::RTD::WriteLinktarget(stream, linktarget);
+        std::ostringstream parameterstream;
+        parameterterm->DefaultLine(parameterstream);
+        parameter += " " + parameterstream.str();
+      }
+      materialcode.push_back(parameter);
+      WriteCode(stream, materialcode);
+      //
+      // Now printing the parameter table
+      parametertable.SetWidths({10, 10, 50});
+      parametertable.AddDirective("header-rows", "1");
 
-          const Teuchos::any &v = entry.getAny(false);
-          boost::format parstring = boost::format{"**%s** | *default:* %s |break| %s"} % name %
-                                    Teuchos::toString(v) % doc;
-          std::string s = parstring.str();
-          DRT::RTD::WriteParagraph(stream, s);
-          if (validator != Teuchos::null)  // it can only take specific values
+      if (parametertable.GetRows() == 1)
+      {
+        tablerow = {"no parameters", "", ""};
+        parametertable.AddRow(tablerow);
+      }
+      parametertable.Print(stream);
+
+      return;
+    }
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteHeaderReference(
+        std::ostream &stream, const Teuchos::ParameterList &list, std::string parentname)
+    {
+      // prevent invalid ordering of parameters caused by alphabetical output:
+      // in the first run, print out all list elements that are not a sublist
+      // in the second run, do the recursive call for all the sublists in the list
+
+      for (int j = 0; j < 2; ++j)
+      {
+        // bool loop_isEntry = (j == 0);
+        bool loop_isList = (j == 1);
+        for (Teuchos::ParameterList::ConstIterator it = list.begin(); it != list.end(); ++it)
+        {
+          const Teuchos::ParameterEntry &entry = list.entry(it);
+          if (entry.isList() != loop_isList) continue;
+          const std::string &name = list.name(it);
+          if (name == INPUT::PrintEqualSign()) continue;
+          Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
+
+          std::string doc = (entry.docString() == "") ? "no description yet" : entry.docString();
+
+          std::string fullname = parentname;
+          bool issubsection = false;
+          if (fullname != "")
           {
-            Teuchos::RCP<const Teuchos::Array<std::string>> values = validator->validStringValues();
-            if (values != Teuchos::null)
+            fullname += "/";
+            issubsection = true;
+          }
+          fullname += name;
+          std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
+          linktarget = Teuchos::StrUtils::removeAllSpaces(UTILS::ToLower(linktarget));
+
+          if (entry.isList())  // it is a section header
+          {
+            unsigned l = fullname.length();
+            // write link:
+            WriteLinktarget(stream, "SEC" + linktarget);
+            // write section header
+            unsigned level = (issubsection) ? 2 : 1;
+            WriteHeader(stream, level, fullname);
+
+            WriteParagraph(stream, doc);
+
+            std::vector<std::string> codelines;
+            codelines.push_back("--" + std::string(std::max<int>(65 - l, 0), '-') + fullname);
+            WriteCode(stream, codelines);
+
+            if (INPUT::NeedToPrintEqualSign(list))
             {
-              stream << "   **Possible values:**\n\n";
-              for (const auto val : *values) stream << "   - " << val << "\n";
-              stream << "\n";
+              WriteNote(stream,
+                  "   The parameters in this section need an equal sign (=) "
+                  "between the parameter name and its value!");
+            }
+
+            WriteHeaderReference(stream, list.sublist(name), fullname);
+          }
+          else  // it is a parameter entry
+          {
+            WriteLinktarget(stream, linktarget);
+
+            const Teuchos::any &v = entry.getAny(false);
+            boost::format parstring = boost::format{"**%s** | *default:* %s |break| %s"} % name %
+                                      Teuchos::toString(v) % doc;
+            std::string s = parstring.str();
+            WriteParagraph(stream, s);
+            if (validator != Teuchos::null)  // it can only take specific values
+            {
+              Teuchos::RCP<const Teuchos::Array<std::string>> values =
+                  validator->validStringValues();
+              if (values != Teuchos::null)
+              {
+                stream << "   **Possible values:**\n\n";
+                for (const auto val : *values) stream << "   - " << val << "\n";
+                stream << "\n";
+              }
             }
           }
         }
       }
     }
-  }
 
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void RTD::WriteConditionsReference(
-      std::ostream &stream, std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist)
-  {
-    RTD::WriteLinktarget(stream, "prescribedconditionreference");
-    RTD::WriteHeader(stream, 0, "Prescribed Condition Reference");
-
-    for (unsigned i = 0; i < condlist.size(); ++i)
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteConditionsReference(
+        std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist)
     {
-      condlist[i]->WriteReadTheDocs(stream);
+      WriteLinktarget(stream, "prescribedconditionreference");
+      WriteHeader(stream, 0, "Prescribed Condition Reference");
+
+      for (auto &condition : condlist)
+      {
+        WriteSingleConditionReadTheDocs(stream, condition);
+      }
     }
-  }
+
+
+    void WriteSingleConditionReadTheDocs(
+        std::ostream &stream, const Teuchos::RCP<INPUT::ConditionDefinition> condition)
+    {
+      /* Each entry consists of a number of fields:
+      - Part 1: link target and header
+      - Part 2: description
+      - Part 3: code lines
+      - Part 4: table for description and admissible values of string
+        and conditionComponentBundleSelector parameters
+      - Part 5: finally additional code lines for model specific parameters
+        or the complex ConditionComponentBundleSelectors
+      */
+
+      std::string sectionname = condition->SectionName();
+      const std::string sectionlinktarget =
+          Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(sectionname));
+      //
+      // boundary condition header
+      //
+      /*------ PART 1 --------------------------
+       * Boundary condition header (incl. link target)
+       */
+      // link target line
+      WriteLinktarget(stream, sectionlinktarget);
+      // condition name as section header
+      WriteHeader(stream, 1, sectionname);
+
+      /*------ PART 2 -------------------------
+       * boundary condition description string
+       */
+      std::string descriptionline =
+          (condition->Description() == "") ? "no description yet" : condition->Description();
+      WriteParagraph(stream, descriptionline);
+
+      /*------ PART 3 -------------------------
+       * boundary condition input lines
+       * In this section, the table for parameter description is filled as well.
+       */
+      // First line: condition name as a section
+      unsigned l = sectionname.length();
+      std::vector<std::string> conditioncode{
+          "--" + std::string(std::max<int>(65 - l, 0), '-') + sectionname};
+      // second line: geometry type
+      std::string name;
+      switch (condition->GeometryType())
+      {
+        case DRT::Condition::Point:
+          conditioncode.push_back("DPOINT  0");
+          break;
+        case DRT::Condition::Line:
+          conditioncode.push_back("DLINE  0");
+          break;
+        case DRT::Condition::Surface:
+          conditioncode.push_back("DSURF  0");
+          break;
+        case DRT::Condition::Volume:
+          conditioncode.push_back("DVOL  0");
+          break;
+        default:
+          dserror("geometry type unspecified");
+          break;
+      }
+      // Collecting information for the final code line (conditioncodeline)
+      // Also:
+      // store admissible values for string parameters (vector<string> parametertable) -> Part 4
+      // store options for the CondCompBundles (vector<string> condCompStrings) -> Part 5
+      std::string conditioncodeline = "E <setnumber> -";
+      bool isNewlinePossible = false;
+      //
+      // also: Generate the table rows for admissible values of string parameters
+      const unsigned tablesize = 3;
+      Table parametertable(tablesize);
+      std::vector<std::string> tablerow = {"Parameter", "Default", "Admissible values"};
+      std::vector<std::string> condCompStrings;
+      std::string condCompName("");
+      parametertable.AddRow(tablerow);
+      for (auto &condparameter : condition->Inputline())
+      {
+        // newline after some 60 characters, but no newline after a separator condition
+        if (isNewlinePossible)
+        {
+          conditioncode.push_back(conditioncodeline + " \\ ");
+          conditioncodeline = "   ";  // start a new line
+        }
+        conditioncodeline += " " + condparameter->WriteReadTheDocs();
+        isNewlinePossible = (conditioncodeline.length() > 60);
+        if (auto *previousparameter =
+                dynamic_cast<DRT::INPUT::SeparatorConditionComponent *>(condparameter.get()))
+        {
+          previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
+          isNewlinePossible = false;
+        }
+        // If the component is a string component, store the admissible parameters in the table:
+        if (auto *stringComponent =
+                dynamic_cast<DRT::INPUT::StringConditionComponent *>(condparameter.get()))
+        {
+          tablerow[0] = stringComponent->Name();
+          std::ostringstream parametercell;
+          stringComponent->DefaultLine(parametercell);
+          tablerow[1] = parametercell.str();
+          std::string optionscell("");
+          Teuchos::Array<std::string> datfilevalues = stringComponent->GetOptions();
+          tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
+          parametertable.AddRow(tablerow);
+        }
+        // if the component is a bundleselector (bundle of variables following a string keyword):
+        if (auto *compBundleSelector =
+                dynamic_cast<DRT::INPUT::CondCompBundleSelector *>(condparameter.get()))
+        {
+          condCompName = compBundleSelector->Name();
+          std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
+          condCompStrings.insert(condCompStrings.end(), bundle.begin(), bundle.end());
+          tablerow[0] = condCompName;
+          Teuchos::Array<std::string> datfilevalues = compBundleSelector->GetOptions();
+          tablerow[1] = datfilevalues[0];
+          std::string optionscell("");
+          tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
+          parametertable.AddRow(tablerow);
+        }
+      }
+      // Now write the complete code of this condition to the readthedocs file
+      conditioncode.push_back(conditioncodeline);
+      WriteCode(stream, conditioncode);
+
+      /*------ PART 4 -------------------------
+       * Now write a table for the options of the string variables, if any have been stored above
+       */
+      if (parametertable.GetRows() > 1)
+      {
+        std::string optionheaderstring("**String options:**");
+        WriteParagraph(stream, optionheaderstring);
+        // table header for the options in string parameters
+        parametertable.SetWidths({0, 0, 50});
+        parametertable.AddDirective("header-rows", "1");
+
+        parametertable.Print(stream);
+      }
+
+      /*------ PART 5 -------------------------
+       * Finally add the model specific parameters for the complex ConditionComponentBundleSelectors
+       */
+      if (condCompStrings.size() > 0)
+      {
+        std::string optionheaderstring =
+            "The following parameter sets are possible for `<" + condCompName + ">`:";
+        WriteParagraph(stream, optionheaderstring);
+        conditioncode.clear();
+        for (auto &condCompString : condCompStrings)
+        {
+          conditioncode.push_back(condCompString);
+        }
+        WriteCode(stream, conditioncode);
+      }
+      return;
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteContactLawReference(std::ostream &stream,
+        const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
+    {
+      WriteLinktarget(stream, "contactconstitutivelawreference");
+      WriteHeader(stream, 0, "Contact Constitutive Law Reference");
+
+
+      std::vector<std::string> contactlawsectionstring{
+          std::string(43, '-') + "CONTACT CONSTITUTIVE LAW"};
+      WriteCode(stream, contactlawsectionstring);
+
+      for (auto &contactlaw : coconstlawlist)
+      {
+        WriteSingleContactLawReadTheDocs(stream, contactlaw);
+      }
+    }
+
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteSingleContactLawReadTheDocs(std::ostream &stream,
+        const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
+    {
+      /* Each entry consists of a number of fields:
+      - header
+      - description
+      - code line
+      - parameter description */
+
+      // the Law title
+      WriteLinktarget(stream, contactlaw->Name());
+      WriteHeader(stream, 1, contactlaw->Name());
+
+      // the description of the contact law
+      std::string contactDescription = contactlaw->Description();
+      WriteParagraph(stream, contactDescription);
+
+      // the material line as it occurs in the dat file
+      std::string parameter = "LAW <lawID>   " + contactlaw->Name();
+      std::vector<std::string> contactlawCode;
+      //
+      // Also: create the table from the parameter descriptions (based on the so-called
+      // separatorComponents) table header
+      const unsigned tablesize = 3;
+      Table parametertable(tablesize);
+      std::vector<std::string> tablerow(tablesize);
+      tablerow = {"Parameter", "optional", "Description"};
+      parametertable.AddRow(tablerow);
+
+      for (auto &parameterterm : contactlaw->Inputline())
+      {
+        if (auto *separator =
+                dynamic_cast<CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent *>(
+                    parameterterm.get()))
+        {
+          parametertable.AddRow(separator->WriteReadTheDocs());
+
+          if (parameter.length() > 60)
+          {
+            parameter += " \\";
+            contactlawCode.push_back(parameter);
+            parameter = "   ";
+          }
+        }
+        std::ostringstream parameterstream;
+        parameterterm->DefaultLine(parameterstream);
+        parameter += " " + parameterstream.str();
+      }
+      contactlawCode.push_back(parameter);
+      WriteCode(stream, contactlawCode);
+      //
+      // Now printing the parameter table
+      parametertable.SetWidths({10, 10, 50});
+      parametertable.AddDirective("header-rows", "1");
+
+      if (parametertable.GetRows() == 1)
+      {
+        tablerow = {"no parameters", "", ""};
+        parametertable.AddRow(tablerow);
+      }
+      parametertable.Print(stream);
+
+      return;
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteVariousReference(std::ostream &stream)
+    {
+      //
+      // adding the sections for the RESULT DESCRIPTION
+      WriteLinktarget(stream, "restultdescriptionreference");
+      WriteHeader(stream, 0, "Result description reference");
+      DRT::ResultTestManager resulttestmanager;
+      Teuchos::RCP<DRT::INPUT::Lines> lines = resulttestmanager.ValidResultLines();
+      std::string sectionDescription = lines->Description();
+      WriteParagraph(stream, sectionDescription);
+      std::stringstream resultDescriptionStream;
+      lines->Print(resultDescriptionStream);
+      std::vector<std::string> resultDescriptionList;
+      boost::split(resultDescriptionList, resultDescriptionStream.str(), boost::is_any_of("\n"));
+      WriteCode(stream, resultDescriptionList);
+      //
+      // adding the sections for the FUNCTION
+      WriteLinktarget(stream, "functionreference");
+      WriteHeader(stream, 0, "Functions reference");
+      lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
+      sectionDescription = lines->Description();
+      WriteParagraph(stream, sectionDescription);
+      std::stringstream functionStream;
+      lines->Print(functionStream);
+      std::vector<std::string> functionList;
+      boost::split(functionList, functionStream.str(), boost::is_any_of("\n"));
+      WriteCode(stream, functionList);
+    }
+  }  // namespace RTD
 
 }  // namespace DRT

@@ -512,7 +512,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION",
+      "The result of the simulation with respect to specific quantities at concrete points "
+      "can be tested against particular values with a given tolerance."));
   lines->Add(structure);
   lines->Add(structure_special);
   lines->Add(fluid_node);
