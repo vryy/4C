@@ -170,56 +170,29 @@ void STR::IMPLICIT::GenAlphaLieGroup::UpdateConstantStateContributions()
 {
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
-  // copy the last converged state into the epetra_multivector
-  // ---------------------------------------------------------------------------
-  // create a copy of the last converged displacement solution and apply the
-  // current DBC values --> D_{n+1}^{0}
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp0_ptr =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().GetDisN()));
-
   /* ToDo in case we want to handle rotation vector DoFs correctly on time
    *      integrator level, the update procedure needs to be adapted here;
    *      use GlobalState().ExportAdditiveEntries() and ExportRotvecEntries() for
    *      this */
 
   // ---------------------------------------------------------------------------
-  // (1) constant velocity update contribution
+  // velocity
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale(1.0 - gamma_ / beta_, *GlobalState().GetVelN());
-  (*const_vel_acc_update_ptr_)(0)->Update((1.0 - gamma_ / (2.0 * beta_)) * dt, *accn_mod_, 1.0);
+  (*const_vel_acc_update_ptr_)(0)->Scale((1.0 - gamma_ / (2.0 * beta_)) * dt, *accn_mod_);
+  (*const_vel_acc_update_ptr_)(0)->Update(1.0 - gamma_ / beta_, *GlobalState().GetVelN(), 1.0);
+  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *GlobalState().GetDisN(), 1.0);
 
   // ---------------------------------------------------------------------------
-  // (2) constant acceleration update contribution
+  // acceleration
   // ---------------------------------------------------------------------------
   (*const_vel_acc_update_ptr_)(1)->Scale(alphaf_ / (alphaf_ - 1.0), *GlobalState().GetAccN());
   (*const_vel_acc_update_ptr_)(1)->Update(
-      -(1.0 - alpham_) / (beta_ * dt * (1.0 - alphaf_)), *GlobalState().GetVelN(), 1.0);
-
-  (*const_vel_acc_update_ptr_)(1)->Update(
       alpham_ / (1.0 - alphaf_) - (1.0 - alpham_) * (0.5 - beta_) / (beta_ * (1.0 - alphaf_)),
       *accn_mod_, 1.0);
-
-  // ---------------------------------------------------------------------------
-  // set the current DBC values at the DBC-DoFs of the constant update vectors
-  // ---------------------------------------------------------------------------
-  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(),
-      disnp0_ptr,                                            // displ.
-      Teuchos::rcp((*const_vel_acc_update_ptr_)(0), false),  // veloc.
-      Teuchos::rcp((*const_vel_acc_update_ptr_)(1), false),  // accel.
-      false);
-
-  /* Finally add the D_{n+1}^{0} vector to the constant velocity and
-   * acceleration update vectors: */
-  // ---------------------------------------------------------------------------
-  // (1) velocity: V_{n+1}^{0} - gamma/(beta * dt) * D_{n+1}^{0}
-  // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *disnp0_ptr, 1.0);
-  // ---------------------------------------------------------------------------
-  // (2) acceleration: A_{n+1}^{0} - 1.0/(beta * dt^{2}) * D_{n+1}^{0}
-  // ---------------------------------------------------------------------------
   (*const_vel_acc_update_ptr_)(1)->Update(
-      -(1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), *disnp0_ptr, 1.0);
+      -(1.0 - alpham_) / (beta_ * dt * (1.0 - alphaf_)), *GlobalState().GetVelN(), 1.0);
+  (*const_vel_acc_update_ptr_)(1)->Update(
+      -(1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), *GlobalState().GetDisN(), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
