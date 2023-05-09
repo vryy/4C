@@ -9,13 +9,11 @@
 DIM           3
 -------------------------------------------------------------TITLE
 simple, academic test case for monolithic scalar-structure interaction:
-- three-dimensional problem involving elch scalar transport
+- three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 1 hex8 element
-- constant initial value of transported scalar (due to validity bound of polynomial)
-- scalar controlled via Volume Dirichlet condition (linearly ramped)
+- constant transported scalar
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
-- MAT_InelasticDefgradPolyIntercalFracAniso: anisotropic strain dependent on lithiation X according to the following equation:
-- polynomial from Koerver[2018] for NMC-811 using a polynomial fit of 7th order for best approximation
+- MAT_InelasticDefgradTimeFunct: isotropic strain dependending on a given function
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
@@ -50,31 +48,36 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
+PRINT_MAT_RHS_MAP_MATLAB        yes
 ----------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 3.3454e-10 COND_PARA_NUM 1 COND_PARA 1.7e5 C_MAX 4.91375e4 CHI_MAX 1.0 OCP_MODEL Polynomial X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 1 OCP_PARA 0.0 END
-MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 7480.0
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 1.0e4 NUE 0.3
-MAT 4 MAT_InelasticDefgradPolyIntercalFracAniso SCALAR1 1 SCALAR1_RefConc 43584.9 NUMSPACEDIM 3 GrowthDirection 1.0 0.0 0.0 POLY_PARA_NUM 8 POLY_PARAMS 0.1051717305 -3.9012322937 31.9658107225 -122.8624633232 258.6769103514 -306.7800791732 192.5096604774 -49.7490196448 X_min 0.152 X_max 0.887 MATID 1
+MAT 4 MAT_InelasticDefgradTimeFunct FUNCT_NUM 2
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-SYMBOLIC_FUNCTION_OF_SPACE_TIME a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 43584.9 7772.7
-------------------------------------------------------------FUNCT2
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 43584.9
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1000.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.6
+------------------------------------------------------------FUNCT2
+SYMBOLIC_FUNCTION_OF_TIME t+1
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.41093596794073777e-02 TOLERANCE 1.4e-10
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.50321827049104181e-02 TOLERANCE 1.5e-10
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE -1.95301434730155016e-02 TOLERANCE 2.0e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -1.55536908921040003e-02 TOLERANCE 1.6e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  6.92185695494193769e-03 TOLERANCE 6.9e-11
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  2.62267891241740825e-01 TOLERANCE 2.6e-09
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -2.59294591386403650e-01 TOLERANCE 2.6e-09
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  2.59278951992216289e-01 TOLERANCE 2.6e-09
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -4.22666506549347707e-03 TOLERANCE 4.2e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE  6.98147799069577849e-04 TOLERANCE 7.0e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE  2.66363926607892931e-01 TOLERANCE 2.7e-09
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE  2.59593126892353865e-01 TOLERANCE 2.6e-09
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -2.53697987258903190e-01 TOLERANCE 2.5e-09
 ------------------------------------------------DESIGN DESCRIPTION
-NDVOL   1
+NDVOL   2
 NDPOINT 3
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT  3
@@ -83,10 +86,10 @@ E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT none none none
 E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 3.6 FUNCT 1 none
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1000.0 3.6 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
-E 1 - ScaTra 2
+E 1 - ScaTra 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 2

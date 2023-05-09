@@ -4,6 +4,7 @@
     {
       "name": ".lnm_cluster",
       "hidden": true,
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_CXX_FLAGS": "-std=c++17 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-local-typedefs -Werror=vla",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
@@ -75,6 +76,7 @@
       "inherits": [
         ".lnm_cluster"
       ],
+      "generator": "Unix Makefiles",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/lnm/mpi407_gcc930/bin/mpic++",

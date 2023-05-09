@@ -1,5 +1,10 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+structure_xstructure (by Michael Hiermeier)
+- removed in commit f3ed4ac7e2173935262dbfd31d024e6e1b336b3b on 1/5/2023
+- reasons: remnants after removal of xcontact.
+- removed by Hoang Giang Bui
+
 Patspec
 - removed in commit 7afadb7a3cb641f4eabf0c74acf835004d463de9
 - reasons: the patient specific implementations directly in the code are no longer in use
@@ -15,7 +20,7 @@ Inverse design prestressing
 
 Topology optimization of fluid domains
 - removed in commit 57aa60e4278aa7d81d45f8dbaad62b8528d44d1b
-- reasons: module is unused and unmaintained -> reduce dependencies and easen maintenance work 
+- reasons: module is unused and unmaintained -> reduce dependencies and easen maintenance work
 - removed by Carolin Geitner
 
 Xcontact (contact simulations based on CutFEM/XFEM)

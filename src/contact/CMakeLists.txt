@@ -60,7 +60,6 @@ baci_add_library(alg_contact ${OBJS_CONTACT})
 set(LIBS_ALG_CONTACT
     # cmake-format: sortable
     alg_contact_aug
-    alg_xstructure
     ele_scatra
     ele_so
     ele_so_plast

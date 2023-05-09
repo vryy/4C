@@ -65,21 +65,21 @@ namespace
       // clang-format on
 
       // prepare variables needed to instantiate linear shape evaluation object
-      const double GrowthFac(5.27e-7);
-      const double RefConc(46456.0);
+      const double growth_fac(5.27e-7);
+      const double ref_conc(46456.0);
 
       // create linear shape evaluation object
-      linear_shape_ = Teuchos::rcp(new MAT::InelasticDefgradLinearShape(GrowthFac, RefConc));
+      linear_shape_ = Teuchos::rcp(new MAT::InelasticDefgradLinearShape(growth_fac, ref_conc));
 
       // prepare variables needed to instantiate polynomial shape evaluation object
-      std::vector<double> PolyCoeffs{0.1051717305, -3.9012322937, 31.9658107225, -122.8624633232,
+      std::vector<double> poly_coeffs{0.1051717305, -3.9012322937, 31.9658107225, -122.8624633232,
           258.6769103514, -306.7800791732, 192.5096604774, -49.7490196448};
-      const double Xmin(0.152);
-      const double Xmax(0.887);
+      const double x_min(0.152);
+      const double x_max(0.887);
 
       // create polynomial shape evaluation object
       polynomial_shape_ =
-          Teuchos::rcp(new MAT::InelasticDefgradPolynomialShape(PolyCoeffs, Xmin, Xmax));
+          Teuchos::rcp(new MAT::InelasticDefgradPolynomialShape(poly_coeffs, x_min, x_max));
 
       // parameter list to be passed to PreEvaluate
       Teuchos::ParameterList params_lin;
@@ -89,49 +89,49 @@ namespace
       params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradScalarData =
+      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_scalar_data =
           Teuchos::rcp(new MAT::PAR::Material());
 
-      inelasticDefgradScalarData->Add("SCALAR1", 1);
-      inelasticDefgradScalarData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
-      inelasticDefgradScalarData->Add("SCALAR1_RefConc", RefConc);
+      inelastic_defgrad_scalar_data->Add("SCALAR1", 1);
+      inelastic_defgrad_scalar_data->Add("SCALAR1_MolarGrowthFac", growth_fac);
+      inelastic_defgrad_scalar_data->Add("SCALAR1_RefConc", ref_conc);
 
-      inelasticDefgradScalarData->SetParameter(
-          new MAT::PAR::InelasticDefgradScalar(inelasticDefgradScalarData));
+      inelastic_defgrad_scalar_data->SetParameter(
+          new MAT::PAR::InelasticDefgradScalar(inelastic_defgrad_scalar_data));
 
       // get pointer to parameter class
       params_inelastic_defgrad_scalar_ =
-          Teuchos::rcp(new MAT::PAR::InelasticDefgradScalar(inelasticDefgradScalarData));
+          Teuchos::rcp(new MAT::PAR::InelasticDefgradLinScalar(inelastic_defgrad_scalar_data));
 
       // setup pointer to InelasticDefgradLinScalarIso object
-      lin_scalar_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarIso(
-          params_inelastic_defgrad_scalar_.get(), linear_shape_));
+      lin_scalar_iso_ = Teuchos::rcp(
+          new MAT::InelasticDefgradLinScalarIso(params_inelastic_defgrad_scalar_.get()));
 
       // call PreEvaluate to set the concentration value
       lin_scalar_iso_->PreEvaluate(params_lin, 0);
 
       // create InelasticDefgradLinScalarAniso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradLinScalarAnisoData =
+      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_lin_scalar_aniso_data =
           Teuchos::rcp(new MAT::PAR::Material());
 
-      inelasticDefgradLinScalarAnisoData->Add("SCALAR1", 1);
-      inelasticDefgradLinScalarAnisoData->Add("SCALAR1_MolarGrowthFac", GrowthFac);
-      inelasticDefgradLinScalarAnisoData->Add("SCALAR1_RefConc", RefConc);
+      inelastic_defgrad_lin_scalar_aniso_data->Add("SCALAR1", 1);
+      inelastic_defgrad_lin_scalar_aniso_data->Add("SCALAR1_MolarGrowthFac", growth_fac);
+      inelastic_defgrad_lin_scalar_aniso_data->Add("SCALAR1_RefConc", ref_conc);
 
       // vector to instantiate the deformation direction object
       const std::vector<double> growthdir{1.0, 0.5, 0.3};
-      inelasticDefgradLinScalarAnisoData->Add("GrowthDirection", growthdir);
+      inelastic_defgrad_lin_scalar_aniso_data->Add("GrowthDirection", growthdir);
 
-      inelasticDefgradLinScalarAnisoData->SetParameter(
-          new MAT::PAR::InelasticDefgradLinScalarAniso(inelasticDefgradLinScalarAnisoData));
+      inelastic_defgrad_lin_scalar_aniso_data->SetParameter(
+          new MAT::PAR::InelasticDefgradLinScalarAniso(inelastic_defgrad_lin_scalar_aniso_data));
 
       // get pointer to parameter class
       params_inelastic_defgrad_lin_scalar_aniso_ = Teuchos::rcp(
-          new MAT::PAR::InelasticDefgradLinScalarAniso(inelasticDefgradLinScalarAnisoData));
+          new MAT::PAR::InelasticDefgradLinScalarAniso(inelastic_defgrad_lin_scalar_aniso_data));
 
       // set up pointer to InelasticDefgradLinScalarAniso object
       lin_scalar_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarAniso(
-          params_inelastic_defgrad_lin_scalar_aniso_.get(), linear_shape_));
+          params_inelastic_defgrad_lin_scalar_aniso_.get()));
 
       // call PreEvaluate to set the concentration value
       lin_scalar_aniso_->PreEvaluate(params_lin, 0);
@@ -177,78 +177,90 @@ namespace
       params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
 
       // initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradPolyIntercalFracData =
+      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_data =
           Teuchos::rcp(new MAT::PAR::Material());
 
-      inelasticDefgradPolyIntercalFracData->Add("MATID", matid);
-      inelasticDefgradPolyIntercalFracData->Add("SCALAR1", 1);
-      inelasticDefgradPolyIntercalFracData->Add("SCALAR1_RefConc", RefConc);
+      inelastic_defgrad_poly_intercal_frac_data->Add("MATID", matid);
+      inelastic_defgrad_poly_intercal_frac_data->Add("SCALAR1", 1);
+      inelastic_defgrad_poly_intercal_frac_data->Add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_poly_intercal_frac_data->Add("POLY_PARAMS", poly_coeffs);
+      inelastic_defgrad_poly_intercal_frac_data->Add("X_max", x_max);
+      inelastic_defgrad_poly_intercal_frac_data->Add("X_min", x_min);
+      inelastic_defgrad_poly_intercal_frac_data->Add(
+          "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
-      inelasticDefgradPolyIntercalFracData->SetParameter(
-          new MAT::PAR::InelasticDefgradPolyIntercalFrac(inelasticDefgradPolyIntercalFracData));
+      inelastic_defgrad_poly_intercal_frac_data->SetParameter(
+          new MAT::PAR::InelasticDefgradPolyIntercalFrac(
+              inelastic_defgrad_poly_intercal_frac_data));
 
       // get pointer to parameter class
-      params_inelastic_defgrad_poly_intercal_frac_ = Teuchos::rcp(
-          new MAT::PAR::InelasticDefgradPolyIntercalFrac(inelasticDefgradPolyIntercalFracData));
+      params_inelastic_defgrad_poly_intercal_frac_ =
+          Teuchos::rcp(new MAT::PAR::InelasticDefgradPolyIntercalFrac(
+              inelastic_defgrad_poly_intercal_frac_data));
 
       // get reference intercalation fraction
-      const double X_ref =
-          MAT::Electrode::ComputeIntercalationFraction(RefConc, chi_max, c_max, 1.0);
+      const double x_ref =
+          MAT::Electrode::ComputeIntercalationFraction(ref_conc, chi_max, c_max, 1.0);
 
       // set the value of the reference polynomial
       params_inelastic_defgrad_poly_intercal_frac_->SetPolynomReferenceValue(
-          polynomial_shape_->ComputePolynomial(X_ref));
+          polynomial_shape_->ComputePolynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
       poly_intercal_frac_iso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracIso(
-          params_inelastic_defgrad_poly_intercal_frac_.get(), polynomial_shape_));
+          params_inelastic_defgrad_poly_intercal_frac_.get()));
 
       // call PreEvaluate to set the concentration value
       poly_intercal_frac_iso_->PreEvaluate(params_poly, 0);
 
       // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
       // parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradPolyIntercalFracAnisoData =
+      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_aniso_data =
           Teuchos::rcp(new MAT::PAR::Material());
 
-      inelasticDefgradPolyIntercalFracAnisoData->Add("MATID", matid);
-      inelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1", 1);
-      inelasticDefgradPolyIntercalFracAnisoData->Add("SCALAR1_RefConc", RefConc);
-      inelasticDefgradPolyIntercalFracAnisoData->Add("GrowthDirection", growthdir);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("MATID", matid);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("SCALAR1", 1);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("GrowthDirection", growthdir);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("POLY_PARAMS", poly_coeffs);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("X_max", x_max);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add("X_min", x_min);
+      inelastic_defgrad_poly_intercal_frac_aniso_data->Add(
+          "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
-      inelasticDefgradPolyIntercalFracAnisoData->SetParameter(
+      inelastic_defgrad_poly_intercal_frac_aniso_data->SetParameter(
           new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(
-              inelasticDefgradPolyIntercalFracAnisoData));
+              inelastic_defgrad_poly_intercal_frac_aniso_data));
 
       // get pointer to parameter class
       params_inelastic_defgrad_poly_intercal_frac_aniso_ =
           Teuchos::rcp(new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(
-              inelasticDefgradPolyIntercalFracAnisoData));
+              inelastic_defgrad_poly_intercal_frac_aniso_data));
 
       // set the value of the reference polynomial
       params_inelastic_defgrad_poly_intercal_frac_aniso_->SetPolynomReferenceValue(
-          polynomial_shape_->ComputePolynomial(X_ref));
+          polynomial_shape_->ComputePolynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
       poly_intercal_frac_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracAniso(
-          params_inelastic_defgrad_poly_intercal_frac_aniso_.get(), polynomial_shape_));
+          params_inelastic_defgrad_poly_intercal_frac_aniso_.get()));
 
       // call PreEvaluate to set the concentration value
       poly_intercal_frac_aniso_->PreEvaluate(params_poly, 0);
 
       // create InelasticDefgradLinTempIso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelasticDefgradTempIsoData =
+      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_temp_iso_data =
           Teuchos::rcp(new MAT::PAR::Material());
 
-      inelasticDefgradTempIsoData->Add("MATID", matid);
-      inelasticDefgradTempIsoData->Add("RefTemp", 298.0);
-      inelasticDefgradTempIsoData->Add("Temp_GrowthFac", 1.0e-3);
-      inelasticDefgradTempIsoData->SetParameter(
-          new MAT::PAR::InelasticDefgradLinTempIso(inelasticDefgradTempIsoData));
+      inelastic_defgrad_temp_iso_data->Add("MATID", matid);
+      inelastic_defgrad_temp_iso_data->Add("RefTemp", 298.0);
+      inelastic_defgrad_temp_iso_data->Add("Temp_GrowthFac", 1.0e-3);
+      inelastic_defgrad_temp_iso_data->SetParameter(
+          new MAT::PAR::InelasticDefgradLinTempIso(inelastic_defgrad_temp_iso_data));
 
       // get pointer to parameter class
       params_lin_temp_iso_ =
-          Teuchos::rcp(new MAT::PAR::InelasticDefgradLinTempIso(inelasticDefgradTempIsoData));
+          Teuchos::rcp(new MAT::PAR::InelasticDefgradLinTempIso(inelastic_defgrad_temp_iso_data));
 
       // setup pointer to InelasticDefgradLinScalarIso object
       lin_temp_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinTempIso(params_lin_temp_iso_.get()));
@@ -319,12 +331,12 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateLinearGrowth)
   {
-    const std::vector<double> TestValues{952834.0233, 44327.362, 12823.902};
-    const std::vector<double> Results{0.4776612182790999, -0.0011217922259999, -0.0177241156459999};
+    const std::vector<double> test_values{952834.0233, 44327.362, 12823.902};
+    const std::vector<double> results{0.4776612182790999, -0.0011217922259999, -0.0177241156459999};
 
     // loop over test values and check whether the result is correct
-    for (auto i = 0U; i < TestValues.size(); ++i)
-      EXPECT_NEAR(linear_shape_->EvaluateLinearGrowth(TestValues[i]), Results[i], 1.0e-12);
+    for (auto i = 0U; i < test_values.size(); ++i)
+      EXPECT_NEAR(linear_shape_->EvaluateLinearGrowth(test_values[i]), results[i], 1.0e-12);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestInelasticDeformationDirection)
@@ -363,7 +375,7 @@ namespace
       // create object
       auto growth_direction = MAT::PAR::InelasticDeformationDirection(growth_directions[i]);
       // check the results
-      BACI_EXPECT_NEAR(growth_direction.Growthdirmat(), growth_direction_solutions[i], 1.0e-12);
+      BACI_EXPECT_NEAR(growth_direction.GrowthDirMat(), growth_direction_solutions[i], 1.0e-12);
     }
   }
 

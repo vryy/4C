@@ -2513,6 +2513,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradTimeFunct",
+        "Time-dependent growth law. Determinant of volume change dependent on time function "
+        "defined "
+        "by 'FUNCT_NUM",
+        INPAR::MAT::mfi_time_funct));
+
+    AddNamedInt(m, "FUNCT_NUM",
+        "Time-dependent function of the determinant of the inelastic deformation gradient");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
   {
     auto mm = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",

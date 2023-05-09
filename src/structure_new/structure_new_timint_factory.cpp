@@ -25,7 +25,6 @@
 
 // supported data containers
 #include "structure_new_timint_basedatasdyn.H"
-#include "structure_xstructure_state.H"
 
 
 /*----------------------------------------------------------------------------*
