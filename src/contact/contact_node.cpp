@@ -181,8 +181,8 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_augA_.resize(dentries);
   d_kappa_.resize(dentries);
 
-  GEN_DATA::reset(dentries, dd_augA_);
-  GEN_DATA::reset(dentries, dd_kappa_);
+  GEN::reset(dentries, dd_augA_);
+  GEN::reset(dentries, dd_kappa_);
 
   d_wgap_sl_.resize(dentries);
   d_wgap_ma_.resize(mentries_);
@@ -190,8 +190,8 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_wgap_sl_complete_ = Teuchos::rcp(new Deriv1stMap(dentries));
   d_wgap_ma_complete_ = Teuchos::rcp(new Deriv1stMap(mentries_));
 
-  GEN_DATA::reset(dentries, dd_wgap_sl_);
-  GEN_DATA::reset(mentries_, dd_wgap_ma_);
+  GEN::reset(dentries, dd_wgap_sl_);
+  GEN::reset(mentries_, dd_wgap_ma_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -257,8 +257,8 @@ void CONTACT::AUG::NodeDataContainer::Debug::Complete()
   d_.complete();
   dd_.complete();
 
-  GEN_DATA::complete(d_vec_);
-  GEN_DATA::complete(dd_vec_);
+  GEN::complete(d_vec_);
+  GEN::complete(dd_vec_);
 }
 
 /*----------------------------------------------------------------------*

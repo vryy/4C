@@ -1004,20 +1004,20 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::HardReset(
     const unsigned linsize)
 {
-  GEN_DATA::reset(my::SLAVEDIM, 0, dsxigp_);
+  GEN::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  GEN_DATA::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
-  GEN_DATA::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
-  GEN_DATA::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
+  GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
+  GEN::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
+  GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  GEN_DATA::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
-  GEN_DATA::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
-  GEN_DATA::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  GEN_DATA::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
+  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
+  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
+  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
 
-  GEN_DATA::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  GEN_DATA::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1027,20 +1027,20 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakReset(
     const unsigned linsize)
 {
-  GEN_DATA::reset(my::SLAVEDIM, 0, dsxigp_);
+  GEN::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  GEN_DATA::weak_reset(dmxigp_);
-  GEN_DATA::weak_reset(dalpha_);
-  GEN_DATA::weak_reset(ddmxigp_);
+  GEN::weak_reset(dmxigp_);
+  GEN::weak_reset(dalpha_);
+  GEN::weak_reset(ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  GEN_DATA::weak_reset(dn_non_unit_);
-  GEN_DATA::weak_reset(ddn_non_unit_);
-  GEN_DATA::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  GEN_DATA::weak_reset(ddn_unit_);
+  GEN::weak_reset(dn_non_unit_);
+  GEN::weak_reset(ddn_non_unit_);
+  GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  GEN::weak_reset(ddn_unit_);
 
-  GEN_DATA::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  GEN_DATA::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*/

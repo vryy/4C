@@ -486,7 +486,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
       const Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN_DATA::copy(d_normal, exp_d_n, GEN_DATA::DeepCopy);
+      GEN::copy(d_normal, exp_d_n, GEN::DeepCopy);
     }
   }
 
@@ -510,7 +510,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
       Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       const Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN_DATA::copy(exp_d_n, d_normal, GEN_DATA::DeepCopy);
+      GEN::copy(exp_d_n, d_normal, GEN::DeepCopy);
     }
   }
 
@@ -537,7 +537,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
       const Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN_DATA::copy(dd_normal, exp_dd_n, GEN_DATA::DeepCopy);
+      GEN::copy(dd_normal, exp_dd_n, GEN::DeepCopy);
     }
   }
 
@@ -561,7 +561,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
       Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       const Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN_DATA::copy(exp_dd_n, dd_normal, GEN_DATA::DeepCopy);
+      GEN::copy(exp_dd_n, dd_normal, GEN::DeepCopy);
     }
   }
 
