@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 2D finite deformation meshtying test
 // - first-order interpolation (quad4 elements)
@@ -17,21 +12,13 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -568,4 +555,3 @@ STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE 2.6835234017101599e+00 TOLE
 STRUCTURE DIS structure NODE 74 QUANTITY dispx VALUE -5.2629561367680955e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 74 QUANTITY dispy VALUE 4.1888795255377014e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
-//                              END

@@ -58,8 +58,8 @@ STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 2.65221247746680389e+00 TO
 STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 2.43286724284057465e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 2.01704383584107028e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          4
+NDPOINT                         0
+NDLINE                          0
 NDSURF                          4
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -68,40 +68,8 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 2.0 2.0 1.0 FUNCT 1 1 1
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
-//                              slave
 E 3 - 1 Master Inactive
-//                              master
 E 4 - 1 Slave Active
----------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 21 DNODE 1
-NODE 217 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 21 DLINE 1
-NODE 22 DLINE 1
-NODE 35 DLINE 1
-NODE 47 DLINE 1
-NODE 59 DLINE 1
-NODE 71 DLINE 1
-NODE 1 DLINE 2
-NODE 2 DLINE 2
-NODE 9 DLINE 2
-NODE 13 DLINE 2
-NODE 17 DLINE 2
-NODE 21 DLINE 2
-NODE 217 DLINE 3
-NODE 220 DLINE 3
-NODE 246 DLINE 3
-NODE 260 DLINE 3
-NODE 274 DLINE 3
-NODE 288 DLINE 3
-NODE 302 DLINE 3
-NODE 217 DLINE 4
-NODE 218 DLINE 4
-NODE 225 DLINE 4
-NODE 229 DLINE 4
-NODE 233 DLINE 4
-NODE 237 DLINE 4
-NODE 241 DLINE 4
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
