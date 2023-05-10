@@ -519,7 +519,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   Teuchos::RCP<Teuchos::Time> time3 = Teuchos::TimeMonitor::getNewTimer("Get Ele Conn");
   Teuchos::RCP<Teuchos::Time> time4 = Teuchos::TimeMonitor::getNewTimer("Get one Ele");
   Teuchos::RCP<Teuchos::Time> time5 = Teuchos::TimeMonitor::getNewTimer("Build one Side Conn");
-  Teuchos::RCP<Teuchos::Time> time7 =
+  Teuchos::RCP<Teuchos::Time> time6 =
       Teuchos::TimeMonitor::getNewTimer("Get all Eblocks and Econns");
   Teuchos::RCP<Teuchos::TimeMonitor> tm_total = Teuchos::rcp(new Teuchos::TimeMonitor(*timetot));
 
@@ -536,7 +536,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   // Also we once get all EBlocks and EConns to enable quick access
   std::vector<EXODUS::ElementBlock> eblocks;
   std::vector<std::map<int, std::vector<int>>> econns;
-  Teuchos::RCP<Teuchos::TimeMonitor> tm7 = Teuchos::rcp(new Teuchos::TimeMonitor(*time7));
+  Teuchos::RCP<Teuchos::TimeMonitor> tm6 = Teuchos::rcp(new Teuchos::TimeMonitor(*time6));
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs)
   {
     rangebreak += i_ebs->second->GetNumEle();
@@ -544,7 +544,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
     eblocks.push_back(*i_ebs->second);
     econns.push_back(*(i_ebs->second->GetEleConn()));
   }
-  tm7 = Teuchos::null;
+  tm6 = Teuchos::null;
 
   // fill SideSet Connectivity
   // int perc = 1;

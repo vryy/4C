@@ -14,7 +14,6 @@
 #include "inpar_structure.H"
 #include "poroelast_base.H"
 #include "poroelast_utils.H"
-#include <Teuchos_Time.hpp>
 
 namespace LINALG
 {
@@ -395,7 +394,7 @@ namespace POROELAST
     double normrhsporo_;  //!< norm of residual forces (porosity)
     double normincporo_;  //!< norm of residual unknowns (porosity)
 
-    Teuchos::Time timer_;  //!< timer for solution technique
+    Teuchos::RCP<Teuchos::Time> timer_;  //!< timer for solution technique
 
     int iter_;  //!< iteration step
 
