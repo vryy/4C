@@ -178,6 +178,59 @@ macro(
   endif(${restart_step})
 endmacro(baci_test_extended_timeout)
 
+# DEFAULT BACI TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
+# Usage in TestingFrameworkListOfTests.cmake: "baci_omp_test(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
+# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <num_proc>: number of mpi-processors the test should use
+# <num_omp_threads>: number of OpenMP threads per proccessor the test should use
+# <restart_step>: number of restart step; <""> indicates no restart
+# optional: <label>: add a label to the test
+macro(
+  baci_omp_test
+  name_of_input_file
+  num_proc
+  num_omp_threads
+  restart_step
+  )
+  set(name_of_test ${name_of_input_file}-p${num_proc}-t${num_omp_threads})
+  set(test_directory
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc}_t${num_omp_threads}
+      )
+  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+
+  add_test(
+    NAME ${name_of_input_file}-p${num_proc}-t${num_omp_threads}
+    COMMAND
+      bash -c
+      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
+    )
+
+  # Calculate the total number of processors required
+  math(EXPR total_num_proc "${num_proc}*${num_omp_threads}")
+
+  require_fixture(${name_of_test} test_cleanup)
+  set_processors(${name_of_test} ${total_num_proc})
+  define_setup_fixture(${name_of_test} ${name_of_test})
+  set_timeout(${name_of_test})
+
+  if(NOT "${ARGN}" STREQUAL "")
+    set_label(${name_of_test} ${ARGN})
+  endif()
+
+  if(${restart_step})
+    add_test(
+      NAME ${name_of_test}-restart
+      COMMAND
+        bash -c
+        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
+      )
+
+    require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
+    set_processors(${name_of_test}-restart ${total_num_proc})
+    set_timeout(${name_of_test}-restart)
+  endif(${restart_step})
+endmacro(baci_omp_test)
+
 # DEFAULT BACI TEST + POST ENSIGHT - run BACI test and subsequent post ensight test in serial and parallel
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_and_post_ensight_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"

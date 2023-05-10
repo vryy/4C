@@ -10,6 +10,7 @@
 #ifdef BACI_WITH_MIRCO
 
 #include <gtest/gtest.h>
+#include <omp.h>
 
 #include "contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 #include "lib_globalproblem.H"
