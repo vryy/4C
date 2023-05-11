@@ -37,6 +37,10 @@ namespace INPAR
       IntParameter("INTERVAL_STEPS", -1, "write VTP output at runtime every INTERVAL_STEPS steps",
           &sublist_IO_VTP_structure);
 
+      IntParameter("STEP_OFFSET", 0,
+          "An offset added to the current step to shift the steps to be written.",
+          &sublist_IO_VTP_structure);
+
 
       // data format for written numeric data
       setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "binary",
