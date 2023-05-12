@@ -1,11 +1,11 @@
 #! Add a unit test executable
 #
-# This executable may be run in serial or with a given number of processes as the NP argument
-# Usage: baci_add_google_test_executable(<name> [NP <number of processes>] SOURCE source1 [source2 ...])
+# This executable may be run in serial or with NP*THREADS processors given as arguments
+# Usage: baci_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
 #
 function(baci_add_google_test_executable TESTNAME)
   set(options "")
-  set(oneValueArgs NP)
+  set(oneValueArgs NP THREADS)
   set(multiValueArgs SOURCE)
   cmake_parse_arguments(
     BACI_ADD_GOOGLE_TEST_EXECUTABLE
@@ -28,6 +28,10 @@ function(baci_add_google_test_executable TESTNAME)
 
   if(NOT DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP)
     set(BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP 1)
+  endif()
+
+  if(NOT DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS)
+    set(BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS 1)
   endif()
 
   set(assert_mpi_file
@@ -67,9 +71,19 @@ function(baci_add_google_test_executable TESTNAME)
       )
   endif()
 
+  # Calculate the total number of processors required
+  math(
+    EXPR
+    TOTAL_NUM_PROCESSORS
+    "${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP}*${BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    )
+
   add_test(NAME ${TESTNAME} COMMAND ${MPI_RUN} ${mpi_arguments})
   set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
-  set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS ${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP})
+  set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS ${TOTAL_NUM_PROCESSORS})
+  set_tests_properties(
+    ${TESTNAME} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    )
 
   add_dependencies(unittests ${TESTNAME})
 endfunction()

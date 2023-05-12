@@ -1,6 +1,3 @@
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 3D meshtying patch test
 // - first-order and second-order interpolation
@@ -87,33 +84,19 @@ DSURF  1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF  14
-// slave1
 E 3 - 1 Slave Active
-// master1
 E 4 - 1 Master Inactive
-// slave2
 E 5 - 2 Slave Active
-// master2
 E 6 - 2 Master Inactive
-// slave3
 E 7 - 3 Slave Active
-// master3
 E 8 - 3 Master Inactive
-// slave4
 E 9 - 4 Slave Active
-// master4
 E 10 - 4 Master Inactive
-// slave5
 E 11 - 5 Slave Active
-// master5
 E 12 - 5 Master Inactive
-// slave6
 E 13 - 6 Slave Active
-// master6
 E 14 - 6 Master Inactive
-// slave7
 E 15 - 7 Slave Active
-// master7
 E 16 - 7 Master Inactive
 -----------------------------DESIGN LINE MORTAR EDGE CONDITIONS 3D
 DLINE  1

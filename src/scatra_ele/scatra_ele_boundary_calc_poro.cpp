@@ -22,7 +22,7 @@
 #include "nurbs_discret_nurbs_utils.H"
 #include "geometry_position_array.H"
 #include "fluid_rotsym_periodicbc.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |

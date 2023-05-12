@@ -40,7 +40,7 @@
 #include "io_discretization_runtime_vtu_writer.H"
 
 #include "structure_new_discretization_runtime_vtu_output_params.H"
-#include "beam3.H"
+#include "beam3_base.H"
 #include "beam3_discretization_runtime_vtu_writer.H"
 #include "beam3_discretization_runtime_vtu_output_params.H"
 

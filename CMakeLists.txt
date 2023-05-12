@@ -5,7 +5,7 @@
 #
 ### General Setup
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.25)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
@@ -214,7 +214,6 @@ set(SINGLEFIELD_LIBRARIES
     alg_thermo
     alg_tutorial
     alg_xfluid
-    alg_xstructure
     )
 
 set(SUPPORT_LIBRARIES
@@ -234,7 +233,6 @@ set(SUPPORT_LIBRARIES
     lib_contact_constitutivelaw
     lib_cut
     lib_fiber
-    lib_geometric_search
     lib_immersed
     lib_io
     lib_mortar
@@ -260,7 +258,6 @@ set(BACI_LIBRARIES
     comm
     constraint
     geometry
-    headers
     linalg
     locacontinuation
     mat

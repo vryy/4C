@@ -19,8 +19,8 @@
 
 #include "lib_dserror.H"
 #include "lib_globalproblem.H"
-#include "geometric_search.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search.H"
+#include "discretization_geometric_search_params.H"
 
 #include "io.H"
 #include "io_control.H"

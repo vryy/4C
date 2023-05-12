@@ -19,7 +19,7 @@ growth, e.g., lithium plating
 #include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "mat_electrode.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

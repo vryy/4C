@@ -22,7 +22,7 @@
 #include <Epetra_SerialDenseVector.h>
 #include "linalg_fixedsizematrix.H"
 #include "lib_pack_buffer.H"
-#include "headers_pairedmatrix.H"
+#include "utils_pairedmatrix.H"
 
 namespace DRT
 {

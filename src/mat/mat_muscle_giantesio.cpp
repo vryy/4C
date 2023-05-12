@@ -467,7 +467,7 @@ void MAT::Muscle_Giantesio::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(lambdaM, lambdaMOld_, timeStepSize);
 
   // compute activation level omegaa and derivative w.r.t. fiber stretch if material is active
-  MAT::UTILS::MUSCLE::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
+  CORE::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
       .val_funct = 0.0, .val_deriv_funct = 0.0, .val_deriv_deriv_funct = 0.0};
 
   if (IsActive(currentTime))
@@ -609,8 +609,7 @@ void MAT::Muscle_Giantesio::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, cmatvolv, 1.0);
 }
 
-MAT::UTILS::MUSCLE::ValuesFunctAndFunctDerivs
-MAT::Muscle_Giantesio::EvaluateActivationLevelAndDerivatives(
+CORE::UTILS::ValuesFunctAndFunctDerivs MAT::Muscle_Giantesio::EvaluateActivationLevelAndDerivatives(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // setup function
@@ -624,8 +623,8 @@ MAT::Muscle_Giantesio::EvaluateActivationLevelAndDerivatives(
 
   // compute activation level omegaa and its first and second derivative w.r.t. lambdaM using
   // central differences
-  MAT::UTILS::MUSCLE::ValuesFunctAndFunctDerivs omegaaAndDerivs =
-      MAT::UTILS::MUSCLE::EvaluateFunctionAndDerivativesCentralDifferences(
+  CORE::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs =
+      CORE::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
           FunctionSolveActivationLevelEquation, lambdaM, h);
 
   return omegaaAndDerivs;
@@ -639,7 +638,7 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
 
   // setup the activation level equation as f(omegaa) = lhs-rhs
   // and its derivative as df/domegaa(omegaa) = dlhs/domegaa
-  std::function<MAT::UTILS::MUSCLE::ValuesFunctAndFunctDeriv(double)> actLevelEquationAndDeriv =
+  std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> actLevelEquationAndDeriv =
       [this, &lambdaM, &rhs](double omegaa_init)
   { return this->EvaluateActivationLevelEquationAndDeriv(omegaa_init, lambdaM, rhs); };
 
@@ -655,7 +654,7 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
     const double omegaa_b_init = 1.0;  // omegaa <= 1
 
     // approximate the starting guess for the newton solver via bisection method
-    omegaa_init = MAT::UTILS::MUSCLE::Bisection(
+    omegaa_init = CORE::UTILS::Bisection(
         actLevelEquationAndDeriv, omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
   }
   else
@@ -667,13 +666,13 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
   const int maxiter_newton = 200;
 
   // compute activation level as solution of activation level equation
-  double omegaa = MAT::UTILS::MUSCLE::NewtonScalar(
-      actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
+  double omegaa =
+      CORE::UTILS::NewtonScalar(actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
 
   return omegaa;
 }
 
-MAT::UTILS::MUSCLE::ValuesFunctAndFunctDeriv
+CORE::UTILS::ValuesFunctAndFunctDeriv
 MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
     double omegaa, const double& lambdaM, const double& rhs)
 {
@@ -701,7 +700,7 @@ MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
   double derivlhs = derivIe * std::exp(alpha * (Ie - 1)) + derivJe * std::exp(beta * (Je - 1));
 
   // compute activation level equation and its derivative
-  MAT::UTILS::MUSCLE::ValuesFunctAndFunctDeriv equationValueAndDeriv{
+  CORE::UTILS::ValuesFunctAndFunctDeriv equationValueAndDeriv{
       .val_funct = lhs - rhs, .val_deriv_funct = derivlhs};
 
   return equationValueAndDeriv;

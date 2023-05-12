@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 3D finite deformation meshtying test
 // - first-order interpolation (tet4 -hex8)
@@ -16,20 +11,12 @@ General Data File CCARAT
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
@@ -39,9 +26,6 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.05
 NUMSTEP                         2
 MAXTIME                         0.1
-DAMPING                         No
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -98,9 +82,7 @@ DSURF  1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF  2
-// slave
 E 2 - 1 Slave Active
-// master
 E 3 - 1 Master Inactive
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    2 DLINE 1

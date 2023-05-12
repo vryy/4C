@@ -75,6 +75,7 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& n
 }
 
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
@@ -513,9 +514,9 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
-      //#ifdef DEBUG
+      // #ifdef DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d", myrank, rgid);
-      //#endif
+      // #endif
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
       if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
@@ -1703,14 +1704,14 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
       if (count1) err1 = A21->InsertGlobalValues(grid, count1, gvalues1.data(), gcindices1.data());
       if (count2) err2 = A22->InsertGlobalValues(grid, count2, gvalues2.data(), gcindices2.data());
     }
-    //#ifdef DEBUG
+    // #ifdef DEBUG
     if (err1 < 0 || err2 < 0)
     {
       dserror(
           "SparseMatrix::Split2x2: Epetra_CrsMatrix::InsertGlobalValues returned err1=%d / err2=%d",
           err1, err2);
     }
-    //#endif
+    // #endif
   }  // for (int i=0; i<A->NumMyRows(); ++i)
   // Do not complete BlockMatrix
 }

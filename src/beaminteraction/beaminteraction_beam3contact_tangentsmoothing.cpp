@@ -39,8 +39,7 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
   int numnode = element1->NumNode();
 
   // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
-  // node (at xi = -1) allways has the local ID 1 For documentation of the node numbering see also
-  // the file beam3.H
+  // node (at xi = -1) allways has the local ID 1
   int n_right;
   if (numnode == 2)
     n_right = 1;

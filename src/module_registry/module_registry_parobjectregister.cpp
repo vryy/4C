@@ -15,7 +15,6 @@
 #include "module_registry_parobjectregister.H"
 
 #include "nurbs_discret_control_point.H"
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beam3_kirchhoff.H"
@@ -182,7 +181,6 @@ void DRT::ForceRegistrationOfParObjectTypes()
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
     << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
-    << DRT::ELEMENTS::Beam3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3rType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3ebType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3kType::Instance().Name() << " "

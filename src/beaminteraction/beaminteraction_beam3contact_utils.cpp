@@ -9,13 +9,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beaminteraction_beam3contact_utils.H"
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beam3_kirchhoff.H"
 #include "rigidsphere.H"
 #include "beamcontact_beam3contact_manager.H"
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|

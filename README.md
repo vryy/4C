@@ -123,6 +123,13 @@ Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wik
 
 ### Configure and Build
 
+#### Create python virtual environment for BACI development (optional)
+
+For testing and active development, you need to create a python virtual environment once. In the source directory, execute:
+```
+./create-baci-python-venv
+```
+
 #### Create the Build Directory
 
 BACI enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
@@ -136,28 +143,31 @@ cd <buildDir>
 where `<buildDir>` is your build directory.
 
 #### Configure
-
-Run
+Run 
 
 ```bash
-cd <someBaseDir>/<buildDir>
-<someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-configuration-file.config> | tee config$(date +%y%m%d%H%M%N).log
+cmake --preset=<name-of-preset> ../<sourceDir> | tee config$(date +%y%m%d%H%M%N).log
 ```
 
 > **Note:**  When you see `command |& tee something$(date +%y%m%d%H%M%N).log`, that is just a means of running a command and sending the output both to the screen and to a timestamped log file.  This is by no means necessary, but if you run into problems, having these timestamped log files can be quite useful in debugging what's gone wrong.
 
-A build configuration file needs to be passed to the configure script via the command line argument `--config`, as indicated above.
-Configuration files for a bunch of supported system environments are located in `<someBaseDir>/<sourceDir>/buildconfig/`. For more information on the provided configuration files please refer to [Configure BACI with correct configuration file](https://gitlab.lrz.de/baci/baci/wikis/Configure-BACI-with-correct-configuration-file).
+A preset name needs to be passed to cmake via the command line argument `--preset`, as indicated above. Use `cmake ../<sourceDir> --list-presets` to get a list of all available presets.
+
+More information about the cmake presets can be found [in the wiki](https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets).
+
+**Note:** Make sure to use at least cmake 3.25. Install it in your path or use the ones provided on your institute's server.
 
 #### Build
 
 ```bash
-make -j <numProcs> full |& tee make$(date +%y%m%d%H%M%N).log
+ninja -j <numProcs> full |& tee build$(date +%y%m%d%H%M%N).log
 ```
 
 where `<numProcs>` is the number of processors you want to use.
 
-> **Note:**  After the first build, it is not always necessary to rerun the configure script &mdash; only the `make` command is required.  Reconfiguring is required when new files have been added and no changes are made to the `CMakeLists.txt` files.  If changes are made to a `CMakeLists.txt` file, then calling `make` will *automatically* reconfigure as part of the build process.
+> **Note:**  After the first build, it is rarely necessary to reconfigure baci &mdash; only the build-command is required. `cmake` is invoked *automatically* during the build process if something changed within `CMakeLists.txt`.
+
+> **Note:** Make sure to have Ninja installed on your system.
 
 #### Run the Tests
 

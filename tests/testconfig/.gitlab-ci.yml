@@ -17,25 +17,12 @@ variables:
   # - "debug"
   CTEST_BUILD_TYPE_GITLAB: release
 
-  # Postfix for do-configure.
-  CONFIGURE_POSTFIX: ''
-
   # Number of threads to be used during build
   NUMBER_OF_BUILD_THREADS: '3'
 
   # Number of threads to be used during testing
   NUMBER_OF_TEST_THREADS: '1'
 
-  # Select specific test by regular expressen (".": all)
-  TEST_TAG: .
-
-  # Select tests to exclude by regular expression.
-  CTEST_EXCLUDE_STRING: ''
-
-  # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
-  GITLAB_SCHEDULER_LNM_SCHMARRN: '0'
-  GITLAB_SCHEDULER_LNM_DEEP: '0'
-  GITLAB_SCHEDULER_LNM_BRUTEFORCE: '0'
 
   # Variables for docker
   BACI_DOCKER_BUILD_IMAGES:
@@ -65,16 +52,19 @@ variables:
   fi
 
 .build-only: &build-only
-- mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+- mkdir -p ${CI_PROJECT_DIR}/../baci-build
   # configure
-- if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then DEBUG_TOOGLE="--debug-optimized";
-  fi
-- ${CI_PROJECT_DIR}/do-configure --no-ccache ${DEBUG_TOOGLE} --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-  --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
+- |
+  if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
+  cd ${CI_PROJECT_DIR}
+  ./create-baci-python-venv
+  cd ${CI_PROJECT_DIR}/../baci-build
+  # We override the launcher arguments here to ensure that ccache is not used during testing
+  ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
-  # build (note: this works even with an older CMake since we directly call the native build tool
-- cmake --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS} 2>&1
-  | tee build.log
+  # build
+- ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS}
+  2>&1 | tee build.log
 
 .build-and-test: &build-and-test
 - *build-only
@@ -96,7 +86,7 @@ variables:
 - cd ${CI_PROJECT_DIR}/../baci-build
 - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   test.log test.log
-    # Write selection of the output into the terminal and therefore to GITLAB
+  # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' test.log || true
 - sed -n '/tests passed,/,//p' test.log
@@ -165,7 +155,6 @@ variables:
   stage: buildtest
   variables:
     BUILD_TARGETS: full
-    CONFIGURE_POSTFIX: --coverage --uselld
   script:
   - *clean-build-folder
   - *build-and-test
@@ -190,7 +179,7 @@ variables:
     {} \;
   - *post-process-log-files
       # update (push) the cache of the weekly coverage report:
-      # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
+    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
     key: cache-weekly-coverage-report
@@ -222,27 +211,6 @@ variables:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
-# A variant of buildtest_daily which only builds the project (and does not check for warnings!)
-# Use for LNM clusters
-.build_daily:
-  stage: buildtest
-  variables:
-    GIT_STRATEGY: fetch
-    BUILD_TARGETS: full
-  script:
-  - *clean-build-folder
-  - *build-only
-  after_script:
-  - cd ${CI_PROJECT_DIR}/../baci-build
-  - mv build.log ${CI_PROJECT_DIR}/
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - build.log
-    when: on_failure
-    expire_in: 1 day
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
 
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "1"
@@ -305,9 +273,8 @@ variables:
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
 
     # Configure and build
-  - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
-    --generator=${BUILD_GENERATOR} ${CONFIGURE_POSTFIX}
-  - cmake --build . --target documentation > ../doxygen.log
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+  - ${CMAKE_COMMAND} --build . --target documentation > ../doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
   - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
@@ -325,6 +292,9 @@ variables:
     doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
     # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../doxygen.log doxygen.log
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -370,8 +340,8 @@ checkcode:
 imcs-buildtest_minimal_ubuntu20:
   extends: .buildtest_minimal
   variables:
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
   needs: [checkcode]
@@ -381,8 +351,9 @@ imcs-buildtest_full_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-full-ubuntu20
   needs: [checkcode]
@@ -392,8 +363,8 @@ imcs-buildtest_daily_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-full-ubuntu20
   needs: [checkcode]
@@ -403,8 +374,8 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04.config
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
   needs: [checkcode]
@@ -414,8 +385,8 @@ imcs-buildtest_release_trilinos_develop:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    BUILD_GENERATOR: make
-    CTEST_BUILD_CONFIG_GITLAB: imcs_workstation_ubuntu20-04_develop.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
+    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
     TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
   tags:
@@ -430,7 +401,7 @@ lnm-codeclimate:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
-  - ${CI_PROJECT_DIR}/do-configure --config=${CI_PROJECT_DIR}/buildconfig/${CTEST_BUILD_CONFIG_GITLAB}
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
@@ -442,7 +413,8 @@ lnm-codeclimate:
     ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
   - cd ${CI_PROJECT_DIR}
   variables:
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   artifacts:
     paths: [codeclimate.json]
     reports:
@@ -461,22 +433,10 @@ lnm-buildtest_minimal:
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-release-minimal
-  - lnm-ubuntu
-  needs: [checkcode]
-
-lnm-buildtest_full:
-  extends: .buildtest_full
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-release-user
   - lnm-ubuntu
   needs: [checkcode]
 
@@ -490,8 +450,8 @@ lnm-buildtest_coverage_weekly:
     # enable coverage option of ctest
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation_coverage
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-coverage-weekly
   - lnm-ubuntu
@@ -543,75 +503,11 @@ pages: # job name needs to be pages
   - lnm-coverage-weekly
   - lnm-ubuntu
 
-lnm-buildtest_daily:
-  extends: .buildtest_daily
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-release-daily
-  - lnm-ubuntu
-  needs: [checkcode]
-
-lnm-build_daily_bruteforce:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_bruteforce.config
-  before_script:
-  - module load comp/gcc/9.1.0 mpi/openmpi/gcc/4.1.5 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-bruteforce
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
-  needs: [checkcode]
-
-lnm-build_daily_deep:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_deep.config
-  before_script:
-  - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-deep
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_DEEP == "1"
-  needs: [checkcode]
-
-lnm-build_daily_schmarrn:
-  extends: .build_daily
-  variables:
-    BUILD_GENERATOR: make
-    BUILD_TARGETS: baci-release post_processor
-    CTEST_BUILD_CONFIG_GITLAB: lnm_schmarrn.config
-  before_script:
-  - module load gcc/gcc9 mpi/openmpi-4.0.7 boost/1.71_gcc9 cmake/3.25.1
-  tags:
-  - lnm-release-nightly-build-schmarrn
-  rules:
-  - if: $GITLAB_SCHEDULER_LNM_SCHMARRN == "1"
-  needs: [checkcode]
-
-lnm-buildtest_daily_debug:
-  extends: .buildtest_daily_debug
-  variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
-  tags:
-  - lnm-debug-daily
-  - lnm-ubuntu
-  needs: [checkcode]
-
 lnm-doxygen-web:
   extends: .doxygen
   variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-doxygen
   - lnm-ubuntu
@@ -629,8 +525,8 @@ lnm-doxygen-web:
 lnm-doxygen:
   extends: .doxygen
   variables:
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: lnm_workstation.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
+    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
   tags:
   - lnm-doxygen
   - lnm-ubuntu
@@ -672,8 +568,8 @@ lnm-buildtest_full_docker:
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    BUILD_GENERATOR: ninja
-    CTEST_BUILD_CONFIG_GITLAB: docker.config
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
   - docker
   needs:
@@ -681,7 +577,29 @@ lnm-buildtest_full_docker:
   - job: build-base-dependencies
     optional: true
   # rules as .buildtest_full but never run when BACI_DOCKER_RUN_TEST == False
+  # Also make use of evaluation order to run test in nightly pipeline as well
   rules:
   - if: $BACI_DOCKER_RUN_TEST == "False"
     when: never
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
+
+lnm-buildtest_debug_full_docker:
+  extends: .buildtest_daily_debug
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - docker
+  needs:
+  - checkcode
+  - job: build-base-dependencies
+    optional: true
+  # rules as .buildtest_daily_debug but never run when BACI_DOCKER_RUN_TEST == False
+  rules:
+  - if: $BACI_DOCKER_RUN_TEST == "False"
+    when: never
+  - !reference [.buildtest_daily_debug, rules]

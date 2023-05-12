@@ -18,7 +18,7 @@
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "xfem_condition_manager.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace XFEM
 {

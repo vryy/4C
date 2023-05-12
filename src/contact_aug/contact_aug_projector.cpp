@@ -12,7 +12,7 @@
 #include "contact_aug_element_utils.H"
 #include "linalg_gauss.H"
 #include "mortar_defines.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

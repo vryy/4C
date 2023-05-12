@@ -88,14 +88,11 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
   auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
-    // set material
-    trans->SetMaterial(matid, oldele);
     // set distype as well
     trans->SetDisType(oldele->Shape());
 
     // now check whether ImplType is reasonable and if set the ImplType
     INPAR::SCATRA::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
-
     if (impltype == INPAR::SCATRA::impltype_undefined)
     {
       dserror(
@@ -107,6 +104,9 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
     }
     else
       trans->SetImplType(impltype);
+
+    // set material
+    trans->SetMaterial(matid, oldele);
   }
   else
   {
@@ -144,12 +144,12 @@ void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
   if (trans == nullptr or oldele->ElementType().Name() != "StructuralSurfaceType")
     dserror("element type not supported");
 
-  // set material
-  trans->SetMaterial(matid, oldele);
   // set distype
   trans->SetDisType(oldele->Shape());
   // set impltype
   trans->SetImplType(impltype);
+  // set material
+  trans->SetMaterial(matid, oldele);
 }
 
 
