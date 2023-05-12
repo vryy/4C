@@ -218,8 +218,8 @@ void SSI::SSIBase::Setup()
   // set up scatra-scatra interface coupling
   if (SSIInterfaceMeshtying())
   {
-    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
-        "SSIInterfaceMeshtying", structure_->Discretization()));
+    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
+        "SSIInterfaceMeshtying", structure_->Discretization(), true, true));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =

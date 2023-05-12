@@ -18,6 +18,7 @@
 #include <memory>
 #include "io_runtime_csv_writer.H"
 #include "coupling_adapter.H"
+#include "ssi_utils.H"
 
 namespace CORE::ADAPTER
 {
@@ -48,11 +49,6 @@ namespace LINALG
 
 namespace SSI
 {
-  namespace UTILS
-  {
-    class SSIStructureMeshTying;
-    class SSIMaps;
-  }  // namespace UTILS
 
   class SSIMono;
 
@@ -295,7 +291,7 @@ namespace SSI
     std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> scatra_manifold_couplings_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
 
     //! system matrices of scatra and manifold
     //@{
@@ -346,8 +342,11 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix, bool do_uncomplete) = 0;
 
-    //! handles all coupling adapters and multimap extractors
-    std::vector<meshtying_handler_type> MeshTyingHandler() const { return meshtying_handler_; }
+    //! coupling adpaters, maps, and extractors for mesh tying
+    std::vector<Teuchos::RCP<UTILS::SSIMeshTyingHandler>> MeshTyingHandlers() const
+    {
+      return ssi_meshtying_->MeshtyingHandlers();
+    }
 
    protected:
     //! should meshtying between manifold fields be applied?
@@ -360,25 +359,8 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
    private:
-    //! construct coupling pairs between two node GIDs based on SSISurfaceManifold condition and
-    //! communicate to all procs
-    std::vector<std::pair<int, int>> ConstructCouplingPairs(
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
-
-    //! define which node is master and which node is slave from coupling_pairs based on master_gids
-    std::map<int, int> DefineMasterSlavePairing(
-        const std::vector<std::pair<int, int>>& coupling_pairs, std::set<int> master_gids);
-
-    //! find list of unique master nodes from all coupling_pairs
-    std::set<int> FindMasterNodeGIDS(std::vector<std::pair<int, int>> coupling_pairs);
-
-    //! setup coupling adapters and multimap extractors to handle mesh tying
-    void SetupMeshTyingHandler(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps);
-
-    //! handles all coupling adapters and multimap extractors: coupling adapter and
-    //! MultiMapExtractor (interior, master, slave)
-    std::vector<meshtying_handler_type> meshtying_handler_;
+    //! coupling adpaters, maps, and extractors for mesh tying
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_meshtying_;
   };
 
   class ManifoldMeshTyingStrategySparse : public ManifoldMeshTyingStrategyBase

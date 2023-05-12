@@ -38,7 +38,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)

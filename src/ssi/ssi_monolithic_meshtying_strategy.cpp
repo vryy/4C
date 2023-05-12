@@ -30,7 +30,7 @@
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
     : temp_scatra_struct_mat_(Teuchos::null),
       temp_scatramanifold_struct_mat_(Teuchos::null),
       temp_struct_scatra_mat_(Teuchos::null),
@@ -44,7 +44,7 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
     : MeshtyingStrategyBase(is_scatra_manifold, ssi_maps, ssi_structure_meshtying)
 {
   temp_scatra_struct_mat_ =
@@ -64,7 +64,7 @@ SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(const bool is_scatra_manif
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
     : MeshtyingStrategyBase(is_scatra_manifold, ssi_maps, ssi_structure_meshtying),
       block_position_scatra_(Teuchos::null),
       block_position_scatra_manifold_(Teuchos::null),
@@ -440,7 +440,7 @@ void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool is_scatra_manifold,
     const LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
 {
   Teuchos::RCP<SSI::MeshtyingStrategyBase> meshtying_strategy = Teuchos::null;
 

@@ -836,14 +836,14 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
     : is_manifold_meshtying_(is_manifold_meshtying),
       condensed_dof_map_(Teuchos::null),
       ssi_maps_(std::move(ssi_maps)),
-      meshtying_handler_()
+      ssi_meshtying_(Teuchos::null)
 {
   if (is_manifold_meshtying_)
   {
-    SetupMeshTyingHandler(scatra_manifold_dis, ssi_maps_);
-    Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
+    ssi_meshtying_ = Teuchos::rcp(
+        new SSI::UTILS::SSIMeshTying("SSISurfaceManifold", scatra_manifold_dis, false, false));
 
-    if (meshtying_handler_.empty())
+    if (ssi_meshtying_->MeshtyingHandlers().empty())
     {
       dserror(
           "Could not create mesh tying between manifold fields. They are not intersecting. "
@@ -851,9 +851,10 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
     }
 
     // merge slave dof maps from all mesh tying conditions
-    for (const auto& meshtying : meshtying_handler_)
+    Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
+    for (const auto& meshtying : ssi_meshtying_->MeshtyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
       if (slave_dof_map == Teuchos::null)
         slave_dof_map = Teuchos::rcp(new Epetra_Map(*coupling_adapter->SlaveDofMap()));
       else
@@ -867,295 +868,6 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
   }
   else
     condensed_dof_map_ = ssi_maps_->ScaTraManifoldDofRowMap();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::ManifoldMeshTyingStrategyBase::SetupMeshTyingHandler(
-    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps)
-{
-  // find all couplings between nodes based on SSISurfaceManifold condition
-  auto coupling_pairs = ConstructCouplingPairs(scatra_manifold_dis);
-
-  // construct set of unique master GIDs within coupling_vec -> master_gids
-  std::set<int> master_gids = FindMasterNodeGIDS(coupling_pairs);
-
-  // assigning slave GIDs (unique key) to master GIDs (non unique values, a master node can have
-  // multiple slave nodes) -> coupling_pair
-  std::map<int, int> master_slave_pair = DefineMasterSlavePairing(coupling_pairs, master_gids);
-
-  // get number of slave nodes per master node -> max. number gives number of needed adapters
-  int my_max_adapters = 0;
-  std::map<int, int> assigned_slave_to_master_nodes;
-  for (auto pair : master_slave_pair)
-  {
-    const int master_node_gid = pair.second;
-    if (assigned_slave_to_master_nodes.empty())
-    {
-      assigned_slave_to_master_nodes.insert(std::make_pair(master_node_gid, 1));
-      my_max_adapters = 1;
-    }
-    else
-    {
-      if (assigned_slave_to_master_nodes.find(master_node_gid) !=
-          assigned_slave_to_master_nodes.end())
-      {
-        assigned_slave_to_master_nodes[master_node_gid]++;
-        if (my_max_adapters < assigned_slave_to_master_nodes[master_node_gid])
-          my_max_adapters = assigned_slave_to_master_nodes[master_node_gid];
-      }
-      else
-        assigned_slave_to_master_nodes.insert(std::make_pair(master_node_gid, 1));
-    }
-  }
-
-  int glob_max_adapters = 0;
-  scatra_manifold_dis->Comm().MaxAll(&my_max_adapters, &glob_max_adapters, 1);
-
-  // setup coupling adapters
-  for (int iadapter = 0; iadapter < glob_max_adapters; ++iadapter)
-  {
-    std::vector<int> inodegidvec_master;
-    std::vector<int> inodegidvec_slave;
-
-    if (!assigned_slave_to_master_nodes.empty())
-    {
-      for (auto master_gid : master_gids)
-      {
-        // check if this master node has iadapter + 1 slave nodes
-        if (assigned_slave_to_master_nodes.at(master_gid) <= iadapter + 1)
-        {
-          DRT::UTILS::AddOwnedNodeGID(*scatra_manifold_dis, master_gid, inodegidvec_master);
-
-          int counter = 0;
-          for (auto pair : master_slave_pair)
-          {
-            const int master_gid_coupling = pair.second;
-
-            if (master_gid_coupling == master_gid and counter == iadapter)
-            {
-              const int slave_gid_coupling = pair.first;
-
-              DRT::UTILS::AddOwnedNodeGID(
-                  *scatra_manifold_dis, slave_gid_coupling, inodegidvec_slave);
-
-              counter++;
-            }
-          }
-        }
-      }
-    }
-
-    // setup coupling adapter
-    auto coupling_adapter = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-    coupling_adapter->SetupCoupling(*scatra_manifold_dis, *scatra_manifold_dis, inodegidvec_master,
-        inodegidvec_slave, DRT::Problem::Instance()->NDim() - 1, true, 1.0e-8);
-
-    // setup multimap extractor for each coupling adapter
-    auto slave_map = coupling_adapter->SlaveDofMap();
-    auto master_map = coupling_adapter->MasterDofMap();
-    auto interior_map = LINALG::SplitMap(
-        *ssi_maps->ScaTraManifoldDofRowMap(), *LINALG::MergeMap(slave_map, master_map));
-
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
-    maps.emplace_back(interior_map);
-    maps.emplace_back(master_map);
-    maps.emplace_back(slave_map);
-
-    auto coupling_map_extractor =
-        Teuchos::rcp(new LINALG::MultiMapExtractor(*ssi_maps->ScaTraManifoldDofRowMap(), maps));
-    coupling_map_extractor->CheckForValidMapExtractor();
-
-    // combine coupling adapter and multimap extractor
-    meshtying_handler_.emplace_back(std::make_pair(coupling_adapter, coupling_map_extractor));
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::vector<std::pair<int, int>> SSI::ManifoldMeshTyingStrategyBase::ConstructCouplingPairs(
-    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis)
-{
-  // data types to handle coupling between slave and master in coupling_vec
-  // coupled_gid_nodes_type: key: master gid, value: slave gid and distance between both
-  // condition_pair_type: key: condition a, value: condition b
-  using coupled_gid_nodes_type = std::map<int, std::pair<int, double>>;
-  using condition_pair_type = std::pair<int, int>;
-  std::map<condition_pair_type, coupled_gid_nodes_type> condition_wise_coupling_pairs;
-
-  std::vector<DRT::Condition*> manifold_conditions(0, nullptr);
-  scatra_manifold_dis->GetCondition("SSISurfaceManifold", manifold_conditions);
-
-  // fill coupling_vec with slave master pairing using NodeMatchingOctree to find matching nodes
-  // between all SSISurfaceManifold conditions (nodes from all procs)
-  for (int a = 0; a < static_cast<int>(manifold_conditions.size()); ++a)
-  {
-    auto* manifold_condition_a = manifold_conditions.at(a);
-
-    // nodes of manifold_condition_a owned by this proc
-    std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDVector(
-        *scatra_manifold_dis, *manifold_condition_a->Nodes(), inodegidvec_a);
-
-    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
-    tree.Init(*scatra_manifold_dis, inodegidvec_a, 150, 1.0e-8);
-    tree.Setup();
-
-    for (int b = a + 1; b < static_cast<int>(manifold_conditions.size()); ++b)
-    {
-      auto* manifold_condition_b = manifold_conditions.at(b);
-
-      // nodes of manifold_condition_b owned by this proc
-      std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          *scatra_manifold_dis, *manifold_condition_b->Nodes(), inodegidvec_b);
-
-      coupled_gid_nodes_type coupled_gid_nodes;
-      condition_pair_type condition_pair = std::make_pair(a, b);
-      condition_wise_coupling_pairs.emplace(condition_pair, coupled_gid_nodes);
-
-      tree.FindMatch(
-          *scatra_manifold_dis, inodegidvec_b, condition_wise_coupling_pairs.at(condition_pair));
-    }
-  }
-
-  // coupled nodes on from all conditions on all procs
-  // split map into vectors to be able to communicate and unite afterwards again
-  std::vector<std::pair<int, int>> coupling_pairs;
-
-  std::vector<int> my_gid_vec1;
-  std::vector<int> my_gid_vec2;
-
-  // loop over all condition pairs
-  for (const auto& coupling : condition_wise_coupling_pairs)
-  {
-    // loop over all nodal couplings
-    for (auto pair : coupling.second)
-    {
-      const int master_node_gid = pair.first;
-      const int slave_node_gid = pair.second.first;
-      const double distance = pair.second.second;
-      if (distance < 1.0e-16)
-      {
-        my_gid_vec1.emplace_back(master_node_gid);
-        my_gid_vec2.emplace_back(slave_node_gid);
-      }
-    }
-  }
-
-  if (my_gid_vec1.size() != my_gid_vec2.size())
-    dserror("Size of node GID vectors to be coupled does not match.");
-
-  auto const& comm = scatra_manifold_dis->Comm();
-  for (int iproc = 0; iproc < comm.NumProc(); ++iproc)
-  {
-    // size of vectors of proc iproc
-    int size_1 = static_cast<int>(my_gid_vec1.size());
-    int size_2 = static_cast<int>(my_gid_vec2.size());
-
-    comm.Broadcast(&size_1, 1, iproc);
-    comm.Broadcast(&size_2, 1, iproc);
-
-    // new vectors to be filled (by this proc, if MyPID == iproc or other procs by communication)
-    std::vector<int> vec_1, vec_2;
-    if (iproc == comm.MyPID())
-    {
-      vec_1 = my_gid_vec1;
-      vec_2 = my_gid_vec2;
-    }
-    vec_1.resize(size_1);
-    vec_2.resize(size_2);
-    comm.Broadcast(vec_1.data(), size_1, iproc);
-    comm.Broadcast(vec_2.data(), size_2, iproc);
-
-    // reassemble to coupling map on this proc
-    for (int i = 0; i < static_cast<int>(size_1); ++i)
-    {
-      // do not add duplicates
-      if (vec_1[i] != vec_2[i]) coupling_pairs.emplace_back(vec_1[i], vec_2[i]);
-    }
-  }
-
-  return coupling_pairs;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::set<int> SSI::ManifoldMeshTyingStrategyBase::FindMasterNodeGIDS(
-    std::vector<std::pair<int, int>> coupling_pairs)
-{
-  std::set<int> master_gids;
-
-  for (const auto& nodal_coupling_outer_loop : coupling_pairs)
-  {
-    const int gid1 = nodal_coupling_outer_loop.first;
-    const int gid2 = nodal_coupling_outer_loop.second;
-
-    if (master_gids.empty())
-      master_gids.insert(nodal_coupling_outer_loop.first);
-    else
-    {
-      if (master_gids.find(gid1) != master_gids.end() and
-          master_gids.find(gid2) != master_gids.end())
-      {
-        // match in both -> erase one random entry and change coupling
-        master_gids.erase(master_gids.find(gid2));
-
-        // search, if erased GID is part of any other coupling pair and if so replace with
-        for (const auto& nodal_coupling_inner_loop : coupling_pairs)
-        {
-          std::pair<int, int> new_pair;
-          if (nodal_coupling_inner_loop.first == gid2 or nodal_coupling_inner_loop.second == gid2)
-          {
-            // new pair: gid1 + (gid, that is not gid2 from inner loop)
-            const int other_gid = nodal_coupling_inner_loop.first == gid2
-                                      ? nodal_coupling_inner_loop.second
-                                      : nodal_coupling_inner_loop.first;
-            new_pair = std::make_pair(gid1, other_gid);
-            coupling_pairs.erase(
-                std::find(coupling_pairs.begin(), coupling_pairs.end(), nodal_coupling_inner_loop));
-            coupling_pairs.emplace_back(new_pair);
-          }
-        }
-      }
-      else if (master_gids.find(gid1) != master_gids.end() or
-               master_gids.find(gid2) != master_gids.end())
-      {
-        // match in one -> do nothing
-      }
-      else
-      {
-        // no  match -> add one random entry
-        master_gids.insert(gid2);
-      }
-    }
-  }
-
-  return master_gids;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::map<int, int> SSI::ManifoldMeshTyingStrategyBase::DefineMasterSlavePairing(
-    const std::vector<std::pair<int, int>>& coupling_pairs, std::set<int> master_gids)
-{
-  std::map<int, int> coupling_pair;
-  for (const auto& nodal_coupling : coupling_pairs)
-  {
-    const int gid_node1 = nodal_coupling.first;
-    const int gid_node2 = nodal_coupling.second;
-    if (gid_node1 != gid_node2)
-    {
-      if (master_gids.find(gid_node1) != master_gids.end())
-        coupling_pair.insert(std::make_pair(gid_node2, gid_node1));
-      else if (master_gids.find(gid_node2) != master_gids.end())
-        coupling_pair.insert(std::make_pair(gid_node1, gid_node2));
-      else
-        dserror("Could not find master GID.");
-    }
-  }
-  return coupling_pair;
 }
 
 /*----------------------------------------------------------------------*
@@ -1187,37 +899,41 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
   condensed_block_dof_map_ = Teuchos::rcp(
       new LINALG::MultiMapExtractor(*condensed_dof_map_, partial_maps_condensed_block_dof_map));
 
-  // couple meshyting_handler_ and condensed_block_dof_map_ to meshtying_block_handler_
-  for (const auto& meshtying : MeshTyingHandler())
+  if (is_manifold_meshtying_)
   {
-    auto coupling_adapter = meshtying.first;
-    auto slave_dof_map = coupling_adapter->SlaveDofMap();
-    auto perm_slave_dof_map = coupling_adapter->PermSlaveDofMap();
-    auto master_dof_map = coupling_adapter->MasterDofMap();
-    auto perm_master_dof_map = coupling_adapter->PermMasterDofMap();
-
-    // split maps according to split of matrix blocks, i.e. block maps
-    std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_slave_block_dof_map;
-    std::vector<Teuchos::RCP<CORE::ADAPTER::Coupling>> partial_block_adapters;
-    for (int i = 0; i < ssi_maps_->BlockMapScaTraManifold()->NumMaps(); ++i)
+    // couple meshyting_handler_ and condensed_block_dof_map_ to meshtying_block_handler_
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto [slave_block_map, perm_master_block_map] =
-          IntersectCouplingMapsBlockMap(ssi_maps_->BlockMapScaTraManifold()->Map(i), slave_dof_map,
-              perm_master_dof_map, scatra_manifold_dis->Comm());
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto perm_slave_dof_map = coupling_adapter->PermSlaveDofMap();
+      auto master_dof_map = coupling_adapter->MasterDofMap();
+      auto perm_master_dof_map = coupling_adapter->PermMasterDofMap();
 
-      auto [master_block_map, perm_slave_block_map] =
-          IntersectCouplingMapsBlockMap(ssi_maps_->BlockMapScaTraManifold()->Map(i), master_dof_map,
-              perm_slave_dof_map, scatra_manifold_dis->Comm());
+      // split maps according to split of matrix blocks, i.e. block maps
+      std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_slave_block_dof_map;
+      std::vector<Teuchos::RCP<CORE::ADAPTER::Coupling>> partial_block_adapters;
+      for (int i = 0; i < ssi_maps_->BlockMapScaTraManifold()->NumMaps(); ++i)
+      {
+        auto [slave_block_map, perm_master_block_map] =
+            IntersectCouplingMapsBlockMap(ssi_maps_->BlockMapScaTraManifold()->Map(i),
+                slave_dof_map, perm_master_dof_map, scatra_manifold_dis->Comm());
 
-      auto coupling_adapter_block = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-      coupling_adapter_block->SetupCoupling(
-          slave_block_map, perm_slave_block_map, master_block_map, perm_master_block_map);
+        auto [master_block_map, perm_slave_block_map] =
+            IntersectCouplingMapsBlockMap(ssi_maps_->BlockMapScaTraManifold()->Map(i),
+                master_dof_map, perm_slave_dof_map, scatra_manifold_dis->Comm());
 
-      partial_maps_slave_block_dof_map.emplace_back(slave_block_map);
-      partial_block_adapters.emplace_back(coupling_adapter_block);
+        auto coupling_adapter_block = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+        coupling_adapter_block->SetupCoupling(
+            slave_block_map, perm_slave_block_map, master_block_map, perm_master_block_map);
+
+        partial_maps_slave_block_dof_map.emplace_back(slave_block_map);
+        partial_block_adapters.emplace_back(coupling_adapter_block);
+      }
+
+      meshtying_block_handler_.emplace_back(
+          partial_block_adapters, partial_maps_slave_block_dof_map);
     }
-
-    meshtying_block_handler_.emplace_back(partial_block_adapters, partial_maps_slave_block_dof_map);
   }
 }
 
@@ -1256,15 +972,15 @@ void SSI::ManifoldMeshTyingStrategyBase::ApplyMeshTyingToManifoldRHS(
 {
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : meshtying_handler_)
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto multimap = meshtying.second;
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto multimap = meshtying->SlaveMasterExtractor();
 
-      auto slave_dofs = multimap->ExtractVector(rhs_manifold, 2);
+      auto slave_dofs = multimap->ExtractVector(rhs_manifold, 1);
       auto slave_to_master_dofs = coupling_adapter->SlaveToMaster(slave_dofs);
-      multimap->AddVector(slave_to_master_dofs, 1, rhs_manifold);
-      multimap->PutScalar(*rhs_manifold, 2, 0.0);
+      multimap->AddVector(slave_to_master_dofs, 2, rhs_manifold);
+      multimap->PutScalar(*rhs_manifold, 1, 0.0);
     }
   }
 }
@@ -1284,9 +1000,9 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandler())
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
       auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
       auto converter = CORE::ADAPTER::CouplingSlaveConverter(*coupling_adapter);
@@ -1304,9 +1020,9 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
 
     // Finalize: put 1.0 on main diag of slave dofs
     const double one = 1.0;
-    for (const auto& meshtying : MeshTyingHandler())
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
       auto slave_dof_map = coupling_adapter->SlaveDofMap();
       for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements(); ++doflid_slave)
@@ -1434,9 +1150,9 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldScatraMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandler())
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
       auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
       auto converter = CORE::ADAPTER::CouplingSlaveConverter(*coupling_adapter);
@@ -1511,9 +1227,9 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatr
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandler())
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
       auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
       auto converter = CORE::ADAPTER::CouplingSlaveConverter(*coupling_adapter);
@@ -1603,9 +1319,9 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToScatraManifoldMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandler())
+    for (const auto& meshtying : MeshTyingHandlers())
     {
-      auto coupling_adapter = meshtying.first;
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
       auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
       auto converter = CORE::ADAPTER::CouplingSlaveConverter(*coupling_adapter);

@@ -343,11 +343,10 @@ namespace SSI
       const LINALG::MatrixType ssi_matrixtype_;
     };
 
-    class SSIStructureMeshTyingHandler
+    class SSIMeshTyingHandler
     {
      public:
-      explicit SSIStructureMeshTyingHandler(
-          Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
+      explicit SSIMeshTyingHandler(Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
           Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
           Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation);
 
@@ -389,11 +388,12 @@ namespace SSI
       Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation_;
     };
 
-    class SSIStructureMeshTying
+    class SSIMeshTying
     {
      public:
-      explicit SSIStructureMeshTying(
-          const std::string& conditionname_coupling, Teuchos::RCP<DRT::Discretization> struct_dis);
+      explicit SSIMeshTying(const std::string& conditionname_coupling,
+          Teuchos::RCP<DRT::Discretization> dis, bool build_slave_slave_transformation,
+          bool check_over_constrained);
 
       //! check if one dof has slave side conditions and Dirichlet conditions
       void CheckSlaveSideHasDirichletConditions(
@@ -409,36 +409,39 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> InteriorMap() const { return interior_map_; }
 
       //! vector of all mesh tying handlers
-      std::vector<Teuchos::RCP<SSIStructureMeshTyingHandler>> MeshtyingHandlers() const
+      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> MeshtyingHandlers() const
       {
         return meshtying_handlers_;
       }
 
      private:
       //! Define master nodes and subsequently master slave pairs
-      //! \param struct_dis               [in] structural discretization
+      //! \param dis               [in] discretization
       //! \param grouped_matching_nodes   [in] vector of vector of nodes at same position
       //! \param master_gids              [out] vector of all defined master nodes
       //! \param slave_master_pair        [out] map between slave nodes (key) and master nodes
       //!                                 (value)
-      void DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> struct_dis,
+      //! \param check_over_constrained   [in] check if two DBCs are set on two dofs at the same
+      //! position
+      void DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> dis,
           const std::vector<std::vector<int>>& grouped_matching_nodes,
-          std::vector<int>& master_gids, std::map<int, int>& slave_master_pair) const;
+          std::vector<int>& master_gids, std::map<int, int>& slave_master_pair,
+          bool check_over_constrained) const;
 
       //! Construct global pairs between matching nodes
-      //! \param struct_dis                 [in] structural discretization
+      //! \param dis                 [in] discretization
       //! \param name_meshtying_condition   [in] name of meshtying condition
       //! \param coupling_pairs         [out] vector of pairs of matching nodes
-      void FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> struct_dis,
+      void FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> dis,
           const std::string& name_meshtying_condition,
           std::vector<std::pair<int, int>>& coupling_pairs) const;
 
       //! Find match between new slave nodes and slave nodes from input file
-      //! \param struct_dis                        [in] structural discretization
+      //! \param dis                        [in] discretization
       //! \param name_meshtying_condition          [in] name of meshtying condition
       //! \param inodegidvec_slave                 [in] new slave nodes on this proc
       //! \param all_coupled_original_slave_gids   [out] old slave nodes that match new slave nodes
-      void FindSlaveSlaveTransformationNodes(Teuchos::RCP<DRT::Discretization> struct_dis,
+      void FindSlaveSlaveTransformationNodes(Teuchos::RCP<DRT::Discretization> dis,
           const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
           std::vector<int>& all_coupled_original_slave_gids) const;
 
@@ -477,10 +480,13 @@ namespace SSI
           int gid, int start, int end, const std::vector<std::vector<int>>& matching_nodes) const;
 
       //! Construct mesh tying handlers based on conditions with name conditionname_coupling
-      //! \param struct_dis                  [in] structural discretization
+      //! \param dis                  [in] discretization
       //! \param name_meshtying_condition    [in] name of meshtying condition
-      void SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> struct_dis,
-          const std::string& name_meshtying_condition);
+      //! \param build_slave_slave_transformation [in] is a map required that defines the
+      //! transformation from slave nodes at the input and matched slave nodes
+      void SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> dis,
+          const std::string& name_meshtying_condition, bool build_slave_slave_transformation,
+          bool check_over_constrained);
 
       //! communicator
       const Epetra_Comm& comm_;
@@ -498,7 +504,7 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> interior_map_;
 
       //! all mesh tying handlers
-      std::vector<Teuchos::RCP<SSIStructureMeshTyingHandler>> meshtying_handlers_;
+      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> meshtying_handlers_;
 
       //! number of proc ID
       const int my_rank_;

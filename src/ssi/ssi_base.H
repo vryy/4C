@@ -50,7 +50,7 @@ namespace SSI
   namespace UTILS
   {
     class SSISlaveSideConverter;
-    class SSIStructureMeshTying;
+    class SSIMeshTying;
   }  // namespace UTILS
 
   enum class RedistributionType
@@ -243,7 +243,7 @@ namespace SSI
     bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> SSIStructureMeshTying() const
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> SSIStructureMeshTying() const
     {
       return ssi_structure_meshtying_;
     }
@@ -391,7 +391,7 @@ namespace SSI
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
