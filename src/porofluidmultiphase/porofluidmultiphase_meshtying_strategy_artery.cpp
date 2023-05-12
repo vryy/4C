@@ -14,7 +14,7 @@
 #include "art_net_utils.H"
 #include "poromultiphase_scatra_artery_coupling_base.H"
 #include "poromultiphase_scatra_utils.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "porofluidmultiphase_utils.H"
 #include "linalg_utils_sparse_algebra_print.H"
 

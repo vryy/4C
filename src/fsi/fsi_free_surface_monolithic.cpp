@@ -35,7 +35,7 @@
 
 #include "inpar_validparameters.H"
 
-#include "solver_linalg_precond.H"
+#include "linear_solver_preconditioner_linalg.H"
 #include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/

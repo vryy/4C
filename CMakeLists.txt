@@ -138,8 +138,6 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 
-###------------------------------------------------------------------ Binaries
-
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
 # hide libraries

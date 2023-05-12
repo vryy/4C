@@ -10,6 +10,5 @@ set(_red_airways_dependencies
     linalg
     mat
     rebalance
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_red_airways_dependencies})

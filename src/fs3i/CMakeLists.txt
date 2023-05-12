@@ -19,7 +19,6 @@ set(_fs3i_dependencies
     poroelast_scatra
     scatra
     scatra_ele
-    solver
     ssi
     structure
     )

@@ -12,7 +12,6 @@ set(_ssti_dependencies
     scatra
     scatra_ele
     so3
-    solver
     ssi
     sti
     structure_new

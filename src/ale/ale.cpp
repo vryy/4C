@@ -23,8 +23,8 @@
 #include "linalg_sparseoperator.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_blocksparsematrix.H"
-#include "solver_linalg_solver.H"
-#include "solver_linalg_precond.H"
+#include "linear_solver_method_linalg.H"
+#include "linear_solver_preconditioner_linalg.H"
 #include "io.H"
 #include "io_control.H"
 #include <Teuchos_TimeMonitor.hpp>

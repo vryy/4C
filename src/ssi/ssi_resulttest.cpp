@@ -18,7 +18,7 @@
 
 #include "scatra_timint_implicit.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

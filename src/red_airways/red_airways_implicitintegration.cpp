@@ -22,7 +22,7 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "rebalance_utils.H"
 #include "utils_exceptions.H"
 #include "lib_function.H"

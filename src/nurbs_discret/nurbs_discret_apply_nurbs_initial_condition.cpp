@@ -13,7 +13,7 @@
 #include "lib_function.H"
 #include "lib_discret.H"
 #include "nurbs_discret.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "discretization_fem_general_utils_integration.H"

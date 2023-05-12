@@ -20,7 +20,7 @@
 #include "inpar_elemag.H"
 #include "lib_discret_hdg.H"
 #include "lib_dofset_independent.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "io.H"
 #include "io_control.H"
 #include "comm_utils.H"

@@ -13,6 +13,5 @@ set(_porofluidmultiphase_dependencies
     porofluidmultiphase_ele
     poromultiphase_scatra
     rebalance
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_porofluidmultiphase_dependencies})

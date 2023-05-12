@@ -16,7 +16,6 @@ set(_contact_dependencies
     scatra
     scatra_ele
     so3
-    solver
     solver_nonlin_nox
     structure_new
     xfem

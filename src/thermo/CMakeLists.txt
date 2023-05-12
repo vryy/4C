@@ -12,7 +12,6 @@ set(_thermo_dependencies
     linalg
     mat
     nurbs_discret
-    solver
     timestepping
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_thermo_dependencies})

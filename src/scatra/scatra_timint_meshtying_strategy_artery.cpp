@@ -12,7 +12,7 @@
 
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_art_net.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "lib_globalproblem.H"
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"

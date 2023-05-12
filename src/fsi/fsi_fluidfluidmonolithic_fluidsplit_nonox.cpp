@@ -15,7 +15,7 @@
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
 #include "lib_globalproblem.H"

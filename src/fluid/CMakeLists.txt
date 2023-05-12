@@ -20,6 +20,5 @@ set(_fluid_dependencies
     poroelast
     rebalance
     red_airways
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_dependencies})

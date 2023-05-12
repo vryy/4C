@@ -42,7 +42,7 @@
 #include "fluid_utils_infnormscaling.H"
 #include "fluid_ele.H"
 #include "linalg_krylov_projector.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "io.H"
 #include "io_discretization_runtime_vtu_writer.H"
 #include "lib_condition_utils.H"

@@ -50,7 +50,7 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_hybrid.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is

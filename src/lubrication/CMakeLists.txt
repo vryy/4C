@@ -8,6 +8,5 @@ set(_lubrication_dependencies
     lib
     linalg
     lubrication_ele
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lubrication_dependencies})
