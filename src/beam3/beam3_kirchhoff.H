@@ -233,11 +233,6 @@ namespace DRT
       std::vector<LINALG::Matrix<3, 1>> Theta0() const { return theta0_; }
 
       /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      LINALG::Matrix<3, 1> GetPos(const double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
-
-      /*!
        \brief Get (non-unit) tangent vectors at the two boundary nodes
       */
       std::vector<LINALG::Matrix<3, 1>> GetNodalTangents() const { return T_; }
