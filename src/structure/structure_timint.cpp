@@ -165,11 +165,18 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       issetup_(false),
       isinit_(false)
 {
-  // Keep this constructor empty!
+  // Keep this constructor empty except some basic input error catching!
   // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // redistribution of elements. Only then call the setup to this class. This will call the
+  // setup to all classes in the inheritance hierarchy. This way, this class may also override
+  // a method that is called during Setup() in a base class.
+
+  if (sdynparams.get<int>("OUTPUT_STEP_OFFSET") != 0)
+  {
+    dserror(
+        "Output step offset (\"OUTPUT_STEP_OFFSET\" != 0) is not supported in the old structural "
+        "time integration");
+  }
   return;
 }
 

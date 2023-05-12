@@ -494,8 +494,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     // reset possible history data on element level
     ResetStep();
     // restart has already been written or simulation has just started
-    if ((dataio_->GetWriteRestartEveryNStep() and
-            (dataglobalstate_->GetStepN() % dataio_->GetWriteRestartEveryNStep() == 0)) or
+    if (dataio_->ShouldWriteRestartForStep(dataglobalstate_->GetStepN()) or
         dataglobalstate_->GetStepN() == DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
@@ -537,18 +536,13 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // write reaction forces
-  if (dataio_->GetMonitorDBCParams()->OutputIntervalInSteps() > 0 and
-      dataglobalstate_->GetStepN() % dataio_->GetMonitorDBCParams()->OutputIntervalInSteps() == 0)
+  if (dataio_->ShouldWriteReactionForcesForThisStep(dataglobalstate_->GetStepN()))
   {
     OutputReactionForces();
   }
 
   // output stress, strain and optional quantity
-  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
-      ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
-          (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
-          (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
-          (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)))
+  if (dataio_->ShouldWriteStressStrainForThisStep(dataglobalstate_->GetStepN()))
   {
     NewIOStep(datawritten);
     OutputStressStrain();
@@ -564,8 +558,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output energy
-  if (dataio_->GetWriteEnergyEveryNStep() and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteEnergyEveryNStep() == 0))
+  if (dataio_->ShouldWriteEnergyForThisStep(dataglobalstate_->GetStepN()))
   {
     OutputEnergy();
   }

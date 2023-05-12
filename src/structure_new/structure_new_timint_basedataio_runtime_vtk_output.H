@@ -40,11 +40,8 @@ namespace STR
     class ParamsRuntimeVtkOutput
     {
      public:
-      /// constructor
-      ParamsRuntimeVtkOutput();
-
       /// destructor
-      virtual ~ParamsRuntimeVtkOutput(){};
+      virtual ~ParamsRuntimeVtkOutput() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_structure_paramslist);
@@ -66,6 +63,12 @@ namespace STR
         CheckInitSetup();
         return output_interval_steps_;
       };
+
+      [[nodiscard]] int OutputStepOffset() const
+      {
+        CheckInitSetup();
+        return output_step_offset_;
+      }
 
       /// whether to write output in every iteration of the nonlinear solver
       bool OutputEveryIteration() const
@@ -118,9 +121,9 @@ namespace STR
       /// @name variables for internal use only
       /// @{
       ///
-      bool isinit_;
+      bool isinit_ = false;
 
-      bool issetup_;
+      bool issetup_ = false;
       /// @}
 
       /// @name variables controlling output
@@ -130,23 +133,27 @@ namespace STR
       INPAR::IO_RUNTIME_VTK::OutputDataFormat output_data_format_;
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
-      int output_interval_steps_;
+      int output_interval_steps_ = -1;
+
+      /// An offset added to the current step to shift the steps to be written
+      int output_step_offset_ = 0;
 
       /// whether to write output in every iteration of the nonlinear solver
-      bool output_every_iteration_;
+      bool output_every_iteration_ = false;
 
       /// whether to write output for structural elements
-      bool output_structure_;
+      bool output_structure_ = false;
 
       /// whether to write special output for beam elements
-      bool output_beams_;
+      bool output_beams_ = false;
 
       /// data container for input parameters related to VTU output of structure at runtime
       Teuchos::RCP<DRT::ELEMENTS::StructureRuntimeVtuOutputParams>
-          params_runtime_vtu_output_structure_;
+          params_runtime_vtu_output_structure_ = Teuchos::null;
 
       /// data container for input parameters related to VTU output of beams at runtime
-      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams> params_runtime_vtu_output_beams_;
+      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams> params_runtime_vtu_output_beams_ =
+          Teuchos::null;
 
 
       //@}

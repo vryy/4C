@@ -20,22 +20,6 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-STR::TIMINT::ParamsRuntimeVtkOutput::ParamsRuntimeVtkOutput()
-    : isinit_(false),
-      issetup_(false),
-      output_data_format_(INPAR::IO_RUNTIME_VTK::vague),
-      output_interval_steps_(-1),
-      output_every_iteration_(false),
-      output_structure_(false),
-      output_beams_(false),
-      params_runtime_vtu_output_structure_(Teuchos::null),
-      params_runtime_vtu_output_beams_(Teuchos::null)
-{
-  // empty constructor
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
     const Teuchos::ParameterList& IO_vtk_structure_paramslist)
 {
@@ -47,6 +31,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
       IO_vtk_structure_paramslist, "OUTPUT_DATA_FORMAT");
 
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
+  output_step_offset_ = IO_vtk_structure_paramslist.get<int>("STEP_OFFSET");
 
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");

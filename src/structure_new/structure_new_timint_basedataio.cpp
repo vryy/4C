@@ -24,6 +24,14 @@
 
 #include <NOX_Solver_Generic.H>
 
+namespace
+{
+  inline bool DetermineWriteOutput(int step, int offset, int write_every)
+  {
+    return (step + offset) % write_every == 0;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataIO::BaseDataIO()
@@ -86,6 +94,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
     outputeveryiter_ = DRT::INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
+    writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
@@ -201,7 +210,8 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return IsWriteResultsEnabled() and step % GetWriteResultsEveryNStep() == 0;
+  return IsWriteResultsEnabled() and
+         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteResultsEveryNStep());
 }
 
 bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
@@ -214,8 +224,9 @@ bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return (IsRuntimeVtkOutputEnabled() and
-          step % GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0);
+  return (IsRuntimeVtkOutputEnabled() &&
+          DetermineWriteOutput(step, GetRuntimeVtkOutputParams()->OutputStepOffset(),
+              GetRuntimeVtkOutputParams()->OutputIntervalInSteps()));
 }
 
 bool STR::TIMINT::BaseDataIO::IsRuntimeVtkOutputEnabled() const
@@ -228,14 +239,41 @@ bool STR::TIMINT::BaseDataIO::IsRuntimeVtkOutputEnabled() const
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return (GetRuntimeVtpOutputParams() != Teuchos::null and
-          step % GetRuntimeVtpOutputParams()->OutputIntervalInSteps() == 0);
+  return (GetRuntimeVtpOutputParams() != Teuchos::null &&
+          DetermineWriteOutput(step, GetRuntimeVtpOutputParams()->OutputStepOffset(),
+              GetRuntimeVtpOutputParams()->OutputIntervalInSteps()));
 }
 
 
 bool STR::TIMINT::BaseDataIO::ShouldWriteRestartForStep(const int step) const
 {
-  return GetWriteRestartEveryNStep() && (step % GetWriteRestartEveryNStep() == 0) && step != 0;
+  return GetWriteRestartEveryNStep() &&
+         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteRestartEveryNStep()) &&
+         step != 0;
+}
+
+
+bool STR::TIMINT::BaseDataIO::ShouldWriteReactionForcesForThisStep(const int step) const
+{
+  return GetMonitorDBCParams()->OutputIntervalInSteps() > 0 &&
+         DetermineWriteOutput(
+             step, GetWriteTimestepOffset(), GetMonitorDBCParams()->OutputIntervalInSteps());
+}
+
+
+bool STR::TIMINT::BaseDataIO::ShouldWriteStressStrainForThisStep(const int step) const
+{
+  return WriteResultsForThisStep(step) &&
+         ((GetStressOutputType() != INPAR::STR::stress_none) ||
+             (GetCouplingStressOutputType() != INPAR::STR::stress_none) ||
+             (GetStrainOutputType() != INPAR::STR::strain_none) ||
+             (GetPlasticStrainOutputType() != INPAR::STR::strain_none));
+}
+
+bool STR::TIMINT::BaseDataIO::ShouldWriteEnergyForThisStep(const int step) const
+{
+  return GetWriteEnergyEveryNStep() > 0 &&
+         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteEnergyEveryNStep());
 }
 
 int STR::TIMINT::BaseDataIO::GetLastWrittenResults() const { return lastwrittenresultsstep_; }
