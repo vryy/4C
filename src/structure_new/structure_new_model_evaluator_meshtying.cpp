@@ -122,21 +122,34 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 
   if (!GState().GetRestartStep())
   {
-    Teuchos::RCP<const Epetra_Vector> Xslavemod =
-        dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
-    if (Xslavemod != Teuchos::null)
+    // perform mesh initialization if required by input parameter MESH_RELOCATION
+    auto mesh_relocation_parameter = DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+        DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
+
+    if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
     {
-      mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap()));
-      for (int i = 0; i < strategy_ptr_->SlaveRowNodes()->NumMyElements(); ++i)
-        for (int d = 0; d < strategy_ptr_->Dim(); ++d)
-        {
-          int gid = GState().GetDiscret()->Dof(
-              GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i)), d);
-          mesh_relocation_->operator[](mesh_relocation_->Map().LID(gid)) =
-              GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))->X()[d] -
-              Xslavemod->operator[](Xslavemod->Map().LID(gid));
-        }
-      ApplyMeshInitialization(Xslavemod);
+      Teuchos::RCP<const Epetra_Vector> Xslavemod =
+          dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
+      if (Xslavemod != Teuchos::null)
+      {
+        mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap()));
+        for (int i = 0; i < strategy_ptr_->SlaveRowNodes()->NumMyElements(); ++i)
+          for (int d = 0; d < strategy_ptr_->Dim(); ++d)
+          {
+            int gid = GState().GetDiscret()->Dof(
+                GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i)), d);
+            mesh_relocation_->operator[](mesh_relocation_->Map().LID(gid)) =
+                GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))->X()[d] -
+                Xslavemod->operator[](Xslavemod->Map().LID(gid));
+          }
+        ApplyMeshInitialization(Xslavemod);
+      }
+    }
+    else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
+    {
+      dserror(
+          "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
+          "initial or MESH_RELOCATION no.");
     }
   }
 
