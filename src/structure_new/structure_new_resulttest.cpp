@@ -11,6 +11,9 @@
 
 #include "structure_new_resulttest.H"
 #include <Teuchos_RCPDecl.hpp>
+#include <optional>
+#include <string>
+#include <Epetra_MultiVector.h>
 #include "structure_new_timint_base.H"
 #include "structure_new_model_evaluator_data.H"
 
@@ -18,6 +21,60 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_voigt_notation.H"
+
+
+namespace
+{
+  struct QuantityNameAndComponent
+  {
+    std::string name;
+    int component;
+  };
+
+  [[nodiscard]] std::optional<QuantityNameAndComponent> GetGaussPointDataNameAndComponent(
+      const std::string& name_with_component,
+      const std::unordered_map<std::string, int>& quantities)
+  {
+    for (const auto& [quantity_name, num_quantities] : quantities)
+    {
+      if (num_quantities == 1)
+      {
+        if (name_with_component == quantity_name)
+          return std::make_optional<QuantityNameAndComponent>({quantity_name, 0});
+        else
+          continue;
+      }
+
+      for (auto i = 0; i < num_quantities; ++i)
+      {
+        if (name_with_component == quantity_name + "_" + std::to_string(i + 1))
+        {
+          return std::make_optional<QuantityNameAndComponent>({quantity_name, i});
+        }
+      }
+    }
+    return std::nullopt;
+  }
+
+  [[nodiscard]] double GetGaussPointDataValue(const QuantityNameAndComponent& name_and_component,
+      int node_id,
+      const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& all_data)
+  {
+    std::cout << "request " << name_and_component.name << "component "
+              << name_and_component.component << std::endl;
+    const Epetra_MultiVector& data = *all_data.at(name_and_component.name);
+
+    int local_id = data.Map().LID(node_id);
+
+    if (local_id < 0)
+    {
+      dserror("You tried to test %s on a proc that does not own node %i.",
+          name_and_component.name.c_str(), node_id);
+    }
+
+    return data[name_and_component.component][local_id];
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -205,6 +262,20 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
       {
         result = GetNodalStressComponent(position, node);
         unknownpos = false;
+      }
+
+      // test for any postprocessed gauss point data
+      if (data_->GetGaussPointDataOutputManagerPtr() != Teuchos::null)
+      {
+        std::optional<QuantityNameAndComponent> name_and_component =
+            GetGaussPointDataNameAndComponent(
+                position, data_->GetGaussPointDataOutputManagerPtr()->GetQuantities());
+        if (name_and_component.has_value())
+        {
+          result = GetGaussPointDataValue(*name_and_component, node,
+              data_->GetGaussPointDataOutputManagerPtr()->GetNodalData());
+          unknownpos = false;
+        }
       }
 
       // test reaction
