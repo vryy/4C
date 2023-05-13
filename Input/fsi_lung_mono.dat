@@ -174,7 +174,7 @@ FLUIDPCITER                     1 1 1 1
 FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
 FSIAMGANALYZE                   No
 INFNORMSCALING                  Yes
-LINEARBLOCKSOLVER               AMGnxn
+LINEARBLOCKSOLVER               PreconditionedKrylov
 NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel

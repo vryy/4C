@@ -244,10 +244,9 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("LINEARBLOCKSOLVER", "PreconditionedKrylov",
       "Linear block preconditioner for block system in monolithic FSI.",
-      tuple<std::string>(
-          "PreconditionedKrylov", "FSIAMG", "AMGnxn", "HybridSchwarz", "LinalgSolver"),
-      tuple<int>(INPAR::FSI::PreconditionedKrylov, INPAR::FSI::FSIAMG, INPAR::FSI::AMGnxn,
-          INPAR::FSI::HybridSchwarz, INPAR::FSI::LinalgSolver),
+      tuple<std::string>("PreconditionedKrylov", "FSIAMG", "HybridSchwarz", "LinalgSolver"),
+      tuple<int>(INPAR::FSI::PreconditionedKrylov, INPAR::FSI::FSIAMG, INPAR::FSI::HybridSchwarz,
+          INPAR::FSI::LinalgSolver),
       &fsimono);
 
   IntParameter("LINEAR_SOLVER", -1,

@@ -48,7 +48,6 @@
 
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
-#include "fsi_overlapprec_amgnxn.H"
 #include "fsi_overlapprec_hybrid.H"
 
 #include "solver_linalg_solver.H"
@@ -1214,21 +1213,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
     }
-    case INPAR::FSI::AMGnxn:
-    {
-      // TODO This is a temporary hack to input the xml file without adding a new input parameter in
-      // FSI/DYNAMIC MONOLITHIC SOLVER. We assume that the xml file is given in the first position
-      // of the BLOCKSMOOTHER list
-      std::string amgnxn_xml = "none";
-      if ((int)blocksmoother.size() > 0)
-        amgnxn_xml = blocksmoother[0];
-      else
-        dserror("Not found xml file in the first position of the BLOCKSMOOTHER list");
-      mat = Teuchos::rcp(new OverlappingBlockMatrixAMGnxn(Extractor(), *StructureField(),
-          *FluidField(), *AleField(), structuresplit, amgnxn_xml,
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
-    }
-    break;
     case INPAR::FSI::HybridSchwarz:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(Extractor(), *StructureField(),
@@ -1251,8 +1235,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1282,7 +1264,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
     case INPAR::FSI::HybridSchwarz:
-    case INPAR::FSI::AMGnxn:
     {
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
