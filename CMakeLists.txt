@@ -88,10 +88,6 @@ endif(ENABLE_STACKTR)
 
 # ignore selected cut test
 option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
-if(IGNORE_UNSTABLE_CUTTEST)
-  message("-- Ignore unstable cut test ")
-  add_definitions("-DIGNORE_UNSTABLE_CUTTEST")
-endif(IGNORE_UNSTABLE_CUTTEST)
 
 # fancy stuff
 

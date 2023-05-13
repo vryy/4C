@@ -73,6 +73,12 @@ set(OBJS_CUT_TEST
     cut_test_volume.cpp
     )
 
+# handle compilation of selected cut test
+if(IGNORE_UNSTABLE_CUTTEST)
+  message("-- Ignore unstable cut test ")
+  add_definitions("-DIGNORE_UNSTABLE_CUTTEST")
+endif(IGNORE_UNSTABLE_CUTTEST)
+
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(
