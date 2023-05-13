@@ -11,11 +11,10 @@
 #include <vector>
 #include <map>
 
-#include <Epetra_SerialDenseMatrix.h>
-
 #include "baci_lib_element.H"
 
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::GEO
 {
@@ -88,17 +87,21 @@ class SimpleWrapper
   std::vector<CORE::LINALG::Matrix<3, 1>> side_points_;
 };
 
-CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-// GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-// GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
+CORE::GEO::CUT::Element* create_hex8(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+// GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+// GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+CORE::GEO::CUT::Element* create_tet4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+CORE::GEO::CUT::Element* create_wedge6(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
 CORE::GEO::CUT::Element* create_pyramid5(
-    CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
 
-CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-// GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-// GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
+CORE::GEO::CUT::Side* create_quad4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+// GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+// GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
 
 void create_hex8(CORE::LINALG::SerialDenseMatrix& xyze, double dx, double dy, double dz);
 

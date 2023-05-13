@@ -73,7 +73,7 @@ CORE::LINALG::SerialDenseMatrix GetLocalHex8Coords()
 
 
 CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
-    std::vector<double> lsvs, Epetra_SerialDenseMatrix xyze, std::string testname)
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
   CORE::GEO::CUT::CombIntersection ci(-1);
@@ -102,7 +102,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
 }
 
 CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
-    std::vector<double> lsvs, Epetra_SerialDenseMatrix xyze, std::string testname)
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
   CORE::GEO::CUT::CombIntersection ci(-1);

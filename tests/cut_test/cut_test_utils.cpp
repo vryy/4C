@@ -17,7 +17,8 @@
 int numnode;
 int numele;
 
-CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_hex8(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(8);
@@ -30,7 +31,8 @@ CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDe
   return mesh.CreateHex8(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_tet4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -43,7 +45,8 @@ CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDe
   return mesh.CreateTet4(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_wedge6(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(6);
@@ -56,7 +59,8 @@ CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_Serial
   return mesh.CreateWedge6(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_pyramid5(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_pyramid5(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(5);
@@ -69,7 +73,8 @@ CORE::GEO::CUT::Element* create_pyramid5(CORE::GEO::CUT::Mesh& mesh, Epetra_Seri
   return mesh.CreatePyramid5(numele++, nids);
 }
 
-CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Side* create_quad4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -528,8 +533,8 @@ void SimpleWrapper::CreateElement(
   id += 1;
 
   std::vector<int> nids;
-  nids.reserve(xyze.N());
-  for (int i = 0; i < xyze.N(); ++i)
+  nids.reserve(xyze.numCols());
+  for (int i = 0; i < xyze.numCols(); ++i)
   {
     CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, element_points_));
@@ -635,8 +640,8 @@ void SimpleWrapper::CreateSide(
   id += 1;
 
   std::vector<int> nids;
-  nids.reserve(xyze.N());
-  for (int i = 0; i < xyze.N(); ++i)
+  nids.reserve(xyze.numCols());
+  for (int i = 0; i < xyze.numCols(); ++i)
   {
     CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, side_points_));
