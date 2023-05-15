@@ -472,7 +472,10 @@ namespace DRT
                 vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
           };
 
-          reflength = CORE::UTILS::NewtonScalar(lengthEquationAndDerivative, reflength, 1e-12, 200);
+          const double newton_tolerance = 1e-12;
+          const int max_iterations = 200;
+          reflength = CORE::UTILS::NewtonScalar(
+              lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
         }
 
         return reflength;
