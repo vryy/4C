@@ -12,7 +12,7 @@
         "CMAKE_Fortran_COMPILER": "/usr/bin/mpif90",
         "CMAKE_CXX_FLAGS": "-std=c++17 -Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3 -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_CXX_FLAGS_DEBUG": "-Og",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g",
         "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -Wignored-qualifiers -mfpmath=sse -msse3",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
@@ -32,7 +32,7 @@
         "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/imcs/public/compsim/opt/mathjax-2.7.9",
         "BACI_WITH_GOOGLETEST": "ON",
         "BACI_WITH_ARBORX": "ON",
-        "BACI_WITH_MIRCO":"ON"
+        "BACI_WITH_MIRCO": "ON"
       }
     },
     {
@@ -50,6 +50,20 @@
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "DEBUG"
+      }
+    },
+    {
+      "name": "imcs_workstation_optimized_debug",
+      "displayName": "Optimized debug build for an IMCS workstation",
+      "inherits": [
+        ".imcs_workstation_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "DEBUG",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O2 -funroll-loops",
+        "CMAKE_C_FLAGS_DEBUG": "-O2 -funroll-loops",
+        "CMAKE_Fortran_FLAGS_DEBUG": "-O3 -funroll-all-loops -malign-double",
+        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "-O2"
       }
     },
     {

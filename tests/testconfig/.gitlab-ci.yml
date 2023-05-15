@@ -352,7 +352,7 @@ imcs-buildtest_full_ubuntu20:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-full-ubuntu20
@@ -374,7 +374,7 @@ imcs-buildtest_daily_debug_ubuntu20:
   variables:
     NUMBER_OF_TEST_THREADS: '12'
     NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_debug
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
