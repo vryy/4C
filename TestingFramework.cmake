@@ -518,7 +518,10 @@ macro(cut_test num_proc)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/cut_test_p${num_proc})
 
   set(RUNTESTS
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test
+      # Run all the cuttests with num_proc except from alex53
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test\ --ignore_test=alex53
+      # Run alex53 serially
+      ${PROJECT_BINARY_DIR}/cut_test\ --test=alex53
       )
 
   add_test(

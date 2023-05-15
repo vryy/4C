@@ -1130,6 +1130,10 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::EraseInsideSides()
 {
+  // Get some information of the sides stored in the mesh_ in case that a cuttest fails
+  int initial_cutsides = mesh_.Sides().size();
+  int final_cutsides = 0;
+
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
   std::vector<plain_int_set> cutsideids;
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
@@ -1140,10 +1144,15 @@ void GEO::CUT::SelfCut::EraseInsideSides()
     {
       cutsideids.push_back(i->first);
       EraseSidePointer(*cutside, false);
+      final_cutsides++;
     }
   }
   EraseInsideSide(cutsideids);
-  if (mesh_.Sides().size() == 0) dserror("All self-cut positions are undecided\n");
+  if (mesh_.Sides().size() == 0)
+    dserror(
+        "All self-cut positions are undecided\n. The inital number of cutsides is %d, the number "
+        "of erased cutsides is %d",
+        initial_cutsides, final_cutsides);
 }
 
 /*-------------------------------------------------------------------------------------*
