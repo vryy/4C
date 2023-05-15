@@ -3104,13 +3104,13 @@ void CONTACT::Beam3cmanager::GmshOutput(
           // of interest here, the beam3k element is a 2-noded element with Hermite interpolation
           if (nnodes == 3)
           {
-            LINALG::Matrix<12, 1> disp_totlag(true);
+            std::vector<double> disp_totlag(12, 0.0);
             for (int i = 0; i < 3; i++)
             {
-              disp_totlag(i) = nodalcoords(i, 0);
-              disp_totlag(i + 6) = nodalcoords(i, 1);
-              disp_totlag(i + 3) = nodaltangents(i, 0);
-              disp_totlag(i + 9) = nodaltangents(i, 1);
+              disp_totlag[i] = nodalcoords(i, 0);
+              disp_totlag[i + 6] = nodalcoords(i, 1);
+              disp_totlag[i + 3] = nodaltangents(i, 0);
+              disp_totlag[i + 9] = nodaltangents(i, 1);
             }
             // Calculate axial positions within the element by using the Hermite interpolation of
             // Kirchhoff beams
@@ -3120,8 +3120,8 @@ void CONTACT::Beam3cmanager::GmshOutput(
                   -1.0 +
                   i * 2.0 /
                       (n_axial - 1);  // parameter coordinate of position vector on beam centerline
-              LINALG::Matrix<3, 1> r =
-                  ele->GetPos(xi, disp_totlag);  // position vector on beam centerline
+              LINALG::Matrix<3, 1> r;
+              ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
             }

@@ -1179,24 +1179,6 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
   return r_xi.Norm2();
 }
 
-/*----------------------------------------------------------------------------------------------------------*
- | Get position vector at xi for given nodal displacements popp 02/16|
- *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3k::GetPos(
-    const double& xi, const LINALG::Matrix<12, 1>& disp_totlag_centerline) const
-{
-  // note: this method expects the absolute ("total Lagrangean") values for positions and tangents
-  // of both centerline nodes (local numbering 0 and 1)
-  LINALG::Matrix<3, 1> r(true);
-  LINALG::Matrix<1, 4> N_i(true);
-
-  DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
-
-  this->Calc_r<2, 2, double>(disp_totlag_centerline, N_i, r);
-
-  return (r);
-}
-
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::GetPosAtXi(
@@ -1234,7 +1216,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
         disp.size());
   }
 
-  pos = this->GetPos(xi, disp_totlag_centerline);
+  Beam3Base::GetPosAtXi<2, 2>(pos, xi, disp_totlag_centerline);
 }
 
 /*------------------------------------------------------------------------------------------------*
