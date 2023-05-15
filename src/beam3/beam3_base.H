@@ -421,17 +421,19 @@ namespace DRT
        *
        * @tparam nnode number of nodes
        * @tparam vpernode values per nodal direction
+       *
+       * @param pos_ref_centerline Vector containing the centerline reference position values
        */
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
       void AddRefValuesDispCenterline(
-          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
+          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& pos_ref_centerline) const
       {
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (unsigned int node = 0; node < nnodecl; ++node)
           {
-            dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
+            pos_ref_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
             if (HermiteCenterlineInterpolation())
-              dofvec_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
+              pos_ref_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
           }
       }
 

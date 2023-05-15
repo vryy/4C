@@ -578,9 +578,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
 
     // calculate the length of the element via Newton iteration
-    LINALG::Matrix<12, 1> disp_refe_centerline;
-    AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
-    length_ = CalcReflength<2, 2>(disp_refe_centerline);
+    LINALG::Matrix<12, 1> pos_ref_centerline;
+    AddRefValuesDispCenterline<2, 2>(pos_ref_centerline);
+    length_ = CalcReflength<2, 2>(pos_ref_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta

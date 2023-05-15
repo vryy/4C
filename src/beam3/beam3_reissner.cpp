@@ -813,7 +813,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // beside the nodal reference positions from xrefe, this vector also holds the reference
     // tangents in case of Hermite interpolation of the beam centerline
-    LINALG::Matrix<3 * vpernode * nnodecl, 1> disp_refe_centerline;
+    LINALG::Matrix<3 * vpernode * nnodecl, 1> pos_ref_centerline;
 
     // initial curve in physical space and derivative with respect to curve parameter xi \in [-1;1]
     // on element level
@@ -867,13 +867,13 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       // fill disp_refe_centerline with reference nodal centerline positions and tangents
       for (int dim = 0; dim < 3; ++dim)
       {
-        disp_refe_centerline(3 * vpernode * node + dim) = xrefe[3 * node + dim];
+        pos_ref_centerline(3 * vpernode * node + dim) = xrefe[3 * node + dim];
         if (centerline_hermite_)
-          disp_refe_centerline(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
+          pos_ref_centerline(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
       }
     }
 
-    reflength_ = CalcReflength<nnodecl, vpernode>(disp_refe_centerline);
+    reflength_ = CalcReflength<nnodecl, vpernode>(pos_ref_centerline);
 
     /************************ Compute quantities required for elasticity
      ***********************************
@@ -936,7 +936,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_force.nquad; ++numgp)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point for under-integration
       jacobiGPelastf_[numgp] = dr0dxi.Norm2();
@@ -1004,7 +1004,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_moment.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPelastm_[numgp] = dr0dxi.Norm2();
@@ -1062,8 +1062,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for exact integration and compute initial jacobi determinant
     for (int numgp = 0; numgp < gausspoints_inertia.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
-      Calc_r<nnodecl, vpernode, double>(disp_refe_centerline, H_i[numgp], r0);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPmass_[numgp] = dr0dxi.Norm2();
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_damp_stoch.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPdampstoch_[numgp] = dr0dxi.Norm2();
@@ -1155,7 +1155,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_neumann.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPneumannline_[numgp] = dr0dxi.Norm2();
