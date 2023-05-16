@@ -23,6 +23,11 @@ project(baci CXX C Fortran)
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
+# Enforce the C++ standard we are using and turn off compiler-specific extensions
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_EXTENSIONS Off)
+
 # The version number.
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
