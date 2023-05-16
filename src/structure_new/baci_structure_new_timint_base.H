@@ -578,6 +578,12 @@ namespace STR
       /// Get the indicator if we are currently restarting the simulation
       [[nodiscard]] inline const bool& IsRestarting() const { return isrestarting_; }
 
+      /// Get the indicator if we need to restart the initial state
+      [[nodiscard]] inline bool IsRestartingInitialState() const
+      {
+        return datasdyn_->IsRestartingInitialState();
+      }
+
       /// Get TimIntBase data for global state quantities (read access)
       [[nodiscard]] Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
       {

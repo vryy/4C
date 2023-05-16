@@ -117,6 +117,12 @@ namespace STR
         return stepmax_;
       };
 
+      bool IsRestartingInitialState() const
+      {
+        CheckInitSetup();
+        return isrestarting_initial_state_;
+      }
+
       /// Returns timer for solution technique
       Teuchos::RCP<const Teuchos::Time> GetTimer() const
       {
@@ -677,6 +683,9 @@ namespace STR
 
       /// final time step \f$N\f$
       int stepmax_;
+
+      /// flag indicating that if the initial state needs to be re-calculated
+      bool isrestarting_initial_state_;
 
       ///@}
 

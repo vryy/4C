@@ -131,6 +131,9 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     stcscale_ = DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING");
 
     stclayer_ = sdynparams.get<int>("STC_LAYER");
+
+    isrestarting_initial_state_ =
+        (DRT::INPUT::IntegralValue<int>(sdynparams, "RESTARTINITIALSTATE") == 1);
   }
   // ---------------------------------------------------------------------------
   // initialize the damping control parameters
