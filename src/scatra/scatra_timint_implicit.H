@@ -24,6 +24,7 @@
 #ifndef SCATRA_TIMINT_IMPLICIT_H
 #define SCATRA_TIMINT_IMPLICIT_H
 
+#include <optional>
 #include <set>
 
 #include "adapter_scatra_wrapper.H"
