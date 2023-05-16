@@ -27,6 +27,7 @@
 #include "lib_function_of_time.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_gder2.H"
+#include "red_airways_evaluation_data.h"
 #include <fstream>
 #include <iomanip>
 
@@ -94,21 +95,12 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 
   Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
 
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
-  Teuchos::RCP<Epetra_Vector> acinar_vn = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vn");
-
-
-  Teuchos::RCP<Epetra_Vector> qin_nm = params.get<Teuchos::RCP<Epetra_Vector>>("qin_nm");
-  Teuchos::RCP<Epetra_Vector> qin_n = params.get<Teuchos::RCP<Epetra_Vector>>("qin_n");
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
-
-  Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector>>("qout_np");
-  Teuchos::RCP<Epetra_Vector> qout_n = params.get<Teuchos::RCP<Epetra_Vector>>("qout_n");
-  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<Teuchos::RCP<Epetra_Vector>>("qout_nm");
-
-
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -144,18 +136,18 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
-    e_acin_e_vnp = (*acinar_vnp)[ele->LID()];
-    e_acin_e_vn = (*acinar_vn)[ele->LID()];
+    e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
+    e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
   }
 
   // Get the volumetric flow rate from the previous time step
   Teuchos::ParameterList elem_params;
-  elem_params.set<double>("qout_np", (*qout_np)[ele->LID()]);
-  elem_params.set<double>("qout_n", (*qout_n)[ele->LID()]);
-  elem_params.set<double>("qout_nm", (*qout_nm)[ele->LID()]);
-  elem_params.set<double>("qin_np", (*qin_np)[ele->LID()]);
-  elem_params.set<double>("qin_n", (*qin_n)[ele->LID()]);
-  elem_params.set<double>("qin_nm", (*qin_nm)[ele->LID()]);
+  elem_params.set<double>("qout_np", (*evaluation_data.qout_np)[ele->LID()]);
+  elem_params.set<double>("qout_n", (*evaluation_data.qout_n)[ele->LID()]);
+  elem_params.set<double>("qout_nm", (*evaluation_data.qout_nm)[ele->LID()]);
+  elem_params.set<double>("qin_np", (*evaluation_data.qin_np)[ele->LID()]);
+  elem_params.set<double>("qin_n", (*evaluation_data.qin_n)[ele->LID()]);
+  elem_params.set<double>("qin_nm", (*evaluation_data.qin_nm)[ele->LID()]);
 
   elem_params.set<double>("acin_vnp", e_acin_e_vnp);
   elem_params.set<double>("acin_vn", e_acin_e_vn);
@@ -192,17 +184,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
 {
   const int myrank = discretization.Comm().MyPID();
 
-  Teuchos::RCP<Epetra_Vector> p0np = params.get<Teuchos::RCP<Epetra_Vector>>("p0np");
-  Teuchos::RCP<Epetra_Vector> p0n = params.get<Teuchos::RCP<Epetra_Vector>>("p0n");
-  Teuchos::RCP<Epetra_Vector> p0nm = params.get<Teuchos::RCP<Epetra_Vector>>("p0nm");
-
-  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
-  Teuchos::RCP<Epetra_Vector> a_bc = params.get<Teuchos::RCP<Epetra_Vector>>("acini_bc");
-
-  //  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<Teuchos::RCP<Epetra_Vector>
-  //  >("acini_volume");
-  Teuchos::RCP<Epetra_Vector> a_e_volume =
-      params.get<Teuchos::RCP<Epetra_Vector>>("acini_e_volume");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
@@ -213,9 +196,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
   {
     int gid = lm[0];
     double val = 0.0;
-    p0np->ReplaceGlobalValues(1, &val, &gid);
-    p0n->ReplaceGlobalValues(1, &val, &gid);
-    p0nm->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.p0np->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.p0n->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.p0nm->ReplaceGlobalValues(1, &val, &gid);
   }
 
   // Find the volume of an acinus element
@@ -223,7 +206,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
     int gid2 = ele->Id();
     double acin_vol = 0.0;
     ele->getParams("AcinusVolume", acin_vol);
-    a_e_volume->ReplaceGlobalValues(1, &acin_vol, &gid2);
+    evaluation_data.acini_e_volume->ReplaceGlobalValues(1, &acin_vol, &gid2);
   }
 
   // Get the generation numbers
@@ -234,38 +217,24 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
       // find the acinus condition
       int gid = ele->Id();
       double val = 1.0;
-      a_bc->ReplaceGlobalValues(1, &val, &gid);
+      evaluation_data.acini_bc->ReplaceGlobalValues(1, &val, &gid);
     }
   }
   {
     int gid = ele->Id();
     int generation = -1;
     double val = double(generation);
-    generations->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
   }
 
-  bool solveScatra = params.get<bool>("solveScatra");
-  Teuchos::RCP<Epetra_Vector> junVolMix_Corrector;
-  Teuchos::RCP<Epetra_Vector> scatranp;
-  Teuchos::RCP<Epetra_Vector> e1scatranp;
-  Teuchos::RCP<Epetra_Vector> e2scatranp;
-
-  if (solveScatra)
-  {
-    junVolMix_Corrector = params.get<Teuchos::RCP<Epetra_Vector>>("junVolMix_Corrector");
-    scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("scatranp");
-    e1scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e1scatranp");
-    e2scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e2scatranp");
-  }
-
-  if (solveScatra)
+  if (evaluation_data.solveScatra)
   {
     double A = 0.0;
     double V = 0.0;
     ele->getParams("AcinusVolume", V);
     ele->getParams("Area", A);
     int gid = lm[1];
-    junVolMix_Corrector->ReplaceGlobalValues(1, &A, &gid);
+    evaluation_data.junVolMix_Corrector->ReplaceGlobalValues(1, &A, &gid);
 
     for (int sci = 0; sci < iel; sci++)
     {
@@ -304,9 +273,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
         // evaluate initial concentration
         double intConc = nO2perVO2 * vO2 / V;
 
-        scatranp->ReplaceGlobalValues(1, &intConc, &sgid);
-        e1scatranp->ReplaceGlobalValues(1, &intConc, &esgid);
-        e2scatranp->ReplaceGlobalValues(1, &intConc, &esgid);
+        evaluation_data.scatranp->ReplaceGlobalValues(1, &intConc, &sgid);
+        evaluation_data.e1scatranp->ReplaceGlobalValues(1, &intConc, &esgid);
+        evaluation_data.e2scatranp->ReplaceGlobalValues(1, &intConc, &esgid);
       }
       else
       {
@@ -588,15 +557,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
          **/
         if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
-
           if (Bc == "VolumeDependentPleuralPressure")
           {
             DRT::Condition* pplCond =
@@ -689,17 +649,20 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             BCin += Pp_np;
           }
 
+          const auto& evaluation_data =
+              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
           // Set pressure at node i
           int gid;
           double val;
 
           gid = lm[i];
           val = BCin;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
         /**
          * For flow bc
@@ -740,14 +703,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             exit(1);
           }
 
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
+          const auto& evaluation_data =
+              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
           // Set pressure=0.0 at node i
           int gid;
@@ -755,11 +712,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 
           gid = lm[i];
           val = 0.0;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
       }  // END of if there is no BC but the node still is at the terminal
 
@@ -795,22 +752,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
   Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
 
-  Teuchos::RCP<Epetra_Vector> qin_nm = params.get<Teuchos::RCP<Epetra_Vector>>("qin_nm");
-  Teuchos::RCP<Epetra_Vector> qin_n = params.get<Teuchos::RCP<Epetra_Vector>>("qin_n");
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
-
-  Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector>>("qout_np");
-  Teuchos::RCP<Epetra_Vector> qout_n = params.get<Teuchos::RCP<Epetra_Vector>>("qout_n");
-  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<Teuchos::RCP<Epetra_Vector>>("qout_nm");
-
-  Teuchos::RCP<Epetra_Vector> acinar_vn = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vn");
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
-  Teuchos::RCP<Epetra_Vector> a_volume_strain_np =
-      params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp_strain");
-
-
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -842,18 +788,18 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
-    e_acin_vnp = (*acinar_vnp)[ele->LID()];
-    e_acin_vn = (*acinar_vn)[ele->LID()];
+    e_acin_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
+    e_acin_vn = (*evaluation_data.acinar_vn)[ele->LID()];
   }
 
   // Get the volumetric flow rate from the previous time step
   Teuchos::ParameterList elem_params;
-  elem_params.set<double>("qout_np", (*qout_np)[ele->LID()]);
-  elem_params.set<double>("qout_n", (*qout_n)[ele->LID()]);
-  elem_params.set<double>("qout_nm", (*qout_nm)[ele->LID()]);
-  elem_params.set<double>("qin_np", (*qin_np)[ele->LID()]);
-  elem_params.set<double>("qin_n", (*qin_n)[ele->LID()]);
-  elem_params.set<double>("qin_nm", (*qin_nm)[ele->LID()]);
+  elem_params.set<double>("qout_np", (*evaluation_data.qout_np)[ele->LID()]);
+  elem_params.set<double>("qout_n", (*evaluation_data.qout_n)[ele->LID()]);
+  elem_params.set<double>("qout_nm", (*evaluation_data.qout_nm)[ele->LID()]);
+  elem_params.set<double>("qin_np", (*evaluation_data.qin_np)[ele->LID()]);
+  elem_params.set<double>("qin_n", (*evaluation_data.qin_n)[ele->LID()]);
+  elem_params.set<double>("qin_nm", (*evaluation_data.qin_nm)[ele->LID()]);
 
   elem_params.set<double>("acin_vnp", e_acin_vnp);
   elem_params.set<double>("acin_vn", e_acin_vn);
@@ -864,25 +810,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   // Call routine for calculating element matrix and right hand side
   Sysmat(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
 
-  double qn = (*qin_n)[ele->LID()];
+  double qn = (*evaluation_data.qin_n)[ele->LID()];
   double qnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
 
   int gid = ele->Id();
 
-  qin_np->ReplaceGlobalValues(1, &qnp, &gid);
-  qout_np->ReplaceGlobalValues(1, &qnp, &gid);
+  evaluation_data.qin_np->ReplaceGlobalValues(1, &qnp, &gid);
+  evaluation_data.qout_np->ReplaceGlobalValues(1, &qnp, &gid);
 
   // Calculate the new volume of the acinus due to the incoming flow; 0.5*(qnp+qn)*dt
   {
     double acinus_volume = e_acin_vn;
     acinus_volume += 0.5 * (qnp + qn) * dt;
-    acinar_vnp->ReplaceGlobalValues(1, &acinus_volume, &gid);
+    evaluation_data.acinar_vnp->ReplaceGlobalValues(1, &acinus_volume, &gid);
 
     // Calculate correponding acinar strain
     double vo = 0.0;
     ele->getParams("AcinusVolume", vo);
     double avs_np = (acinus_volume - vo) / vo;
-    a_volume_strain_np->ReplaceGlobalValues(1, &avs_np, &gid);
+    evaluation_data.acinar_vnp_strain->ReplaceGlobalValues(1, &avs_np, &gid);
   }
 }
 
@@ -897,25 +843,21 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
     Teuchos::RCP<MAT::Material> material)
 
 {
-  // Get all essential vector variables
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
-  Teuchos::RCP<Epetra_Vector> elemVolumenp =
-      params.get<Teuchos::RCP<Epetra_Vector>>("elemVolumenp");
-  Teuchos::RCP<Epetra_Vector> elemRadiusnp =
-      params.get<Teuchos::RCP<Epetra_Vector>>("elemRadiusnp");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // Get acinus size
-  double evolnp = (*elemVolumenp)[ele->LID()];
+  double evolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
 
   // Get element global ID
   int gid = ele->Id();
 
   // Update elem
-  elemVolumenp->ReplaceGlobalValues(1, &evolnp, &gid);
+  evaluation_data.elemVolumenp->ReplaceGlobalValues(1, &evolnp, &gid);
 
   // calculate and update element radius
   double eRadiusnp = std::pow(evolnp * 0.75 * M_1_PI, 1.0 / 3.0);
-  elemRadiusnp->ReplaceGlobalValues(1, &eRadiusnp, &gid);
+  evaluation_data.elemRadiusnp->ReplaceGlobalValues(1, &eRadiusnp, &gid);
 }
 
 /*----------------------------------------------------------------------*
@@ -1058,13 +1000,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
     Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
-  // get flow rate out at time step n+1
-  Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector>>("qout_np");
-  // get acinar volumes at time step n+1
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // get the element qout
-  double q_out = (*qout_np)[ele->LID()];
+  double q_out = (*evaluation_data.qout_np)[ele->LID()];
 
   // if transport is flowing into the acinus
   if (q_out >= 0.0)
@@ -1097,23 +1037,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
     Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
 
-  Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector>>("qout_np");
-
-  Teuchos::RCP<Epetra_Vector> e1scatran = params.get<Teuchos::RCP<Epetra_Vector>>("e1scatran");
-  Teuchos::RCP<Epetra_Vector> e2scatran = params.get<Teuchos::RCP<Epetra_Vector>>("e2scatran");
-
-  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e1scatranp");
-  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e2scatranp");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  Teuchos::RCP<Epetra_Vector> acinar_vn = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vn");
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
-
-  double volumenp = (*acinar_vnp)[ele->LID()];
-  double volumen = (*acinar_vn)[ele->LID()];
+  double volumenp = (*evaluation_data.acinar_vnp)[ele->LID()];
+  double volumen = (*evaluation_data.acinar_vn)[ele->LID()];
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
@@ -1122,10 +1053,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
   double area = myvolmix[1];
 
   // get the elements Qin and Qout
-  double q_out = (*qout_np)[ele->LID()];
-  double q_in = (*qin_np)[ele->LID()];
-  double e1s = (*e1scatran)[ele->LID()];
-  double e2s = (*e2scatran)[ele->LID()];
+  double q_out = (*evaluation_data.qout_np)[ele->LID()];
+  double q_in = (*evaluation_data.qin_np)[ele->LID()];
+  double e1s = (*evaluation_data.e1scatran)[ele->LID()];
+  double e2s = (*evaluation_data.e2scatran)[ele->LID()];
 
   // get time step size
   // const double dt = params.get<double>("time step size");
@@ -1160,7 +1091,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
     int gid = ele->Id();
     double scnp = 0.0;
     scnp = (e2s * volumen + e1s * (volumenp - volumen)) / (volumenp);
-    e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
+    evaluation_data.e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
   }
   else
   {
@@ -1169,8 +1100,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
     int gid = ele->Id();
     scnp = (e2s * volumen + e2s * (volumenp - volumen)) / (volumenp);
     {
-      e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
-      e1scatranp->ReplaceGlobalValues(1, &scnp, &gid);
+      evaluation_data.e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
+      evaluation_data.e1scatranp->ReplaceGlobalValues(1, &scnp, &gid);
     }
   }
 
@@ -1246,10 +1177,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       {
         int gid = ele->Id();
         double val = scnp;
-        if (vel < 0.0) val = (*e1scatranp)[ele->LID()];
+        if (vel < 0.0) val = (*evaluation_data.e1scatranp)[ele->LID()];
         //        if (ele->Owner()==myrank)
         {
-          e1scatranp->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.e1scatranp->ReplaceGlobalValues(1, &val, &gid);
         }
         scatranp(0) = val * area;
       }
@@ -1257,10 +1188,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       {
         int gid = ele->Id();
         double val = scnp;
-        if (vel >= 0.0) val = (*e2scatranp)[ele->LID()];
+        if (vel >= 0.0) val = (*evaluation_data.e2scatranp)[ele->LID()];
         //        if (ele->Owner()==myrank)
         {
-          e2scatranp->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.e2scatranp->ReplaceGlobalValues(1, &val, &gid);
         }
         scatranp(1) = val * area;
       }
@@ -1269,11 +1200,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
 
 
   {
-    scatranp(1) = (*e2scatranp)[ele->LID()] * area;
+    scatranp(1) = (*evaluation_data.e2scatranp)[ele->LID()] * area;
   }
   if (vel < 0.0)
   {
-    scatranp(0) = (*e1scatranp)[ele->LID()] * area;
+    scatranp(0) = (*evaluation_data.e1scatranp)[ele->LID()] * area;
   }
 }  // SolveScatra
 
@@ -1289,14 +1220,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
     Epetra_SerialDenseVector& scatranp, Epetra_SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
-  Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector>>("qout_np");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   Teuchos::RCP<const Epetra_Vector> scatran = discretization.GetState("scatranp");
-
-  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e1scatranp");
-  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e2scatranp");
-
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
   // extract local values from the global vectors
@@ -1306,8 +1233,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
   double area = myvolmix[1];
 
   // get the elements Qin and Qout
-  double q_out = (*qout_np)[ele->LID()];
-  double q_in = (*qin_np)[ele->LID()];
+  double q_out = (*evaluation_data.qout_np)[ele->LID()];
+  double q_in = (*evaluation_data.qin_np)[ele->LID()];
 
   // extract local values from the global vectors
   std::vector<double> myscatran(lm.size());
@@ -1334,14 +1261,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
     // extrapolate the analytical solution
     double scnp = myscatran[0];
     int gid = ele->Id();
-    e1scatranp->ReplaceGlobalValues(1, &scnp, &gid);
+    evaluation_data.e1scatranp->ReplaceGlobalValues(1, &scnp, &gid);
   }
   else
   {
     // extrapolate the analytical solution
     double scnp = myscatran[1];
     int gid = ele->Id();
-    e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
+    evaluation_data.e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
   }
 }  // SolveScatraBifurcations
 
@@ -1358,11 +1285,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
   const int myrank = discretization.Comm().MyPID();
 
   Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  Teuchos::RCP<Epetra_Vector> dscatranp_m = params.get<Teuchos::RCP<Epetra_Vector>>("dscatranp");
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // get flowrate
-  double qin = (*qin_np)[ele->LID()];
+  double qin = (*evaluation_data.qin_np)[ele->LID()];
 
   // extract local values from the global vectors
   std::vector<double> mydscatra(lm.size());
@@ -1380,7 +1307,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
     double val = mydscatra[1];
     if (myrank == ele->Nodes()[1]->Owner())
     {
-      dscatranp_m->ReplaceGlobalValues(1, &val, &gid);
+      evaluation_data.dscatranp->ReplaceGlobalValues(1, &val, &gid);
     }
   }
 }  // UpdateScatra
@@ -1395,9 +1322,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
   Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  Teuchos::RCP<Epetra_Vector> qin_np = params.get<Teuchos::RCP<Epetra_Vector>>("qin_np");
-  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e1scatranp");
-  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("e2scatranp");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
@@ -1412,7 +1338,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
   DRT::UTILS::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // get flowrate
-  double qin = (*qin_np)[ele->LID()];
+  double qin = (*evaluation_data.qin_np)[ele->LID()];
   // Get the average concentration
 
   // ---------------------------------------------------------------------
@@ -1422,10 +1348,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
   double e2s = myscatranp[1];
 
   int gid = ele->Id();
-  e2scatranp->ReplaceGlobalValues(1, &e2s, &gid);
+  evaluation_data.e2scatranp->ReplaceGlobalValues(1, &e2s, &gid);
   if (qin < 0.0)
   {
-    e1scatranp->ReplaceGlobalValues(1, &e2s, &gid);
+    evaluation_data.e1scatranp->ReplaceGlobalValues(1, &e2s, &gid);
   }
 }
 
@@ -1442,12 +1368,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
-  // get Po2 vector
-  Teuchos::RCP<Epetra_Vector> po2 = params.get<Teuchos::RCP<Epetra_Vector>>("PO2");
+
   // get Po2 vector
   Teuchos::RCP<const Epetra_Vector> scatran = discretization.GetState("scatranp");
-  // get acinar volume
-  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
+
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   // -------------------------------------------------------------------
   // extract scatra values
   // -------------------------------------------------------------------
@@ -1504,7 +1431,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
     // Calculate Vo2 in air
     // -----------------------------------------------------------------
     // get airway volume
-    double vAir = (*acinar_vnp)[ele->LID()];
+    double vAir = (*evaluation_data.acinar_vnp)[ele->LID()];
     // calculate the VO2 at nodes
     double vO2 = (vAir * myscatran[lm.size() - 1]) / nO2perVO2;
     // calculate PO2 at nodes
@@ -1523,7 +1450,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
   double val = pO2;
   if (myrank == ele->Nodes()[lm.size() - 1]->Owner())
   {
-    po2->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.po2->ReplaceGlobalValues(1, &val, &gid);
   }
 
 }  // EvalPO2FromScatra
@@ -1541,7 +1468,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
     Teuchos::RCP<MAT::Material> material)
 {
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<Epetra_Vector> acinar_e_v = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_v");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
 
   // Extract scatra values
@@ -1551,7 +1480,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
 
   // Find the volume of an acinus
   // Get the current acinar volume
-  double volAcinus = (*acinar_e_v)[ele->LID()];
+  double volAcinus = (*evaluation_data.acinar_v)[ele->LID()];
   // Set nodal volume
   nodal_volume[1] = volAcinus;
 

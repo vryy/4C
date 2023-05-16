@@ -24,6 +24,7 @@
 #include "lib_globalproblem.H"
 #include "lib_function_of_time.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "red_airways_evaluation_data.h"
 #include <fstream>
 #include <iomanip>
 
@@ -98,12 +99,13 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Epetra_SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // Set the generation number for the inter-acinar linker element to -2.0
   int gid = ele->Id();
   double val = -2.0;
-  generations->ReplaceGlobalValues(1, &val, &gid);
+  evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
 
   // In this element, each node of an inter-acinar linker element has
   // one linker. The final sum of linkers for each node is automatically
@@ -258,15 +260,6 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
          **/
         if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
-
           if (Bc == "VolumeDependentPleuralPressure")
           {
             DRT::Condition* pplCond =
@@ -361,17 +354,19 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             BCin += Pp_np;
           }
 
+          const auto& evaluation_data =
+              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
           // Set pressure at node i
           int gid;
           double val;
 
           gid = lm[i];
           val = BCin;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
         else
         {
@@ -396,14 +391,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             exit(1);
           }
 
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
+          const auto& evaluation_data =
+              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
           // Set pressure at node i
           int gid;
@@ -411,11 +400,11 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
           gid = lm[i];
           val = 0.0;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
       }  // END of if there is no BC but the node still is at the terminal
     }    // END of if node is available on this processor

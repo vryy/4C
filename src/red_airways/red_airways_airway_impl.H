@@ -128,8 +128,8 @@ namespace DRT
     class AirwayImpl : public RedAirwayImplInterface
     {
      public:
-      /// Constructor
-      explicit AirwayImpl();
+      /// Default constructor. Will need to query data from ParameterList.
+      AirwayImpl() = default;
 
       //! number of nodes
       static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
