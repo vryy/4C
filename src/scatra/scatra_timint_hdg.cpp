@@ -1375,8 +1375,6 @@ void SCATRA::TimIntHDG::AssembleRHS()
   // get cpu time
   const double tcpuele = Teuchos::Time::wallTime();
 
-  Teuchos::RCP<LINALG::SparseOperator> dummyMat;
-
   // reset the residual vector
   residual_->PutScalar(0.0);
 
