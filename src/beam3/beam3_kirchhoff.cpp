@@ -187,7 +187,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
       useFAD_(false),
       isinit_(false),
-      T0_(0),
       T_(0),
       theta0_(0),
       Qrefconv_(0),
@@ -236,7 +235,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
     : DRT::ELEMENTS::Beam3Base(old),
       useFAD_(old.useFAD_),
       isinit_(old.isinit_),
-      T0_(old.T0_),
       T_(old.T_),
       theta0_(old.theta0_),
       Qrefconv_(old.Qrefconv_),
@@ -343,7 +341,7 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   // add all class variables
   AddtoPack(data, useFAD_);
   AddtoPack(data, isinit_);
-  AddtoPack<3, 1>(data, T0_);
+  AddtoPack<3, 1>(data, Tref_);
   AddtoPack<3, 1>(data, T_);
   AddtoPack<3, 1>(data, theta0_);
   AddtoPack<4, 1>(data, Qrefconv_);
@@ -404,7 +402,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   // extract all class variables of beam3k element
   useFAD_ = ExtractInt(position, data);
   isinit_ = ExtractInt(position, data);
-  ExtractfromPack<3, 1>(position, data, T0_);
+  ExtractfromPack<3, 1>(position, data, Tref_);
   ExtractfromPack<3, 1>(position, data, T_);
   ExtractfromPack<3, 1>(position, data, theta0_);
   ExtractfromPack<4, 1>(position, data, Qrefconv_);
@@ -457,6 +455,25 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3k::Lines()
   std::vector<Teuchos::RCP<Element>> lines(1);
   lines[0] = Teuchos::rcp(this, false);
   return lines;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3k::SetUpInitialRotations(const std::vector<double>& nodal_thetas)
+{
+  theta0_.resize(BEAM3K_COLLOCATION_POINTS);
+  for (int i = 0; i < BEAM3K_COLLOCATION_POINTS; i++)
+  {
+    for (int j = 0; j < 3; j++) (theta0_[i])(j) = nodal_thetas[3 * i + j];
+
+    // Shift angles by 2PI in case these angles are not in the interval [-PI,PI].
+    if (theta0_[i].Norm2() > M_PI)
+    {
+      LINALG::Matrix<4, 1> Q(true);
+      LARGEROTATIONS::angletoquaternion(theta0_[i], Q);
+      LARGEROTATIONS::quaterniontoangle(Q, theta0_[i]);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -515,13 +532,13 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
-    T0_.resize(2);
+    Tref_.resize(2);
     T_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
-      (T0_[0])(i) = (Gref[0])(i, 0);
-      (T0_[1])(i) = (Gref[1])(i, 0);
+      (Tref_[0])(i) = (Gref[0])(i, 0);
+      (Tref_[1])(i) = (Gref[1])(i, 0);
       (T_[0])(i) = (Gref[0])(i, 0);
       (T_[1])(i) = (Gref[1])(i, 0);
     }
@@ -560,9 +577,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     bending_moment_3_GP_.resize(gausspoints.nquad);
     std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
 
-
     // calculate the length of the element via Newton iteration
-    Calculate_length(xrefe, T0_, LENGTHCALCNEWTONTOL);
+    LINALG::Matrix<12, 1> pos_ref_centerline;
+    AddRefValuesDispCenterline<2, 2>(pos_ref_centerline);
+    length_ = CalcReflength<2, 2>(pos_ref_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -598,8 +616,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       for (int i = 0; i < 3; i++)
       {
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
       }
 
       jacobi_cp_[ind] = r_xi.Norm2();
@@ -655,10 +673,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       for (int i = 0; i < 3; i++)
       {
-        r(i) +=
-            xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + T0_[0](i) * N_i(1) + T0_[1](i) * N_i(3);
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r(i) += xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + Tref_[0](i) * N_i(1) +
+                Tref_[1](i) * N_i(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
       }
 
       // calculate jacobi jacobi_=|r'_0|
@@ -725,13 +743,13 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
-    T0_.resize(2);
+    Tref_.resize(2);
     T_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
-      (T0_[0])(i) = (Gref[0])(i, 0);
-      (T0_[1])(i) = (Gref[1])(i, 0);
+      (Tref_[0])(i) = (Gref[0])(i, 0);
+      (Tref_[1])(i) = (Gref[1])(i, 0);
       (T_[0])(i) = (Gref[0])(i, 0);
       (T_[1])(i) = (Gref[1])(i, 0);
     }
@@ -770,9 +788,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     bending_moment_3_GP_.resize(gausspoints.nquad);
     std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
 
-
     // calculate the length of the element via Newton iteration
-    Calculate_length(xrefe, T0_, LENGTHCALCNEWTONTOL);
+    LINALG::Matrix<12, 1> disp_refe_centerline;
+    AddRefValuesDispCenterline<2, 2>(disp_refe_centerline);
+    length_ = CalcReflength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -819,10 +838,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       for (int i = 0; i < 3; i++)
       {
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
         r_xixi(i) += xrefe[0](i) * N_i_xixi(0) + xrefe[1](i) * N_i_xixi(2) +
-                     T0_[0](i) * N_i_xixi(1) + T0_[1](i) * N_i_xixi(3);
+                     Tref_[0](i) * N_i_xixi(1) + Tref_[1](i) * N_i_xixi(3);
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
@@ -899,12 +918,12 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       for (int i = 0; i < 3; i++)
       {
-        r(i) +=
-            xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + T0_[0](i) * N_i(1) + T0_[1](i) * N_i(3);
-        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + T0_[0](i) * N_i_xi(1) +
-                   T0_[1](i) * N_i_xi(3);
+        r(i) += xrefe[0](i) * N_i(0) + xrefe[1](i) * N_i(2) + Tref_[0](i) * N_i(1) +
+                Tref_[1](i) * N_i(3);
+        r_xi(i) += xrefe[0](i) * N_i_xi(0) + xrefe[1](i) * N_i_xi(2) + Tref_[0](i) * N_i_xi(1) +
+                   Tref_[1](i) * N_i_xi(3);
         r_xixi(i) += xrefe[0](i) * N_i_xixi(0) + xrefe[1](i) * N_i_xixi(2) +
-                     T0_[0](i) * N_i_xixi(1) + T0_[1](i) * N_i_xixi(3);
+                     Tref_[0](i) * N_i_xixi(1) + Tref_[1](i) * N_i_xixi(3);
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
@@ -941,222 +960,6 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
 }  // DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK()
 
-/*--------------------------------------------------------------------------------------------*
- |  Calculates the element length via a Newton Iteration: f(l)=l-int(|N'd|)dxi=0   meier 01/16|
- *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::Calculate_length(const std::vector<LINALG::Matrix<3, 1>>& xrefe,
-    const std::vector<LINALG::Matrix<3, 1>>& trefe, double tolerance)
-{
-  const int nnode = 2;  // number of nodes
-  const int vnode = 2;  // interpolated values per node (2: value + derivative of value)
-
-  // Get integration points for exact integration
-  // DRT::UTILS::IntegrationPoints1D gausspoints =
-  //    DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
-
-  // Newton Iteration - Tolerance and residual
-  double res = 1.0;
-
-  // Integral-value for Gauss Integration
-  double int_length = 0.0;
-  // Derivative value of the length integral for Newton Iteration (=weighted sum over deriv_int,
-  // gauss quadrature of: int(d/dl(|N'd|))dxi)
-  double deriv_length = 0.0;
-  // value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
-  double deriv_int = 0.0;
-
-  // inital value for iteration
-  {
-    LINALG::Matrix<3, 1> tempvec;
-    tempvec.Clear();
-    for (int i = 0; i < 3; i++)
-    {
-      tempvec(i) = xrefe[1](i) - xrefe[0](i);
-    }
-    length_ = tempvec.Norm2();
-  }
-
-  // Matrices to store the function values of the shape functions
-  LINALG::Matrix<1, nnode * vnode> shapefuncderiv;
-
-  shapefuncderiv.Clear();
-
-  // current value of the derivative at the GP
-  LINALG::Matrix<3, 1> r_xi;
-
-  while (std::fabs(res) > tolerance)
-  {
-    int_length = 0;
-    deriv_length = 0;
-    // Loop through all GPs and computation of the length and the derivative of the length
-    for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
-    {
-      deriv_int = 0;
-      // Get position xi of GP
-      const double xi = gausspoints.qxg[numgp][0];
-
-      // Get derivatives of the shape functions
-      DRT::UTILS::shape_function_hermite_1D_deriv1(shapefuncderiv, xi, length_, line2);
-
-      // integral of the length
-      r_xi.Clear();
-      deriv_int = 0;
-      for (int i = 0; i < 3; i++)
-      {
-        r_xi(i) += xrefe[0](i) * shapefuncderiv(0) + xrefe[1](i) * shapefuncderiv(2) +
-                   trefe[0](i) * shapefuncderiv(1) + trefe[1](i) * shapefuncderiv(3);
-      }
-      int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
-
-      // derivative of the integral of the length at GP
-      for (int i = 0; i < 3; i++)
-      {
-        deriv_int += (trefe[0](i) * shapefuncderiv(1) / length_ +
-                         trefe[1](i) * shapefuncderiv(3) / length_) *
-                     r_xi(i);
-      }
-      deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
-    }
-    // cout << endl << "Laenge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" <<
-    // deriv_length << endl;
-    res = length_ - int_length;
-    // Update
-    length_ = length_ - res / (1 - deriv_length);  // the derivative of f(l)=l-int(|N'd|)dxi=0 is
-                                                   // f'(l)=1-int(d/dl(|N'd|))dxi
-  }
-
-  //  //*************************************begin: Determine optimal Hermite constant for circle
-  //  segment****************************** if(fabs(trefe[0].Norm2()-1.0)>1.0e-12 or
-  //  fabs(trefe[1].Norm2()-1.0)>1.0e-12)
-  //    dserror("Tangents have to be unit vectors!");
-  //
-  //  double copt=0.0;
-  //  double int1=0.0;
-  //  double int2=0.0;
-  //
-  //  LINALG::Matrix<3,1> v0(true);
-  //  LINALG::Matrix<3,1> n0(true);
-  //  LINALG::Matrix<3,3> Sv0(true);
-  //  LINALG::Matrix<3,3> Sn0(true);
-  //  LINALG::Matrix<3,1> r0(true);
-  //  LINALG::Matrix<3,1> R0vec(true);
-  //  LINALG::Matrix<3,3> triad0(true);
-  //  double R0 = 0.0;
-  //  double alpha0 = 0.0;
-  //  double d0 = 0.0;
-  //  LINALG::Matrix<1,1> scalarproduct10(true);
-  //  LINALG::Matrix<1,1> scalarproduct20(true);
-  //
-  //  v0.Update(1.0,xrefe[1],1.0);
-  //  v0.Update(-1.0,xrefe[0],1.0);
-  //  d0 = v0.Norm2();
-  //  v0.Scale(1.0/d0);
-  //
-  //  LARGEROTATIONS::computespin(Sv0,v0);
-  //  n0.Multiply(Sv0,trefe[0]);
-  //  n0.Scale(1.0/n0.Norm2());
-  //  LARGEROTATIONS::computespin(Sn0,n0);
-  //  scalarproduct10.MultiplyTN(n0,trefe[1]);
-  //  if(scalarproduct10.Norm2()>1.0e-12)
-  //    dserror("Only plane geometries possible at this point!");
-  //
-  //  scalarproduct20.MultiplyTN(v0,trefe[0]);
-  //  alpha0 = acos(scalarproduct20(0,0));
-  //  R0=d0/(2*sin(alpha0));
-  //  R0vec.Multiply(Sn0,trefe[0]);
-  //  R0vec.Scale(1/R0vec.Norm2());
-  //  R0vec.Scale(R0);
-  //  r0.Update(1.0,xrefe[0],0.0);
-  //  r0.Update(-1.0,R0vec,1.0);
-  //
-  //  for(int i=0;i<3;i++)
-  //  {
-  //    triad0(i,0)=R0vec(i);
-  //    triad0(i,1)=n0(i);
-  //    triad0(i,2)=trefe[0](i);
-  //  }
-  //
-  ////  std::cout << "xrefe[0]: " << xrefe[0] << std::endl;
-  ////  std::cout << "xrefe[1]: " << xrefe[1] << std::endl;
-  ////  std::cout << "trefe[0]: " << trefe[0] << std::endl;
-  ////  std::cout << "trefe[1]: " << trefe[1] << std::endl;
-  ////  std::cout << "alpha0: " << alpha0 << std::endl;
-  ////  std::cout << "r0: " << r0 << std::endl;
-  ////  std::cout << "R0vec: " << R0vec << std::endl;
-  ////  std::cout << "d0: " << d0 << std::endl;
-  ////  std::cout << "R0: " << R0 << std::endl;
-  //
-  //  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-  //  {
-  //    //Get position xi of GP
-  //    const double xi = gausspoints.qxg[numgp][0];
-  //    const double wgt = gausspoints.qwgt[numgp];
-  //    LINALG::Matrix<3,1> a(true);
-  //    LINALG::Matrix<3,1> b(true);
-  //    LINALG::Matrix<3,1> r(true);
-  //    LINALG::Matrix<3,1> r_hermite(true);
-  //    LINALG::Matrix<3,1> auxvec(true);
-  //    LINALG::Matrix<1,1> auxscal(true);
-  //
-  //    //Get derivatives of the shape functions
-  //    LINALG::Matrix<1,nnode*vnode> shapefunc(true);
-  //    DRT::UTILS::shape_function_hermite_1D(shapefunc,xi,1.0,line2);
-  //
-  //    for (int i=0; i<3; i++)
-  //    {
-  //      b(i)+=trefe[0](i)*shapefunc(1)+trefe[1](i)*shapefunc(3);
-  //      a(i)+=xrefe[0](i)*shapefunc(0)+xrefe[1](i)*shapefunc(2);
-  //      r_hermite(i)+=xrefe[0](i)*shapefunc(0)+xrefe[1](i)*shapefunc(2)+trefe[0](i)*length_*shapefunc(1)+trefe[1](i)*length_*shapefunc(3);
-  //    }
-  //
-  //    LINALG::Matrix<3,3> triad(true);
-  //    LINALG::Matrix<3,3> triadalpha(true);
-  //    LINALG::Matrix<3,1> Rvec(true);
-  //    LINALG::Matrix<3,1> alphavec(true);
-  //
-  //    alphavec.Update(-(1.0+xi)*alpha0,n0,0.0);
-  //    LARGEROTATIONS::angletotriad(alphavec,triadalpha);
-  //    triad.Multiply(triadalpha,triad0);
-  //    for(int i=0;i<3;i++)
-  //    {
-  //      Rvec(i)=triad(i,0);
-  //    }
-  //    r.Update(1.0,r0,0.0);
-  //    r.Update(1.0,Rvec,1.0);
-  //
-  ////    std::cout << "r: " << r << std::endl;
-  ////    std::cout << "r_hermite: " << r_hermite << std::endl;
-  ////
-  ////    std::cout << "alphavec: " << alphavec << std::endl;
-  ////    std::cout << "Rvec: " << Rvec << std::endl;
-  //
-  //
-  //    auxvec.Update(1.0,r,0.0);
-  //    auxvec.Update(-1.0,a,1.0);
-  //    auxscal.MultiplyTN(b,auxvec);
-  //
-  //    int1+= auxscal(0,0)*wgt;
-  //
-  //    auxscal=0.0;
-  //    auxscal.MultiplyTN(b,b);
-  //    int2+= auxscal(0,0)*wgt;
-  //  }
-  //
-  //  copt=int1/int2;
-  //  double length_approx=d0;
-  //  double length_analyt=2*alpha0*R0;
-  //  std::cout << "copt length_ length_approx length_analyt" << std::endl;
-  //
-  //  std::cout << std::setprecision(16) << copt << " " << length_ << " " << length_approx << " " <<
-  //  length_analyt << std::endl;
-  //  //*************************************end: Determine optimal Hermite constant for circle
-  //  segment******************************
-
-  return;
-}
-
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
@@ -1173,7 +976,7 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
     r_xi(dim) += Nodes()[0]->X()[dim] * N_i_xi(0) + Nodes()[1]->X()[dim] * N_i_xi(2) +
-                 T0_[0](dim) * N_i_xi(1) + T0_[1](dim) * N_i_xi(3);
+                 Tref_[0](dim) * N_i_xi(1) + Tref_[1](dim) * N_i_xi(3);
   }
 
   return r_xi.Norm2();
@@ -1860,22 +1663,6 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   }
 
   if (add_reference_values) AddRefValuesDispCenterline<nnodecl, vpernode, T>(dofvec_centerline);
-}
-
-/*------------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------------*/
-template <unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(
-    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
-{
-  for (unsigned int dim = 0; dim < 3; ++dim)
-    for (unsigned int node = 0; node < nnodecl; ++node)
-    {
-      dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-
-      // Hermite interpolation: update tangent DOFs as well
-      if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += T0_[node](dim);
-    }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -2783,11 +2570,6 @@ template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateV
 template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
     const LINALG::Matrix<12 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
     LINALG::Matrix<12, 1, double>&, bool) const;
-
-template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&) const;
-template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, double>(
-    LINALG::Matrix<12, 1, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDisp<2, double>(
     LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;

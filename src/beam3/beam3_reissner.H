@@ -48,11 +48,6 @@ namespace LARGEROTATIONS
   class TriadInterpolationLocalRotationVectors;
 }
 
-#define BEAM3RLENGTHCALCNEWTONTOL \
-  10e-12  // Tolerance for iterative determination of element
-          // length.
-// DEFAULT: 10e-12
-
 // #define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the
 // element
 //  length and to only provide random numbers for the 3 translational DoFs (needed in order to
@@ -260,11 +255,6 @@ namespace DRT
       */
       virtual void Print(std::ostream& os) const;
 
-      /*!
-      \brief return flag whether Hermite polynomials are applied for centerline interpolation
-      */
-      virtual inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_; }
-
       /** \brief get centerline position at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
@@ -351,7 +341,7 @@ namespace DRT
       /*!
       \brief get tangent of centerline at all nodes in reference configuration
       */
-      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Trefnode_; }
+      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
 
       /*!
       \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element
@@ -745,7 +735,7 @@ namespace DRT
           {
             disp_centerline_ref(3 * vpernode * node + dim) = Nodes()[node]->X()[dim];
             if (vpernode == 2)
-              disp_centerline_ref(3 * vpernode * node + 3 + dim) = (Trefnode_[node])(dim);
+              disp_centerline_ref(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
           }
         }
 
@@ -967,11 +957,6 @@ namespace DRT
       void ExtractRotVecDofValues(const std::vector<double>& dofvec,
           std::vector<LINALG::Matrix<3, 1, double>>& dofvec_rotvec) const;
 
-      //! add reference positions and tangents to (centerline) displacement state vector
-      template <unsigned int nnodecl, unsigned int vpernode, typename T>
-      void AddRefValuesDispCenterline(
-          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const;
-
       //! compute nodal triads from current nodal rotation vectors ("displacement", i.e. relative
       //! rotations)
       template <unsigned int nnodetriad, typename T>
@@ -1003,15 +988,9 @@ namespace DRT
       //! determine Gauss rule from required type of integration and parameter list
       DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
-     private:
-      //! calculates the element length in reference configuration
-      template <unsigned int nnode, unsigned int vpernode>
-      void Calculate_reflength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
-          const double tolerance);
-
       //@}
 
+     private:
       //! @name Methods for Brownian dynamics simulations
 
       //! computes rotational damping forces and stiffness
@@ -1051,10 +1030,6 @@ namespace DRT
       //! bool storing whether automatic differentiation shall be used for this element evaluation
       bool useFAD_;
 
-      //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange
-      //! interpolation)
-      bool centerline_hermite_;
-
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
 
@@ -1064,9 +1039,6 @@ namespace DRT
 
       //! rotational pseudovectors at nodes in reference configuration
       std::vector<LINALG::Matrix<3, 1>> theta0node_;
-
-      //! vector holding reference tangent at the centerline nodes
-      std::vector<LINALG::Matrix<3, 1>> Trefnode_;
 
       //! vector holding current tangent at the centerline nodes Todo needed?
       std::vector<LINALG::Matrix<3, 1>> Tcurrnode_;

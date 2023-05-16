@@ -84,9 +84,6 @@ dserror(
                             // is implemented.
 // DEFAULT: intrule_line_4point
 
-#define LENGTHCALCNEWTONTOL 10e-12  // Tolerance for iterative determination of element length.
-// DEFAULT: 10e-12
-
 #define BEAM3K_COLLOCATION_POINTS \
   3  // defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner
      // nodes are introduced
@@ -418,12 +415,6 @@ namespace DRT
       */
       virtual int NumDofPerElement() const { return 0; }
 
-      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual inline bool HermiteCenterlineInterpolation() const { return true; }
-
       /*!
       \brief Print this element
       */
@@ -511,6 +502,15 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1);
 
+      /*!
+      \brief Set rotations in the initial configuration
+
+       Set the initial rotations based on nodal rotation (pseudo) vectors.
+       The nodal rotation vectors are independent of the subsequent used
+       rotational interpolation method.
+      */
+      void SetUpInitialRotations(const std::vector<double>& nodal_thetas);
+
 
       //! sets up from current nodal position all geometric parameters (considering current position
       //! as reference configuration)
@@ -523,7 +523,7 @@ namespace DRT
       /*!
       \brief get (non-unit) tangent vectors at the two boundary nodes in the initial configuration
       */
-      std::vector<LINALG::Matrix<3, 1>> Tref() const { return T0_; }
+      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
       //@}
 
       /** \brief add indices of those DOFs of a given node that are positions
@@ -1149,11 +1149,6 @@ namespace DRT
           LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
           bool add_reference_values = false) const;
 
-      //! add reference positions and tangents to (centerline) displacement state vector
-      template <unsigned int nnodecl, unsigned int vpernode, typename T>
-      void AddRefValuesDispCenterline(
-          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const;
-
       //! "add" reference values to displacement state vector (multiplicative in case of rotation
       //! pseudo vectors)
       template <unsigned int nnodecl, typename T>
@@ -1202,11 +1197,6 @@ namespace DRT
 
       //! lump mass matrix
       void Lumpmass(Epetra_SerialDenseMatrix* emass);
-
-      //! Computes the length of the element and its Jacobi based upon a hermitian interpolation of
-      //! the geometry
-      void Calculate_length(const std::vector<LINALG::Matrix<3, 1>>& xrefe,
-          const std::vector<LINALG::Matrix<3, 1>>& trefe, double tolerance);
 
       template <typename T>
       void Calculate_clcurvature(LINALG::Matrix<3, 1, T>& r_s, LINALG::Matrix<3, 1, T>& r_ss,
@@ -1569,8 +1559,6 @@ namespace DRT
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
 
-      //! tangent vectors at the two boundary nodes in the initial configuration
-      std::vector<LINALG::Matrix<3, 1>> T0_;
       //! current (non-unit) tangent vectors at the two boundary nodes
       std::vector<LINALG::Matrix<3, 1>> T_;
       // Variables needed by all local triads

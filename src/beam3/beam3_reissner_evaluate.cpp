@@ -626,7 +626,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
       {
         X_ref[dim] += H_i[vpernode * node] * Nodes()[node]->X()[dim];
 
-        if (centerline_hermite_) X_ref[dim] += H_i[vpernode * node + 1] * (Trefnode_[node])(dim);
+        if (centerline_hermite_) X_ref[dim] += H_i[vpernode * node + 1] * (Tref_[node])(dim);
       }
     }
 

@@ -244,13 +244,13 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.748962623795456, segments_vector[0][0].GetEtaA(),
+      EXPECT_NEAR(-0.7495456134309243, segments_vector[0][0].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(-0.441636318022276, segments_vector[0][0].GetEtaB(),
+      EXPECT_NEAR(-0.44451080329628256, segments_vector[0][0].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(0.0775865904109607, segments_vector[0][1].GetEtaA(),
+      EXPECT_NEAR(0.076870238957896297, segments_vector[0][1].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(0.951758620200254, segments_vector[0][1].GetEtaB(),
+      EXPECT_NEAR(0.95200105410689462, segments_vector[0][1].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -285,13 +285,13 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.412044388317299, segments_vector[0][0].GetEtaA(),
+      EXPECT_NEAR(-0.40853230756138476, segments_vector[0][0].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(-0.0831807800943276, segments_vector[0][0].GetEtaB(),
+      EXPECT_NEAR(-0.079518054716933712, segments_vector[0][0].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(0.879733788402666, segments_vector[0][1].GetEtaA(),
+      EXPECT_NEAR(0.88282786408473413, segments_vector[0][1].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(0.978734285704557, segments_vector[0][1].GetEtaB(),
+      EXPECT_NEAR(0.97917616983415101, segments_vector[0][1].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -332,9 +332,9 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 1);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.413784483606813, segments_vector[0][0].GetEtaA(),
+      EXPECT_NEAR(-0.40769440465702655, segments_vector[0][0].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      EXPECT_NEAR(-0.0069828192751272902261, segments_vector[0][0].GetEtaB(),
+      EXPECT_NEAR(-0.0090552523537554153, segments_vector[0][0].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
