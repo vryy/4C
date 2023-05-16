@@ -30,20 +30,22 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      protected:
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrode<distype, probdim>* Instance(
           int numdofpernode, int numscal, const std::string& disname);
 
 

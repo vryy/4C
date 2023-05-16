@@ -17,16 +17,18 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcLoma<distype>* Instance(
+      static ScaTraEleBoundaryCalcLoma<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
