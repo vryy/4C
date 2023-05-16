@@ -10,6 +10,8 @@
 #ifndef LINALG_FOUR_TENSOR_H
 #define LINALG_FOUR_TENSOR_H
 
+#include <array>
+
 namespace LINALG
 {
   /*!

@@ -9,8 +9,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_gauss_templates.H"
-#include <stdexcept>
-#include <cmath>
 
 namespace LINALG
 {

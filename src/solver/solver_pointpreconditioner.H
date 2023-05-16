@@ -11,7 +11,6 @@
 #define SOLVER_POINTPRECONDITIONER_H
 
 #include "linalg_downwindmatrix.H"
-#include "linalg_none_operator.H"
 
 #include "solver_preconditionertype.H"
 
