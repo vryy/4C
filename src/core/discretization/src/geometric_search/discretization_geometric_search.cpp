@@ -58,7 +58,9 @@ namespace ArborX
     static auto get(
         const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector, std::size_t i)
     {
-      return intersects(vector[i].second.bounding_volume_);
+      // Attach the primitive ID here, so we can get the actual primitve in the callback
+      // IntersectActualVolumeType
+      return attach(intersects(vector[i].second.bounding_volume_), i);
     }
   };
 }  // namespace ArborX
@@ -66,6 +68,43 @@ namespace ArborX
 
 namespace GEOMETRICSEARCH
 {
+
+  // The currently used ArborX version only supports tree structures for points and
+  // axis-aligned-boundary-boxes (AABB). We convert the k-DOPs to AABB in the creation of the tree.
+  // Therefore, the standard query would only give the intersections of the AABB of the primitives
+  // with the predicates. With this callback we perform the query in the sense, that we check each
+  // k-DOP of the primitives with each k-DOP of the predicates. This can lead to a drastic reduction
+  // of the found pairs.
+  template <class Primitives, class Predicates>
+  struct IntersectActualVolumeType
+  {
+    // Empyt constructor
+    IntersectActualVolumeType(Primitives primitives, Predicates predicates)
+        : primitives_(primitives), predicates_(predicates)
+    {
+    }
+
+    // When querying a primitive vs a predicate, get the actual volume type for the primitive and
+    // predicate and check them for intersection
+    template <class Predicate, class OutputFunctor>
+    KOKKOS_FUNCTION void operator()(
+        const Predicate predicate, const int primitive_index, const OutputFunctor& out) const
+    {
+      const int predicate_index = getData(predicate);
+      const auto& predicate_geometry = predicates_[predicate_index].second.bounding_volume_;
+      const auto& primitive_geometry = primitives_[primitive_index].second.bounding_volume_;
+      if (ArborX::intersects(predicate_geometry)(primitive_geometry))
+      {
+        out(primitive_index);
+      }
+    }
+
+    // The original pimitives and predicates
+    Primitives primitives_;
+    Predicates predicates_;
+  };
+
+
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
@@ -107,34 +146,14 @@ namespace GEOMETRICSEARCH
       Kokkos::View<int*, Kokkos::HostSpace> offset_full("offset_full", 0);
 
       // Perform the collision check.
-      bounding_volume_hierarchy.query(
-          Kokkos::DefaultExecutionSpace{}, predicates, indices_full, offset_full);
+      bounding_volume_hierarchy.query(Kokkos::DefaultExecutionSpace{}, predicates,
+          IntersectActualVolumeType{primitives, predicates}, indices_full, offset_full);
 
-      // ArborX only supports tree structures for points and axis-aligned-boundary-boxes (AABB). We
-      // convert the k-DOPs to AABB in the creation of the tree. Therefore, the query only gives the
-      // intersections of the AABB of the primitives with the predicates. In this loop we perform a
-      // post-processing of the query results in the sense, that we check each k-DOP of the
-      // primitives with each k-DOP of the predicates. This only marginally effects the performance
-      // of this function, but can lead to a drastic reduction of the found pairs.
-      offsets_final.push_back(0);
-      for (size_t i_predicate = 0; i_predicate < predicates.size(); i_predicate++)
-      {
-        int collisions_for_predicate_i = 0;
-        const auto& predicate = predicates[i_predicate].second.bounding_volume_;
-        for (int j = offset_full[i_predicate]; j < offset_full[i_predicate + 1]; j++)
-        {
-          // Check for actual intersection.
-          int i_primitive = indices_full[j];
-          if (ArborX::Experimental::intersects(
-                  predicate, primitives[i_primitive].second.bounding_volume_))
-          {
-            indices_final.push_back(i_primitive);
-            collisions_for_predicate_i += 1;
-          }
-        }
-
-        offsets_final.push_back(offsets_final.back() + collisions_for_predicate_i);
-      }
+      // Copy kokkos view to std::vector
+      indices_final.insert(
+          indices_final.begin(), indices_full.data(), indices_full.data() + indices_full.extent(0));
+      offsets_final.insert(
+          offsets_final.begin(), offset_full.data(), offset_full.data() + offset_full.extent(0));
     }
 
     if (verbosity == IO::verbose)
