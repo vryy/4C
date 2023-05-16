@@ -6,7 +6,7 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-std=c++17 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-local-typedefs -Wignored-qualifiers -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
+        "CMAKE_CXX_FLAGS": "-march=native -Wall -Wno-unknown-pragmas -Wno-unused-local-typedefs -Wignored-qualifiers -Wno-maybe-uninitialized -Wno-format-security -Werror=vla",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_C_FLAGS": "-Wall -march=native -Wno-unknown-pragmas -mfpmath=sse -msse3",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
@@ -14,7 +14,7 @@
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
         "CMAKE_Fortran_FLAGS": "-Wall",
         "CMAKE_Fortran_FLAGS_RELEASE": "-O3 -funroll-all-loops -malign-double",
-        "BACI_WITH_ARBORX":"ON",
+        "BACI_WITH_ARBORX": "ON",
         "BACI_WITH_GOOGLETEST": "OFF",
         "BUILD_DOXYGEN": "OFF"
       }
@@ -36,12 +36,12 @@
         "QHULL_INCLUDE_DIR": "$env{QHULL_ROOT}/include/libqhull",
         "BOOST_INCLUDE_DIR": "$env{BOOST_ROOT}/include",
         "BOOST_LIBRARY_DIR": "$env{BOOST_ROOT}/lib",
-        "USE_USERSPECIFIED_BOOST":"ON",
-        "BOOST_EXCLUDE_SYSTEM_PATHS":"ON",
+        "USE_USERSPECIFIED_BOOST": "ON",
+        "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
         "BLAS_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
         "LAPACK_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
         "SEARCH_CLN_LIBRARY_DIR": "$env{CLN_ROOT}/lib",
-        "CLN_INCLUDE_DIR":"$env{CLN_ROOT}/include",
+        "CLN_INCLUDE_DIR": "$env{CLN_ROOT}/include",
         "BLA_VENDOR": "openBLAS.0.3.6",
         "MPI_RUN": "$env{OPENMPI_ROOT}/bin/mpirun"
       }
