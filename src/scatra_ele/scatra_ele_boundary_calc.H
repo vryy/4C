@@ -417,10 +417,26 @@ namespace DRT
           const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
           const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
 
-      //! Compute a constant normal vector for a boundary element
-      void GetConstNormal(LINALG::Matrix<nsd_, 1>& normal,  ///< the constant normal vector
-          const LINALG::Matrix<nsd_, nen_>& xyze            ///< element node coordinates
-      );
+      //! Compute the normal vector for a 2D boundary element in a 3D space
+      //!
+      //! \param xyze   position of boundary nodes
+      //! \return       normal vector of boundary element
+      LINALG::Matrix<3, 1> GetConstNormal(const LINALG::Matrix<3, nen_>& xyze);
+
+      //! Compute the normal vector for a 1D boundary element in a 2D space
+      //!
+      //! \param xyze   position of boundary nodes
+      //! \return       normal vector of boundary element
+      LINALG::Matrix<2, 1> GetConstNormal(const LINALG::Matrix<2, nen_>& xyze);
+
+      //! Compute the normal vector for a 1D boundary element in a 3D space
+      //!
+      //! \param xyze   position of boundary nodes
+      //! \param nodes_parent_ele position of 3 nodes in parent element to compute normal vector of
+      //! parent element
+      //! \return       normal vector of boundary element
+      LINALG::Matrix<3, 1> GetConstNormal(
+          const LINALG::Matrix<3, nen_>& xyze, const LINALG::Matrix<3, 3>& nodes_parent_ele);
 
       //! calculate potential Neumann inflow terms
       virtual void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
