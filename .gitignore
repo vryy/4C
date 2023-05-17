@@ -104,3 +104,6 @@ utilities/baci-python-venv/*
 
 # CLion
 .idea/
+
+# clangd
+.clangd
