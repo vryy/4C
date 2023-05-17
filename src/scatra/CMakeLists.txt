@@ -3,7 +3,6 @@ set(OBJS_SCATRA
     scatra_algorithm.cpp
     scatra_cardiac_monodomain_dyn.cpp
     scatra_dyn.cpp
-    scatra_nox_nln_scatra_linearsystem.cpp
     scatra_resulttest.cpp
     scatra_resulttest_elch.cpp
     scatra_resulttest_hdg.cpp
@@ -23,7 +22,6 @@ set(OBJS_SCATRA
     scatra_timint_implicit_service.cpp
     scatra_timint_loma.cpp
     scatra_timint_loma_genalpha.cpp
-    scatra_timint_loma_ost.cpp
     scatra_timint_meshtying_strategy_artery.cpp
     scatra_timint_meshtying_strategy_fluid.cpp
     scatra_timint_meshtying_strategy_fluid_elch.cpp
