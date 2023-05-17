@@ -283,30 +283,29 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // loop all elements and initialize all of the values
 
   // note: We use an RCP because ParameterList wants something printable and comparable
-  auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
-  evaluation_data->p0np = pnp_;
-  evaluation_data->p0n = pn_;
-  evaluation_data->p0nm = pnm_;
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  evaluation_data.p0np = pnp_;
+  evaluation_data.p0n = pn_;
+  evaluation_data.p0nm = pnm_;
 
-  evaluation_data->generations = generations_;
-  evaluation_data->acini_bc = acini_bc_;
-  evaluation_data->acini_e_volume = acini_e_volumenp_;
-  evaluation_data->solveScatra = solveScatra_;
-  evaluation_data->elemVolume = elemVolumenp_;
+  evaluation_data.generations = generations_;
+  evaluation_data.acini_bc = acini_bc_;
+  evaluation_data.acini_e_volume = acini_e_volumenp_;
+  evaluation_data.solveScatra = solveScatra_;
+  evaluation_data.elemVolume = elemVolumenp_;
   if (solveScatra_)
   {
-    evaluation_data->junVolMix_Corrector = junVolMix_Corrector_;
-    evaluation_data->scatranp = scatraO2np_;
-    evaluation_data->e1scatranp = e1scatraO2np_;
-    evaluation_data->e2scatranp = e2scatraO2np_;
+    evaluation_data.junVolMix_Corrector = junVolMix_Corrector_;
+    evaluation_data.scatranp = scatraO2np_;
+    evaluation_data.e1scatranp = e1scatraO2np_;
+    evaluation_data.e2scatranp = e2scatraO2np_;
   }
-  evaluation_data->elemArea0 = elemArea0_;
+  evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
   Teuchos::RCP<Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap, true);
   Teuchos::RCP<Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap, true);
 
-  eleparams.set("evaluation_data", evaluation_data);
   discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
 
   for (int i = 0; i < radii_->MyLength(); i++)
@@ -925,33 +924,33 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->SetState("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qin_nm = qin_nm_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qin_nm = qin_nm_;
 
-    evaluation_data->x_np = x_np_;
-    evaluation_data->x_n = x_n_;
-    evaluation_data->open = open_;
+    evaluation_data.x_np = x_np_;
+    evaluation_data.x_n = x_n_;
+    evaluation_data.open = open_;
 
-    evaluation_data->airway_acinus_dep = airway_acinus_dep_;
-    evaluation_data->p_extnp = p_extnp_;
-    evaluation_data->p_extn = p_extn_;
-    evaluation_data->compute_awacinter = compAwAcInter_;
+    evaluation_data.airway_acinus_dep = airway_acinus_dep_;
+    evaluation_data.p_extnp = p_extnp_;
+    evaluation_data.p_extn = p_extn_;
+    evaluation_data.compute_awacinter = compAwAcInter_;
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qout_nm = qout_nm_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qout_nm = qout_nm_;
 
-    evaluation_data->elemVolumen = elemVolumen_;
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumen = elemVolumen_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     // Evaluate Lung volumes nm, n, np and set to eleparams
     double lung_volume_np = 0.0;
@@ -975,12 +974,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       dserror("Error by summing all acinar volumes");
     }
 
-    evaluation_data->lungVolume_np = lung_volume_np;
-    evaluation_data->lungVolume_n = lung_volume_n;
-    evaluation_data->lungVolume_nm = lung_volume_nm;
+    evaluation_data.lungVolume_np = lung_volume_np;
+    evaluation_data.lungVolume_n = lung_volume_n;
+    evaluation_data.lungVolume_nm = lung_volume_nm;
 
 
-    eleparams.set("evaluation_data", evaluation_data);
     // Call standard loop over all elements
     discret_->Evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
@@ -1010,25 +1008,25 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->SetState("pnm", pnm_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
 
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qout_n = qout_n_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qout_n = qout_n_;
 
-    evaluation_data->airway_acinus_dep = airway_acinus_dep_;
-    evaluation_data->p_extnp = p_extnp_;
-    evaluation_data->p_extn = p_extn_;
+    evaluation_data.airway_acinus_dep = airway_acinus_dep_;
+    evaluation_data.p_extnp = p_extnp_;
+    evaluation_data.p_extn = p_extn_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
-    evaluation_data->bcval = bcval_;
-    evaluation_data->dbctog = dbctog_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
+    evaluation_data.bcval = bcval_;
+    evaluation_data.dbctog = dbctog_;
 
     // Evaluate Lung volumes n, np and set to eleparams
     double lung_volume_np = 0.0;
@@ -1043,13 +1041,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     {
       dserror("Error by summing all acinar volumes");
     }
-    evaluation_data->lungVolume_np = lung_volume_np;
-    evaluation_data->lungVolume_n = lung_volume_n;
+    evaluation_data.lungVolume_np = lung_volume_np;
+    evaluation_data.lungVolume_n = lung_volume_n;
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
 
-    eleparams.set("evaluation_data", evaluation_data);
     // Call standard loop over all elements
     discret_->Evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
@@ -1126,33 +1123,31 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->SetState("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_nm = qin_nm_;
-    evaluation_data->qout_nm = qout_nm_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->elemVolumen = elemVolumen_;
-    evaluation_data->elemVolumenp = elemVolumenp_;
-    evaluation_data->acinar_vnp_strain = acini_e_volume_strain_;
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.qin_nm = qin_nm_;
+    evaluation_data.qout_nm = qout_nm_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.elemVolumen = elemVolumen_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
+    evaluation_data.acinar_vnp_strain = acini_e_volume_strain_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->x_n = x_n_;
-    evaluation_data->x_np = x_np_;
-    evaluation_data->open = open_;
-    evaluation_data->airway_acinus_dep = airway_acinus_dep_;
-    evaluation_data->p_extnp = p_extnp_;
-    evaluation_data->p_extn = p_extn_;
-    evaluation_data->compute_awacinter = compAwAcInter_;
+    evaluation_data.x_n = x_n_;
+    evaluation_data.x_np = x_np_;
+    evaluation_data.open = open_;
+    evaluation_data.airway_acinus_dep = airway_acinus_dep_;
+    evaluation_data.p_extnp = p_extnp_;
+    evaluation_data.p_extn = p_extn_;
+    evaluation_data.compute_awacinter = compAwAcInter_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
-
-    eleparams.set("evaluation_data", evaluation_data);
     // Call standard loop over all elements
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1173,21 +1168,20 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
-    evaluation_data->elemVolumen = elemVolumen_;
-    evaluation_data->elemVolumenp = elemVolumenp_;
-    evaluation_data->elemRadiusnp = elemRadiusnp_;
+    evaluation_data.dt = dta_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
+    evaluation_data.elemVolumen = elemVolumen_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
+    evaluation_data.elemRadiusnp = elemRadiusnp_;
 
-    eleparams.set("evaluation_data", evaluation_data);
     // call standard loop over all elements
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1210,28 +1204,27 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->SetState("pnp", pnp_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
 
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qout_n = qout_n_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qout_n = qout_n_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
-    evaluation_data->x_n = x_n_;
-    evaluation_data->x_np = x_np_;
-    evaluation_data->open = open_;
-    evaluation_data->airway_acinus_dep = airway_acinus_dep_;
-    evaluation_data->p_extnp = p_extnp_;
-    evaluation_data->p_extn = p_extn_;
-    evaluation_data->compute_awacinter = compAwAcInter_;
+    evaluation_data.x_n = x_n_;
+    evaluation_data.x_np = x_np_;
+    evaluation_data.open = open_;
+    evaluation_data.airway_acinus_dep = airway_acinus_dep_;
+    evaluation_data.p_extnp = p_extnp_;
+    evaluation_data.p_extn = p_extn_;
+    evaluation_data.compute_awacinter = compAwAcInter_;
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
 
-    eleparams.set("evaluation_data", evaluation_data);
     // call standard loop over all elements
     discret_->Evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();
@@ -1263,20 +1256,18 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "calc_cfl");
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->elemVolumenp = elemVolumenp_;
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
-    evaluation_data->cfl = cfls_;
+    evaluation_data.cfl = cfls_;
 
     cfls_->PutScalar(0.0);
-
-    eleparams.set("evaluation_data", evaluation_data);
 
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1301,23 +1292,22 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     junctionVolumeInMix_->PutScalar(0.0);
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
 
-    eleparams.set("evaluation_data", evaluation_data);
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, junctionVolumeInMix_, Teuchos::null, Teuchos::null);
   }
@@ -1338,31 +1328,29 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->SetState("scatran", scatraO2n_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->e1scatran = e1scatraO2n_;
-    evaluation_data->e1scatranp = e1scatraO2np_;
+    evaluation_data.e1scatran = e1scatraO2n_;
+    evaluation_data.e1scatranp = e1scatraO2np_;
 
-    evaluation_data->e2scatran = e2scatraO2n_;
-    evaluation_data->e2scatranp = e2scatraO2np_;
+    evaluation_data.e2scatran = e2scatraO2n_;
+    evaluation_data.e2scatranp = e2scatraO2np_;
 
     discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
 
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->elemVolumenp = elemVolumenp_;
-    evaluation_data->elemVolumen = elemVolumen_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumen = elemVolumen_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
-
-    eleparams.set("evaluation_data", evaluation_data);
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     Teuchos::RCP<Epetra_Vector> dummy = LINALG::CreateVector(*dofrowmap, true);
@@ -1399,25 +1387,24 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->e1scatranp = e1scatraO2np_;
-    evaluation_data->e2scatranp = e2scatraO2np_;
+    evaluation_data.e1scatranp = e1scatraO2np_;
+    evaluation_data.e2scatranp = e2scatraO2np_;
 
     discret_->SetState("scatranp", scatraO2np_);
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
     discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
 
-    eleparams.set("evaluation_data", evaluation_data);
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, scatraO2np_, junctionVolumeInMix_, Teuchos::null);
     discret_->ClearState();
@@ -1443,20 +1430,19 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // set vector values of flow rates
     discret_->SetState("scatranp", scatraO2np_);
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
-    evaluation_data->acinar_v = acini_e_volumenp_;
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    evaluation_data.acinar_v = acini_e_volumenp_;
 
     // set vector values of flow rates
     eleparams.set("time step size", dta_);
     eleparams.set("time step size", dta_);
     // TODO used to be "qnp" and was likely unused
-    evaluation_data->qin_np = qin_np_;
+    evaluation_data.qin_np = qin_np_;
 
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
 
-    eleparams.set("evaluation_data", evaluation_data);
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, nodal_surfaces, nodal_volumes, nodal_avg_conc);
     discret_->ClearState();
@@ -1474,11 +1460,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->SetState("scatranp", nodal_avg_conc);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
-    evaluation_data->elemVolumenp = elemVolumenp_;
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
-    eleparams.set("evaluation_data", evaluation_data);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    evaluation_data.elemVolumenp = elemVolumenp_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     dscatraO2_->PutScalar(0.0);
     dVolumeO2_->PutScalar(0.0);
@@ -1499,20 +1484,19 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->e1scatranp = e1scatraO2np_;
-    evaluation_data->e2scatranp = e2scatraO2np_;
-    evaluation_data->dscatranp = dscatraO2_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.e1scatranp = e1scatraO2np_;
+    evaluation_data.e2scatranp = e2scatraO2np_;
+    evaluation_data.dscatranp = dscatraO2_;
     discret_->SetState("dscatranp", dscatraO2_);
     discret_->SetState("avg_scatranp", nodal_avg_conc);
     discret_->SetState("scatranp", scatraO2np_);
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
 
-    eleparams.set("evaluation_data", evaluation_data);
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -1531,17 +1515,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->e1scatranp = e1scatraO2np_;
-    evaluation_data->e2scatranp = e2scatraO2np_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.e1scatranp = e1scatraO2np_;
+    evaluation_data.e2scatranp = e2scatraO2np_;
     discret_->SetState("dscatranp", dscatraO2_);
     discret_->SetState("scatranp", scatraO2np_);
     discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -1848,20 +1832,19 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         Teuchos::ParameterList eleparams;
 
         // note: We use an RCP because ParameterList wants something printable and comparable
-        auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+        DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
         // action for elements
-        evaluation_data->elemVolumenp = elemVolumenp_;
+        evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->DofRowMap();
         Teuchos::RCP<Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
-        evaluation_data->po2 = po2;
+        evaluation_data.po2 = po2;
         discret_->SetState("scatranp", scatraO2np_);
-        evaluation_data->acinar_vnp = acini_e_volumenp_;
+        evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-        eleparams.set("evaluation_data", evaluation_data);
         discret_->Evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
@@ -1872,20 +1855,19 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         // create the parameters for the discretization
         Teuchos::ParameterList eleparams;
         // note: We use an RCP because ParameterList wants something printable and comparable
-        auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+        DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
         // action for elements
-        evaluation_data->elemVolumenp = elemVolumenp_;
+        evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->DofRowMap();
         Teuchos::RCP<Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
-        evaluation_data->po2 = po2;
+        evaluation_data.po2 = po2;
         discret_->SetState("scatranp", acinarDO2_);
-        evaluation_data->acinar_vnp = acini_e_volumenp_;
+        evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-        eleparams.set("evaluation_data", evaluation_data);
         discret_->Evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
         discret_->ClearState();
@@ -2295,32 +2277,32 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     discret_->SetState("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
-    evaluation_data->qin_nm = qin_nm_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
+    evaluation_data.qin_nm = qin_nm_;
 
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qout_n = qout_n_;
-    evaluation_data->qout_nm = qout_nm_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qout_n = qout_n_;
+    evaluation_data.qout_nm = qout_nm_;
 
-    evaluation_data->x_np = x_np_;
-    evaluation_data->x_n = x_n_;
-    evaluation_data->open = open_;
-    evaluation_data->airway_acinus_dep = airway_acinus_dep_;
-    evaluation_data->p_extnp = p_extnp_;
-    evaluation_data->p_extn = p_extn_;
-    evaluation_data->compute_awacinter = compAwAcInter_;
+    evaluation_data.x_np = x_np_;
+    evaluation_data.x_n = x_n_;
+    evaluation_data.open = open_;
+    evaluation_data.airway_acinus_dep = airway_acinus_dep_;
+    evaluation_data.p_extnp = p_extnp_;
+    evaluation_data.p_extn = p_extn_;
+    evaluation_data.compute_awacinter = compAwAcInter_;
 
-    evaluation_data->elemVolumen = elemVolumen_;
-    evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data.elemVolumen = elemVolumen_;
+    evaluation_data.elemVolumenp = elemVolumenp_;
 
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     // get lung volume
     double lung_volume_np = 0.0;
@@ -2344,11 +2326,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
       dserror("Error by summing all acinar volumes");
     }
 
-    evaluation_data->lungVolume_np = lung_volume_np;
-    evaluation_data->lungVolume_n = lung_volume_n;
-    evaluation_data->lungVolume_nm = lung_volume_nm;
+    evaluation_data.lungVolume_np = lung_volume_np;
+    evaluation_data.lungVolume_n = lung_volume_n;
+    evaluation_data.lungVolume_nm = lung_volume_nm;
 
-    eleparams.set("evaluation_data", evaluation_data);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams, sysmat_, rhs_);
@@ -2378,21 +2359,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     //    discret_->SetState("qcn" ,qcn_ );
     //    discret_->SetState("qcnm",qcnm_);
     // note: We use an RCP because ParameterList wants something printable and comparable
-    auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
-    evaluation_data->acinar_vn = acini_e_volumen_;
-    evaluation_data->acinar_vnp = acini_e_volumenp_;
+    evaluation_data.acinar_vn = acini_e_volumen_;
+    evaluation_data.acinar_vnp = acini_e_volumenp_;
 
-    evaluation_data->qin_np = qin_np_;
-    evaluation_data->qin_n = qin_n_;
+    evaluation_data.qin_np = qin_np_;
+    evaluation_data.qin_n = qin_n_;
 
-    evaluation_data->qout_np = qout_np_;
-    evaluation_data->qout_n = qout_n_;
+    evaluation_data.qout_np = qout_np_;
+    evaluation_data.qout_n = qout_n_;
 
-    evaluation_data->bcval = bcval_;
-    evaluation_data->dbctog = dbctog_;
-    evaluation_data->dt = dta_;
-    evaluation_data->time = time_;
+    evaluation_data.bcval = bcval_;
+    evaluation_data.dbctog = dbctog_;
+    evaluation_data.dt = dta_;
+    evaluation_data.time = time_;
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
@@ -2410,11 +2391,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     {
       dserror("Error by summing all acinar volumes");
     }
-    evaluation_data->lungVolume_np = lung_volume_np;
-    evaluation_data->lungVolume_n = lung_volume_n;
+    evaluation_data.lungVolume_np = lung_volume_np;
+    evaluation_data.lungVolume_n = lung_volume_n;
 
 
-    eleparams.set("evaluation_data", evaluation_data);
     // call standard loop over all elements
     discret_->Evaluate(eleparams, sysmat_, rhs_);
     discret_->ClearState();

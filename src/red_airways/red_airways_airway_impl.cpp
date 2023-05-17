@@ -599,8 +599,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
 
   std::vector<int>::iterator it_vcr;
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -717,8 +716,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
 {
   const int myrank = discretization.Comm().MyPID();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
@@ -895,8 +893,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
     RedAirway* ele, Epetra_SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   double s_c, s_o, Pcrit_o, Pcrit_c;
   ele->getParams("S_Close", s_c);
@@ -956,8 +953,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
     Teuchos::RCP<const Epetra_Vector> pn, Teuchos::RCP<const Epetra_Vector> pnp,
     Teuchos::ParameterList& params)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get node-Id of nearest acinus
   int node_id = (*evaluation_data.airway_acinus_dep)[ele->LID()];
@@ -983,8 +979,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get total time
   const double time = evaluation_data.time;
@@ -1397,8 +1392,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
 {
   const int elemVecdim = lm.size();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -1513,8 +1507,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
 {
   // get all essential vector variables
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // extract all essential element variables from their corresponding variables
   double qinnp = (*evaluation_data.qin_np)[ele->LID()];
@@ -1576,8 +1569,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get total time
   const double time = evaluation_data.time;
@@ -1709,8 +1701,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
     Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get the elements Qin and Qout
   double qoutnp = (*evaluation_data.qout_np)[ele->LID()];
@@ -1763,8 +1754,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
     Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get the elements Qin and Qout
   double q_out = (*evaluation_data.qout_np)[ele->LID()];
@@ -2030,8 +2020,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get the elements Qin and Qout
   double q_out = (*evaluation_data.qout_n)[ele->LID()];
@@ -2099,8 +2088,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get the elements Qin and Qout
   double q_outnp = (*evaluation_data.qout_np)[ele->LID()];
@@ -2165,8 +2153,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
     Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.GetState("avg_scatranp");
     Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
 
-    const auto& evaluation_data =
-        *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
     // extract local values from the global vectors
     std::vector<double> mydscatranp(lm.size());
@@ -2230,8 +2217,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
@@ -2268,8 +2254,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // -------------------------------------------------------------------
   // extract scatra values
@@ -2444,8 +2429,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele
     return;
   }
 
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // get time-step size
   const double dt = evaluation_data.dt;
