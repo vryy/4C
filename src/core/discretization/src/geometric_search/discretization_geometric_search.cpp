@@ -19,7 +19,6 @@
 #include <ArborX.hpp>
 #endif
 
-
 #include "discretization_geometric_search.H"
 #include "discretization_geometric_search_utils.H"
 
@@ -58,53 +57,15 @@ namespace ArborX
     static auto get(
         const std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>>& vector, std::size_t i)
     {
-      // Attach the primitive ID here, so we can get the actual primitve in the callback
-      // IntersectActualVolumeType
-      return attach(intersects(vector[i].second.bounding_volume_), i);
+      return intersects(vector[i].second.bounding_volume_);
     }
   };
 }  // namespace ArborX
+
 #endif
 
 namespace GEOMETRICSEARCH
 {
-
-  // The currently used ArborX version only supports tree structures for points and
-  // axis-aligned-boundary-boxes (AABB). We convert the k-DOPs to AABB in the creation of the tree.
-  // Therefore, the standard query would only give the intersections of the AABB of the primitives
-  // with the predicates. With this callback we perform the query in the sense, that we check each
-  // k-DOP of the primitives with each k-DOP of the predicates. This can lead to a drastic reduction
-  // of the found pairs.
-  template <class Primitives, class Predicates>
-  struct IntersectActualVolumeType
-  {
-    // Empyt constructor
-    IntersectActualVolumeType(Primitives primitives, Predicates predicates)
-        : primitives_(primitives), predicates_(predicates)
-    {
-    }
-
-    // When querying a primitive vs a predicate, get the actual volume type for the primitive and
-    // predicate and check them for intersection
-    template <class Predicate, class OutputFunctor>
-    KOKKOS_FUNCTION void operator()(
-        const Predicate predicate, const int primitive_index, const OutputFunctor& out) const
-    {
-      const int predicate_index = getData(predicate);
-      const auto& predicate_geometry = predicates_[predicate_index].second.bounding_volume_;
-      const auto& primitive_geometry = primitives_[primitive_index].second.bounding_volume_;
-      if (ArborX::intersects(predicate_geometry)(primitive_geometry))
-      {
-        out(primitive_index);
-      }
-    }
-
-    // The original pimitives and predicates
-    Primitives primitives_;
-    Predicates predicates_;
-  };
-
-
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
@@ -145,9 +106,23 @@ namespace GEOMETRICSEARCH
       Kokkos::View<int*, Kokkos::HostSpace> indices_full("indices_full", 0);
       Kokkos::View<int*, Kokkos::HostSpace> offset_full("offset_full", 0);
 
+      // The currently used ArborX version only supports tree structures for points and
+      // axis-aligned-boundary-boxes (AABB). We convert the k-DOPs to AABB in the creation of the
+      // tree. Therefore, the standard query would only give the intersections of the AABB of the
+      // primitives with the predicates. With this callback we perform the query in the sense, that
+      // we check each k-DOP of the primitives with each k-DOP of the predicates. This can lead to a
+      // drastic reduction of the found pairs.
+      auto IntersectActualVolumeType =
+          KOKKOS_LAMBDA(const auto predicate, const int primitive_index, const auto& out)->void
+      {
+        const auto& primitive_geometry = primitives[primitive_index].second.bounding_volume_;
+
+        if (predicate(primitive_geometry)) out(primitive_index);
+      };
+
       // Perform the collision check.
       bounding_volume_hierarchy.query(Kokkos::DefaultExecutionSpace{}, predicates,
-          IntersectActualVolumeType{primitives, predicates}, indices_full, offset_full);
+          IntersectActualVolumeType, indices_full, offset_full);
 
       // Copy kokkos view to std::vector
       indices_final.insert(
