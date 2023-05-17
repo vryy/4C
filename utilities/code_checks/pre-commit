@@ -147,12 +147,14 @@ then
 exit 1
 fi
 
-### Stage 2: Header check ####################################
+### Stage 2: Header & Codeowners check ####################################
 python ./utilities/code_checks/header_check.py --diff_only || exit 1
 
 python ./utilities/code_checks/check_file_prefix_and_includes.py src unittests --diff_only || exit 1
 
 python ./utilities/code_checks/check_header_guards.py --diff_only || exit 1
+
+python ./utilities/code_checks/check_codeowners.py --diff_only|| exit 1
 
 ### Stage 3: Framework check ####################################
 python ./utilities/code_checks/testing_frameworks_check.py --diff_only || exit 1

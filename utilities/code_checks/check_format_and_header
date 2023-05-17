@@ -21,6 +21,7 @@
 [ -e wrong_headers.txt ] && rm wrong_headers.txt
 [ -e wrong_tests.txt ] && rm wrong_tests.txt
 [ -e wrong_code_format.txt ] && rm wrong_code_format.txt
+[ -e wrong_codeowners.txt ] && rm wrong_codeowners.txt
 
 # Load the python virtual environment, which provides the formatters.
 source ./utilities/baci-python-venv/bin/activate
@@ -82,6 +83,21 @@ else
   rm wrong_header_guards.txt
   echo "Passed."
 fi
+
+### Check for Codeowners ####################################
+echo "Start test for Codeowners ..."
+python ./utilities/code_checks/check_codeowners.py --out wrong_codeowners.txt | tee wrong_codeowners.txt
+
+if [ -s wrong_codeowners.txt ]
+then
+  echo "Failed. Non-compliant files have been reported in wrong_codeowners.txt."
+  cat wrong_codeowners.txt
+  exit 1
+else
+  rm wrong_codeowners.txt
+  echo "Passed."
+fi
+
 
 
 ### Style Format check #########################################

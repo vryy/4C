@@ -96,6 +96,8 @@ config/                    @baci/team_infrastructure
 
 constraint/                @baci/team_discretization
 
+constraint_framework/      @baci/team_structure
+
 contact/                   @baci/team_contact
 contact/baci_contact_meshtying_poro_*          @baci/team_poro @baci/team_contact
 contact/baci_contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
@@ -157,25 +159,27 @@ geometry_pair/             @baci/team_discretization
 
 global_full/               @baci/team_discretization
 
+global_legacy_module/      @baci/team_infrastructure
+
 headers/                   @baci/team_discretization
 
 immersed_problem/          @baci/team_fsi
 
 inpar/                     @baci/team_input
-inpar/baci_inpar_ale*           @baci/team_fsi
-inpar/baci_inpar_beam*          @baci/team_input @baci/team_structure
-inpar/baci_inpar_bio*           @baci/team_reduced_fluid_models
-inpar/baci_inpar_contact*       @baci/team_contact
-inpar/baci_inpar_fbi*           @baci/team_fsi
-inpar/baci_inpar_fluid*         @baci/team_fluid
-inpar/baci_inpar_fpsi*          @baci/team_poro @baci/team_fluid
-inpar/baci_inpar_fsi*           @baci/team_fsi
+inpar/baci_inpar_ale*               @baci/team_fsi
+inpar/baci_inpar_beam*              @baci/team_input @baci/team_structure
+inpar/baci_inpar_bio*               @baci/team_reduced_fluid_models
+inpar/baci_inpar_contact*           @baci/team_contact
+inpar/baci_inpar_fbi*               @baci/team_fsi
+inpar/baci_inpar_fluid*             @baci/team_fluid
+inpar/baci_inpar_fpsi*              @baci/team_poro @baci/team_fluid
+inpar/baci_inpar_fsi*               @baci/team_fsi
 inpar/baci_inpar_IO_runtime_vt*_output*                  @baci/team_input @baci/team_output
-inpar/baci_inpar_material*      @baci/team_material
-inpar/baci_inpar_particle*      @baci/team_particle
-inpar/baci_inpar_pasi*          @baci/team_particle
-inpar/baci_inpar_poro*          @baci/team_poro
-inpar/baci_inpar_solver*        @baci/team_solvers
+inpar/baci_inpar_material*          @baci/team_material
+inpar/baci_inpar_particle*          @baci/team_particle
+inpar/baci_inpar_pasi*              @baci/team_particle
+inpar/baci_inpar_poro*              @baci/team_poro
+inpar/baci_inpar_solver*            @baci/team_solvers
 inpar/baci_inpar_validcontactconstitutivelaw*            @baci/team_contact
 inpar/baci_inpar_validmaterials*                         @baci/team_material
 
@@ -184,9 +188,8 @@ io/                        @baci/team_input @baci/team_output
 levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
-lib/baci_material*         @baci/team_material
-lib/baci_parobject*        @baci/team_infrastructure
-lib/baci_particlereader*   @baci/team_particle
+lib/baci_lib_material*              @baci/team_material
+lib/baci_lib_parobject*             @baci/team_infrastructure
 
 linalg/                    @baci/team_solvers
 
@@ -213,7 +216,7 @@ membrane/                  @baci/team_structure
 
 mixture/                   @baci/team_structure @baci/team_material
 
-module_registery/          @baci/team_discretization
+module_registry/          @baci/team_discretization
 
 mor/                       @baci/team_structure
 
@@ -281,11 +284,7 @@ so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
 solid_ele/                 @baci/team_structure
 
-solver/                    @baci/team_solvers
-
 solver_nonlin_nox/         @baci/team_solvers
-
-spring3/                   @baci/team_structure
 
 ssi/                       @baci/team_scatra
 
@@ -318,7 +317,7 @@ tsi/                       @baci/team_thermo
 tutorial/                  @baci/team_infrastructure
 
 w1/                        @baci/team_structure
-w1/baci_wall1_poro*        @baci/team_structure @baci/team_poro
+w1/baci_w1_poro*           @baci/team_structure @baci/team_poro
 
 wear/                      @baci/team_contact
 
@@ -383,7 +382,7 @@ xfem/                      @baci/team_fluid
 
 /tests/input_files/prestress*                  @baci/team_structure
 
-/tests/input_files/red_airways*                @baci/team_reduced_fluid_models
+/tests/input_files/red_airway*                @baci/team_reduced_fluid_models
 
 /tests/input_files/ref/beam*/**/*              @baci/team_structure
 /tests/input_files/ref/fluid*/**/*             @baci/team_fluid
@@ -392,8 +391,8 @@ xfem/                      @baci/team_fluid
 /tests/input_files/ref/pasi*/**/*              @baci/team_particle
 /tests/input_files/ref/sohex8fbar*/**/*        @baci/team_structure
 /tests/input_files/ref/solid*/**/*             @baci/team_structure
-/tests/input_files/ref/ssi*/**/*               @baci/team_scatra
-/tests/input_files/ref/ssti*/**/*              @baci/team_scatra
+/tests/input_files/ref/ssi*                    @baci/team_scatra
+/tests/input_files/ref/ssti*                   @baci/team_scatra
 /tests/input_files/ref/structure*/**/*         @baci/team_structure
 
 /tests/input_files/rigidsphere*                @baci/team_structure
@@ -429,11 +428,33 @@ xfem/                      @baci/team_fluid
 /tests/input_files/xfluid_*                    @baci/team_fluid
 
 # infrastructure configuration files
+.clang*                                        @baci/team_infrastructure
+.gitignore                                     @baci/team_infrastructure 
+.gitlab/CODEOWNERS                             @baci/team_infrastructure 
+CMakePresets.json                              @baci/team_infrastructure 
+Dangerfile                                     @baci/team_infrastructure 
+Gemfile                                        @baci/team_infrastructure 
+Gemfile.lock                                   @baci/team_infrastructure 
+create-baci-python-venv                        @baci/team_infrastructure 
+requirements.txt                               @baci/team_infrastructure
+.contains_modules                              @baci/team_infrastructure 
+
+# template files
+.gitlab/issue_templates/BUG_REPORT.md                                        @baci/team_infrastructure 
+.gitlab/issue_templates/DEVELOPER_MEETING_TEMPLATE.md                        @baci/baci_developers 
+.gitlab/issue_templates/FAREWELL.md                                          @baci/baci_maintainer 
+.gitlab/issue_templates/ISSUE_TEMPLATE.md                                    @baci/baci_developers 
+.gitlab/issue_templates/ONBOARDING.md                                        @baci/baci_maintainer 
+.gitlab/issue_templates/TEST_FAILING.md                                      @baci/team_infrastructure 
+.gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers 
+
 
 # put CMakeLists.txt last to override folder owners
-*CMakeLists.txt                    @baci/baci_maintainer @baci/team_infrastructure
+*CMakeLists.txt                                @baci/baci_maintainer @baci/team_infrastructure
 
 # testing framework configuration files
-TestingFramework.cmake             @baci/team_testing
-TestingFrameworkListOfTests.cmake  @baci/baci_developers
-UnittestingFramework.cmake         @baci/team_testing
+TestingFramework.cmake                         @baci/team_testing
+TestingFrameworkListOfTests.cmake              @baci/baci_developers
+
+README.md                                      @baci/baci_developers
+CONTRIBUTING.md                                @baci/baci_maintainer 
