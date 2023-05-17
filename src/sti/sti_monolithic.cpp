@@ -12,6 +12,7 @@
 #include "sti_monolithic_evaluate_OffDiag.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "linalg_matrixtransform.H"
 
 #include "io_control.H"

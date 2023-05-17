@@ -15,7 +15,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 #include "lib_dserror.H"
-#include "coupling_adapter.H"
+#include "coupling_adapter_base.H"
 
 // forward declarations
 namespace LINALG
@@ -107,13 +107,6 @@ namespace ADAPTER
         const bool slidingale = false,    ///< flag indicating sliding ALE case
         const int nds_master = 0,         ///< master dofset number
         const int nds_slave = 0           ///< slave dofset number
-    );
-
-    //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface
-    //! ONLY))
-    virtual void SetupForUQAbuseNormalCalculation(
-        Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
-        const Epetra_Comm& comm                      ///< communicator
     );
 
     /// create integration cells

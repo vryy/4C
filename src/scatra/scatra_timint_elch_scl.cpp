@@ -34,6 +34,8 @@
 
 #include "adapter_scatra_base_algorithm.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+
 
 #include "lib_utils_parallel.H"
 

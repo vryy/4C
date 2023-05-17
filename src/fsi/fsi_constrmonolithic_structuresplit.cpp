@@ -12,6 +12,7 @@
 
 #include "fsi_constrmonolithic_structuresplit.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "lib_globalproblem.H"

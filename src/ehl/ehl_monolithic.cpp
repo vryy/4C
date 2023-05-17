@@ -28,6 +28,8 @@
 #include "lib_globalproblem.H"
 #include "lib_locsys.H"
 
+#include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_coupling_ehl_mortar.H"
 #include "contact_interface.H"
 #include "contact_node.H"

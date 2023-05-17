@@ -1,6 +1,7 @@
 set(OBJS_ADAPTER_COUPLING
     # cmake-format: sortable
     coupling_adapter.cpp
+    coupling_adapter_converter.cpp
     coupling_adapter_mortar.cpp
     coupling_adapter_volmortar.cpp
     )

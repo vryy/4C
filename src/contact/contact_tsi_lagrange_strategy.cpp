@@ -22,6 +22,8 @@
 #include "linalg_multiply.H"
 #include "inpar_thermo.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+
 #include "contact_tsi_interface.H"
 
 #include "linalg_sparsematrix.H"

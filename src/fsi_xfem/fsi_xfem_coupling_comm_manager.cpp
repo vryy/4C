@@ -19,6 +19,7 @@ transform matrixes, vectors, ...
 #include "linalg_matrixtransform.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 
 #include <iostream>
 #include <string>

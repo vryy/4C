@@ -26,6 +26,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 
 #include "linalg_matrixtransform.H"
 

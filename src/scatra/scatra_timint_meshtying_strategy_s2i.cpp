@@ -12,6 +12,7 @@
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "coupling_adapter_mortar.H"
 
 #include "fluid_utils.H"

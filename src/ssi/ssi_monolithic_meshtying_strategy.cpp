@@ -15,6 +15,7 @@
 
 #include "adapter_str_ssiwrapper.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 
 #include "lib_locsys.H"
 

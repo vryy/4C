@@ -15,6 +15,7 @@
 #include "adapter_fld_poro.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_coupling_nonlin_mortar.H"
 
 #include "contact_interface.H"

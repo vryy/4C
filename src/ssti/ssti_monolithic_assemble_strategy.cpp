@@ -9,6 +9,7 @@
 #include "ssti_monolithic_assemble_strategy.H"
 #include "ssti_utils.H"
 
+#include "coupling_adapter_converter.H"
 #include "adapter_str_ssiwrapper.H"
 
 #include "io_control.H"

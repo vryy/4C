@@ -30,6 +30,7 @@
 #include "inpar_fs3i.H"
 
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_structure_scatra_ele.H"
 

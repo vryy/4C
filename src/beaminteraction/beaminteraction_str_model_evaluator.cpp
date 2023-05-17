@@ -48,7 +48,7 @@
 #include "beaminteraction_data.H"
 #include "beaminteraction_crosslinker_handler.H"
 
-
+#include "coupling_adapter_converter.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

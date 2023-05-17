@@ -25,6 +25,8 @@
 
 #include "linalg_matrixtransform.H"
 
+#include "coupling_adapter_converter.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::MultiFieldMapExtractor::MultiFieldMapExtractor()

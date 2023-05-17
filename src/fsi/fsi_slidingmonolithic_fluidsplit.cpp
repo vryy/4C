@@ -12,8 +12,9 @@ with condensed fluid interface velocities
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "coupling_adapter_mortar.H"
 #include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "fsi_slidingmonolithic_fluidsplit.H"
