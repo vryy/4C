@@ -29,7 +29,7 @@ STDOUTEVRY                      0
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   2
 INT_STRATEGY                    Standard
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -50,13 +50,13 @@ EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
--------------------------------------------------------SSTI CONTROL
+------------------------------------------------------SSTI CONTROL
 NUMSTEP                         30
 TIMESTEP                        0.05
 COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
 RESTARTEVRY                     5
---------------------------------------------SSTI CONTROL/MONOLITHIC
+-------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
 ABSTOLRES                       1.0e-11
@@ -64,7 +64,7 @@ EQUILIBRATION                   local
 EQUILIBRATION_SCATRA            none
 EQUILIBRATION_STRUCTURE         symmetry
 EQUILIBRATION_THERMO            none
---------------------------------------------SSTI CONTROL/THERMO
+-----------------------------------------------SSTI CONTROL/THERMO
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_condition
 ----------------------------------------------------------SOLVER 1
@@ -120,17 +120,17 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME (-0.5*(1+cos((t-0.2)*pi))*heaviside(1.2-t)+1)*he
 ------------------------------------------------------------FUNCT8
 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-0.5*(1+cos((t-0.1)*pi))*heaviside(1.1-t)+1)*heaviside(t-0.1)
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -2.00000000000912854e-04 TOLERANCE 2.0e-12
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -3.00000000001245614e-04 TOLERANCE 3.0e-12
-STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE -5.00000000001012222e-04 TOLERANCE 5.0e-12
-SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  5.55555524040853221e+00 TOLERANCE 5.6e-08
-SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  1.18959728448083474e-01 TOLERANCE 1.2e-09
-SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  1.10836336398159328e+04 TOLERANCE 1.1e-04
-SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.77894337535445459e+02 TOLERANCE 2.8e-06
-SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.18197652959470588e+02 TOLERANCE 3.2e-06
-SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.34677687523994734e+02 TOLERANCE 3.3e-06
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -2.00000000000970045e-04 TOLERANCE 2.0e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -3.00000000001331049e-04 TOLERANCE 3.0e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE -5.00000000001154686e-04 TOLERANCE 5.0e-12
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  5.55555524040883864e+00 TOLERANCE 5.6e-08
+SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  1.18959726349577549e-01 TOLERANCE 1.2e-09
+SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  1.10800247649541088e+04 TOLERANCE 1.1e-04
+SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.77894337536503826e+02 TOLERANCE 2.8e-06
+SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.18197674085044468e+02 TOLERANCE 3.2e-06
+SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.34569584738632841e+02 TOLERANCE 3.3e-06
 SSTI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE  3.00000000000000000e+00 TOLERANCE 1.0e-16
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  12
@@ -183,7 +183,7 @@ E 3 - 0 Master
 E 4 - 1 Master
 // cath_el_cath_side
 E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 0.0
---------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
+-------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
 E 2 - 0 Slave S2I_KINETICS_ID  0

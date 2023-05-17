@@ -50,7 +50,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
-----------------------------------------------SSI CONTROL/ELCH
+--------------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -68,7 +68,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 4358
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 43584.9
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.6
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.41093596794073777e-02 TOLERANCE 1.4e-10
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.50321827049104181e-02 TOLERANCE 1.5e-10
 STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE -1.95301434730155016e-02 TOLERANCE 2.0e-10
