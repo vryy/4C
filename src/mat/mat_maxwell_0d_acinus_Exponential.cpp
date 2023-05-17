@@ -27,6 +27,7 @@ E1_LIN 0 TAU 0
 #include "mat_par_bundle.H"
 #include "red_airways_elementbase.H"
 #include "lib_linedefinition.H"
+#include "red_airways_elem_params.h"
 
 
 
@@ -150,20 +151,20 @@ void MAT::Maxwell_0d_acinus_Exponential::Setup(DRT::INPUT::LineDefinition* lined
  *----------------------------------------------------------------------*/
 void MAT::Maxwell_0d_acinus_Exponential::Evaluate(Epetra_SerialDenseVector& epnp,
     Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
-    const double Vo, double time, double dt)
+    Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+    const double NumOfAcini, const double Vo, double time, double dt)
 {
   // Set sysmat and rhs to zero
   sysmat.Scale(0.0);
   rhs.Scale(0.0);
 
   // Get acinar volume in next and current timestep
-  double acin_vnp = params.get<double>("acin_vnp");
-  double acin_vn = params.get<double>("acin_vn");
+  double acin_vnp = params.acin_vnp;
+  double acin_vn = params.acin_vn;
 
   // Get flow in next and current timestep
-  double qnp = params.get<double>("qin_np");
-  double qn = params.get<double>("qin_n");
+  double qnp = params.qin_np;
+  double qn = params.qin_n;
 
   // Get acini pressure and beginning and end of acinus element
   double p1n = epn(0);

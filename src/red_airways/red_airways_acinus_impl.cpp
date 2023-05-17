@@ -14,6 +14,7 @@
 
 
 #include "red_airways_acinus_impl.H"
+#include "red_airways_elem_params.h"
 
 #include "mat_newtonianfluid.H"
 #include "mat_maxwell_0d_acinus.H"
@@ -66,6 +67,56 @@ DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
 
 
 /*----------------------------------------------------------------------*
+ |  calculate element matrix and right hand side (private)  ismail 01/10|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+/*!
+        \brief calculate element matrix and rhs
+
+\param ele              (i) the element those matrix is calculated
+        \param eqnp             (i) nodal volumetric flow rate at n+1
+        \param evelnp           (i) nodal velocity at n+1
+        \param eareanp          (i) nodal cross-sectional area at n+1
+        \param eprenp           (i) nodal pressure at n+1
+        \param estif            (o) element matrix to calculate
+        \param eforce           (o) element rhs to calculate
+        \param material         (i) acinus material/dimesion
+        \param time             (i) current simulation time
+        \param dt               (i) timestep
+        */
+template <DRT::Element::DiscretizationType distype>
+void Sysmat(DRT::ELEMENTS::RedAcinus* ele, Epetra_SerialDenseVector& epnp,
+    Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
+    Epetra_SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
+    DRT::REDAIRWAYS::ElemParams& params, double time, double dt)
+{
+  // Decide which acinus material should be used
+  if ((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_exponential) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_doubleexponential) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden))
+  {
+    double VolAcinus;
+    ele->getParams("AcinusVolume", VolAcinus);
+    double volAlvDuct;
+    ele->getParams("AlveolarDuctVolume", volAlvDuct);
+    const double NumOfAcini = double(floor(VolAcinus / volAlvDuct));
+
+    const Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat =
+        Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(ele->Material());
+
+    // Evaluate material law for acinus
+    acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
+  }
+  else
+  {
+    dserror("Material law is not a valid reduced dimensional lung acinus material.");
+    exit(1);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -78,11 +129,14 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   const int elemVecdim = elevec1_epetra.Length();
   std::vector<int>::iterator it_vcr;
 
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   // Get control parameters for time integration
   // get time-step size
-  const double dt = params.get<double>("time step size");
+  const double dt = evaluation_data.dt;
   // get time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   // Get control parameters for stabilization and higher-order elements (currently unused)
   // flag for higher order elements
@@ -97,10 +151,6 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
-
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
-
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -141,23 +191,23 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   }
 
   // Get the volumetric flow rate from the previous time step
-  Teuchos::ParameterList elem_params;
-  elem_params.set<double>("qout_np", (*evaluation_data.qout_np)[ele->LID()]);
-  elem_params.set<double>("qout_n", (*evaluation_data.qout_n)[ele->LID()]);
-  elem_params.set<double>("qout_nm", (*evaluation_data.qout_nm)[ele->LID()]);
-  elem_params.set<double>("qin_np", (*evaluation_data.qin_np)[ele->LID()]);
-  elem_params.set<double>("qin_n", (*evaluation_data.qin_n)[ele->LID()]);
-  elem_params.set<double>("qin_nm", (*evaluation_data.qin_nm)[ele->LID()]);
+  DRT::REDAIRWAYS::ElemParams elem_params;
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
 
-  elem_params.set<double>("acin_vnp", e_acin_e_vnp);
-  elem_params.set<double>("acin_vn", e_acin_e_vn);
+  elem_params.acin_vnp = e_acin_e_vnp;
+  elem_params.acin_vn = e_acin_e_vn;
 
-  elem_params.set<double>("lungVolume_np", params.get<double>("lungVolume_np"));
-  elem_params.set<double>("lungVolume_n", params.get<double>("lungVolume_n"));
-  elem_params.set<double>("lungVolume_nm", params.get<double>("lungVolume_nm"));
+  elem_params.lungVolume_np = evaluation_data.lungVolume_np;
+  elem_params.lungVolume_n = evaluation_data.lungVolume_n;
+  elem_params.lungVolume_nm = evaluation_data.lungVolume_nm;
 
   // Call routine for calculating element matrix and right hand side
-  Sysmat(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
+  Sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
 
   double Ao = 0.0;
   ele->getParams("Area", Ao);
@@ -288,42 +338,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
 
 
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
- |                                                                      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(RedAcinus* ele, Epetra_SerialDenseVector& epnp,
-    Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, double time, double dt)
-{
-  // Decide which acinus material should be used
-  if ((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_exponential) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_doubleexponential) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden))
-  {
-    double VolAcinus;
-    ele->getParams("AcinusVolume", VolAcinus);
-    double volAlvDuct;
-    ele->getParams("AlveolarDuctVolume", volAlvDuct);
-    const double NumOfAcini = double(floor(VolAcinus / volAlvDuct));
-
-    const Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(ele->Material());
-
-    // Evaluate material law for acinus
-    acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
-  }
-  else
-  {
-    dserror("Material law is not a valid reduced dimensional lung acinus material.");
-    exit(1);
-  }
-}
-
-
-/*----------------------------------------------------------------------*
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
@@ -334,8 +348,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 {
   const int myrank = discretization.Comm().MyPID();
 
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   // Get total time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   // The number of nodes
   const int numnode = lm.size();
@@ -585,6 +602,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               double RV = pplCond->GetDouble("RV");
               double TLC = pplCond->GetDouble("TLC");
 
+              const auto& evaluation_data =
+                  *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
               // Safety check: in case of polynomial TLC is not used
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and
                   (TLC != 0.0))
@@ -606,34 +626,34 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 
               if (ppl_Type == "Linear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Linear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Linear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else if (ppl_Type == "Nonlinear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Nonlinear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Nonlinear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else
@@ -737,11 +757,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 {
   const int elemVecdim = lm.size();
 
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   // Get control parameters for time integration
   // Get time-step size
-  const double dt = params.get<double>("time step size");
+  const double dt = evaluation_data.dt;
   // Get time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   // Get control parameters for stabilization and higher-order elements
   // flag for higher order elements
@@ -754,9 +777,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
-
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -793,22 +813,22 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   }
 
   // Get the volumetric flow rate from the previous time step
-  Teuchos::ParameterList elem_params;
-  elem_params.set<double>("qout_np", (*evaluation_data.qout_np)[ele->LID()]);
-  elem_params.set<double>("qout_n", (*evaluation_data.qout_n)[ele->LID()]);
-  elem_params.set<double>("qout_nm", (*evaluation_data.qout_nm)[ele->LID()]);
-  elem_params.set<double>("qin_np", (*evaluation_data.qin_np)[ele->LID()]);
-  elem_params.set<double>("qin_n", (*evaluation_data.qin_n)[ele->LID()]);
-  elem_params.set<double>("qin_nm", (*evaluation_data.qin_nm)[ele->LID()]);
+  DRT::REDAIRWAYS::ElemParams elem_params;
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
 
-  elem_params.set<double>("acin_vnp", e_acin_vnp);
-  elem_params.set<double>("acin_vn", e_acin_vn);
+  elem_params.acin_vnp = e_acin_vnp;
+  elem_params.acin_vn = e_acin_vn;
 
   Epetra_SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
   Epetra_SerialDenseVector rhs(elemVecdim);
 
   // Call routine for calculating element matrix and right hand side
-  Sysmat(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
+  Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
 
   double qn = (*evaluation_data.qin_n)[ele->LID()];
   double qnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
@@ -1059,10 +1079,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
   double e2s = (*evaluation_data.e2scatran)[ele->LID()];
 
   // get time step size
-  // const double dt = params.get<double>("time step size");
+  // const double dt = evaluation_data.dt;
 
   // get time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   //--------------------------------------------------------------------
   // get element length

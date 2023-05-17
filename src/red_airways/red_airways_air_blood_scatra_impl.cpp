@@ -203,8 +203,11 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
 {
   // const int   myrank  = discretization.Comm().MyPID();
 
+  const auto& evaluation_data =
+      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+
   // get time-step size
-  const double dt = params.get<double>("time step size");
+  const double dt = evaluation_data.dt;
 
 
   Teuchos::RCP<const Epetra_Vector> volnp = discretization.GetState("volumenp");

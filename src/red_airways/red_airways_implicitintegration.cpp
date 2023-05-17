@@ -916,10 +916,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     // Set action for elements: calc_sys_matrix_rhs
     eleparams.set("action", "calc_sys_matrix_rhs");
-    eleparams.set("time step size", dta_);
-
-    // Set other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // Set vector values needed by elements
     discret_->ClearState();
@@ -954,6 +950,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     evaluation_data->elemVolumen = elemVolumen_;
     evaluation_data->elemVolumenp = elemVolumenp_;
 
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
+
     // Evaluate Lung volumes nm, n, np and set to eleparams
     double lung_volume_np = 0.0;
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
@@ -976,9 +975,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       dserror("Error by summing all acinar volumes");
     }
 
-    eleparams.set("lungVolume_np", lung_volume_np);
-    eleparams.set("lungVolume_n", lung_volume_n);
-    eleparams.set("lungVolume_nm", lung_volume_nm);
+    evaluation_data->lungVolume_np = lung_volume_np;
+    evaluation_data->lungVolume_n = lung_volume_n;
+    evaluation_data->lungVolume_nm = lung_volume_nm;
 
 
     eleparams.set("evaluation_data", evaluation_data);
@@ -1026,8 +1025,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     evaluation_data->p_extnp = p_extnp_;
     evaluation_data->p_extn = p_extn_;
 
-    eleparams.set("time step size", dta_);
-    eleparams.set("total time", time_);
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
     evaluation_data->bcval = bcval_;
     evaluation_data->dbctog = dbctog_;
 
@@ -1044,8 +1043,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     {
       dserror("Error by summing all acinar volumes");
     }
-    eleparams.set("lungVolume_np", lung_volume_np);
-    eleparams.set("lungVolume_n", lung_volume_n);
+    evaluation_data->lungVolume_np = lung_volume_np;
+    evaluation_data->lungVolume_n = lung_volume_n;
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
@@ -1126,8 +1125,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->SetState("pnm", pnm_);
     discret_->SetState("intr_ac_link", n_intr_ac_ln_);
 
-    eleparams.set("time step size", dta_);
-    eleparams.set("total time", time_);
     // note: We use an RCP because ParameterList wants something printable and comparable
     auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
 
@@ -1150,6 +1147,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     evaluation_data->p_extnp = p_extnp_;
     evaluation_data->p_extn = p_extn_;
     evaluation_data->compute_awacinter = compAwAcInter_;
+
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
 
     eleparams.set("evaluation_data", evaluation_data);
@@ -1177,7 +1177,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     evaluation_data->acinar_vn = acini_e_volumen_;
 
-    eleparams.set("time step size", dta_);
+    evaluation_data->dt = dta_;
     evaluation_data->qin_n = qin_n_;
     evaluation_data->qout_n = qout_n_;
     evaluation_data->qin_np = qin_np_;
@@ -1218,8 +1218,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     evaluation_data->qout_np = qout_np_;
     evaluation_data->qout_n = qout_n_;
 
-    eleparams.set("time step size", dta_);
-    eleparams.set("total time", time_);
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     evaluation_data->x_n = x_n_;
     evaluation_data->x_np = x_np_;
@@ -1261,10 +1261,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action", "calc_cfl");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
@@ -1272,6 +1268,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data->elemVolumenp = elemVolumenp_;
     evaluation_data->qin_np = qin_np_;
     evaluation_data->qout_np = qout_np_;
+
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     evaluation_data->cfl = cfls_;
 
@@ -1297,10 +1296,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action", "get_junction_volume_mix");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
@@ -1315,6 +1310,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
 
     evaluation_data->acinar_vn = acini_e_volumen_;
     evaluation_data->acinar_vnp = acini_e_volumenp_;
+
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     junctionVolumeInMix_->PutScalar(0.0);
     evaluation_data->elemVolumenp = elemVolumenp_;
@@ -1334,10 +1332,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action", "solve_scatra");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
@@ -1364,6 +1358,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
 
     evaluation_data->elemVolumenp = elemVolumenp_;
     evaluation_data->elemVolumen = elemVolumen_;
+
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     eleparams.set("evaluation_data", evaluation_data);
 
@@ -1397,10 +1394,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action", "solve_junction_scatra");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
@@ -1417,6 +1410,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data->qout_np = qout_np_;
     evaluation_data->qin_n = qin_n_;
     evaluation_data->qout_n = qout_n_;
+
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     evaluation_data->elemVolumenp = elemVolumenp_;
     discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
@@ -1472,10 +1468,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action", "solve_blood_air_transport");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     discret_->SetState("areanp", nodal_surfaces);
     discret_->SetState("volumenp", nodal_volumes);
@@ -1484,6 +1476,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // note: We use an RCP because ParameterList wants something printable and comparable
     auto evaluation_data = Teuchos::rcp(new DRT::REDAIRWAYS::EvaluationData);
     evaluation_data->elemVolumenp = elemVolumenp_;
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
     eleparams.set("evaluation_data", evaluation_data);
 
     dscatraO2_->PutScalar(0.0);
@@ -2292,10 +2286,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
     // action for elements
     eleparams.set("action", "calc_sys_matrix_rhs");
-    eleparams.set("time step size", dta_);
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time", time_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -2329,6 +2319,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     evaluation_data->elemVolumen = elemVolumen_;
     evaluation_data->elemVolumenp = elemVolumenp_;
 
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
+
     // get lung volume
     double lung_volume_np = 0.0;
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
@@ -2351,9 +2344,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
       dserror("Error by summing all acinar volumes");
     }
 
-    eleparams.set("lungVolume_np", lung_volume_np);
-    eleparams.set("lungVolume_n", lung_volume_n);
-    eleparams.set("lungVolume_nm", lung_volume_nm);
+    evaluation_data->lungVolume_np = lung_volume_np;
+    evaluation_data->lungVolume_n = lung_volume_n;
+    evaluation_data->lungVolume_nm = lung_volume_nm;
 
     eleparams.set("evaluation_data", evaluation_data);
 
@@ -2396,10 +2389,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     evaluation_data->qout_np = qout_np_;
     evaluation_data->qout_n = qout_n_;
 
-    eleparams.set("time step size", dta_);
-    eleparams.set("total time", time_);
     evaluation_data->bcval = bcval_;
     evaluation_data->dbctog = dbctog_;
+    evaluation_data->dt = dta_;
+    evaluation_data->time = time_;
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
@@ -2417,8 +2410,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     {
       dserror("Error by summing all acinar volumes");
     }
-    eleparams.set("lungVolume_np", lung_volume_np);
-    eleparams.set("lungVolume_n", lung_volume_n);
+    evaluation_data->lungVolume_np = lung_volume_np;
+    evaluation_data->lungVolume_n = lung_volume_n;
 
 
     eleparams.set("evaluation_data", evaluation_data);

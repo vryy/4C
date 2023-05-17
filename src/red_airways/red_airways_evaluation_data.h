@@ -18,6 +18,11 @@ namespace DRT::REDAIRWAYS
    */
   struct EvaluationData
   {
+    /*
+   protected:
+    EvaluationData() = default;
+
+   public: */
     Teuchos::RCP<Epetra_Vector> acinar_vnp_strain;
     Teuchos::RCP<Epetra_Vector> acinar_vnp;
     Teuchos::RCP<Epetra_Vector> acinar_vn;
@@ -76,7 +81,28 @@ namespace DRT::REDAIRWAYS
     Teuchos::RCP<Epetra_Vector> dbctog;
 
     Teuchos::RCP<Epetra_Vector> acini_bc;
+
+    double lungVolume_np{};
+    double lungVolume_n{};
+    double lungVolume_nm{};
+
+    double time{};
+    double dt{};
+
+    /*
+    static EvaluationData& get()
+    {
+      static EvaluationData evaluation_data;
+      return evaluation_data;
+    }
+
+    EvaluationData(const EvaluationData&) = delete;
+    EvaluationData(EvaluationData&&) = delete;
+    EvaluationData& operator=(const EvaluationData&) = delete;
+    EvaluationData& operator=(EvaluationData&&) = delete; */
   };
 }  // namespace DRT::REDAIRWAYS
 
 #endif
+
+// DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
