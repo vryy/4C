@@ -53,6 +53,7 @@ set(OBJS_LIB
     lib_symbolic_expression.cpp
     lib_tensor_transformation.cpp
     lib_utils.cpp
+    lib_utils_cond_and_mat_definition.cpp
     lib_utils_createdis.cpp
     lib_utils_discret.cpp
     lib_utils_discret_dbc.cpp
