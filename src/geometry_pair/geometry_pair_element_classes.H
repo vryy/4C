@@ -16,6 +16,7 @@
 
 #include "linalg_utils_densematrix_inverse.H"
 #include "lib_dserror.H"
+#include "lib_discret.H"
 
 #include <vector>
 

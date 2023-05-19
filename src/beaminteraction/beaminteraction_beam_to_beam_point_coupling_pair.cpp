@@ -11,6 +11,7 @@
 
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
+#include "linalg_sparsematrix.H"
 
 #include "beaminteraction_beam_to_solid_utils.H"
 #include "geometry_pair_element_functions.H"

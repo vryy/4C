@@ -9,10 +9,10 @@
 #ifndef LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define LINALG_UTILS_DENSEMATRIX_INVERSE_H
 
+#include "linalg_serialdensematrix.H"
 #include "linalg_utils_densematrix_determinant.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "lib_exporter.H"
 
 namespace LINALG
 {

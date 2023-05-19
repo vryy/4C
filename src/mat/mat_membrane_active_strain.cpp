@@ -19,6 +19,7 @@
 #include "lib_globalproblem.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "mat_membrane_elasthyper.H"
+#include "lib_utils_factory.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                     brandstaeter 05/2018 |

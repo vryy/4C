@@ -14,8 +14,6 @@
 #include "linalg_fixedsizematrix.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "lib_exporter.H"
-#include "linalg_blocksparsematrix.H"
 
 namespace LINALG
 {
