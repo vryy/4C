@@ -61,9 +61,6 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat) = 0;
 
-      virtual bool GetCurveValAtCond(double& bcVal, DRT::Node* node, std::string conditionName,
-          std::string optionName, std::string conditionType, double time) = 0;
-
       virtual void GetCoupledValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) = 0;
@@ -76,7 +73,6 @@ namespace DRT
           DRT::Discretization& discretization, Epetra_SerialDenseVector& scatra_np,
           Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) = 0;
-
 
       virtual void SolveScatraBifurcations(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, Epetra_SerialDenseVector& scatra_np,
@@ -103,8 +99,6 @@ namespace DRT
           DRT::Discretization& discretization, Epetra_SerialDenseVector& nodal_surface,
           Epetra_SerialDenseVector& nodal_volume, Epetra_SerialDenseVector& nodal_flow,
           std::vector<int>& lm, Teuchos::RCP<MAT::Material> material) = 0;
-
-      virtual double GetElementLength(RedAirway* ele) = 0;
 
 
       /// Internal implementation class for airway element
@@ -163,25 +157,6 @@ namespace DRT
         */
       void ComputePext(RedAirway* ele, Teuchos::RCP<const Epetra_Vector> pn,
           Teuchos::RCP<const Epetra_Vector> pnp, Teuchos::ParameterList& params);
-      /*!
-        \brief calculate element matrix and rhs
-
-        \param ele              (i) the element those matrix is calculated
-        \param eqnp             (i) nodal volumetric flow rate at n+1
-        \param evelnp           (i) nodal velocity at n+1
-        \param eareanp          (i) nodal cross-sectional area at n+1
-        \param eprenp           (i) nodal pressure at n+1
-        \param estif            (o) element matrix to calculate
-        \param eforce           (o) element rhs to calculate
-        \param material         (i) airway material/dimesion
-        \param time             (i) current simulation time
-        \param dt               (i) timestep
-        \param compute_awacinter(i) computing airway-acinus interdependency
-        */
-      void Sysmat(RedAirway* ele, Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
-          Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& estif,
-          Epetra_SerialDenseVector& eforce, Teuchos::RCP<const MAT::Material> material,
-          Teuchos::ParameterList& params, double time, double dt, bool compute_awacinter);
 
 
       virtual void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
@@ -220,12 +195,6 @@ namespace DRT
       virtual void CalcElemVolume(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat);
-
-      /*!
-       \Essential functions to compute curve value at a Nodal Prescribed condition
-      */
-      virtual bool GetCurveValAtCond(double& bcVal, DRT::Node* node, std::string conditionName,
-          std::string optionName, std::string conditionType, double time);
 
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
@@ -277,7 +246,6 @@ namespace DRT
           Epetra_SerialDenseVector& nodal_volume, Epetra_SerialDenseVector& nodal_flow,
           std::vector<int>& lm, Teuchos::RCP<MAT::Material> material);
 
-      virtual double GetElementLength(RedAirway* ele);
 
      private:
     };

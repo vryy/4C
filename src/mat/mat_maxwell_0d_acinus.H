@@ -16,6 +16,7 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 #define MAT_MAXWELL_0D_ACINUS_H
 
 
+#include "red_airways_elem_params.h"
 
 #include "mat_par_parameter.H"
 #include "mat_material.H"
@@ -136,8 +137,8 @@ namespace MAT
      */
     virtual void Evaluate(Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
         Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-        Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
-        const double Vo, double time, double dt)
+        Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+        const double NumOfAcini, const double Vo, double time, double dt)
     {
       dserror("Evaluate not implemented yet !");
     }

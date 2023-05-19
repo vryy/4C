@@ -99,8 +99,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Epetra_SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
 {
-  const auto& evaluation_data =
-      *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // Set the generation number for the inter-acinar linker element to -2.0
   int gid = ele->Id();
@@ -155,8 +154,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 {
   const int myrank = discretization.Comm().MyPID();
 
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+
   // Get total time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   // Get the number of nodes
   const int numnode = lm.size();
@@ -306,36 +307,39 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
                     "TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
               }
 
+              DRT::REDAIRWAYS::EvaluationData& evaluation_data =
+                  DRT::REDAIRWAYS::EvaluationData::get();
+
               if (ppl_Type == "Linear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Linear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Linear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else if (ppl_Type == "Nonlinear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Nonlinear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Nonlinear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else
@@ -354,8 +358,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             BCin += Pp_np;
           }
 
-          const auto& evaluation_data =
-              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
           // Set pressure at node i
           int gid;
           double val;
@@ -391,8 +394,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             exit(1);
           }
 
-          const auto& evaluation_data =
-              *params.get<Teuchos::RCP<DRT::REDAIRWAYS::EvaluationData>>("evaluation_data");
+          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
           // Set pressure at node i
           int gid;

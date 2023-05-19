@@ -17,6 +17,7 @@ exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertat
 
 #include "mat_maxwell_0d_acinus.H"
 #include "red_airways_elementbase.H"
+#include "red_airways_elem_params.h"
 
 
 namespace MAT
@@ -131,8 +132,8 @@ namespace MAT
      */
     virtual void Evaluate(Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
         Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-        Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
-        const double Vo, double time, double dt);
+        Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+        const double NumOfAcini, const double Vo, double time, double dt);
 
    private:
     double e1_0_;
