@@ -14,6 +14,7 @@
 #include "mortar_utils.H"
 #include "mortar_calc_utils.H"
 #include "contact_interpolator.H"  // MT interpolator is located in here
+#include "lib_discret.H"
 
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensevector.H"

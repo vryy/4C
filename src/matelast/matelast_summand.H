@@ -13,6 +13,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "lib_parobject.H"
 #include "linalg_FADmatrix_utils.H"
+#include <Epetra_Vector.h>
 
 // forward declarations
 

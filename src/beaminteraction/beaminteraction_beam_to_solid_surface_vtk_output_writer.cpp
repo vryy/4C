@@ -23,7 +23,9 @@
 #include "geometry_pair_line_to_surface_evaluation_data.H"
 #include "beaminteraction_str_model_evaluator_datastate.H"
 #include "structure_new_timint_basedataglobalstate.H"
+#include "lib_discret.H"
 
+#include <Epetra_MpiComm.h>
 #include <Epetra_FEVector.h>
 #include <unordered_set>
 

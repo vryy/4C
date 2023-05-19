@@ -19,6 +19,7 @@
 #include "geometry_pair_element.H"
 #include "geometry_pair_scalar_types.H"
 #include "linalg_FAD_utils.H"
+#include "linalg_sparsematrix.H"
 #include "geometry_pair_element_functions.H"
 #include "discretization_fem_general_largerotations.H"
 #include "inpar_beam_to_solid.H"
