@@ -14,38 +14,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::UTILS::NewtonScalar(const std::function<ValuesFunctAndFunctDeriv(double)> &func,
-    const double x_init, const double tol, const int maxiter)
-{
-  int numiter = 0;
-  double x = x_init;
-  ValuesFunctAndFunctDeriv funct_and_funct_deriv = func(x);
-
-  // find x s.t. f(x) = 0
-  while ((std::fabs(funct_and_funct_deriv.val_funct) > tol) && (numiter <= maxiter))
-  {
-    numiter++;
-
-    // x_{n+1} = x_{n} - func(x_{n}) / derivFunc(x_{n})
-    x = x - funct_and_funct_deriv.val_funct / funct_and_funct_deriv.val_deriv_funct;
-
-    // f(x_{n+1})
-    funct_and_funct_deriv = func(x);
-  }
-
-  if (numiter >= maxiter and std::fabs(funct_and_funct_deriv.val_funct) > tol)
-    dserror(
-        "Maximal number of iterations reached for Newton solver (%d iterations). Error is "
-        "still at %14.14f",
-        numiter, std::fabs(funct_and_funct_deriv.val_funct));
-
-  return x;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double CORE::UTILS::Bisection(const std::function<ValuesFunctAndFunctDeriv(double)> &funct,
-    const double a_init, const double b_init, const double tol, const int maxiter)
+double CORE::UTILS::Bisection(const std::function<double(double)> &funct, const double a_init,
+    const double b_init, const double tol, const int maxiter)
 {
   double a = a_init;
   double b = b_init;
@@ -57,8 +27,8 @@ double CORE::UTILS::Bisection(const std::function<ValuesFunctAndFunctDeriv(doubl
     numiter++;
     c = (a + b) / 2;
 
-    auto f_c = funct(c).val_funct;
-    auto f_a = funct(a).val_funct;
+    auto f_c = funct(c);
+    auto f_a = funct(a);
 
     if (std::fabs(f_c) < tol)
     {

@@ -25,6 +25,7 @@
 #include "discretization_fem_general_utils_integration.H"
 
 #include "beam3_spatial_discretization_utils.H"
+#include "utils_local_newton.H"
 
 
 // forward declaration ...
@@ -465,8 +466,8 @@ namespace DRT
               DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
           const auto distype = this->Shape();
 
-          std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> lengthEquationAndDerivative =
-              [&gausspoints, &disp_refe_centerline, &distype](double reflength)
+          auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
+                                                 double reflength)
           {
             return DRT::UTILS::BEAM::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
                 vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
@@ -474,7 +475,7 @@ namespace DRT
 
           const double newton_tolerance = 1e-12;
           const int max_iterations = 200;
-          reflength = CORE::UTILS::NewtonScalar(
+          reflength = CORE::UTILS::SolveLocalNewton(
               lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
         }
 

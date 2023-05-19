@@ -14,15 +14,6 @@
 namespace CORE::UTILS
 {
   /*!
-   * @brief Structure holding the values of a function f(x) and its derivative dfdx(x) at x
-   */
-  struct ValuesFunctAndFunctDeriv
-  {
-    double val_funct;
-    double val_deriv_funct;
-  };
-
-  /*!
    * @brief Structure holding the values of a function f(x) and its first derivative dfdx(x) and
    * second derivative ddfddx(x) at x
    */
@@ -34,22 +25,6 @@ namespace CORE::UTILS
   };
 
   /*!
-   * @brief Find a zero of a function using the Newton-Raphson method.
-   *
-   * Find a zero of the scalar-valued function func given a nearby scalar starting point x_init.
-   * The input function needs to be defined as a function that accepts the argument x and that
-   * returns a ValuesFunctAndFunctDeriv holding f(x) and dfdx(x)
-   *
-   * @param[in]     func Scalar function f(x) whose zero should be found
-   * @param[in]     x_init Starting point of x
-   * @param[in]     tol Tolerance for zero value f(x)
-   * @param[in]     maxiter Maximal number of iterations
-   * @return        x Point x where f(x) is zero
-   */
-  double NewtonScalar(const std::function<ValuesFunctAndFunctDeriv(double)> &func,
-      const double x_init, const double tol, const int maxiter);
-
-  /*!
    * @brief Find a zero of a continuous function using the bisection method
    *
    * Find a zero of the scalar-valued continuous function func defined on an interval [a, b]
@@ -57,7 +32,7 @@ namespace CORE::UTILS
    * need to have opposite signs.
    *
    * The input function needs to be defined as a function that accepts the argument x and that
-   * returns a ValuesFunctAndFunctDeriv holding f(x) and dfdx(x)
+   * returns a double holding f(x)
    *
    * @param[in]     func Scalar function f(x) whose zero should be found
    * @param[in]     a_init Starting point of a for the interval [a,b]
@@ -66,7 +41,7 @@ namespace CORE::UTILS
    * @param[in]     maxiter Maximal number of iterations
    * @return        c Midpoint c where f(c) is zero
    */
-  double Bisection(const std::function<ValuesFunctAndFunctDeriv(double)> &func, const double a_init,
+  double Bisection(const std::function<double(double)> &func, const double a_init,
       const double b_init, const double tol, const int maxiter);
 
   /*!

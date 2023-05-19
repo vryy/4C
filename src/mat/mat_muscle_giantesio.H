@@ -223,7 +223,7 @@ namespace MAT
      * @return equationValueAndDeriv Value of the activation level equation and its derivative for
      * the given omegaa, lambdaM and rhs
      */
-    CORE::UTILS::ValuesFunctAndFunctDeriv EvaluateActivationLevelEquationAndDeriv(
+    std::tuple<double, double> EvaluateActivationLevelEquationAndDeriv(
         double omegaa, const double& lambdaM, const double& rhs);
 
     /*!

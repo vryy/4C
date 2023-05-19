@@ -18,8 +18,6 @@
 #include "discretization_fem_general_utils_gausspoints.H"
 #include "discretization_fem_general_utils_integration.H"
 
-#include "utils_local_numeric_methods.H"
-
 namespace DRT::UTILS::BEAM
 {
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
@@ -334,7 +332,7 @@ namespace DRT::UTILS::BEAM
   /** \brief evaluate length and derivative at all specified Gauss points at once
    */
   template <unsigned int nnode, unsigned int vpernode>
-  CORE::UTILS::ValuesFunctAndFunctDeriv IntegrateCenterlineArcLengthAndArcLengthDerivative(
+  std::tuple<double, double> IntegrateCenterlineArcLengthAndArcLengthDerivative(
       const DRT::UTILS::IntegrationPoints1D& gausspoints,
       const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
       const DRT::Element::DiscretizationType& distype, const double& reflength)
@@ -362,10 +360,7 @@ namespace DRT::UTILS::BEAM
       deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
     }
 
-    CORE::UTILS::ValuesFunctAndFunctDeriv equationValueAndDeriv{
-        .val_funct = reflength - int_length, .val_deriv_funct = 1 - deriv_length};
-
-    return equationValueAndDeriv;
+    return {reflength - int_length, 1 - deriv_length};
   }
 }  // namespace DRT::UTILS::BEAM
 
