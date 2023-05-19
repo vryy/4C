@@ -31,7 +31,6 @@
 #include "cardiovascular0d_nox_nln_linearsystem.H"
 #include "constraint_nox_nln_lagpenconstraint_linearsystem.H"
 #include "structure_new_nox_nln_str_linearsystem.H"
-#include "scatra_nox_nln_scatra_linearsystem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -118,13 +117,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLinea
           new NOX::NLN::LAGPENCONSTRAINT::LinearSystem(printParams, lsParams, linSolvers, iReq,
               iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject));
 
-      break;
-    }
-    // scalar transport case
-    case NOX::NLN::LinSystem::linear_system_scatra:
-    {
-      linSys = Teuchos::rcp(new NOX::NLN::SCATRA::LinearSystem(printParams, lsParams, linSolvers,
-          iReq, iJac, jac, iPrec, precMat, *cloneVector, scalingObject));
       break;
     }
 

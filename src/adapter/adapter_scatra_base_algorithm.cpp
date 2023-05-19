@@ -34,7 +34,6 @@
 
 // loma specific files
 #include "scatra_timint_loma_genalpha.H"
-#include "scatra_timint_loma_ost.H"
 
 // elch specific files
 #include "scatra_timint_elch_scheme.H"
@@ -219,19 +218,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
             discret, solver, lomaparams, scatratimeparams, extraparams, output));
         break;
       }
-      case INPAR::SCATRA::timeint_one_step_theta:
-      {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaOST(
-            discret, solver, lomaparams, scatratimeparams, extraparams, output));
-        break;
-      }
-      //      case INPAR::SCATRA::timeint_bdf2:
-      //      {
-      //        // create instance of time integration class (call the constructor)
-      //        scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaBDF2(discret, solver, lomaparams,
-      //        scatratimeparams,extraparams, output)); break;
-      //      }
       default:
         dserror("Unknown time integration scheme for loMa!");
         break;
