@@ -3,7 +3,9 @@ set(OBJS_UTILS_NUMERICS
     utils_local_numeric_methods.cpp
     )
 
-set(LIBS_UTILS_NUMERICS # cmake-format: sortable
+set(LIBS_UTILS_NUMERICS
+    # cmake-format: sortable
+    linalg
     )
 
 baci_add_library_to_module(
