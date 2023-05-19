@@ -60,8 +60,6 @@ namespace
       int node_id,
       const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& all_data)
   {
-    std::cout << "request " << name_and_component.name << "component "
-              << name_and_component.component << std::endl;
     const Epetra_MultiVector& data = *all_data.at(name_and_component.name);
 
     int local_id = data.Map().LID(node_id);
