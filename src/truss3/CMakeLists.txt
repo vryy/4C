@@ -1,16 +1,12 @@
-set(OBJS_T3_LIB
-    # cmake-format: sortable
-    truss3.cpp
-    truss3_evaluate.cpp
-    truss3_input.cpp
-    truss3_scatra.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_t3 ${OBJS_T3_LIB})
-
-set(LIBS_ELET3
+set(_truss3_dependencies
     # cmake-format: sortable
+    core
+    inpar
     lib
+    linalg
+    mat
+    structure_new
     )
-
-baci_add_dependency(ele_t3 ${LIBS_ELET3})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_truss3_dependencies})

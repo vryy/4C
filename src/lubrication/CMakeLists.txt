@@ -1,18 +1,13 @@
-set(OBJS_LUBRICATION
-    # cmake-format: sortable
-    lubrication_dyn.cpp
-    lubrication_resulttest.cpp
-    lubrication_timint_implicit.cpp
-    lubrication_timint_stat.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_lubrication ${OBJS_LUBRICATION})
-
-set(LIBS_ALG_LUBRICATION
+set(_lubrication_dependencies
     # cmake-format: sortable
     adapter
-    ele_lubrication
     inpar
+    io
+    lib
+    linalg
+    lubrication_ele
+    solver
     )
-
-baci_add_dependency(alg_lubrication ${LIBS_ALG_LUBRICATION})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lubrication_dependencies})

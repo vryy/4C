@@ -1,21 +1,13 @@
-set(OBJS_MEMBRANE
-    # cmake-format: sortable
-    membrane.cpp
-    membrane_eletypes.cpp
-    membrane_evaluate.cpp
-    membrane_input.cpp
-    membrane_line.cpp
-    membrane_line_evaluate.cpp
-    membrane_scatra.cpp
-    membrane_scatra_eletypes.cpp
-    membrane_scatra_evaluate.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_membrane ${OBJS_MEMBRANE})
-
-set(LIBS_ELE_MEMBRANE
+set(_membrane_dependencies
     # cmake-format: sortable
+    core
+    inpar
     lib
+    linalg
+    mat
+    structure_new
+    thermo
     )
-
-baci_add_dependency(ele_membrane ${LIBS_ELE_MEMBRANE})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_membrane_dependencies})

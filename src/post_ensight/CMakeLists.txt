@@ -4,5 +4,11 @@ set(OBJS_POST_ENSIGHT
     post_ensight_writer_nurbs.cpp
     )
 
-baci_add_library(post_ensight_lib ${OBJS_POST_ENSIGHT})
+baci_add_library(
+  post_ensight_lib
+  SOURCES
+  ${OBJS_POST_ENSIGHT}
+  HEADERS
+  post_ensight_writer.H
+  )
 baci_add_dependency(post_ensight_lib post_common)

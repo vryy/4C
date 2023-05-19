@@ -1,19 +1,16 @@
-set(SOURCES
-    # cmake-format: sortable
-    levelset_algorithm.cpp
-    levelset_algorithm_reinit.cpp
-    levelset_algorithm_utils.cpp
-    levelset_dyn.cpp
-    levelset_intersection_utils.cpp
-    levelset_timint_ost.cpp
-    levelset_timint_stat.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(levelset ${SOURCES})
-
-set(LIBS_LEVELSET
+set(_levelset_dependencies
     # cmake-format: sortable
+    adapter
+    cut
+    geometry
+    inpar
+    io
+    lib
     linalg
+    scatra
+    scatra_ele
+    solver
     )
-
-baci_add_dependency(levelset ${LIBS_LEVELSET})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_levelset_dependencies})

@@ -1,7 +1,1 @@
-baci_add_library_to_module(
-  INTERFACE
-  MODULE
-  utils
-  NAME
-  stl_extension
-  )
+baci_auto_define_module()

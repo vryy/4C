@@ -3,12 +3,19 @@ set(OBJS_CREATERTD_MAIN
     create_rtdfiles_base.cpp
     )
 set(OBJS_CREATERTD_LIB create_rtdfiles_wrapper.cpp create_rtdfiles_utils.cpp)
-baci_add_library(create_rtdfiles ${OBJS_CREATERTD_LIB})
-baci_add_dependency(create_rtdfiles lib)
+baci_add_library(
+  create_rtdfiles
+  SOURCES
+  ${OBJS_CREATERTD_LIB}
+  HEADERS
+  create_rtdfiles_utils.H
+  create_rtdfiles_wrapper.H
+  )
+
+baci_add_dependency(create_rtdfiles config lib)
 # the create_rtdfiles executable
 add_executable(create_rtd ${OBJS_CREATERTD_MAIN})
 baci_add_dependency(create_rtd create_rtdfiles)
 set_target_properties(create_rtd PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(create_rtd PRIVATE -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
-
+baci_link_executable_with_all(create_rtd)
 add_custom_target(rtd DEPENDS create_rtd)

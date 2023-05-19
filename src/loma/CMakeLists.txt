@@ -1,14 +1,16 @@
-set(OBJS_LOMA
-    # cmake-format: sortable
-    loma_algorithm.cpp
-    loma_dyn.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_loma ${OBJS_LOMA})
-
-set(LIBS_ALG_LOMA
+set(_loma_dependencies
     # cmake-format: sortable
+    adapter
+    fluid
+    fluid_ele
+    inpar
+    io
+    lib
     linalg
+    scatra
+    scatra_ele
+    solver
     )
-
-baci_add_dependency(alg_loma ${LIBS_ALG_LOMA})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_loma_dependencies})
