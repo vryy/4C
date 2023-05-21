@@ -34,7 +34,7 @@
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Eig.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 namespace LINALG

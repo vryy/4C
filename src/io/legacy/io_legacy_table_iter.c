@@ -10,7 +10,7 @@ Iterate the symbol table and visit all entries.
 ---------------------------------------------------------------------*/
 
 #include "io_legacy_table_iter.h"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*/
 /*!

@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "mat_list.H"
 #include "mat_list_reactions.H"
 #include "mat_list_chemotaxis.H"

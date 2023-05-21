@@ -8,6 +8,6 @@ function(baci_link_google_test_necessary_libraries TESTNAME)
   # All libraries are linked as PRIVATE since a unit test executable cannot be used as a dependency itself.
   target_link_libraries(${TESTNAME} PRIVATE gtest gmock ${ARGN})
 
-  # Link to a special version of dserror which throws a std::runtime_exception
-  target_link_libraries(${TESTNAME} PRIVATE error_for_testing unittests_common)
+  # Link to common helpers for unit tests
+  target_link_libraries(${TESTNAME} PRIVATE unittests_common)
 endfunction()

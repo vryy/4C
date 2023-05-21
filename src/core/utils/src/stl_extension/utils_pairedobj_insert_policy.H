@@ -29,7 +29,7 @@
 #include <limits>
 
 #if defined(DEBUG_INSERT_POLICY) || defined(DEBUG)
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #endif
 
 namespace GEN

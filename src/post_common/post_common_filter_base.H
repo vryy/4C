@@ -11,7 +11,7 @@
 #ifndef POST_COMMON_FILTER_BASE_H
 #define POST_COMMON_FILTER_BASE_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 

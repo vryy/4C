@@ -17,7 +17,7 @@ general static parameters required for scalar transport element evaluation.
 #include "scatra_ele_parameter_turbulence.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

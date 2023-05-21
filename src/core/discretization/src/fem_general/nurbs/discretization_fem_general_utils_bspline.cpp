@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "discretization_fem_general_utils_bspline.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 //--------------------------------------------------
 // Constructor

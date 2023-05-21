@@ -10,7 +10,7 @@
 
 
 #include "fsi_monolithic_linearsystem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // NOX includes
 #include <NOX_Epetra_Interface_Required.H>

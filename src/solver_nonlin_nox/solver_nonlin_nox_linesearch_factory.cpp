@@ -12,7 +12,7 @@
 
 #include "solver_nonlin_nox_linesearch_factory.H"  // class definition
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Common.H>
 #include <NOX_StatusTest_Generic.H>

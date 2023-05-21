@@ -10,7 +10,7 @@
 #define SOLVER_LINALG_ANA_H
 
 // Trilinos includes
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_sparsematrix.H"
 #include "solver_linalg_solver.H"
 

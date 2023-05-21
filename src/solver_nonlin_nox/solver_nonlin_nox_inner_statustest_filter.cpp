@@ -25,7 +25,7 @@
 #include "solver_nonlin_nox_statustest_activeset.H"
 #include "solver_nonlin_nox_group.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_Time.hpp>
 #include <NOX_MeritFunction_Generic.H>

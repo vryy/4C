@@ -11,7 +11,7 @@
 #include "s8.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "mat_material.H"

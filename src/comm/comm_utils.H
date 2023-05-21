@@ -25,7 +25,7 @@
 #include <Epetra_MpiComm.h>
 #include <Epetra_MultiVector.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem_enums.H"
 
 /*----------------------------------------------------------------------*

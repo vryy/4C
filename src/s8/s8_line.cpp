@@ -10,7 +10,7 @@
 #include "s8.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::Shell8LineType DRT::ELEMENTS::Shell8LineType::instance_;

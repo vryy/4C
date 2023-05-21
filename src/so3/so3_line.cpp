@@ -8,7 +8,7 @@
 
 #include "so3_line.H"
 #include "linalg_serialdensematrix.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;

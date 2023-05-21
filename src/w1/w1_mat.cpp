@@ -14,7 +14,7 @@
 // headers
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"

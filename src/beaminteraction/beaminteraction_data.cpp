@@ -11,7 +11,7 @@
 
 #include "beaminteraction_data.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_pack_buffer.H"
 #include "lib_parobject.H"
 #include "lib_globalproblem.H"

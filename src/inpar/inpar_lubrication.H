@@ -10,7 +10,7 @@
 #define INPAR_LUBRICATION_H
 
 #include "inpar_parameterlist_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 namespace INPAR
 {

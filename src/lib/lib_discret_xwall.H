@@ -14,7 +14,7 @@ of dofs per node on a fluid discretization for xwall
 #define LIB_DISCRET_XWALL_H
 
 #include "lib_discret_faces.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

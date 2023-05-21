@@ -28,7 +28,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "solver_krylovsolver.H"
 #include "solver_pointpreconditioner.H"

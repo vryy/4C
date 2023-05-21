@@ -16,7 +16,7 @@
 #include "lib_utils_factory.H"
 #include "linalg_utils_nullspace.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"

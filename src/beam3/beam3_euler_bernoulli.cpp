@@ -14,7 +14,7 @@
 #include "beaminteraction_periodic_boundingbox.H"
 
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
 #include "linalg_fixedsizematrix.H"

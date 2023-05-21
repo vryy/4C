@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "mat_muscle_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_fixedsizematrix.H"
 #include <cmath>
 #include <functional>

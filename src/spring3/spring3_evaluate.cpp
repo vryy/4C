@@ -11,7 +11,7 @@
 #include "beam3_euler_bernoulli.H"
 #include "beaminteraction_beam3contact_utils.H"
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"

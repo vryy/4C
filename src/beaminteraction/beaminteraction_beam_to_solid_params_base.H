@@ -15,7 +15,7 @@
 #include "discretization_fem_general_utils_integration.H"
 #include "inpar_beam_to_solid.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 namespace BEAMINTERACTION

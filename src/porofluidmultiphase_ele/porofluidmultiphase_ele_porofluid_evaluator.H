@@ -11,7 +11,7 @@
 
 #include "porofluidmultiphase_ele_action.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "linalg_fixedsizematrix.H"
 

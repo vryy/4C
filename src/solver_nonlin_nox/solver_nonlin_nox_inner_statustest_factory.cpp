@@ -13,7 +13,7 @@
 #include "solver_nonlin_nox_inner_statustest_factory.H"
 #include "solver_nonlin_nox_params_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 

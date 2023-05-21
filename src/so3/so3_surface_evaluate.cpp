@@ -10,7 +10,7 @@
 #include "so3_surface.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "lib_utils.H"
 #include "lib_function_of_time.H"

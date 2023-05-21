@@ -12,7 +12,7 @@
 #include "ale_ale2.H"
 
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;

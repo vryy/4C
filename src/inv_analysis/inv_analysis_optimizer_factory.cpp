@@ -14,7 +14,7 @@
 #include "inv_analysis_optimizer_mh.H"
 #include "inv_analysis_optimizer_smc_predict.H"
 #include "inv_analysis_base.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_statinvanalysis.H"
 
 #include <Teuchos_ParameterList.hpp>

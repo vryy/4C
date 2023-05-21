@@ -12,7 +12,7 @@
 #include <Epetra_ConfigDefs.h>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "mat_par_material.H"
 #include "mixture_constituent.H"
 #include <iosfwd>

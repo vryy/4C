@@ -14,7 +14,7 @@
 #include "contact_aug_contact_integrator_utils.H"
 
 #include "linalg_serialdensevector.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 

@@ -10,7 +10,7 @@
 
 #include "beaminteraction_contact_runtime_vtk_output_params.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 
 /*-----------------------------------------------------------------------------------------------*

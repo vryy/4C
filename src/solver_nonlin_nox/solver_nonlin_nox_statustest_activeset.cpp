@@ -17,7 +17,7 @@
 #include <NOX_Solver_Generic.H>
 #include <Epetra_Map.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 /*----------------------------------------------------------------------------*

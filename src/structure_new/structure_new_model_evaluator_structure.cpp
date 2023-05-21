@@ -30,7 +30,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_serialdensevector.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "lib_utils_discret.H"
 

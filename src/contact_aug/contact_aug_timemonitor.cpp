@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "contact_aug_timemonitor.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_Time.hpp>
 #include <Epetra_Comm.h>

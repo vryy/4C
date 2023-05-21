@@ -14,7 +14,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "nurbs_discret.H"
 #include "fluid_ele_immersed_base.H"

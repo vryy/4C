@@ -16,7 +16,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // forward declaration
 namespace DRT

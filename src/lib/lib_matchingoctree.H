@@ -15,7 +15,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseMatrix.h>
 #include <vector>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 namespace DRT
 {

@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "linalg_utils_nullspace.H"

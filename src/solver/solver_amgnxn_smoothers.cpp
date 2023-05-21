@@ -22,7 +22,7 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_EpetraOperator.hpp>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_multiply.H"
 
 #include "solver_amgnxn_smoothers.H"

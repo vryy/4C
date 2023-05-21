@@ -12,7 +12,7 @@
 #ifndef LIB_UTILS_GID_VECTOR_H
 #define LIB_UTILS_GID_VECTOR_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Epetra_Comm.h>
 #include <map>
 #include <Teuchos_RCPDecl.hpp>

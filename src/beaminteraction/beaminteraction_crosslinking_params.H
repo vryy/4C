@@ -10,7 +10,7 @@
 #ifndef BEAMINTERACTION_CROSSLINKING_PARAMS_H
 #define BEAMINTERACTION_CROSSLINKING_PARAMS_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_beaminteraction.H"
 #include "linalg_fixedsizematrix.H"
 

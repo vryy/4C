@@ -23,7 +23,7 @@
 #include "lib_function.H"
 #include "lib_elementdefinition.H"
 #include "lib_resulttest.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "module_registry_parobjectregister.H"
 #include "lib_utils_createdis.H"
 

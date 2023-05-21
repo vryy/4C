@@ -13,7 +13,7 @@
 
 #include "coupling_adapter.H"
 #include "coupling_adapter_converter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>

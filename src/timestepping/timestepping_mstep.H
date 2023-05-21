@@ -18,7 +18,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*/
 /* A collection of time integration utilities */

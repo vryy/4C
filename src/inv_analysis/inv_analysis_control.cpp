@@ -24,7 +24,7 @@
 #include "inv_analysis_optimizer_base.H"
 
 // BACI
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_statinvanalysis.H"
 #include "lib_globalproblem.H"
 #include "io.H"

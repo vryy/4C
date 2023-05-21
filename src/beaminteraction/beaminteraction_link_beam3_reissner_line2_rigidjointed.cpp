@@ -18,7 +18,7 @@ elements
 
 #include "linalg_serialdensematrix.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>

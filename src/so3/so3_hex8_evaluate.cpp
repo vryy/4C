@@ -16,7 +16,7 @@
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "lib_utils_elements.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_voigt_notation.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_densematrix_inverse.H"

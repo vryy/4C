@@ -11,7 +11,7 @@
 #define CONTACT_TSI_LAGRANGE_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "contact_defines.H"
 #include <Epetra_Operator.h>
 

@@ -15,7 +15,7 @@
 #include "solver_nonlin_nox_solver_linesearchbased.H"
 #include "solver_nonlin_nox_linesearch_prepostoperator.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>

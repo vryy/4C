@@ -23,7 +23,7 @@
 
 #include <Sacado.hpp>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_symbolic_expression.H"
 
 namespace

@@ -7,7 +7,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "scatra_ele_parameter_boundary.H"
 #include "utils_singleton_owner.H"
 

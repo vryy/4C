@@ -18,7 +18,7 @@
 #include "lib_discret.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "mat_cnst_1d_art.H"
 #include "mat_list.H"

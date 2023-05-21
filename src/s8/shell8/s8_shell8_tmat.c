@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*/
 #include "s8_shell8.h"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  | get density out of material law                        m.gee 2/02    |

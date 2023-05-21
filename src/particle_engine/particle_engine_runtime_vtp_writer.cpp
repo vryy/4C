@@ -15,7 +15,7 @@
 #include "io_runtime_vtp_writer.H"
 
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

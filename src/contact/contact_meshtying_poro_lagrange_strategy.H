@@ -13,7 +13,7 @@
 #define CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H
 
 #include "contact_meshtying_lagrange_strategy.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 namespace CONTACT
 {

@@ -19,7 +19,7 @@ in the Baci guide in the Convention chapter.
 
 *----------------------------------------------------------------------*/
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  |  returns the number of nodes                              a.ger 11/07|

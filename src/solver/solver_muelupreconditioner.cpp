@@ -10,7 +10,7 @@
 // Baci
 #include "solver_muelupreconditioner.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 // Teuchos

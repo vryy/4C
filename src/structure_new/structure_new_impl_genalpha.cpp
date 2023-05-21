@@ -18,7 +18,7 @@
 #include "structure_new_timint_base.H"
 
 #include "inpar_structure.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "io.H"
 #include "io_pstream.H"

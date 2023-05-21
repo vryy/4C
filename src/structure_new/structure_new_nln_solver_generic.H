@@ -13,7 +13,7 @@
 #define STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_structure.H"
 
 // forward declaration

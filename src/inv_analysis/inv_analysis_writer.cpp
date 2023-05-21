@@ -11,7 +11,7 @@
 
 // baci
 #include "io.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------------*/
 INVANA::InvanaWriter::InvanaWriter() : output_(Teuchos::null) { return; }

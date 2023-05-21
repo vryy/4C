@@ -13,7 +13,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "linalg_fixedsizematrix.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_symbolic_expression.H"
 #include "lib_functionvariables.H"
 #include "discretization_fem_general_utils_polynomial.H"

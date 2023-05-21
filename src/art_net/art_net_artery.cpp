@@ -10,7 +10,7 @@
 #include "art_net_artery.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
 using namespace DRT::UTILS;

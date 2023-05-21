@@ -10,7 +10,7 @@
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
 #include "linalg_utils_nullspace.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"

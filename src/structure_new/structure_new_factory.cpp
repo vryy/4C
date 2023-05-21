@@ -12,7 +12,7 @@
 #include "structure_new_factory.H"
 #include "structure_new_timint_base.H"
 #include "structure_new_dbc.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // supported implicit time integrators
 #include "structure_new_impl_statics.H"

@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "linalg_nullspace.H"
 

@@ -15,7 +15,7 @@
 
 #include "lib_utils_discret.H"
 #include "lib_discret_faces.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>

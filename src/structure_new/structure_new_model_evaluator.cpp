@@ -17,7 +17,7 @@
 #include "structure_new_timint_base.H"
 #include "structure_new_integrator.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_sparseoperator.H"
 #include "linalg_blocksparsematrix.H"  // debugging
 

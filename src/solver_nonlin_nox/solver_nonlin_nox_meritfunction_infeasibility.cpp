@@ -15,7 +15,7 @@
 #include "solver_nonlin_nox_meritfunction_infeasibility.H"
 #include "solver_nonlin_nox_constraint_group.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 

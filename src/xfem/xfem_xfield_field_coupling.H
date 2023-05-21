@@ -15,7 +15,7 @@
 
 
 #include "coupling_adapter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 // due to enum use ...
 #include "xfem_multi_field_mapextractor.H"
 

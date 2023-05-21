@@ -18,7 +18,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 #include <Teuchos_RCP.hpp>
 //
 #include "inpar_xfem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 

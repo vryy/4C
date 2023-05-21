@@ -10,7 +10,7 @@
 
 #include "so3_hex8fbar.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "so3_prestress.H"

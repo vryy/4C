@@ -15,7 +15,7 @@
 
 // Todo @grill: check for obsolete header inclusions
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "linalg_utils_nullspace.H"

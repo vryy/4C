@@ -11,7 +11,7 @@
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -12,7 +12,7 @@
 #ifndef LIB_EPETRA_UTILS_H
 #define LIB_EPETRA_UTILS_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /// set and restore the trace back mode during the macro execution
 void set_trace_back_mode(int tracebackmode);

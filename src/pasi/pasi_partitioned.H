@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "adapter_algorithmbase.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

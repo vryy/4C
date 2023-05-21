@@ -16,7 +16,7 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "mat_beam_elasthyper.H"
 #include "linalg_utils_sparse_algebra_math.H"
