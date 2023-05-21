@@ -610,8 +610,8 @@ namespace GEO
       template <class T>
       double getAreaTri(const T& xyze, LINALG::Matrix<3, 1>* normalvec = NULL)
       {
-        if (xyze.M() != 3) run_time_error("Currently unsupported element dimension!");
-        if (xyze.N() != 3) run_time_error("Wrong node number!");
+        if (xyze.M() != 3) dserror("Currently unsupported element dimension!");
+        if (xyze.N() != 3) dserror("Wrong node number!");
 
         return getAreaTri(&xyze(0, 0), &xyze(0, 1), &xyze(0, 2), normalvec);
       }

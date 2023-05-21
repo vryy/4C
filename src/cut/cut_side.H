@@ -815,7 +815,7 @@ namespace GEO
           }
           default:
           {
-            run_time_error("Unknown/unsupported side type!");
+            dserror("Unknown/unsupported side type!");
             exit(EXIT_FAILURE);
           }
         }

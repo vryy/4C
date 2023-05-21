@@ -220,7 +220,7 @@ GEO::CUT::Point* GEO::CUT::Mesh::NewPoint(
 void GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2,
     Element* cut_element, std::vector<Line*>* newlines)
 {
-  if (p1 == p2) run_time_error("no line between same point");
+  if (p1 == p2) dserror("no line between same point");
 
   // If there is a line between those points already, return it. Otherwise
   // create a new one.
@@ -328,7 +328,7 @@ void GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_si
 GEO::CUT::Line* GEO::CUT::Mesh::NewLineInternal(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
 {
-  if (p1 == p2) run_time_error("no line between same point");
+  if (p1 == p2) dserror("no line between same point");
 
   // If there is a line between those points already, return it. Otherwise
   // create a new one.
@@ -378,7 +378,7 @@ bool GEO::CUT::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side* cut_
 GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet(
     const std::vector<Point*>& points, Side* side, bool cutsurface)
 {
-  if (points.size() == 0) run_time_error("empty facet");
+  if (points.size() == 0) dserror("empty facet");
 
   std::vector<Point*>::const_iterator i = points.begin();
   plain_facet_set facets = (*i)->Facets();
@@ -469,7 +469,7 @@ GEO::CUT::Line2BoundaryCell* GEO::CUT::Mesh::NewLine2Cell(
 GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  if (points.size() != 3) run_time_error("expect 3 points");
+  if (points.size() != 3) dserror("expect 3 points");
 #ifdef DEBUGCUTLIBRARY
   plain_point_set pointtest;
   pointtest.insert(points.begin(), points.end());
@@ -497,7 +497,7 @@ GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell(
 GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  if (points.size() != 4) run_time_error("expect 4 points");
+  if (points.size() != 4) dserror("expect 4 points");
 #ifdef DEBUGCUTLIBRARY
   plain_point_set pointtest;
   pointtest.insert(points.begin(), points.end());
@@ -553,7 +553,7 @@ GEO::CUT::Line2IntegrationCell* GEO::CUT::Mesh::NewLine2Cell(
 {
   const unsigned num_nodes =
       DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
-  if (points.size() != num_nodes) run_time_error("Mismatch of point and node number!");
+  if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
@@ -573,7 +573,7 @@ GEO::CUT::Tri3IntegrationCell* GEO::CUT::Mesh::NewTri3Cell(
 {
   const unsigned num_nodes =
       DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-  if (points.size() != num_nodes) run_time_error("Mismatch of point and node number!");
+  if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
@@ -593,7 +593,7 @@ GEO::CUT::Quad4IntegrationCell* GEO::CUT::Mesh::NewQuad4Cell(
 {
   const unsigned num_nodes =
       DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-  if (points.size() != num_nodes) run_time_error("Mismatch of point and node number!");
+  if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
@@ -1834,7 +1834,7 @@ void GEO::CUT::Mesh::TestElementVolume(DRT::Element::DiscretizationType shape, E
       // Cut test is written for level-set cases as well.
       DebugDump(&e, __FILE__, __LINE__);
       //    if(LINSOLVETOL < fabs( volume_error ) )
-      run_time_error(err.str());
+      dserror(err.str());
     }
     else
     {

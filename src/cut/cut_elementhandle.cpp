@@ -40,7 +40,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected(
   const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
   LINALG::Matrix<dim, nen> xie;
-  if (cpoints.size() != nen) run_time_error("non-matching number of points");
+  if (cpoints.size() != nen) dserror("non-matching number of points");
 
   // Find the local coordinates of given corner points w.r. to background ElementHandle
   for (unsigned i = 0; i < nen; ++i)

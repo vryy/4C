@@ -46,8 +46,6 @@ inline void cpp_dsassert_func(const char* file, const int line, const bool test,
 /// gets the file name, the pretty function name and the line of the calling function
 void run_time_error_latest(const std::string file, const std::string func, const int line);
 
-/// throws a run time error
-void run_time_error_func(const std::string& errorMsg, const bool& is_catch = false);
 
 /** throws a run time error during a catch block and forwards the existing
  *  extended error message */

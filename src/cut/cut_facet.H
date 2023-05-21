@@ -354,7 +354,7 @@ namespace GEO
           }
           else
           {
-            run_time_error("not unique");
+            dserror("not unique");
           }
         }
       }

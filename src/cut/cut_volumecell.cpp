@@ -406,7 +406,7 @@ void GEO::CUT::VolumeCell::NewBoundaryCell(
 {
   if (facets_.count(f) == 0)
   {
-    run_time_error("facet does not belong to volume cell");
+    dserror("facet does not belong to volume cell");
   }
   switch (shape)
   {

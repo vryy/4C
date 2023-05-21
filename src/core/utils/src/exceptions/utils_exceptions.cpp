@@ -205,27 +205,28 @@ void run_time_error_latest(const std::string file, const std::string func, const
   latest_line = line;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void run_time_error_func(const std::string& errorMsg, const bool& is_catch)
+namespace
 {
-  if (not is_catch) err_count = 0;
+  void run_time_error_func_internal(const std::string& errorMsg, const bool& is_catch = false)
+  {
+    if (not is_catch) err_count = 0;
 
-  int myrank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    int myrank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-  std::ostringstream msg_0;
-  msg_0 << "[" << err_count << "] "
-        << "PROC " << myrank << " ERROR in " << latest_file << ", line " << latest_line << ":\n";
+    std::ostringstream msg_0;
+    msg_0 << "[" << err_count << "] "
+          << "PROC " << myrank << " ERROR in " << latest_file << ", line " << latest_line << ":\n";
 
-  std::ostringstream msg;
-  msg << msg_0.str() << "    " << latest_func << " - " << errorMsg;
+    std::ostringstream msg;
+    msg << msg_0.str() << "    " << latest_func << " - " << errorMsg;
 
-  // increase level counter
-  ++err_count;
+    // increase level counter
+    ++err_count;
 
-  throw std::runtime_error(msg.str().c_str());
-};
+    throw std::runtime_error(msg.str().c_str());
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -234,7 +235,7 @@ void run_time_error_func(const std::string& errorMsg, const std::runtime_error& 
   std::ostringstream msg;
   msg << errorMsg << "\n" << e.what();
 
-  run_time_error_func(msg.str(), true);
+  run_time_error_func_internal(msg.str(), true);
 };
 
 /*----------------------------------------------------------------------------*

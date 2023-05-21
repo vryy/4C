@@ -176,7 +176,7 @@ namespace GEO
       else
       {
         if (normalvec1 == NULL)
-          run_time_error(
+          dserror(
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
 
@@ -210,7 +210,7 @@ namespace GEO
         if (dim == 1 and probdim == 3)
         {
           if (normalvec2 == NULL)
-            run_time_error(
+            dserror(
                 "The normalvec2 is necessary to calculate the extended "
                 "jacobian for 1D elements embedded in 3D problems!");
 
@@ -227,7 +227,7 @@ namespace GEO
             // normalize
             const valtype norm2 = normalvec2->Norm2();
             if (norm2 < 1.0e-16)
-              run_time_error("The l2-norm of the normal vector is smaller than 1.0e-16!");
+              dserror("The l2-norm of the normal vector is smaller than 1.0e-16!");
             //   " ( norm2 = %e )", norm2 ); // commented out in order for cln to work
             normalvec2->Scale(1.0 / norm2);
           }

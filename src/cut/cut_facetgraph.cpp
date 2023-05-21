@@ -278,9 +278,9 @@ void GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
       GEO::CUT::OUTPUT::GmshElementDump(file_element, element, false);
       file_element.close();
 
-      run_time_error(
+      dserror(
           "The facet number is too small to represent a volume cell! \n"
-          "If this happens, it is an indication for missing internal facets. -- hiermeier");
+          "If this happens, it is an indication for missing internal facets.");
     }
 
     std::map<std::pair<Point *, Point *>, plain_facet_set> volume_lines;
@@ -360,7 +360,7 @@ Teuchos::RCP<GEO::CUT::FacetGraph> GEO::CUT::FacetGraph::Create(
       fg = Teuchos::rcp(new FacetGraph(sides, facets));
       break;
     default:
-      run_time_error("Unsupported element dimension!");
+      dserror("Unsupported element dimension!");
       break;
   }
 

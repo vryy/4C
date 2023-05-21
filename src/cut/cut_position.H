@@ -305,7 +305,7 @@ namespace GEO
           msg << "The local coordinates are not valid. "
                  "( Position::Status = "
               << Status2String(pos_status_) << " )";
-          run_time_error(msg.str());
+          dserror(msg.str());
         }
 
         std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
@@ -487,7 +487,7 @@ namespace GEO
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
               << Position::Status2String(this->pos_status_) << " )";
-          run_time_error(msg.str());
+          dserror(msg.str());
         }
 
         switch (probdim - dim)
@@ -508,7 +508,7 @@ namespace GEO
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
               << Position::Status2String(this->pos_status_) << " )";
-          run_time_error(msg.str());
+          dserror(msg.str());
         }
 
         std::copy(xsi_aug_.A() + dim, xsi_aug_.A() + probdim, distance);
