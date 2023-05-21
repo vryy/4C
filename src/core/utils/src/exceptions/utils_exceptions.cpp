@@ -183,18 +183,7 @@ extern "C" void cpp_dserror_func(const char* text, ...)
 
   va_end(ap);
 
-  if (nprocs > 1)
-    throw std::runtime_error(errbuf);
-  else
-  {
-    // if only one processor is running, do not throw because that destroys the call
-    // history in debuggers like gdb. Instead, call abort which preserves the location
-    // (but do not do it in parallel because otherwise an error leads to a call stack
-    // from every processor with OpenMPI, which has a severe impact in readability).
-    char line[] = "=========================================================================\n";
-    std::cout << "\n\n" << line << errbuf << "\n" << line << "\n" << std::endl;
-    std::abort();
-  }
+  throw std::runtime_error(errbuf);
 } /* end of dserror_func */
 
 /*----------------------------------------------------------------------*
