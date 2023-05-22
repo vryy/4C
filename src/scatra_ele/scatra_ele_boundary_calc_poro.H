@@ -17,16 +17,18 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       /// Singleton access method
-      static ScaTraEleBoundaryCalcPoro<distype>* Instance(
+      static ScaTraEleBoundaryCalcPoro<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
@@ -40,7 +42,7 @@ namespace DRT
       //! compute integral of convective mass/heat flux over boundary surface
       virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
           const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-          const LINALG::Matrix<nsd_ + 1, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
+          const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual double ComputePorosity(

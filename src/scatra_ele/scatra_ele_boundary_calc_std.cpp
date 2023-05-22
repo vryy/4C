@@ -25,16 +25,16 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcStd<distype>>(
-            new ScaTraEleBoundaryCalcStd<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcStd<distype, probdim>>(
+            new ScaTraEleBoundaryCalcStd<distype, probdim>(numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
@@ -44,8 +44,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalcStd(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
 {
@@ -56,12 +56,13 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<DRT::Element::nurbs9, 3>;

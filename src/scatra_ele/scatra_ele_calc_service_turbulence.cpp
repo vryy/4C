@@ -1210,7 +1210,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     case INPAR::FLUID::cube_edge:
     {
       // c) cubic element length
-      hk = std::pow(vol, (1.0 / (double(nsd_))));
+      hk = std::pow(vol, (1.0 / static_cast<double>(nsd_)));
 
       break;
     }

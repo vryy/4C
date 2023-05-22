@@ -23,16 +23,17 @@ growth, e.g., lithium plating
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
       [](int numdofpernode, int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>>(
-            new ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>>(
+            new ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>(
+                numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
@@ -41,9 +42,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    distype>::ScaTraEleBoundaryCalcElchElectrodeGrowth(const int numdofpernode, const int numscal,
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::ScaTraEleBoundaryCalcElchElectrodeGrowth(const int numdofpernode, const int numscal,
     const std::string& disname)
     : myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
       egrowth_(true)
@@ -52,10 +53,11 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateMinMaxOverpotential(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::EvaluateMinMaxOverpotential(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -86,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -131,8 +133,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICoupling(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
@@ -186,12 +188,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
-  LINALG::Matrix<nsd_ + 1, nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, XYZe);
+  // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
+  LINALG::Matrix<nsd_, nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -309,12 +311,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     eslaveresidual[row_pot] += numelectrons * eslaveresidual[row_conc];
   }
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICoupling
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateS2ICoupling
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAction(
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
@@ -363,9 +365,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    distype>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix)
 {
@@ -411,12 +413,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // get the node coordinates in material configuration (we have a nsd_+1 dimensional domain!)
-  LINALG::Matrix<nsd_ + 1, nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, XYZe);
+  // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
+  LINALG::Matrix<nsd_, nen_> XYZe;
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -504,13 +506,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     for (int icol = 0; icol < nen_; ++icol)
       eslavematrix(row_pot, icol) += numelectrons * eslavematrix(row_conc, icol);
   }
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICouplingScatraGrowth
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+   // probdim>::EvaluateS2ICouplingScatraGrowth
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    distype>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
     Epetra_SerialDenseMatrix& emastermatrix)
@@ -548,7 +551,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -627,9 +630,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    distype>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
     Epetra_SerialDenseVector& eslaveresidual)
@@ -668,7 +671,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -750,8 +753,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNodeValues(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::ExtractNodeValues(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
@@ -762,12 +765,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNo
 }
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<DRT::Element::nurbs9, 3>;

@@ -20,20 +20,22 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
-        : public ScaTraEleBoundaryCalcElchElectrode<distype>
+        : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
-      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -86,7 +88,7 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          LINALG::Matrix<nsd_ + 1, nen_> shapederivatives,
+          LINALG::Matrix<nsd_, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
           double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);

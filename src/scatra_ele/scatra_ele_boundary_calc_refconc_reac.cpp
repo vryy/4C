@@ -18,16 +18,17 @@ concentrations and with advanced reaction terms
 /*----------------------------------------------------------------------*
  |  Singleton access method                                  thon 02/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype>>(
-            new ScaTraEleBoundaryCalcRefConcReac<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype, probdim>>(
+            new ScaTraEleBoundaryCalcRefConcReac<distype, probdim>(
+                numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
@@ -38,10 +39,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(
 /*----------------------------------------------------------------------*
  |  Private constructor                                      thon 02/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::ScaTraEleBoundaryCalcRefConcReac(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoundaryCalcRefConcReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(
+    : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
           numdofpernode, numscal, disname)
 {
   return;
@@ -51,8 +52,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::ScaTraEleBoundaryCalcR
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::FacForRefConc(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacForRefConc(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
     Teuchos::ParameterList& params,      ///< parameter list
@@ -95,9 +96,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::FacForRefConc(
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJatIntPoint(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
     const DRT::Element* pele,            ///< current parent element
@@ -113,8 +114,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
   // number of boundary spatial dimensions
   const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
 
-  if (pnsd != (nsd_ + 1)) dserror("dimension do not match!");
-  if (bnsd != nsd_) dserror("dimension do not match!");
+  if (pnsd != nsd_) dserror("dimension do not match!");
+  if (bnsd != nsd_ele_) dserror("dimension do not match!");
 
   // number of parent element nodes
   const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
@@ -150,7 +151,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
       for (int idim = 0; idim < pnsd; ++idim)
         plmdisp[inode * pnsd + idim] = pla[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
-    // we deal with a (nsd_+1)-dimensional flow field
+    // we deal with a nsd_-dimensional flow field
     LINALG::Matrix<pnsd, pnen> pedispnp(true);
 
     // extract local values of convective velocity field from global state vector
@@ -218,12 +219,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<DRT::Element::nurbs9, 3>;
