@@ -307,8 +307,8 @@ namespace SSI
       std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
   //! data types for mesh tying handlers for block case: standard mesh tying handler and
   //! MultiMapExtractor splitting slave dofs into blocks
-  using meshtying_block_handler_type =
-      std::pair<meshtying_handler_type, Teuchos::RCP<LINALG::MultiMapExtractor>>;
+  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<ADAPTER::Coupling>>,
+      std::vector<Teuchos::RCP<const Epetra_Map>>>;
 
   //! Base class to handle mesh tying between manifold fields
   class ManifoldMeshTyingStrategyBase
@@ -431,6 +431,14 @@ namespace SSI
     }
 
    private:
+    //! intersects @p block_map with @p intersecting_map. Extracts also dofs from @p perm_map if the
+    //! corresponding dof in @p intersecting map intersects wirh @p block_map. Returns both in a
+    //! tuple.
+    std::tuple<Teuchos::RCP<const Epetra_Map>, Teuchos::RCP<const Epetra_Map>>
+    IntersectCouplingMapsBlockMap(Teuchos::RCP<const Epetra_Map> block_map,
+        Teuchos::RCP<const Epetra_Map> intersecting_map, Teuchos::RCP<const Epetra_Map> perm_map,
+        const Epetra_Comm& comm);
+
     //! all interior and master dofs split into blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> condensed_block_dof_map_;
 

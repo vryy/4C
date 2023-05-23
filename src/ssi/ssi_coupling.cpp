@@ -512,8 +512,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     auto structdofset = structdis->GetDofSetProxy();
     // build a proxy of the scatra discretization for the other fields
     auto scatradofset = scatradis->GetDofSetProxy();
-    // build a proxy of the scatra manifold discretization for the other fields
-    auto manifolddofset = scatra_manifold_dis->GetDofSetProxy();
 
     // add proxy dofssets of other fields to discretizations and check if number of dofsets is
     // correct
@@ -532,20 +530,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     auto structgidmatchingdofset =
         Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
 
-    auto scatragidmatchingdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
-
-    auto scatramanifoldgidmatchingdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatra_manifold_dis, manifolddofset));
-
     auto proxy_structure_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
         structgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
-
-    auto proxy_scatra_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        scatragidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
-
-    auto proxy_scatramanifold_scatra = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        scatramanifoldgidmatchingdofset, scatradis, "SSISurfaceManifold", couplingids));
 
     if (scatra_manifold_dis->AddDofSet(proxy_structure_scatramanifold) !=
         ++scatra_manifold_dofset_counter)
