@@ -11,7 +11,6 @@
 #define CONTACT_ABSTRACT_STRATEGY_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_Time.hpp>
 
 #include <Epetra_Operator.h>
 

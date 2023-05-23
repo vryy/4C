@@ -34,7 +34,6 @@
 #include "solver_nonlin_nox_group_prepostoperator.H"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_Time.hpp>
 
 #include <NOX_Epetra_Vector.H>
 

@@ -12,7 +12,6 @@
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 
 #include "linalg_utils_sparse_algebra_math.H"

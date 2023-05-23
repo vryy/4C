@@ -13,7 +13,6 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_Time.hpp>
 #include <set>
 
 namespace ADAPTER

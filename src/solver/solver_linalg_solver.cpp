@@ -6,12 +6,6 @@
 \level 0
 
 *-----------------------------------------------------------------------*/
-
-#undef WRITEOUTSTATISTICS
-#ifdef WRITEOUTSTATISTICS
-#include <Teuchos_Time.hpp>
-#endif
-
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

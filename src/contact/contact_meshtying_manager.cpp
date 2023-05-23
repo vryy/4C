@@ -7,7 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "contact_meshtying_manager.H"

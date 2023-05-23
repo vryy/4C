@@ -11,7 +11,6 @@
 /*----------------------------------------------------------------------------*/
 // Teuchos
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 // baci
 #include "fsi_monolithic.H"

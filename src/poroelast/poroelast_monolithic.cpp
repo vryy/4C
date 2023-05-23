@@ -7,9 +7,9 @@
 
 
 */
-
 #include "poroelast_monolithic.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 // needed for PrintNewton
 #include <sstream>
 
@@ -90,7 +90,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       normincstruct_(0.0),
       normrhsporo_(0.0),
       normincporo_(0.0),
-      timer_("", false),
+      timer_(Teuchos::rcp(new Teuchos::Time("", false))),
       iter_(-1),
       iterinc_(Teuchos::null),
       directsolve_(true),
@@ -185,7 +185,7 @@ void POROELAST::Monolithic::Solve()
   // equilibrium iteration loop (loop over k)
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
-    timer_.start();
+    timer_->start();
     Teuchos::Time timer("eval", true);
     timer.start();
     // compute residual forces #rhs_ and tangent #tang_
@@ -906,7 +906,7 @@ void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
   PrintNewtonIterTextStream(oss);
 
   // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.totalElapsedTime(true);
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_->totalElapsedTime(true);
   // finish oss
   oss << std::ends;
 

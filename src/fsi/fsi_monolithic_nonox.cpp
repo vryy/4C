@@ -7,8 +7,6 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "fsi_debugwriter.H"
 #include "fsi_monolithic_nonox.H"
@@ -28,7 +26,6 @@
 
 #include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
-#include "ale_utils_mapextractor.H"
 
 #include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
@@ -373,7 +370,6 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // displacement of the last time step. So we need to build the
     // sum of all increments and give it to ALE.
 
-    Teuchos::Time ta("", true);
     AleField()->Evaluate(ax);
   }
 
