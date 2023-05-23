@@ -11,7 +11,6 @@
 #include <Sacado_tradvec.hpp>
 #include <memory>
 #include <vector>
-#include "mixture_growth_evolution.H"
 #include "linalg_fixedsizematrix.H"
 
 namespace DRT
@@ -24,9 +23,7 @@ namespace MIXTURE
   template <typename T>
   class RemodelFiberMaterial;
   template <typename T>
-  class RemodelFiberMaterialActive;
-  template <typename T>
-  class GrowthEvolution;
+  class LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution;
 
 
   namespace IMPLEMENTATION
@@ -44,7 +41,7 @@ namespace MIXTURE
 
      public:
       RemodelFiberImplementation(std::shared_ptr<const RemodelFiberMaterial<T>> material,
-          std::shared_ptr<const GrowthEvolution<T>> growth_evolution, T decay_time, T lambda_pre);
+          LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<T> growth_evolution, T lambda_pre);
 
       /*!
        * @brief Pack all internal data into tha #data
@@ -154,12 +151,6 @@ namespace MIXTURE
       [[nodiscard]] T EvaluateCurrentLambdar() const;
       /// @}
 
-     private:
-      /// material parameters
-      /// @{
-      const T decay_time_;
-      /// @}
-
       /// array of G&R states (the last state in the array is the current state)
       std::array<GRState, numstates> states_;
 
@@ -170,11 +161,10 @@ namespace MIXTURE
       /// @}
 
       /// Strain energy function of the fiber
-      const std::shared_ptr<const RemodelFiberMaterialActive<T>> active_fiber_material_;
       const std::shared_ptr<const RemodelFiberMaterial<T>> fiber_material_;
 
       /// Growth evolution equation
-      const std::shared_ptr<const GrowthEvolution<T>> growth_evolution_;
+      const LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<T> growth_evolution_;
 
 #ifdef DEBUG
       bool state_is_set_ = false;

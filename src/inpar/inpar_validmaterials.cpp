@@ -3890,6 +3890,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Mixture constituent for a full constrained mixture fiber
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_FullConstrainedMixtureFiber",
+        "A 1D constituent that grows with the full constrained mixture fiber theory",
+        INPAR::MAT::mix_full_constrained_mixture_fiber));
+
+    AddNamedInt(m, "FIBER_ID", "Id of the fiber");
+    AddNamedInt(m, "FIBER_MATERIAL_ID", "Id of fiber material");
+    AddNamedBool(m, "GROWTH_ENABLED", "Switch for the growth", true, true);
+    AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
+    AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
+    AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at which the fiber is deposited");
+    AddNamedInt(m, "INITIAL_DEPOSITION_STRETCH_TIMEFUNCT",
+        "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
+    AddNamedInt(m, "INIT", "Initialization mode for fibers (1=element fibers, 3=nodal fibers)");
+    AddNamedBool(m, "ADAPTIVE_HISTORY", "Adaptively remove history snapshots based on a tolerance",
+        false, true);
+    AddNamedReal(m, "ADAPTIVE_HISTORY_TOLERANCE", "Tolerance of the adaptive history", 1e-6, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Mixture constituent for a remodel fiber
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_ExplicitRemodelFiber",

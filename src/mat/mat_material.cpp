@@ -853,6 +853,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_elasthyper:
     case INPAR::MAT::mix_elasthyper_damage:
     case INPAR::MAT::mix_elasthyper_elastin_membrane:
+    case INPAR::MAT::mix_full_constrained_mixture_fiber:
     case INPAR::MAT::mix_solid_material:
     case INPAR::MAT::mix_growth_strategy_anisotropic:
     case INPAR::MAT::mix_growth_strategy_isotropic:

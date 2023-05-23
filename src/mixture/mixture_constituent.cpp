@@ -18,6 +18,7 @@
 #include "mixture_constituent_elasthyper.H"
 #include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
+#include "mixture_constituent_full_constrained_mixture_fiber.H"
 #include "mixture_constituent_remodelfiber_expl.H"
 #include "mixture_constituent_remodelfiber_impl.H"
 #include "mixture_constituent_solidmaterial.H"
@@ -90,6 +91,15 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       if (curmat->Parameter() == nullptr)
       {
         curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat));
+      }
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+    }
+    case INPAR::MAT::mix_full_constrained_mixture_fiber:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }

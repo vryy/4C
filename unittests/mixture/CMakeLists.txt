@@ -2,6 +2,7 @@ set(TESTNAME unittests_mixture)
 
 set(SOURCE_LIST
     # cmake-format: sortable
+    unit_mixture_full_constrained_mixture_fiber.cpp
     unit_remodelfiber.cpp
     )
 

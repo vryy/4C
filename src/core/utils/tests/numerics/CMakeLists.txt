@@ -2,6 +2,7 @@ set(TESTNAME unittests_numerics)
 
 set(SOURCE_LIST
     # cmake-format: sortable
+    utils_local_integration_test.cpp
     utils_local_newton_test.cpp
     utils_local_numeric_methods_test.cpp
     )
