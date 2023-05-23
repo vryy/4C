@@ -17,6 +17,7 @@
 #include "mat_par_bundle.H"
 #include "linalg_four_tensor.H"
 #include "mat_muscle_utils.H"
+#include "utils_local_newton.H"
 
 
 namespace
@@ -638,8 +639,7 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
 
   // setup the activation level equation as f(omegaa) = lhs-rhs
   // and its derivative as df/domegaa(omegaa) = dlhs/domegaa
-  std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> actLevelEquationAndDeriv =
-      [this, &lambdaM, &rhs](double omegaa_init)
+  auto actLevelEquationAndDeriv = [this, &lambdaM, &rhs](double omegaa_init)
   { return this->EvaluateActivationLevelEquationAndDeriv(omegaa_init, lambdaM, rhs); };
 
   // determine starting guess for newton solver
@@ -654,8 +654,9 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
     const double omegaa_b_init = 1.0;  // omegaa <= 1
 
     // approximate the starting guess for the newton solver via bisection method
-    omegaa_init = CORE::UTILS::Bisection(
-        actLevelEquationAndDeriv, omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
+    omegaa_init = CORE::UTILS::Bisection([&](double omegaa_init)
+        { return std::get<0>(actLevelEquationAndDeriv(omegaa_init)); },
+        omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
   }
   else
     // use omegaa from the previous timestep as a starting guess
@@ -666,14 +667,13 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
   const int maxiter_newton = 200;
 
   // compute activation level as solution of activation level equation
-  double omegaa =
-      CORE::UTILS::NewtonScalar(actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
+  double omegaa = CORE::UTILS::SolveLocalNewton(
+      actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
 
   return omegaa;
 }
 
-CORE::UTILS::ValuesFunctAndFunctDeriv
-MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
+std::tuple<double, double> MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
     double omegaa, const double& lambdaM, const double& rhs)
 {
   // get active microstructural parameters from params_
@@ -700,10 +700,7 @@ MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
   double derivlhs = derivIe * std::exp(alpha * (Ie - 1)) + derivJe * std::exp(beta * (Je - 1));
 
   // compute activation level equation and its derivative
-  CORE::UTILS::ValuesFunctAndFunctDeriv equationValueAndDeriv{
-      .val_funct = lhs - rhs, .val_deriv_funct = derivlhs};
-
-  return equationValueAndDeriv;
+  return {lhs - rhs, derivlhs};
 }
 
 double MAT::Muscle_Giantesio::EvaluateRhsActivationLevelEquation(

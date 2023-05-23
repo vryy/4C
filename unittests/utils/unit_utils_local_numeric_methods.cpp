@@ -13,26 +13,9 @@
 
 namespace
 {
-  TEST(CoreUtilsTest, NewtonScalar)
-  {
-    std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> function = [](double x)
-    {
-      CORE::UTILS::ValuesFunctAndFunctDeriv fx_fdx = {std::pow(x, 2) - 1, 2 * x};
-      return fx_fdx;
-    };
-
-    double root = CORE::UTILS::NewtonScalar(function, 5.0, 1e-12, 200);
-
-    EXPECT_NEAR(root, 1.0, 1e-12);
-  }
-
   TEST(CoreUtilsTest, Bisection)
   {
-    std::function<CORE::UTILS::ValuesFunctAndFunctDeriv(double)> function = [](double x)
-    {
-      CORE::UTILS::ValuesFunctAndFunctDeriv fx_fdx = {std::pow(x, 2) - 1, 0.0};
-      return fx_fdx;
-    };
+    std::function<double(double)> function = [](double x) { return std::pow(x, 2) - 1; };
 
     double root = CORE::UTILS::Bisection(function, 0.0, 5.0, 1e-12, 200);
 
