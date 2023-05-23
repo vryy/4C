@@ -234,10 +234,11 @@ namespace TESTING::INTERNAL
    *
    * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
    */
+  template <typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const Teuchos::SerialDenseMatrix<int, double>& mat1,
-      const Teuchos::SerialDenseMatrix<int, double>& mat2, double tolerance)
+      const char* toleranceExpr, const Teuchos::SerialDenseMatrix<int, T>& mat1,
+      const Teuchos::SerialDenseMatrix<int, T>& mat2, double tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;
@@ -261,7 +262,7 @@ namespace TESTING::INTERNAL
           {
             for (int j = 0; j < mat1.numCols(); ++j)
             {
-              if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
+              if (std::abs(mat1(i, j) - mat2(i, j)) > tolerance)
               {
                 ss << "(" << i << "," << j << "): " << mat1(i, j) << " vs. " << mat2(i, j)
                    << std::endl;

@@ -64,7 +64,8 @@ namespace
    */
   TEST_F(Beam3eb, ComputeNullSpace)
   {
-    // nodal nullspace calculation for reference state {0.0, 0.0, 0.0} at {-0.05, 0.05, 0.3}
+    // nodal nullspace calculation for reference center of discretization at {0.0, 0.0, 0.0}
+    // at node {-0.05, 0.05, 0.3}
     {
       Teuchos::SerialDenseMatrix<int, double> nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
@@ -92,8 +93,8 @@ namespace
       BACI_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
     }
 
-    // nodal nullspace calculation for reference state {-0.05, 0.05, 0.3} at {-0.05, 0.05, 0.3}
-    // -> rotational components in displacement vanish
+    // nodal nullspace calculation for reference center of discretization at {-0.05, 0.05, 0.3}
+    // at node {-0.05, 0.05, 0.3} -> rotational components in displacement vanish
     {
       Teuchos::SerialDenseMatrix<int, double> nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
