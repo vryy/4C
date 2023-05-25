@@ -166,18 +166,6 @@ namespace ADAPTER
       return P_;
     };
 
-    /*! \brief Access to mortar projection operator \f$P\f$
-     *
-     *  \warning Redundant with GetPMatrix().
-     *
-     *  ToDo (mayr.mt) Remove this routine and replace its calls by GetPMatrix().
-     */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const
-    {
-      if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
-      return P_;
-    };
-
     /// @name Conversion between master and slave
     //@{
 

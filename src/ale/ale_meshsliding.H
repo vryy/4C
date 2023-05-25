@@ -46,7 +46,7 @@ namespace ALE
     void DofRowMaps();
 
     //! Get function for the P matrix
-    Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo();
+    Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix();
 
     //! Condensation operation for a block matrix
     void CondensationOperationBlockMatrix(

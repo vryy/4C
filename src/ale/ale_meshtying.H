@@ -109,7 +109,7 @@ namespace ALE
     virtual void DofRowMaps();
 
     //! Get function for the P matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo();
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix();
 
     //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;

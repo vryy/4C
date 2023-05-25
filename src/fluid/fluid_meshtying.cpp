@@ -76,7 +76,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
       discret_, discret_, Teuchos::null, coupleddof, "Mortar", discret_->Comm(), true);
 
   // OutputSetUp();
-  // AnalyzeMatrix(adaptermeshtying_->GetMortarTrafo());
+  // AnalyzeMatrix(adaptermeshtying_->GetPMatrix());
 
   // 4 different systems to solve
   // a) Condensation with a block matrix (condensed_bmat)
@@ -891,7 +891,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
 
   /**********************************************************************/
   /* Condensation operation for the sysmat                              */
@@ -1227,7 +1227,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
 
   /*--------------------------------------------------------------------*/
   // block nm
@@ -1356,7 +1356,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ and firstnonliniter_) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
 
   // define new incremental vector
   Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap, true);
@@ -1421,7 +1421,7 @@ void FLD::Meshtying::OutputSetUp()
     std::cout << *(adaptermeshtying_->SlaveDofRowMap())<< std::endl << std::endl;
    */
     std::cout << "Projection matrix:" << std::endl;
-    std::cout << *(adaptermeshtying_->GetMortarTrafo()) << std::endl << std::endl;
+    std::cout << *(adaptermeshtying_->GetPMatrix()) << std::endl << std::endl;
   }
 
   /* {
@@ -1842,7 +1842,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
 
   /*--------------------------------------------------------------------*/
   // block nm

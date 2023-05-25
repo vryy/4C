@@ -90,9 +90,9 @@ void ALE::Meshsliding::DofRowMaps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshsliding::GetMortarTrafo()
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshsliding::GetPMatrix()
 {
-  return adaptermeshsliding_->GetMortarTrafo();
+  return adaptermeshsliding_->GetPMatrix();
 }
 
 /*-------------------------------------------------------*/
@@ -131,7 +131,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
   Teuchos::RCP<LINALG::SparseMatrix> N_m;
   Teuchos::RCP<LINALG::SparseMatrix> N_s;
   GetMortarMatrices(Aco_mm, Aco_ms, Aco_sm, Aco_ss, N_m, N_s);
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetPMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> T = adaptermeshsliding_->TMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> H = adaptermeshsliding_->HMatrix();
   Teuchos::RCP<Epetra_Vector> gap = adaptermeshsliding_->Gap();

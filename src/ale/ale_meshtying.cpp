@@ -436,9 +436,9 @@ void ALE::Meshtying::DofRowMaps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshtying::GetMortarTrafo()
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshtying::GetPMatrix()
 {
-  return adaptermeshtying_->GetMortarTrafo();
+  return adaptermeshtying_->GetPMatrix();
 }
 
 /*-------------------------------------------------------*/
@@ -504,7 +504,7 @@ void ALE::Meshtying::CondensationOperationBlockMatrix(Teuchos::RCP<LINALG::Spars
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetPMatrix();
 
   /*--------------------------------------------------------------------*/
   // block nm
@@ -610,7 +610,7 @@ void ALE::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ == true and firstnonliniter_ == true) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetPMatrix();
 
   // define new incremental vector
   Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap, true);
