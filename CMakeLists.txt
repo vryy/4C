@@ -41,7 +41,7 @@ include(CheckCXXSourceCompiles)
 include(FetchContent)
 
 # include our own functions and macros
-file(GLOB _function_files "cmake/functions/*.cmake")
+file(GLOB _function_files CONFIGURE_DEPENDS "cmake/functions/*.cmake")
 foreach(_file ${_function_files})
   message(STATUS "Include ${_file}")
   include(${_file})
@@ -107,7 +107,7 @@ if(TRAP_FE)
 endif(TRAP_FE)
 
 # Run some system checks
-file(GLOB _check_files "cmake/checks/*.cmake")
+file(GLOB _check_files CONFIGURE_DEPENDS "cmake/checks/*.cmake")
 foreach(_file ${_check_files})
   message(STATUS "Include ${_file}")
   include(${_file})
@@ -138,145 +138,9 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 
-###------------------------------------------------------------------ List of files
-
-### LEGACY
-# Define variables that gather the names of all to-be-created libraries. These will be used
-# for the executables that link against all libraries.
-
-set(ELEMENT_LIBRARIES
-    # cmake-format: sortable
-    ele_ale
-    ele_beam3
-    ele_bele
-    ele_discsh3
-    ele_elemag
-    ele_fluid
-    ele_lubrication
-    ele_membrane
-    ele_porofluidmultiphase
-    ele_rigidsphere
-    ele_s8
-    ele_scatra
-    ele_so
-    ele_so_plast
-    ele_sp3
-    ele_t3
-    ele_t3cl
-    ele_thermo
-    ele_to3
-    ele_w1
-    )
-
-set(MULTIFIELD_LIBRARIES
-    # cmake-format: sortable
-    alg_ehl
-    alg_elch
-    alg_fbi
-    alg_fpsi
-    alg_fs3i
-    alg_fsi
-    alg_fsi_xfem
-    alg_immersed_problem
-    alg_loma
-    alg_pasi
-    alg_poroelast
-    alg_poroelast_scatra
-    alg_poromultiphase
-    alg_poromultiphase_scatra
-    alg_ssi
-    alg_ssti
-    alg_sti
-    alg_tsi
-    alg_two_phase
-    alg_wear
-    )
-
-set(SINGLEFIELD_LIBRARIES
-    # cmake-format: sortable
-    alg_ale
-    alg_artnet
-    alg_contact
-    alg_contact_aug
-    alg_elemag
-    alg_fluid
-    alg_fluid_turbulence
-    alg_lubrication
-    alg_particle_algorithm
-    alg_particle_engine
-    alg_particle_interaction
-    alg_particle_rigidbody
-    alg_particle_wall
-    alg_porofluidmultiphase
-    alg_scatra
-    alg_statinvanalysis
-    alg_structure
-    alg_structure_new
-    alg_thermo
-    alg_tutorial
-    alg_xfluid
-    )
-
-set(SUPPORT_LIBRARIES
-    # cmake-format: sortable
-    geometry_pair
-    inpar
-    io
-    levelset
-    lib
-    lib_artnet
-    lib_beamcontact
-    lib_beaminteraction
-    lib_binstrategy
-    lib_browniandyn
-    lib_constraint
-    lib_contact
-    lib_contact_constitutivelaw
-    lib_cut
-    lib_fiber
-    lib_immersed
-    lib_io
-    lib_mortar
-    lib_poromulti_art_coupl
-    lib_statinv_ana
-    lib_struct_ale
-    lib_surfstress
-    lib_xfem
-    lib_xfem_manag
-    particleengine
-    red_airways
-    )
-
-set(BACI_LIBRARIES
-    # cmake-format: sortable
-    ${ELEMENT_LIBRARIES}
-    ${MULTIFIELD_LIBRARIES}
-    ${SINGLEFIELD_LIBRARIES}
-    ${SUPPORT_LIBRARIES}
-    adapter
-    baci::core
-    cardiovascular0d
-    comm
-    constraint
-    geometry
-    linalg
-    locacontinuation
-    mat
-    matelast
-    mixture
-    mor
-    mortar
-    nlnsolver_nox
-    nurbs_discret
-    rebalance
-    solver
-    stru_multi
-    timestepping
-    )
+###------------------------------------------------------------------ Binaries
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
-
-###------------------------------------------------------------------ Binaries
 
 # hide libraries
 
@@ -304,7 +168,12 @@ set(FULL_TARGETS
 
 add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
+# Read in the source directory which defines all modules and executables
 add_subdirectory(src)
+# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
+get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
+
+# Process documentation
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
@@ -315,7 +184,6 @@ set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
     )
 
 enable_testing()
-include(CTest)
 
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)

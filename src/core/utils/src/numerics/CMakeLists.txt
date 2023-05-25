@@ -1,21 +1,8 @@
-set(OBJS_UTILS_NUMERICS
-    # cmake-format: sortable
-    utils_local_numeric_methods.cpp
-    )
-
+baci_auto_define_module()
 set(LIBS_UTILS_NUMERICS
     # cmake-format: sortable
+    core_utils_exceptions
     linalg
-    utils_exceptions
     )
 
-baci_add_library_to_module(
-  MODULE
-  utils
-  NAME
-  numerics
-  SOURCES
-  ${OBJS_UTILS_NUMERICS}
-  DEPENDENCIES
-  ${LIBS_UTILS_NUMERICS}
-  )
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_UTILS_NUMERICS})

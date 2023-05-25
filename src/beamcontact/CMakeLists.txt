@@ -1,24 +1,17 @@
-set(OBJS_LIB_BEAMCONTACT
+baci_auto_define_module()
+
+set(_beamcontact_dependencies
     # cmake-format: sortable
-    beamcontact_beam3contact.cpp
-    beamcontact_beam3contact_manager.cpp
-    beamcontact_beam3contact_octtree.cpp
-    beamcontact_beam3contactinterface.cpp
-    beamcontact_beam3contactnew.cpp
-    beamcontact_beam3contactvariables.cpp
-    beamcontact_beam3tobeampotential.cpp
-    beamcontact_beam3tosolidcontact.cpp
-    beamcontact_beam3tosolidmeshtying.cpp
-    beamcontact_beam3tospherecontact.cpp
-    beamcontact_beam3tospherepotential.cpp
-    beamcontact_str_model_evaluator_beaminteraction_old.cpp
+    beam3
+    beaminteraction
+    contact
+    core
+    inpar
+    io
+    lib
+    linalg
+    rigidsphere
+    structure
+    structure_new
     )
-
-baci_add_library(lib_beamcontact ${OBJS_LIB_BEAMCONTACT})
-
-set(LIBS_LIB_BEAMCONTACT
-    # cmake-format: sortable
-    lib_beaminteraction
-    )
-
-baci_add_dependency(lib_beamcontact ${LIBS_LIB_BEAMCONTACT})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_beamcontact_dependencies})

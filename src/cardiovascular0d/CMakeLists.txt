@@ -1,25 +1,17 @@
-set(OBJS_CARDIOVASCULAR0D
-    # cmake-format: sortable
-    cardiovascular0d.cpp
-    cardiovascular0d_4elementwindkessel.cpp
-    cardiovascular0d_arterialproxdist.cpp
-    cardiovascular0d_dofset.cpp
-    cardiovascular0d_manager.cpp
-    cardiovascular0d_nox_nln_linearsystem.cpp
-    cardiovascular0d_respiratory_syspulperiphcirculation.cpp
-    cardiovascular0d_resulttest.cpp
-    cardiovascular0d_structure_new_model_evaluator.cpp
-    cardiovascular0d_syspulcirculation.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(cardiovascular0d ${OBJS_CARDIOVASCULAR0D})
-
-set(LIBS_CARDIOVASCULAR0D
+set(_cardiovascular0d_dependencies
     # cmake-format: sortable
-    ele_so
+    adapter
+    core
+    inpar
+    io
     lib
+    linalg
     mor
+    so3
     solver
+    solver_nonlin_nox
+    structure_new
     )
-
-baci_add_dependency(cardiovascular0d ${LIBS_CARDIOVASCULAR0D})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_cardiovascular0d_dependencies})

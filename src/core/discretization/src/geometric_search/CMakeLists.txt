@@ -1,9 +1,4 @@
-set(OBJS_GEOMETRIC_SEARCH
-    # cmake-format: sortable
-    discretization_geometric_search.cpp
-    discretization_geometric_search_params.cpp
-    discretization_geometric_search_utils.cpp
-    )
+baci_auto_define_module()
 
 set(LIBS_GEOMETRIC_SEARCH
     # cmake-format: sortable
@@ -11,13 +6,4 @@ set(LIBS_GEOMETRIC_SEARCH
     lib
     )
 
-baci_add_library_to_module(
-  MODULE
-  discretization
-  NAME
-  geometric_search
-  SOURCES
-  ${OBJS_GEOMETRIC_SEARCH}
-  DEPENDENCIES
-  ${LIBS_GEOMETRIC_SEARCH}
-  )
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_GEOMETRIC_SEARCH})

@@ -1,13 +1,8 @@
-set(OBJS_TUTORIAL_MATERIAL
+baci_auto_define_module()
+
+set(LIBS
     # cmake-format: sortable
-    tutorial_material_stvenantkirchhoff.cpp
+    tutorial
     )
 
-baci_add_library(alg_tutorial_material ${OBJS_TUTORIAL_MATERIAL})
-
-set(LIBS_ALG_TUTORIAL_MATERIAL
-    # cmake-format: sortable
-    alg_tutorial
-    )
-
-baci_add_dependency(alg_tutorial_material ${LIBS_ALG_TUTORIAL_MATERIAL})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS})

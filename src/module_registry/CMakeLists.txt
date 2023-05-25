@@ -1,14 +1,35 @@
-set(OBJS_MODULE_REGISTRY
+baci_auto_define_module()
+
+set(_module_registry_dependencies
     # cmake-format: sortable
-    module_registry_parobjectregister.cpp
+    ale
+    art_net
+    beam3
+    beaminteraction
+    bele
+    binstrategy
+    constraint
+    contact
+    discsh3
+    elemag
+    fluid_ele
+    immersed_problem
+    inv_analysis
+    lubrication_ele
+    mat
+    membrane
+    mortar
+    nurbs_discret
+    particle_engine
+    porofluidmultiphase_ele
+    red_airways
+    rigidsphere
+    s8
+    scatra_ele
+    so3
+    thermo
+    torsion3
+    truss3
+    w1
     )
-
-baci_add_library(module_registry ${OBJS_MODULE_REGISTRY})
-
-set(LIBS_MODULE_REGISTRY
-    # cmake-format: sortable
-    lib
-    lib_constraint
-    )
-
-target_link_libraries(module_registry PUBLIC ${LIBS_MODULE_REGISTRY})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_module_registry_dependencies})

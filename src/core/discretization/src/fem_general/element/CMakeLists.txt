@@ -1,22 +1,10 @@
-set(OBJS_FEM_GENERAL_ELEMENT
-    # cmake-format: sortable
-    discretization_fem_general_utils_gauss_point_postprocess.cpp
-    )
+baci_auto_define_module()
 
 set(LIBS_FEM_GENERAL_ELEMENT
     # cmake-format: sortable
+    cut
     geometry
     lib
-    lib_cut
     )
 
-baci_add_library_to_module(
-  MODULE
-  discretization
-  NAME
-  fem_general_element
-  SOURCES
-  ${OBJS_FEM_GENERAL_ELEMENT}
-  DEPENDENCIES
-  ${LIBS_FEM_GENERAL_ELEMENT}
-  )
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_FEM_GENERAL_ELEMENT})

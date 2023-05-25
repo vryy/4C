@@ -1,9 +1,10 @@
-set(OBJS_POST_COMMON
-    # cmake-format: sortable
-    post_common.cpp
-    )
-
-baci_add_library(post_common ${OBJS_POST_COMMON})
+baci_add_library(
+  post_common
+  SOURCES
+  post_common.cpp
+  HEADERS
+  post_common.H
+  )
 baci_add_dependency(post_common inpar module_registry)
 
 set(OBJS_POST_PROCESSOR_MAIN
@@ -18,7 +19,8 @@ set(OBJS_POST_PROCESSOR_MAIN
 
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
 set_target_properties(post_processor PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(post_processor post_ensight_lib post_vtk_lib ${FILTER_LIBRARIES})
+baci_add_dependency(post_processor post_ensight_lib post_vtk_lib post_common)
+baci_link_executable_with_all(post_processor)
 
 # various post-processing tools
 include(scripts/baci_create_post_scripts.cmake)

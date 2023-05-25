@@ -1,13 +1,11 @@
-set(OBJS_MOR
-    # cmake-format: sortable
-    mor_pod.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(mor ${OBJS_MOR})
-
-set(LIBS_MOR
+set(_mor_dependencies
     # cmake-format: sortable
+    adapter
+    io
+    lib
     linalg
+    solver
     )
-
-baci_add_dependency(mor ${LIBS_MOR})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_mor_dependencies})

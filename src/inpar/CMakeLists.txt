@@ -1,80 +1,13 @@
-set(OBJS_INPAR
-    # cmake-format: sortable
-    inpar_ale.cpp
-    inpar_beam_to_solid.cpp
-    inpar_beamcontact.cpp
-    inpar_beaminteraction.cpp
-    inpar_beampotential.cpp
-    inpar_binningstrategy.cpp
-    inpar_bio.cpp
-    inpar_boolifyparameters.cpp
-    inpar_browniandyn.cpp
-    inpar_cardiac_monodomain.cpp
-    inpar_cardiovascular0d.cpp
-    inpar_contact.cpp
-    inpar_cut.cpp
-    inpar_ehl.cpp
-    inpar_elch.cpp
-    inpar_elemag.cpp
-    inpar_fbi.cpp
-    inpar_fluid.cpp
-    inpar_fpsi.cpp
-    inpar_fs3i.cpp
-    inpar_fsi.cpp
-    inpar_geometric_search.cpp
-    inpar_geometry_pair.cpp
-    inpar_immersed.cpp
-    inpar_invanalysis.cpp
-    inpar_io.cpp
-    inpar_IO_monitor_structure_dbc.cpp
-    inpar_IO_runtime_vtk_output.cpp
-    inpar_IO_runtime_vtk_output_fluid.cpp
-    inpar_IO_runtime_vtk_output_structure.cpp
-    inpar_IO_runtime_vtk_output_structure_beams.cpp
-    inpar_IO_runtime_vtp_output_structure.cpp
-    inpar_levelset.cpp
-    inpar_loca_continuation.cpp
-    inpar_lubrication.cpp
-    inpar_mor.cpp
-    inpar_mortar.cpp
-    inpar_particle.cpp
-    inpar_pasi.cpp
-    inpar_plasticity.cpp
-    inpar_poroelast.cpp
-    inpar_porofluidmultiphase.cpp
-    inpar_poromultiphase.cpp
-    inpar_poromultiphase_scatra.cpp
-    inpar_poroscatra.cpp
-    inpar_problemtype.cpp
-    inpar_rebalance.cpp
-    inpar_s2i.cpp
-    inpar_scatra.cpp
-    inpar_searchtree.cpp
-    inpar_solver.cpp
-    inpar_solver_nonlin.cpp
-    inpar_ssi.cpp
-    inpar_ssti.cpp
-    inpar_sti.cpp
-    inpar_structure.cpp
-    inpar_thermo.cpp
-    inpar_tsi.cpp
-    inpar_twophase.cpp
-    inpar_validconditions.cpp
-    inpar_validcontactconstitutivelaw.cpp
-    inpar_validmaterials.cpp
-    inpar_validparameters.cpp
-    inpar_volmortar.cpp
-    inpar_wear.cpp
-    inpar_xfem.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(inpar ${OBJS_INPAR})
-
-set(LIBS_INPAR
+set(_inpar_dependencies
     # cmake-format: sortable
-    alg_tutorial
+    contact_constitutivelaw
+    core
+    io
     lib
-    lib_contact_constitutivelaw
+    linalg
+    solver_nonlin_nox
+    tutorial
     )
-
-baci_add_dependency(inpar ${LIBS_INPAR})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_inpar_dependencies})

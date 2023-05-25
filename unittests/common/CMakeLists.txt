@@ -1,3 +1,3 @@
 add_library(unittests_common INTERFACE)
 target_include_directories(unittests_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(unittests_common INTERFACE linalg)
+baci_add_dependency(unittests_common linalg)

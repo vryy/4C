@@ -1,46 +1,16 @@
-set(OBJS_ARTNET
-    # cmake-format: sortable
-    art_net_dyn_drt.cpp
-    art_net_explicitintegration.cpp
-    art_net_impl_stationary.cpp
-    art_net_timint.cpp
-    art_net_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_artnet ${OBJS_ARTNET})
-
-set(LIBS_ALG_ARTNET
+set(_art_net_dependencies
     # cmake-format: sortable
     adapter
-    adapter
-    ele_scatra
-    )
-baci_add_dependency(alg_artnet ${LIBS_ALG_ARTNET})
-
-set(OBJS_ARTNET_LIB
-    # cmake-format: sortable
-    art_net_art_junction.cpp
-    art_net_art_terminal_bc.cpp
-    art_net_art_write_gnuplot.cpp
-    art_net_artery.cpp
-    art_net_artery_ele_calc.cpp
-    art_net_artery_ele_calc_lin_exp.cpp
-    art_net_artery_ele_calc_pres_based.cpp
-    art_net_artery_ele_factory.cpp
-    art_net_artery_evaluate.cpp
-    art_net_artery_input.cpp
-    art_net_artery_resulttest.cpp
-    )
-
-baci_add_library(lib_artnet ${OBJS_ARTNET_LIB})
-
-set(LIBS_LIB_ARTNET
-    # cmake-format: sortable
-    adapter
-    ele_scatra
+    core
     inpar
+    io
     lib
+    linalg
     mat
+    scatra
+    scatra_ele
+    solver
     )
-
-baci_add_dependency(lib_artnet ${LIBS_LIB_ARTNET})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_art_net_dependencies})
