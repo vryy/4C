@@ -21,7 +21,7 @@
 #include "mat_newtonianfluid.H"
 #include "mat_list.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "fluid_rotsym_periodicbc.H"
 

@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "lib_cubic_spline_interpolation.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*/
 DRT::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(

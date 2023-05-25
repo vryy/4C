@@ -21,7 +21,7 @@
 #include <Epetra_Operator.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /* ====================================================================
     public

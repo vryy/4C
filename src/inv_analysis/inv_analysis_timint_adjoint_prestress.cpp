@@ -8,7 +8,7 @@
 !*/
 #include "inv_analysis_timint_adjoint_prestress.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "linalg_sparsematrix.H"
 #include "solver_linalg_solver.H"

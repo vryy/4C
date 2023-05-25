@@ -12,7 +12,7 @@ file as well as a quick access wrapper for those parameters
 #include "contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 CONTACT::CONSTITUTIVELAW::Parameter::Parameter(

@@ -12,7 +12,7 @@
 #define BEAM3_SPATIAL_DISCRETIZATION_UTILS_H
 
 #include "lib_element.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_gausspoints.H"

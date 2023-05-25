@@ -24,7 +24,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "solver_linalg_solver.H"
 #include "rebalance_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_function.H"
 #include "io_control.H"
 #include "mat_maxwell_0d_acinus_Ogden.H"

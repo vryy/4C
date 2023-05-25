@@ -31,7 +31,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*

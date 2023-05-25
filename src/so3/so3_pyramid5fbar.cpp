@@ -11,7 +11,7 @@
 #include "so3_pyramid5fbar.H"
 #include "lib_discret.H"
 #include "linalg_utils_nullspace.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "so3_prestress.H"
 #include "lib_prestress_service.H"

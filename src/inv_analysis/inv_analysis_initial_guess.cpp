@@ -22,7 +22,7 @@
 #include "inpar_statinvanalysis.H"
 #include "inv_analysis_DcsMatrix.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "io_control.H"
 #include "io.H"
 #include "timestepping_mstep.H"

@@ -12,7 +12,7 @@
 #include "cut_volumecell.H"
 #include "cut_element.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_SerialQRDenseSolver.hpp>
 #include <Teuchos_SerialDenseVector.hpp>

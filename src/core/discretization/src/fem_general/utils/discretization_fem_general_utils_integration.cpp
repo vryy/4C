@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "discretization_fem_general_utils_integration.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 namespace internal

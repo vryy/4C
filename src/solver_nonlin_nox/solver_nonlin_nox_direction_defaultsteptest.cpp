@@ -11,7 +11,7 @@
 #include "solver_nonlin_nox_direction_defaultsteptest.H"
 #include "solver_nonlin_nox_group.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Vector.h>

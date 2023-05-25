@@ -16,7 +16,7 @@
 
 #include "lib_element_vtk_cell_type_register.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "post_common.H"

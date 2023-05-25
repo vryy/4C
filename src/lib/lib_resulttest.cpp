@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "lib_resulttest.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "io_control.H"
 #include "io_pstream.H"

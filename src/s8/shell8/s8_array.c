@@ -12,7 +12,7 @@
 \brief the header of everything
 *----------------------------------------------------------------------*/
 #include <string.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "s8_array.h"
 
 

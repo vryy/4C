@@ -9,7 +9,7 @@
 #include "so3_element_service.H"
 #include "so3_tet10.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"

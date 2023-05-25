@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "solver_nonlin_nox_enum_lists.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_StatusTest_Generic.H>
 

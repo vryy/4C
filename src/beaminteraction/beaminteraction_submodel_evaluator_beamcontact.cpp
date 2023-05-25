@@ -17,7 +17,7 @@
 #include "beaminteraction_calc_utils.H"
 #include "beaminteraction_str_model_evaluator_datastate.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "discretization_geometric_search.H"
 #include "discretization_geometric_search_params.H"

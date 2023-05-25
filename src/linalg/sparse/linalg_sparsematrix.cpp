@@ -181,7 +181,7 @@ bool LINALG::SparseMatrix::Destroy(bool throw_exception)
     msg << "Epetra_CrsMatrix cannot be finally deleted: The strong counter "
            "is still larger than 1. ( strong_count() = "
         << sysmat_.strong_count() << " )";
-    run_time_error(msg.str());
+    dserror(msg.str());
   }
   sysmat_ = Teuchos::null;
 
@@ -192,7 +192,7 @@ bool LINALG::SparseMatrix::Destroy(bool throw_exception)
     msg << "Epetra_CrsGraph cannot be finally deleted: The strong counter is "
            "still larger than 1. ( strong_count() = "
         << graph_.strong_count() << " )";
-    run_time_error(msg.str());
+    dserror(msg.str());
   }
   graph_ = Teuchos::null;
 
@@ -203,7 +203,7 @@ bool LINALG::SparseMatrix::Destroy(bool throw_exception)
     msg << "DBCMaps cannot be finally deleted: The strong counter is still "
            "larger than 1. ( strong_count() = "
         << dbcmaps_.strong_count() << " )";
-    run_time_error(msg.str());
+    dserror(msg.str());
   }
   dbcmaps_ = Teuchos::null;
 

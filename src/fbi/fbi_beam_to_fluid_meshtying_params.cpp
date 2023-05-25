@@ -11,7 +11,7 @@
 #include "fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "inpar_fbi.H"
 #include "inpar_geometry_pair.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 
 /**

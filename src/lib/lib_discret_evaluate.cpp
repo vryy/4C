@@ -12,7 +12,7 @@
 #include "lib_utils_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "lib_parobjectfactory.H"
 #include "lib_elements_paramsinterface.H"

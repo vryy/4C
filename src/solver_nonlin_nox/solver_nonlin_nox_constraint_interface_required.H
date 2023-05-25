@@ -17,7 +17,7 @@
 #define SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H
 
 #include "solver_nonlin_nox_enum_lists.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>

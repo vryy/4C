@@ -17,7 +17,7 @@
 #include "structure_new_model_evaluator_data.H"
 #include "structure_new_timint_base.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "io.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_assemble.H"

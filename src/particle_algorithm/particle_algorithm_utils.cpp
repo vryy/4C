@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_algorithm_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

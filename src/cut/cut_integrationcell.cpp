@@ -122,7 +122,7 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree(
     case DRT::Element::pyramid5:
       return 6;
     default:
-      run_time_error("no rule defined for this element type");
+      dserror("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }
@@ -151,7 +151,7 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree(
     case DRT::Element::pyramid5:
       return 6;
     default:
-      run_time_error("no rule defined for this element type");
+      dserror("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }

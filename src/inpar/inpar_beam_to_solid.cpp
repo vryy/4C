@@ -15,7 +15,7 @@
 #include "inpar_validparameters.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_geometry_pair.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_conditiondefinition.H"
 
 

@@ -18,7 +18,7 @@
 #include "structure_new_dbc.H"
 #include "structure_new_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "io.H"
 #include "io_control.H"

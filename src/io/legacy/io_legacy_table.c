@@ -40,7 +40,7 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <ctype.h>
 #include <string.h>

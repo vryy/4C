@@ -16,7 +16,7 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "adapter_coupling_nonlin_mortar.H"
 
 /*---------------------------------------------------------------------*

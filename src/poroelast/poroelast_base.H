@@ -15,7 +15,7 @@
 #include "adapter_algorithmbase.H"
 #include "adapter_field.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "poroelast_utils.H"
 
 #include "linalg_mapextractor.H"

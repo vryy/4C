@@ -16,7 +16,7 @@ Here is everything related with reading a bc file
 #include <iostream>
 #include <vector>
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "pre_exodus_reader.H"
 
 

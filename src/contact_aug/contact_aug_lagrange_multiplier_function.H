@@ -14,7 +14,7 @@
 #include "contact_aug_utils.H"
 
 #include "inpar_solver.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // forward declarations
 class Epetra_MultiVector;

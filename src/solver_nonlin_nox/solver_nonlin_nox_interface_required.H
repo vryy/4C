@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "solver_nonlin_nox_enum_lists.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Epetra_Interface_Required.H>  // base class
 #include <NOX_Epetra_Vector.H>

@@ -22,7 +22,7 @@
 #include "lib_element.H"
 #include "lib_node.H"
 #include "lib_dofset_interface.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem_enums.H"
 
 // forward declarations

@@ -11,7 +11,7 @@ distributions
 #ifndef MORTAR_MATRIX_TRANSFORM_H
 #define MORTAR_MATRIX_TRANSFORM_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "utils_pairedvector.H"
 #include "lib_utils_matrix_vector_enums.H"
 

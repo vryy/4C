@@ -26,7 +26,7 @@
 
 #include "structure_timada_create.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "structure_new_timint_factory.H"
 #include "structure_new_solver_factory.H"

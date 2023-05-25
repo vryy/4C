@@ -15,7 +15,7 @@
 #include <Epetra_Import.h>
 #include <Epetra_Export.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*/

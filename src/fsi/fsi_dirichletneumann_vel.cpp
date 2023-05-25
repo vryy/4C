@@ -14,7 +14,7 @@
 #include "adapter_str_fbiwrapper.H"
 #include "binstrategy.H"
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "inpar_fsi.H"
 #include "inpar_fbi.H"

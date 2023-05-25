@@ -5,5 +5,5 @@ function(baci_add_library target)
   target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
   # link with external libraries
-  baci_link_default_libraries(${target} PUBLIC)
+  baci_link_default_external_libraries(${target} PUBLIC)
 endfunction()

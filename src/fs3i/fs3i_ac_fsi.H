@@ -16,7 +16,7 @@
 #define FS3I_AC_FSI_H
 
 #include "fs3i_partitioned_1wc.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // forward declarations
 namespace LINALG

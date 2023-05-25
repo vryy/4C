@@ -10,7 +10,7 @@
 #include "utils_local_numeric_methods.H"
 
 #include <cmath>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

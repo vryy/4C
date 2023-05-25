@@ -14,7 +14,7 @@
 #include "solver_nonlin_nox_group.H"
 #include "solver_nonlin_nox_direction_defaultsteptest.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_GlobalData.H>
 #include <NOX_Solver_Generic.H>

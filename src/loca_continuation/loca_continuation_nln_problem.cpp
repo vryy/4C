@@ -17,7 +17,7 @@
 
 #include "solver_nonlin_nox_globaldata.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 

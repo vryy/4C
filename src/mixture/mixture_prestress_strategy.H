@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
 #include <utility>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <memory>
 
 namespace MAT

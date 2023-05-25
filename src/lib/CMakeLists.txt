@@ -108,5 +108,3 @@ set(LIBS_LIB_IO
     )
 
 baci_add_dependency(lib_io ${LIBS_LIB_IO})
-
-add_subdirectory(error)

@@ -14,7 +14,7 @@
 #define SOLVER_NONLIN_NOX_STATUSTEST_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // forward declaration
 namespace Teuchos

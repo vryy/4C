@@ -13,7 +13,7 @@
 #define BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_PARAMS_H
 
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_IO_runtime_vtk_output.H"
 
 

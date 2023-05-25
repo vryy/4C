@@ -11,7 +11,7 @@
 #include <vector>
 #include "lib_exporter.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::Exporter::Exporter(const Epetra_Comm& comm)

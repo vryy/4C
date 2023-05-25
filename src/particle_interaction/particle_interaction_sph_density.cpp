@@ -30,7 +30,7 @@
 
 #include "lib_element.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

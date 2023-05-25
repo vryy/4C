@@ -14,7 +14,7 @@
 #include "geometry_pair_scalar_types.H"
 
 #include "linalg_utils_densematrix_inverse.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 

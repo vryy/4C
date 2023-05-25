@@ -12,7 +12,7 @@
 #ifndef BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
 #define BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_beaminteraction.H"
 #include <Teuchos_RCP.hpp>
 

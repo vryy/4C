@@ -12,7 +12,7 @@
 #ifndef XFEM_XFIELD_STATE_H
 #define XFEM_XFIELD_STATE_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Map;

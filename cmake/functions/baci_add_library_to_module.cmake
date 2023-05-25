@@ -28,7 +28,7 @@ function(baci_add_library_to_module)
       ${target_name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
       )
     # link with external libraries
-    baci_link_default_libraries(${target_name} INTERFACE)
+    baci_link_default_external_libraries(${target_name} INTERFACE)
   else()
     baci_add_library(${target_name} ${parsed_SOURCES})
   endif()

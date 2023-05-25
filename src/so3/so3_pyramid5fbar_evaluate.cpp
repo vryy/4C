@@ -11,7 +11,7 @@
 #include "linalg_serialdensematrix.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_prestress_service.H"
 #include "mat_so3_material.H"
 #include "mat_thermoplastichyperelast.H"

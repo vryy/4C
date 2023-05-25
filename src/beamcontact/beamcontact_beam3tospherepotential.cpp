@@ -14,7 +14,7 @@
 #include "inpar_contact.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"

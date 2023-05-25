@@ -18,7 +18,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_IntVector.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 

@@ -16,7 +16,7 @@
 /* headers */
 #include <Teuchos_RCP.hpp>
 #include "inpar_material.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*/

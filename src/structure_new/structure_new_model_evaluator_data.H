@@ -11,7 +11,7 @@
 #ifndef STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 #define STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
 #include <unordered_map>

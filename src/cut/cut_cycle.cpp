@@ -46,7 +46,7 @@ bool GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
         std::find(frompoints.begin(), frompoints.end(), topoints[pos]);
     if (i == frompoints.end())
     {
-      run_time_error("no cycle: \"to point\" not in \"from list\"");
+      dserror("no cycle: \"to point\" not in \"from list\"");
     }
     pos = std::distance(frompoints.begin(), i);
   }

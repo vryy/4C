@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
 #include "adapter_ale_wear.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/

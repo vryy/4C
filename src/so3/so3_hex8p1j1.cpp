@@ -9,7 +9,7 @@
 
 #include "so3_hex8p1j1.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "so3_hex8.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"

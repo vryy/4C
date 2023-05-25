@@ -6,6 +6,7 @@ set(OBJS_UTILS_NUMERICS
 set(LIBS_UTILS_NUMERICS
     # cmake-format: sortable
     linalg
+    utils_exceptions
     )
 
 baci_add_library_to_module(

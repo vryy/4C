@@ -16,7 +16,7 @@
 #include "so3_line.H"
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_prestress_service.H"
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"

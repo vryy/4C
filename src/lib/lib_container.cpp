@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "lib_container.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Epetra_Vector.h>
 
 

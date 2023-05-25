@@ -10,7 +10,7 @@
 #ifndef SOLVER_SOLVERTYPE_H
 #define SOLVER_SOLVERTYPE_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_krylov_projector.H"
 
 namespace LINALG::SOLVER

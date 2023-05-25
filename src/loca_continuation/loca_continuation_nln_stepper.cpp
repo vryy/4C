@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "loca_continuation_nln_stepper.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "solver_nonlin_nox_inner_statustest_generic.H"
 #include "solver_nonlin_nox_solver_factory.H"

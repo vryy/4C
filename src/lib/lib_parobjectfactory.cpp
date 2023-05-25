@@ -11,7 +11,7 @@
 
 #include <Epetra_Comm.h>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "lib_element.H"
 #include "lib_parobject.H"

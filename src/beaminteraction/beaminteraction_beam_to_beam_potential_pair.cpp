@@ -22,7 +22,7 @@
 #include "inpar_beampotential.H"
 
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_function_of_time.H"
 
 #include "linalg_FAD_utils.H"

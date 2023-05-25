@@ -15,7 +15,7 @@ be set in problem specific parameter lists derived from this class.
 
 #include <string>
 #include <iostream>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "io_pstream.H"
 #include "fluid_ele_parameter.H"
 

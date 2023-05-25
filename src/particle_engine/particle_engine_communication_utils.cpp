@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_engine_communication_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

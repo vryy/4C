@@ -10,7 +10,7 @@
 
 #include "bele_bele3.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils_factory.H"
 #include "lib_linedefinition.H"
 

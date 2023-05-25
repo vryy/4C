@@ -13,7 +13,7 @@
 #include "solver_nonlin_nox_linearsystem_factory.H"
 #include "solver_nonlin_nox_globaldata.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "solver_linalg_solver.H"
 #include "linalg_sparseoperator.H"
 

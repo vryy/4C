@@ -11,7 +11,7 @@
 
 #include "fsi_nox_group.H"
 #include "fsi_monolithicinterface.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

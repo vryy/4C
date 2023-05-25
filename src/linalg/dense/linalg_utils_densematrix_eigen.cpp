@@ -9,7 +9,7 @@
 
 #include "linalg_fortran_definitions.h"
 #include "linalg_utils_densematrix_eigen.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|

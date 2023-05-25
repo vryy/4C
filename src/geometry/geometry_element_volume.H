@@ -154,7 +154,7 @@ namespace GEO
   double ElementLength(const DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
     if (distype != DRT::Element::line2 or xyze.N() != 2)
-      run_time_error("Currently only line2 elements are supported!");
+      dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
     // the value

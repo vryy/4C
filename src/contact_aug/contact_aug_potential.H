@@ -12,7 +12,7 @@
 #define CONTACT_AUG_POTENTIAL_H
 
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 class Epetra_Vector;
 

@@ -23,7 +23,7 @@ additional static parameters required for scalar transport element evaluation.
 #include "inpar_elch.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
