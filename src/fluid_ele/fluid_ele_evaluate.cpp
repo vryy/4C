@@ -99,7 +99,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
   Teuchos::RCP<MAT::Material> mat = Material();
 
   // get space dimensions
-  const int nsd = DRT::UTILS::getDimension(Shape());
+  const int nsd = CORE::DRT::UTILS::getDimension(Shape());
 
   // switch between different physical types as used below
   std::string impltype = "std";

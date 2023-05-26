@@ -52,19 +52,19 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
 
     // initialize shapes
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgwkele->Degree(), usescompletepoly_, 2 * ele->Degree()));
     else if (shapes_->degree_ != unsigned(ele->Degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgwkele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
     // initialize shapes on faces
     if (shapesface_ == Teuchos::null)
     {
-      DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
           ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+      shapesface_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValuesFace<distype>(svfparams));
     }
 
     // initialize local solver
@@ -83,7 +83,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration&, bool offdiag)
+    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -656,7 +656,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix locations =
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -728,14 +729,14 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -758,7 +759,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
@@ -889,8 +890,8 @@ DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(CORE::UTILS::Singleton
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
-    const DRT::ELEMENTS::Fluid* ele, const DRT::UTILS::ShapeValues<distype>& shapeValues,
-    DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
+    const DRT::ELEMENTS::Fluid* ele, const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+    CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
     : ndofs_(shapeValues.ndofs_),
       convective(true),
       unsteady(true),
@@ -1483,7 +1484,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   tau_w = tau_w_ref;
 
   // ease notation
-  DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
+  CORE::DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
   LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
   LINALG::SerialDenseMatrix Nn = shapesface_.funct;
   LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
@@ -1664,7 +1665,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
   double eps = actmat->ComprCoeff();
 
   // ease notation
-  DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
+  CORE::DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
   LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
   LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
   LINALG::SerialDenseVector facf = shapesface_.jfac;

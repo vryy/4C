@@ -146,7 +146,7 @@ namespace UTILS
     const INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
     const INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
     //! gaussian integration to be used
-    DRT::UTILS::GaussRule2D gaussrule_;
+    CORE::DRT::UTILS::GaussRule2D gaussrule_;
 
    private:
     // don't want = operator, cctor and destructor

@@ -33,17 +33,18 @@ namespace DRT
 {
   class Condition;
 
-  namespace UTILS
-  {
-    template <const int NSD>
-    class IntPointsAndWeights;
-  }
   namespace ELEMENTS
   {
     class ScaTraEleParameterBoundary;
   }
 
 }  // namespace DRT
+
+namespace CORE::DRT::UTILS
+{
+  template <const int NSD>
+  class IntPointsAndWeights;
+}
 
 namespace LINALG
 {
@@ -844,16 +845,18 @@ namespace SCATRA
 
    protected:
     //! number of slave element nodes
-    static const int nen_slave_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int nen_slave_ =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
 
     //! number of master element nodes
-    static const int nen_master_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nen_master_ =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
     //! spatial dimensionality of slave elements
-    static const int nsd_slave_ = DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int nsd_slave_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
 
     //! spatial dimensionality of master elements
-    static const int nsd_master_ = DRT::UTILS::DisTypeToDim<distypeM>::dim;
+    static const int nsd_master_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim;
 
     //! protected constructor for singletons
     MortarCellCalc(const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -968,14 +971,14 @@ namespace SCATRA
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
         MORTAR::MortarElement& masterelement,  //!< master-side mortar element
         MORTAR::IntCell& cell,                 //!< mortar integration cell
-        const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
-        const int iquad                                                //!< ID of integration point
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
+        const int iquad  //!< ID of integration point
     );
 
     //! evaluate slave-side shape functions and domain integration factor at element integration
     //! point
     double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::MortarElement& element,  //!< mortar element
-        const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,           //!< quadrature rule
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,     //!< quadrature rule
         const int iquad  //!< ID of integration point
     );
 

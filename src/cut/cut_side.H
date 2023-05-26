@@ -654,8 +654,9 @@ namespace GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, DRT::Element::DiscretizationType sidetype,
-        unsigned numNodesSide = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<sidetype>::dim>
+        unsigned numNodesSide =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim>
     class ConcreteSide : public Side, public ConcreteElement<probdim, sidetype>
     {
      public:
@@ -832,7 +833,7 @@ namespace GEO
         LINALG::Matrix<dim, numNodesSide> deriv(true);
         LINALG::Matrix<dim, probdim> A(true);
 
-        DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
+        CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
 
         switch (dim)
@@ -878,7 +879,7 @@ namespace GEO
       void BasisAtCenter(LINALG::Matrix<probdim, 1>& t1, LINALG::Matrix<probdim, 1>& t2,
           LINALG::Matrix<probdim, 1>& n)
       {
-        LINALG::Matrix<dim, 1> center_rs(DRT::UTILS::getLocalCenterPosition<dim>(sidetype));
+        LINALG::Matrix<dim, 1> center_rs(CORE::DRT::UTILS::getLocalCenterPosition<dim>(sidetype));
         Basis(center_rs, t1, t2, n);
       }
 
@@ -895,7 +896,7 @@ namespace GEO
         LINALG::Matrix<dim, numNodesSide> deriv(true);
         LINALG::Matrix<dim, probdim> A(true);
 
-        DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
+        CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
 
         // set the first tangential vector
@@ -1044,7 +1045,7 @@ namespace GEO
       {
         Side* s = NULL;
         // sanity check
-        if (probdim < DRT::UTILS::DisTypeToDim<sidetype>::dim)
+        if (probdim < CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim)
           dserror("Problem dimension is smaller than the side dimension!");
 
         switch (probdim)

@@ -21,7 +21,7 @@ namespace DRT
   {
     // class implementation
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
@@ -75,18 +75,18 @@ namespace DRT
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           LINALG::Matrix<nsd_, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,

@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
     : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), data_()
 {
-  gaussrule_ = GaussRule1D::undefined;
+  gaussrule_ = CORE::DRT::UTILS::GaussRule1D::undefined;
 
   return;
 }

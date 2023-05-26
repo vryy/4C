@@ -231,10 +231,10 @@ namespace NTS
     ;
 
     //! nm_: number of master element nodes
-    static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeM>::dim + 1;
+    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim + 1;
 
     /*!
      \brief Interpolate for nts problems

@@ -39,7 +39,7 @@
 #include "xfem_xfluid_timeInt_base.H"
 
 
-//#define DEBUG_TIMINT_STD
+// #define DEBUG_TIMINT_STD
 
 /*------------------------------------------------------------------------------------------------*
  * basic XFEM time-integration constructor                                           schott 07/12 *
@@ -437,7 +437,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(GEO::CUT::SideHandle* 
 ) const
 {
   const int nsd = 3;
-  const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
+  const int numNodesSurface = CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
 
   LINALG::Matrix<nsd, 2> xyze_lineElement(true);
 
@@ -562,7 +562,8 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
 {
   const int nsd = 3;  // dimension
   const int numnode =
-      DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of nodes of element
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of nodes of
+                                                                             // element
 
   LINALG::Matrix<nsd, numnode> xyze(xyz);
 
@@ -594,7 +595,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
   shapeFcnDerivXY.Clear();
 
   //-------------------------------------------------------
-  DRT::UTILS::shape_function_3D(
+  CORE::DRT::UTILS::shape_function_3D(
       shapeFcn, xi(0), xi(1), xi(2), DISTYPE);  // evaluate shape functions at xi
 
   if (compute_deriv)
@@ -633,7 +634,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
     // shape function derivatives w.r.t local coordinates
     LINALG::Matrix<3, numnode> shapeFcnDeriv;
-    DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
 
     LINALG::Matrix<nsd, nsd> xjm(true);         // jacobi matrix
     xjm.MultiplyNT(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
@@ -1123,7 +1124,8 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
 
   const int numdofpernode = nsd + 1;
   const int numnode =
-      DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of element nodes
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of element
+                                                                             // nodes
 
   //-------------------------------------------------------
   // initialization
@@ -1938,7 +1940,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
 
 
   for (int i = 0; i < side1->NumNode(); i++)
-    xi_1_avg.Update(1.0, DRT::UTILS::getNodeCoordinates(i, side1->Shape()), 1.0);
+    xi_1_avg.Update(1.0, CORE::DRT::UTILS::getNodeCoordinates(i, side1->Shape()), 1.0);
 
   xi_1_avg.Scale(1.0 / side1->NumNode());
 
@@ -1952,7 +1954,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
   if (side2 != NULL)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->NumNode(); i++)
-      xi_2_avg.Update(1.0, DRT::UTILS::getNodeCoordinates(i, side2->Shape()), 1.0);
+      xi_2_avg.Update(1.0, CORE::DRT::UTILS::getNodeCoordinates(i, side2->Shape()), 1.0);
 
     xi_2_avg.Scale(1.0 / side2->NumNode());
 
@@ -1999,7 +2001,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
     // get the side-center
     for (int i = 0; i < side->NumNode(); i++)
     {
-      local_node_coord = DRT::UTILS::getNodeCoordinates(i, side->Shape());
+      local_node_coord = CORE::DRT::UTILS::getNodeCoordinates(i, side->Shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }
@@ -2115,7 +2117,7 @@ void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< norm
     LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
 )
 {
-  const int side_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+  const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
 
   // add displacements
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, "idispn", lm);
@@ -2136,8 +2138,8 @@ void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< norm
   LINALG::Matrix<3, 1> dx_ds(true);
 
   // get current values
-  DRT::UTILS::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
-  DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+  CORE::DRT::UTILS::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
   proj_x_n.Multiply(xyze_, funct);
 
@@ -2232,7 +2234,7 @@ void XFEM::XFLUID_STD::get_projxn_Line(
     double& xi_line                       ///< local coordinates of projected point w.r.t line
 )
 {
-  const int line_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
+  const int line_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
 
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, "idispn", lm);
@@ -2249,7 +2251,7 @@ void XFEM::XFLUID_STD::get_projxn_Line(
 
 
   // get current values
-  DRT::UTILS::shape_function_1D(funct, xi_line, line_distype);
+  CORE::DRT::UTILS::shape_function_1D(funct, xi_line, line_distype);
 
   // projected point tracked back at t^n
   proj_x_n.Multiply(xyze_, funct);
@@ -2270,7 +2272,7 @@ void XFEM::XFLUID_STD::addeidisp(
     const std::vector<int>& lm          ///< local map
 )
 {
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   LINALG::Matrix<3, nen> eidisp(true);
 
@@ -2714,7 +2716,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
     double& dist                          ///< distance from point to its projection
 )
 {
-  const int side_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+  const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
 
   // add displacements
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, state, lm);
@@ -2783,9 +2785,9 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 
 
     // get current values
-    DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
-    DRT::UTILS::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
+    CORE::DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
 
     x.Multiply(xyze_, funct);
 
@@ -2924,7 +2926,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       dist = -sol(2) * normal_length;  // negative sol(2)!!! and scaling with normal length
 
       // evaluate shape function at solution
-      DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
+      CORE::DRT::UTILS::shape_function_2D(funct, sol(0), sol(1), side_distype);
 
       // get projected gauss point
       x_side.Multiply(xyze_, funct);
@@ -2978,7 +2980,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
 {
   bool on_line = false;
 
-  const int line_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
+  const int line_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
 
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, state, lm);

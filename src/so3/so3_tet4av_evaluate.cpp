@@ -251,8 +251,8 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET4av; gp++)
   {
-    DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
-    DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
     jac.Multiply(deriv, xrefe);
 
     // material/reference co-ordinates of Gauss point
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
   }
   LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
 
-  DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::GaussRule3D::tet_1point);
+  CORE::DRT::UTILS::IntPointsAndWeights<3> intpoints(CORE::DRT::UTILS::GaussRule3D::tet_1point);
   numgpt_ = intpoints.IP().nquad;
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -323,7 +323,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
     const double* gpcoord = (intpoints.IP().qxg)[gp];
     for (int idim = 0; idim < 3; idim++) xsi_[gp](idim) = gpcoord[idim];
 
-    DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
 
@@ -384,8 +384,8 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
   for (int gp = 0; gp < numgpt_; gp++)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
-    DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xsi_[gp], deriv);
 
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -563,13 +563,13 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
     // jacobian is constatnt
     double ifactor, massfactor;
     // needs more than one gauss point
-    DRT::UTILS::IntPointsAndWeights<3> intpoints(DRT::UTILS::GaussRule3D::tet_4point);
+    CORE::DRT::UTILS::IntPointsAndWeights<3> intpoints(CORE::DRT::UTILS::GaussRule3D::tet_4point);
     LINALG::Matrix<3, 1> xsi;
 
     for (int gp = 0; gp < intpoints.IP().nquad; gp++)
     {
       for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.IP().qxg)[gp][i];
-      DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
+      CORE::DRT::UTILS::shape_function<DRT::Element::tet4>(xsi_[gp], shapefct);
       const double factor = detJ_[0] * density * (intpoints.IP().qwgt)[gp];
       for (int inod = 0; inod < 4; ++inod)
       {

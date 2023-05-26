@@ -94,7 +94,7 @@ DRT::ELEMENTS::DiscSh3::DiscSh3(int id, int owner)
       x_n_1_(LINALG::Matrix<1, 9>(true)),
       data_()
 {
-  gaussrule_ = DRT::UTILS::GaussRule2D::tri_3point_gauss_radau;
+  gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point_gauss_radau;
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
   eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
   return;
@@ -597,7 +597,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x
 
   if (Adiff2 != Teuchos::null) Adiff2->Shape(ndof, ndof);
 
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   int ngp = intpoints.nquad;
 
@@ -615,7 +615,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x
     const double e1 = intpoints.qxg[gpid][1];
 
     // get derivatives of shape functions in the plane of the element
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
     std::vector<double> normal(3);
     double detA;
@@ -730,7 +730,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
   // initialization
   A = 0.;
 
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   int ngp = intpoints.nquad;
 
@@ -748,7 +748,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
     const double e1 = intpoints.qxg[gpid][1];
 
     // get derivatives of shape functions in the plane of the element
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
     std::vector<double> normal(3);
     double detA;

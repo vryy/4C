@@ -1968,7 +1968,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
       LINALG::SerialDenseMatrix auxderiv(1, NumNode());
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, nurbs2);
 
       // copy entries for to be conform with the mortar code!
@@ -1987,7 +1987,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
       LINALG::SerialDenseMatrix auxderiv(1, NumNode());
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, nurbs3);
 
       // copy entries for to be conform with the mortar code!
@@ -2011,7 +2011,8 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
       uv(1) = xi[1];
 
       LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val, auxderiv, uv, Knots(), weights, nurbs4);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          val, auxderiv, uv, Knots(), weights, nurbs4);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 2; ++d)
@@ -2035,7 +2036,8 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
 
 
       LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val, auxderiv, uv, Knots(), weights, nurbs9);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          val, auxderiv, uv, Knots(), weights, nurbs9);
 
 #ifdef DEBUG
       if (deriv.N() != 2 || deriv.M() != NumNode()) dserror("Inconsistency in EvaluateShape");
@@ -4519,7 +4521,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       LINALG::SerialDenseMatrix auxderiv2(1, NumNode());
 
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, nurbs2);
 
       // copy entries for to be conform with the mortar code!
@@ -4541,7 +4543,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       LINALG::SerialDenseMatrix auxderiv(1, 3);
       LINALG::SerialDenseMatrix auxderiv2(1, 3);
 
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, nurbs3);
 
       // copy entries for to be conform with the mortar code!
@@ -4568,7 +4570,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs4);
 
       // copy entries for to be conform with the mortar code!
@@ -4595,7 +4597,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs8);
 
       // copy entries for to be conform with the mortar code!
@@ -4622,7 +4624,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs9);
 
       // copy entries for to be conform with the mortar code!

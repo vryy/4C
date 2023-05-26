@@ -275,8 +275,9 @@ namespace GEO
    *
    *  \author hiermeier \date 11/16 */
   template <unsigned probDim, DRT::Element::DiscretizationType cellType,
-      unsigned dim = DRT::UTILS::DisTypeToDim<cellType>::dim,
-      unsigned numNodePerEle = DRT::UTILS::DisTypeToNumNodePerEle<cellType>::numNodePerElement>
+      unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim,
+      unsigned numNodePerEle =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<cellType>::numNodePerElement>
   class ConcreteBoundaryIntCell : public BoundaryIntCell
   {
    public:

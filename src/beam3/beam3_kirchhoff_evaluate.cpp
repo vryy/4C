@@ -592,8 +592,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
       BEAM3K_COLLOCATION_POINTS);
 
   // Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
 
 
@@ -675,10 +675,10 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
 
     // get value of interpolating function of theta (lagrange polynomials) at xi
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     // Determine storage position for the node node
     ind = CORE::LARGEROTATIONS::NumberingTrafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
@@ -741,8 +741,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     L_i.Clear();
     L_i_xi.Clear();
     L_i_s.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
-    DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
+    CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
     L_i_s.Update(1.0 / jacobi_[numgp], L_i_xi);
 
 
@@ -969,13 +969,13 @@ void DRT::ELEMENTS::Beam3k::CalculateStiffmatContributionsAnalyticWK(
 
     // get all required shape function values
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1004,10 +1004,10 @@ void DRT::ELEMENTS::Beam3k::CalculateStiffmatContributionsAnalyticWK(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
 
   L_i_xi.Clear();
-  DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
+  CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
 
   L_i_s.Clear();
   L_i_s.Update(std::pow(jacobifac_gp, -1.0), L_i_xi, 0.0);
@@ -1157,8 +1157,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
       BEAM3K_COLLOCATION_POINTS);
 
   // Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   // interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
@@ -1250,7 +1250,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 
     // get value of interpolating function of theta (lagrange polynomials) at xi
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
 
     // Determine storage position for the node node
     ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -1344,15 +1344,15 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     N_i_xixi.Clear();
     N_s.Clear();
     N_ss.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-    DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+    CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
     L_i_s.Update(1.0 / jacobi_[numgp], L_i_xi, 0.0);
     AssembleShapefunctionsL(L_i, L);
     // The assemble routine is identical for L and L_s
     AssembleShapefunctionsL(L_i_s, L_s);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
     AssembleShapefunctionsNs(N_i_xi, jacobi_[numgp], N_s);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
     AssembleShapefunctionsNss(N_i_xi, N_i_xixi, jacobi_[numgp], jacobi2_[numgp], N_ss);
 
     // Calculate collocation piont interpolations
@@ -1679,8 +1679,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
   //  LINALG::Matrix<numdofelement,3,T> v_thetapar(true);
 
   // Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   Ekin_ = 0.0;
 
@@ -1693,7 +1693,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     // get shape function values and assemble them
     N_i.Clear();
-    DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
 
     N.Clear();
     AssembleShapefunctionsN(N_i, N);
@@ -1974,13 +1974,13 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
 
     // get all required shape function values
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -2008,7 +2008,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -2389,13 +2389,13 @@ void DRT::ELEMENTS::Beam3k::EvaluateStiffMatrixAnalyticFromPointNeumannMoment(
 
   // get all required shape function values
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi_node, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi_node, Shape());
 
   L.Clear();
   AssembleShapefunctionsL(L_i, L);
 
   N_i_xi.Clear();
-  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_node, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_node, length_, line2);
 
   N_s.Clear();
   AssembleShapefunctionsNs(N_i_xi, jacobi_node, N_s);
@@ -2533,8 +2533,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
   }
 
   // gaussian points
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   LINALG::Matrix<1, 4, double> N_i;
   LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T> N;
@@ -2552,7 +2552,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
     // Clear matrix for shape functions
     N_i.Clear();
     N.Clear();
-    DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
     AssembleShapefunctionsN(N_i, N);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
@@ -2795,8 +2795,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
 
   // get Gauss points and weights
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   // matrix to store individual Hermite shape functions and their derivatives evaluated at a certain
   // Gauss point
@@ -2979,8 +2979,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateStochasticForces(
 
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   // matrix to store Hermite shape functions and their derivatives evaluated at a certain Gauss
   // point
@@ -3108,8 +3108,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
   GetDampingCoefficients(gamma);
 
   // get Gauss points and weights for evaluation of viscous damping contributions
-  DRT::UTILS::IntegrationPoints1D gausspoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
   LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T> f_int_aux(true);
 
@@ -3163,13 +3163,13 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     // get value of interpolating function of theta (Lagrange polynomials) at xi
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -3196,7 +3196,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     // evaluate shape functions
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_gp, this->Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_gp, this->Shape());
 
     v_thetapar_bar.Clear();
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
@@ -3352,13 +3352,13 @@ void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRotationalD
 
     // get all required shape function values
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -3382,7 +3382,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRotationalD
   // re-interpolation of quantities at xi based on CP values
 
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi_gp, Shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -3467,8 +3467,8 @@ void DRT::ELEMENTS::Beam3k::
 int DRT::ELEMENTS::Beam3k::HowManyRandomNumbersINeed() const
 {
   // get Gauss rule for evaluation of stochastic force contributions
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::MYGAUSSRULEBEAM3K;
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MYGAUSSRULEBEAM3K;
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom,
    * i.e. three random numbers for the translational degrees of freedom */

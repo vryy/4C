@@ -302,7 +302,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
           xrefe(i, 2) = Nodes()[i]->X()[2];
         }
         LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-        DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
         LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
         invJ_0.Multiply(N_rst_0, xrefe);
         invJ_0.Invert();
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ_0;
       // element coordinate derivatives at centroid
       LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-      DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
       {
         // inverse jacobian matrix at centroid
         LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
@@ -561,7 +561,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::InitJacobianMapping()
     if (!(prestress_->IsInit()))
     {
       LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-      DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
       LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
       invJ_0.Multiply(N_rst_0, xrefe);
       invJ_0.Invert();
@@ -730,7 +730,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
   LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ_0;
   // element coordinate derivatives at centroid
   LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
   {
     // inverse jacobian matrix at centroid
     LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
@@ -1395,7 +1395,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::DefGradient(const std::vector<double>& disp
   const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   // derivatives at centroid point
   LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;  // current  coord. of element
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::UpdateJacobianMapping(
   const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   // derivatives at centroid
   LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
 
   // get incremental disp
   LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;

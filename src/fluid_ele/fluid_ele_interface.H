@@ -82,7 +82,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) = 0;
+          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) = 0;
 
       /// Evaluate the XFEM cut element
       virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
@@ -90,17 +90,18 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) = 0;
 
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const DRT::UTILS::GaussIntegration& intpoints) = 0;
+          Epetra_SerialDenseVector& elevec1,
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) = 0;
 
       virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1,
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const GEO::CUT::plain_volumecell_set& cells) = 0;
 
       /// Evaluate supporting methods of the element
@@ -113,7 +114,7 @@ namespace DRT
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          const DRT::UTILS::GaussIntegration& intpoints2) = 0;
+          const CORE::DRT::UTILS::GaussIntegration& intpoints2) = 0;
 
       virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
@@ -122,7 +123,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
           Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,                               ///< boundary integration points
           const GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                ///< parameter list
@@ -132,9 +133,10 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,  ///< element gauss points
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>&
+              intpoints,  ///< element gauss points
           const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -155,7 +157,7 @@ namespace DRT
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,               ///< parameter list
@@ -172,7 +174,7 @@ namespace DRT
 
       virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints) = 0;
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) = 0;
 
       virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra) = 0;

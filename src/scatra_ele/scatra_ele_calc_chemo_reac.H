@@ -23,7 +23,7 @@ namespace DRT
   namespace ELEMENTS
   {
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcChemoReac : public ScaTraEleCalcChemo<distype, probdim>,
                                    public ScaTraEleCalcAdvReac<distype, probdim>
     {

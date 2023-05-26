@@ -463,7 +463,7 @@ namespace DRT
         if (HermiteCenterlineInterpolation())
         {
           const auto gausspoints =
-              DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
+              CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_10point);
           const auto distype = this->Shape();
 
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](

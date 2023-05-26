@@ -238,7 +238,8 @@ namespace FLD
       LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
-      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(
+          CORE::DRT::UTILS::GaussRule2D::quad_9point);
 
       // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
       // (now we allow even more)
@@ -289,8 +290,8 @@ namespace FLD
           }
 
           // compute the shape function values
-          DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
 
           // get transposed Jacobian matrix and determinant
           //
@@ -642,7 +643,8 @@ namespace FLD
       LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
-      const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(
+          CORE::DRT::UTILS::GaussRule2D::quad_9point);
 
       // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
       // (now we allow even more)
@@ -689,8 +691,8 @@ namespace FLD
           }
 
           // compute the shape function values
-          DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
 
           // get transposed Jacobian matrix and determinant
           //
@@ -919,14 +921,15 @@ namespace FLD
     }
 
     // get gauss rule: we use a one-point rule here
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+    CORE::DRT::UTILS::GaussRule3D integrationrule_filter =
+        CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
       case DRT::Element::tet10:
       case DRT::Element::hex20:
@@ -938,7 +941,7 @@ namespace FLD
     }
 
     // gaussian points
-    const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+    const CORE::DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
 
     // shape functions and derivs at element center
     const double e1 = intpoints_onepoint.qxg[0][0];
@@ -946,8 +949,8 @@ namespace FLD
     const double e3 = intpoints_onepoint.qxg[0][2];
     const double wquad = intpoints_onepoint.qwgt[0];
 
-    DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     // get Jacobian matrix and determinant
 
@@ -1413,31 +1416,32 @@ namespace FLD
 
 
     // use one point gauss
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+    CORE::DRT::UTILS::GaussRule3D integrationrule_filter =
+        CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
       default:
         dserror("invalid discretization type for fluid3");
     }
 
     // gaussian points --- i.e. the midpoint
-    const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+    const CORE::DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
     const double e1 = intpoints_onepoint.qxg[0][0];
     const double e2 = intpoints_onepoint.qxg[0][1];
     const double e3 = intpoints_onepoint.qxg[0][2];
 
     // shape functions and derivs at element center
-    DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     LINALG::Matrix<3, 3> xjm;
     // get Jacobian matrix and its determinant
@@ -1864,14 +1868,15 @@ namespace FLD
     }
 
     // get gauss rule: we use a one-point rule here
-    DRT::UTILS::GaussRule3D integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+    CORE::DRT::UTILS::GaussRule3D integrationrule_filter =
+        CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
       case DRT::Element::hex8:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::hex_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
       case DRT::Element::tet4:
-        integrationrule_filter = DRT::UTILS::GaussRule3D::tet_1point;
+        integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
       case DRT::Element::tet10:
       case DRT::Element::hex20:
@@ -1883,7 +1888,7 @@ namespace FLD
     }
 
     // gaussian points
-    const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+    const CORE::DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
 
     // shape functions and derivs at element center
     const double e1 = intpoints_onepoint.qxg[0][0];
@@ -1891,8 +1896,8 @@ namespace FLD
     const double e3 = intpoints_onepoint.qxg[0][2];
     const double wquad = intpoints_onepoint.qwgt[0];
 
-    DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -2074,7 +2079,7 @@ namespace FLD
     LINALG::Matrix<NSD, NSD> xji;
     {
       // use one-point Gauss rule
-      DRT::UTILS::IntPointsAndWeights<NSD> intpoints(
+      CORE::DRT::UTILS::IntPointsAndWeights<NSD> intpoints(
           DRT::ELEMENTS::DisTypeToStabGaussRule<DISTYPE>::rule);
 
       // coordinates of the current integration point
@@ -2087,8 +2092,8 @@ namespace FLD
       const double wquad = intpoints.IP().qwgt[0];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-      DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
+      CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+      CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
       // get Jacobian matrix and determinant
       LINALG::Matrix<NSD, NSD> xjm;
@@ -2783,7 +2788,7 @@ namespace FLD
       }
 
       // use one-point Gauss rule
-      DRT::UTILS::IntPointsAndWeights<NSD> intpoints(
+      CORE::DRT::UTILS::IntPointsAndWeights<NSD> intpoints(
           DRT::ELEMENTS::DisTypeToStabGaussRule<DISTYPE>::rule);
 
       // coordinates of the current integration point
@@ -2794,8 +2799,8 @@ namespace FLD
       double wquad = intpoints.IP().qwgt[0];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-      DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
+      CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+      CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
       // get Jacobian matrix and determinant
       xjm.MultiplyNT(deriv, xyze);
@@ -2810,7 +2815,7 @@ namespace FLD
       // adopt integration points and weights for gauss point evaluation of B
       if (fldpara->BGp())
       {
-        DRT::UTILS::IntPointsAndWeights<NSD> gauss_intpoints(
+        CORE::DRT::UTILS::IntPointsAndWeights<NSD> gauss_intpoints(
             DRT::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
         intpoints = gauss_intpoints;
       }
@@ -2824,8 +2829,8 @@ namespace FLD
         wquad = intpoints.IP().qwgt[iquad];
 
         // shape functions and their first derivatives
-        DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-        DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
+        CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+        CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
         // get Jacobian matrix and determinant
         xjm.MultiplyNT(deriv, xyze);
@@ -3057,10 +3062,10 @@ namespace FLD
     // point outwards on nodes at the rim of a basin (e.g. channel-flow).
 
     // get number of nodes
-    const int iel = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // get number of dimensions
-    const int nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
     // get number of dof's
     const int numdofpernode = nsd + 1;
@@ -3178,7 +3183,7 @@ namespace FLD
     // LINALG::Matrix<6,6>   bm(true);
 
     // get Gaussrule
-    const DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
 
     // gaussian points
@@ -3209,8 +3214,8 @@ namespace FLD
                distype == DRT::Element::nurbs27))
           {
             // get values of shape functions and derivatives in the gausspoint
-            DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
-            DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+            CORE::DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+            CORE::DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
           }
           else
           {
@@ -3221,12 +3226,12 @@ namespace FLD
       if (not DRT::ELEMENTS::IsNurbs<DISTYPE>::isnurbs)
       {
         // get values of shape functions and derivatives in the gausspoint
-        // DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
-        // DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+        // CORE::DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+        // CORE::DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
 
         // shape function derivs of boundary element at gausspoint
-        DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-        DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
+        CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+        CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
       }
       else
         dserror("Nurbs are not implemented yet");

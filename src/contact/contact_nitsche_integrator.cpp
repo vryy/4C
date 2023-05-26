@@ -403,16 +403,16 @@ template <DRT::Element::DiscretizationType parentdistype, int dim>
 void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtrafo)
 {
-  DRT::UTILS::CollectedGaussPoints intpoints =
-      DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+  CORE::DRT::UTILS::CollectedGaussPoints intpoints =
+      CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
   intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   LINALG::SerialDenseMatrix pqxg(1, dim);
   derivtrafo.Clear();
 
-  DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
-      sele.Shape(), sele.FaceParentNumber());
+  CORE::DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
+      sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
 
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
@@ -524,7 +524,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
 
     for (int s = 0; s < ele.NumNode(); ++s)
     {
-      *(ele.GetNitscheContainer().Rhs(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+      *(ele.GetNitscheContainer().Rhs(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                                           ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                                           dim +
                                       d)) += val * shape(s);
@@ -543,7 +543,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
       double* row = ele.GetNitscheContainer().K(p.first);
       for (int s = 0; s < ele.NumNode(); ++s)
       {
-        row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] += p.second * shape(s);
@@ -557,7 +557,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
         double* row = ele.GetNitscheContainer().K(p.first);
         for (int s = 0; s < ele.NumNode(); ++s)
         {
-          row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+          row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                   ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                   dim +
               d] += val * deriv(s, e) * p.second;

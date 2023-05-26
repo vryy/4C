@@ -90,7 +90,7 @@ DRT::ELEMENTS::Truss3CL::Truss3CL(int id, int owner)
       kintype_(tr3_totlag),
       // note: for corotational approach integration for Neumann conditions only
       // hence enough to integrate 3rd order polynomials exactly
-      gaussrule_(DRT::UTILS::GaussRule1D::line_2point),
+      gaussrule_(CORE::DRT::UTILS::GaussRule1D::line_2point),
       mybindingposition_(0)
 {
   return;
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::Truss3CL::Print(std::ostream& os) const
 {
   os << "Truss3CL ";
   Element::Print(os);
-  os << " gaussrule_: " << DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
+  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
   return;
 }
 
@@ -232,10 +232,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Truss3CL::Lines()
  |determine Gauss rule from required type of integration                |
  |                                               (public)mukherjee 01/14|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
     int nnode, IntegrationType integrationtype)
 {
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::undefined;
 
   switch (nnode)
   {
@@ -245,17 +245,17 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_1point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_1point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_lobatto2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_lobatto2point;
           break;
         }
         default:
@@ -269,17 +269,17 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_lobatto3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
           break;
         }
         default:
@@ -293,12 +293,12 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_4point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_4point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
           break;
         }
         default:
@@ -312,12 +312,12 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3CL::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_5point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_4point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_4point;
           break;
         }
         default:
@@ -501,7 +501,7 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
       std::vector<LINALG::Matrix<1, 2>> Ibp(2);
       for (int filament = 0; filament < 2; filament++)
       {
-        DRT::UTILS::shape_function_1D(
+        CORE::DRT::UTILS::shape_function_1D(
             Ibp[filament], currele->mybindingposition_[filament], currele->Shape());
       }
 

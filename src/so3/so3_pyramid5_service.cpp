@@ -29,7 +29,7 @@ const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoor
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOP5, 1> funct;
   // Element midpoint at r=s=t=0.0
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.25, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.25, distype);
   LINALG::Matrix<1, NUMDIM_SOP5> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

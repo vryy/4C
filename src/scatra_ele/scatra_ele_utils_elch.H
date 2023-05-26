@@ -27,10 +27,10 @@ namespace DRT
     {
      protected:
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
      public:
       //! singleton access method

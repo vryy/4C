@@ -411,8 +411,8 @@ namespace GEO
       template <int probdim, DRT::Element::DiscretizationType distype>
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
-        const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        const int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+        const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         LINALG::Matrix<probdim, nen> xyze;
         LINALG::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
@@ -426,7 +426,7 @@ namespace GEO
 
         LINALG::Matrix<dim, nen> deriv;
         LINALG::Matrix<probdim, probdim> xjm;
-        DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
+        CORE::DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
 
         double det = 0;
         if (dim == probdim)
@@ -439,7 +439,7 @@ namespace GEO
         {
           LINALG::Matrix<dim, dim> metrictensor;
           const double throw_error_if_negative_determinant(true);
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
+          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
@@ -638,8 +638,8 @@ namespace GEO
      *  \author hiermeier */
     template <unsigned probdim, DRT::Element::DiscretizationType elementtype,
         unsigned numNodesElement =
-            DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<elementtype>::dim>
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
     class ConcreteElement : public Element
     {
      public:
@@ -717,7 +717,7 @@ namespace GEO
       void GlobalCoordinates(const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, 1>& xyz)
       {
         LINALG::Matrix<numNodesElement, 1> funct;
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
 
@@ -742,7 +742,7 @@ namespace GEO
         LINALG::Matrix<probdim, numNodesElement> xyze(true);
         this->Coordinates(xyze);
 
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
         xyz.Multiply(xyze, funct);
       }
 
@@ -755,7 +755,8 @@ namespace GEO
       void ElementCenter(LINALG::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
-        LINALG::Matrix<dim, 1> center_rst(DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
+        LINALG::Matrix<dim, 1> center_rst(
+            CORE::DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
         PointAt(center_rst, midpoint);
       }
 
@@ -770,7 +771,7 @@ namespace GEO
       double Scalar(const std::vector<double>& ns, const LINALG::Matrix<dim, 1>& rst)
       {
         LINALG::Matrix<numNodesElement, 1> funct;
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
         LINALG::Matrix<1, 1> res;
@@ -797,7 +798,7 @@ namespace GEO
       {
         LINALG::Matrix<numNodesElement, 1> funct;
 
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
@@ -890,7 +891,7 @@ namespace GEO
       {
         LINALG::Matrix<dim, numNodesElement> deriv1;
 
-        DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
+        CORE::DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
@@ -1002,7 +1003,7 @@ namespace GEO
       {
         Element* e = NULL;
         // sanity check
-        if (probdim < DRT::UTILS::DisTypeToDim<elementtype>::dim)
+        if (probdim < CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim)
           dserror("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)

@@ -51,7 +51,7 @@ namespace INPAR
     /**
      * \brief Map number of gauss points to 1D gauss rule
      */
-    DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
+    CORE::DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
 
     /**
      * \brief Set valid input parameters for line to 3D geometry pairs.

@@ -47,11 +47,11 @@ void GEO::checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMat
   int CartesianCount = 0;
   const int dimCoord = 3;
   const DRT::Element::DiscretizationType distype = element->Shape();
-  const int eleDim = DRT::UTILS::getDimension(distype);
+  const int eleDim = CORE::DRT::UTILS::getDimension(distype);
 
-  if (DRT::UTILS::getOrder(distype) == 1)
+  if (CORE::DRT::UTILS::getOrder(distype) == 1)
     eleGeoType = LINEAR;
-  else if (DRT::UTILS::getOrder(distype) == 2)
+  else if (CORE::DRT::UTILS::getOrder(distype) == 2)
     eleGeoType = HIGHERORDER;
   else
     dserror("order of element shapefuntion is not correct");
@@ -60,7 +60,7 @@ void GEO::checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMat
   if (eleDim == 3)
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
-        DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
     std::vector<Teuchos::RCP<DRT::Element>> surfaces =
         (const_cast<DRT::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
@@ -267,8 +267,8 @@ bool GEO::overlap(double smin, double smax, double omin, double omax)
 bool GEO::checkPositionWithinElement(const DRT::Element* element,
     const LINALG::SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& x)
 {
-  dsassert(
-      DRT::UTILS::getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
+  dsassert(CORE::DRT::UTILS::getDimension(element->Shape()) == 3,
+      "only valid for 3 dimensional elements");
   LINALG::Matrix<3, 1> xsi(true);
   bool nodeWithinElement = currentToVolumeElementCoordinates(element->Shape(), xyze, x, xsi);
   // printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol =

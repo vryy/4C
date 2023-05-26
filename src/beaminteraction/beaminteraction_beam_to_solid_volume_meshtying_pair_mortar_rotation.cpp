@@ -252,7 +252,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
-      DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -540,7 +540,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
-      DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);

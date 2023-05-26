@@ -461,7 +461,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
     const DRT::Element* ele, Epetra_SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

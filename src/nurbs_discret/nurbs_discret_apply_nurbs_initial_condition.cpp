@@ -252,7 +252,8 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
           case 2:
           {
             // gaussian points
-            const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::GaussRule2D::quad_9point);
+            const CORE::DRT::UTILS::IntegrationPoints2D intpoints(
+                CORE::DRT::UTILS::GaussRule2D::quad_9point);
 
             for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
             {
@@ -262,7 +263,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 gp(rr) = intpoints.qxg[iquad][rr];
               }
 
-              DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+              CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
                   funct, deriv, gp, eleknots, weights, distype);
 
               // get transposed Jacobian matrix and determinant
@@ -376,7 +377,8 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
           case 3:
           {
             // gaussian points
-            const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::hex_27point);
+            const CORE::DRT::UTILS::IntegrationPoints3D intpoints(
+                CORE::DRT::UTILS::GaussRule3D::hex_27point);
 
             for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
             {
@@ -386,7 +388,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 gp(rr) = intpoints.qxg[iquad][rr];
               }
 
-              DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+              CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
                   funct, deriv, gp, eleknots, weights, distype);
 
               // get transposed Jacobian matrix and determinant

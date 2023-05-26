@@ -57,7 +57,7 @@ namespace CORE::ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2,
+    void Init(Teuchos::RCP<::DRT::Discretization> dis1, Teuchos::RCP<::DRT::Discretization> dis2,
         std::vector<int>* coupleddof12 = NULL, std::vector<int>* coupleddof21 = NULL,
         std::pair<int, int>* dofsets12 = NULL, std::pair<int, int>* dofsets21 = NULL,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
@@ -111,8 +111,8 @@ namespace CORE::ADAPTER
     //@}
 
     //! assign materials
-    void AssignMaterials(Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2,
+    void AssignMaterials(Teuchos::RCP<::DRT::Discretization> dis1,
+        Teuchos::RCP<::DRT::Discretization> dis2,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 
@@ -185,8 +185,8 @@ namespace CORE::ADAPTER
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void CreateAuxDofsets(Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12,
+    void CreateAuxDofsets(Teuchos::RCP<::DRT::Discretization> dis1,
+        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12,
         std::vector<int>* coupleddof21);
 
     /// check setup call
@@ -219,8 +219,8 @@ namespace CORE::ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix>
         P21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    Teuchos::RCP<DRT::Discretization> masterdis_;
-    Teuchos::RCP<DRT::Discretization> slavedis_;
+    Teuchos::RCP<::DRT::Discretization> masterdis_;
+    Teuchos::RCP<::DRT::Discretization> slavedis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;

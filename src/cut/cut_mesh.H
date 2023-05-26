@@ -187,7 +187,7 @@ namespace GEO
 
       /// creates a new ??? boundary cell
       ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
-          const std::vector<Point*>& points, const DRT::UTILS::GaussIntegration& gaussRule,
+          const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
           const LINALG::Matrix<3, 1>& normal);
 
 

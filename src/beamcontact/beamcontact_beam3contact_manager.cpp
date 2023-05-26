@@ -3228,7 +3228,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // for creating an unique filename if contact forces should be written in a text file
 
       // Get number of Gauss points used for one contact interval
-      const int numgp = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
+      const int numgp = CORE::DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
 
       // Get moment of inertia
       // double Iyy1 = 0.0;

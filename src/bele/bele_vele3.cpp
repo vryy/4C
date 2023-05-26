@@ -227,24 +227,24 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Volumes()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
+CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
     const DRT::Element::DiscretizationType& distype) const
 {
-  DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::undefined;
+  CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
     case DRT::Element::hex8:
-      rule = DRT::UTILS::GaussRule3D::hex_8point;
+      rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
-      rule = DRT::UTILS::GaussRule3D::hex_27point;
+      rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
     case DRT::Element::tet4:
-      rule = DRT::UTILS::GaussRule3D::tet_4point;
+      rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
     case DRT::Element::tet10:
-      rule = DRT::UTILS::GaussRule3D::tet_10point;
+      rule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

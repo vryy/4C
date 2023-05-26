@@ -1097,7 +1097,7 @@ void GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
           std::vector<int> side(3);
           for (int j = 0; j < 3; ++j)
           {
-            side[j] = original_tet[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
+            side[j] = original_tet[CORE::DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
           }
           if (tri->Equals(side))
           {

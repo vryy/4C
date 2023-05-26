@@ -50,8 +50,8 @@ namespace GEO
        *  \author hiermeier \date 01/17 */
       template <DRT::Element::DiscretizationType celltype,
           DRT::Element::DiscretizationType facetype =
-              DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
-          unsigned numfaces = DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces>
+              CORE::DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
+          unsigned numfaces = CORE::DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces>
       bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell

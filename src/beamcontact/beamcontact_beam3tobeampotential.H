@@ -266,7 +266,7 @@ namespace CONTACT
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N2_i,
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N2_i_xi,
-        DRT::UTILS::IntegrationPoints1D& gausspoints);
+        CORE::DRT::UTILS::IntegrationPoints1D& gausspoints);
 
     /*!
     \brief Compute coordinates of centreline points from the discretization

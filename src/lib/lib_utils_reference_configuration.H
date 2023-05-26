@@ -32,13 +32,16 @@ namespace DRT
      *  \author cschmidt \date 11/18 */
     template <int probdim, DRT::Element::DiscretizationType distype>
     static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
-        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi, LINALG::Matrix<probdim, 1>& coord)
+        const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        LINALG::Matrix<probdim, 1>& coord)
     {
-      static LINALG::Matrix<DisTypeToNumNodePerEle<distype>::numNodePerElement, 1> funct(true);
-      static LINALG::Matrix<probdim, DisTypeToNumNodePerEle<distype>::numNodePerElement> nodecoords(
-          true);
+      static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
+          funct(true);
+      static LINALG::Matrix<probdim,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+          nodecoords(true);
 
-      shape_function<distype>(xi, funct);
+      CORE::DRT::UTILS::shape_function<distype>(xi, funct);
 
       const DRT::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();
@@ -52,7 +55,7 @@ namespace DRT
         dserror("Problem dimension and dimension of nodes does not match!");
       }
 
-      for (int i = 0; i < DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {
@@ -77,15 +80,17 @@ namespace DRT
      *  \author cschmidt \date 11/18 */
     template <DRT::Element::DiscretizationType distype>
     static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
-        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi, LINALG::Matrix<3, 1>& normal)
+        const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        LINALG::Matrix<3, 1>& normal)
     {
-      static LINALG::Matrix<3, DisTypeToDim<distype>::dim> gxieta(true);
-      static LINALG::Matrix<DisTypeToDim<distype>::dim,
-          DisTypeToNumNodePerEle<distype>::numNodePerElement>
+      static LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToDim<distype>::dim> gxieta(true);
+      static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
           deriv(true);
-      static LINALG::Matrix<3, DisTypeToNumNodePerEle<distype>::numNodePerElement> nodecoords(true);
+      static LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+          nodecoords(true);
 
-      shape_function_deriv1<distype>(xi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
 
       const DRT::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();
@@ -99,7 +104,7 @@ namespace DRT
         dserror("ERROR: Only implemented for 3D cases so far!");
       }
 
-      for (int i = 0; i < DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {

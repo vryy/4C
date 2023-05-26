@@ -302,7 +302,8 @@ void DRT::ELEMENTS::So_hex18::InitGp()
 {
   xsi_.resize(NUMGPT_SOH18, LINALG::Matrix<NUMDIM_SOH18, 1>(true));
   wgt_.resize(NUMGPT_SOH18, 0.);
-  DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH18> intpoints(DRT::UTILS::GaussRule3D::hex_18point);
+  CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH18> intpoints(
+      CORE::DRT::UTILS::GaussRule3D::hex_18point);
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     wgt_.at(gp) = (intpoints.IP().qwgt)[gp];
@@ -587,9 +588,9 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     // shape function and derivatives
     LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-    DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
     LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
 
     // compute the Jacobian matrix
     LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
@@ -663,7 +664,7 @@ int DRT::ELEMENTS::So_hex18::InitJacobianMapping()
     detJ_[gp] = 0.;
 
     LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
     detJ_[gp] = invJ_[gp].Invert();
@@ -721,8 +722,8 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(std::vector<int>& lm,  ///< location 
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<hex18>(xsi_[gp], shapefunct);
-    DRT::UTILS::shape_function_deriv1<hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<hex18>(xsi_[gp], deriv);
 
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)

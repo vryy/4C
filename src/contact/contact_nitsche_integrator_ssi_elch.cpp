@@ -162,7 +162,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
     {
       for (int d = 0; d < dim; ++d)
       {
-        row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        row[CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] -= fac * jac * wgt * d_testval_ds.second * normal(d) * shape(s);
@@ -366,7 +366,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(double fac,
 
   for (int s = 0; s < ele.NumNode(); ++s)
   {
-    const int slave_parent = DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    const int slave_parent = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), s);
     const int slave_parent_conc = slave_parent * numdofpernode_;
     const int slave_parent_pot = slave_parent_conc + 1;
@@ -437,7 +437,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(ElementDataBundl
   LINALG::SerialDenseVector ele_pot(shape_func.Length());
   for (int i = 0; i < ele.NumNode(); ++i)
   {
-    const int iparent = DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    const int iparent = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), i);
     const int iparent_conc = iparent * numdofpernode_;
     const int iparent_pot = iparent_conc + 1;

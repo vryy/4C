@@ -338,7 +338,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAnd
   double normvelint = params.get<double>("normal velocity integral");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points

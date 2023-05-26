@@ -15,8 +15,8 @@ equations
 #include "cut_mesh.H"
 #include "cut_enum.H"
 
-//#define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
-//#define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
+// #define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+// #define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
 
 namespace GEO
 {
@@ -76,14 +76,14 @@ namespace GEO
       when DirectDivergence option is used for Gauss point generation
       */
       void DivergenceIntegrationRule(
-          Mesh &mesh, Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> &cgp);
+          Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp);
 
       /*!
       \brief Generate Gaussian points over the considered facet by triangulating it. This is used
       when DirectDivergence option is used for Gauss point generation
       */
       void DivergenceIntegrationRuleNew(
-          Mesh &mesh, Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> &cgp);
+          Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp);
 
      private:
       /*!

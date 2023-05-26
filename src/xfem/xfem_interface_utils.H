@@ -99,7 +99,7 @@ namespace XFEM
     );
 
     //! pre-compute the measure of the element's intersecting surface
-    double ComputeMeasCutSurf(const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+    double ComputeMeasCutSurf(const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
                                   bintpoints,  ///< boundary cell integration points
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells  ///< boundary cells
     );
@@ -123,8 +123,9 @@ namespace XFEM
     //! evaluate element volume
     template <DRT::Element::DiscretizationType distype>
     double EvalElementVolume(
-        LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> xyze,
-        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>*
+        LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+            xyze,
+        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>*
             nurbs_weights = NULL,
         std::vector<Epetra_SerialDenseVector>* nurbs_knots = NULL);
 
@@ -136,7 +137,7 @@ namespace XFEM
         const GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets for volume integration
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>&
             bcells,  ///< bcells for boundary cell integration
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration
         const INPAR::XFEM::ViscStab_hk visc_stab_hk,  ///< h definition
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =

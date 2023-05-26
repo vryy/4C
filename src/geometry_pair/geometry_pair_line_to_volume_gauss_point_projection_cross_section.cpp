@@ -67,7 +67,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
 
   // Gauss rule.
-  DRT::UTILS::IntegrationPoints1D gauss_points_axis =
+  CORE::DRT::UTILS::IntegrationPoints1D gauss_points_axis =
       this->line_to_3d_evaluation_data_->GetGaussPoints();
   unsigned int n_gauss_points_axis = this->line_to_3d_evaluation_data_->GetNumberOfGaussPoints();
   unsigned int n_integration_points_circ =

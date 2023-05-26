@@ -67,7 +67,7 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       //! number of space dimensions
       static const int nsd_ = 3;
       //! number of dofs per node
@@ -232,7 +232,7 @@ namespace DRT
       //! vector of coordinates of current integration point in reference coordinates
       std::vector<LINALG::Matrix<nsd_, 1>> xsi_;
 
-      DRT::UTILS::GaussIntegration intpoints_;
+      CORE::DRT::UTILS::GaussIntegration intpoints_;
 
       //! flag indicating higher order element
       bool ishigherorder_;

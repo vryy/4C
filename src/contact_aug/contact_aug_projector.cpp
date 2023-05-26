@@ -197,7 +197,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   alpha = 0.0;
 
   LINALG::Matrix<TAR_DIM, 1> txi_center(false);
-  DRT::UTILS::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
+  CORE::DRT::UTILS::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
   RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
@@ -300,7 +300,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGloba
     MORTAR::MortarElement& ele, const LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
     LINALG::Matrix<probdim, 1>& pos) const
 {
-  const unsigned dim = DRT::UTILS::DisTypeToDim<type>::dim;
+  const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
   const LINALG::Matrix<dim, 1> mat_xi(xi, true);
 
   LINALG::Matrix<numnodes, 1> val(true);

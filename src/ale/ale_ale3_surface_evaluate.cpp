@@ -109,6 +109,6 @@ inline void DRT::ELEMENTS::Ale3Surface_Impl<distype>::ElementNodeNormal(Ale3Surf
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
-  DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_, ele,
-      discretization, elevec1, mydispnp, false, true);
+  CORE::DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
+      ele, discretization, elevec1, mydispnp, false, true);
 }

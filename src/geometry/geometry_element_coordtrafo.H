@@ -28,10 +28,10 @@ namespace GEO
   static inline void elementToCurrentCoordinatesInPlaceT(
       const M& xyze, LINALG::Matrix<3, 1>& eleCoord)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
 
-    DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
+    CORE::DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
 
     eleCoord.Clear();
     for (int i = 0; i < numNodes; i++)
@@ -119,10 +119,10 @@ namespace GEO
   static inline void elementToCurrentCoordinatesT(
       const M& xyze, const V& xsi, LINALG::Matrix<probDim, 1>& x)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
 
-    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
     // set to zero
     x.Clear();
@@ -602,7 +602,7 @@ namespace GEO
       case DRT::Element::line2:
       case DRT::Element::line3:
       {
-        for (int i = 0; i < DRT::UTILS::getDimension(distype); i++)
+        for (int i = 0; i < CORE::DRT::UTILS::getDimension(distype); i++)
           if (eleCoord(i) > (1.0 + GEO::TOL7) || eleCoord(i) < (-1) * (1.0 + GEO::TOL7))
             return false;
 
@@ -671,9 +671,9 @@ namespace GEO
       const M2& xyze                       ///< nodal position array (3,numNodes)
   )
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<dim, numNodes> deriv1;
-    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
     A.Clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -697,10 +697,10 @@ namespace GEO
       const M1& xyze                         ///< nodal coordinates of an element with shape DISTYPE
   )
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
     funct.Clear();
-    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -740,10 +740,10 @@ namespace GEO
     //         from the origin as well. (27.07.2015 winter & seitz)
 
     // number space dimensions for element
-    const size_t dim = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const size_t dim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
     // number of nodes of element
-    const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     bool nodeWithinElement = true;
     const int maxiter = 20;  // 40;
     double residual = 1.0;
@@ -989,10 +989,10 @@ namespace GEO
   static inline void updateJacobianForMap3To2(
       LINALG::Matrix<3, 2>& Jacobi, const LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     static LINALG::Matrix<2, numNodes> deriv1;
-    DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
 
     Jacobi.Clear();
     for (int isd = 0; isd < 3; isd++)
@@ -1017,9 +1017,9 @@ namespace GEO
   static inline void updateFForMap3To2(LINALG::Matrix<3, 1>& F, const LINALG::Matrix<2, 1>& xsi,
       const LINALG::Matrix<3, 1>& x, const M& xyze_surfaceElement)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
-    DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
+    CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
 
     F.Clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -1045,9 +1045,9 @@ namespace GEO
   static void updateAForMap3To2(LINALG::Matrix<2, 2>& A, const LINALG::Matrix<3, 2>& Jacobi,
       const LINALG::Matrix<3, 1>& F, const LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<3, numNodes> deriv2;
-    DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
     static LINALG::Matrix<3, 4> tensor3order;
@@ -1187,7 +1187,7 @@ namespace GEO
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
       const LINALG::Matrix<3, 1>& physCoord, LINALG::Matrix<1, 1>& eleCoord)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     const int maxiter = 20;
     int iter = 0;
@@ -1202,13 +1202,13 @@ namespace GEO
 
       // determine shapefunction, 1. and 2. derivative at current solutiom
       static LINALG::Matrix<numNodes, 1> funct;
-      DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
+      CORE::DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
 
       static LINALG::Matrix<1, numNodes> deriv1;
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
 
       static LINALG::Matrix<1, numNodes> deriv2;
-      DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
+      CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
 
       // compute nonlinear system
       static LINALG::Matrix<3, 1> F;
@@ -1299,15 +1299,15 @@ namespace GEO
   // template <DRT::Element::DiscretizationType DISTYPE>
   template <DRT::Element::DiscretizationType DISTYPE>
   static bool ComputeLocalCoordinates(
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
+      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
+      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
+      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
   {
     bool inelement = true;
 
-    const int nsd_ = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     const int maxiter = 20;
     double residual = 1.0;
@@ -1329,7 +1329,7 @@ namespace GEO
     startingValueCurrentToElementCoords<DISTYPE>(xsi);
 
     // update rhs b= -(x(xi)-x_point)
-    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
     for (int isd = 0; isd < nsd_; ++isd)
     {
@@ -1342,7 +1342,7 @@ namespace GEO
     int iter = 0;
     while (residual > GEO::TOL12 or dx.Norm2() > GEO::TOL12)
     {
-      DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+      CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
       // get the jacobian
       A.Clear();
@@ -1365,7 +1365,7 @@ namespace GEO
       for (int i = 0; i < nsd_; i++) xsi(i, 0) += dx(i);
 
       // update rhs b= -(x(xi)-x_point)
-      DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+      CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
       for (int isd = 0; isd < nsd_; ++isd)
       {
         b(isd) = x(isd);

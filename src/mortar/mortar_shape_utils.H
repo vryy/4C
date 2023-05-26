@@ -1907,7 +1907,7 @@ namespace MORTAR
             weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
 
           LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
-          DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+          CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
               funct, auxderiv, xi0, ele.Knots()[0], weights, DRT::Element::nurbs2);
           break;
         }
@@ -1921,7 +1921,7 @@ namespace MORTAR
             weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
 
           LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
-          DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+          CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
               funct, auxderiv, xi0, ele.Knots()[0], weights, DRT::Element::nurbs3);
           break;
         }
@@ -1971,7 +1971,7 @@ namespace MORTAR
           uv(1) = xi1;
 
           LINALG::SerialDenseMatrix auxderiv(2, ele.NumNode());
-          DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
               funct, auxderiv, uv, ele.Knots(), weights, DRT::Element::nurbs9);
           break;
         }

@@ -72,8 +72,8 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
         "and 1000).");
 
   // initialize integration rules
-  const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
-  const DRT::UTILS::GaussIntegration intpoints_std(distype);
+  const CORE::DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
+  const CORE::DRT::UTILS::GaussIntegration intpoints_std(distype);
 
   // store current element
   immersedele_ = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);

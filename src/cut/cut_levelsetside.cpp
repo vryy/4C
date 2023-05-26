@@ -148,7 +148,7 @@ bool GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           // find levelset value at side center
           LINALG::Matrix<4, 1> lsv;
           LINALG::Matrix<4, 1> funct;
-          DRT::UTILS::shape_function_2D(funct, 0., 0., DRT::Element::quad4);
+          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., DRT::Element::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)

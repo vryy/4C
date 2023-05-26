@@ -483,7 +483,7 @@ namespace DRT
 
      private:
       Ale3_Impl() = default;
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
       inline void ale3_edge_geometry(int i, int j, const LINALG::Matrix<3, iel>& xyze,
@@ -536,7 +536,7 @@ namespace DRT
           LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze);
 
 
-      inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
+      inline CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule();
 
       Ale3_Impl<distype> operator=(const Ale3_Impl<distype> other);
     };
@@ -788,10 +788,11 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of element nodes
-      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of spatial dimensions of parent element
       static const int nsd_ = bdrynsd_ + 1;
@@ -804,8 +805,9 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp);
 
      private:
-      //  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      //  static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
+      //  static const int iel =
+      //  CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; static const int
+      //  numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
       //  inline void ale3_edge_geometry(int i, int j, const LINALG::Matrix<3, iel>& xyze,
       //                                 double& length,
@@ -866,7 +868,7 @@ namespace DRT
       //               const LINALG::Matrix<3,iel>& xyze);
       //
       //
-      //  inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
+      //  inline CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule();
 
       // Ale3Surface_Impl<distype> operator=(const Ale3Surface_Impl<distype> other);
 
