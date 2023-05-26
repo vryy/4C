@@ -5,14 +5,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef LIB_DEMANGLE_H
-#define LIB_DEMANGLE_H
+#ifndef UTILS_DEMANGLE_H
+#define UTILS_DEMANGLE_H
 
 #include <string>
 #include <memory>
 #include <cxxabi.h>
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /**
    * Utility function which tries to demangle the given @p mangledString. As a fallback, it returns
@@ -26,6 +26,6 @@ namespace DRT::UTILS
 
     return (status == 0 && result) ? std::string(result.get()) : std::string(mangledString);
   }
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif

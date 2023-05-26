@@ -13,7 +13,7 @@
 
 #include <any>
 #include "utils_exceptions.H"
-#include "lib_demangle.H"
+#include "utils_demangle.H"
 #include <unordered_map>
 
 // forward declaration
@@ -79,7 +79,7 @@ namespace CORE::GEN
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
               "respective task.",
-              ::DRT::UTILS::TryDemangle(data_.type().name()).c_str());
+              CORE::UTILS::TryDemangle(data_.type().name()).c_str());
         }
         else
           data_ = data;
