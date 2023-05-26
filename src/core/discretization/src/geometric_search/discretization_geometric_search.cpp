@@ -15,14 +15,14 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 #include <ArborX.hpp>
 #endif
 
 #include "discretization_geometric_search.H"
 #include "discretization_geometric_search_utils.H"
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 namespace ArborX
 {
   template <>
@@ -75,7 +75,7 @@ namespace CORE::GEOMETRICSEARCH
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const IO::verbositylevel verbosity)
   {
-#ifndef HAVE_ARBORX
+#ifndef BACI_WITH_ARBORX
     dserror(
         "CORE::GEOMETRICSEARCH::CollisionSearch can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");

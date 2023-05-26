@@ -26,14 +26,14 @@ baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_proj
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_patch 2 "")
 
 if(TRILINOS_DEVELOP)
-    baci_test(beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu 3 "" muelu)
+  baci_test(beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu 3 "" muelu)
 endif(TRILINOS_DEVELOP)
 
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact 2 3)
 
-if(HAVE_ARBORX)
-    baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume 2 3)
-endif(HAVE_ARBORX)
+if(BACI_WITH_ARBORX)
+  baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume 2 3)
+endif(BACI_WITH_ARBORX)
 
 # The following two test cases have to be run back-to-back.
 baci_test(beam3eb_static_beam_to_solid_volume_meshtying_circ_restart_first 2 "")
@@ -64,9 +64,9 @@ baci_test(beam3r_herm2line3_static_beam_to_solid_surface_contact_ironing_penalty
 baci_test(beam3r_herm2line3_static_beam_to_solid_surface_contact_ironing_penalty_potential_segmentation_lin_quad 3 "")
 baci_test(beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced 3 2)
 
-if(HAVE_ARBORX)
-    baci_test(beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced_boundingvolume 3 2)
-endif(HAVE_ARBORX)
+if(BACI_WITH_ARBORX)
+  baci_test(beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced_boundingvolume 3 2)
+endif(BACI_WITH_ARBORX)
 
 baci_test(beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced 1 "")
 vtk_test(beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced-vtk-structure beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced 1 xxx-structure.pvd ref/beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced-vtk/structure.pvd 1e-08 1.00000001 3.0)
@@ -168,9 +168,9 @@ baci_test(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d 3 "")
 baci_test(beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting 2 "")
 baci_test(beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 "")
 
-if(HAVE_ARBORX)
-    baci_test(beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc_boundingvolume 2 "")
-endif(HAVE_ARBORX)
+if(BACI_WITH_ARBORX)
+  baci_test(beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc_boundingvolume 2 "")
+endif(BACI_WITH_ARBORX)
 
 baci_test(beam3r_herm2line3_static_crosslinking_beam3rline2_linkedcantilevers_endload 2 5)
 baci_test(beam3r_herm2line3_static_crosslinking_truss_linkedcantilevers_endload 2 5)
@@ -183,9 +183,9 @@ baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_two
 baci_test(beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_twocrossedbeams_pulloff_FAD 2 "")
 baci_test(beam3r_herm2line3_static_point_coupling_BTSPH_contact_stent_honeycomb_stretch_r01_circ10 3 20)
 
-if(HAVE_ARBORX)
-    baci_test(beam3r_herm2line3_static_point_coupling_BTSPH_contact_stent_honeycomb_stretch_r01_circ10_boundingvolume 3 20)
-endif(HAVE_ARBORX)
+if(BACI_WITH_ARBORX)
+  baci_test(beam3r_herm2line3_static_point_coupling_BTSPH_contact_stent_honeycomb_stretch_r01_circ10_boundingvolume 3 20)
+endif(BACI_WITH_ARBORX)
 
 baci_test(beam3r_herm2line3_static_test1 2 "")
 baci_test(beam3r_herm2line4_static_test1 2 "")
@@ -679,10 +679,10 @@ baci_test(f3_poiseuille_flow_edgebased 2 "")
 baci_test(f3_pseudo_orthopressure 3 "")
 
 if(HAVE_FFTW)
-    baci_test(f3_decaying_hit_8x8x8 2 "")
-    baci_test(f3_decaying_hit_eb_revcond 2 "")
-    baci_test(f3_decaying_hit_eb 2 "")
-    baci_test(f3_forced_hit_geogen_hdg 1 "")
+  baci_test(f3_decaying_hit_8x8x8 2 "")
+  baci_test(f3_decaying_hit_eb_revcond 2 "")
+  baci_test(f3_decaying_hit_eb 2 "")
+  baci_test(f3_forced_hit_geogen_hdg 1 "")
 endif(HAVE_FFTW)
 
 baci_test(f3_nurbs27_AfGenAlpha 3 "")
@@ -1233,7 +1233,7 @@ baci_test(roughcontact2d_brokenrational_patchtest 2 "")
 baci_test(roughcontact3d_multipatch 2 "")
 
 if(BACI_WITH_MIRCO)
-    baci_omp_test(roughcontact2d_mirco_patchtest 2 2 "")
+  baci_omp_test(roughcontact2d_mirco_patchtest 2 2 "")
 endif(BACI_WITH_MIRCO)
 
 baci_test(scatra_1D_line2_diffnumdof 2 150)
@@ -1288,9 +1288,9 @@ baci_test(scatra_chemo_h27 3 "")
 baci_test(scatra_chemo_reac 2 "")
 
 if(${HAVE_FFTW})
-    baci_test(scatra_forced_hit_iso_8x8x8 1 4)
-    baci_test(scatra_forced_hit_iso_8x8x8_dsm 3 4)
-    baci_test(scatra_forced_hit_mean_8x8x8 3 4)
+  baci_test(scatra_forced_hit_iso_8x8x8 1 4)
+  baci_test(scatra_forced_hit_iso_8x8x8_dsm 3 4)
+  baci_test(scatra_forced_hit_mean_8x8x8 3 4)
 endif()
 
 baci_test(scatra_gaussian_hill_pbc 2 "")

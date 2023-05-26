@@ -49,6 +49,10 @@ function(baci_add_library _target)
     FILES
     ${_headers}
     )
+
+  # Add all global compile definitions
+  target_compile_definitions(${_target} ${_target_link_type} ${BACI_GLOBAL_COMPILE_DEFINITIONS})
+
   # Link against all default external libraries
   baci_link_default_external_libraries(${_target} ${_target_link_type})
 endfunction()
