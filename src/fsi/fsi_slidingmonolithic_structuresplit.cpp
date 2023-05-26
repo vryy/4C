@@ -1074,7 +1074,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::SlidingMonolithicStructureSplit::Cr
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;

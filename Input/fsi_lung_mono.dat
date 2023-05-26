@@ -172,7 +172,6 @@ ALEPCOMEGA                      1.0 1.0 1.0 1.0
 BLOCKSMOOTHER                   SIMPLE(ILU,KLU)
 FLUIDPCITER                     1 1 1 1
 FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
-FSIAMGANALYZE                   No
 INFNORMSCALING                  Yes
 LINEARBLOCKSOLVER               PreconditionedKrylov
 NORMCOMBI_RESFINC               And

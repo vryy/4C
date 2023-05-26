@@ -282,7 +282,6 @@ void fluid_freesurf_drt()
   }
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
@@ -290,13 +289,6 @@ void fluid_freesurf_drt()
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
     {
-      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-          DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
-
-      if (linearsolverstrategy == INPAR::FSI::FSIAMG)
-        dserror(
-            "No FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
-
       Teuchos::RCP<FSI::MonolithicMainFS> fsi;
 
       // Monolithic Free Surface Algorithm
