@@ -75,9 +75,6 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
   adaptermeshtying_->Setup(
       discret_, discret_, Teuchos::null, coupleddof, "Mortar", discret_->Comm(), true);
 
-  // OutputSetUp();
-  // AnalyzeMatrix(adaptermeshtying_->GetPMatrix());
-
   // 4 different systems to solve
   // a) Condensation with a block matrix (condensed_bmat)
   //    system is solved in a 2x2 (n,m) block matrix with the respective solvers
