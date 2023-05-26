@@ -276,9 +276,9 @@ Teuchos::RCP<Epetra_Vector> EHL::Base::EvaluateFluidForce(
 
   // Forces on the interfaces due to the fluid traction
   Teuchos::RCP<Epetra_Vector> slaveiforce =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetDMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixD()->DomainMap()));
   Teuchos::RCP<Epetra_Vector> masteriforce =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixM()->DomainMap()));
 
   stritraction_D_ = Teuchos::rcp(new Epetra_Vector(*ada_strDisp_to_lubDisp_->MasterDofMap()));
   stritraction_M_ = Teuchos::rcp(new Epetra_Vector(*ada_strDisp_to_lubDisp_->MasterDofMap()));
@@ -328,8 +328,8 @@ void EHL::Base::AddPressureForce(
   stritraction->Multiply(-1., *mortaradapter_->Normals(), *p_exp, 0.);
 
   // Get the Mortar D and M Matrix
-  const Teuchos::RCP<LINALG::SparseMatrix> mortard = mortaradapter_->GetDMatrix();
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = mortaradapter_->GetMMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortard = mortaradapter_->GetMortarMatrixD();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = mortaradapter_->GetMortarMatrixM();
 
   // f_slave = D^T*t
   int err = mortard->Multiply(true, *stritraction, *slaveiforce);
@@ -368,18 +368,18 @@ void EHL::Base::AddPoiseuilleForce(
   m.Apply(*p_int_full, *poiseuille_force);
 
   Teuchos::RCP<Epetra_Vector> slave_psl =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetDMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixD()->DomainMap()));
   Teuchos::RCP<Epetra_Vector> master_psl =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixM()->DomainMap()));
 
   // f_slave = D^T*t
-  if (mortaradapter_->GetDMatrix()->Multiply(true, *poiseuille_force, *slave_psl))
+  if (mortaradapter_->GetMortarMatrixD()->Multiply(true, *poiseuille_force, *slave_psl))
     dserror("Multiply failed");
   if (stritraction_D_->Update(1., *poiseuille_force, 1.)) dserror("Update failed");
 
   // f_master = +M^T*t // attention: no minus sign here: poiseuille points in same direction on
   // slave and master side
-  if (mortaradapter_->GetMMatrix()->Multiply(true, *poiseuille_force, *master_psl))
+  if (mortaradapter_->GetMortarMatrixM()->Multiply(true, *poiseuille_force, *master_psl))
     dserror("Multiply failed");
   if (stritraction_M_->Update(1., *poiseuille_force, 1.)) dserror("update failed");
 
@@ -429,16 +429,16 @@ void EHL::Base::AddCouetteForce(
   couette_force->Multiply(-1., *visc_vec_str, *hinv_relV, 0.);
 
   Teuchos::RCP<Epetra_Vector> slave_cou =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetDMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixD()->DomainMap()));
   Teuchos::RCP<Epetra_Vector> master_cou =
-      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixM()->DomainMap()));
   // f_slave = D^T*t
-  if (mortaradapter_->GetDMatrix()->Multiply(true, *couette_force, *slave_cou))
+  if (mortaradapter_->GetMortarMatrixD()->Multiply(true, *couette_force, *slave_cou))
     dserror("Multiply failed");
   if (stritraction_D_->Update(1., *couette_force, 1.)) dserror("Update failed");
 
   // f_master = -M^T*t
-  if (mortaradapter_->GetMMatrix()->Multiply(true, *couette_force, *master_cou))
+  if (mortaradapter_->GetMortarMatrixM()->Multiply(true, *couette_force, *master_cou))
     dserror("Multiply failed");
   if (stritraction_M_->Update(-1., *couette_force, 1.)) dserror("update failed");
 

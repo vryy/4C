@@ -384,7 +384,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
   const double fluidscale = FluidField()->ResidualScaling();
 
   // get the Mortar matrix M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetPMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // get single field residuals
   Teuchos::RCP<const Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
@@ -433,7 +433,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
     const double ftiparam = FluidField()->TimIntParam();
 
     // get the Mortar matrix M
-    const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+    const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
     /* project Lagrange multiplier field onto the master interface DOFs and
      * consider temporal scaling */
@@ -468,7 +468,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
 
   // get the Mortar projection matrix P = D^{-1} * M
-  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetPMatrix();
+  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // get fluid matrix
   const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blockf =
@@ -736,7 +736,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatr
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupSystemMatrix");
 
   // get the Mortar projection matrix P = D^{-1} * M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetPMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // get info about STC feature
   INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
@@ -1379,7 +1379,7 @@ void FSI::SlidingMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Ep
 #endif
 
   // get the Mortar projection matrix P = D^{-1} * M
-  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetPMatrix();
+  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // ---------------------------------------------------------------------------
   // process structure unknowns
@@ -1608,10 +1608,10 @@ void FSI::SlidingMonolithicFluidSplit::RecoverLagrangeMultiplier()
   const double scale = FluidField()->ResidualScaling();
 
   // get the Mortar projection matrix P = D^{-1} * M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetPMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // get the inverted Mortar matrix D^{-1}
-  const Teuchos::RCP<LINALG::SparseMatrix> mortardinv = coupsfm_->GetDinvMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortardinv = coupsfm_->GetMortarMatrixDinv();
 
 #ifdef DEBUG
   if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
@@ -1787,7 +1787,7 @@ void FSI::SlidingMonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
   const double ftiparam = FluidField()->TimIntParam();
 
   // get the Mortar matrix M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
   // interface traction weighted by time integration factors
   Teuchos::RCP<Epetra_Vector> tractionfluid = Teuchos::rcp(new Epetra_Vector(lambda_->Map(), true));
@@ -1820,8 +1820,8 @@ void FSI::SlidingMonolithicFluidSplit::CheckKinematicConstraint()
   const double timescale = FluidField()->TimeScaling();
 
   // get the Mortar matrices D and M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetDMatrix();
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
 #ifdef DEBUG
   if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
@@ -1880,8 +1880,8 @@ void FSI::SlidingMonolithicFluidSplit::CheckKinematicConstraint()
 void FSI::SlidingMonolithicFluidSplit::CheckDynamicEquilibrium()
 {
   // get the Mortar matrices D and M
-  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetDMatrix();
-  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
 #ifdef DEBUG
   if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
@@ -2023,7 +2023,7 @@ void FSI::SlidingMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int,
 
   // get P matrix
   Teuchos::RCP<LINALG::SparseMatrix> P =
-      coupsfm_->GetPMatrix();  // P matrix that couples fluid dofs with structure dofs
+      coupsfm_->GetMortarMatrixP();  // P matrix that couples fluid dofs with structure dofs
   Teuchos::RCP<Epetra_CrsMatrix> P_;
   P_ = P->EpetraMatrix();
   const Epetra_Map& P_Map = P_->RowMap();  // maps fluid dofs to procs

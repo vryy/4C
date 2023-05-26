@@ -30,7 +30,7 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
       false, false, nodeset, nodeset);
 
   adaptermeshtying->Evaluate();
-  p_.push_back(adaptermeshtying->GetPMatrix());
+  p_.push_back(adaptermeshtying->GetMortarMatrixP());
 }
 
 /*-----------------------------------------------------------------------*/

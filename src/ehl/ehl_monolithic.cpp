@@ -1851,13 +1851,13 @@ void EHL::Monolithic::LinPressureForceDisp(
   if (p_deriv_normal->Scale(-1.)) dserror("scale failed");
 
   Teuchos::RCP<LINALG::SparseMatrix> tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetDMatrix(), true, *p_deriv_normal, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixD(), true, *p_deriv_normal, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetMMatrix(), true, *p_deriv_normal, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixM(), true, *p_deriv_normal, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, -1., 1.);
 
@@ -1901,13 +1901,13 @@ void EHL::Monolithic::LinPoiseuilleForceDisp(
   deriv_Poiseuille->Complete(*mortaradapter_->SMdofMap(), *mortaradapter_->SlaveDofMap());
 
   Teuchos::RCP<LINALG::SparseMatrix> tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetDMatrix(), true, *deriv_Poiseuille, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixD(), true, *deriv_Poiseuille, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetMMatrix(), true, *deriv_Poiseuille, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixM(), true, *deriv_Poiseuille, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, +1., 1.);
 }
@@ -1973,13 +1973,13 @@ void EHL::Monolithic::LinCouetteForceDisp(
   deriv_Couette->Complete(*mortaradapter_->SMdofMap(), *mortaradapter_->SlaveDofMap());
 
   Teuchos::RCP<LINALG::SparseMatrix> tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetDMatrix(), true, *deriv_Couette, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixD(), true, *deriv_Couette, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = LINALG::MLMultiply(
-      *mortaradapter_->GetMMatrix(), true, *deriv_Couette, false, false, false, true);
+      *mortaradapter_->GetMortarMatrixM(), true, *deriv_Couette, false, false, false, true);
   if (tmp.is_null()) dserror("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, -1., 1.);
 }
@@ -1998,13 +1998,14 @@ void EHL::Monolithic::LinPressureForcePres(
   if (tmp->LeftScale(*mortaradapter_->Normals())) dserror("leftscale failed");
   if (tmp->Scale(-1.)) dserror("scale failed");
 
-  Teuchos::RCP<LINALG::SparseMatrix> a =
-      LINALG::MLMultiply(*mortaradapter_->GetDMatrix(), true, *tmp, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> a = LINALG::MLMultiply(
+      *mortaradapter_->GetMortarMatrixD(), true, *tmp, false, false, false, true);
   if (a.is_null()) dserror("MLMULTIPLY failed");
   ds_dp->Add(*a, false, +1., 1.);
 
   a = Teuchos::null;
-  a = LINALG::MLMultiply(*mortaradapter_->GetMMatrix(), true, *tmp, false, false, false, true);
+  a = LINALG::MLMultiply(
+      *mortaradapter_->GetMortarMatrixM(), true, *tmp, false, false, false, true);
   if (a.is_null()) dserror("MLMULTIPLY failed");
   dm_dp->Add(*a, false, -1., 1.);
 }
@@ -2025,7 +2026,7 @@ void EHL::Monolithic::LinPoiseuilleForcePres(
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->SlaveDofMap();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
     Teuchos::RCP<LINALG::SparseMatrix> a =
-        LINALG::MLMultiply(*mortaradapter_->GetDMatrix(), true, m, false, true, false, true);
+        LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixD(), true, m, false, true, false, true);
 
     Teuchos::RCP<LINALG::SparseMatrix> b =
         Teuchos::rcp(new LINALG::SparseMatrix(a->RowMap(), 81, false, false));
@@ -2043,7 +2044,7 @@ void EHL::Monolithic::LinPoiseuilleForcePres(
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->MasterDofMap();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
     Teuchos::RCP<LINALG::SparseMatrix> a =
-        LINALG::MLMultiply(*mortaradapter_->GetMMatrix(), true, m, false, true, false, true);
+        LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixM(), true, m, false, true, false, true);
 
     Teuchos::RCP<LINALG::SparseMatrix> b =
         Teuchos::rcp(new LINALG::SparseMatrix(a->RowMap(), 81, false, false));
@@ -2113,8 +2114,8 @@ void EHL::Monolithic::LinCouetteForcePres(
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
 
     ds_dp->UnComplete();
-    ds_dp->Add(*LINALG::MLMultiply(
-                   *mortaradapter_->GetDMatrix(), true, *dVisc_str_dp, false, true, false, true),
+    ds_dp->Add(*LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixD(), true, *dVisc_str_dp, false,
+                   true, false, true),
         false, 1., 1.);
     ds_dp->Complete(*d, *r);
   }
@@ -2124,8 +2125,8 @@ void EHL::Monolithic::LinCouetteForcePres(
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
 
     dm_dp->UnComplete();
-    dm_dp->Add(*LINALG::MLMultiply(
-                   *mortaradapter_->GetMMatrix(), true, *dVisc_str_dp, false, true, false, true),
+    dm_dp->Add(*LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixM(), true, *dVisc_str_dp, false,
+                   true, false, true),
         false, -1., 1.);
     dm_dp->Complete(*d, *r);
   }

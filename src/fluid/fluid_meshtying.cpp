@@ -891,7 +891,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /**********************************************************************/
   /* Condensation operation for the sysmat                              */
@@ -1227,7 +1227,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm
@@ -1356,7 +1356,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ and firstnonliniter_) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   // define new incremental vector
   Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap, true);
@@ -1421,7 +1421,7 @@ void FLD::Meshtying::OutputSetUp()
     std::cout << *(adaptermeshtying_->SlaveDofRowMap())<< std::endl << std::endl;
    */
     std::cout << "Projection matrix:" << std::endl;
-    std::cout << *(adaptermeshtying_->GetPMatrix()) << std::endl << std::endl;
+    std::cout << *(adaptermeshtying_->GetMortarMatrixP()) << std::endl << std::endl;
   }
 
   /* {
@@ -1842,7 +1842,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetPMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm

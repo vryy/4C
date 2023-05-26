@@ -396,7 +396,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
       FluidField()->Interface()->ExtractFSICondVector(FluidField()->Dispnp());
   mortar_adapter_->IntegrateLinD(
       "displacement", disp_interface, StructureToFluidAtInterface(lambdanp_));
-  tmp_k_D = mortar_adapter_->GetDMatrix();
+  tmp_k_D = mortar_adapter_->GetMortarMatrixD();
 
   // fill off diagonal blocks
   {
