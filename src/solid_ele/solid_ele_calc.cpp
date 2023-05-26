@@ -131,6 +131,103 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 }
 
 template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGEMM(
+    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
+    Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix)
+{
+  const double gemmalphaf = params.get<double>("alpha f");
+  const double gemmxi = params.get<double>("xi");
+
+  // Create views to SerialDenseMatrices
+  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
+  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
+  std::optional<LINALG::Matrix<numdofperelement_, 1>> force = {};
+  if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
+  if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
+  if (force_vector != nullptr) force.emplace(*force_vector, true);
+
+  const NodalCoordinates<distype> nodal_coordinates =
+      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+
+  const NodalCoordinates<distype> nodal_coordinates_old =
+      EvaluateNodalCoordinatesOld<distype>(ele, discretization, lm);
+
+  // TODO: This is a quite unsafe check, whether the same integrations are used
+  bool equal_integration_mass_stiffness =
+      mass_matrix_integration_.NumPoints() == stiffness_matrix_integration_.NumPoints();
+
+  double mean_density = 0.0;
+
+  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+
+        Strains<distype> strains_old =
+            EvaluateStrains<distype>(nodal_coordinates_old, jacobian_mapping);
+
+        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+            EvaluateStrainGradient(jacobian_mapping, strains);
+
+        LINALG::Matrix<numstr_, numdofperelement_> Bop_old =
+            EvaluateStrainGradient(jacobian_mapping, strains_old);
+
+        // computed averaged mid-point quantities
+        // 1. non-linear mid-B-operator from Bop and Bop_old
+        // B_{m} = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
+        LINALG::Matrix<numstr_, numdofperelement_> BopM(true);
+        BopM.Update(1.0 - gemmalphaf, Bop, gemmalphaf, Bop_old);
+
+        // 2. mid-strain GL-vector from gl_strains and gl_strains_old
+        // E_{m} = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_{n}
+        LINALG::Matrix<numstr_, 1> gl_strains_m(true);
+        gl_strains_m.Update(1.0 - gemmalphaf + gemmxi, strains.gl_strain_, gemmalphaf - gemmxi,
+            strains_old.gl_strain_);
+
+        const Stress<distype> stress = EvaluateMaterialStressGEMM(
+            solid_material, strains, strains_old, gl_strains_m, params, gp, ele.Id());
+
+        if (force.has_value()) AddInternalForceVector(BopM, stress, integration_factor, *force);
+
+        if (stiff.has_value())
+        {
+          AddElasticStiffnessMatrixGEMM(
+              Bop, BopM, stress, integration_factor * (1.0 - gemmalphaf + gemmxi), *stiff);
+          AddGeometricStiffnessMatrix(
+              jacobian_mapping.n_xyz_, stress, integration_factor * (1.0 - gemmalphaf), *stiff);
+        }
+
+        if (mass.has_value())
+        {
+          if (equal_integration_mass_stiffness)
+          {
+            AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
+          }
+          else
+          {
+            mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
+          }
+        }
+      });
+
+
+  if (mass.has_value() && !equal_integration_mass_stiffness)
+  {  // integrate mass matrix
+    dsassert(mean_density > 0, "It looks like the density is 0.0");
+    IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
+        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+            const ShapeFunctionsAndDerivatives<distype>& shape_functions,
+            const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+        { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
+  }
+}
+
+
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)

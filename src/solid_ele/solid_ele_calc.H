@@ -52,6 +52,12 @@ namespace DRT
           Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
           Epetra_SerialDenseMatrix* mass_matrix) override;
 
+      void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params,
+          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
+          Epetra_SerialDenseMatrix* mass_matrix) override;
+
       void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) override;
 
