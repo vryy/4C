@@ -76,7 +76,7 @@
       "cacheVariables": {
         "Trilinos_PREFIX": "$env{TRILINOS_ROOT}",
         "TRILINOS_EXPERIMENTAL": "ON",
-        "BACI_WITH_ARBORX": "OFF"
+        "BACI_WITH_ARBORX": "ON"
       }
     }
   ]
