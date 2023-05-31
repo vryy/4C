@@ -13,6 +13,7 @@
 #define XFEM_COUPLING_MESH_COUPLED_LEVELSET_H
 
 #include "xfem_coupling_base.H"
+#include "xfem_coupling_mesh.H"
 #include "xfem_coupling_levelset.H"
 #include "xfem_interface_utils.H"
 

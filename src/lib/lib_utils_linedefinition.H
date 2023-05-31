@@ -15,6 +15,9 @@
 #include <memory>
 #include <string>
 #include <cstdlib>
+#include <istream>
+
+#include "utils_exceptions.H"
 
 
 namespace DRT

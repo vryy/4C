@@ -14,6 +14,7 @@
 #define STRUCTURE_NEW_ENUM_LISTS_H
 
 #include <string>
+#include "utils_exceptions.H"
 
 namespace STR
 {

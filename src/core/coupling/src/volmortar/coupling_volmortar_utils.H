@@ -12,6 +12,7 @@
 #define COUPLING_VOLMORTAR_UTILS_H
 
 #include <vector>
+#include <Teuchos_RCPDecl.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |

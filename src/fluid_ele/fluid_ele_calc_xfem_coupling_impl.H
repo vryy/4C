@@ -13,6 +13,8 @@
 #define FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
 
 #include "inpar_xfem.H"
+#include "lib_element.H"
+#include "fluid_ele_calc_xfem_coupling.H"
 
 //   qnuP - option SHOULD BE ON!
 //     projects the given velocity into normal direction in case there

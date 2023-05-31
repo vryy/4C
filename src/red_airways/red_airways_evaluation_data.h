@@ -9,6 +9,7 @@
 #define RED_AIRWAYS_EVALUATION_DATA_H
 
 #include <Teuchos_RCPDecl.hpp>
+#include <Epetra_Vector.h>
 
 namespace DRT::REDAIRWAYS
 {

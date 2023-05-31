@@ -21,6 +21,7 @@
 #include "inpar_thermo.H"
 
 #include "utils_singleton_owner.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |

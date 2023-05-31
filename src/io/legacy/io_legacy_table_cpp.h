@@ -14,9 +14,15 @@
 // not its C version included by pss_table.h
 #include <mpi.h>
 
+#ifdef __cplusplus
 extern "C"
 {
+#endif
+
 #include "io_legacy_table.h"  // access to C methods
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif

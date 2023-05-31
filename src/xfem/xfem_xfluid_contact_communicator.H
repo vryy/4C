@@ -16,9 +16,11 @@
 #include <vector>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <set>
 #include "inpar_xfem.H"
+#include "linalg_fixedsizematrix.H"
 
-//#define WRITE_GMSH
+// #define WRITE_GMSH
 
 namespace MORTAR
 {
@@ -38,6 +40,7 @@ namespace DRT
   {
     class StructuralSurface;
   }
+  class Discretization;
   class Element;
 }  // namespace DRT
 namespace GEO

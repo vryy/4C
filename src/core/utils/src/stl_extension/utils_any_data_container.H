@@ -15,6 +15,7 @@
 #include "utils_exceptions.H"
 #include "utils_demangle.H"
 #include <unordered_map>
+#include <vector>
 
 // forward declaration
 namespace CONTACT

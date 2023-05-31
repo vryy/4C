@@ -17,9 +17,6 @@
 
 namespace LINALG
 {
-  // forward declarations
-  class Discretization;
-
   /*!
     \brief Helper function for the nodal nullspace of solid elements in 3D
 

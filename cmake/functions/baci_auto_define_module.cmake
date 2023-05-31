@@ -24,6 +24,14 @@ function(baci_auto_define_module)
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS *.h *.H
     )
+  # Remove headers that only contain template instantiations
+  list(
+    FILTER
+    _headers
+    EXCLUDE
+    REGEX
+    "\.inst\.[hH]"
+    )
 
   baci_add_library(
     ${_target}

@@ -14,6 +14,9 @@
 #ifndef XFEM_ENUM_LISTS_H
 #define XFEM_ENUM_LISTS_H
 
+#include <string>
+#include "utils_exceptions.H"
+
 namespace XFEM
 {
   /// supported field names
