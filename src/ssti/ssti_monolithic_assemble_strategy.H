@@ -127,7 +127,7 @@ namespace SSTI
     {
       return ssti_mono_->MeshtyingScatra();
     }
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> SSTIStructureMeshtying() const
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSTIStructureMeshtying() const
     {
       return ssti_mono_->SSTIStructureMeshTying();
     }

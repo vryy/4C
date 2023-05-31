@@ -37,7 +37,7 @@
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
@@ -55,7 +55,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
@@ -711,7 +711,7 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_scatra,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)

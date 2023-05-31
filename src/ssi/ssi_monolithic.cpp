@@ -1016,14 +1016,14 @@ void SSI::SSIMono::UpdateIterScaTra()
     // reconstruct slave side solution from master side
     if (IsScaTraManifoldMeshtying())
     {
-      for (const auto& meshtying : strategy_manifold_meshtying_->MeshTyingHandler())
+      for (const auto& meshtying : strategy_manifold_meshtying_->MeshTyingHandlers())
       {
-        auto coupling_adapter = meshtying.first;
-        auto multimap = meshtying.second;
+        auto coupling_adapter = meshtying->SlaveMasterCoupling();
+        auto multimap = meshtying->SlaveMasterExtractor();
 
-        auto master_dofs = multimap->ExtractVector(increment_manifold, 1);
+        auto master_dofs = multimap->ExtractVector(increment_manifold, 2);
         auto master_dofs_to_slave = coupling_adapter->MasterToSlave(master_dofs);
-        multimap->InsertVector(master_dofs_to_slave, 2, increment_manifold);
+        multimap->InsertVector(master_dofs_to_slave, 1, increment_manifold);
       }
     }
 
