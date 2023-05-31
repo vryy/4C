@@ -138,40 +138,28 @@ feel free to write your own tailored Setup() method.
     Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixD() const
     {
       if (D_ == Teuchos::null) dserror("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetDinvMatrix() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixDinv() const
     {
       if (Dinv_ == Teuchos::null) dserror("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixM() const
     {
       if (M_ == Teuchos::null) dserror("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix() const
-    {
-      if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
-      return P_;
-    };
-
-    /*! \brief Access to mortar projection operator \f$P\f$
-     *
-     *  \warning Redundant with GetPMatrix().
-     *
-     *  ToDo (mayr.mt) Remove this routine and replace its calls by GetPMatrix().
-     */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixP() const
     {
       if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
       return P_;
