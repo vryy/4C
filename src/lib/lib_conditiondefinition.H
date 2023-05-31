@@ -612,9 +612,6 @@ namespace DRT
       /// print my dat file section and possible conditions from the Discretization
       std::ostream& Print(std::ostream& stream, const Discretization* dis = nullptr);
 
-      /// Write dat file section and possible conditions to a rst file for ReadTheDocs
-      void WriteReadTheDocs(std::ostream& stream);
-
       /// name of my section in input file
       std::string SectionName() const { return sectionname_; }
 

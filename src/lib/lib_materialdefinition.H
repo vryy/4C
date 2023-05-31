@@ -416,9 +416,6 @@ namespace DRT
       std::ostream& Print(std::ostream& stream,  ///< the output stream
           const Discretization* dis = nullptr);
 
-      /// write the material to a restructuredText file used for ReadTheDocs
-      void WriteReadTheDocs(std::ostream& stream);
-
       /// my material name
       std::string Name() const { return materialname_; }
 

@@ -267,8 +267,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
       .AddNamedInt("SRC_MAT")
       .AddNamedString("TAR_FIELD")
       .AddNamedInt("TAR_MAT");
-  Teuchos::RCP<DRT::INPUT::Lines> lines =
-      Teuchos::rcp(new DRT::INPUT::Lines("CLONING MATERIAL MAP"));
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CLONING MATERIAL MAP",
+      "This section is used for multi physics simulations, "
+      "in which a discretization is used for more than one physics. "
+      "The material model given for the defined element (SRC_MAT) is coupled to the material model "
+      "for a different physics (TAR_MAT)."));
+
   lines->Add(structure);
 
   return lines;

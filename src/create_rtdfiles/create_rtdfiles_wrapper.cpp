@@ -74,6 +74,23 @@ namespace DRT
       conditiondocumentationfile << "..\n   Created using baci version (git SHA1):\n";
       conditiondocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
       WriteConditionsReference(conditiondocumentationfile, *DRT::INPUT::ValidConditions());
+
+      WriteContactLawReference(
+          conditiondocumentationfile, *DRT::INPUT::ValidContactConstitutiveLaws());
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename)
+    {
+      //
+      // open ascii file for writing all constrains / conditions parameters
+      std::ofstream variousdocumentationfile(variousdocumentationfilename.c_str());
+      if (!variousdocumentationfile)
+        dserror("failed to open file: %s", variousdocumentationfilename.c_str());
+      variousdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
+      variousdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+      WriteVariousReference(variousdocumentationfile);
     }
 
     void PrintHelpMessage()

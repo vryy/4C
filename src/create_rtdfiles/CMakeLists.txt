@@ -14,7 +14,7 @@ baci_add_library(
 
 baci_add_dependency(create_rtdfiles config lib)
 # the create_rtdfiles executable
-add_executable(create_rtd ${OBJS_CREATERTD_MAIN})
+add_executable(create_rtd EXCLUDE_FROM_ALL ${OBJS_CREATERTD_MAIN})
 baci_add_dependency(create_rtd create_rtdfiles)
 set_target_properties(create_rtd PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 baci_link_executable_with_all(create_rtd)

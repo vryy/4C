@@ -17,6 +17,7 @@
 #include "lib_materialdefinition.H"
 #include "lib_conditiondefinition.H"
 #include "inpar_validparameters.H"
+#include "contact_constitutivelaw_constitutivelaw_definition.H"
 #include <Teuchos_RCP.hpp>
 
 namespace DRT
@@ -79,7 +80,7 @@ namespace DRT
        *
        * @return Number of rows of the table (that is, the size of the private vector tablerows_
        */
-      unsigned GetRows();
+      unsigned GetRows() const;
       /*!
        * Here the table is printed as a restructuredText list-table
        *
@@ -103,6 +104,7 @@ namespace DRT
        */
       std::map<std::string, std::string> directives_;
     };
+
     /*!
       \brief Write a link target to the restructuredText stream
 
@@ -121,7 +123,7 @@ namespace DRT
       \param[in] line: The link target to be printed
 
     */
-    void WriteHeader(std::ostream& stream, const unsigned level, const std::string& line);
+    void WriteHeader(std::ostream& stream, unsigned level, const std::string& line);
 
     /*----------------------------------------------------------------------*/
     /*!
@@ -133,7 +135,7 @@ namespace DRT
       \param[in] indent: Optional indentation of the paragraph (default 0)
 
     */
-    void WriteParagraph(std::ostream& stream, std::string& line, const size_t indent = 0);
+    void WriteParagraph(std::ostream& stream, std::string& line, size_t indent = 0);
     /*----------------------------------------------------------------------*/
     /*!
       \brief Write a code block to the restructuredText stream
@@ -159,9 +161,17 @@ namespace DRT
      *  \param[in] stream: stream for the restructuredText file
      *  \param[in] matlist: vector containing all material definitions
      */
-    void WriteMaterialReference(
-        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist);
+    void WriteMaterialReference(std::ostream& stream,
+        const std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist);
 
+    /*!
+     *  \brief write the information of a single material to readthedocs
+     *
+     *  \param[in] stream: stream for the restructuredText file
+     *  \param[in] material: single material definition
+     */
+    void WriteSingleMaterialReadTheDocs(
+        std::ostream& stream, const Teuchos::RCP<INPUT::MaterialDefinition> material);
     /*!
      *  \brief write all parameters of the header sections for readthedocs
      *
@@ -180,11 +190,48 @@ namespace DRT
      *  @param[in] stream restructuredText file for prescribed conditions.
      *  @param[in] condlist List of prescribed conditions to be written to that file
      */
-    void WriteConditionsReference(
-        std::ostream& stream, std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+    void WriteConditionsReference(std::ostream& stream,
+        const std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+
+    /*!
+     *  write a single condition including explanations (if available) to a .rst file for
+     * ReadTheDocs
+     *
+     *  @param[in] stream restructuredText file for prescribed conditions.
+     *  @param[in] condition Single prescribed condition to be written to that file
+     */
+    void WriteSingleConditionReadTheDocs(
+        std::ostream& stream, const Teuchos::RCP<INPUT::ConditionDefinition> condition);
+
+    /*!
+     *  write a single contact law including explanations (if available) to a .rst file for
+     * ReadTheDocs
+     *
+     *  @param[in] stream restructuredText file for prescribed contact law.
+     *  @param[in] coconstlaw Single contact law to be written to that file
+     */
+    void WriteSingleContactLawReadTheDocs(std::ostream& stream,
+        const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> coconstlaw);
+
+    /*!
+     *  write all known contact laws including explanations (if available) to a .rst file for
+     * ReadTheDocs
+     *
+     *  @param[in] stream restructuredText file for prescribed contact law.
+     */
+    void WriteContactLawReference(std::ostream& stream,
+        const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist);
+    /*!
+     *  write various other parameters including explanations (if available) to a .rst file for
+     * ReadTheDocs
+     *
+     *  @param[in] stream restructuredText file for functions.
+     */
+    void WriteVariousReference(std::ostream& stream);
   }  // namespace RTD
 }  // namespace DRT
 
 std::ostream& operator<<(std::ostream& os, const DRT::RTD::Table& table);
+
 
 #endif  // CREATE_RTDFILES_UTILS_H

@@ -172,7 +172,8 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
 
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines(
+      "FUNCT", "Definition of functions for various cases, mainly boundary conditions"));
 
   DRT::UTILS::AddValidFunctionFunctionLines(lines);
   DRT::UTILS::AddValidLibraryFunctionLines(lines);

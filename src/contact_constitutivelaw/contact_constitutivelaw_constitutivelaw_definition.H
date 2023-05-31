@@ -224,6 +224,16 @@ namespace CONTACT
           Teuchos::RCP<std::stringstream> condline,
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container) override;
 
+      /**
+       * \brief read my part of the the contact constitutive law
+       * definition
+       *
+       *\param[in] def Contact Constitutive Law definition
+       *\param[in] condline read input line
+       *\params[inout] container container to add the read parameter to
+       */
+      std::vector<std::string> WriteReadTheDocs() const;
+
      private:
       /// separator string, i.e. the NAME of variable in DAT input file
       std::string separator_;
