@@ -718,14 +718,14 @@ namespace DRT
     template <int nsd_>
     DRT::UTILS::PolynomialSpaceCache<nsd_> &DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance()
     {
-      static ::UTILS::SingletonOwner<DRT::UTILS::PolynomialSpaceCache<nsd_>> owner(
+      static CORE::UTILS::SingletonOwner<DRT::UTILS::PolynomialSpaceCache<nsd_>> owner(
           []()
           {
             return std::unique_ptr<DRT::UTILS::PolynomialSpaceCache<nsd_>>(
                 new PolynomialSpaceCache<nsd_>);
           });
 
-      return *owner.Instance(::UTILS::SingletonAction::create);
+      return *owner.Instance(CORE::UTILS::SingletonAction::create);
     }
 
     template <int nsd_>

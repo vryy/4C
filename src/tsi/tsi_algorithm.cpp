@@ -41,6 +41,7 @@
 #include "structure_new_model_evaluator_contact.H"
 #include "structure_new_model_evaluator_structure.H"
 #include "mortar_multifield_coupling.H"
+#include "coupling_adapter.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -70,9 +71,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (!matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    volcoupl_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
-    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
+    Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
     volcoupl_->Init(structdis, thermodis, NULL, NULL, NULL, NULL, materialstrategy);
@@ -135,7 +136,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // setup coupling object for matching discretization
   if (matchinggrid_)
   {
-    coupST_ = Teuchos::rcp(new ADAPTER::Coupling());
+    coupST_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     coupST_->SetupCoupling(*StructureField()->Discretization(), *ThermoField()->Discretization(),
         *StructureField()->Discretization()->NodeRowMap(),
         *ThermoField()->Discretization()->NodeRowMap(), 1, true);

@@ -256,7 +256,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcHDG<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Print local residuals
       void PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele);

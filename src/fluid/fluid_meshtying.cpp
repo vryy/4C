@@ -44,7 +44,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
       gmdofrowmap_(Teuchos::null),
       mergedmap_(Teuchos::null),
       valuesdc_(Teuchos::null),
-      adaptermeshtying_(Teuchos::rcp(new ADAPTER::CouplingMortar())),
+      adaptermeshtying_(Teuchos::rcp(new CORE::ADAPTER::CouplingMortar())),
       pcoupled_(true),
       dconmaster_(false),
       firstnonliniter_(false),

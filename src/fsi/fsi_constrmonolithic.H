@@ -14,6 +14,7 @@
 
 #include "fsi_constr_overlapprec.H"
 #include "fsi_monolithic.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace UTILS
@@ -164,16 +165,16 @@ namespace FSI
     int writerestartevery_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     /// additional coupling of structure and ale fields at airway outflow
-    Teuchos::RCP<ADAPTER::Coupling> coupsaout_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsaout_;
 
     /// additional coupling of structure and ale/fluid fields at airway outflow
-    Teuchos::RCP<ADAPTER::Coupling> coupfsout_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfsout_;
 
     /// fluid and ale coupling at airway outflow
-    Teuchos::RCP<ADAPTER::Coupling> coupfaout_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfaout_;
 
     /// @name infnorm scaling
     //!@{

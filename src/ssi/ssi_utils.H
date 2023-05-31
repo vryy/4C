@@ -14,12 +14,13 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <set>
+#include "coupling_adapter.H"
 
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
   class CouplingSlaveConverter;
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 namespace DRT
 {
@@ -345,12 +346,16 @@ namespace SSI
     class SSIStructureMeshTyingHandler
     {
      public:
-      explicit SSIStructureMeshTyingHandler(Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling,
+      explicit SSIStructureMeshTyingHandler(
+          Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
           Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
-          Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation);
+          Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation);
 
       //! coupling adapter between master and slave coupling
-      Teuchos::RCP<ADAPTER::Coupling> SlaveMasterCoupling() const { return slave_master_coupling_; }
+      Teuchos::RCP<CORE::ADAPTER::Coupling> SlaveMasterCoupling() const
+      {
+        return slave_master_coupling_;
+      }
 
       //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
       Teuchos::RCP<LINALG::MultiMapExtractor> SlaveMasterExtractor() const
@@ -359,29 +364,29 @@ namespace SSI
       }
 
       //! converter to convert slave dofs to master side
-      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> SlaveSideConverter() const
+      Teuchos::RCP<CORE::ADAPTER::CouplingSlaveConverter> SlaveSideConverter() const
       {
         return slave_side_converter_;
       }
 
       //! coupling adapter between new slave nodes and slave nodes from input file
-      Teuchos::RCP<ADAPTER::Coupling> SlaveSlaveTransformation() const
+      Teuchos::RCP<CORE::ADAPTER::Coupling> SlaveSlaveTransformation() const
       {
         return slave_slave_transformation_;
       }
 
      private:
       //! coupling adapter between master and slave coupling
-      Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling_;
+      Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling_;
 
       //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
       Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor_;
 
       //! converter to convert slave dofs to master side
-      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_side_converter_;
+      Teuchos::RCP<CORE::ADAPTER::CouplingSlaveConverter> slave_side_converter_;
 
       //! coupling adapter between new slave nodes and slave nodes from input file
-      Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation_;
+      Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation_;
     };
 
     class SSIStructureMeshTying

@@ -15,6 +15,7 @@
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_algorithmbase.H"
 #include "ale.H"
+#include "coupling_adapter.H"
 
 #include <NOX.H>
 #include <NOX_Epetra.H>
@@ -211,13 +212,13 @@ namespace FSI
 
     //@}
 
-    ADAPTER::Coupling& FluidAleCoupling();
+    CORE::ADAPTER::Coupling& FluidAleCoupling();
 
-    const ADAPTER::Coupling& FluidAleCoupling() const;
+    const CORE::ADAPTER::Coupling& FluidAleCoupling() const;
 
    private:
     /// coupling of fluid and ale
-    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// underlying fluid of the FS problem
     Teuchos::RCP<::ADAPTER::Fluid> fluid_;
@@ -512,7 +513,7 @@ namespace FSI
     Teuchos::RCP<OverlappingBlockMatrixFS> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

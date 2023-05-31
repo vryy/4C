@@ -68,7 +68,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   {
     Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("porofluid");
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    volcoupl_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // build material strategy
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
@@ -452,7 +452,7 @@ void POROELAST::PoroBase::SetupCoupling()
     }
   }
 
-  coupling_fluid_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupling_fluid_structure_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   int ndof = ndim;
 
   // if the porosity is a primary variable, we get one more dof

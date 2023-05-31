@@ -666,15 +666,15 @@ void EHL::Base::SetupFieldCoupling(
   //----------------------------------------------------------
   Teuchos::RCP<Epetra_Map> strucnodes = mortaradapter_->Interface()->SlaveRowNodes();
   const Epetra_Map* lubrinodes = lubricationdis->NodeRowMap();
-  ada_strDisp_to_lubDisp_ = Teuchos::rcp(new ADAPTER::Coupling);
+  ada_strDisp_to_lubDisp_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
   ada_strDisp_to_lubDisp_->SetupCoupling(
       *structdis, *lubricationdis, *strucnodes, *lubrinodes, ndim, true, 1.e-8, 0, 1);
 
-  ada_lubPres_to_lubDisp_ = Teuchos::rcp(new ADAPTER::Coupling);
+  ada_lubPres_to_lubDisp_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
   ada_lubPres_to_lubDisp_->SetupCoupling(*lubricationdis, *lubricationdis,
       *lubricationdis->NodeRowMap(), *lubricationdis->NodeRowMap(), 1, true, 1.e-8, 0, 1);
 
-  ada_strDisp_to_lubPres_ = Teuchos::rcp(new ADAPTER::Coupling);
+  ada_strDisp_to_lubPres_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
   ada_strDisp_to_lubPres_->SetupCoupling(mortaradapter_->Interface()->Discret(), *lubricationdis,
       *mortaradapter_->Interface()->SlaveRowNodes(), *lubricationdis->NodeRowMap(), 1, true, 1.e-3);
 

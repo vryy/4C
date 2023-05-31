@@ -60,7 +60,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleCalcPoroP1<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /*!
       \brief calculate element matrix and rhs for porous flow (2)

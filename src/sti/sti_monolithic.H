@@ -13,6 +13,7 @@
 #include "sti_algorithm.H"
 
 #include "inpar_sti.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 class Epetra_Map;
@@ -175,10 +176,10 @@ namespace STI
     Teuchos::RCP<Epetra_Vector> invrowsums_;
 
     //! interface coupling adapter for scatra discretization
-    Teuchos::RCP<const ADAPTER::Coupling> icoupscatra_;
+    Teuchos::RCP<const CORE::ADAPTER::Coupling> icoupscatra_;
 
     //! interface coupling adapter for thermo discretization
-    Teuchos::RCP<const ADAPTER::Coupling> icoupthermo_;
+    Teuchos::RCP<const CORE::ADAPTER::Coupling> icoupthermo_;
 
     //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
     Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformscatraod_;

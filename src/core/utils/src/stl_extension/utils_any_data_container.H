@@ -26,7 +26,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
-namespace GEN
+namespace CORE::GEN
 {
   /** \brief Data container of any content
    *
@@ -380,7 +380,7 @@ namespace GEN
     /// container for any data
     std::vector<AnyData> any_data_;
   };
-}  // namespace GEN
+}  // namespace CORE::GEN
 
 
 #endif

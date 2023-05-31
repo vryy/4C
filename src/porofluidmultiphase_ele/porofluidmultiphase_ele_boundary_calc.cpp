@@ -28,14 +28,15 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
             new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[disname].Instance(
+      CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 

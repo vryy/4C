@@ -25,7 +25,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleParameterStd* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
      private:
      protected:

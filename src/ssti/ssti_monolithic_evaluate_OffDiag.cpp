@@ -222,7 +222,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
           auto slave_side_converter_struct = meshtying->SlaveSideConverter();
 
           auto slave_side_converter_thermo =
-              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
+              CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
 
           LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
               *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
@@ -256,7 +256,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
         auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto slave_side_converter_struct = meshtying->SlaveSideConverter();
         auto slave_side_converter_thermo =
-            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
+            CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
 
         LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
             *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
@@ -347,7 +347,8 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
@@ -384,7 +385,8 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();

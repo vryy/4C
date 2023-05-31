@@ -224,9 +224,9 @@ template <DRT::Element::DiscretizationType distype, DRT::Element::Discretization
     DRT::Element::DiscretizationType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<
+  static CORE::UTILS::SingletonOwner<
       DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
       singleton_owner(
           []()

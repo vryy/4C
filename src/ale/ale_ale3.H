@@ -440,7 +440,7 @@ namespace DRT
      public:
       /// Singleton access method
       static Ale3_Impl<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,          ///< pointer to element
           DRT::Discretization& dis,              ///< discretization
@@ -785,7 +785,7 @@ namespace DRT
 
       /// Singleton access method
       static Ale3Surface_Impl<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of element nodes
       static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

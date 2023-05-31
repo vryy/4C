@@ -12,9 +12,9 @@
 
 #include "discretization_geometric_search_utils.H"
 
-namespace GEOMETRICSEARCH::UTILS
+namespace CORE::GEOMETRICSEARCH
 {
-  void PrintGeometricSearchDetails(const Epetra_Comm& comm, const UTILS::GeometricSearchInfo info)
+  void PrintGeometricSearchDetails(const Epetra_Comm& comm, const GeometricSearchInfo info)
   {
     const int numproc = comm.NumProc();
     const int myrank = comm.MyPID();
@@ -49,4 +49,4 @@ namespace GEOMETRICSEARCH::UTILS
       IO::cout(IO::verbose) << IO::endl;
     }
   }
-}  // namespace GEOMETRICSEARCH::UTILS
+}  // namespace CORE::GEOMETRICSEARCH

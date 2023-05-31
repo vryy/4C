@@ -485,7 +485,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
       const Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN::copy(d_normal, exp_d_n, GEN::DeepCopy);
+      CORE::GEN::copy(d_normal, exp_d_n, CORE::GEN::DeepCopy);
     }
   }
 
@@ -509,7 +509,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
       Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       const Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN::copy(exp_d_n, d_normal, GEN::DeepCopy);
+      CORE::GEN::copy(exp_d_n, d_normal, CORE::GEN::DeepCopy);
     }
   }
 
@@ -536,7 +536,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
       const Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN::copy(dd_normal, exp_dd_n, GEN::DeepCopy);
+      CORE::GEN::copy(dd_normal, exp_dd_n, CORE::GEN::DeepCopy);
     }
   }
 
@@ -560,7 +560,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
       Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       const Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN::copy(exp_dd_n, dd_normal, GEN::DeepCopy);
+      CORE::GEN::copy(exp_dd_n, dd_normal, CORE::GEN::DeepCopy);
     }
   }
 
@@ -584,7 +584,7 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
   // coupling evaluation
   cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
   EvaluateCoupling(*interfaceData_.SActiveEleColMap(), NULL, cparams_ptr);
-  cparams_ptr->ClearEntry(GEN::AnyDataContainer::DataType::any, 1);
+  cparams_ptr->ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 1);
 }
 
 /*----------------------------------------------------------------------------*

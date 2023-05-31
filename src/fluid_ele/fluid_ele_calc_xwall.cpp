@@ -61,9 +61,9 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(::UTILS::SingletonAction action)
+DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
+  static CORE::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
       singleton_owner(
           []()
           {

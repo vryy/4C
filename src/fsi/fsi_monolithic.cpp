@@ -77,10 +77,10 @@ FSI::MonolithicBase::MonolithicBase(
   CreateStructureTimeIntegrator(timeparams, structdis);
   CreateFluidAndALETimeIntegrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
 
@@ -376,10 +376,10 @@ void FSI::Monolithic::SetupSystem()
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // structure to fluid
 

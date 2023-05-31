@@ -28,7 +28,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleParameterPoro* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void SetElementPoroParameter(Teuchos::ParameterList& params, int myrank);
 

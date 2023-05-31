@@ -407,9 +407,10 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
           const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-          const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const override;
+          const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params)
+          const override;
 
       //@}
 

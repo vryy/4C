@@ -34,18 +34,17 @@ namespace LINALG
   class SparseMatrix;
 }
 
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   namespace UTILS
   {
     class DefaultMaterialStrategy;
   }
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
-namespace ADAPTER
-{
-  /// Class for calling volmortar coupling and proper parallel redistr.
-  class MortarVolCoupl : public CouplingBase
+namespace CORE::ADAPTER
+{  /// Class for calling volmortar coupling and proper parallel redistr.
+  class MortarVolCoupl : public CORE::ADAPTER::CouplingBase
   {
    public:
     /*!
@@ -229,6 +228,6 @@ namespace ADAPTER
     std::pair<int, int>* dofsets21_;
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
   };
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #endif  // COUPLING_ADAPTER_VOLMORTAR_H

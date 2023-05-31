@@ -11,6 +11,7 @@
 #define POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NODEBASED_H
 
 #include "poromultiphase_scatra_artery_coupling_base.H"
+#include "coupling_adapter.H"
 
 namespace ADAPTER
 {
@@ -146,7 +147,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<LINALG::MultiMapExtractor> artex_;
 
     //! coupling adapter
-    Teuchos::RCP<ADAPTER::Coupling> artcontfieldcoup_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> artcontfieldcoup_;
 
     //! needed for matrix transforms
     Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;

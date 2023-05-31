@@ -1557,7 +1557,7 @@ void CONTACT::CoInterface::PreEvaluate(const int& step, const int& iter)
 void CONTACT::CoInterface::StoreNTSvalues()
 {
   // create iterators for data types
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all possibly non smooth nodes
@@ -1653,7 +1653,7 @@ void CONTACT::CoInterface::StoreNTSvalues()
 void CONTACT::CoInterface::StoreLTSvalues()
 {
   // create iterators for data types
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all possibly non smooth nodes
@@ -1800,7 +1800,7 @@ void CONTACT::CoInterface::StoreLTLvalues()
   dserror("StoreLTLvalues() is outdated!");
   return;
   //  // create iterators for data types
-  //  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  //  typedef CORE::GEN::pairedvector<int,double>::const_iterator CI;
   //  typedef std::map<int,double>::const_iterator          CImap;
   //
   //  // loop over all possibly non smooth nodes
@@ -1938,7 +1938,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 
   std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -2014,7 +2014,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -2089,7 +2089,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
   const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
   const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
@@ -2131,7 +2131,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
     {
       // state
       bool stick = true;
-      GEN::pairedvector<int, double> coefflin(100);
+      CORE::GEN::pairedvector<int, double> coefflin(100);
 
       // normal force
       std::array<double, 3> fn = {0.0, 0.0, 0.0};
@@ -2165,13 +2165,13 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         coeff = frcoeff * maxtrac / trialnorm;
         for (int dim = 0; dim < Dim(); ++dim) ftan[dim] = coeff * ftrial[dim];
 
-        GEN::pairedvector<int, double> fn_x(100);
-        GEN::pairedvector<int, double> fn_y(100);
-        GEN::pairedvector<int, double> fn_z(100);
+        CORE::GEN::pairedvector<int, double> fn_x(100);
+        CORE::GEN::pairedvector<int, double> fn_y(100);
+        CORE::GEN::pairedvector<int, double> fn_z(100);
 
-        GEN::pairedvector<int, double> ft_x(100);
-        GEN::pairedvector<int, double> ft_y(100);
-        GEN::pairedvector<int, double> ft_z(100);
+        CORE::GEN::pairedvector<int, double> ft_x(100);
+        CORE::GEN::pairedvector<int, double> ft_y(100);
+        CORE::GEN::pairedvector<int, double> ft_z(100);
 
         for (CImap pp = cnode->CoData().GetDerivGltl()[0].begin();
              pp != cnode->CoData().GetDerivGltl()[0].end(); ++pp)
@@ -2193,7 +2193,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
              pp != cnode->CoData().GetDerivJumpltl()[2].end(); ++pp)
           ft_z[pp->first] -= penaltytan * (pp->second);
 
-        GEN::pairedvector<int, double> maxtraclin(100);
+        CORE::GEN::pairedvector<int, double> maxtraclin(100);
         for (CI pp = fn_x.begin(); pp != fn_x.end(); ++pp)
           maxtraclin[pp->first] -= 0.5 * (1.0 / maxtrac) * (pp->second) * 2.0 * fn[0] * pp->second;
         for (CI pp = fn_y.begin(); pp != fn_y.end(); ++pp)
@@ -2201,7 +2201,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         for (CI pp = fn_z.begin(); pp != fn_z.end(); ++pp)
           maxtraclin[pp->first] -= 0.5 * (1.0 / maxtrac) * (pp->second) * 2.0 * fn[2] * pp->second;
 
-        GEN::pairedvector<int, double> trialnormlin(100);
+        CORE::GEN::pairedvector<int, double> trialnormlin(100);
         for (CI pp = ft_x.begin(); pp != ft_x.end(); ++pp)
           trialnormlin[pp->first] -=
               0.5 * (1.0 / trialnorm) * (pp->second) * 2.0 * ftrial[0] * pp->second;
@@ -2315,7 +2315,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+          CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
@@ -2377,7 +2377,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+          CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
@@ -2406,7 +2406,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+          CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
@@ -2499,7 +2499,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -2519,7 +2519,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDnts()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDnts();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDnts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -2583,7 +2583,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -2607,7 +2607,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDlts()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDlts();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDlts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -2676,7 +2676,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
   // D/M = sval/mval
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -2694,7 +2694,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -2763,7 +2763,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -2879,7 +2879,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDlts()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDlts();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDlts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -2960,7 +2960,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -3029,7 +3029,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDnts()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDnts();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDnts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -3110,7 +3110,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
@@ -3220,7 +3220,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
+        CORE::GEN::pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
@@ -3436,7 +3436,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
 
   return;
   //  // create iterators for data types
-  //  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  //  typedef CORE::GEN::pairedvector<int,double>::const_iterator CI;
   //  typedef std::map<int,double>::const_iterator          CImap;
   //
   //  // loop over all possibly non smooth nodes
@@ -3480,7 +3480,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //    std::map<int, double> m_lts =
   //        cnode->MoData().GetMlts();
   //
-  //    GEN::pairedvector<int, double> d_lts =
+  //    CORE::GEN::pairedvector<int, double> d_lts =
   //        cnode->MoData().GetDlts();
   //
   //    // ############################################################
@@ -3978,7 +3978,7 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
  *----------------------------------------------------------------------*/
 double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normaltonodelin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -4154,9 +4154,9 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   //**********************************************
   //   LINEARIZATION    f                       //
   //**********************************************
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<GEN::pairedvector<int, double>> linT(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> linT(3, 100);  // added all sizes
 
   for (_CI p = node1->CoData().GetDerivTangent()[0].begin();
        p != node1->CoData().GetDerivTangent()[0].end(); ++p)
@@ -4178,12 +4178,12 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
        p != node2->CoData().GetDerivTangent()[2].end(); ++p)
     linT[2][p->first] += sval[1] * p->second;
 
-  std::vector<GEN::pairedvector<int, double>> linXsl(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> linXsl(3, 100);  // added all sizes
   linXsl[0][snode.Dofs()[0]] += 1.0;
   linXsl[1][snode.Dofs()[1]] += 1.0;
   linXsl[2][snode.Dofs()[2]] += 1.0;
 
-  std::vector<GEN::pairedvector<int, double>> linXm(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> linXm(3, 100);  // added all sizes
   linXm[0][node1->Dofs()[0]] += sval[0];
   linXm[1][node1->Dofs()[1]] += sval[0];
   linXm[2][node1->Dofs()[2]] += sval[0];
@@ -4192,7 +4192,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   linXm[1][node2->Dofs()[1]] += sval[1];
   linXm[2][node2->Dofs()[2]] += sval[1];
 
-  GEN::pairedvector<int, double> linf(100);  // added all sizes
+  CORE::GEN::pairedvector<int, double> linf(100);  // added all sizes
   for (_CI p = linT[0].begin(); p != linT[0].end(); ++p)
     linf[p->first] += snode.xspatial()[0] * p->second;
   for (_CI p = linT[1].begin(); p != linT[1].end(); ++p)
@@ -4215,7 +4215,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   for (_CI p = linXm[1].begin(); p != linXm[1].end(); ++p) linf[p->first] -= tangent[1] * p->second;
   for (_CI p = linXm[2].begin(); p != linXm[2].end(); ++p) linf[p->first] -= tangent[2] * p->second;
 
-  GEN::pairedvector<int, double> linXi(100);  // added all sizes
+  CORE::GEN::pairedvector<int, double> linXi(100);  // added all sizes
   for (_CI p = linf.begin(); p != linf.end(); ++p) linXi[p->first] -= p->second / df;
 
   //**********************************************
@@ -4242,7 +4242,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
 
   //*******************************************
   // Lin:
-  std::vector<GEN::pairedvector<int, double>> auxlin(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> auxlin(3, 100);  // added all sizes
 
   // xslave
   for (int k = 0; k < 3; ++k) (auxlin[k])[snode.Dofs()[k]] += 1.0;
@@ -4336,21 +4336,21 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
  *----------------------------------------------------------------------*/
 double CONTACT::CoInterface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
     MORTAR::MortarNode& mnode, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normaltonodelin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin)
 {
   const int dim = Dim();
 
   // distance between node and surface
   double gdist = 1e12;
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<GEN::pairedvector<int, double>> glin(3, 1000);
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  std::vector<CORE::GEN::pairedvector<int, double>> glin(3, 1000);
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   double dist = 1e12;
   std::array<double, 3> auxnormal = {0.0, 0.0, 0.0};
 
   // loop over found master nodes
-  std::vector<GEN::pairedvector<int, double>> auxlin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxlin(3, 1000);
 
   // calc vector
   auxnormal[0] = snode.xspatial()[0] - mnode.xspatial()[0];
@@ -4513,7 +4513,7 @@ void CONTACT::CoInterface::EvaluateCPPNormals()
     // Here we have all found master elements for one slave node.
     // distance for cpp
     double normaltoline[3] = {0.0, 0.0, 0.0};
-    std::vector<GEN::pairedvector<int, double>> normaltolineLin(3, 1);  // 1 dummy
+    std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLin(3, 1);  // 1 dummy
 
     // Now, calculate distance between node and master line
     double dist = ComputeCPPNormal(*mrtrnode, meles, normaltoline, normaltolineLin);
@@ -4565,7 +4565,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
   std::map<int, std::vector<double>> teta_y_val;
   std::map<int, std::vector<double>> teta_z_val;
 
-  GEN::pairedvector<int, double>::iterator iter;
+  CORE::GEN::pairedvector<int, double>::iterator iter;
 
   const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
 
@@ -4592,9 +4592,9 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
     triad[gid] = loc;
 
     // fill nodal derivative vectors
-    std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-    std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-    std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
     for (iter = derivn[0].begin(); iter != derivn[0].end(); ++iter)
     {
@@ -4695,9 +4695,9 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
     cnode->CoData().teta()[2] = (*loc)(2, 2);
 
     // extract derivative info
-    std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-    std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-    std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
     for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
@@ -4818,7 +4818,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   std::cout << "ComputeScalingLTL" << std::endl;
 
   // define iterator for linerization
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   // angle in degree
   const double minAngle = InterfaceParams().get<double>("HYBRID_ANGLE_MIN");
@@ -5054,9 +5054,9 @@ void CONTACT::CoInterface::ComputeScalingLTL()
         // create empty points
         double sxi = 0.0;
         double mxi = 0.0;
-        GEN::pairedvector<int, double> dsxi(
+        CORE::GEN::pairedvector<int, double> dsxi(
             3 * lineElementsM[m]->NumNode() + 3 * lineElementsS[s]->NumNode());
-        GEN::pairedvector<int, double> dmxi(
+        CORE::GEN::pairedvector<int, double> dmxi(
             3 * lineElementsM[m]->NumNode() + 3 * lineElementsS[s]->NumNode());
 
         coup.LineIntersection(&sxi, &mxi, dsxi, dmxi);
@@ -5072,7 +5072,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
         {
           std::cout << "VALID INTERSECTION" << std::endl;
           // 2. calc current angle for this element pair
-          GEN::pairedvector<int, double> linAngle(
+          CORE::GEN::pairedvector<int, double> linAngle(
               100 + 3 * lineElementsM[m]->NumNode() + 3 * lineElementsS[s]->NumNode());
           gR = coup.CalcCurrentAngle(linAngle);
 
@@ -5194,7 +5194,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //
   //    // calc smallest angle between cpp and nele
   //    double gR = 1e12;
-  //    GEN::pairedvector<int,double> ddotcppfinal(1000);
+  //    CORE::GEN::pairedvector<int,double> ddotcppfinal(1000);
   //
   //    for (int n = 0; n<eles; ++n)
   //    {
@@ -5222,8 +5222,8 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //      double fac = (-1.0/(sqrt(1.0-dotcpp*dotcpp)));
   //
   //      // init lin
-  //      GEN::pairedvector<int,double> ddotcpp(1000);
-  //      std::vector<GEN::pairedvector<int,double> > dnele(3,1000);
+  //      CORE::GEN::pairedvector<int,double> ddotcpp(1000);
+  //      std::vector<CORE::GEN::pairedvector<int,double> > dnele(3,1000);
   //
   //      // deriv unit normal!
   //      seleaux->DerivNormalAtNode(cnode->Id(),loc,elens,dnele);
@@ -5327,7 +5327,7 @@ void CONTACT::CoInterface::ScaleNormals()
 void CONTACT::CoInterface::ScaleNormals2D()
 {
   // define iterator for paired vector
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   //======================================================
   // loop over non smooth slave nodes
@@ -5344,7 +5344,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
     std::array<double, 3> normalcpp = {0.0, 0.0, 0.0};
 
     // get cpp normal lin.
-    std::vector<GEN::pairedvector<int, double>> dcppaux(3, 1000);
+    std::vector<CORE::GEN::pairedvector<int, double>> dcppaux(3, 1000);
 
     dcppaux = cnode->CoData().GetDerivN();
     normalcpp[0] = cnode->MoData().n()[0];
@@ -5428,7 +5428,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
 
 
     // deriv unit normal!
-    std::vector<GEN::pairedvector<int, double>> dnele(3, 1000);
+    std::vector<CORE::GEN::pairedvector<int, double>> dnele(3, 1000);
     seleaux->DerivNormalAtNode(cnode->Id(), loc, elens, dnele);
 
     cnode->CoData().GetDerivN()[0].clear();
@@ -5516,7 +5516,7 @@ void CONTACT::CoInterface::ScaleNormals3D() { dserror("not yet implemented!"); }
  *----------------------------------------------------------------------*/
 double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -5525,7 +5525,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
   // distance between node and surface
   double gdist = 1e12;  // distance
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
+  std::vector<CORE::GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
   std::set<int> donebeforeMasterCorner;
 
   bool nodeOnNode = false;     // flag for node on node (corner on corner) setting
@@ -5593,7 +5593,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
           // aux variables
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<GEN::pairedvector<int, double>> auxlin(
+          std::vector<CORE::GEN::pairedvector<int, double>> auxlin(
               3, linsize + 1 + meles[ele]->NumNode());
 
           // compute distance between corners
@@ -5650,7 +5650,8 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
     double xi[2] = {0.0, 0.0};
     double dist = 1e12;
     double auxnormal[3] = {0.0, 0.0, 0.0};
-    std::vector<GEN::pairedvector<int, double>> auxlin(3, linsize + 1 + meles[ele]->NumNode());
+    std::vector<CORE::GEN::pairedvector<int, double>> auxlin(
+        3, linsize + 1 + meles[ele]->NumNode());
 
     // check for nonsmooth mele
     if (cornerele and !nodeOnNode)
@@ -5713,7 +5714,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
  *----------------------------------------------------------------------*/
 double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -5723,7 +5724,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
   const double validAngle = 5.0;
   double gdist = 1e12;  // distance
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
+  std::vector<CORE::GEN::pairedvector<int, double>> glin(3, 1);  // 1 dummy
 
   //******************************************************
   //             CALC TRAJECTORY
@@ -5766,7 +5767,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
     double xi[2] = {0.0, 0.0};
     double dist = 1e12;
     double auxnormal[3] = {0.0, 0.0, 0.0};
-    std::vector<GEN::pairedvector<int, double>> auxlin(3, 1000);
+    std::vector<CORE::GEN::pairedvector<int, double>> auxlin(3, 1000);
 
     // perform CPP to find normals
     bool success =
@@ -5910,7 +5911,8 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
 
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<GEN::pairedvector<int, double>> auxlin(3, 100 + 1 + meles[ele]->NumNode());
+          std::vector<CORE::GEN::pairedvector<int, double>> auxlin(
+              3, 100 + 1 + meles[ele]->NumNode());
 
           // compute distance between node and edge
           dist = ComputeNormalNodeToEdge(mrtrnode, *lineEle, auxnormal, auxlin);
@@ -5973,7 +5975,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
 
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<GEN::pairedvector<int, double>> auxlin(
+          std::vector<CORE::GEN::pairedvector<int, double>> auxlin(
               3, linsize + 1 + meles[ele]->NumNode());
 
           // compute distance between corners
@@ -6024,7 +6026,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
  *----------------------------------------------------------------------*/
 double CONTACT::CoInterface::ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
     std::vector<MORTAR::MortarElement*> meles, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   // define distance
   double gdist = 1e12;
@@ -6065,7 +6067,7 @@ double CONTACT::CoInterface::ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
  |  set cpp normal                                           farah 01/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& normallin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normallin)
 {
   CoNode& cnode = dynamic_cast<CoNode&>(snode);
 
@@ -6139,7 +6141,7 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
 
 
   //------------------------------------------------------------------
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   for (CI p = normallin[0].begin(); p != normallin[0].end(); ++p)
     (cnode.CoData().GetDerivN()[0])[p->first] -= (p->second);
@@ -6151,13 +6153,13 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with reference / copy of derivative maps!)
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
-  GEN::pairedvector<int, double>& derivnx = cnode.CoData().GetDerivN()[0];
-  GEN::pairedvector<int, double>& derivny = cnode.CoData().GetDerivN()[1];
-  GEN::pairedvector<int, double>& derivnz = cnode.CoData().GetDerivN()[2];
-  GEN::pairedvector<int, double> cderivnx = cnode.CoData().GetDerivN()[0];
-  GEN::pairedvector<int, double> cderivny = cnode.CoData().GetDerivN()[1];
-  GEN::pairedvector<int, double> cderivnz = cnode.CoData().GetDerivN()[2];
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+  CORE::GEN::pairedvector<int, double>& derivnx = cnode.CoData().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double>& derivny = cnode.CoData().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double>& derivnz = cnode.CoData().GetDerivN()[2];
+  CORE::GEN::pairedvector<int, double> cderivnx = cnode.CoData().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double> cderivny = cnode.CoData().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double> cderivnz = cnode.CoData().GetDerivN()[2];
   const double nxnx = cnode.MoData().n()[0] * cnode.MoData().n()[0];
   const double nxny = cnode.MoData().n()[0] * cnode.MoData().n()[1];
   const double nxnz = cnode.MoData().n()[0] * cnode.MoData().n()[2];
@@ -6232,8 +6234,8 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
     // use definitions for txi from BuildAveragedNormal()
     if (abs(cnode.MoData().n()[0]) > 1.0e-6 || abs(cnode.MoData().n()[1]) > 1.0e-6)
     {
-      GEN::pairedvector<int, double>& derivtxix = cnode.CoData().GetDerivTxi()[0];
-      GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxix = cnode.CoData().GetDerivTxi()[0];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -6241,8 +6243,8 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
     }
     else
     {
-      GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
-      GEN::pairedvector<int, double>& derivtxiz = cnode.CoData().GetDerivTxi()[2];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxiz = cnode.CoData().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -6253,13 +6255,13 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
-    typedef GEN::pairedvector<int, double>::const_iterator CI;
-    GEN::pairedvector<int, double>& derivtxix = cnode.CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int, double>& derivtxiz = cnode.CoData().GetDerivTxi()[2];
-    GEN::pairedvector<int, double> cderivtxix = cnode.CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double> cderivtxiy = cnode.CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int, double> cderivtxiz = cnode.CoData().GetDerivTxi()[2];
+    typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+    CORE::GEN::pairedvector<int, double>& derivtxix = cnode.CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = cnode.CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxiz = cnode.CoData().GetDerivTxi()[2];
+    CORE::GEN::pairedvector<int, double> cderivtxix = cnode.CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double> cderivtxiy = cnode.CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double> cderivtxiz = cnode.CoData().GetDerivTxi()[2];
     const double txtx = cnode.CoData().txi()[0] * cnode.CoData().txi()[0];
     const double txty = cnode.CoData().txi()[0] * cnode.CoData().txi()[1];
     const double txtz = cnode.CoData().txi()[0] * cnode.CoData().txi()[2];
@@ -6321,9 +6323,9 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    GEN::pairedvector<int, double>& derivtetax = cnode.CoData().GetDerivTeta()[0];
-    GEN::pairedvector<int, double>& derivtetay = cnode.CoData().GetDerivTeta()[1];
-    GEN::pairedvector<int, double>& derivtetaz = cnode.CoData().GetDerivTeta()[2];
+    CORE::GEN::pairedvector<int, double>& derivtetax = cnode.CoData().GetDerivTeta()[0];
+    CORE::GEN::pairedvector<int, double>& derivtetay = cnode.CoData().GetDerivTeta()[1];
+    CORE::GEN::pairedvector<int, double>& derivtetaz = cnode.CoData().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
@@ -6462,7 +6464,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
   std::map<int, std::vector<double>> teta_z_val;
 
   std::map<int, double>::iterator iter;
-  GEN::pairedvector<int, double>::iterator _iter;
+  CORE::GEN::pairedvector<int, double>::iterator _iter;
 
   // build info on row map
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
@@ -6487,9 +6489,9 @@ void CONTACT::CoInterface::ExportNodalNormals() const
     triad[gid] = loc;
 
     // fill nodal derivative vectors
-    std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-    std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-    std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
     for (_iter = derivn[0].begin(); _iter != derivn[0].end(); ++_iter)
     {
@@ -6592,9 +6594,9 @@ void CONTACT::CoInterface::ExportNodalNormals() const
     cnode->CoData().teta()[2] = (*loc)(2, 2);
 
     // extract derivative info
-    std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-    std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-    std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
     for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
@@ -8059,8 +8061,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
     if (activeinfuture == true)
     {
-      GEN::pairedvector<int, double>& dmap = cnode->MoData().GetD();
-      GEN::pairedvector<int, double>& dmapold = cnode->FriData().GetDOld();
+      CORE::GEN::pairedvector<int, double>& dmap = cnode->MoData().GetD();
+      CORE::GEN::pairedvector<int, double>& dmapold = cnode->FriData().GetDOld();
 
       std::set<int> snodes = cnode->FriData().GetSNodes();
 
@@ -8318,7 +8320,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
     std::map<int, std::vector<double>>& mynormals,
-    std::map<int, std::vector<GEN::pairedvector<int, double>>>& dmynormals,
+    std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>>& dmynormals,
     std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap)
 {
   SetState(MORTAR::state_new_displacement, *vec);
@@ -8394,7 +8396,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
         temp[kk] = mynode->MoData().n()[kk];
       }
       mynormals.insert(std::pair<int, std::vector<double>>(gid, temp));
-      dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int, double>>>(
+      dmynormals.insert(std::pair<int, std::vector<CORE::GEN::pairedvector<int, double>>>(
           gid, mynode->CoData().GetDerivN()));
 
       //**************************************************************
@@ -8549,8 +8551,8 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
           //**************************************************************
 
           // evalute the GP slave coordinate derivatives --> no entries
-          std::vector<GEN::pairedvector<int, double>> dsxi(2, 0);
-          std::vector<GEN::pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
+          std::vector<CORE::GEN::pairedvector<int, double>> dsxi(2, 0);
+          std::vector<CORE::GEN::pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
 
           (*interpolator)
               .DerivXiGP3D(*selement, *melements[nummaster], sxi, mxi, dsxi, dmxi, projalpha);

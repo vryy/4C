@@ -372,7 +372,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
       for (int iblock = 0; iblock < MeshtyingStrategyScaTra()->BlockMapsSlave().NumMaps(); ++iblock)
       {
         LINALG::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
-            ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
+            CORE::ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
             mastermatrixsparse, true);
       }
 
@@ -399,7 +399,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
       // and assemble into scatra-thermo matrix block
       LINALG::MatrixRowTransform()(*sparseslavematrix, -1.0,
-          ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
+          CORE::ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
           *sparsemastermatrix, false);
 
       // finalize master matrix
@@ -516,8 +516,8 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
 
       // transform linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
       LINALG::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(), *mastermatrix,
-          1.0, ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()), ksm,
-          true, false);
+          1.0, CORE::ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
+          ksm, true, false);
 
       // finalize temporary matrix
       ksm.Complete(*MeshtyingStrategyScaTra()->CouplingAdapter()->MasterDofMap(),
@@ -548,7 +548,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
       // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
       // and assemble into thermo-scatra matrix block
       LINALG::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(), *mastermatrix,
-          1.0, ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
+          1.0, CORE::ADAPTER::CouplingSlaveConverter(*MeshtyingStrategyScaTra()->CouplingAdapter()),
           *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(thermoscatrablockinterface), true, true);
 
       // finalize matrix

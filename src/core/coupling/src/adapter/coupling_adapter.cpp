@@ -21,7 +21,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::Coupling::Coupling()
+CORE::ADAPTER::Coupling::Coupling()
     : masterdofmap_(Teuchos::null),
       permmasterdofmap_(Teuchos::null),
       slavedofmap_(Teuchos::null),
@@ -39,7 +39,7 @@ ADAPTER::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
     Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall,
@@ -99,7 +99,7 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
     Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
     bool matchall, const int nds_master, const int nds_slave)
@@ -111,7 +111,7 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const std::vector<int>& masternodes,
     const std::vector<int>& slavenodes, const std::vector<int>& masterdofs,
     const std::vector<int>& slavedofs, const bool matchall, const double tolerance,
@@ -139,7 +139,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const std::vector<int>& masternodes,
     const std::vector<int>& slavenodes, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
@@ -150,10 +150,10 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretization& masterdis,
-    Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
-    Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname1,
-    const std::string& condname2, const int numdof, bool matchall)
+void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
+    const DRT::Discretization& masterdis, Teuchos::RCP<const Epetra_Map> mastercondmap,
+    const DRT::Discretization& slavedis, Teuchos::RCP<const Epetra_Map> slavecondmap,
+    const std::string& condname1, const std::string& condname2, const int numdof, bool matchall)
 {
   std::vector<int> masternodes1;
   DRT::UTILS::FindConditionedNodes(masterdis, condname1, masternodes1);
@@ -221,7 +221,7 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(Teuchos::RCP<const Epetra_Map> slavedofmap,
+void CORE::ADAPTER::Coupling::SetupCoupling(Teuchos::RCP<const Epetra_Map> slavedofmap,
     Teuchos::RCP<const Epetra_Map> permslavedofmap, Teuchos::RCP<const Epetra_Map> masterdofmap,
     Teuchos::RCP<const Epetra_Map> permmasterdofmap)
 {
@@ -237,7 +237,7 @@ void ADAPTER::Coupling::SetupCoupling(Teuchos::RCP<const Epetra_Map> slavedofmap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const Epetra_Map& masternodes,
     const Epetra_Map& slavenodes, const int numdof, const bool matchall, const double tolerance,
     const int nds_master, const int nds_slave)
@@ -271,7 +271,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(const DRT::DiscretizationInterface& masterdis,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::DiscretizationInterface& masterdis,
     const DRT::DiscretizationInterface& slavedis, const Epetra_Map& masternodemap,
     const Epetra_Map& slavenodemap, const Epetra_Map& permslavenodemap, const int numdof)
 {
@@ -294,7 +294,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::DiscretizationInterface& master
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(
+void CORE::ADAPTER::Coupling::SetupCoupling(
     const DRT::Discretization& masterdis, const DRT::Discretization& slavedis)
 {
   // safety check
@@ -315,7 +315,7 @@ void ADAPTER::Coupling::SetupCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
     const std::vector<std::vector<int>>& slavenodes_vec, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
@@ -355,7 +355,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, std::vector<int>& masternodes,
     std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
     const double tolerance)
@@ -398,7 +398,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::FinishCoupling(const DRT::DiscretizationInterface& masterdis,
+void CORE::ADAPTER::Coupling::FinishCoupling(const DRT::DiscretizationInterface& masterdis,
     const DRT::DiscretizationInterface& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap, Teuchos::RCP<Epetra_Map> permslavenodemap,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, const int nds_master,
@@ -438,7 +438,7 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::DiscretizationInterface& maste
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& masterdis,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& masterdis,
     const DRT::DiscretizationInterface& slavedis,
     const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
@@ -454,7 +454,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& masterd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> ADAPTER::Coupling::BuildDofVectorFromNumDof(const int numdof)
+std::vector<int> CORE::ADAPTER::Coupling::BuildDofVectorFromNumDof(const int numdof)
 {
   std::vector<int> dofvec;
   if (numdof > 0)
@@ -471,7 +471,7 @@ std::vector<int> ADAPTER::Coupling::BuildDofVectorFromNumDof(const int numdof)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
     Teuchos::RCP<const Epetra_Map> nodemap, Teuchos::RCP<const Epetra_Map> permnodemap,
     Teuchos::RCP<const Epetra_Map>& dofmap, Teuchos::RCP<const Epetra_Map>& permdofmap,
     Teuchos::RCP<Epetra_Export>& exporter, const std::vector<int>& coupled_dofs,
@@ -571,7 +571,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*slavedofmap_));
@@ -584,7 +584,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofmap_));
@@ -597,7 +597,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_FEVector> CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_FEVector> mv) const
 {
   Teuchos::RCP<Epetra_FEVector> sv =
@@ -611,7 +611,7 @@ Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_FEVector> CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_FEVector> sv) const
 {
   Teuchos::RCP<Epetra_FEVector> mv =
@@ -625,7 +625,7 @@ Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   Teuchos::RCP<Epetra_MultiVector> sv =
@@ -639,7 +639,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   Teuchos::RCP<Epetra_MultiVector> mv =
@@ -653,7 +653,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::MasterToSlave(
+void CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
@@ -673,7 +673,7 @@ void ADAPTER::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_IntVector& sv) const
+void CORE::ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_IntVector& sv) const
 {
   Epetra_IntVector perm(*permslavedofmap_);
   std::copy(mv.Values(), mv.Values() + (mv.MyLength()), perm.Values());
@@ -685,7 +685,7 @@ void ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_IntVect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SlaveToMaster(
+void CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
@@ -712,7 +712,7 @@ void ADAPTER::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_IntVector& mv) const
+void CORE::ADAPTER::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_IntVector& mv) const
 {
   Epetra_IntVector perm(*permmasterdofmap_);
   std::copy(sv.Values(), sv.Values() + (sv.MyLength()), perm.Values());
@@ -724,7 +724,7 @@ void ADAPTER::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_IntVect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int, int>& rowmap) const
+void CORE::ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int, int>& rowmap) const
 {
   for (int i = 0; i < masterdofmap_->NumMyElements(); ++i)
   {
@@ -735,7 +735,7 @@ void ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int, int>& rowmap) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int, int>& rowmap) const
+void CORE::ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int, int>& rowmap) const
 {
   for (int i = 0; i < slavedofmap_->NumMyElements(); ++i)
   {
@@ -745,7 +745,7 @@ void ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int, int>& rowmap) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave)
+Teuchos::RCP<Epetra_Map> CORE::ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
@@ -766,7 +766,7 @@ Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master)
+Teuchos::RCP<Epetra_Map> CORE::ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
@@ -788,7 +788,7 @@ Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(
+Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMaster(
     const LINALG::SparseMatrix& sm) const
 {
   Teuchos::RCP<Epetra_CrsMatrix> permsm =
@@ -812,7 +812,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(
+Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
     const LINALG::SparseMatrix& sm) const
 {
 #ifdef DEBUG
@@ -842,7 +842,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
+void CORE::ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
     const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
 {
   // we always use the masterdofmap for the domain
@@ -898,11 +898,11 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& ADAPTER::Coupling::MaDofMapPtr() { return masterdofmap_; }
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::MaDofMapPtr() { return masterdofmap_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& ADAPTER::Coupling::MaDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::MaDofMap() const
 {
   if (masterdofmap_.is_null()) dserror("The masterdofmap_ has not been initialized correctly!");
   return *masterdofmap_;
@@ -910,14 +910,14 @@ const Epetra_Map& ADAPTER::Coupling::MaDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& ADAPTER::Coupling::PermutedMaDofMapPtr()
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedMaDofMapPtr()
 {
   return permmasterdofmap_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& ADAPTER::Coupling::PermutedMaDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::PermutedMaDofMap() const
 {
   if (permmasterdofmap_.is_null())
     dserror("The permmasterdofmap_ has not been initialized correctly!");
@@ -926,11 +926,11 @@ const Epetra_Map& ADAPTER::Coupling::PermutedMaDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& ADAPTER::Coupling::SlDofMapPtr() { return slavedofmap_; }
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::SlDofMapPtr() { return slavedofmap_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& ADAPTER::Coupling::SlDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::SlDofMap() const
 {
   if (slavedofmap_.is_null()) dserror("The slavedofmap_ has not been initialized correctly!");
   return *slavedofmap_;
@@ -938,14 +938,14 @@ const Epetra_Map& ADAPTER::Coupling::SlDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& ADAPTER::Coupling::PermutedSlDofMapPtr()
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedSlDofMapPtr()
 {
   return permslavedofmap_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& ADAPTER::Coupling::PermutedSlDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::PermutedSlDofMap() const
 {
   if (permslavedofmap_.is_null())
     dserror("The permslavedofmap_ has not been initialized correctly!");
@@ -954,11 +954,11 @@ const Epetra_Map& ADAPTER::Coupling::PermutedSlDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Export>& ADAPTER::Coupling::MaExporterPtr() { return masterexport_; }
+Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::MaExporterPtr() { return masterexport_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Export& ADAPTER::Coupling::MaExporter() const
+const Epetra_Export& CORE::ADAPTER::Coupling::MaExporter() const
 {
   if (masterexport_.is_null()) dserror("The masterexport_ has not been initialized correctly!");
   return *masterexport_;
@@ -966,11 +966,11 @@ const Epetra_Export& ADAPTER::Coupling::MaExporter() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Export>& ADAPTER::Coupling::SlExporterPtr() { return slaveexport_; }
+Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::SlExporterPtr() { return slaveexport_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Export& ADAPTER::Coupling::SlExporter() const
+const Epetra_Export& CORE::ADAPTER::Coupling::SlExporter() const
 {
   if (slaveexport_.is_null()) dserror("The slaveexport_ has not been initialized correctly!");
   return *slaveexport_;

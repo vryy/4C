@@ -37,7 +37,7 @@ namespace DRT
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   /*! \class Coupling
    *  \brief Management of coupling between two (matching) sets of nodes from
@@ -200,15 +200,16 @@ namespace ADAPTER
 
     /*! \brief Setup coupling of given nodes and node maps
      *
-     *  Setup the whole thing. Build appropriate dof maps (for given, matching nodes on both sides).
+     *  Setup the whole thing. Build appropriate dof maps (for given, matching nodes on both
+     * sides).
      *
      *  \note All master and slave nodes are required to match.
-     *  The permuted slave node map is given as input, thus no search tree to find matching nodes is
-     * used. Only the corresponding dof maps are build here (+ some checks). This setup method can
-     * be used, if one discretization was cloned from the others discretization, and thus matching
-     * node GIDs are assured (for Fluid-ALE or poro, for instance). In this case, this setup gives
-     * the same results as the standard version above, but without the need to perform the matching
-     * node search.
+     *  The permuted slave node map is given as input, thus no search tree to find matching nodes
+     * is used. Only the corresponding dof maps are build here (+ some checks). This setup method
+     * can be used, if one discretization was cloned from the others discretization, and thus
+     * matching node GIDs are assured (for Fluid-ALE or poro, for instance). In this case, this
+     * setup gives the same results as the standard version above, but without the need to perform
+     * the matching node search.
      *
      *  \param masterdis         (i) master side mesh
      *  \param slavedis          (i) slave side mesh
@@ -228,8 +229,8 @@ namespace ADAPTER
      *  \note All master and slave dofs are required to match.
      *  This setup method can be used, if one discretization was cloned from the other
      * discretization, and thus matching dof GIDs are assured. All dofs of all nodes are coupled
-     * this way. In this case, this setup gives the same results as the standard version above, but
-     *  neither a matching node search nor building dof maps is necessary.
+     * this way. In this case, this setup gives the same results as the standard version above,
+     * but neither a matching node search nor building dof maps is necessary.
      *
      *  \param masterdis         (i) master side mesh
      *  \param slavedis          (i) slave side mesh
@@ -264,8 +265,8 @@ namespace ADAPTER
         const bool matchall = true, const double tolerance = 1.0e-3, const int nds_master = 0,
         const int nds_slave = 0);
 
-    /*! Setup coupling based on dof maps. This can be used if no search is required anymore and all
-     * dof maps are known already
+    /*! Setup coupling based on dof maps. This can be used if no search is required anymore and
+     * all dof maps are known already
      *
      * \param slavedofmap       (i) slave side dof map
      * \param permslavedofmap   (i) permuted dofs on slave side to match dofs on master side
@@ -565,6 +566,6 @@ namespace ADAPTER
 
     //@}
   };
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #endif  // COUPLING_ADAPTER_H

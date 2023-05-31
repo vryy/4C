@@ -332,10 +332,10 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
     const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
@@ -350,7 +350,7 @@ GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
 
-  GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.

@@ -14,6 +14,8 @@ with condensed structure interface displacements
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 
 // forward declarations
 namespace ADAPTER
@@ -278,10 +280,10 @@ namespace FSI
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     /// communicator
     const Epetra_Comm& comm_;

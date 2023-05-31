@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
   // Compute third base vector
   LINALG::Matrix<3, 3> S_vector1;
-  LARGEROTATIONS::computespin(S_vector1, vector1);
+  CORE::LARGEROTATIONS::computespin(S_vector1, vector1);
   vector3.Multiply(S_vector1, vector2);
 
   // Compute rotation matrix
@@ -71,15 +71,15 @@ int main(int argc, char** argv)
 
   // Compute rotation angle via quaterion
   LINALG::Matrix<4, 1> quaterion;
-  LARGEROTATIONS::triadtoquaternion(rotmatrix, quaterion);
+  CORE::LARGEROTATIONS::triadtoquaternion(rotmatrix, quaterion);
   LINALG::Matrix<3, 1> rotangle;
-  LARGEROTATIONS::quaterniontoangle(quaterion, rotangle);
+  CORE::LARGEROTATIONS::quaterniontoangle(quaterion, rotangle);
 
   std::cout << std::endl << std::setprecision(10) << "Rotation vector: " << rotangle << std::endl;
 
   //  //Check via inverse mapping
   //  LINALG::Matrix<3,3> rotmatrix_test;
-  //  LARGEROTATIONS::angletotriad(rotangle, rotmatrix_test);
+  //  CORE::LARGEROTATIONS::angletotriad(rotangle, rotmatrix_test);
   //
   //  std::cout << endl << std::setprecision(10)<<  "rotmatrix_test: " << rotmatrix_test <<  endl;
 

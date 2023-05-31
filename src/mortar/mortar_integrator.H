@@ -109,7 +109,7 @@ namespace MORTAR
 
     /// Singleton access method
     static MortarIntegratorCalc<distypeS, distypeM>* Instance(
-        ::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
+        CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
     static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;

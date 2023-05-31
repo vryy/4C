@@ -360,7 +360,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     abs_tangent = tangent.Norm2();
 
     // computespin = S ( tangent ) using the spinmatrix in namespace largerotations
-    LARGEROTATIONS::computespin(spinmatrix, tangent);
+    CORE::LARGEROTATIONS::computespin(spinmatrix, tangent);
 
     // matrixoperation crossproduct = t x m
     for (int i = 0; i < 3; i++)
@@ -389,7 +389,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     spinmatrix.Clear();
 
     // spinmatrix = S ( m )
-    LARGEROTATIONS::computespin(spinmatrix, moment);
+    CORE::LARGEROTATIONS::computespin(spinmatrix, moment);
 
     // add R_external to stiffness matrix
     // all parts have been evaluated at the boundaries which helps simplifying the matrices
@@ -1824,7 +1824,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       LINALG::Matrix<3, 1> dL(true);
       LINALG::Matrix<3, 3> S_r(true);
-      LARGEROTATIONS::computespin(S_r, r);
+      CORE::LARGEROTATIONS::computespin(S_r, r);
       dL.Multiply(S_r, r_t);
       dL.Scale(mass_inertia_translational);
       for (int i = 0; i < 3; i++)

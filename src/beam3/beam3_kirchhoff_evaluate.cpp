@@ -681,7 +681,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     // Determine storage position for the node node
-    ind = LARGEROTATIONS::NumberingTrafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -932,7 +932,7 @@ void DRT::ELEMENTS::Beam3k::CalculateStiffmatContributionsAnalyticWK(
 
 
   LINALG::Matrix<3, 3, double> spinmatrix_of_moment_resultant(true);
-  LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_resultant, moment_resultant);
+  CORE::LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_resultant, moment_resultant);
 
   // push forward constitutive matrix according to Jelenic 1999, paragraph following to (2.22) on
   // page 148
@@ -960,7 +960,7 @@ void DRT::ELEMENTS::Beam3k::CalculateStiffmatContributionsAnalyticWK(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1108,7 +1108,7 @@ void DRT::ELEMENTS::Beam3k::PreComputeTermsAtCPForStiffmatContributionsAnalyticW
   LINALG::Matrix<ndim, 1, double> g_1_bar(true);
 
   LINALG::Matrix<3, 3, double> triad_ref_conv_cp(true);
-  LARGEROTATIONS::quaterniontotriad(Qref_conv, triad_ref_conv_cp);
+  CORE::LARGEROTATIONS::quaterniontotriad(Qref_conv, triad_ref_conv_cp);
 
   g_1_bar.Clear();
   for (unsigned int idim = 0; idim < ndim; ++idim) g_1_bar(idim) = triad_ref_conv_cp(idim, 0);
@@ -1253,7 +1253,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
 
     // Determine storage position for the node node
-    ind = LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1287,8 +1287,9 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     {
       tangentref(i) = triad_mat_cp[node](i, 0);
     }
-    LARGEROTATIONS::CalculateSRTriads<FAD>(tangentref, triad_mat_cp[REFERENCE_NODE], Lambdabarref);
-    LARGEROTATIONS::triadtoangleleft(phivec, Lambdabarref, triad_mat_cp[node]);
+    CORE::LARGEROTATIONS::CalculateSRTriads<FAD>(
+        tangentref, triad_mat_cp[REFERENCE_NODE], Lambdabarref);
+    CORE::LARGEROTATIONS::triadtoangleleft(phivec, Lambdabarref, triad_mat_cp[node]);
     phi_cp[node] = 0.0;
     for (unsigned int i = 0; i < 3; i++)
     {
@@ -1414,12 +1415,12 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     v_thetaperp_s.Clear();
     auxmatrix1.Clear();
     auxmatrix2.Clear();
-    LARGEROTATIONS::computespin(auxmatrix1, ttilde);
+    CORE::LARGEROTATIONS::computespin(auxmatrix1, ttilde);
     auxmatrix2.MultiplyTN(N_ss, auxmatrix1);
     v_thetaperp_s.Update(-1.0, auxmatrix2, 0.0);
     auxmatrix1.Clear();
     auxmatrix2.Clear();
-    LARGEROTATIONS::computespin(auxmatrix1, ttilde_s);
+    CORE::LARGEROTATIONS::computespin(auxmatrix1, ttilde_s);
     auxmatrix2.MultiplyTN(N_s, auxmatrix1);
     v_thetaperp_s.Update(-1.0, auxmatrix2, 1.0);
 
@@ -1443,7 +1444,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     // II b) Compute v_thetaperp contribution
     auxmatrix1.Clear();
     auxmatrix2.Clear();
-    LARGEROTATIONS::computespin(auxmatrix1, ttilde);
+    CORE::LARGEROTATIONS::computespin(auxmatrix1, ttilde);
     auxmatrix2.MultiplyTN(N_s, auxmatrix1);
     v_theta_gp[numgp].Update(-1.0, auxmatrix2, 1.0);
 
@@ -1708,15 +1709,15 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
     LINALG::Matrix<4, 1, T> Qconv(true);
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (Qconvmass_[numgp])(i);
 
-    LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_old);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_old);
 
     // compute quaternion of relative rotation from converged to current state
     LINALG::Matrix<3, 3, T> deltatriad(true);
     deltatriad.MultiplyNT(triad_mat_gp[numgp], triad_mat_old);
     LINALG::Matrix<4, 1, T> deltaQ(true);
-    LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
+    CORE::LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
     LINALG::Matrix<3, 1, T> deltatheta(true);
-    LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
+    CORE::LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
 
     // compute material counterparts of spatial vectors
     LINALG::Matrix<3, 1, T> deltaTHETA(true);
@@ -1794,7 +1795,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     // spin matrix of the material angular velocity, i.e. S(W)
     LINALG::Matrix<3, 3, T> SWnewmass(true);
-    LARGEROTATIONS::computespin(SWnewmass, Wnewmass);
+    CORE::LARGEROTATIONS::computespin(SWnewmass, Wnewmass);
 
     LINALG::Matrix<3, 1, T> Jp_Wnewmass(true);
     LINALG::Matrix<3, 1, T> auxvector1(true);
@@ -1867,7 +1868,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     // compute quaterion of current material triad at gp
     LINALG::Matrix<4, 1, T> Qnewmass(true);
-    LARGEROTATIONS::triadtoquaternion(triad_mat_gp[numgp], Qnewmass);
+    CORE::LARGEROTATIONS::triadtoquaternion(triad_mat_gp[numgp], Qnewmass);
 
     for (unsigned int i = 0; i < 4; ++i)
     {
@@ -1944,7 +1945,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
 
 
   LINALG::Matrix<3, 3, double> spinmatrix_of_moment_rho(true);
-  LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_rho, moment_rho);
+  CORE::LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_rho, moment_rho);
 
 
   // linearization of stress resultant (moment)
@@ -1964,7 +1965,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -2338,7 +2339,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateResidualFromPointNeumannMoment(
   LINALG::Matrix<3, 1, T> auxvector(true);
   LINALG::Matrix<1, 1, T> auxscalar(true);
 
-  LARGEROTATIONS::computespin(Srs, r_s);
+  CORE::LARGEROTATIONS::computespin(Srs, r_s);
   auxvector.Multiply(Srs, moment_ext);
   auxvector.Scale(-1.0 * std::pow(abs_r_s, -2.0));
 
@@ -2405,7 +2406,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateStiffMatrixAnalyticFromPointNeumannMoment(
   g_1.Update(std::pow(abs_r_s, -1.0), r_s);
 
   LINALG::Matrix<3, 3, double> spinmatrix_of_moment_ext(true);
-  LARGEROTATIONS::computespin(spinmatrix_of_moment_ext, moment_ext);
+  CORE::LARGEROTATIONS::computespin(spinmatrix_of_moment_ext, moment_ext);
 
   LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
       double>
@@ -2528,7 +2529,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
   for (unsigned int node = 0; node < 2; ++node)
   {
     Gref[node].Clear();
-    LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
+    CORE::LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
   }
 
   // gaussian points
@@ -3157,7 +3158,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     const double xi_cp = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
 
     // Determine storage position for the node node
-    const unsigned int ind = LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+    const unsigned int ind =
+        CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     // get value of interpolating function of theta (Lagrange polynomials) at xi
     L_i.Clear();
@@ -3212,7 +3214,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(Qnewmass, theta);
 
-    LARGEROTATIONS::quaterniontotriad(Qnewmass, triad_mat);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qnewmass, triad_mat);
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
     for (unsigned int i = 0; i < 4; ++i) (Qnewmass_[gp])(i) = FADUTILS::CastToDouble(Qnewmass(i));
@@ -3221,7 +3223,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (Qconvmass_[gp])(i);
 
     LINALG::Matrix<3, 3, T> triad_mat_conv(true);
-    LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
 
 
     // compute quaternion of relative rotation from converged to current state
@@ -3229,10 +3231,10 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     deltatriad.MultiplyNT(triad_mat, triad_mat_conv);
 
     LINALG::Matrix<4, 1, T> deltaQ(true);
-    LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
+    CORE::LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
 
     LINALG::Matrix<3, 1, T> deltatheta(true);
-    LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
+    CORE::LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
 
 
     // angular velocity at this Gauss point according to backward Euler scheme
@@ -3321,7 +3323,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRotationalD
 
 
   LINALG::Matrix<3, 3, double> spinmatrix_of_moment_visc(true);
-  LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_visc, moment_viscous);
+  CORE::LARGEROTATIONS::computespin<double>(spinmatrix_of_moment_visc, moment_viscous);
 
 
   // linearization of moment_visc
@@ -3341,7 +3343,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRotationalD
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -3443,7 +3445,7 @@ void DRT::ELEMENTS::Beam3k::
   LINALG::Matrix<ndim, 1, double> g_1_bar(true);
 
   LINALG::Matrix<3, 3, double> triad_ref_conv_cp(true);
-  LARGEROTATIONS::quaterniontotriad(Qref_conv, triad_ref_conv_cp);
+  CORE::LARGEROTATIONS::quaterniontotriad(Qref_conv, triad_ref_conv_cp);
 
   g_1_bar.Clear();
   for (unsigned int idim = 0; idim < ndim; ++idim) g_1_bar(idim) = triad_ref_conv_cp(idim, 0);
@@ -3626,7 +3628,7 @@ void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo(
 
     t = FADUTILS::Norm<T>(g_1);
     g_1.Scale(1.0 / t);
-    LARGEROTATIONS::computespin(auxmatrix, g_1);
+    CORE::LARGEROTATIONS::computespin(auxmatrix, g_1);
     auxmatrix.Scale(-1.0 * t);
     trafomat.Clear();
 
@@ -3686,7 +3688,7 @@ void DRT::ELEMENTS::Beam3k::TransformStiffMatrixMultipl(Epetra_SerialDenseMatrix
   for (unsigned int node = 0; node < 2; ++node)
   {
     Tmat.Clear();
-    Tmat = LARGEROTATIONS::Tmatrix(theta[node]);
+    Tmat = CORE::LARGEROTATIONS::Tmatrix(theta[node]);
 
     tempmat.Clear();
     for (unsigned int i = 0; i < 2 * 6 + BEAM3K_COLLOCATION_POINTS; ++i)

@@ -27,13 +27,13 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingMortar::CouplingMortar() : issetup_(false) { return; }
+CORE::ADAPTER::CouplingMortar::CouplingMortar() : issetup_(false) { return; }
 
 
 /*----------------------------------------------------------------------*
  | setup routine for mortar framework                        fang 01/16 |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Setup(
+void CORE::ADAPTER::CouplingMortar::Setup(
     const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
     const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
     const Teuchos::RCP<DRT::Discretization>& aledis,     ///< ALE discretization
@@ -189,7 +189,7 @@ void ADAPTER::CouplingMortar::Setup(
 /*----------------------------------------------------------------------*
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
+void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
     const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm)
 {
   // safety check
@@ -243,7 +243,7 @@ void ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
 /*----------------------------------------------------------------------*
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::SetupInterface(
+void CORE::ADAPTER::CouplingMortar::SetupInterface(
     const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
     const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
     const std::vector<int>& coupleddof,             ///< vector defining coupled degrees of freedom
@@ -507,7 +507,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
+void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
     Teuchos::RCP<DRT::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
     Teuchos::RCP<const Epetra_Map> slavedofrowmap, Teuchos::RCP<Epetra_Vector>& idisp,
     const Epetra_Comm& comm, bool slavewithale)
@@ -1002,7 +1002,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> s
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::CreateP()
+void CORE::ADAPTER::CouplingMortar::CreateP()
 {
   // safety check
   CheckSetup();
@@ -1058,7 +1058,7 @@ void ADAPTER::CouplingMortar::CreateP()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
+void CORE::ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 {
   // safety check
   CheckSetup();
@@ -1074,7 +1074,7 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Evaluate(
+void CORE::ADAPTER::CouplingMortar::Evaluate(
     Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl)
 {
   // safety checks
@@ -1119,7 +1119,7 @@ void ADAPTER::CouplingMortar::Evaluate(
 /*----------------------------------------------------------------------*
  *  Create integration cells for mortar interface           farah 01/16 |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::EvaluateGeometry(
+void CORE::ADAPTER::CouplingMortar::EvaluateGeometry(
     std::vector<Teuchos::RCP<MORTAR::IntCell>>& intcells  //!< vector of mortar integration cells
 )
 {
@@ -1135,7 +1135,7 @@ void ADAPTER::CouplingMortar::EvaluateGeometry(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Evaluate()
+void CORE::ADAPTER::CouplingMortar::Evaluate()
 {
   // safety check
   CheckSetup();
@@ -1169,7 +1169,7 @@ void ADAPTER::CouplingMortar::Evaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MatrixRowColTransform()
+void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
 {
   // safety check
   CheckSetup();
@@ -1201,9 +1201,9 @@ void ADAPTER::CouplingMortar::MatrixRowColTransform()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
-    Teuchos::RCP<DRT::Discretization> aledis, Teuchos::RCP<Epetra_Vector>& idisp,
-    const Epetra_Comm& comm, bool slavewithale)
+void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
+    Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Discretization> aledis,
+    Teuchos::RCP<Epetra_Vector>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
   // safety check
   CheckSetup();
@@ -1269,7 +1269,7 @@ void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(Teuchos::RCP<DRT::Discr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<Epetra_Vector> mv) const
 {
   // safety check
@@ -1291,7 +1291,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<Epetra_MultiVector> mv) const
 {
   // safety check
@@ -1313,7 +1313,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   // safety check
@@ -1335,7 +1335,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   // safety check
@@ -1357,7 +1357,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MasterToSlave(
+void CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
@@ -1386,7 +1386,7 @@ void ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::SlaveToMaster(
+void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
@@ -1415,7 +1415,7 @@ void ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   // safety check
@@ -1432,7 +1432,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<Epetra_Vector> sv) const
 {
   // safety check
@@ -1449,7 +1449,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<Epetra_MultiVector> sv) const
 {
   // safety check
@@ -1467,7 +1467,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   // safety check
@@ -1485,7 +1485,7 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MortarCondensation(
+void CORE::ADAPTER::CouplingMortar::MortarCondensation(
     Teuchos::RCP<LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
 {
   MORTAR::UTILS::MortarMatrixCondensation(k, P_, P_);
@@ -1497,7 +1497,7 @@ void ADAPTER::CouplingMortar::MortarCondensation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MortarRecover(
+void CORE::ADAPTER::CouplingMortar::MortarRecover(
     Teuchos::RCP<LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
 {
   MORTAR::UTILS::MortarRecover(inc, P_);

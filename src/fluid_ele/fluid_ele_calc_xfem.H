@@ -118,7 +118,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// evaluate the XFEM cut element
       virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,

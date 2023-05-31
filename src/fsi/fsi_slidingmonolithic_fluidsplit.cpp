@@ -158,14 +158,14 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
 
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
-  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
   fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
 
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
-  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   aigtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
   fmiitransform_ = Teuchos::rcp(new LINALG::MatrixColTransform);
@@ -243,7 +243,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystem()
     const int ndim = DRT::Problem::Instance()->NDim();
 
     // get coupling objects
-    ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+    CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -269,7 +269,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystem()
           AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
     }
 
-    ADAPTER::Coupling& coupfa = FluidAleCoupling();
+    CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
     // the fluid-ale coupling always matches
     const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -743,7 +743,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatr
   Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
   if (stcalgo != INPAR::STR::stc_none) stcmat = StructureField()->GetSTCMat();
 
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get single field block matrices
   Teuchos::RCP<LINALG::SparseMatrix> s =
@@ -847,7 +847,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatr
   Teuchos::RCP<LINALG::SparseMatrix> laig =
       Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(), 81, false));
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-      ADAPTER::CouplingSlaveConverter(InterfaceFluidAleCoupling()), *laig);
+      CORE::ADAPTER::CouplingSlaveConverter(InterfaceFluidAleCoupling()), *laig);
 
   laig->Complete(f->Matrix(1, 1).DomainMap(), aii.RangeMap());
   Teuchos::RCP<LINALG::SparseMatrix> llaig =
@@ -909,12 +909,12 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatr
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
 
     Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
         Teuchos::rcp(new LINALG::SparseMatrix(fmgi.RowMap(), 81, false));
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.0,
-        ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false);
 
     // ---------Addressing contribution to block (2,4)
     lfmgi->Complete(aii.DomainMap(), mortarp->RangeMap());

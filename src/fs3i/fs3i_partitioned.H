@@ -19,6 +19,7 @@
 
 #include "fs3i.H"
 #include "inpar_fs3i.H"
+#include "coupling_adapter_volmortar.H"
 #include <Teuchos_ParameterList.hpp>
 
 
@@ -89,7 +90,7 @@ namespace FS3I
     void RedistributeInterface() { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
+    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
         Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> structscatradis);
 
@@ -169,7 +170,7 @@ namespace FS3I
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;

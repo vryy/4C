@@ -1763,7 +1763,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    typedef GEN::pairedvector<int, double>::const_iterator _CI;
+    typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
     if ((int)(cnode->MoData().GetD().size()) == 0) continue;
 
@@ -1827,7 +1827,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
-      typedef GEN::pairedvector<int, double>::const_iterator _CI;
+      typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
       for (_CI it = kcnode->MoData().GetD().begin(); it != kcnode->MoData().GetD().end(); ++it)
         newD[it->first] = it->second;
@@ -1934,7 +1934,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
-      typedef GEN::pairedvector<int, double>::const_iterator _CI;
+      typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
       for (_CI it = kcnode->MoData().GetD().begin(); it != kcnode->MoData().GetD().end(); ++it)
         newD[it->first] = it->second;

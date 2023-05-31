@@ -16,7 +16,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams()
+CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams()
     : beam_radius_extension_factor_(-1), sphere_radius_extension_factor_(-1)
 {
   Teuchos::ParameterList const& params_list = DRT::Problem::Instance()->GeometricSearchParams();

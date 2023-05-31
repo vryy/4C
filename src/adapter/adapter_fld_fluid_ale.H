@@ -29,6 +29,7 @@ namespace ADAPTER
 
 #include "adapter_fld_moving_boundary.H"
 #include "adapter_fld_base_algorithm.H"
+#include "coupling_adapter.H"
 
 
 namespace FSI
@@ -124,16 +125,16 @@ namespace ADAPTER
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<CouplingBase> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingBase> coupfa_;
 
     /// coupling of fluid and ale (interface or volume...)
-    Teuchos::RCP<CouplingBase> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingBase> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of fluid and ale for the ale update condition
-    Teuchos::RCP<Coupling> aucoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> aucoupfa_;
 
    private:
     /// problem-specific Fluid-wrapper

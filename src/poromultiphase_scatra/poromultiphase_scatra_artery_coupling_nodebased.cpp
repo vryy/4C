@@ -85,7 +85,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   CheckDbcOnCoupledDofs(arterydis_, artex_->Map(1));
 
   // setup coupling adapter
-  artcontfieldcoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  artcontfieldcoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   artcontfieldcoup_->SetupConditionCoupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
@@ -220,14 +220,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
   sysmat->Assign(1, 1, LINALG::View, blockartery->Matrix(0, 0));
 
   (*sibtransform_)(blockartery->FullRowMap(), blockartery->FullColMap(), blockartery->Matrix(0, 1),
-      1.0, ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->Matrix(1, 0));
+      1.0, CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->Matrix(1, 0));
 
   (*sbitransform_)(blockartery->Matrix(1, 0), 1.0,
-      ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->Matrix(0, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->Matrix(0, 1));
 
   (*sbbtransform_)(blockartery->Matrix(1, 1), 1.0,
-      ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_),
-      ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), *sysmat_cont, true, true);
+      CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_),
+      CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), *sysmat_cont, true, true);
 
   // continuous field
   sysmat->Assign(0, 0, LINALG::View, *sysmat_cont);

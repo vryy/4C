@@ -231,7 +231,7 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   scatradis_->FillComplete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   SetIsInit(true);
 }
@@ -349,7 +349,7 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   scatradis->FillComplete(true, false, false);
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  volcoupl_structurescatra_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+  volcoupl_structurescatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
   volcoupl_structurescatra_->Init(structdis, scatradis);

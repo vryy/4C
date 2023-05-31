@@ -17,14 +17,19 @@
 #include <set>
 #include <memory>
 #include "io_runtime_csv_writer.H"
+#include "coupling_adapter.H"
 
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
   class CouplingSlaveConverter;
   class CouplingMasterConverter;
+}  // namespace CORE::ADAPTER
+
+namespace ADAPTER
+{
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}
 
 namespace DRT
 {
@@ -84,7 +89,7 @@ namespace SSI
     DRT::Condition* ConditionManifold() const { return condition_manifold_; }
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
+    Teuchos::RCP<CORE::ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
 
     //! inverse of thickness of manifold
     double InvThickness() const { return inv_thickness_; }
@@ -93,7 +98,7 @@ namespace SSI
     int ManifoldConditionID() const { return manifold_conditionID_; }
 
     //! from master to slave side
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> MasterConverter() const
+    Teuchos::RCP<CORE::ADAPTER::CouplingMasterConverter> MasterConverter() const
     {
       return master_converter_;
     }
@@ -118,7 +123,7 @@ namespace SSI
     DRT::Condition* condition_manifold_;
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupling_adapter_;
 
     //! inverse of thickness of manifold
     const double inv_thickness_;
@@ -133,7 +138,7 @@ namespace SSI
     Teuchos::RCP<LINALG::MapExtractor> manifold_map_extractor_;
 
     //! Master converter for scatra - manifold coupling
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> master_converter_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMasterConverter> master_converter_;
 
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> scatra_map_extractor_;
@@ -304,10 +309,10 @@ namespace SSI
   //! data types for mesh tying handlers for sparse case: coupling adapter and MultiMapExtractor
   //! splitting dofs into interior, master, and slave
   using meshtying_handler_type =
-      std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
+      std::pair<Teuchos::RCP<CORE::ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
   //! data types for mesh tying handlers for block case: standard mesh tying handler and
   //! MultiMapExtractor splitting slave dofs into blocks
-  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<ADAPTER::Coupling>>,
+  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<CORE::ADAPTER::Coupling>>,
       std::vector<Teuchos::RCP<const Epetra_Map>>>;
 
   //! Base class to handle mesh tying between manifold fields

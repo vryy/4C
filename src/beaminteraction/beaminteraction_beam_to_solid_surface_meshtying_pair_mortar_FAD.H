@@ -32,11 +32,11 @@ namespace INPAR
     enum class SurfaceNormals;
   }
 }  // namespace INPAR
-namespace LARGEROTATIONS
+namespace CORE::LARGEROTATIONS
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
-}  // namespace LARGEROTATIONS
+}  // namespace CORE::LARGEROTATIONS
 
 
 namespace BEAMINTERACTION
