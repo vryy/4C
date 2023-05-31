@@ -21,9 +21,6 @@
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_FECrsGraph.h>
-#include <Ifpack_Graph_Epetra_CrsGraph.h>
-#include <Ifpack_RCMReordering.h>
-#include <Ifpack_AMDReordering.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
