@@ -17,7 +17,6 @@ vectors and matrices.
 #include "linalg_multiply.H"
 #include "lib_globalproblem.H"
 #include "discretization_fem_general_largerotations.H"
-#include "beaminteraction_calc_utils.H"
 
 
 
@@ -83,7 +82,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   // (i.e. point, line, surface, volume).
 
   // LIMITATIONS:
-  // - So far locsys only works for 2D and 3D solids and for beam elements of Kirchhoff type
+  // - So far locsys only works for 2D and 3D solids
   // - Due to this limitation it's necessary to distinguish between this different element types
   //   by means of there nodal DoFs. If further element types are integrated into locsys
   //   more elaborate criteria might be useful.
@@ -261,8 +260,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
   // of dimension (numdof)x(numdof). The following code block is designed
-  // for 2D and 3D solid elements as well as for beam elements of Kirchhoff
-  // type (applying nodal tangents). If special fields are constructed with
+  // for 2D and 3D solid elements. If special fields are constructed with
   // more than dim geometric dofs, i.e. that have to be transformed, then
   // the following code might have to be modified!
 
@@ -311,7 +309,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       LINALG::Matrix<3, 3> currrotationmatrix;
 
       // Compute rotation matrix out of rotation angle
-      LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
+      CORE::LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
 
       // base vectors of local system
       LINALG::Matrix<3, 1> vec1;
@@ -328,32 +326,29 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       // Check for zero-diagonal elements
       if (fabs(vec1(0)) < 1e-9 || fabs(vec2(1)) < 1e-9 || fabs(vec3(2)) < 1e-9) sanity_check = true;
-
-      if (!BEAMINTERACTION::UTILS::IsBeamNode(*node))  // for solid elements
+      // test how big numdofs are
+      if (numdof > 3)
+        dserror(
+            "The locsys condition is not implemented for elements with numdof "
+            "exceeding 3");
+      // trafo for 2D case
+      if (Dim() == 2)
       {
-        // trafo for 2D case
-        if (Dim() == 2)
+        for (int dim = 0; dim < 2; dim++)
         {
-          for (int dim = 0; dim < 2; dim++)
-          {
-            nodetrafo(0, dim) = vec1(dim);
-            nodetrafo(1, dim) = vec2(dim);
-          }
-        }
-        // trafo for 3D case
-        if (Dim() == 3)
-        {
-          for (int dim = 0; dim < 3; dim++)
-          {
-            nodetrafo(0, dim) = vec1(dim);
-            nodetrafo(1, dim) = vec2(dim);
-            nodetrafo(2, dim) = vec3(dim);
-          }
+          nodetrafo(0, dim) = vec1(dim);
+          nodetrafo(1, dim) = vec2(dim);
         }
       }
-      else  // for beam elements
+      // trafo for 3D case
+      if (Dim() == 3)
       {
-        dserror("The locsys condition is not implemented for beam elements!");
+        for (int dim = 0; dim < 3; dim++)
+        {
+          nodetrafo(0, dim) = vec1(dim);
+          nodetrafo(1, dim) = vec2(dim);
+          nodetrafo(2, dim) = vec3(dim);
+        }
       }
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
@@ -504,10 +499,6 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseM
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
     Teuchos::RCP<Epetra_Vector> vec, bool offset) const
 {
-  // Add an offset value to the displacement vector. This offsett value is needed for Kirchhoff type
-  // beam elements, where tangent vectors and not position vectors are rotated!!!
-  if (offset) AddOffset(vec, false);
-
   // y = trafo_ . x  with x = vec
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(false, tmp, *vec);
@@ -547,10 +538,6 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
 {
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(true, tmp, *vec);
-
-  // Remove offset value from the displacement vector. This offset value is needed for Kirchhoff
-  // type beam elements, where tangent vectors and not position vectors are rotated!!!
-  if (offset) AddOffset(vec, true);
 }
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
@@ -561,10 +548,6 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseM
       LINALG::Multiply(*trafo_, true, *sysmat, false, false, sysmat->SaveGraph(), true);
   *sysmat = *temp2;
 }
-/*----------------------------------------------------------------------*
- |  Add displacement offset value                            meier 06/13|
- *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const {}
 
 
 /*----------------------------------------------------------------------*

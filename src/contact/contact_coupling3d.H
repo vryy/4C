@@ -102,7 +102,7 @@ namespace CONTACT
 
      */
     virtual bool VertexLinearization(
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex,
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
         std::map<int, double>& projpar, bool printderiv = false);
 
     /*!
@@ -113,7 +113,7 @@ namespace CONTACT
 
      */
     virtual bool SlaveVertexLinearization(
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin);
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -122,7 +122,7 @@ namespace CONTACT
 
      */
     virtual bool MasterVertexLinearization(
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin);
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -134,10 +134,10 @@ namespace CONTACT
 
      */
     virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
-        std::vector<GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
+        std::vector<CORE::GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
         MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& linsnodes,
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& linmnodes);
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linsnodes,
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linmnodes);
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -149,8 +149,8 @@ namespace CONTACT
 
      */
     virtual bool CenterLinearization(
-        const std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex,
-        std::vector<GEN::pairedvector<int, double>>& lincenter);
+        const std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
+        std::vector<CORE::GEN::pairedvector<int, double>>& lincenter);
 
     /*!
      \brief Return type of wear surface definition

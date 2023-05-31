@@ -18,6 +18,7 @@
 
 
 #include "fs3i_partitioned_1wc.H"
+#include "coupling_adapter.H"
 
 
 // forward declarations
@@ -101,16 +102,16 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// coupling of structure and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupsa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupsa_;
 
     /// coupling of structure and ale (whole field)
-    Teuchos::RCP<ADAPTER::Coupling> coupsa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_;
 
     // Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 

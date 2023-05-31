@@ -1,16 +1,12 @@
-set(OBJS_TO3_LIB
-    # cmake-format: sortable
-    torsion3.cpp
-    torsion3_evaluate.cpp
-    torsion3_input.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_to3 ${OBJS_TO3_LIB})
-
-set(LIBS_ELE_TO3
+set(_torsion3_dependencies
     # cmake-format: sortable
+    core
+    inpar
     lib
-    lib_browniandyn
+    linalg
+    mat
+    structure_new
     )
-
-baci_add_dependency(ele_to3 ${LIBS_ELE_TO3})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_torsion3_dependencies})

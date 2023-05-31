@@ -14,6 +14,7 @@ with condensed structure interface displacements
 
 #include "fsi_monolithic.H"
 #include "inpar_fsi.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace ADAPTER
@@ -244,7 +245,7 @@ namespace FSI
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

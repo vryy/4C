@@ -11,4 +11,5 @@ set(OBJS_PRE_EXODUS
 
 add_executable(pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 set_target_properties(pre_exodus PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(pre_exodus ${FILTER_LIBRARIES})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} post_common)
+baci_link_executable_with_all(pre_exodus)

@@ -92,7 +92,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_interaction_params_ptr_->Setup();
 
   // build a new data container to manage geometric search parameters
-  geometric_search_params_ptr_ = Teuchos::rcp(new GEOMETRICSEARCH::GeometricSearchParams());
+  geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams());
 
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
@@ -848,7 +848,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
-    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> beam_bounding_boxes;
+    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> beam_bounding_boxes;
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
@@ -862,7 +862,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
     // Get vector of the bounding boxes of all possible interacting elements (also including beams
     // if beam-to-beam contact is activated).
     int const numcoleles = Discret().NumMyColElements();
-    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> other_bounding_boxes;
+    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> other_bounding_boxes;
     for (int colele_i = 0; colele_i < numcoleles; ++colele_i)
     {
       // Check if the current element is relevant for beam-to-xxx contact.

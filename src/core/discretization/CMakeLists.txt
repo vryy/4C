@@ -1,2 +1,1 @@
-baci_define_module(discretization)
-add_subdirectory(src)
+baci_auto_define_module()

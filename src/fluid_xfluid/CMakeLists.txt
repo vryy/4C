@@ -1,22 +1,18 @@
-set(OBJS_FLUID_XFLUID
-    # cmake-format: sortable
-    fluid_xfluid.cpp
-    fluid_xfluid_fluid.cpp
-    fluid_xfluid_fluid_state.cpp
-    fluid_xfluid_functions.cpp
-    fluid_xfluid_functions_combust.cpp
-    fluid_xfluid_levelset_coupling_algorithm.cpp
-    fluid_xfluid_outputservice.cpp
-    fluid_xfluid_resulttest.cpp
-    fluid_xfluid_state.cpp
-    fluid_xfluid_state_creator.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_xfluid ${OBJS_FLUID_XFLUID})
-
-set(LIBS_ALG_XFLUID
+set(_fluid_xfluid_dependencies
     # cmake-format: sortable
+    adapter
+    cut
+    fluid
+    fluid_ele
+    inpar
+    io
+    levelset
     lib
+    linalg
+    mat
+    solver
+    xfem
     )
-
-baci_add_dependency(alg_xfluid ${LIBS_ALG_XFLUID})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_xfluid_dependencies})

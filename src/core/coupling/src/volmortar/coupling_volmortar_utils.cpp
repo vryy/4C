@@ -17,9 +17,10 @@
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
-    const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1, const std::vector<int>& ids_2,
-    Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
+void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   if (ele1 == NULL) dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
 
@@ -59,9 +60,10 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
-    const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2, const std::vector<int>& ids_1,
-    Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
+void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   if (ele2 == NULL) dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
 

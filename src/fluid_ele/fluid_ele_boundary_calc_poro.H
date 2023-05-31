@@ -62,7 +62,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcPoro<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
       virtual ~FluidEleBoundaryCalcPoro() = default;
@@ -390,7 +390,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcPoroP1<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
       virtual ~FluidEleBoundaryCalcPoroP1() = default;

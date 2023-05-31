@@ -43,7 +43,7 @@ namespace MORTAR
   class Vertex;
 }  // namespace MORTAR
 
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   class Cell;
 
@@ -79,7 +79,8 @@ namespace VOLMORTAR
         Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12 = NULL,
         std::vector<int>* coupleddof21 = NULL, std::pair<int, int>* dofsets12 = NULL,
         std::pair<int, int>* dofsets21 = NULL,
-        Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
+        Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
+            Teuchos::null);
 
     /*!
      \brief Destructor
@@ -94,7 +95,7 @@ namespace VOLMORTAR
     virtual void EvaluateVolmortar();
 
     /*!
-     \brief Evaluate consistent interpolation (NO VOLMORTAR)
+     \brief Evaluate consistent interpolation (NO CORE::VOLMORTAR)
 
      */
     virtual void EvaluateConsistentInterpolation();
@@ -453,7 +454,7 @@ namespace VOLMORTAR
     INPAR::VOLMORTAR::DualQuad dualquad_;  /// type of quadratic weighting interpolation
 
     /// strategy for element information transfer (mainly material, but can be more)
-    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
     //! @name mesh initialization
 
@@ -471,7 +472,7 @@ namespace VOLMORTAR
     //@}
   };
 
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
 
 #endif  // COUPLING_VOLMORTAR_H

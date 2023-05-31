@@ -1,22 +1,12 @@
-set(OBJS_S8_LIB
-    # cmake-format: sortable
-    s8.cpp
-    s8_evaluate.cpp
-    s8_input.cpp
-    s8_line.cpp
-    s8_line_evaluate.cpp
-    s8_scatra.cpp
-    shell8/s8_array.c
-    shell8/s8_shell8_mat_linel.c
-    shell8/s8_shell8_mattransform.c
-    shell8/s8_shell8_tmat.c
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_s8 ${OBJS_S8_LIB})
-
-set(LIBS_ELE_S8
+set(_s8_dependencies
     # cmake-format: sortable
+    inpar
+    lib
     linalg
+    mat
+    matelast
+    structure_new
     )
-
-baci_add_dependency(ele_s8 ${LIBS_ELE_S8})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_s8_dependencies})

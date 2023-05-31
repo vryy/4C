@@ -64,11 +64,11 @@ namespace MORTAR
 
     virtual bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
         MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin) = 0;
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
 
     virtual bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin) = 0;
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
   };  // class MortarProjector
 
   /*!
@@ -84,7 +84,7 @@ namespace MORTAR
 
     /// Singleton access method
     static MortarProjectorCalc<distype>* Instance(
-        ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+        CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
     static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -201,12 +201,12 @@ namespace MORTAR
     // TODO explanation
     bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     // TODO explanation
     bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
    protected:
     bool ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
@@ -214,22 +214,22 @@ namespace MORTAR
 
     bool ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNormal2D(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi,
         double* normal, double& dist);
 
     bool ProjectSNodeByMNodalNormal2DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNodalNormal3DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Evaluate F for nodal normal projection
@@ -287,7 +287,7 @@ namespace MORTAR
 
     /// Singleton access method
     static MortarProjectorCalc_EleBased<distypeS, distypeM>* Instance(
-        ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+        CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
     static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -413,7 +413,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
     {
       dserror("ERROR");
       return false;
@@ -421,7 +421,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode, MORTAR::MortarElement& mele,
         double* xi, double* normal, double& dist,
-        std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
     {
       dserror("ERROR");
       return false;

@@ -60,7 +60,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleCalc<distype>>(
@@ -68,7 +68,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
       });
 
   return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 

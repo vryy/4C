@@ -36,33 +36,32 @@ namespace MORTAR
   class IntCell;
 }  // namespace MORTAR
 
-namespace ADAPTER
-{
-  /// Couple non-matching interface meshes using mortar method
-  /*!
-    This is a generic class used to couple any non-matching meshes
-    (or more general: discretizations) at interfaces. The current
-    applications in BACI encompass FSI coupling algorithms (i.e. to
-    interpolate between fluid and structure fields at the interface)
-    and fluid mesh tying algorithms (i.e. to couple non-matching
-    Eulerian fluid meshes). All the hard work is actually done by
-    the MORTAR::MortarInterface class (thus we use the mortar method).
+/// Couple non-matching interface meshes using mortar method
+namespace CORE::ADAPTER
+{ /*!
+This is a generic class used to couple any non-matching meshes
+(or more general: discretizations) at interfaces. The current
+applications in BACI encompass FSI coupling algorithms (i.e. to
+interpolate between fluid and structure fields at the interface)
+and fluid mesh tying algorithms (i.e. to couple non-matching
+Eulerian fluid meshes). All the hard work is actually done by
+the MORTAR::MortarInterface class (thus we use the mortar method).
 
-    The major part of this code is the Setup() method that gets the
-    non-matching interface meshes on input, initializes the mortar
-    interface and computes the so-called coupling matrices \f$D\f$ and \f$M\f$.
+The major part of this code is the Setup() method that gets the
+non-matching interface meshes on input, initializes the mortar
+interface and computes the so-called coupling matrices \f$D\f$ and \f$M\f$.
 
-    The actual coupling methods MasterToSlave() and SlaveToMaster()
-    just evaluate one simple equation each, i.e. primal variables
-    are projected from master to slave side via \f$D^{-1} M\f$ when
-    calling MasterToSlave(), and dual variables are projected from
-    slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
+The actual coupling methods MasterToSlave() and SlaveToMaster()
+just evaluate one simple equation each, i.e. primal variables
+are projected from master to slave side via \f$D^{-1} M\f$ when
+calling MasterToSlave(), and dual variables are projected from
+slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
 
-    Whenever you want to add a new problem class, check whether you
-    can re-use one of the already existing Setup() methods. If not,
-    feel free to write your own tailored Setup() method.
-   */
-  class CouplingMortar : public CouplingBase
+Whenever you want to add a new problem class, check whether you
+can re-use one of the already existing Setup() methods. If not,
+feel free to write your own tailored Setup() method.
+*/
+  class CouplingMortar : public CORE::ADAPTER::CouplingBase
   {
    public:
     /// empty constructor
@@ -351,6 +350,6 @@ namespace ADAPTER
     /// Mortar projection operator \f$P=D^{-1}M\f$
     Teuchos::RCP<LINALG::SparseMatrix> P_;
   };
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #endif  // COUPLING_ADAPTER_MORTAR_H

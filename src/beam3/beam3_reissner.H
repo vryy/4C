@@ -797,7 +797,7 @@ namespace DRT
          * the element type considered here),
          * or Jelenic 1999, paragraph on page 153 between NOTE 5 and NOTE 6*/
         LINALG::Matrix<3, 3, T> Tinv(true);
-        Tinv = LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
+        Tinv = CORE::LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
         // It is important to use the transposed matrix Tinv^T instead of Tinv (these two only
         // differ in one of three terms)
         K.MultiplyTN(Tinv, Psi_l_s);

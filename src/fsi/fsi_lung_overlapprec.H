@@ -14,7 +14,7 @@
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
-//#define BLOCKMATRIXMERGE
+// #define BLOCKMATRIXMERGE
 
 // forward declarations
 namespace LINALG

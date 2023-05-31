@@ -1,23 +1,26 @@
-set(OBJS_FS3I
-    # cmake-format: sortable
-    fs3i.cpp
-    fs3i_ac_fsi.cpp
-    fs3i_ac_fsi_lts.cpp
-    fs3i_biofilm_fsi.cpp
-    fs3i_biofilm_fsi_utils.cpp
-    fs3i_dyn.cpp
-    fs3i_fps3i_partitioned.cpp
-    fs3i_fps3i_partitioned_1wc.cpp
-    fs3i_partitioned.cpp
-    fs3i_partitioned_1wc.cpp
-    fs3i_partitioned_2wc.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_fs3i ${OBJS_FS3I})
-
-set(LIBS_ALG_FS3I
+set(_fs3i_dependencies
     # cmake-format: sortable
+    adapter
+    ale
+    comm
+    core
+    fluid
+    fluid_ele
+    fpsi
+    fsi
     inpar
+    io
+    lib
+    linalg
+    mat
+    poroelast
+    poroelast_scatra
+    scatra
+    scatra_ele
+    solver
+    ssi
+    structure
     )
-
-baci_add_dependency(alg_fs3i ${LIBS_ALG_FS3I})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fs3i_dependencies})

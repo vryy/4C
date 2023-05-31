@@ -116,19 +116,19 @@ namespace POROELAST
 
      \author vuong 10/14
      */
-    class PoroMaterialStrategy : public VOLMORTAR::UTILS::DefaultMaterialStrategy
+    class PoroMaterialStrategy : public CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy
     {
      public:
       //! constructor
       PoroMaterialStrategy() = default;
 
       //! assignment of fluid material to structure material
-      void AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
           const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
           Teuchos::RCP<DRT::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
-      void AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
           const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
           Teuchos::RCP<DRT::Discretization> dis2) override;
     };

@@ -242,7 +242,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcHDGWeakComp<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
      private:
       /// private Constructor since we are a Singleton.

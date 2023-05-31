@@ -219,28 +219,29 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_double, projected_gauss_point.GetEta());
-      LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
+      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
-      LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
-      quaternion_beam_inv = LARGEROTATIONS::inversequaternion(quaternion_beam);
+      CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
+      quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid, this->Element2());
-      LARGEROTATIONS::angletoquaternion(psi_solid, quaternion_solid);
+      CORE::LARGEROTATIONS::angletoquaternion(psi_solid, quaternion_solid);
 
       // Calculate the relative rotation vector.
-      LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_solid, quaternion_rel);
-      LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+      CORE::LARGEROTATIONS::quaternionproduct(
+          quaternion_beam_inv, quaternion_solid, quaternion_rel);
+      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_rel = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
-      T_beam = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-      T_solid = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_solid));
+      T_rel = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
+      T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+      T_solid = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_solid));
       T_solid_inv = T_solid;
       LINALG::Inverse(T_solid_inv);
 
@@ -504,12 +505,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_double, projected_gauss_point.GetEta());
-      LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
+      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
-      LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
-      quaternion_beam_inv = LARGEROTATIONS::inversequaternion(quaternion_beam);
+      CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
+      quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
@@ -518,16 +519,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid, this->Element2());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
-      LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);
+      CORE::LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);
 
       // Calculate the relative rotation vector.
-      LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_solid, quaternion_rel);
-      LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+      CORE::LARGEROTATIONS::quaternionproduct(
+          quaternion_beam_inv, quaternion_solid, quaternion_rel);
+      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_rel = LARGEROTATIONS::Tmatrix(psi_rel);
-      T_beam = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-      T_solid = LARGEROTATIONS::Tmatrix(psi_solid_val);
+      T_rel = CORE::LARGEROTATIONS::Tmatrix(psi_rel);
+      T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+      T_solid = CORE::LARGEROTATIONS::Tmatrix(psi_solid_val);
       T_solid_inv = T_solid;
       LINALG::Inverse(T_solid_inv);
 

@@ -21,12 +21,12 @@ void CONTACT::CoIntegratorEhl::IntegrateGP_3D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
     LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
     LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-    GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
 {
   // check bound
   bool bound = false;
@@ -69,24 +69,24 @@ void CONTACT::CoIntegratorEhl::IntegrateGP_2D(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
     LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
     LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-    GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
 {
   dserror("2D EHL integration not supported");
 }
 
 
 void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele,
-    const double* xi, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
+    const double* xi, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const LINALG::SerialDenseVector& lmval, const LINALG::SerialDenseMatrix& lmderiv,
-    const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
+    const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
     const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
     const LINALG::SerialDenseMatrix& sderiv2, const double& wgt, const double& jac,
-    const GEN::pairedvector<int, double>& jacintcellmap)
+    const CORE::GEN::pairedvector<int, double>& jacintcellmap)
 {
   // empty local basis vectors
   std::vector<std::vector<double>> gxi(2, std::vector<double>(3, 0));
@@ -183,25 +183,25 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
     const LINALG::SerialDenseVector& lmval, const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& sderiv, const LINALG::SerialDenseMatrix& mderiv,
     const LINALG::SerialDenseMatrix& lmderiv,
-    const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, const double& wgt,
-    const double& jac, const GEN::pairedvector<int, double>& derivjac, const double* normal,
-    const std::vector<GEN::pairedvector<int, double>>& dnmap_unit, const double& gap,
-    const GEN::pairedvector<int, double>& deriv_gap, const double* sxi, const double* mxi,
-    const std::vector<GEN::pairedvector<int, double>>& derivsxi,
-    const std::vector<GEN::pairedvector<int, double>>& derivmxi)
+    const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, const double& wgt,
+    const double& jac, const CORE::GEN::pairedvector<int, double>& derivjac, const double* normal,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, const double& gap,
+    const CORE::GEN::pairedvector<int, double>& deriv_gap, const double* sxi, const double* mxi,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
 {
   const int dim = 3;
   if (Dim() != dim)
     dserror("dimension inconsistency, or is this not implemented for all spatial dimensions?");
 
   LINALG::Matrix<dim, 1> t1, t2;
-  std::vector<GEN::pairedvector<int, double>> dt1, dt2;
+  std::vector<CORE::GEN::pairedvector<int, double>> dt1, dt2;
   LINALG::Matrix<dim, 1> relVel;
-  std::vector<GEN::pairedvector<int, double>> relVel_deriv(
+  std::vector<CORE::GEN::pairedvector<int, double>> relVel_deriv(
       dim, sele.NumNode() * dim + mele.NumNode() * dim + derivsxi[0].size() + derivmxi[0].size());
   double vt1, vt2;
-  GEN::pairedvector<int, double> dvt1(0);
-  GEN::pairedvector<int, double> dvt2(0);
+  CORE::GEN::pairedvector<int, double> dvt1(0);
+  CORE::GEN::pairedvector<int, double> dvt2(0);
 
   CONTACT::UTILS::BuildTangentVectors<dim>(normal, dnmap_unit, t1.A(), dt1, t2.A(), dt2);
   CONTACT::UTILS::RelVelInvariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi, mval,

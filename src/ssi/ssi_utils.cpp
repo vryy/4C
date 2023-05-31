@@ -1010,7 +1010,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     }
 
     // setup coupling adapter
-    auto coupling_adapter = Teuchos::rcp(new ADAPTER::Coupling());
+    auto coupling_adapter = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     coupling_adapter->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_master, inodegidvec_slave,
         DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 
@@ -1039,7 +1039,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     for (const int& slave_gid : all_coupled_original_slave_gids)
       DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, my_coupled_original_slave_gids);
 
-    auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
+    auto slave_slave_transformation = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
         my_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 
@@ -1391,14 +1391,14 @@ void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::UTILS::SSIStructureMeshTyingHandler::SSIStructureMeshTyingHandler(
-    Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling,
+    Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
     Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
-    Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation)
+    Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation)
     : slave_master_coupling_(std::move(slave_master_coupling)),
       slave_master_extractor_(std::move(slave_master_extractor)),
       slave_side_converter_(Teuchos::null),
       slave_slave_transformation_(std::move(slave_slave_transformation))
 {
   slave_side_converter_ =
-      Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
+      Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
 }

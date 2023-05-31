@@ -30,43 +30,43 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
   {
     case DRT::Element::hex8:
     {
-      return Ale3_Impl<DRT::Element::hex8>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex20:
     {
-      return Ale3_Impl<DRT::Element::hex20>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex20>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex27:
     {
-      return Ale3_Impl<DRT::Element::hex27>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet4:
     {
-      return Ale3_Impl<DRT::Element::tet4>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::tet4>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet10:
     {
-      return Ale3_Impl<DRT::Element::tet10>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::tet10>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::wedge6:
     {
-      return Ale3_Impl<DRT::Element::wedge6>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
     }
       /*  case DRT::Element::wedge15:
         {
-          return Ale3_Impl<DRT::Element::wedge15>::Instance(::UTILS::SingletonAction::create);
+          return Ale3_Impl<DRT::Element::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
         }*/
     case DRT::Element::pyramid5:
     {
-      return Ale3_Impl<DRT::Element::pyramid5>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::pyramid5>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs8:
     {
-      return Ale3_Impl<DRT::Element::nurbs8>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs27:
     {
-      return Ale3_Impl<DRT::Element::nurbs27>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -77,9 +77,9 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::Ale3_Impl<distype>>(

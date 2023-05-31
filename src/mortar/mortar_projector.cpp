@@ -437,9 +437,9 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::MortarProjectorCalc_El
 
 template <DRT::Element::DiscretizationType distype>
 MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(
@@ -451,9 +451,10 @@ MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Inst
 
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>*
-MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(::UTILS::SingletonAction action)
+MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(
+    CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
+  static CORE::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
       singleton_owner(
           []()
           {
@@ -1245,7 +1246,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
@@ -1408,7 +1409,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
@@ -1577,7 +1578,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // get linsize
   int linsize = 0;
@@ -1589,14 +1590,16 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     linsize += mnode->GetLinsize();
   }
 
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
 
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, linsize);  // linsize of all mnodes
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, linsize);   // linsize of all mnodes
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(
+      3, linsize);  // linsize of all mnodes
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(
+      3, linsize);  // linsize of all mnodes
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
 
 
   //--------------------------
@@ -1664,9 +1667,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> n_eta0_deriv(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> n_eta1_deriv(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> n_n_deriv(3, linsize);              // linsize
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(
+      3, linsize + n_ + 1);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(
+      3, linsize + n_ + 1);                                                 // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
 
   for (int k = 0; k < n_; ++k)
   {
@@ -1722,7 +1727,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2DLin is only for 2D problems!");
 
@@ -1885,13 +1890,13 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
@@ -1907,9 +1912,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
 
   //--------------------------
   // normal part:
-  std::vector<GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   for (int i = 0; i < n_; ++i)
   {
@@ -1962,10 +1967,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> n_eta0_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> n_eta1_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> n_n_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   for (int k = 0; k < n_; ++k)
   {
@@ -2163,7 +2168,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
@@ -2312,13 +2317,13 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
@@ -2337,9 +2342,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
 
   //--------------------------
   // normal part:
-  std::vector<GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   LINALG::Matrix<1, n_> deriv1;
   DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
@@ -2426,8 +2431,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   LINALG::Matrix<1, n_> deriv;
   DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
@@ -2516,7 +2521,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(MORTAR::MortarN
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   bool success = false;
 
@@ -2542,7 +2547,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR:
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ == 2)
   {

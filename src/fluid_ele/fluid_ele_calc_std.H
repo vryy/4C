@@ -30,7 +30,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcStd<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
      private:
       /// private constructor, since we are a Singleton.

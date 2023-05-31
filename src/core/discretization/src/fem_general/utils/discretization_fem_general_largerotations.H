@@ -15,7 +15,7 @@
 #include "linalg_FAD_utils.H"
 
 
-namespace LARGEROTATIONS
+namespace CORE::LARGEROTATIONS
 {
   /**
    * \brief Compute spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation
@@ -51,7 +51,7 @@ namespace LARGEROTATIONS
     for (int i = 0; i < 3; i++) qvec(i) = q(i);
 
     // setting R to third summand of equation (16.70)
-    LARGEROTATIONS::computespin(R, qvec);
+    CORE::LARGEROTATIONS::computespin(R, qvec);
     R.Scale(2 * q(3));
 
     // adding second summand of equation (16.70)
@@ -110,8 +110,8 @@ namespace LARGEROTATIONS
   {
     triad.Clear();
     LINALG::Matrix<4, 1, T> quaternion(true);
-    LARGEROTATIONS::angletoquaternion(theta, quaternion);
-    LARGEROTATIONS::quaterniontotriad(quaternion, triad);
+    CORE::LARGEROTATIONS::angletoquaternion(theta, quaternion);
+    CORE::LARGEROTATIONS::quaterniontotriad(quaternion, triad);
   }
 
   /**
@@ -312,7 +312,7 @@ namespace LARGEROTATIONS
     // based on the small angle approximation tan(x)=x, we get: T = I - 0.5*S(theta)
     else
     {
-      LARGEROTATIONS::computespin(result, theta);
+      CORE::LARGEROTATIONS::computespin(result, theta);
       result.Scale(-0.5);
       for (int j = 0; j < 3; j++) result(j, j) += 1.0;
     }
@@ -337,7 +337,7 @@ namespace LARGEROTATIONS
     if (theta_abs > 1e-8)
     {
       // ultimate term in eq. (2.5)
-      LARGEROTATIONS::computespin(result, theta);
+      CORE::LARGEROTATIONS::computespin(result, theta);
       result.Scale((1.0 - cos(theta_abs)) / (theta_abs * theta_abs));
 
       // penultimate term in eq. (2.5)
@@ -354,7 +354,7 @@ namespace LARGEROTATIONS
     {
       // based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I +
       // 0.5*S(theta) -> Tinv'=0.5*S(theta')
-      LARGEROTATIONS::computespin(result, theta);
+      CORE::LARGEROTATIONS::computespin(result, theta);
       result.Scale(0.5);
       for (int j = 0; j < 3; j++) result(j, j) += 1.0;
     }
@@ -503,8 +503,8 @@ namespace LARGEROTATIONS
     quaternion.Clear();
 
     rotation_matrix.MultiplyTN(triad_ref, triad);
-    LARGEROTATIONS::triadtoquaternion(rotation_matrix, quaternion);
-    LARGEROTATIONS::quaterniontoangle(quaternion, theta);
+    CORE::LARGEROTATIONS::triadtoquaternion(rotation_matrix, quaternion);
+    CORE::LARGEROTATIONS::quaterniontoangle(quaternion, theta);
   }
 
   //! compute the relative angle theta between triad_ref and triad so that exp(theta) =
@@ -520,10 +520,10 @@ namespace LARGEROTATIONS
     quaternion.Clear();
 
     rotation_matrix.MultiplyNT(triad, triad_ref);
-    LARGEROTATIONS::triadtoquaternion(rotation_matrix, quaternion);
-    LARGEROTATIONS::quaterniontoangle(quaternion, theta);
+    CORE::LARGEROTATIONS::triadtoquaternion(rotation_matrix, quaternion);
+    CORE::LARGEROTATIONS::quaterniontoangle(quaternion, theta);
   }
 
-}  // namespace LARGEROTATIONS
+}  // namespace CORE::LARGEROTATIONS
 
 #endif

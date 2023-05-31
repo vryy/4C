@@ -10,6 +10,6 @@ set(OBJS_BACI_MAIN
 # the baci executable
 add_executable(${baciname} ${OBJS_BACI_MAIN})
 set_target_properties(${baciname} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(${baciname} module_registry ${BACI_LIBRARIES})
+baci_add_dependency(${baciname} ${BACI_ALL_DEFINED_MODULE_TARGETS})
 
 add_custom_target(baci DEPENDS ${baciname})

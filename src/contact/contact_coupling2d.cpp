@@ -406,8 +406,8 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   // detect entire overlap
   double ximin = 1.0;
   double ximax = -1.0;
-  GEN::pairedvector<int, double> dximin(linsize + ndof * mnodes);
-  GEN::pairedvector<int, double> dximax(linsize + ndof * mnodes);
+  CORE::GEN::pairedvector<int, double> dximin(linsize + ndof * mnodes);
+  CORE::GEN::pairedvector<int, double> dximax(linsize + ndof * mnodes);
 
   // loop over all master elements associated with this slave element
   for (int m = 0; m < (int)Coupling().size(); ++m)
@@ -436,7 +436,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     // create an integrator for this segment
     CONTACT::CoIntegrator integrator(imortar_, SlaveElement().Shape(), Comm());
 
-    std::vector<GEN::pairedvector<int, double>> ximaps(4, linsize + ndof * mnodes);
+    std::vector<CORE::GEN::pairedvector<int, double>> ximaps(4, linsize + ndof * mnodes);
     // get directional derivatives of sxia, sxib, mxia, mxib
     integrator.DerivXiAB2D(SlaveElement(), sxia, sxib, MasterElement(m), mxia, mxib, ximaps,
         startslave, endslave, linsize);
@@ -460,7 +460,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   }
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // no overlap: the applied dual shape functions don't matter, as the integration domain is void
   if ((ximax == -1.0 && ximin == 1.0) || (ximax - ximin < 4. * MORTARINTLIM)) return;
@@ -473,9 +473,9 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
 
   // store derivae into element
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
           linsize + 2 * ndof * mnodes, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // compute entries to bi-ortho matrices me/de with Gauss quadrature
@@ -485,10 +485,10 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
   LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
   // two-dim arrays of maps for linearization of me/de
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivme(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivde(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(nnodes,
+      std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivde(nnodes,
+      std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
 
   LINALG::SerialDenseVector sval(nnodes);
   LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
@@ -523,14 +523,14 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     double dxdsxidsxi = djacdxi[0];  // only 2D here
 
     // evalute the GP slave coordinate derivatives
-    GEN::pairedvector<int, double> dsxigp(linsize + ndof * mnodes);
+    CORE::GEN::pairedvector<int, double> dsxigp(linsize + ndof * mnodes);
     for (_CI p = dximin.begin(); p != dximin.end(); ++p)
       dsxigp[p->first] += 0.5 * (1 - eta[0]) * (p->second);
     for (_CI p = dximax.begin(); p != dximax.end(); ++p)
       dsxigp[p->first] += 0.5 * (1 + eta[0]) * (p->second);
 
     // evaluate the Jacobian derivative
-    GEN::pairedvector<int, double> derivjac(SlaveElement().NumNode() * Dim());
+    CORE::GEN::pairedvector<int, double> derivjac(SlaveElement().NumNode() * Dim());
     SlaveElement().DerivJacobian(sxi, derivjac);
 
     // integrate dual shape matrices de, me and their linearizations

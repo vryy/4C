@@ -63,7 +63,7 @@ namespace DRT
      public:
       //! Singleton access method
       static ScaTraHDGBoundaryImpl<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! Constructor
       ScaTraHDGBoundaryImpl();

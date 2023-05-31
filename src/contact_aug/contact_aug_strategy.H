@@ -1087,7 +1087,7 @@ namespace CONTACT
        public:
         /// singleton creation
         static FD_Debug* Instance(Strategy* strat, const double delta = 1.0e-8,
-            ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+            CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
         void Evaluate(const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,

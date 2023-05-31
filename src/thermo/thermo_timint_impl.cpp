@@ -70,7 +70,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != NULL)
     {
-      adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+      adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(

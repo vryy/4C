@@ -837,7 +837,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     for (unsigned int node = 0; node < nnodetriad; node++)
     {
       LINALG::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
-      LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
+      CORE::LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
     }
 
     Qconvnode_ = Qnewnode_;
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
       Gref.Clear();
-      LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
+      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
       for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
@@ -1187,7 +1187,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    if (nodeids[this->nodeI_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //      for (int i=0; i<3; i++)
   //        Tcurrnode_[0](i)= DummyLambda(i,0);
@@ -1195,7 +1195,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    else if (nodeids[this->nodeJ_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //
   //      for (int i=0; i<3; i++)
@@ -1729,7 +1729,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
+    CORE::LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
   }
 
   // set differentiation variables for FAD: rotational DOFs
@@ -1750,7 +1750,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     Q_i[node].PutScalar(0.0);
-    LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
   }
 }
 
@@ -1955,12 +1955,12 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // get initial nodal rotation vectors and transform to quaternions
-    LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
+    CORE::LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
 
     // rotate initial triads by relative rotation vector from displacement vector (via quaternion
     // product)
-    LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
-    LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations

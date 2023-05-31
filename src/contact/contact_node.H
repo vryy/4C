@@ -131,8 +131,11 @@ namespace CONTACT
      A vector is used because the normal itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivN() { return derivn_; }
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivTangent() { return derivEdge_; }
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivN() { return derivn_; }
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivTangent()
+    {
+      return derivEdge_;
+    }
 
     /*!
      \brief Return the 'DerivTxi' map (vector) of this node
@@ -142,7 +145,7 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivTxi() { return derivtxi_; }
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivTxi() { return derivtxi_; }
 
     /*!
      \brief Return the 'DerivTeta' map (vector) of this node
@@ -152,7 +155,7 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivTeta() { return derivteta_; }
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivTeta() { return derivteta_; }
 
     /*!
      \brief Return the 'DerivD' map of this node
@@ -272,7 +275,7 @@ namespace CONTACT
      */
     virtual std::vector<std::map<int, double>>& GetDerivZ() { return derivz_; }
 
-    virtual GEN::pairedvector<int, double>& GetAlpha() { return alpha_; };
+    virtual CORE::GEN::pairedvector<int, double>& GetAlpha() { return alpha_; };
     virtual double& GetAlphaN() { return nalpha_; };
 
     /*!
@@ -311,16 +314,16 @@ namespace CONTACT
     bool activeold_;
 
     //! directional derivative of nodal normal
-    std::vector<GEN::pairedvector<int, double>> derivn_;
+    std::vector<CORE::GEN::pairedvector<int, double>> derivn_;
 
     //! directional derivative of nodal tangent
-    std::vector<GEN::pairedvector<int, double>> derivEdge_;
+    std::vector<CORE::GEN::pairedvector<int, double>> derivEdge_;
 
     //! directional derivative of nodal tangent t_xi
-    std::vector<GEN::pairedvector<int, double>> derivtxi_;
+    std::vector<CORE::GEN::pairedvector<int, double>> derivtxi_;
 
     //! directional derivative of nodal tangent t_eta
-    std::vector<GEN::pairedvector<int, double>> derivteta_;
+    std::vector<CORE::GEN::pairedvector<int, double>> derivteta_;
 
     //! directional derivative of nodal D-matrix value
     std::map<int, std::map<int, double>> derivd_;
@@ -368,7 +371,7 @@ namespace CONTACT
     std::map<int, double> derivw_lm_;
 
     //! lin. of scaling factor for hybrid formulation
-    GEN::pairedvector<int, double> alpha_;
+    CORE::GEN::pairedvector<int, double> alpha_;
 
     //! @name Penalty-related quantities
     //! @{

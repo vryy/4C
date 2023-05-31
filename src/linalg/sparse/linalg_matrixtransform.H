@@ -17,13 +17,14 @@
 #include <Epetra_Import.h>
 #include <Epetra_Export.h>
 #include <Epetra_CrsMatrix.h>
+#include "coupling_adapter.H"
 
 // forward declarations
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
   class CouplingConverter;
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 namespace LINALG
 {
@@ -34,13 +35,12 @@ namespace LINALG
 
   Monolithic multiphysics add matrices from different fields at the interface. These matrices
   belong to different row maps. Thus adding them requires moving one of them to a new row map. The
-  relations between these maps are managed by ADAPTER::Coupling objects. In a parallel setting there
-  is a master and a slave side (in case of matrix transformations we use
-  source and destination abstraction via ADAPTER::CouplingConverter). The
-  parallel distribution of both is arbitrary. And in addition there are
-  permuted master and slave maps, that match the respective other side. So
-  the row map transformation requires a parallel redistribution followed by
-  a row map exchange.
+  relations between these maps are managed by ADAPTER::Coupling objects. In a parallel setting
+  there is a master and a slave side (in case of matrix transformations we use source and
+  destination abstraction via ADAPTER::CouplingConverter). The parallel distribution of both
+  is arbitrary. And in addition there are permuted master and slave maps, that match the respective
+  other side. So the row map transformation requires a parallel redistribution followed by a row map
+  exchange.
 
   This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
   copies the temporary matrix. This is required both to preserve the
@@ -84,15 +84,15 @@ namespace LINALG
       \param logical_domain_map (i) sub-map that defines a logical block matrix column within src
       \param scale          (i) scaling factor to be applied
       \param row_converter  (i) src to dst abstraction on ADAPTER::Coupling, if NULL: no row
-      transform is done \param col_converter  (i) src to dst abstraction on ADAPTER::Coupling, if
-      NULL: no column transform is done \param dst          (i/o) destination matrix \param
+      transform is done \param col_converter  (i) src to dst abstraction on ADAPTER::Coupling,
+      if NULL: no column transform is done \param dst          (i/o) destination matrix \param
       exactmatch     (i) do not drop any source values if true \param addmatrix      (i) remove
       current dst values if false
      */
     bool operator()(const LINALG::SparseMatrix& src, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const double scale,
-        const ::ADAPTER::CouplingConverter* row_converter,
-        const ::ADAPTER::CouplingConverter* col_converter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter* row_converter,
+        const ::CORE::ADAPTER::CouplingConverter* col_converter, LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -101,7 +101,7 @@ namespace LINALG
       Internal method.
      */
     void SetupGidMap(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const ::ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm);
+        const ::CORE::ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm);
 
     /// copy values from source to destination matrix
     /*!
@@ -149,13 +149,12 @@ namespace LINALG
 
     Monolithic multiphysics add matrices from different fields at the interface. These matrices
   belong to different row maps. Thus adding them requires moving one of them to a new row map. The
-  relations between these maps are managed by ADAPTER::Coupling objects. In a parallel setting there
-  is a master and a slave side (in case of matrix transformations we use
-  source and destination abstraction via ADAPTER::CouplingConverter). The
-  parallel distribution of both is arbitrary. And in addition there are
-  permuted master and slave maps, that match the respective other side. So
-  the row map transformation requires a parallel redistribution followed by
-  a row map exchange.
+  relations between these maps are managed by ADAPTER::Coupling objects. In a parallel setting
+  there is a master and a slave side (in case of matrix transformations we use source and
+  destination abstraction via ADAPTER::CouplingConverter). The parallel distribution of both
+  is arbitrary. And in addition there are permuted master and slave maps, that match the respective
+  other side. So the row map transformation requires a parallel redistribution followed by a row map
+  exchange.
 
   This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
   copies the temporary matrix. This is required both to preserve the
@@ -194,7 +193,7 @@ namespace LINALG
       \param addmatrix (i) remove current dst values if false
      */
     bool operator()(const LINALG::SparseMatrix& src, double scale,
-        const ::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
         bool addmatrix = false);
 
    private:
@@ -251,7 +250,7 @@ namespace LINALG
      */
     bool operator()(const Epetra_Map& rowmap, const Epetra_Map& colmap,
         const LINALG::SparseMatrix& src, double scale,
-        const ::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -296,8 +295,8 @@ namespace LINALG
       \param addmatrix    (i) remove current dst values if false
      */
     bool operator()(const LINALG::SparseMatrix& src, double scale,
-        const ::ADAPTER::CouplingConverter& rowconverter,
-        const ::ADAPTER::CouplingConverter& colconverter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter& rowconverter,
+        const ::CORE::ADAPTER::CouplingConverter& colconverter, LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:

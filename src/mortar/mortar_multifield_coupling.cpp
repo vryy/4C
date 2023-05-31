@@ -23,8 +23,8 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
   if (!dis->GetCondition("MortarMulti"))
     dserror("this discretization does not have a Mortar-Muti condition");
 
-  Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying =
-      Teuchos::rcp(new ADAPTER::CouplingMortar());
+  Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying =
+      Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
       false, false, nodeset, nodeset);

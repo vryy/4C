@@ -26,7 +26,7 @@ namespace LINALG
   class SerialDenseMatrix;
 }  // namespace LINALG
 
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   class Cell
   {
@@ -88,6 +88,6 @@ namespace VOLMORTAR
     double vol_;                              // integration cell volume
   };
 
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
 #endif  // COUPLING_VOLMORTAR_CELL_H

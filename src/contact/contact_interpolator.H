@@ -78,8 +78,8 @@ namespace NTS
 
      */
     void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, double* sxigp,
-        double* mxigp, const std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi, double& alpha);
+        double* mxigp, const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi, double& alpha);
 
     /*!
      \brief node-wise gap calculation for 3D problems
@@ -87,7 +87,7 @@ namespace NTS
      */
     void nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        std::vector<GEN::pairedvector<int, double>>& dmxi, double* gpn);
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn);
 
    private:
     /*!
@@ -107,8 +107,8 @@ namespace NTS
 
      */
     void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, double& sxigp,
-        double& mxigp, const GEN::pairedvector<int, double>& derivsxi,
-        GEN::pairedvector<int, double>& derivmxi, int& linsize);
+        double& mxigp, const CORE::GEN::pairedvector<int, double>& derivsxi,
+        CORE::GEN::pairedvector<int, double>& derivmxi, int& linsize);
 
     /*!
      \brief node-wise D/M calculation
@@ -116,7 +116,7 @@ namespace NTS
      */
     void nwDM2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        GEN::pairedvector<int, double>& dmxi);
+        CORE::GEN::pairedvector<int, double>& dmxi);
 
     /*!
      \brief node-wise D/M calculation for 3D problems
@@ -124,7 +124,7 @@ namespace NTS
      */
     void nwDM3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        std::vector<GEN::pairedvector<int, double>>& dmxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
     /*!
      \brief node-wise gap calculation
@@ -132,7 +132,7 @@ namespace NTS
      */
     void nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        GEN::pairedvector<int, double>& dmxi, double* gpn);
+        CORE::GEN::pairedvector<int, double>& dmxi, double* gpn);
 
     /*!
      \brief node-wise master temperature calculation for 3D problems
@@ -140,7 +140,7 @@ namespace NTS
      */
     void nwMasterTemp(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
-        const std::vector<GEN::pairedvector<int, double>>& dmxi);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
     /*!
      \brief node-wise slip calculation
@@ -151,7 +151,7 @@ namespace NTS
         LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
         Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
-        GEN::pairedvector<int, double>& dmxi);
+        CORE::GEN::pairedvector<int, double>& dmxi);
 
     /*!
      \brief node-wise wear calculation (internal state var.)
@@ -163,15 +163,16 @@ namespace NTS
         Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
         Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
         Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize, double& jumpval,
-        double& area, double* gpn, GEN::pairedvector<int, double>& dmxi,
-        GEN::pairedvector<int, double>& dslipmatrix, GEN::pairedvector<int, double>& dwear);
+        double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
+        CORE::GEN::pairedvector<int, double>& dslipmatrix,
+        CORE::GEN::pairedvector<int, double>& dwear);
 
     /*!
      \brief node-wise wear calculation (primary variable)
 
      */
     void nwTE2D(CONTACT::CoNode& mynode, double& area, double& jumpval,
-        GEN::pairedvector<int, double>& dslipmatrix);
+        CORE::GEN::pairedvector<int, double>& dslipmatrix);
 
     Teuchos::ParameterList& iparams_;  //< containing contact input parameters
     int dim_;                          //< problem dimension
@@ -226,7 +227,7 @@ namespace NTS
     MTInterpolatorCalc();
 
     /// Singleton access method
-    static MTInterpolatorCalc<distypeM>* Instance(::UTILS::SingletonAction action);
+    static MTInterpolatorCalc<distypeM>* Instance(CORE::UTILS::SingletonAction action);
     ;
 
     //! nm_: number of master element nodes

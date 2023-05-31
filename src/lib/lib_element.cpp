@@ -1142,11 +1142,12 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(const DRT::Discretization& discret,
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
+    const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
-  GEOMETRICSEARCH::BoundingVolume bounding_box;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_box;
   LINALG::Matrix<3, 1, double> point;
 
   // The default bounding box is simply the bounding box of all element nodes.

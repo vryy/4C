@@ -18,9 +18,9 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
-DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(::UTILS::SingletonAction action)
+DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcImmersed<distype>>(

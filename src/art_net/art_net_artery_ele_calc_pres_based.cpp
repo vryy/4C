@@ -43,7 +43,7 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = ::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
@@ -52,7 +52,7 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].Instance(CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*

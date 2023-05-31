@@ -24,7 +24,7 @@
 
 #include "utils_pairedobj_insert_policy.H"
 
-namespace GEN
+namespace CORE::GEN
 {
   /// copy types
   enum CopyType : char
@@ -397,7 +397,7 @@ namespace GEN
       pairedvector_type sorted_m(_m.begin(), _m.begin() + _entries);
       if (sort) std::sort(sorted_m.begin(), sorted_m.end(), pair_comp<pair_type>);
 
-      os << "GEN::pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
+      os << "CORE::GEN::pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
       if (sort) os << "sorted ";
       os << "entries {KEY, T}:\n";
       for (auto& p : sorted_m) os << "{" << p.first << ", " << p.second << "}\n";
@@ -479,6 +479,6 @@ namespace GEN
   template <typename Key, typename T>
   using quick_pairedvector = pairedvector<Key, T, quick_insert_policy<Key, T>>;
 
-}  // namespace GEN
+}  // namespace CORE::GEN
 
 #endif

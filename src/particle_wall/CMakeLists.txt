@@ -1,18 +1,13 @@
-set(OBJS_PARTICLE_WALL
-    # cmake-format: sortable
-    particle_wall.cpp
-    particle_wall_datastate.cpp
-    particle_wall_discretization_runtime_vtu_writer.cpp
-    particle_wall_result_test.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_particle_wall ${OBJS_PARTICLE_WALL})
-
-set(LIBS_ALG_PARTICLE_WALL
+set(_particle_wall_dependencies
     # cmake-format: sortable
+    binstrategy
+    geometry
     inpar
+    io
     lib
-    particleengine
+    linalg
+    particle_engine
     )
-
-baci_add_dependency(alg_particle_wall ${LIBS_ALG_PARTICLE_WALL})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_particle_wall_dependencies})

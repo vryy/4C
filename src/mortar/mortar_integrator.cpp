@@ -42,27 +42,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::quad4:
         {
           return MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad8:
         {
           return MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad8>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad9:
         {
           return MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri3:
         {
           return MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::tri3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri6:
         {
           return MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::tri6>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -76,27 +76,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::quad4:
         {
           return MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad8:
         {
           return MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad8>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad9:
         {
           return MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri3:
         {
           return MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::tri3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri6:
         {
           return MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::tri6>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -110,27 +110,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::quad4:
         {
           return MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad8:
         {
           return MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad8>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad9:
         {
           return MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri3:
         {
           return MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::tri3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri6:
         {
           return MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::tri6>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -144,27 +144,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::quad4:
         {
           return MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad8:
         {
           return MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad8>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad9:
         {
           return MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri3:
         {
           return MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::tri3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri6:
         {
           return MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::tri6>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -178,27 +178,27 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::quad4:
         {
           return MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad8:
         {
           return MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad8>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::quad9:
         {
           return MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri3:
         {
           return MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::tri3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::tri6:
         {
           return MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::tri6>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -213,12 +213,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::line2:
         {
           return MortarIntegratorCalc<DRT::Element::line2, DRT::Element::line2>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::line3:
         {
           return MortarIntegratorCalc<DRT::Element::line2, DRT::Element::line3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -232,12 +232,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::line2:
         {
           return MortarIntegratorCalc<DRT::Element::line3, DRT::Element::line2>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::line3:
         {
           return MortarIntegratorCalc<DRT::Element::line3, DRT::Element::line3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -256,12 +256,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::nurbs2:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs2, DRT::Element::nurbs2>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::nurbs3:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs2, DRT::Element::nurbs3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -275,12 +275,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::nurbs2:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs3, DRT::Element::nurbs2>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::nurbs3:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs3, DRT::Element::nurbs3>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -294,12 +294,12 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
         case DRT::Element::nurbs9:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs9, DRT::Element::nurbs9>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         case DRT::Element::nurbs4:
         {
           return MortarIntegratorCalc<DRT::Element::nurbs9, DRT::Element::nurbs4>::Instance(
-              ::UTILS::SingletonAction::create, params);
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -330,9 +330,9 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>*
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
-    ::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
+    CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       [](const Teuchos::ParameterList& p)
       {
         return std::unique_ptr<MORTAR::MortarIntegratorCalc<distypeS, distypeM>>(

@@ -46,7 +46,7 @@ namespace LINALG
 
 namespace ADAPTER
 {
-  class CouplingNonLinMortar : public CouplingMortar
+  class CouplingNonLinMortar : public CORE::ADAPTER::CouplingMortar
   {
    public:
     /*!

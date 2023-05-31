@@ -28,7 +28,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleParameterXFEM* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// set all the XFEM specific parameters
       void SetElementXFEMParameter(Teuchos::ParameterList& params,  ///< parameter list

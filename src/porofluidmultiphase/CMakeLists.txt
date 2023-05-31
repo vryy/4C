@@ -1,18 +1,18 @@
-set(OBJS_POROFLUIDMULTIPHASE
-    # cmake-format: sortable
-    porofluidmultiphase_dyn.cpp
-    porofluidmultiphase_meshtying_strategy_artery.cpp
-    porofluidmultiphase_meshtying_strategy_std.cpp
-    porofluidmultiphase_resulttest.cpp
-    porofluidmultiphase_timint_implicit.cpp
-    porofluidmultiphase_timint_ost.cpp
-    porofluidmultiphase_utils.cpp
-    )
-baci_add_library(alg_porofluidmultiphase ${OBJS_POROFLUIDMULTIPHASE})
+baci_auto_define_module()
 
-set(LIBS_ALG_POROFLUIDMULTIPHASE
+set(_porofluidmultiphase_dependencies
     # cmake-format: sortable
+    adapter
+    art_net
+    geometry
     inpar
+    io
+    lib
+    linalg
+    mat
+    porofluidmultiphase_ele
+    poromultiphase_scatra
+    rebalance
+    solver
     )
-
-baci_add_dependency(alg_porofluidmultiphase ${LIBS_ALG_POROFLUIDMULTIPHASE})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_porofluidmultiphase_dependencies})

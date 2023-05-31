@@ -36,7 +36,7 @@ namespace MORTAR
   class IntCell;
 }
 
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   class Cell;
 
@@ -80,7 +80,7 @@ namespace VOLMORTAR
 
     */
     void IntegrateCells3D(DRT::Element& Aele, DRT::Element& Bele,
-        Teuchos::RCP<VOLMORTAR::Cell> cell, LINALG::SparseMatrix& dmatrix_A,
+        Teuchos::RCP<CORE::VOLMORTAR::Cell> cell, LINALG::SparseMatrix& dmatrix_A,
         LINALG::SparseMatrix& mmatrix_A, LINALG::SparseMatrix& dmatrix_B,
         LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
         Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
@@ -394,6 +394,6 @@ namespace VOLMORTAR
         const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
   };
 
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
 #endif  // COUPLING_VOLMORTAR_INTEGRATOR_H

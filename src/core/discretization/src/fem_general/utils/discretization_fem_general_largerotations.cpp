@@ -14,7 +14,7 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-unsigned int LARGEROTATIONS::NumberingTrafo(const unsigned int j, const unsigned int numnode)
+unsigned int CORE::LARGEROTATIONS::NumberingTrafo(const unsigned int j, const unsigned int numnode)
 {
   // Node numbering j=1,...,NumNode() according to Crisfield 1999:
   // LINE2  1---2

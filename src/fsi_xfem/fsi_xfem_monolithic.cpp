@@ -198,8 +198,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
   //-------------------------------------------------------------------------
   // Finish standard FluidField()->Init()!
-  // REMARK: We don't want to do this at the beginning, to be able to use std ADAPTER::Coupling for
-  // FA-Coupling
+  // REMARK: We don't want to do this at the beginning, to be able to use std
+  // ADAPTER::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
   const int restart = DRT::Problem::Instance()->Restart();
   if (not restart)

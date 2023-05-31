@@ -394,7 +394,7 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysma
 /*-------------------------------------------------------*/
 void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(

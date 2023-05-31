@@ -18,7 +18,7 @@
 
 #include "discretization_geometric_search_bounding_volume.H"
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   /*! \brief Finds all primitives meeting the predicates and record results in {indices, offsets}.
    *
@@ -43,6 +43,6 @@ namespace GEOMETRICSEARCH
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const IO::verbositylevel verbosity);
 
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH
 
 #endif

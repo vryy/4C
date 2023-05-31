@@ -80,7 +80,7 @@ namespace DRT
 
       /// Singleton access method.
       static ElemagEleCalc<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
       void PrintTrace(DRT::Element* ele);

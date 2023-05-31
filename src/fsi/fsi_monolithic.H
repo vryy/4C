@@ -21,6 +21,7 @@
 #include "linalg_mapextractor.H"
 
 #include "inpar_fsi.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace ADAPTER
@@ -207,15 +208,15 @@ namespace FSI
 
     //! @name Coupling objects
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
-    ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
-    ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
-    ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
+    CORE::ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
+    CORE::ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
+    CORE::ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
+    CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
-    const ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
-    const ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
-    const ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
+    const CORE::ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
+    const CORE::ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
+    const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
+    const CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
 
     //@}
 
@@ -251,16 +252,16 @@ namespace FSI
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling> coupsf_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling> coupsa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     //@}
   };

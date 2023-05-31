@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   namespace UTILS
   {
@@ -1988,6 +1988,6 @@ namespace VOLMORTAR
     }
 
   }  // namespace UTILS
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
 #endif  // COUPLING_VOLMORTAR_SHAPE_H

@@ -16,7 +16,7 @@
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
-VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
+CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
     const DRT::Element::DiscretizationType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {
@@ -52,7 +52,7 @@ VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coo
 /*---------------------------------------------------------------------*
  | calculate jacobian for hex elements                     farah 04/14 |
  *---------------------------------------------------------------------*/
-double VOLMORTAR::Cell::CalcJac(const double* xi)
+double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
 {
   double jac = 0.0;
 
@@ -84,7 +84,7 @@ double VOLMORTAR::Cell::CalcJac(const double* xi)
 /*---------------------------------------------------------------------*
  | mapping from parameter space to global space            farah 01/14 |
  *---------------------------------------------------------------------*/
-void VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
+void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 {
   if (shape_ == DRT::Element::tet4)
   {
@@ -141,7 +141,7 @@ void VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 /*---------------------------------------------------------------------*
  | output                                                  farah 03/14 |
  *---------------------------------------------------------------------*/
-void VOLMORTAR::Cell::Print()
+void CORE::VOLMORTAR::Cell::Print()
 {
   for (int i = 0; i < 4; ++i)
     std::cout << "coords= " << coords_(0, i) << " " << coords_(1, i) << " " << coords_(2, i)

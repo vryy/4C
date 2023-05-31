@@ -52,14 +52,14 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
-    Teuchos::RCP<DRT::Discretization> dis1,         // on Omega_1
-    Teuchos::RCP<DRT::Discretization> dis2,         // on Omega_2
-    std::vector<int>* coupleddof12,                 // 2-->1
-    std::vector<int>* coupleddof21,                 // 1-->2
-    std::pair<int, int>* dofset12,                  // 2-->1
-    std::pair<int, int>* dofset21,                  // 1-->2
-    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy>
+CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
+    Teuchos::RCP<DRT::Discretization> dis1,               // on Omega_1
+    Teuchos::RCP<DRT::Discretization> dis2,               // on Omega_2
+    std::vector<int>* coupleddof12,                       // 2-->1
+    std::vector<int>* coupleddof21,                       // 1-->2
+    std::pair<int, int>* dofset12,                        // 2-->1
+    std::pair<int, int>* dofset21,                        // 1-->2
+    Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy>
         materialstrategy  // strategy for element information transfer
     )
     : dim_(dim), dis1_(dis1), dis2_(dis2), materialstrategy_(materialstrategy)
@@ -133,7 +133,7 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
 /*----------------------------------------------------------------------*
  |  Build maps based on coupling dofs                        farah 03/15|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization>& dis,
+void CORE::VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization>& dis,
     Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof, const int* nodes,
     int numnode, int dofset)
 {
@@ -178,7 +178,7 @@ void VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization>& dis
 /*----------------------------------------------------------------------*
  |  Evaluate (public)                                        farah 10/13|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
 {
   /***********************************************************
    * Welcome                                                 *
@@ -186,7 +186,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   if (myrank_ == 0)
   {
     std::cout << "**************************************************" << std::endl;
-    std::cout << "*****     Welcome to VOLMORTAR-Coupling!     *****" << std::endl;
+    std::cout << "*****     Welcome to CORE::VOLMORTAR-Coupling!     *****" << std::endl;
     std::cout << "**************************************************" << std::endl;
   }
 
@@ -239,7 +239,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   if (myrank_ == 0)
   {
     std::cout << "**************************************************" << std::endl;
-    std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
+    std::cout << "*****       CORE::VOLMORTAR-Coupling Done!!!       *****" << std::endl;
     std::cout << "**************************************************" << std::endl;
 
     // output
@@ -263,7 +263,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
 /*----------------------------------------------------------------------*
  |  Init normals for Dop calculation                         farah 05/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::InitDopNormals()
+void CORE::VOLMORTAR::VolMortarCoupl::InitDopNormals()
 {
   dopnormals_(0, 0) = 1.0;
   dopnormals_(0, 1) = 0.0;
@@ -306,7 +306,7 @@ void VOLMORTAR::VolMortarCoupl::InitDopNormals()
 /*----------------------------------------------------------------------*
  |  Init search tree                                         farah 05/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<GEO::SearchTree> VOLMORTAR::VolMortarCoupl::InitSearch(
+Teuchos::RCP<GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
     Teuchos::RCP<DRT::Discretization> searchdis)
 {
   // init current positions
@@ -343,7 +343,7 @@ Teuchos::RCP<GEO::SearchTree> VOLMORTAR::VolMortarCoupl::InitSearch(
 /*----------------------------------------------------------------------*
  |  Calculate Dops for background mesh                       farah 05/14|
  *----------------------------------------------------------------------*/
-std::map<int, LINALG::Matrix<9, 2>> VOLMORTAR::VolMortarCoupl::CalcBackgroundDops(
+std::map<int, LINALG::Matrix<9, 2>> CORE::VOLMORTAR::VolMortarCoupl::CalcBackgroundDops(
     Teuchos::RCP<DRT::Discretization> searchdis)
 {
   std::map<int, LINALG::Matrix<9, 2>> currentKDOPs;
@@ -361,7 +361,7 @@ std::map<int, LINALG::Matrix<9, 2>> VOLMORTAR::VolMortarCoupl::CalcBackgroundDop
 /*----------------------------------------------------------------------*
  |  Calculate Dop for one Element                            farah 05/14|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<9, 2> VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
+LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
 {
   LINALG::Matrix<9, 2> dop;
 
@@ -404,7 +404,7 @@ LINALG::Matrix<9, 2> VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
 /*----------------------------------------------------------------------*
  |  Perform searching procedure                              farah 05/14|
  *----------------------------------------------------------------------*/
-std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
+std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
     Teuchos::RCP<GEO::SearchTree> SearchTree, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
@@ -430,7 +430,7 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
 /*----------------------------------------------------------------------*
  |  Assign materials for both fields                         vuong 09/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::AssignMaterials()
+void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
 {
   if (dis1_ == Teuchos::null or dis2_ == Teuchos::null)
     dserror("no discretization for assigning materials!");
@@ -481,7 +481,7 @@ void VOLMORTAR::VolMortarCoupl::AssignMaterials()
 /*----------------------------------------------------------------------*
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
-std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
+std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
     DRT::Element::DiscretizationType shape, int& lid)
 {
   // vector of adjacent node ids
@@ -603,7 +603,7 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
 /*----------------------------------------------------------------------*
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
+void CORE::VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
     Teuchos::RCP<DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore)
 {
   // trafo parameter
@@ -710,7 +710,7 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
 /*----------------------------------------------------------------------*
  |  Consistent interpolation routine                         farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
 {
   /***********************************************************
    * Welcome                                                 *
@@ -776,7 +776,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
 /*----------------------------------------------------------------------*
  |  Element-based routine                                    farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateElements()
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
 {
   // output
   if (myrank_ == 0)
@@ -846,7 +846,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 /*----------------------------------------------------------------------*
  |  Segment-based routine                                    farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 {
   // create search tree and current dops
   Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
@@ -914,7 +914,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 /*----------------------------------------------------------------------*
  |  Segment-based routine 2D                                 farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT::Element& Bele)
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT::Element& Bele)
 {
   // define polygon vertices
   static std::vector<MORTAR::Vertex> SlaveVertices;
@@ -960,7 +960,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT::Elem
 /*----------------------------------------------------------------------*
  |  Segment-based routine 3D                                 farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT::Element* Bele)
+void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT::Element* Bele)
 {
   // check need element-based integration over sele:
   bool integrateA = CheckEleIntegration(*Aele, *Bele);
@@ -1022,7 +1022,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT::Elem
 /*----------------------------------------------------------------------*
  |  get parameters and check for validity                    farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
+void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
 {
   // read input parameters
   const Teuchos::ParameterList& volmortar = DRT::Problem::Instance()->VolmortarParams();
@@ -1066,7 +1066,7 @@ void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
 /*----------------------------------------------------------------------*
  |  check initial residuum                                   farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
+void CORE::VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 {
   // create vectors of initial primary variables
   Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(*Discret1()->DofRowMap(0), true);
@@ -1139,7 +1139,7 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 /*----------------------------------------------------------------------*
  |  check initial residuum                                   farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::MeshInit()
+void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
 {
   // create merged map:
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
@@ -1526,7 +1526,7 @@ void VOLMORTAR::VolMortarCoupl::MeshInit()
 /*----------------------------------------------------------------------*
  |  PrintStatus (public)                                     farah 02/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
+void CORE::VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
 {
   static int percent_counter = 0;
   static int EleSum = 0;
@@ -1557,7 +1557,7 @@ void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
 /*----------------------------------------------------------------------*
  |  Start Cut routine                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::PerformCut(
+void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
     DRT::Element* sele, DRT::Element* mele, bool switched_conf)
 {
   // create empty vector of integration cells
@@ -1651,7 +1651,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
           GEO::CUT::IntegrationCell* ic = *z;
 
           IntCells.push_back(
-              Teuchos::rcp(new VOLMORTAR::Cell(count, 4, ic->Coordinates(), ic->Shape())));
+              Teuchos::rcp(new CORE::VOLMORTAR::Cell(count, 4, ic->Coordinates(), ic->Shape())));
           volume_ += IntCells[count]->Vol();
 
           count++;
@@ -1721,7 +1721,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
 /*----------------------------------------------------------------------*
  |  Check need for element-based integration                 farah 01/14|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele, DRT::Element& mele)
+bool CORE::VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele, DRT::Element& mele)
 {
   bool integrateele = true;
   bool converged = false;
@@ -1791,7 +1791,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele, DRT::Ele
 /*----------------------------------------------------------------------*
  |  Check need for cut and element-based integration         farah 01/14|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
+bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
 {
   double xi[3] = {0.0, 0.0, 0.0};
   double xgl[3] = {0.0, 0.0, 0.0};
@@ -2043,7 +2043,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
 /*----------------------------------------------------------------------*
  |  Integrate2D Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate2D(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
     DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells)
 {
   //--------------------------------------------------------------------
@@ -2194,7 +2194,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
     DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells)
 {
   //--------------------------------------------------------------------
@@ -2620,7 +2620,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
     DRT::Element& Aele, std::vector<int>& foundeles)
 {
   switch (Aele.Shape())
@@ -2728,7 +2728,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
 /*----------------------------------------------------------------------*
  |  Integrate3D element based for projector P21              farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
     DRT::Element& Bele, std::vector<int>& foundeles)
 {
   switch (Bele.Shape())
@@ -2835,7 +2835,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 03/15|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
     DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb)
 {
   switch (Aele.Shape())
@@ -2902,7 +2902,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 03/15|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
     DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta)
 {
   switch (Bele.Shape())
@@ -2968,7 +2968,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
+void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
     DRT::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
@@ -2981,7 +2981,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
+void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
     DRT::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
@@ -2994,7 +2994,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells for direct divergence approach         farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
     DRT::Element& sele, DRT::Element& mele, bool switched_conf)
 {
   if ((int)(volcell_.size()) > 1)
@@ -3148,7 +3148,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
 /*----------------------------------------------------------------------*
  |  Integrate over A-element domain                          farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& mele, int domain)
+void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
+    DRT::Element& sele, DRT::Element& mele, int domain)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -3553,7 +3554,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele, DRT::Element& me
 /*----------------------------------------------------------------------*
  |  init (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Initialize()
+void CORE::VOLMORTAR::VolMortarCoupl::Initialize()
 {
   /* ******************************************************************
    * (re)setup global Mortar LINALG::SparseMatrices                   *
@@ -3581,7 +3582,7 @@ void VOLMORTAR::VolMortarCoupl::Initialize()
 /*----------------------------------------------------------------------*
  |  Complete (public)                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Complete()
+void CORE::VOLMORTAR::VolMortarCoupl::Complete()
 {
   // complete...
   D1_->Complete(*P12_dofrowmap_, *P12_dofrowmap_);
@@ -3603,7 +3604,7 @@ void VOLMORTAR::VolMortarCoupl::Complete()
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
+void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 {
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
@@ -3672,7 +3673,7 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
+void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
     DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices)
 {
   // project slave nodes onto auxiliary plane
@@ -3702,7 +3703,7 @@ void VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
+void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
     DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices)
 {
   // project slave nodes onto auxiliary plane
@@ -3732,7 +3733,7 @@ void VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons (NEW version)                    popp 11/09|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
+bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
     std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly, DRT::Element& sele,
     DRT::Element& mele, double& tol)
 {
@@ -4460,19 +4461,19 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Ve
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::CenterTriangulation(
+bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
     std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells, std::vector<MORTAR::Vertex>& clip,
     double tol)
 {
   // preparations
   cells.resize(0);
   int clipsize = (int)(clip.size());
-  std::vector<GEN::pairedvector<int, double>> lincenter(3, 100);
+  std::vector<CORE::GEN::pairedvector<int, double>> lincenter(3, 100);
 
-  std::vector<GEN::pairedvector<int, double>> derivauxn;
+  std::vector<CORE::GEN::pairedvector<int, double>> derivauxn;
 
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<GEN::pairedvector<int, double>>(3, 100));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 100));
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -4619,7 +4620,7 @@ bool VOLMORTAR::VolMortarCoupl::CenterTriangulation(
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
+bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
     std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells, std::vector<MORTAR::Vertex>& clip,
     double tol)
 {
@@ -4627,10 +4628,10 @@ bool VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
   cells.resize(0);
   int clipsize = (int)(clip.size());
 
-  std::vector<GEN::pairedvector<int, double>> derivauxn;
+  std::vector<CORE::GEN::pairedvector<int, double>> derivauxn;
 
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<GEN::pairedvector<int, double>>(3, 100));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 100));
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
   //**********************************************************************

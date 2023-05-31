@@ -1,20 +1,16 @@
-set(OBJS_STI
-    # cmake-format: sortable
-    sti_algorithm.cpp
-    sti_clonestrategy.cpp
-    sti_dyn.cpp
-    sti_monolithic.cpp
-    sti_monolithic_evaluate_OffDiag.cpp
-    sti_partitioned.cpp
-    sti_resulttest.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_sti ${OBJS_STI})
-
-set(LIBS_ALG_STI
+set(_sti_dependencies
     # cmake-format: sortable
     adapter
+    core
+    inpar
+    io
     lib
+    linalg
+    mat
+    scatra
+    scatra_ele
+    solver
     )
-
-baci_add_dependency(alg_sti ${LIBS_ALG_STI})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_sti_dependencies})

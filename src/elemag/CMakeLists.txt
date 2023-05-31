@@ -1,37 +1,19 @@
-set(OBJS_ELEMAG
-    # cmake-format: sortable
-    elemag_dyn.cpp
-    elemag_resulttest.cpp
-    elemag_timeint.cpp
-    elemag_utils_clonestrategy.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_elemag ${OBJS_ELEMAG})
-
-set(LIBS_ALG_ELEMEAG
+set(_elemag_dependencies
     # cmake-format: sortable
+    adapter
+    comm
+    core
+    cut
+    geometry
+    inpar
+    io
+    lib
     linalg
+    mat
+    scatra
+    scatra_ele
+    solver
     )
-
-baci_add_dependency(alg_elemag ${LIBS_ALG_ELEMEAG})
-
-set(OBJS_ELEMAG_LIB
-    # cmake-format: sortable
-    elemag_diff_ele.cpp
-    elemag_diff_ele_calc.cpp
-    elemag_ele.cpp
-    elemag_ele_boundary_calc.cpp
-    elemag_ele_calc.cpp
-    elemag_ele_evaluate.cpp
-    elemag_ele_factory.cpp
-    elemag_ele_intfaces_calc.cpp
-    )
-
-baci_add_library(ele_elemag ${OBJS_ELEMAG_LIB})
-
-set(LIBS_ELE_ELEMAG
-    # cmake-format: sortable
-    linalg
-    )
-
-baci_add_dependency(ele_elemag ${LIBS_ELE_ELEMAG})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_elemag_dependencies})
