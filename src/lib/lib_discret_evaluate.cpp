@@ -73,12 +73,9 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
   // for each type of element
   // for most element types, just the base class dummy is called
   // that does nothing
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
-    ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
-        strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
-        strategy.Systemvector3());
-  }
+  ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
+      strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
+      strategy.Systemvector3());
 
   Element::LocationArray la(dofsets_.size());
 
@@ -88,36 +85,23 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
   {
     DRT::Element* actele = lColElement(i);
 
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
-      // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(*this, la, false);
-    }
+    // get element location vector, dirichlet flags and ownerships
+    actele->LocationVector(*this, la, false);
 
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate Resize");
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    strategy.ClearElementStorage(la[row].Size(), la[col].Size());
 
-      // get dimension of element matrices and vectors
-      // Reshape element matrices and vectors and init to zero
-      strategy.ClearElementStorage(la[row].Size(), la[col].Size());
-    }
+    // call the element evaluate method
+    element_action(*actele, la, strategy.Elematrix1(), strategy.Elematrix2(), strategy.Elevector1(),
+        strategy.Elevector2(), strategy.Elevector3());
 
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
-      // call the element evaluate method
-      element_action(*actele, la, strategy.Elematrix1(), strategy.Elematrix2(),
-          strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-    }
-
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
-      int eid = actele->Id();
-      strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
-      strategy.AssembleMatrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
-      strategy.AssembleVector1(la[row].lm_, la[row].lmowner_);
-      strategy.AssembleVector2(la[row].lm_, la[row].lmowner_);
-      strategy.AssembleVector3(la[row].lm_, la[row].lmowner_);
-    }
+    int eid = actele->Id();
+    strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
+    strategy.AssembleMatrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
+    strategy.AssembleVector1(la[row].lm_, la[row].lmowner_);
+    strategy.AssembleVector2(la[row].lm_, la[row].lmowner_);
+    strategy.AssembleVector3(la[row].lm_, la[row].lmowner_);
 
   }  // for (int i=0; i<numcolele; ++i)
 
