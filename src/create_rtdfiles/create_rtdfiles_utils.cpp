@@ -216,9 +216,9 @@ namespace DRT
       Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
       std::stringstream cloningMatStream;
       lines->Print(cloningMatStream);
-      std::vector<std::string> cloningMatList;
-      boost::split(cloningMatList, cloningMatStream.str(), boost::is_any_of("\n"));
-      // materialsectionstring = {std::string(58, '-') + "CLONING MATERIAL MAP"};
+      const std::vector<std::string> cloningMatList =
+          DRT::UTILS::Split(cloningMatStream.str(), "\n");
+
       WriteCode(stream, cloningMatList);
     }
 
@@ -641,8 +641,8 @@ namespace DRT
       WriteParagraph(stream, sectionDescription);
       std::stringstream resultDescriptionStream;
       lines->Print(resultDescriptionStream);
-      std::vector<std::string> resultDescriptionList;
-      boost::split(resultDescriptionList, resultDescriptionStream.str(), boost::is_any_of("\n"));
+      const std::vector<std::string> resultDescriptionList =
+          DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
       WriteCode(stream, resultDescriptionList);
       //
       // adding the sections for the FUNCTION
@@ -653,8 +653,7 @@ namespace DRT
       WriteParagraph(stream, sectionDescription);
       std::stringstream functionStream;
       lines->Print(functionStream);
-      std::vector<std::string> functionList;
-      boost::split(functionList, functionStream.str(), boost::is_any_of("\n"));
+      const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
       WriteCode(stream, functionList);
     }
   }  // namespace RTD
