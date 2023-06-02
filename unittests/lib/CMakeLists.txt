@@ -19,7 +19,7 @@ set(SOURCE_LIST
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 
 baci_link_google_test_necessary_libraries(${TESTNAME})
-baci_link_executable_with_all(${TESTNAME})
+baci_target_requires_cyclic_legacy_linking(${TESTNAME})
 
 set(TESTNAME unittests_lib_np_3)
 
@@ -39,4 +39,4 @@ baci_add_google_test_executable(
   )
 
 baci_link_google_test_necessary_libraries(${TESTNAME})
-baci_link_executable_with_all(${TESTNAME})
+baci_target_requires_cyclic_legacy_linking(${TESTNAME})

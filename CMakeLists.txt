@@ -170,8 +170,6 @@ add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
 # Read in the source directory which defines all modules and executables
 add_subdirectory(src)
-# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
-get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
 
 # Process documentation
 add_subdirectory(doc EXCLUDE_FROM_ALL)
@@ -188,3 +186,15 @@ enable_testing()
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
 include(UnittestingFramework.cmake)
+
+# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
+get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
+
+## After we defined all targets, we can now resolve the legacy linking
+get_property(
+  BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING GLOBAL
+  PROPERTY BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING
+  )
+foreach(target ${BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING})
+  baci_link_executable_with_all(${target})
+endforeach()
