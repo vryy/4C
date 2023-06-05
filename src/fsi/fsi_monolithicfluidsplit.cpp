@@ -1535,9 +1535,9 @@ void FSI::MonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv,
-    Teuchos::RCP<const Epetra_Vector> av, bool fullvectors)
+    Teuchos::RCP<const Epetra_Vector> av, const bool slave_vectors_contain_interface_dofs)
 {
-  if (fullvectors)
+  if (slave_vectors_contain_interface_dofs)
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Epetra_Vector> fov = FluidField()->Interface()->ExtractOtherVector(fv);
@@ -1545,9 +1545,7 @@ void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
     // put them together
-    Extractor().AddVector(*sv, 0, v);
-    Extractor().AddVector(*fov, 1, v);
-    Extractor().AddVector(*aov, 2, v);
+    FSI::Monolithic::CombineFieldVectors(v, sv, fov, aov);
   }
   else
     FSI::Monolithic::CombineFieldVectors(v, sv, fv, av);

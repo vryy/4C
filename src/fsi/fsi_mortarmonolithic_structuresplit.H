@@ -262,19 +262,9 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f);
 
-    /*! \brief Put three field vectors together to a single monolithic vector
-     *
-     *  If all input vectors contain interface DOFs, we first have to extract
-     *  the inner portion of the slave vectors. Then, we just put them together.
-     *  As usual, the ordering is: structure --  fluid -- ALE
-     */
-    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-        Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
-        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
-                          ///< (false)
-    );
+    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
+        const bool slave_vectors_contain_interface_dofs) final;
 
     /// block system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
