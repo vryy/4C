@@ -1,0 +1,13 @@
+set(TESTNAME unittests_stl_extension)
+
+set(SOURCE_LIST utils_std_cxx20_ranges_tests.cpp)
+
+baci_add_google_test_executable(
+  ${TESTNAME}
+  NP
+  1
+  SOURCE
+  ${SOURCE_LIST}
+  )
+
+baci_link_google_test_necessary_libraries(${TESTNAME})
