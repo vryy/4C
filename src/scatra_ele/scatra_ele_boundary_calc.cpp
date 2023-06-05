@@ -477,20 +477,38 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
     Teuchos::ParameterList& params, DRT::FaceElement* ele)
 {
   // access the global vector
-  const Teuchos::RCP<Epetra_MultiVector> normals =
+  const auto normals =
       params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
   if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element
-  GetConstNormal(normal_, xyze_);
+  if constexpr (nsd_ == 3 and nsd_ele_ == 1)
+  {
+    // get first 3 nodes in parent element
+    dsassert(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
+    LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
-  // loop over the element nodes
+    auto* p_ele = ele->ParentElement();
+    for (int i_node = 0; i_node < 3; ++i_node)
+    {
+      const auto* coords = p_ele->Nodes()[i_node]->X();
+      for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
+    }
+
+    normal_ = GetConstNormal(xyze_, xyz_parent_ele);
+  }
+  else if constexpr (nsd_ - nsd_ele_ == 1)
+  {
+    normal_ = GetConstNormal(xyze_);
+  }
+  else
+    dserror("This combination of space dimension and element dimension makes no sense.");
+
   for (int j = 0; j < nen_; j++)
   {
     const int nodegid = (ele->Nodes()[j])->Id();
     if (normals->Map().MyGID(nodegid))
-    {  // OK, the node belongs to this processor
-
+    {
       // scaling to a unit vector is performed on the global level after
       // assembly of nodal contributions since we have no reliable information
       // about the number of boundary elements adjacent to a node
@@ -499,8 +517,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
         normals->SumIntoGlobalValue(nodegid, dim, normal_(dim));
       }
     }
-    // else: the node belongs to another processor; the ghosted
-    //      element will contribute the right value on that proc
   }
 }
 
@@ -917,53 +933,75 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
-    LINALG::Matrix<nsd_, 1>& normal, const LINALG::Matrix<nsd_, nen_>& xyze)
+LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<3, nen_>& xyze)
 {
-  // determine normal to this element
-  if (not DRT::NURBS::IsNurbs(distype))
-  {
-    switch (nsd_ele_)
-    {
-      case 2:
-      {
-        LINALG::Matrix<3, 1> dist1(true), dist2(true);
-        for (int i = 0; i < 3; i++)
-        {
-          dist1(i) = xyze(i, 1) - xyze(i, 0);
-          dist2(i) = xyze(i, 2) - xyze(i, 0);
-        }
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-        normal(0) = dist1(1) * dist2(2) - dist1(2) * dist2(1);
-        normal(1) = dist1(2) * dist2(0) - dist1(0) * dist2(2);
-        normal(2) = dist1(0) * dist2(1) - dist1(1) * dist2(0);
-      }
-      break;
-      case 1:
-      {
-        normal(0) = xyze(1, 1) - xyze(1, 0);
-        normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
-      }
-      break;
-      default:
-        dserror("Illegal number of space dimensions: %d", nsd_ele_);
-        break;
-    }  // switch(nsd)
-  }
-  else  // NURBS case
+  LINALG::Matrix<3, 1> normal(true), dist1(true), dist2(true);
+  for (int i = 0; i < 3; i++)
   {
-    // ToDo: this is only a temporary solution in order to have something here.
-    // Current handling of node-based normal vectors not applicable in NURBS case
-    normal(0) = 1.0;
+    dist1(i) = xyze(i, 1) - xyze(i, 0);
+    dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  // length of normal to this element
+  normal = GEO::computeCrossProduct(dist1, dist2);
+
   const double length = normal.Norm2();
-  // outward-pointing normal of length 1.0
-  if (length > 1e-10)
-    normal.Scale(1 / length);
-  else
-    dserror("Zero length for element normal");
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
+}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<2, nen_>& xyze)
+{
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+
+  LINALG::Matrix<2, 1> normal(true);
+
+  normal(0) = xyze(1, 1) - xyze(1, 0);
+  normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
+
+  const double length = normal.Norm2();
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
+}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<3, nen_>& xyze, const LINALG::Matrix<3, 3>& nodes_parent_ele)
+{
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+
+  LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true), parent_ele_v2(true);
+
+  for (int dim = 0; dim < 3; ++dim)
+  {
+    boundary_ele(dim, 0) = xyze(dim, 0) - xyze(dim, 1);
+    parent_ele_v1(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 1);
+    parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
+  }
+
+  auto normal_parent_ele = GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
+  normal = GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
+
+  const double length = normal.Norm2();
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
 }  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
 
 /*----------------------------------------------------------------------*

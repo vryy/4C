@@ -140,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   std::vector<double> mynormvel(lm.size());
 
   // determine constant outer normal to this element
-  my::GetConstNormal(my::normal_, my::xyze_);
+  my::normal_ = my::GetConstNormal(my::xyze_);
 
   // extract temperature flux vector for each node of the parent element
   LINALG::SerialDenseMatrix eflux(3, nenparent);
