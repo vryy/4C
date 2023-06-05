@@ -221,17 +221,16 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   for (int elid = 0; elid < elecolmap.NumMyElements(); ++elid)
     coleles[elid] = dis.gElement(elecolmap.GID(elid));
 
-  return ComputeNodalL2Projection(dis, noderowmap, coleles.data(), coleles.size(), statename,
-      numvec, params, solvernumber, l2_proj_type, fullnoderowmap, slavetomastercolnodesmap,
-      sys_mat_diagonal_ptr);
+  return ComputeNodalL2Projection(dis, noderowmap, coleles.size(), statename, numvec, params,
+      solvernumber, l2_proj_type, fullnoderowmap, slavetomastercolnodesmap, sys_mat_diagonal_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretization& dis,
-    const Epetra_Map& noderowmap, DRT::Element* const* coleleptr, const unsigned& numcolele,
-    const std::string& statename, const int& numvec, Teuchos::ParameterList& params,
-    const int& solvernumber, const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
+    const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
+    const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
+    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
     const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap,
     Epetra_Vector* const sys_mat_diagonal_ptr)
 {
@@ -259,7 +258,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   // loop column elements
   for (unsigned i = 0; i < numcolele; ++i)
   {
-    DRT::Element* actele = coleleptr[i];
+    DRT::Element* actele = dis.lColElement(i);
     const int numnode = actele->NumNode();
 
     actele->LocationVector(dis, la, false);
@@ -384,9 +383,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
 
   // use fast access methods
   const int numcolele = dis->NumMyColElements();
-  DRT::Element* const* coleleptr = dis->lColElements();
 
-  return ComputeNodalL2Projection(*dis, noderowmap, coleleptr, numcolele, statename, numvec, params,
+  return ComputeNodalL2Projection(*dis, noderowmap, numcolele, statename, numvec, params,
       solvernumber, l2_proj_type, fullnoderowmap, &slavetomastercolnodesmap);
 }
 

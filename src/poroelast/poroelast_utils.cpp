@@ -141,7 +141,7 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
-      dis->lColElements(), dis->lColElements() + dis->NumMyColElements(), IsPoroP1Element);
+      dis->MyColElementRange().begin(), dis->MyColElementRange().end(), IsPoroP1Element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
