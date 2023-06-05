@@ -1,39 +1,5 @@
 ###------------------------------------------------------------------ Test definitions
 
-# Determine timeout for each test. Use default one, if it is not passed from the outside.
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT})
-  set(GLOBAL_TEST_TIMEOUT $ENV{GLOBAL_TEST_TIMEOUT})
-  message("Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s (before scaling).")
-else()
-  # default test timeout, if not passed as an environment variable
-  set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
-
-  message(
-    "Global test timeout is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT} s (before scaling)."
-    )
-endif()
-
-# Determine timeout scale factor. Use default one, if it is not passed from the outside
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  set(GLOBAL_TEST_TIMEOUT_SCALE $ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  message("Global test timeout scale is $ENV{GLOBAL_TEST_TIMEOUT_SCALE}.")
-else()
-  # default test timeout scale, if not passed as an environment variable
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-    set(GLOBAL_TEST_TIMEOUT_SCALE 4) # Default timeout scale for debug configuration
-  else()
-    set(GLOBAL_TEST_TIMEOUT_SCALE 1) # Default timeout scale
-  endif()
-
-  message(
-    "Global test timeout scale is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT_SCALE} for this kind of build."
-    )
-endif()
-
-# Determine scaled global test timeout
-math(EXPR GLOBAL_TEST_TIMEOUT_SCALED "${GLOBAL_TEST_TIMEOUT}*${GLOBAL_TEST_TIMEOUT_SCALE}")
-message("The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
-
 ####################################################################
 ################        Definition of macros       #################
 ####################################################################
@@ -603,7 +569,7 @@ macro(
     set(FIELD "")
   endif()
 
-  set(name_of_test ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp)
+  set(name_of_test "${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp")
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
       ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
@@ -614,16 +580,13 @@ macro(
 
   # specify test case
   add_test(
-    NAME ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
+    NAME "${name_of_test}"
     COMMAND
       sh -c
       " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
-  require_fixture(
-    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
-    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
-    )
+  require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
   set_environment(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
@@ -758,7 +721,7 @@ macro(
 
   # add test to testing framework
   add_test(
-    NAME ${name_of_test}-p${num_proc_base_run}
+    NAME "${name_of_test}-p${num_proc_base_run}"
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
