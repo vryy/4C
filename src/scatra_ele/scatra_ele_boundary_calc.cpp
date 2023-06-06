@@ -485,10 +485,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
   if constexpr (nsd_ == 3 and nsd_ele_ == 1)
   {
     // get first 3 nodes in parent element
+    auto* p_ele = ele->ParentElement();
     dsassert(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
     LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
-    auto* p_ele = ele->ParentElement();
     for (int i_node = 0; i_node < 3; ++i_node)
     {
       const auto* coords = p_ele->Nodes()[i_node]->X();
