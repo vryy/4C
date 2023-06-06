@@ -417,7 +417,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
 
-  DRT::UTILS::GaussIntegration ip(DRT::Element::hex8, 3);
+  CORE::DRT::UTILS::GaussIntegration ip(DRT::Element::hex8, 3);
   numgpt_ = ip.NumPoints();
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -1002,8 +1002,8 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   {
     InvalidGpData();
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<DRT::Element::hex8>(xsi_[gp], SetShapeFunction());
-    DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi_[gp], SetDerivShapeFunction());
+    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi_[gp], SetShapeFunction());
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi_[gp], SetDerivShapeFunction());
 
     Kinematics(gp);
 

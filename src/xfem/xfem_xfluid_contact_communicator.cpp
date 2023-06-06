@@ -386,10 +386,10 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       static LINALG::Matrix<3, 8> derxy;
 
       // evaluate shape functions
-      DRT::UTILS::shape_function<DRT::Element::hex8>(fluidele_xsi, funct);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(fluidele_xsi, funct);
 
       // evaluate the derivatives of shape functions
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(fluidele_xsi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(fluidele_xsi, deriv);
       xjm.MultiplyNT(deriv, xyze);
       // double det = xji.Invert(xjm); //if we need this at some point
       xji.Invert(xjm);
@@ -429,9 +429,10 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       }
     }
 
-    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+    const int numnodes =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
     static LINALG::Matrix<numnodes, 1> funct(false);
-    DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
+    CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
     vel_s.Multiply(vels, funct);
     if (isporo_) velpf_s.Multiply(velpfs, funct);
   }
@@ -452,7 +453,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
   {
     // 1 // Get Boundary Cells and Gausspoints of this Boundarycells for this fluid element!
     std::map<int, std::vector<GEO::CUT::BoundaryCell*>> bcells;
-    std::map<int, std::vector<DRT::UTILS::GaussIntegration>> bintpoints;
+    std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> bintpoints;
 
     GEO::CUT::ElementHandle* cele = cutwizard_->GetElement(fluidele);
     if (cele == NULL) dserror("Couldn't find cut element for ele %d", fluidele->Id());
@@ -460,7 +461,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
     std::vector<GEO::CUT::plain_volumecell_set> cell_sets;
     {
       std::vector<std::vector<int>> nds_sets;
-      std::vector<std::vector<DRT::UTILS::GaussIntegration>> intpoints_sets;
+      std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>> intpoints_sets;
       cele->GetCellSets_DofSets_GaussPoints(cell_sets, nds_sets, intpoints_sets, false);
     }
 
@@ -670,14 +671,15 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   volumecell = NULL;
   if (sele->Shape() == DRT::Element::quad4)
   {
-    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+    const int numnodes =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
 
     Epetra_SerialDenseMatrix xyze_m;
     LINALG::Matrix<numnodes, 1> funct(false);
 
     sidehandle->Coordinates(xyze_m);
     LINALG::Matrix<3, numnodes> xyze(xyze_m.A(), true);
-    DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DRT::Element::quad4);
+    CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DRT::Element::quad4);
     x.Multiply(xyze, funct);
   }
   else
@@ -1013,7 +1015,7 @@ double XFEM::XFluid_Contact_Comm::DistancetoSide(
     {
       static LINALG::Matrix<2, 1> funct;
       // evaluate shape functions
-      DRT::UTILS::shape_function<DRT::Element::line2>(rst, funct);
+      CORE::DRT::UTILS::shape_function<DRT::Element::line2>(rst, funct);
       static LINALG::Matrix<3, 1> posx;
       posx.Multiply(xyzl, funct);
       posx.Update(-1, x, 1);
@@ -1202,7 +1204,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   if (!sh) dserror("Couldn't get SideHandle!");
   if (sh->Shape() != DRT::Element::quad4) dserror("Not a quad4!");
   const int numnodes_sh =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
   Epetra_SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
   LINALG::Matrix<2, numnodes_sh> deriv(false);
@@ -1345,12 +1347,13 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   double drs_sh = 0;
   for (uint bc = 0; bc < bcs.size(); ++bc)
   {
-    DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
+    CORE::DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
     {
       coords.Reshape(weights.size() + gi.NumPoints(), 2);
       int idx = weights.size();
-      for (DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
+           ++iquad)
       {
         const LINALG::Matrix<2, 1> eta(iquad.Point(), false);
         XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
@@ -1364,9 +1367,9 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         coords(idx, 0) = rst(0);
         coords(idx, 1) = rst(1);
 
-        DRT::UTILS::shape_function_2D_deriv1(
+        CORE::DRT::UTILS::shape_function_2D_deriv1(
             deriv, coords(idx, 0), coords(idx, 1), DRT::Element::quad4);
-        DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
+        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
             xquad_m, deriv, metrictensor, drs_sh, NULL);
         weights.push_back(iquad.Weight() * drs / drs_sh);  // small tri3 to quad4 weight
         ++idx;

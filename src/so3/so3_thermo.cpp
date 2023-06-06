@@ -22,7 +22,7 @@ DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::So3_Thermo(int id, int owner)
     : so3_ele(id, owner), intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
+  ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
   return;
 }
 

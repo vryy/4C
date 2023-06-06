@@ -83,7 +83,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
       \brief Evaluate coupling terms (off diagonal terms) of the element at specified gauss points
@@ -107,7 +107,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
      protected:
       /*!
@@ -145,7 +145,7 @@ namespace DRT
           const LINALG::Matrix<nsd_, nen_>& edispn, const LINALG::Matrix<nsd_, nen_>& egridv,
           const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
           const LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat, bool isale,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief calculate off diagonal element matrix and rhs for porous flow
@@ -180,7 +180,7 @@ namespace DRT
           const LINALG::Matrix<nen_, 1>* eporositynp,
           LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& ecoupl,
           LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
-          bool isale, const DRT::UTILS::GaussIntegration& intpoints);
+          bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief Gauss point loop for evaluation of off-diagonal terms
@@ -220,7 +220,7 @@ namespace DRT
           LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
           LINALG::Matrix<nen_ * nsd_, nen_>& ecouplp1_u, LINALG::Matrix<nen_, nen_>& ecouplp1_p,
           Teuchos::RCP<const MAT::Material> material,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
        \brief evaluate pressure equation (i.e. continuity equation for standard poro elements)

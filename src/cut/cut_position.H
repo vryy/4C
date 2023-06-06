@@ -249,8 +249,9 @@ namespace GEO
      *  \author hiermeier
      *  \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned numNodesElement =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
     {
@@ -397,8 +398,9 @@ namespace GEO
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned numNodesElement =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputePosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -446,8 +448,9 @@ namespace GEO
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned numNodesElement =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputeEmbeddedPosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -601,7 +604,8 @@ namespace GEO
       /// template class for the actual position creation
       template <bool isembedded, unsigned probdim, unsigned dim,
           DRT::Element::DiscretizationType eletype,
-          unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement =
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       class PositionCreator
       {
        public:
@@ -710,13 +714,15 @@ namespace GEO
             case INPAR::CUT::floattype_double:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(xyze, xyz);
+                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
+                  xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(xyze, xyz);
+                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
+                  xyze, xyz);
               break;
             }
             default:
@@ -740,13 +746,15 @@ namespace GEO
             case INPAR::CUT::floattype_double:
             {
               return new ComputePosition<dim, eletype, numNodesElement,
-                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(xyze, xyz);
+                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
+                  xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
               return new ComputePosition<dim, eletype, numNodesElement,
-                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(xyze, xyz);
+                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
+                  xyze, xyz);
               break;
             }
             default:
@@ -770,8 +778,9 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-          unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+          unsigned numNodesElement =
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -804,7 +813,7 @@ namespace GEO
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -839,8 +848,9 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-          unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+          unsigned numNodesElement =
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
           const LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
@@ -873,7 +883,7 @@ namespace GEO
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -913,8 +923,9 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-          unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+          unsigned numNodesElement =
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(
           const LINALG::Matrix<probdim, numNodesElement>& xyze,
           const LINALG::Matrix<probdim, 1>& xyz,
@@ -946,7 +957,7 @@ namespace GEO
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
         const unsigned num_nodes_ele =
-            DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
         switch (probdim_)
         {
           case 2:
@@ -982,8 +993,9 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
-          unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+          unsigned numNodesElement =
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
           const LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)

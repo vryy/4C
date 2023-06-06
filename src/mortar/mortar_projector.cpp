@@ -617,7 +617,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
     else
-      DRT::UTILS::shape_function_1D(val, gpeta[0], distypeS);
+      CORE::DRT::UTILS::shape_function_1D(val, gpeta[0], distypeS);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -866,7 +866,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     }
     else
     {
-      DRT::UTILS::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
+      CORE::DRT::UTILS::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
     }
 
     // get interpolated GP normal and GP coordinates
@@ -1155,7 +1155,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1318,7 +1318,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1438,8 +1438,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     LINALG::Matrix<n_, 1> mval;
     LINALG::Matrix<2, n_> mderiv;
 
-    DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
-    DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1556,8 +1556,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   LINALG::Matrix<n_, 1> mval;
   LINALG::Matrix<2, n_> mderiv;
 
-  DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
-  DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+  CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -1756,8 +1756,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     LINALG::Matrix<n_, 1> mval;
     LINALG::Matrix<1, n_> mderiv;
 
-    DRT::UTILS::shape_function_1D(mval, eta[0], distype);
-    DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1868,8 +1868,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   LINALG::Matrix<n_, 1> mval;
   LINALG::Matrix<1, n_> mderiv;
 
-  DRT::UTILS::shape_function_1D(mval, eta[0], distype);
-  DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -2084,7 +2084,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2235,7 +2235,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2328,7 +2328,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   //--------------------------
   // master part:
   LINALG::Matrix<n_, 1> val;
-  DRT::UTILS::shape_function_1D(val, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
 
   for (int i = 0; i < n_; ++i)
   {
@@ -2347,7 +2347,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   LINALG::Matrix<1, n_> deriv1;
-  DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
@@ -2435,10 +2435,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   LINALG::Matrix<1, n_> deriv;
-  DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
 
   LINALG::Matrix<1, n_> deriv2;
-  DRT::UTILS::shape_function_1D_deriv2(deriv2, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
@@ -2655,7 +2655,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
   }
   else
-    DRT::UTILS::shape_function_1D(val, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
 
   // get interpolated normal and proj. coordinates for current eta
   double nn[ndim_];
@@ -2734,8 +2734,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   }
   else
   {
-    DRT::UTILS::shape_function_1D(val, eta[0], distype);
-    DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
   }
 
   // get interpolated normal and proj. coordinates for current eta

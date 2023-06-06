@@ -683,11 +683,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         {
           if (so3_ele::Shape() != DRT::Element::nurbs27)
           {
-            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+            CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
           }
           // evaluate shape functions NURBS-style
           else
-            DRT::NURBS::UTILS::nurbs_get_3D_funct(
+            CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                 shapefunct, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
 
           // product of shapefunctions and element temperatures
@@ -838,8 +838,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1002,8 +1002,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1151,12 +1151,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // shape functions (shapefunct) and their first derivatives (deriv)
     if (so3_ele::Shape() != DRT::Element::nurbs27)
     {
-      DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
     }
     // evaluate shape functions NURBS-style
     else
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1416,12 +1416,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     // shape functions (shapefunct) and their first derivatives (deriv)
     if (so3_ele::Shape() != DRT::Element::nurbs27)
     {
-      DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
     }
     // evaluate shape functions NURBS-style
     else
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1589,7 +1589,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
     // inverse jacobian matrix at centroid
     LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -1610,8 +1610,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     for (int gp = 0; gp < numgpt_; ++gp)
     {
       // shape functions (shapefunct) and their first derivatives (deriv)
-      DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1
@@ -1934,7 +1934,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
     // inverse jacobian matrix at centroid
     LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -1954,8 +1954,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     for (int gp = 0; gp < numgpt_; ++gp)
     {
       // shape functions (shapefunct) and their first derivatives (deriv)
-      DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       // copy structural shape functions needed for the thermo field
       // identical shapefunctions for the displacements and the temperatures
@@ -2475,9 +2475,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
     }
     // first derivatives of shape functions (deriv)
     if (so3_ele::Shape() != DRT::Element::nurbs27)
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
     else
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           funct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
 
     // compute Jacobian matrix and determinant

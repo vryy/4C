@@ -25,7 +25,7 @@ namespace DRT
 
     // class implementation
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcElchScl : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      protected:

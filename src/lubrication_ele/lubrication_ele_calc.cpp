@@ -348,7 +348,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1010,8 +1010,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsShear(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
-    const int iquad                                              ///< id of current Gauss point
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
+    const int iquad  ///< id of current Gauss point
 )
 {
   // coordinates of the current integration point
@@ -1045,8 +1045,8 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDeri
   if (nsd_ == nsd_ele_)  // standard case
   {
     // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
 
 
     // compute Jacobian matrix and determinant
@@ -1075,8 +1075,8 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDeri
     static LINALG::Matrix<nsd_ele_, nen_> deriv_red;
 
     // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
 
     //! metric tensor at integration point
     static LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
@@ -1085,7 +1085,7 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDeri
     // the metric tensor and the area of an infinitesimal surface/line element
     // optional: get unit normal at integration point as well
     const bool throw_error_if_negative_determinant(true);
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
+    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
@@ -1297,7 +1297,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::LUBRICATION::CalcError errortype =
@@ -1406,7 +1406,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
     const DRT::Element* ele, Epetra_SerialDenseVector& pressures, const bool inverting)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

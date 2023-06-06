@@ -578,7 +578,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
 
   // declaration of variables in order to store shape functions
   // used for interpolation of triad field
@@ -609,11 +609,11 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     wgt = intpoints.qwgt[numgp];
 
     // evaluation of shape functions at Gauss points
-    DRT::UTILS::shape_function_1D(I_i, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype);
     if (centerline_hermite_)
-      DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, line2);
     else
-      DRT::UTILS::shape_function_1D(H_i, xi, distype);
+      CORE::DRT::UTILS::shape_function_1D(H_i, xi, distype);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
     std::vector<double> X_ref(3, 0.0);
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   // for these contributions, reduced integration is applied to avoid locking
 
   // get integration points for elasticity
-  DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_force.nquad);
@@ -1031,7 +1031,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   //***********************
 
   // get integration points for elasticity
-  DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_moment.nquad);
@@ -1204,7 +1204,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i;
 
   // get integration scheme for inertia forces and mass matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_mass.nquad);
   H_i.resize(gausspoints_mass.nquad);
@@ -2208,8 +2208,8 @@ void DRT::ELEMENTS::Beam3r::EvaluatePTC(
 int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed() const
 {
   // get Gauss rule for evaluation of stochastic force contributions
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom,
    * i.e. three random numbers for the translational degrees of freedom */
@@ -2245,8 +2245,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   GetDampingCoefficients(gamma);
 
   // get Gauss points and weights for evaluation of viscous damping contributions
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   //*************************** physical quantities evaluated at a certain GP
   //***************************
@@ -2508,8 +2508,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
   LINALG::Matrix<ndim, ndim> damp_mat(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
@@ -2688,8 +2688,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   LINALG::Matrix<ndim, 1> f_stoch(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP

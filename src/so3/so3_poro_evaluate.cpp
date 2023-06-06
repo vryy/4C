@@ -1227,7 +1227,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
 
     if (not isNurbs_)
     {
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       invJ_[gp].Multiply(deriv, xrefe);
       detJ_[gp] = invJ_[gp].Invert();
@@ -1654,12 +1654,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeShapeFunctionsAndDerivati
 {
   if (!isNurbs_)
   {
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
   }
   else
   {
-    DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
         shapefct, deriv, xsi_[gp], myknots_, weights_, distype);
 
     LINALG::Matrix<numnod_, numdim_> xrefe;
@@ -2757,7 +2757,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fabs(dot) > 1e-30)
   {
     LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-    DRT::UTILS::shape_function<DRT::Element::hex8>(xi, shapefcts);
+    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xi, shapefcts);
 
     for (uint nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
@@ -2765,7 +2765,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
     {
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
 
       d_cauchyndir_dp->Reshape(NUMNOD_SOH8, 1);
       LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->A(), true);

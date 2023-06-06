@@ -341,7 +341,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
 
   // creating a singleton instance ensures that the object will be deleted at the end
   // create intpoints with computed degree
-  intpoints_ = DRT::UTILS::GaussPointCache::Instance().Create(distype, patch_degree);
+  intpoints_ = CORE::DRT::UTILS::GaussPointCache::Instance().Create(distype, patch_degree);
 
   numgp_ = intpoints_->NumPoints();
 
@@ -354,24 +354,24 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
   if (nsd_ == 3)
   {
     // numbering of master's surfaces/lines w.r.t parent element
-    m_connectivity_ = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
-    s_connectivity_ = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
+    m_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
+    s_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
 
     // just for 3D
     if (pdistype != DRT::Element::wedge6 and pdistype != DRT::Element::wedge15)
-      connectivity_line_surf_ = DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
+      connectivity_line_surf_ = CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
   }
   else if (nsd_ == 2)
   {
     // numbering of master's surfaces/lines w.r.t parent element
-    m_connectivity_ = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-    s_connectivity_ = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+    m_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingLines(pdistype);
+    s_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingLines(ndistype);
   }
   else
     dserror("not valid nsd %i", nsd_);
 
   // get the connectivity between lines and surfaces of an parent element
-  connectivity_line_nodes_ = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+  connectivity_line_nodes_ = CORE::DRT::UTILS::getEleNodeNumberingLines(pdistype);
 
 
   // is the face a higher order face with higher order neighboring elements?
@@ -932,14 +932,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         case DRT::Element::line3:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
-              DRT::UTILS::eleNodeNumbering_line3_nodes_reference[i][isd];
+              CORE::DRT::UTILS::eleNodeNumbering_line3_nodes_reference[i][isd];
           break;
         }
         case DRT::Element::tri3:
         case DRT::Element::tri6:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
-              DRT::UTILS::eleNodeNumbering_tri6_nodes_reference[i][isd];
+              CORE::DRT::UTILS::eleNodeNumbering_tri6_nodes_reference[i][isd];
           break;
         }
         case DRT::Element::quad4:
@@ -947,7 +947,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         case DRT::Element::quad9:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
-              DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][isd];
+              CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][isd];
           break;
         }
         default:
@@ -976,7 +976,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     // transform the local coordinates from the local coordinate system of the face w.r.t master
     // face to the local coordinate system of the face w.r.t slave face
-    DRT::UTILS::shape_function<distype>(face_xi_points_master_linalg, funct_);
+    CORE::DRT::UTILS::shape_function<distype>(face_xi_points_master_linalg, funct_);
 
     face_xi_points_slave_linalg.Multiply(local_slave_coordiantes_trafo, funct_);
 
@@ -992,21 +992,21 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (nsd_ == 3)
   {
     // get the local gp coordinates w.r.t parent (master) element
-    DRT::UTILS::BoundaryGPToParentGP3(
+    CORE::DRT::UTILS::BoundaryGPToParentGP3(
         p_xi_points_, face_xi_points_master_, pdistype, distype, intface->FaceMasterNumber());
 
     // get the local gp coordinates w.r.t parent (master) element
-    DRT::UTILS::BoundaryGPToParentGP3(
+    CORE::DRT::UTILS::BoundaryGPToParentGP3(
         n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->FaceSlaveNumber());
   }
   else if (nsd_ == 2)
   {
     // get the local gp coordinates w.r.t parent (master) element
-    DRT::UTILS::BoundaryGPToParentGP2(
+    CORE::DRT::UTILS::BoundaryGPToParentGP2(
         p_xi_points_, face_xi_points_master_, pdistype, distype, intface->FaceMasterNumber());
 
     // get the local gp coordinates w.r.t neighbor (slave) element
-    DRT::UTILS::BoundaryGPToParentGP2(
+    CORE::DRT::UTILS::BoundaryGPToParentGP2(
         n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->FaceSlaveNumber());
   }
   else
@@ -1622,8 +1622,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
-    DRT::UTILS::shape_function<distype>(xi_gp, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xi_gp, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xi_gp, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xi_gp, deriv_);
   }
   else
   {
@@ -1633,7 +1633,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // ------------------------------------------------
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor_, drs_, &n_);
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+      xyze_, deriv_, metrictensor_, drs_, &n_);
 
 
   // total integration factor
@@ -1644,8 +1645,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // shape functions and derivs of corresponding parent at gausspoint
   if (!(pdistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function<pdistype>(p_xi_gp, pfunct_);
-    DRT::UTILS::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
+    CORE::DRT::UTILS::shape_function<pdistype>(p_xi_gp, pfunct_);
+    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
   }
   else
     dserror("not implemented for nurbs");
@@ -1654,8 +1655,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // shape functions and derivs of corresponding parent at gausspoint
   if (!(ndistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function<ndistype>(n_xi_gp, nfunct_);
-    DRT::UTILS::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
+    CORE::DRT::UTILS::shape_function<ndistype>(n_xi_gp, nfunct_);
+    CORE::DRT::UTILS::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
   }
   else
     dserror("not implemented for nurbs");
@@ -1664,8 +1665,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (use2ndderiv)
   {
-    DRT::UTILS::shape_function_deriv2<pdistype>(p_xi_gp, pderiv2_);
-    DRT::UTILS::shape_function_deriv2<ndistype>(n_xi_gp, nderiv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<pdistype>(p_xi_gp, pderiv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<ndistype>(n_xi_gp, nderiv2_);
   }
 
   //-----------------------------------------------------
@@ -1758,8 +1759,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (use2ndderiv)
   {
-    DRT::UTILS::gder2<pdistype, piel>(pxjm_, pderxy_, pderiv2_, pxyze_, pderxy2_);
-    DRT::UTILS::gder2<ndistype, niel>(nxjm_, nderxy_, nderiv2_, nxyze_, nderxy2_);
+    CORE::DRT::UTILS::gder2<pdistype, piel>(pxjm_, pderxy_, pderiv2_, pxyze_, pderxy2_);
+    CORE::DRT::UTILS::gder2<ndistype, niel>(nxjm_, nderxy_, nderiv2_, nxyze_, nderxy2_);
   }
   else
   {
@@ -2005,7 +2006,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
     DRT::Element::DiscretizationType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::EvalShapeFuncAndDerivsAtIntPoint(DRT::UTILS::GaussIntegration::iterator&
+    ndistype>::EvalShapeFuncAndDerivsAtIntPoint(CORE::DRT::UTILS::GaussIntegration::iterator&
                                                     iquad,  ///< actual integration point
     int master_eid,                                         ///< master parent element
     int slave_eid,                                          ///< slave parent element
@@ -2029,8 +2030,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
   }
   else
   {
@@ -2061,7 +2062,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // ------------------------------------------------
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor_, drs_, &n_);
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+      xyze_, deriv_, metrictensor_, drs_, &n_);
 
 
   // total integration factor
@@ -2072,8 +2074,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // shape functions and derivs of corresponding parent at gausspoint
   if (!(pdistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function<pdistype>(pqxg, pfunct_);
-    DRT::UTILS::shape_function_deriv1<pdistype>(pqxg, pderiv_);
+    CORE::DRT::UTILS::shape_function<pdistype>(pqxg, pfunct_);
+    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pqxg, pderiv_);
   }
   else
     dserror("not implemented for nurbs");
@@ -2082,8 +2084,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // shape functions and derivs of corresponding parent at gausspoint
   if (!(ndistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function<ndistype>(nqxg, nfunct_);
-    DRT::UTILS::shape_function_deriv1<ndistype>(nqxg, nderiv_);
+    CORE::DRT::UTILS::shape_function<ndistype>(nqxg, nfunct_);
+    CORE::DRT::UTILS::shape_function_deriv1<ndistype>(nqxg, nderiv_);
   }
   else
     dserror("not implemented for nurbs");
@@ -2092,8 +2094,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (use2ndderiv)
   {
-    DRT::UTILS::shape_function_deriv2<pdistype>(pqxg, pderiv2_);
-    DRT::UTILS::shape_function_deriv2<ndistype>(nqxg, nderiv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<pdistype>(pqxg, pderiv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<ndistype>(nqxg, nderiv2_);
   }
 
   //-----------------------------------------------------
@@ -2186,8 +2188,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (use2ndderiv)
   {
-    DRT::UTILS::gder2<pdistype, piel>(pxjm_, pderxy_, pderiv2_, pxyze_, pderxy2_);
-    DRT::UTILS::gder2<ndistype, niel>(nxjm_, nderxy_, nderiv2_, nxyze_, nderxy2_);
+    CORE::DRT::UTILS::gder2<pdistype, piel>(pxjm_, pderxy_, pderiv2_, pxyze_, pderxy2_);
+    CORE::DRT::UTILS::gder2<ndistype, niel>(nxjm_, nderxy_, nderiv2_, nxyze_, nderxy2_);
   }
   else
   {

@@ -735,11 +735,11 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
 
     if (s->Shape() == DRT::Element::tri3)
     {
-      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3);
     }
     else if (s->Shape() == DRT::Element::quad4)
     {
-      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4);
     }
     else
       throw std::runtime_error("unsupported side-shape");

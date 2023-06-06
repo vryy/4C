@@ -2278,7 +2278,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   static LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
   deriv.Clear();
-  DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
 
   static LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
   static LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ(true);
@@ -2351,7 +2351,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
-  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+  static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
       NUMNOD_SOTET4>
       deriv2(true);
   static LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
@@ -2360,11 +2360,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(true);
     static LINALG::Matrix<NUMDIM_SOTET4,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -2395,11 +2395,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->A(), true);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
         NUMDIM_SOTET4>
         Xsec(true);
     static LINALG::Matrix<NUMNOD_SOTET4,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);

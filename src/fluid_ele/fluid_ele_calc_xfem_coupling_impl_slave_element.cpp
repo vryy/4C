@@ -337,7 +337,7 @@ namespace DRT
         if (slave_nsd_ == nsd_ - 1)
         {
           // evaluate shape function at solution
-          DRT::UTILS::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
+          CORE::DRT::UTILS::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
           rst_slave(0) = xslave(0);
           rst_slave(1) = xslave(1);
           //    dserror("You called 3D evaluation routine when coupling with a 2D element.");
@@ -352,9 +352,9 @@ namespace DRT
         if (slave_nsd_ == nsd_)
         {
           pos->LocalCoordinates(rst_slave);
-          DRT::UTILS::shape_function_3D(
+          CORE::DRT::UTILS::shape_function_3D(
               slave_funct_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
-          DRT::UTILS::shape_function_3D_deriv1(
+          CORE::DRT::UTILS::shape_function_3D_deriv1(
               slave_deriv_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
         }
         else
@@ -462,10 +462,11 @@ namespace DRT
           ++iter;
 
           // get current values
-          DRT::UTILS::shape_function_2D(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
-          DRT::UTILS::shape_function_2D_deriv1(
+          CORE::DRT::UTILS::shape_function_2D(
+              proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(
               proj_deriv_, proj_sol_(0), proj_sol_(1), slave_distype);
-          DRT::UTILS::shape_function_2D_deriv2(
+          CORE::DRT::UTILS::shape_function_2D_deriv2(
               proj_deriv2_, proj_sol_(0), proj_sol_(1), slave_distype);
 
           proj_x_.Multiply(slave_xyze_, proj_funct_);
@@ -573,7 +574,8 @@ namespace DRT
         }
 
         // evaluate shape function at solution
-        DRT::UTILS::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+        CORE::DRT::UTILS::shape_function_2D(
+            slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
 
         // get projected gauss point
         x_side.Multiply(slave_xyze_, slave_funct_);
@@ -590,7 +592,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::EvalElementVolume()
       {
-        switch (DRT::UTILS::DisTypeToDim<slave_distype>::dim)
+        switch (CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim)
         {
           case 3:
           {

@@ -105,7 +105,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       // Set the element parameter coordinates.
       LINALG::Matrix<2, 1, double> xi(true);
       LINALG::SerialDenseMatrix nodal_coordinates =
-          DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+          CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
               face_element_iterator.second->GetDrtFaceElement()->Shape());
 
       // Loop over element nodes.

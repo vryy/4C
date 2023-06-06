@@ -232,7 +232,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
 {
   // calculate the normal at the side element center
   const LINALG::Matrix<dimside, 1> rst_side_center(
-      DRT::UTILS::getLocalCenterPosition<dimside>(sidetype));
+      CORE::DRT::UTILS::getLocalCenterPosition<dimside>(sidetype));
 
   LINALG::Matrix<probdim, numNodesSide> side_deriv1;
   LINALG::Matrix<probdim, probdim> xjm;
@@ -443,7 +443,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
   {
     pos = r_endpoints[i];
 
-    DRT::UTILS::shape_function_1D(lineFunct, pos, edgetype);
+    CORE::DRT::UTILS::shape_function_1D(lineFunct, pos, edgetype);
     dist.MultiplyNN(xyze_lineElement_, lineFunct);
 
     dist.Update(1.0, xyz, -1.0);

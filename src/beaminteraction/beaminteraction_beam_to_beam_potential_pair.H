@@ -471,7 +471,7 @@ namespace BEAMINTERACTION
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
-        DRT::UTILS::IntegrationPoints1D& gausspoints) const;
+        CORE::DRT::UTILS::IntegrationPoints1D& gausspoints) const;
 
     /*!
     \brief Compute coordinates of centerline point

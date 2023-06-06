@@ -70,16 +70,16 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of components necessary to store second derivatives
       // 1 component  for nsd=1:  (N,xx)
       // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! element-type specific flag if second derivatives are needed
       static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
@@ -119,8 +119,8 @@ namespace DRT
       );
 
       void GaussPointLoop(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                       //!< current element
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                             //!< current element
           std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
           DRT::Discretization& discretization,             //!< discretization
@@ -128,8 +128,8 @@ namespace DRT
       );
 
       void GaussPointLoopODStruct(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                       //!< current element
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                             //!< current element
           std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
           DRT::Discretization& discretization,             //!< discretization
@@ -137,8 +137,8 @@ namespace DRT
       );
 
       void GaussPointLoopODScatra(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          DRT::Element* ele,                                       //!< current element
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                             //!< current element
           std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
           DRT::Discretization& discretization,             //!< discretization
@@ -171,8 +171,8 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          const int iquad                                          //!< id of current Gauss point
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int iquad  //!< id of current Gauss point
       );
 
       //! evaluate shape functions and their derivatives at current integration point

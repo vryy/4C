@@ -48,7 +48,7 @@ bool GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<3, 1>& x)
 template <unsigned probdim, DRT::Element::DiscretizationType celltype>
 bool GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<probdim, 1>& x)
 {
-  const int ncn = DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
+  const int ncn = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
 
   LINALG::Matrix<probdim, ncn> coords(xyz_);
 

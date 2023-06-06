@@ -20,11 +20,11 @@ namespace internal
   {
     // compute 3D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1000][3],
+    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1000][3],
         double (&qwgt)[1000], int &nquad)
     {
       nquad = 0;
-      DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
+      CORE::DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
       for (int i = 0; i < rule1d.nquad; ++i)
         for (int j = 0; j < rule1d.nquad; ++j)
           for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
@@ -38,11 +38,11 @@ namespace internal
 
     // compute 2D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1024][2],
+    void fillquadrature(const CORE::DRT::UTILS::GaussRule1D gaussrule, double (&qxg)[1024][2],
         double (&qwgt)[1024], int &nquad)
     {
       nquad = 0;
-      DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
+      CORE::DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
       for (int j = 0; j < rule1d.nquad; ++j)
         for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
         {
@@ -55,7 +55,7 @@ namespace internal
 }  // namespace internal
 
 
-DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
+CORE::DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
     : intrule_(gaussrule)
 {
   const double Q12 = 1.0 / 2.0;
@@ -107,9 +107,9 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     {
       nquad = 18;
       // in plane
-      DRT::UTILS::IntPointsAndWeights<2> ip_p(DRT::UTILS::GaussRule2D::quad_9point);
+      CORE::DRT::UTILS::IntPointsAndWeights<2> ip_p(CORE::DRT::UTILS::GaussRule2D::quad_9point);
       // director
-      DRT::UTILS::IntPointsAndWeights<1> ip_d(DRT::UTILS::GaussRule1D::line_2point);
+      CORE::DRT::UTILS::IntPointsAndWeights<1> ip_d(CORE::DRT::UTILS::GaussRule1D::line_2point);
 
       for (int d = 0; d < ip_d.IP().nquad; ++d)
         for (int p = 0; p < ip_p.IP().nquad; ++p)
@@ -6093,7 +6093,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 }
 
 
-DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
+CORE::DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
     : intrule_(gaussrule)
 {
   switch (gaussrule)
@@ -6887,7 +6887,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 }
 
 
-DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
+CORE::DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
     : intrule_(gaussrule)
 {
   switch (gaussrule)

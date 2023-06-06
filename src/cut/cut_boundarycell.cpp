@@ -55,7 +55,7 @@ void GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1, const LINALG::
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
 
 
-  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+  const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
   LINALG::Matrix<3, numnodes> xyzeGlo(this->xyz_, true), xyze;
 
   for (int i = 0; i < numnodes; i++)
@@ -83,9 +83,9 @@ void GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1, const LINALG::
   LINALG::Matrix<2, numnodes> deriv;
   LINALG::Matrix<2, 2> metrictensor;
 
-  DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
-  DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
+  CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);
@@ -105,7 +105,8 @@ double GEO::CUT::Line2BoundaryCell::Area() { return GEO::ElementArea(Shape(), xy
  *----------------------------------------------------------------------------*/
 double GEO::CUT::Tri3BoundaryCell::Area()
 {
-  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+  const int numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
 
   const std::vector<Point*> points = this->Points();
 
@@ -255,7 +256,7 @@ void GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file.precision(16);
 
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
 
   file << "VP(";
   LINALG::Matrix<3, 1> midpoint(true);
@@ -331,7 +332,7 @@ void GEO::CUT::Tri3BoundaryCell::Normal(
   LINALG::Matrix<2, 3> deriv;
   LINALG::Matrix<2, 3> A;
 
-  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -356,7 +357,7 @@ void GEO::CUT::Quad4BoundaryCell::Normal(
   LINALG::Matrix<2, 4> deriv;
   LINALG::Matrix<2, 3> A;
 
-  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::quad4);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::quad4);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -386,39 +387,39 @@ void GEO::CUT::ArbitraryBoundaryCell::Normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
+CORE::DRT::UTILS::GaussIntegration GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::point1, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::point1, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
+CORE::DRT::UTILS::GaussIntegration GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::line2, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::line2, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
+CORE::DRT::UTILS::GaussIntegration GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::tri3, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::tri3, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
+CORE::DRT::UTILS::GaussIntegration GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::quad4, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::quad4, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule(int cubaturedegree)
+CORE::DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule(int cubaturedegree)
 {
   return gaussRule_;
 }
@@ -537,7 +538,8 @@ std::vector<std::vector<double>> GEO::CUT::BoundaryCell::CoordinatesV()
  *----------------------------------------------------------------------------*/
 bool GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 {
-  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+  const int numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
 
   const std::vector<Point*> points = this->Points();
 

@@ -323,7 +323,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
           xrefe(i, 2) = Nodes()[i]->X()[2];
         }
         LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-        DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
         invJ_0.Multiply(N_rst_0, xrefe);
         invJ_0.Invert();
@@ -433,7 +433,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
       // element coordinate derivatives at centroid
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
       {
         // inverse jacobian matrix at centroid
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -640,7 +640,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     if (!(prestress_->IsInit()))
     {
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
       LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
       invJ_0.Multiply(N_rst_0, xrefe);
       invJ_0.Invert();
@@ -819,7 +819,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
   LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
   // element coordinate derivatives at centroid
   LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
   {
     // inverse jacobian matrix at centroid
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -1499,7 +1499,7 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const std::vector<double>& disp,
   const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid point
   LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
@@ -1561,7 +1561,7 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
   const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid
   LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
 
   // get incremental disp
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
@@ -1667,7 +1667,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
     // element coordinate derivatives at centroid
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
     {
       // inverse jacobian matrix at centroid
       LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;

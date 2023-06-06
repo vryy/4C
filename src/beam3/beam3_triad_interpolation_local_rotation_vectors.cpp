@@ -61,24 +61,24 @@ LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType(
   {
     case 2:
     {
-      return DRT::Element::line2;
+      return ::DRT::Element::line2;
     }
     case 3:
     {
-      return DRT::Element::line3;
+      return ::DRT::Element::line3;
     }
     case 4:
     {
-      return DRT::Element::line4;
+      return ::DRT::Element::line4;
     }
     case 5:
     {
-      return DRT::Element::line5;
+      return ::DRT::Element::line5;
     }
     default:
     {
       dserror("only 2...5 nodes allowed here! got %d", numnodes);
-      return DRT::Element::max_distype;
+      return ::DRT::Element::max_distype;
     }
   }
 }
@@ -185,7 +185,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions at xi
   LINALG::Matrix<1, numnodes> I_i(true);
 
-  DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
 
   Calc_Psi_l(Psi_li_, I_i, Psi_l);
 }
@@ -210,7 +210,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions derivatives at xi
   LINALG::Matrix<1, numnodes> I_i_xi(true);
 
-  DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype_);
 
   Calc_Psi_l_s(Psi_li_, I_i_xi, jacobifac, Psi_l_s);
 }
@@ -243,7 +243,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 
   // values of individual shape functions at xi
   LINALG::Matrix<1, numnodes> I_i(true);
-  DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
 
   // compute interpolated local relative rotation vector \Psi^l
   LINALG::Matrix<3, 1, T> Psi_l(true);

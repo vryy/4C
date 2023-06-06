@@ -188,7 +188,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
 
       // get Gauss rule
-      auto intpoints = DRT::UTILS::IntegrationPoints1D(gaussrule_);
+      auto intpoints = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule_);
 
       // computing forcevec and stiffmat
       forcevec.Scale(0.0);
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
       }
 
-      const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
       Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
@@ -433,7 +433,8 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
 
       // get Gauss rule
-      auto gauss_points = DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
+      auto gauss_points =
+          CORE::DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
 
       // internal energy
       for (int j = 0; j < gauss_points.nquad; ++j)

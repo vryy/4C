@@ -83,7 +83,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
         // shape functions evaluated at current gauss point
         LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
-        DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
+        CORE::DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
 
         for (int k = 0; k < numscal; ++k)
         {
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
         {
           // shape functions evaluated at current gauss point
           LINALG::Matrix<numnod_, 1> shapefunct_gp(true);
-          DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
+          CORE::DRT::UTILS::shape_function<distype>(xsi_[igp], shapefunct_gp);
 
           // temperature at Gauss point withidentical shapefunctions for displacements and
           // temperatures
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
     d_cauchyndir_ds->Shape(numnod_, 1);
     // get the shape functions
     LINALG::Matrix<numnod_, 1> shapefunct(true);
-    DRT::UTILS::shape_function<distype>(xi, shapefunct);
+    CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
     // calculate DsntDs
     LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->A(), true)
         .Update(d_cauchyndir_ds_gp, shapefunct, 1.0);
@@ -317,8 +317,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // get shape functions and their derivatives
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 . N_rst
@@ -494,7 +494,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
     // get derivative of shape functions w.r.t. parameter coordinates, needed for calculation of the
     // inverse of the jacobian
     LINALG::Matrix<numdim_, numnod_> deriv;
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
     // get the inverse of the Jacobian matrix which looks like:
     /*

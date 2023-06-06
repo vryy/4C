@@ -430,7 +430,7 @@ GEO::CUT::Point1BoundaryCell* GEO::CUT::Mesh::NewPoint1Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::point1>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::point1>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyz(3, 1);
@@ -448,7 +448,7 @@ GEO::CUT::Line2BoundaryCell* GEO::CUT::Mesh::NewLine2Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
@@ -523,7 +523,7 @@ GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell(
  * creates a new ??? boundary cell
  *-------------------------------------------------------------------------------------*/
 GEO::CUT::ArbitraryBoundaryCell* GEO::CUT::Mesh::NewArbitraryCell(VolumeCell* volume, Facet* facet,
-    const std::vector<Point*>& points, const DRT::UTILS::GaussIntegration& gaussRule,
+    const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
     const LINALG::Matrix<3, 1>& normal)
 {
 #ifdef DEBUGCUTLIBRARY
@@ -552,7 +552,7 @@ GEO::CUT::Line2IntegrationCell* GEO::CUT::Mesh::NewLine2Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
@@ -572,7 +572,7 @@ GEO::CUT::Tri3IntegrationCell* GEO::CUT::Mesh::NewTri3Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);
@@ -592,7 +592,7 @@ GEO::CUT::Quad4IntegrationCell* GEO::CUT::Mesh::NewQuad4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
   const unsigned num_nodes =
-      DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   Epetra_SerialDenseMatrix xyze(3, num_nodes);

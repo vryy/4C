@@ -97,7 +97,7 @@ namespace MORTAR
     Note that this is \b not a collective call as overlaps are
     integrated in parallel by individual processes.<br>
     Note also that this constructor relies heavily on the
-    DRT::UTILS::IntegrationPoints structs to get Gauss points
+    CORE::DRT::UTILS::IntegrationPoints structs to get Gauss points
     and corresponding weights.
 
     */
@@ -112,13 +112,13 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
-    static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int ns_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
 
     //! nm_: number of master element nodes
-    static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;
+    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;
 
     //@}
     //! @name 2D and 3D integration methods

@@ -19,36 +19,36 @@
 
 namespace
 {
-  inline DRT::UTILS::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
+  inline CORE::DRT::UTILS::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
   {
     switch (degree)
     {
       case 1:
-        return DRT::UTILS::GaussRule1D::line_lobatto2point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto2point;
       case 2:
-        return DRT::UTILS::GaussRule1D::line_lobatto3point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
       case 3:
-        return DRT::UTILS::GaussRule1D::line_lobatto4point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto4point;
       case 4:
-        return DRT::UTILS::GaussRule1D::line_lobatto5point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto5point;
       case 5:
-        return DRT::UTILS::GaussRule1D::line_lobatto6point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto6point;
       case 6:
-        return DRT::UTILS::GaussRule1D::line_lobatto7point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto7point;
       case 7:
-        return DRT::UTILS::GaussRule1D::line_lobatto8point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto8point;
       case 8:
-        return DRT::UTILS::GaussRule1D::line_lobatto9point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto9point;
       case 9:
-        return DRT::UTILS::GaussRule1D::line_lobatto10point;
+        return CORE::DRT::UTILS::GaussRule1D::line_lobatto10point;
       default:
         dserror("The Lobatto Gauss rule is not implemented for degree %d", degree);
-        return DRT::UTILS::GaussRule1D::undefined;
+        return CORE::DRT::UTILS::GaussRule1D::undefined;
     }
   }
 }  // namespace
 
-namespace DRT
+namespace CORE::DRT
 {
   namespace UTILS
   {
@@ -60,11 +60,11 @@ namespace DRT
       std::vector<LagrangePolynomial> poly1d;
       if (degree == 0)
       {
-        poly1d.push_back(DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
+        poly1d.push_back(CORE::DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
         return poly1d;
       }
 
-      DRT::UTILS::IntegrationPoints1D gaussLobattoPoints(
+      CORE::DRT::UTILS::IntegrationPoints1D gaussLobattoPoints(
           Get1DLagrangeBasisLobattoGaussRule(degree));
       std::vector<double> points(degree);
       for (unsigned int i = 0; i <= degree; ++i)
@@ -75,7 +75,8 @@ namespace DRT
             points[c] = gaussLobattoPoints.qxg[j][0];
             ++c;
           }
-        poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
+        poly1d.push_back(
+            CORE::DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
       }
       return poly1d;
     }
@@ -716,12 +717,13 @@ namespace DRT
     }
 
     template <int nsd_>
-    DRT::UTILS::PolynomialSpaceCache<nsd_> &DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance()
+    CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>
+        &CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance()
     {
-      static CORE::UTILS::SingletonOwner<DRT::UTILS::PolynomialSpaceCache<nsd_>> owner(
+      static CORE::UTILS::SingletonOwner<CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>> owner(
           []()
           {
-            return std::unique_ptr<DRT::UTILS::PolynomialSpaceCache<nsd_>>(
+            return std::unique_ptr<CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>>(
                 new PolynomialSpaceCache<nsd_>);
           });
 
@@ -729,11 +731,12 @@ namespace DRT
     }
 
     template <int nsd_>
-    Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_>> DRT::UTILS::PolynomialSpaceCache<nsd_>::Create(
-        PolynomialSpaceParams params)
+    Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_>>
+    CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>::Create(PolynomialSpaceParams params)
     {
       typename std::map<PolynomialSpaceParams,
-          Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_>>>::iterator i = ps_cache_.find(params);
+          Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_>>>::iterator i =
+          ps_cache_.find(params);
       if (i != ps_cache_.end())
       {
         return i->second;
@@ -767,4 +770,4 @@ namespace DRT
     template class PolynomialSpaceCache<3>;
 
   }  // end of namespace UTILS
-}  // end of namespace DRT
+}  // namespace CORE::DRT

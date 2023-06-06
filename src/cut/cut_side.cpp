@@ -1593,7 +1593,7 @@ bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
    * inside */
-  LINALG::Matrix<dim, 1> rst_center = DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
+  LINALG::Matrix<dim, 1> rst_center = CORE::DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
 
   //-----------------------------
   // get perturbed coordinates

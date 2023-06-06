@@ -34,9 +34,9 @@ CORE::ADAPTER::CouplingMortar::CouplingMortar() : issetup_(false) { return; }
  | setup routine for mortar framework                        fang 01/16 |
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::Setup(
-    const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
-    const Teuchos::RCP<DRT::Discretization>& aledis,     ///< ALE discretization
+    const Teuchos::RCP<::DRT::Discretization>& masterdis,  ///< master discretization
+    const Teuchos::RCP<::DRT::Discretization>& slavedis,   ///< slave discretization
+    const Teuchos::RCP<::DRT::Discretization>& aledis,     ///< ALE discretization
     const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
     const std::string& couplingcond,     ///< string for coupling condition
     const Epetra_Comm& comm,             ///< communicator
@@ -47,25 +47,25 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 )
 {
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> masternodes;
-  std::map<int, DRT::Node*> slavenodes;
+  std::map<int, ::DRT::Node*> masternodes;
+  std::map<int, ::DRT::Node*> slavenodes;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> mastergnodes;
-  std::map<int, DRT::Node*> slavegnodes;
+  std::map<int, ::DRT::Node*> mastergnodes;
+  std::map<int, ::DRT::Node*> slavegnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
+  std::map<int, Teuchos::RCP<::DRT::Element>> masterelements;
+  std::map<int, Teuchos::RCP<::DRT::Element>> slaveelements;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "MortarMulti")
   {
-    std::vector<DRT::Condition*> conds;
-    std::vector<DRT::Condition*> conds_master(0);
-    std::vector<DRT::Condition*> conds_slave(0);
+    std::vector<::DRT::Condition*> conds;
+    std::vector<::DRT::Condition*> conds_master(0);
+    std::vector<::DRT::Condition*> conds_slave(0);
     masterdis->GetCondition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
@@ -79,11 +79,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    ::DRT::UTILS::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    ::DRT::UTILS::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -92,11 +92,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   else
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(
+    ::DRT::UTILS::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(
+    ::DRT::UTILS::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
@@ -117,8 +117,8 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 
   // get mortar coupling parameters
   Teuchos::ParameterList inputmortar;
-  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& cmortar = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = ::DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& cmortar = ::DRT::Problem::Instance()->ContactDynamicParams();
   inputmortar.setParameters(cmortar);
   inputmortar.setParameters(mortar);
 
@@ -149,13 +149,13 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
+  if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
       INPAR::MORTAR::relocation_initial)
   {
     // Warning:
     // Mesh relocation is not possible if coupled degrees of freedom are less than
     // the spatial dimensions!
-    if (numcoupleddof < DRT::Problem::Instance()->NDim())
+    if (numcoupleddof < ::DRT::Problem::Instance()->NDim())
     {
       std::cout << "Warning: " << std::endl;
       std::cout
@@ -190,7 +190,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
-    const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm)
+    const Teuchos::RCP<::DRT::Discretization>& slavedis, const Epetra_Comm& comm)
 {
   // safety check
   CheckSetup();
@@ -208,7 +208,7 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -244,14 +244,14 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::SetupInterface(
-    const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
-    const std::vector<int>& coupleddof,             ///< vector defining coupled degrees of freedom
-    const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
-    const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
-    const std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,  ///< master elements
-    const std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,   ///< slave elements
-    const Epetra_Comm& comm,                                          ///< communicator
+    const Teuchos::RCP<::DRT::Discretization>& masterdis,  ///< master discretization
+    const Teuchos::RCP<::DRT::Discretization>& slavedis,   ///< slave discretization
+    const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
+    const std::map<int, ::DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
+    const std::map<int, ::DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
+    const std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,  ///< master elements
+    const std::map<int, Teuchos::RCP<::DRT::Element>>& slaveelements,   ///< slave elements
+    const Epetra_Comm& comm,                                            ///< communicator
     const bool slavewithale,  ///< flag defining if slave is ALE
     const bool slidingale,    ///< flag indicating sliding ALE case
     const int nds_master,     ///< master dofset number
@@ -267,14 +267,14 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   // - ....
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& inputcontact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& inputmortar = ::DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& inputcontact = ::DRT::Problem::Instance()->ContactDynamicParams();
   Teuchos::ParameterList input;
   input.setParameters(inputmortar);
   input.setParameters(inputcontact);
 
   // is this a nurbs problem?
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  ShapeFunctionType distype = ::DRT::Problem::Instance()->SpatialApproximationType();
   bool nurbs;
   switch (distype)
   {
@@ -295,10 +295,10 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   input.set<std::string>("LM_SHAPEFCN", "dual");
   input.set<std::string>("LM_DUAL_CONSISTENT", "none");
   input.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "none");
-  input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
+  input.set<int>("DIMENSION", ::DRT::Problem::Instance()->NDim());
 
   // create an empty mortar interface
-  interface_ = MORTAR::MortarInterface::Create(0, comm, DRT::Problem::Instance()->NDim(), input);
+  interface_ = MORTAR::MortarInterface::Create(0, comm, ::DRT::Problem::Instance()->NDim(), input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -335,10 +335,10 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     if (coupleddof[ii] == 1) ++numcoupleddof;
 
   // feeding master nodes to the interface including ghosted nodes
-  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, ::DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    ::DRT::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -363,7 +363,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    ::DRT::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -402,23 +402,23 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   if (slidingale == true) eleoffset = masterdis->ElementRowMap()->MaxAllGID() + 1;
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<::DRT::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<::DRT::Element> ele = elemiter->second;
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, nurbs));
 
     if (nurbs)
       MORTAR::UTILS::PrepareNURBSElement(
-          *masterdis, ele, mrtrele, DRT::Problem::Instance()->NDim());
+          *masterdis, ele, mrtrele, ::DRT::Problem::Instance()->NDim());
     interface_->AddMortarElement(mrtrele);
   }
 
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<::DRT::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce
@@ -431,7 +431,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
 
       if (nurbs)
         MORTAR::UTILS::PrepareNURBSElement(
-            *slavedis, ele, mrtrele, DRT::Problem::Instance()->NDim());
+            *slavedis, ele, mrtrele, ::DRT::Problem::Instance()->NDim());
       interface_->AddMortarElement(mrtrele);
     }
     else
@@ -507,8 +507,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
-    Teuchos::RCP<DRT::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
+void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretization> slavedis,
+    Teuchos::RCP<::DRT::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
     Teuchos::RCP<const Epetra_Map> slavedofrowmap, Teuchos::RCP<Epetra_Vector>& idisp,
     const Epetra_Comm& comm, bool slavewithale)
 {
@@ -516,7 +516,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   CheckSetup();
 
   // problem dimension
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = ::DRT::Problem::Instance()->NDim();
 
   //**********************************************************************
   // (0) check constraints in reference configuration
@@ -529,7 +529,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -569,7 +569,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -662,7 +662,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   // interface among all processors. Thus, we loop over the fully over-
   // lapping slave column map here to keep all processors around. Then,
   // the first modification (MortarNode) is always performed, but the
-  // second modification (DRT::Node) is only performed if the respective
+  // second modification (::DRT::Node) is only performed if the respective
   // node in contained in the problem node column map.
   //**********************************************************************
 
@@ -676,7 +676,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -725,7 +725,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     bool isininterfacecolmap = false;
     int ilid = interface_->SlaveColNodes()->LID(gid);
     if (ilid >= 0) isininterfacecolmap = true;
-    DRT::Node* node = NULL;
+    ::DRT::Node* node = NULL;
     MORTAR::MortarNode* mtnode = NULL;
     if (isininterfacecolmap)
     {
@@ -739,7 +739,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     bool isinproblemcolmap = false;
     int lid = slavedis->NodeColMap()->LID(gid);
     if (lid >= 0) isinproblemcolmap = true;
-    DRT::Node* pnode = NULL;
+    ::DRT::Node* pnode = NULL;
     if (isinproblemcolmap)
     {
       pnode = slavedis->gNode(gid);
@@ -749,7 +749,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     // ... AND standard node in ALE discret if fluid=slave
     // (check if the node is available on this processor)
     bool isinproblemcolmap2 = false;
-    DRT::Node* alenode = NULL;
+    ::DRT::Node* alenode = NULL;
     if (aledis != Teuchos::null)
     {
       int lid2 = aledis->NodeColMap()->LID(gid);
@@ -824,8 +824,8 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-            DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
+    if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+            ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
         INPAR::MORTAR::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
@@ -845,8 +845,8 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
           const_cast<double&>(alenode->X()[k]) = Xnewglobal[k];
       }
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-                 DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
+    else if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+                 ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
              INPAR::MORTAR::relocation_timestep)
     {
       // modification of ALE displacements
@@ -891,7 +891,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -927,7 +927,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    ::DRT::Node* node = interface_->Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
@@ -982,7 +982,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   // if slave=fluid, we are lucky because fluid elements do not
   // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
-  DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
+  ::DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
 
   // print message
   if (comm.MyPID() == 0)
@@ -1008,7 +1008,7 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   CheckSetup();
 
   // check
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+  if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
           Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Creation of P operator only for dual shape functions!");
 
@@ -1177,7 +1177,7 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      ::DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
@@ -1202,7 +1202,7 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
-    Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Discretization> aledis,
+    Teuchos::RCP<::DRT::Discretization> slavedis, Teuchos::RCP<::DRT::Discretization> aledis,
     Teuchos::RCP<Epetra_Vector>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
   // safety check
@@ -1255,8 +1255,8 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-          DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
+  if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+          ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
       INPAR::MORTAR::relocation_timestep)
     MeshRelocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 

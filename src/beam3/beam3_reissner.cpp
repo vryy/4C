@@ -563,7 +563,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     const IntegrationPurpose intpurpose) const
 {
   const DRT::Element::DiscretizationType distype = this->Shape();
@@ -579,30 +579,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         default:
         {
@@ -623,30 +623,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_5point;
+            return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -664,19 +664,19 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
       {
         case line2:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_5point;
+          return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -690,7 +690,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      return DRT::UTILS::GaussRule1D::line_4point;
+      return CORE::DRT::UTILS::GaussRule1D::line_4point;
     }
 
     /* 'full' integration of Neumann line loads
@@ -703,21 +703,21 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         default:
         {
@@ -735,7 +735,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     }
   }
 
-  return DRT::UTILS::GaussRule1D::undefined;
+  return CORE::DRT::UTILS::GaussRule1D::undefined;
   ;
 }
 
@@ -892,7 +892,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
     jacobiGPelastf_.resize(gausspoints_elast_force.nquad);
     GammarefGP_.resize(gausspoints_elast_force.nquad);
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
     jacobiGPelastm_.resize(gausspoints_elast_moment.nquad);
     KrefGP_.resize(gausspoints_elast_moment.nquad);
@@ -1028,8 +1028,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
-    DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
     jacobiGPmass_.resize(gausspoints_inertia.nquad);
@@ -1098,10 +1098,10 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // compute Jacobi determinant at GPs for integration of damping/stochastic forces
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
+    CORE::DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
         MyGaussRule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
                                       // been applied above
-    DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
     // named 'dampstoch'
@@ -1138,8 +1138,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
-    DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
     jacobiGPneumannline_.resize(gausspoints_neumann.nquad);

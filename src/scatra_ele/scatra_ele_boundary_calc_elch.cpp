@@ -274,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
       /*----------------------------------------------------------------------*
        |               start loop over integration points                     |
        *----------------------------------------------------------------------*/
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
       {
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
   double intdomain(0.);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -386,7 +386,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
   const double faraday = elchparams_->Faraday();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
     dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   bool statistics = false;

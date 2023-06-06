@@ -96,7 +96,7 @@ void XFEM::MeshProjector::FindSearchRadius()
   const DRT::Node* const* nodes = actele->Nodes();
 
   // problem dimension
-  const unsigned int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+  const unsigned int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   // we are looking for the maximum diameter of the source element
   // as an estimate for the search radius
@@ -105,7 +105,8 @@ void XFEM::MeshProjector::FindSearchRadius()
   double max_diameter = 0.0;
 
   // build connectivity matrix for every surface of the embedded element
-  std::vector<std::vector<int>> connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  std::vector<std::vector<int>> connectivity =
+      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
 
   //-----------------------------------------------------------------------------------
   // We have hex elements & the faces are quads:
@@ -328,7 +329,8 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
     const LINALG::Matrix<3, 1>& node_xyz, LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
-  const unsigned int src_numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned int src_numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   // nodal coordinates
   LINALG::Matrix<3, src_numnodes> src_xyze(true);
 
@@ -355,7 +357,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
 
     // Evaluate elements shape function at this point and fill values
     LINALG::SerialDenseVector shp(src_numnodes);
-    DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
+    CORE::DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
     for (int in = 0; in < src_ele->NumNode(); ++in)

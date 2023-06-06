@@ -121,7 +121,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // integration loop for one element
       //----------------------------------------------------------------------
       // integration points and weights
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -259,7 +259,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
     Epetra_SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

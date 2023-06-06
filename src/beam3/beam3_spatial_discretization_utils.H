@@ -33,7 +33,7 @@ namespace DRT::UTILS::BEAM
       case 1:
       {
         // evaluate Lagrange shape functions at xi
-        DRT::UTILS::shape_function_1D(I_i, xi, distype);
+        CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype);
         break;
       }
       case 2:
@@ -43,7 +43,8 @@ namespace DRT::UTILS::BEAM
             "Hermite interpolation!");
 
         // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D(I_i, xi, hermite_length_param, DRT::Element::line2);
+        CORE::DRT::UTILS::shape_function_hermite_1D(
+            I_i, xi, hermite_length_param, DRT::Element::line2);
         break;
       }
       default:
@@ -65,7 +66,7 @@ namespace DRT::UTILS::BEAM
       case 1:
       {
         // evaluate Lagrange shape function derivs at xi
-        DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype);
+        CORE::DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype);
         break;
       }
       case 2:
@@ -75,7 +76,7 @@ namespace DRT::UTILS::BEAM
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D_deriv1(
+        CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
             I_i_xi, xi, hermite_length_param, DRT::Element::line2);
         break;
       }
@@ -99,7 +100,7 @@ namespace DRT::UTILS::BEAM
       case 1:
       {
         // evaluate Lagrange shape function derivs at xi
-        DRT::UTILS::shape_function_1D_deriv2(I_i_xixi, xi, distype);
+        CORE::DRT::UTILS::shape_function_1D_deriv2(I_i_xixi, xi, distype);
         break;
       }
       case 2:
@@ -109,7 +110,7 @@ namespace DRT::UTILS::BEAM
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D_deriv2(
+        CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
             I_i_xixi, xi, hermite_length_param, DRT::Element::line2);
         break;
       }
@@ -144,7 +145,7 @@ namespace DRT::UTILS::BEAM
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D_deriv3(
+        CORE::DRT::UTILS::shape_function_hermite_1D_deriv3(
             I_i_xixixi, xi, hermite_length_param, DRT::Element::line2);
         break;
       }
@@ -185,7 +186,7 @@ namespace DRT::UTILS::BEAM
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+  void EvaluateShapeFunctionsAllGPs(const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
       std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
@@ -212,7 +213,7 @@ namespace DRT::UTILS::BEAM
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+  void EvaluateShapeFunctionDerivsAllGPs(const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
       std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
@@ -242,7 +243,8 @@ namespace DRT::UTILS::BEAM
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
+  void EvaluateShapeFunctionsAndDerivsAllGPs(
+      const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
       std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
       std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
@@ -333,7 +335,7 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode>
   std::tuple<double, double> IntegrateCenterlineArcLengthAndArcLengthDerivative(
-      const DRT::UTILS::IntegrationPoints1D& gausspoints,
+      const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
       const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
       const DRT::Element::DiscretizationType& distype, const double& reflength)
   {

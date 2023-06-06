@@ -17,10 +17,10 @@
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
 CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
-    const DRT::Element::DiscretizationType& shape)
+    const ::DRT::Element::DiscretizationType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {
-  if (shape_ == DRT::Element::tet4)
+  if (shape_ == ::DRT::Element::tet4)
   {
     /* get the matrix of the coordinates of edges needed to compute the volume,
     ** which is used here as detJ in the quadrature rule.
@@ -44,7 +44,7 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatri
     vol_ = 0.0;
 
   // std::cout << "SHAPE=     "<< shape_ << std::endl;
-  if (shape_ != DRT::Element::tet4) dserror("wrong shape");
+  if (shape_ != ::DRT::Element::tet4) dserror("wrong shape");
 
   return;
 }
@@ -61,7 +61,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
   const double s = xi[1];
   const double t = xi[2];
 
-  DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, DRT::Element::hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, ::DRT::Element::hex8);
 
 
   LINALG::Matrix<8, 3> xrefe;
@@ -86,7 +86,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
  *---------------------------------------------------------------------*/
 void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 {
-  if (shape_ == DRT::Element::tet4)
+  if (shape_ == ::DRT::Element::tet4)
   {
     // check input
     if (!local) dserror("ERROR: LocalToGlobal called with xi=NULL");
@@ -98,7 +98,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     LINALG::Matrix<n, 1> val;
-    DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {
@@ -109,7 +109,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
       }
     }
   }
-  else if (shape_ == DRT::Element::hex8)
+  else if (shape_ == ::DRT::Element::hex8)
   {
     // check input
     if (!local) dserror("ERROR: LocalToGlobal called with xi=NULL");
@@ -121,7 +121,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     LINALG::Matrix<n, 1> val;
-    DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {

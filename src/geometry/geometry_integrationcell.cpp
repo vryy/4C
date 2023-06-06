@@ -25,7 +25,7 @@ LINALG::Matrix<3, 1> GEO::IntCell::ComputePhysicalCenterPosition(
     const DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
-  const LINALG::Matrix<3, 1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(distype));
+  const LINALG::Matrix<3, 1> localcenterpos(CORE::DRT::UTILS::getLocalCenterPosition<3>(distype));
   // center in physical coordinates
   static LINALG::Matrix<3, 1> pyhsicalcenterpos;
   GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
@@ -71,7 +71,7 @@ GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
 GEO::IntCell::~IntCell() {}
 
 
-int GEO::IntCell::NumNode() const { return DRT::UTILS::getNumberOfElementNodes(Shape()); }
+int GEO::IntCell::NumNode() const { return CORE::DRT::UTILS::getNumberOfElementNodes(Shape()); }
 
 
 /*----------------------------------------------------------------------*
@@ -122,7 +122,7 @@ GEO::DomainIntCell::DomainIntCell(const DRT::Element::DiscretizationType& distyp
 GEO::DomainIntCell::DomainIntCell(
     const DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze_ele)
     : IntCell(distype),
-      nodalpos_xi_domain_(DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
+      nodalpos_xi_domain_(CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
       nodalpos_xyz_domain_(xyze_ele),
       phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele))
 {
@@ -256,7 +256,7 @@ double GEO::DomainIntCell::VolumeInXiDomain(const DRT::Element& ele) const
         volume_cell);
   }
   const double normed_cell_volume =
-      volume_cell / DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
+      volume_cell / CORE::DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
   return normed_cell_volume;
 }
 
@@ -480,8 +480,8 @@ void GEO::ComputePhysicalCenterPosition<2, DRT::Element::line2>(
     const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center)
 {
   const DRT::Element::DiscretizationType cellType = DRT::Element::line2;
-  const unsigned dim = DRT::UTILS::DisTypeToDim<cellType>::dim;
-  LINALG::Matrix<dim, 1> localcenterpos = DRT::UTILS::getLocalCenterPosition<1>(cellType);
+  const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim;
+  LINALG::Matrix<dim, 1> localcenterpos = CORE::DRT::UTILS::getLocalCenterPosition<1>(cellType);
   GEO::elementToCurrentCoordinates(cellType, xyze, localcenterpos, phys_center);
 }
 

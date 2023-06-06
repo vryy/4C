@@ -81,10 +81,10 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
     static const int num_parent_thermo_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
     LINALG::Matrix<num_parent_thermo_dof, 1> rhs_t_;
     std::unordered_map<int, LINALG::Matrix<num_parent_thermo_dof, 1>> k_tt_;
@@ -105,11 +105,11 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
     static const int num_parent_pf_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        (DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1);
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        (CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1);
 
     LINALG::Matrix<num_parent_pf_dof, 1> rhs_p_;
     std::unordered_map<int, LINALG::Matrix<num_parent_pf_dof, 1>> k_pp_;
@@ -130,10 +130,10 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
     static const int num_parent_scatra_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
     LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
     std::unordered_map<int, LINALG::Matrix<num_parent_scatra_dof, 1>> k_ss_;
@@ -154,10 +154,10 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
     static const int num_parent_elch_dof =
-        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement * 2;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement * 2;
 
     LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
     std::unordered_map<int, LINALG::Matrix<num_parent_elch_dof, 1>> k_ee_;
@@ -204,17 +204,18 @@ namespace MORTAR
 
     template <int num_dof_per_node>
     void AssembleRHS(MORTAR::MortarElement* mele,
-        const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                                 num_dof_per_node,
+        const LINALG::Matrix<
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+                num_dof_per_node,
             1>& rhs,
         std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc);
 
     template <int num_dof_per_node>
     void AssembleMatrix(MORTAR::MortarElement* mele,
-        const std::unordered_map<int,
-            LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                               num_dof_per_node,
-                1>>& k,
+        const std::unordered_map<int, LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                                         parent_distype>::numNodePerElement *
+                                                         num_dof_per_node,
+                                          1>>& k,
         std::vector<int>& dofs, Teuchos::RCP<LINALG::SparseMatrix> kc);
 
 
@@ -229,13 +230,13 @@ namespace MORTAR
     }
 
    private:
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                       DRT::UTILS::DisTypeToDim<parent_distype>::dim,
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+                       CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
         1>
         rhs_;
     std::unordered_map<int,
-        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                           DRT::UTILS::DisTypeToDim<parent_distype>::dim,
+        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+                           CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
             1>>
         k_;
     MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;

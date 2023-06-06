@@ -200,7 +200,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, const DRT::UTILS::GaussIntegration& intpoints)
+    Epetra_SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // --------------------------------------------------
   // construct views
@@ -240,8 +240,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -282,8 +282,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
   }
 
   // integration loop
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -339,8 +339,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -411,8 +411,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -510,7 +510,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
 
     // loop over Gauss points if div u needs to be evaluated at the Gauss points
     /*
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end();
+    for ( CORE::DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin();
+    iquad!=intpoints_.end();
     ++iquad )
     {
       // evaluate shape functions and derivatives at integration point
@@ -546,7 +547,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
-  const DRT::UTILS::GaussIntegration intpoints(distype, ele->Degree() * 2 + 3);
+  const CORE::DRT::UTILS::GaussIntegration intpoints(distype, ele->Degree() * 2 + 3);
   return ComputeError(ele, params, mat, discretization, lm, elevec1, intpoints);
 }
 
@@ -558,7 +559,7 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
   LINALG::Matrix<nsd_, 1> u(true);
@@ -627,8 +628,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -1617,8 +1618,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     //---------------------------------------------------------------
     // evaluate shape functions and derivatives at integration point
@@ -2760,8 +2761,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // ---------------------------------------------------------------------------
   // Integration loop
   // ---------------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -2834,7 +2835,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
     // ---------------------------------------------------------------------------
     // Integration loop
     // ---------------------------------------------------------------------------
-    for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+    for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
          iquad != intpoints_.end(); ++iquad)
     {
       // evaluate shape functions and derivatives at integration point
@@ -2931,9 +2932,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   for (int i = 0; i < nsd_; ++i) xi(i) = elevec2_epetra(i);
 
   // evaluate shapefunctions at given point in reference coordinates
-  DRT::UTILS::shape_function<distype>(xi, shapefunct);
+  CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
   // evaluate derivatives of element shape functions at given point in reference configuration
-  DRT::UTILS::shape_function_deriv1<distype>(xi, pderiv_loc);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, pderiv_loc);
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> state = discretization.GetState("velnp");
 
@@ -3326,13 +3327,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
     // only velocity divergence needs to be calculated and interpolated here
     vel_calculation = false;
     // get integration rule of fluid element
-    const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
+    const CORE::DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
 
     if (degree_gp_fluid_bound)
     {
       if (immersedele->IsBoundaryImmersed())
       {
-        for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints_fluid_bound.begin();
+        for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad =
+                 intpoints_fluid_bound.begin();
              iquad != intpoints_fluid_bound.end(); ++iquad)
         {
           std::vector<double> backgrdxi(nsd_);
@@ -3584,7 +3586,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
         for (int i = 0; i < nsd_; ++i) xi(i) = closest_point_xi[i];
 
         // evaluate shape functions at closest point
-        DRT::UTILS::shape_function<distype>(xi, shapefunct);
+        CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
         weight = shapefunct(node, 0);
 
         // calculate new node velocities by weighting the influence of Navier Stokes solution and
@@ -4026,7 +4028,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     }
 
     // get the quad9 gaussrule for the in plane integration
-    DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+    CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
 
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
@@ -4067,7 +4069,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       }
 
       // start loop over integration points in layer
-      for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // get the other gauss point coordinates
@@ -4292,7 +4294,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       gp[1] = -1.0 + rr * 2.0 / ((double)numsublayers);
 
       // get the quad9 gaussrule for the in plane integration
-      DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+      CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
 
       // reset temporary values
       double area = 0;
@@ -4312,7 +4314,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
 
       // start loop over integration points in layer
-      for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // get the other gauss point coordinates
@@ -4535,8 +4537,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // Integration loop
   // ---------------------------------------------------------------------------
   double massf = 0.0;
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());

@@ -39,10 +39,10 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
   switch (Shape())
   {
     case line2:
-      gaussrule_ = DRT::UTILS::GaussRule1D::line_2point;
+      gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      gaussrule_ = DRT::UTILS::GaussRule1D::line_3point;
+      gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("shape type unknown!\n");

@@ -535,7 +535,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues<LINALG::SerialDenseMatrix>(
+              CORE::DRT::ELEMENTS::AssembleAveragedElementValues<LINALG::SerialDenseMatrix>(
                   *global_data, gp_data, *this);
               break;
             }
@@ -733,9 +733,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
     LINALG::Matrix<nen_, 1> shapefunct;
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     LINALG::Matrix<nsd_, nen_> deriv;
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
     // compute the Jacobian matrix
     LINALG::Matrix<nsd_, nsd_> jac;
@@ -1068,7 +1068,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_kdT_tsi(
   for (int gp = 0; gp < numgpt_; gp++)
   {
     // shape functions
-    DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     // update linear coupling matrix K_dT
     k_dT->MultiplyNT(1., (*dFintdT_)[gp], shapefunct, 1.);
   }
@@ -1530,7 +1530,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
           {
             Epetra_SerialDenseMatrix kbTm(spintype, nen_);
             LINALG::Matrix<nen_, 1> shapefunct;
-            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+            CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
             LINALG::DENSEFUNCTIONS::multiplyNT<double, spintype, 1, nen_>(
                 0., kbTm.A(), 1., KbT_->at(gp).A(), shapefunct.A());
             LINALG::DENSEFUNCTIONS::multiply<double,
@@ -1559,7 +1559,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
           {
             Epetra_SerialDenseMatrix kbTm(spintype, nen_);
             LINALG::Matrix<nen_, 1> shapefunct;
-            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+            CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
             LINALG::DENSEFUNCTIONS::multiplyNT<double, spintype, 1, nen_>(
                 0., kbTm.A(), 1., KbT_->at(gp).A(), shapefunct.A());
             LINALG::DENSEFUNCTIONS::multiply<double,
@@ -1588,7 +1588,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
           {
             Epetra_SerialDenseMatrix kbTm(spintype, nen_);
             LINALG::Matrix<nen_, 1> shapefunct;
-            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+            CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
             LINALG::DENSEFUNCTIONS::multiplyNT<double, spintype, 1, nen_>(
                 0., kbTm.A(), 1., KbT_->at(gp).A(), shapefunct.A());
             LINALG::DENSEFUNCTIONS::multiply<double,
@@ -1617,7 +1617,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
           {
             Epetra_SerialDenseMatrix kbTm(spintype, nen_);
             LINALG::Matrix<nen_, 1> shapefunct;
-            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+            CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
             LINALG::DENSEFUNCTIONS::multiplyNT<double, spintype, 1, nen_>(
                 0., kbTm.A(), 1., KbT_->at(gp).A(), shapefunct.A());
             LINALG::DENSEFUNCTIONS::multiply<double,
@@ -1753,7 +1753,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticityAndEAS(
       {
         if (res_T)
         {
-          DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+          CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
           res_t = shapefunct.Dot(*res_T);
           res_t_ptr = &res_t;
         }
@@ -2256,7 +2256,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
-  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
+  static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(
+      true);
   static LINALG::Matrix<9, nsd_> d_F_dxi(true);
   deriv2.Clear();
   d_F_dxi.Clear();
@@ -2265,14 +2266,15 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   {
     if (distype == DRT::Element::nurbs27)
     {
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
           SetShapeFunction(), SetDerivShapeFunction(), deriv2, xi, Knots(), Weights(), distype);
     }
     else
-      DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
+      CORE::DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
 
     static LINALG::Matrix<nen_, nsd_> xXF(true);
-    static LINALG::Matrix<nsd_, DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec(true);
+    static LINALG::Matrix<nsd_, CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec(
+        true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
@@ -2303,7 +2305,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     LINALG::Matrix<numdofperelement_, nsd_> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->A(), true);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec(true);
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec(
+        true);
     static LINALG::Matrix<nen_, 6> N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
@@ -2396,8 +2399,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
 
   LINALG::Matrix<nen_, 1> shapefunct;
   LINALG::Matrix<nsd_, nen_> deriv;
-  DRT::UTILS::shape_function<distype>(xi_expol, shapefunct);
-  DRT::UTILS::shape_function_deriv1<distype>(xi_expol, deriv);
+  CORE::DRT::UTILS::shape_function<distype>(xi_expol, shapefunct);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi_expol, deriv);
 
   LINALG::Matrix<numstr_, 1> cauchy_expol;
   LINALG::Matrix<numstr_, numdofperelement_> cauchy_deriv_expol;
@@ -3131,8 +3134,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
   FillPositionArrays(disp, vel, temp);
 
   // shape functions (shapefunct) and their first derivatives (deriv)
-  DRT::UTILS::shape_function<distype>(xi, SetShapeFunction());
-  DRT::UTILS::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
+  CORE::DRT::UTILS::shape_function<distype>(xi, SetShapeFunction());
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
 
   Kinematics();
 
@@ -3205,13 +3208,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
     d2q_dT_dpxi->Shape(nen_, nsd_);
     LINALG::Matrix<nen_, nsd_> d2q_dT_dpxi_m(d2q_dT_dpxi->A(), true);
 
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2;
-    DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2;
+    CORE::DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
     const int d2v[3][3] = {{0, 3, 4}, {3, 1, 5}, {4, 5, 2}};
     LINALG::Matrix<3, 1> tmp;
     tmp.MultiplyTN(InvJ(), iFn);
 
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> tmp3;
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> tmp3;
     tmp3.Update(deriv2);
 
     for (int a = 0; a < nsd_; ++a)
@@ -3230,13 +3233,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
     LINALG::Matrix<nen_, nsd_> xXF(Xcurr());
     xXF.MultiplyNT(-1., Xrefe(), Defgrd(), 1.);
 
-    LINALG::Matrix<nsd_, DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec;
+    LINALG::Matrix<nsd_, CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec;
     xXFsec.MultiplyTT(xXF, deriv2);
 
     LINALG::Matrix<nsd_, nsd_> tmp4;
     tmp4.MultiplyTN(InvJ(), InvDefgrd());
 
-    LINALG::Matrix<nsd_, DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> tmp5;
+    LINALG::Matrix<nsd_, CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> tmp5;
     tmp5.Multiply(tmp4, xXFsec);
 
     LINALG::Matrix<nen_, 1> tmp6;

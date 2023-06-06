@@ -281,7 +281,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct(funct, gpa, myknots, weights, DRT::Element::nurbs27);
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+        funct, gpa, myknots, weights, DRT::Element::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -300,7 +301,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct(funct, gpa, myknots, weights, DRT::Element::nurbs27);
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+        funct, gpa, myknots, weights, DRT::Element::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -318,7 +320,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     gpa(1) = 1.0;
     gpa(2) = -1.0;
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct(funct, gpa, myknots, weights, DRT::Element::nurbs27);
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+        funct, gpa, myknots, weights, DRT::Element::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -336,7 +339,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     gpa(1) = -1.0;
     gpa(2) = 1.0;
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct(funct, gpa, myknots, weights, DRT::Element::nurbs27);
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
+        funct, gpa, myknots, weights, DRT::Element::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -602,8 +606,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   }
   /* ================================================= Loop over Gauss Points */
   const int numgp = 27;
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   LINALG::Matrix<3, 1> gpa;
 
   LINALG::Matrix<27, 1> shape;
@@ -615,7 +619,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
         shape, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
 
     // compute the Jacobian matrix
@@ -794,8 +798,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);
   detJ_.resize(numgp);
@@ -814,7 +818,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
         funct, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -983,8 +987,8 @@ const std::vector<LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
   std::vector<LINALG::Matrix<27, 1>> shapefcts(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up nodal f at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     LINALG::Matrix<3, 1> gp;
@@ -992,7 +996,7 @@ const std::vector<LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct(
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
         shapefcts[igp], gp, myknots, weights, DRT::Element::nurbs27);
   }
   return shapefcts;
@@ -1010,8 +1014,8 @@ const std::vector<LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
   std::vector<LINALG::Matrix<3, 27>> derivs(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     LINALG::Matrix<3, 1> gp;
@@ -1021,7 +1025,7 @@ const std::vector<LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
 
     LINALG::Matrix<27, 1> dummyfct;
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
         dummyfct, derivs[igp], gp, myknots, weights, DRT::Element::nurbs27);
   }
   return derivs;
@@ -1035,8 +1039,8 @@ const std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights(
   const int numgp = 27;
 
   std::vector<double> gpweights(numgp);
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < numgp; ++i)
   {
     gpweights[i] = intpoints.qwgt[i];
@@ -1114,8 +1118,8 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);
   detJ_.resize(numgp);
@@ -1134,7 +1138,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
         funct, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1220,7 +1224,7 @@ void EvalNurbs3DInterpolation(LINALG::Matrix<n_val, 1, double>& r,
 {
   // Get the shape functions.
   LINALG::Matrix<n_points, 1, double> N;
-  DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
+  CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
 
   // Multiply the shape functions with the control point values.
   r.Clear();
@@ -1271,7 +1275,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)
-        xi(i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
+        xi(i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
 
       // Get the reference position at the parameter coordinate.
       EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
@@ -1324,7 +1328,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
     for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)
-        xi(i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
+        xi(i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
 
       // Get the reference position at the parameter coordinate.
       EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());

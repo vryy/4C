@@ -96,13 +96,13 @@ namespace DRT
         case buildSurfaces:
         {
           nele = ele->NumSurface();
-          connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+          connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
           break;
         }
         case buildLines:
         {
           nele = ele->NumLine();
-          connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+          connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
           break;
         }
         default:

@@ -245,7 +245,7 @@ namespace DRT
       Bele3& operator=(const Bele3& old);
 
       //! set number of gauss points to element shape default
-      DRT::UTILS::GaussRule2D getOptimalGaussrule() const;
+      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule() const;
 
     };  // class Bele3
 
@@ -391,7 +391,7 @@ namespace DRT
           const Epetra_SerialDenseMatrix xyze, const Epetra_SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
       //! integrate shape functions over a line
       void IntegrateShapeFunction(Teuchos::ParameterList& params,

@@ -14,7 +14,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
-using namespace DRT::UTILS;
+using namespace CORE::DRT::UTILS;
 
 DRT::ELEMENTS::RedAirBloodScatraLine3Type DRT::ELEMENTS::RedAirBloodScatraLine3Type::instance_;
 

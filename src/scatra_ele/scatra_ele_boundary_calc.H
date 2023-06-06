@@ -71,16 +71,16 @@ namespace DRT
       \date 08/08
     */
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalc : public ScaTraBoundaryInterface
     {
      public:
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of boundary(!) space dimensions
       static const int nsd_ = probdim;
-      static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       // schott
       /*----------------------------------------------------------------------*/
@@ -92,8 +92,9 @@ namespace DRT
         double elediam = 0.0;
 
         // number of nodes of this element
-        //  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::;
-        const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+        //  const size_t numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::;
+        const size_t numnode =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
         // check all possible connections between nodes of an element
         // node 1 to 2
@@ -187,15 +188,15 @@ namespace DRT
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -248,8 +249,9 @@ namespace DRT
        * @param[out] normalvec  normal vector at Gauss point(optional)
        * @return domain integration factor
        */
-      double EvalShapeFuncAndIntFac(const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,
-          const int iquad, LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
+      double EvalShapeFuncAndIntFac(
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
+          LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
 
       /*!
        * @brief evaluate shape functions and derivatives at integration point
@@ -258,7 +260,7 @@ namespace DRT
        * @param[in] iquad      id of current Gauss point
        */
       void EvaluateShapeFuncAndDerivativeAtIntPoint(
-          const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
 
       /*!
        * @brief Evaluate the square root of the metric tensor determinant
@@ -269,7 +271,7 @@ namespace DRT
        * @return square root of the metric tensor determinant
        */
       double EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
-          const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
           const LINALG::Matrix<nsd_, nen_>& XYZe);
 
       //! evaluate scatra-scatra interface coupling condition

@@ -1273,7 +1273,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
   // number space dimensions for 3d combustion problems
   const size_t nsd = 3;
   // here, a triangular boundary integration cell is assumed (numvertices = 3)
-  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const size_t numvertices = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by
@@ -1315,11 +1315,11 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
     funct.Clear();
-    DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
+    CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
     deriv.Clear();
-    DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)

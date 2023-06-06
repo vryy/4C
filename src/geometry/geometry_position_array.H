@@ -67,7 +67,7 @@ namespace GEO
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,
@@ -102,7 +102,7 @@ namespace GEO
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,

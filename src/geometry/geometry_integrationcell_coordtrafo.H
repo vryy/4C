@@ -38,10 +38,10 @@ namespace GEO
   static inline double detEtaToXi3DT(
       const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     // get shape function derivative
     static LINALG::Matrix<3, numNodes> deriv;
-    DRT::UTILS::shape_function_3D_deriv1(
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, pos_eta_domain(0), pos_eta_domain(1), pos_eta_domain(2), distype);
 
     // get jacobian matrix ...
@@ -102,11 +102,11 @@ namespace GEO
   inline void mapEtaBToXiBT(const M& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary,
       LINALG::Matrix<2, 1>& pos_xsi_boundary)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // create shape function vectors
     static LINALG::Matrix<numNodes, 1> funct;
-    DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0), pos_eta_boundary(1), distype);
+    CORE::DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0), pos_eta_boundary(1), distype);
 
     // does this make sense
     // translate position into from cell coordinates to element coordinates
@@ -166,11 +166,12 @@ namespace GEO
   static inline double detEtaBToXiBT(
       const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // get shape function derivative
     static LINALG::Matrix<2, numNodes> deriv;
-    DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta_boundary(0), pos_eta_boundary(1), distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(
+        deriv, pos_eta_boundary(0), pos_eta_boundary(1), distype);
 
     // get jacobian matrix ...
     static LINALG::Matrix<2, 2> xjm;

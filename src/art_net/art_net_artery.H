@@ -323,7 +323,7 @@ namespace DRT
 
       //! @name Other
 
-      DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
+      CORE::DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
 
 
       //@}
@@ -334,7 +334,7 @@ namespace DRT
       INPAR::ARTDYN::ImplType impltype_;
 
       //! Gaussrule
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! container containing all kind of Artery thisandthat
       DRT::Container data_;
@@ -347,7 +347,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are

@@ -18,19 +18,19 @@
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
-    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>&
-        R)
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& R)
 {
   // number of nodes per element
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   // spatial dimension
-  const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   if (disp.size() != nsd * nen) dserror("mismatch in dimensions");
 
   LINALG::Matrix<nsd, 1> xi_ele_center =
-      DRT::UTILS::getLocalCenterPosition<nsd>(distype);  // depending on distype
+      CORE::DRT::UTILS::getLocalCenterPosition<nsd>(distype);  // depending on distype
 
   LINALG::Matrix<nen, nsd> xrefe;  // X, material coord. of element
   LINALG::Matrix<nen, nsd> xcurr;  // x, current  coord. of element
@@ -43,7 +43,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
     }
   }
   LINALG::Matrix<nsd, nen> deriv;
-  DRT::UTILS::shape_function_deriv1<distype>(xi_ele_center, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi_ele_center, deriv);
 
   LINALG::Matrix<nsd, nsd> jac;
   LINALG::Matrix<nsd, nsd> defgrd;
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
         shapefctsGP,                // shape function of current Gauss-point
     Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
 )
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
   if (temperature_vector != Teuchos::null)
   {
     double scalartemp = 0.0;
-    for (int i = 0; i < DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+    for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
     {
       scalartemp += shapefctsGP(i) * (*temperature_vector)[i];
     }
@@ -88,24 +88,24 @@ void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
-    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>&
-        defgrd,
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
     const INPAR::STR::KinemType kinemType,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp)
 {
   if (kinemType == INPAR::STR::kinem_linear)
   {
     defgrd.Clear();
-    for (auto i = 0; i < DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+    for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
     {
       defgrd(i, i) = 1.0;
     }
@@ -123,36 +123,39 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
-    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>&
-        defgrd,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp)
 {
   // get Jacobian mapping wrt to the stored configuration
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>
+  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       invJdef;
   mulfHistory->StoragetoMatrix(gp, invJdef, mulfHistory->JHistory());
 
   // get derivatives wrt to last spatial configuration
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-      DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
       N_xyz;
   N_xyz.Multiply(invJdef, derivs);
 
   // build multiplicative incremental defgrd
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>
+  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       Finc;
   Finc.MultiplyTT(xdisp, N_xyz);
-  for (auto i = 0; i < DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+  for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
   {
     defgrd(i, i) += 1.0;
   }
 
   // get stored old incremental F
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>
+  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       Fhist;
   mulfHistory->StoragetoMatrix(gp, Fhist, mulfHistory->FHistory());
 
@@ -162,17 +165,17 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
-    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>&
-        defgrd,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian)
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian)
 {
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-      DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
       N_XYZ(false);
   N_XYZ.Multiply(inverseJacobian, derivs);
 
@@ -181,10 +184,10 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(DRT::Node** nodes,
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe)
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe)
 {
-  for (auto i = 0; i < DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+  for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
   {
     const double* x = nodes[i]->X();
     xrefe(i, 0) = x[0];
@@ -195,37 +198,37 @@ void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(DRT::Node** nodes,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements(const std::vector<double>& disp,
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp)
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp)
 {
-  for (auto i = 0; i < DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+  for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
   {
-    xdisp(i, 0) = disp[i * DRT::UTILS::DisTypeToDim<distype>::dim + 0];
-    xdisp(i, 1) = disp[i * DRT::UTILS::DisTypeToDim<distype>::dim + 1];
-    xdisp(i, 2) = disp[i * DRT::UTILS::DisTypeToDim<distype>::dim + 2];
+    xdisp(i, 0) = disp[i * CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 0];
+    xdisp(i, 1) = disp[i * CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1];
+    xdisp(i, 2) = disp[i * CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 2];
   }
 }
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr)
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr)
 {
   xcurr.Update(1.0, xrefe, 1.0, xdisp);
 }
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
-    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, DRT::UTILS::DisTypeToDim<distype>::dim>&
-        inverseJacobian)
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
+    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
+    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian)
 {
   inverseJacobian.Multiply(1.0, derivs, xrefe, 0.0);
   inverseJacobian.Invert();
@@ -246,34 +249,39 @@ template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
     const DRT::Element*, const std::vector<double>&, LINALG::Matrix<3, 3>&);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet4>(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
-        1>& shapefctsGP,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex27>(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
-        1>& shapefctsGP,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex8>(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
-        1>& shapefctsGP,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::nurbs27>(
     const LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::nurbs27>::numNodePerElement, 1>&
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::nurbs27>::numNodePerElement, 1>&
         shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet10>(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
-        1>& shapefctsGP,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::hex20>(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
-        1>& shapefctsGP,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 

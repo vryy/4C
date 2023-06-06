@@ -106,10 +106,10 @@ namespace DRT
       TemperBoundaryImpl(int numdofpernode);
 
       //! number of nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of Gauss points
       static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
@@ -135,9 +135,9 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at int. point
       void EvalShapeFuncAndIntFac(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          const int& iquad,                                        //!< id of current Gauss point
-          const int& eleid                                         //!< the element id
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int& iquad,  //!< id of current Gauss point
+          const int& eleid   //!< the element id
       );
 
       //! integral of shape functions over boundary surface

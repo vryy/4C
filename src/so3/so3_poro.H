@@ -65,10 +65,11 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int numdim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of dofs per node
       static const int noddof_ = numdim_;
@@ -87,7 +88,7 @@ namespace DRT
 
        6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       */
-      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! total gauss points per element
       int numgpt_;
@@ -626,7 +627,7 @@ namespace DRT
           const LINALG::Matrix<numnod_, 1>& shapefct) const;
 
       //! Gauss integration rule
-      DRT::UTILS::GaussIntegration intpoints_;
+      CORE::DRT::UTILS::GaussIntegration intpoints_;
 
       //! flag indicating if element has been initialized
       bool init_;

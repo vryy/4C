@@ -185,7 +185,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
     const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   std::vector<double> integralflux(my::numscal_);

@@ -1875,10 +1875,10 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
 
   const int numnode_space_time =
-      DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement;
 
   const int numnode_side =
-      DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement / 2;
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement / 2;
 
   // space time side coordinates
   LINALG::Matrix<3, numnode_space_time> xyze_st;
@@ -1971,7 +1971,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     LINALG::Matrix<3, 1> dx_ds(true);
 
     // get current values
-    DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
     LINALG::Matrix<3, numnode_side> xyz_side_new(xyze_new);
 
@@ -2044,10 +2044,10 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(const LINALG::Matrix<3, numnode_spac
 {
   bool successful = true;
 
-  const int nsd = DRT::UTILS::DisTypeToDim<space_time_distype>::dim;
+  const int nsd = CORE::DRT::UTILS::DisTypeToDim<space_time_distype>::dim;
 
   // use one-point Gauss rule
-  DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<space_time_distype>::rule);
 
   LINALG::Matrix<nsd, 1> xsi(true);
@@ -2063,7 +2063,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(const LINALG::Matrix<3, numnode_spac
   LINALG::Matrix<nsd, numnode_space_time> deriv(true);
   LINALG::Matrix<nsd, nsd> xjm(true);
 
-  DRT::UTILS::shape_function_deriv1<space_time_distype>(xsi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<space_time_distype>(xsi, deriv);
 
   xjm.MultiplyNT(deriv, xyze_st);
 

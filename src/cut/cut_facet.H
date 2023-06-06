@@ -226,7 +226,7 @@ namespace GEO
       dealt with when moment fitting is used for boun.cell integration
        */
       void NewArbitraryCell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
-          plain_boundarycell_set& bcells, const DRT::UTILS::GaussIntegration& gp,
+          plain_boundarycell_set& bcells, const CORE::DRT::UTILS::GaussIntegration& gp,
           const LINALG::Matrix<3, 1>& normal);
 
       /// Get the BoundaryCells created on this facet

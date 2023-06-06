@@ -50,7 +50,7 @@ namespace CONTACT
      Note that this is \b not a collective call as overlaps are
      integrated in parallel by individual processes.<br>
      Note also that this constructor relies heavily on the
-     DRT::UTILS::IntegrationPoints structs to get Gauss points
+     CORE::DRT::UTILS::IntegrationPoints structs to get Gauss points
      and corresponding weights.
 
      */

@@ -82,10 +82,11 @@ namespace DRT
           Epetra_SerialDenseVector& elevec3);
 
       //! number of element nodes
-      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of spatial dimensions of parent element
       static const int nsd_ = bdrynsd_ + 1;

@@ -615,7 +615,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   this->ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal temperature values
   LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
@@ -848,7 +849,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal master temperature values and shape derivatives
   LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
@@ -1067,7 +1069,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
   Epetra_SerialDenseMatrix dummy_ksm;
@@ -1142,7 +1145,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for shape derivatives
   LINALG::Matrix<3, nen_slave_> dummy_shape_deriv;

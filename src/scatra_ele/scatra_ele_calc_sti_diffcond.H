@@ -42,7 +42,7 @@ namespace DRT
      private:
       //! abbreviations
       using my = ScaTraEleCalc<distype>;
-      using myelch = ScaTraEleCalcElch<distype, DRT::UTILS::DisTypeToDim<distype>::dim>;
+      using myelch = ScaTraEleCalcElch<distype, CORE::DRT::UTILS::DisTypeToDim<distype>::dim>;
       using mystielch = ScaTraEleSTIElch<distype>;
       using my::nen_;
       using my::nsd_;

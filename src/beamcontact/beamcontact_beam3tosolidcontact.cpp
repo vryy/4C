@@ -437,8 +437,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   LINALG::Matrix<dim1 + dim2, 1, TYPEBTS> eta_d(true);
 
   // Get Gauss points and weights in interval [-1, 1]
-  DRT::UTILS::IntegrationPoints1D gaussPoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE);
+  CORE::DRT::UTILS::IntegrationPoints1D gaussPoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(GAUSSRULE);
 
   // Loop over all Gauss points in contact interval [eta_a, eta_b]
   for (int i_gp = 0; i_gp < gaussPoints.nquad; i_gp++)
@@ -2161,9 +2161,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
   if (numnodalvalues == 1)
   {
     // Get values and derivatives of shape functions
-    DRT::UTILS::shape_function_1D(N_i, eta, distype);
-    DRT::UTILS::shape_function_1D_deriv1(N_i_eta, eta, distype);
-    DRT::UTILS::shape_function_1D_deriv2(N_i_etaeta, eta, distype);
+    CORE::DRT::UTILS::shape_function_1D(N_i, eta, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N_i_eta, eta, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N_i_etaeta, eta, distype);
   }
   else if (numnodalvalues == 2)
   {
@@ -2173,9 +2173,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
     double length = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
 
     // Get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N_i, eta, length, distype);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_eta, eta, length, distype);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_etaeta, eta, length, distype);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, eta, length, distype);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_eta, eta, length, distype);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_etaeta, eta, length, distype);
   }
   else
     dserror(
@@ -2219,9 +2219,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetSur
   LINALG::Matrix<2, numnodessol, TYPEBTS> N_i_xi(true);
   LINALG::Matrix<3, numnodessol, TYPEBTS> N_i_xixi(true);
 
-  DRT::UTILS::shape_function_2D(N_i, xi1, xi2, element2_->Shape());
-  DRT::UTILS::shape_function_2D_deriv1(N_i_xi, xi1, xi2, element2_->Shape());
-  DRT::UTILS::shape_function_2D_deriv2(N_i_xixi, xi1, xi2, element2_->Shape());
+  CORE::DRT::UTILS::shape_function_2D(N_i, xi1, xi2, element2_->Shape());
+  CORE::DRT::UTILS::shape_function_2D_deriv1(N_i_xi, xi1, xi2, element2_->Shape());
+  CORE::DRT::UTILS::shape_function_2D_deriv2(N_i_xixi, xi1, xi2, element2_->Shape());
 
   // Assemble the individual shape functions in matrices, such that: r = N * d, r_xi = N_xi * d,
   // r_xi1xi1 = N_xi1xi1 * d, ...

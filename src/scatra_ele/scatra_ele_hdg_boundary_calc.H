@@ -69,10 +69,11 @@ namespace DRT
       ScaTraHDGBoundaryImpl();
 
       //! number of element nodes
-      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions of the ScaTraHDGBoundary element
-      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of space dimensions of the parent element
       static const int nsd_ = bdrynsd_ + 1;

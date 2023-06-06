@@ -115,8 +115,9 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](DRT::Element& ele) {
-          DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        [&](DRT::Element& ele)
+        {
+          CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), nodal_stress);
         });
 
@@ -150,8 +151,9 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
 
     dis->Evaluate(
-        [&](DRT::Element& ele) {
-          DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+        [&](DRT::Element& ele)
+        {
+          CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
               ele, *data->at(ele.Id()), elestress);
         });
 
@@ -392,8 +394,9 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](DRT::Element& ele) {
-          DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        [&](DRT::Element& ele)
+        {
+          CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), nodal_stress);
         });
 
@@ -507,7 +510,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     dis->Evaluate(
         [&](DRT::Element& ele)
         {
-          DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+          CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
               ele, *data->at(ele.Id()), element_stress);
         });
 

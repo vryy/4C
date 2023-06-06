@@ -433,7 +433,7 @@ namespace DRT
       // Nodal positions at previous time step
       LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_1_;
 
-      DRT::UTILS::GaussRule2D gaussrule_;  ///< Gaussrule
+      CORE::DRT::UTILS::GaussRule2D gaussrule_;  ///< Gaussrule
 
       //! container containing all kind of discsh3 thisandthat
       DRT::Container data_;

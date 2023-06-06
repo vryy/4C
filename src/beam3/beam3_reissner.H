@@ -986,7 +986,7 @@ namespace DRT
 
      public:
       //! determine Gauss rule from required type of integration and parameter list
-      DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
+      CORE::DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
       //@}
 

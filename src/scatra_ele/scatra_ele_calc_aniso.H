@@ -21,7 +21,7 @@ namespace DRT
     class ScaTraEleDiffManagerAniso;
 
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:

@@ -176,8 +176,8 @@ namespace XFEM
       {
         const DRT::Element::DiscretizationType shape = DRT::Element::hex8;
         //
-        const size_t nsd = DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
+        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         LINALG::Matrix<nen, 1> funct_(funct, true);
         LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex8>(sliplength, eid, cond, funct_, derxy_);
@@ -186,8 +186,8 @@ namespace XFEM
       {
         const DRT::Element::DiscretizationType shape = DRT::Element::hex27;
         //
-        const size_t nsd = DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
+        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         LINALG::Matrix<nen, 1> funct_(funct, true);
         LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex27>(sliplength, eid, cond, funct_, derxy_);
@@ -196,8 +196,8 @@ namespace XFEM
       {
         const DRT::Element::DiscretizationType shape = DRT::Element::hex20;
         //
-        const size_t nsd = DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
+        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         LINALG::Matrix<nen, 1> funct_(funct, true);
         LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex20>(sliplength, eid, cond, funct_, derxy_);

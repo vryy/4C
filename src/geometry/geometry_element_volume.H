@@ -23,8 +23,8 @@ namespace GEO
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    const DRT::UTILS::GaussIntegration intpoints(distype);
+    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<1, 1> eleCoord;
     LINALG::Matrix<1, numnode> deriv;
@@ -39,7 +39,7 @@ namespace GEO
       eleCoord(0) = intpoints.Point(iquad)[0];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -61,8 +61,8 @@ namespace GEO
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    const DRT::UTILS::GaussIntegration intpoints(distype);
+    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<2, 1> eleCoord;
     LINALG::Matrix<2, numnode> deriv;
@@ -79,7 +79,7 @@ namespace GEO
       eleCoord(1) = intpoints.Point(iquad)[1];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -105,9 +105,9 @@ namespace GEO
   )
   {
     // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     // gaussian points
-    const DRT::UTILS::GaussIntegration intpoints(distype);
+    const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     LINALG::Matrix<3, 1> eleCoord;
     LINALG::Matrix<3, numnode> deriv;
@@ -124,7 +124,8 @@ namespace GEO
       eleCoord(2) = intpoints.Point(iquad)[2];
 
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(
+          deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;

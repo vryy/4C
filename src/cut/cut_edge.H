@@ -284,8 +284,9 @@ namespace GEO
 
     /*--------------------------------------------------------------------------*/
     template <unsigned probDim, DRT::Element::DiscretizationType edgeType,
-        unsigned dimEdge = DRT::UTILS::DisTypeToDim<edgeType>::dim,
-        unsigned numNodesEdge = DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
+        unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
+        unsigned numNodesEdge =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
     class ConcreteEdge : public Edge
     {
      public:
