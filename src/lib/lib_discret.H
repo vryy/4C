@@ -24,6 +24,7 @@
 #include "lib_dofset_interface.H"
 #include "utils_exceptions.H"
 #include "lib_globalproblem_enums.H"
+#include "utils_std_cxx20_ranges.H"
 
 // forward declarations
 namespace COMM_UTILS
@@ -720,12 +721,32 @@ namespace DRT
       return elecolptr_[lid];
     }
 
-    inline DRT::Element* const* lColElements() const
+    /**
+     * This function is useful for range based for-loops over all row elements.
+     *
+     * \code
+     *      for (Element* actele : MyRowElementRange()) {}
+     * \endcode
+     *
+     * \return A range of all local row elements.
+     */
+    [[nodiscard]] auto MyRowElementRange() const
     {
 #ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
+      if (!Filled()) dserror("Filled() != true");
 #endif
-      return elecolptr_.data();
+      return std_20::ranges::views::all(elerowptr_);
+    }
+
+    /**
+     * This function is equivalent to MyRowElementRange(), but applied to column elements
+     */
+    [[nodiscard]] auto MyColElementRange() const
+    {
+#ifdef DEBUG
+      if (!Filled()) dserror("Filled() != true");
+#endif
+      return std_20::ranges::views::all(elecolptr_);
     }
 
     /*!
@@ -1759,7 +1780,7 @@ namespace DRT
 
     */
     void EvaluateInitialField(const std::string& fieldstring,
-        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int> locids);
+        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
     //@}
 
