@@ -4,6 +4,10 @@
 # Usage: baci_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
 #
 function(baci_add_google_test_executable TESTNAME)
+  if(NOT BACI_WITH_GOOGLETEST)
+    return()
+  endif()
+
   set(options "")
   set(oneValueArgs NP THREADS)
   set(multiValueArgs SOURCE)
