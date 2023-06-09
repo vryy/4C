@@ -10,19 +10,19 @@ General Data File BACI
 created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMTHERMDIS                     1
 NUMAIRWAYSDIS                   1
---------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
@@ -45,7 +45,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
--------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESEVRYERGY                     0
@@ -68,7 +68,7 @@ LOADLIN                         no
 MASSLIN                         no
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
-----------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     PetrovGalerkin
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    1000
@@ -79,12 +79,12 @@ MESH_RELOCATION                 Initial
 INTTYPE                         Segments
 NUMGP_PER_DIM                   16
 TRIANGULATION                   Center
-----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 GHOSTING_STRATEGY               redundant_master
-----------------------------------------------------CONTACT DYNAMIC
+---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   4
 RESTART_WITH_CONTACT            Yes
 ADHESION                        None
@@ -108,9 +108,9 @@ NORMCOMBI_RESFCONTCONSTR        And
 NORMCOMBI_DISPLAGR              And
 TOLCONTCONSTR                   1e-06
 TOLLAGR                         1e-06
-------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
----------------------------------------------POROELASTICITY DYNAMIC
+--------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 RESTARTEVRY                     1
@@ -129,7 +129,7 @@ SECONDORDER                     Yes
 CONTIPARTINT                    Yes
 CONTACTNOPEN                    No
 LINEAR_SOLVER                   1
-------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   3
 SIMPLER_SOLVER                  -1
@@ -153,7 +153,7 @@ INITSTATITEMAX                  5
 GAMMA                           1
 THETA                           0.66
 START_THETA                     1
-----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+---------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
@@ -173,19 +173,19 @@ EVALUATION_MAT                  integration_point
 LOMA_CONTI_SUPG                 No
 LOMA_CONTI_CROSS_STRESS         no_cross
 LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 NAME                            Poro_monolithic
------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 NAME                            structural solver
------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 NAME                            FluidSolver
------------------------------------------------------------SOLVER 4
+----------------------------------------------------------SOLVER 4
 SOLVER                          UMFPACK
 NAME                            contact
-----------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.5
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 5.0
@@ -193,9 +193,9 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0 DENSITY 10.0 PERMEABILITY 1.0e-2 TYPE Darcy
 MAT 5 MAT_ElastHyper NUMMAT 1 MATIDS 6 DENS 5.0
 MAT 6 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
--------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 21 500000.0 DESCRIPTION 0.01+0.09*0.5*(1-cos((t*pi/1.0))) 0.01+0.09+0.21*0.5*(1-cos(((t-1.0)*pi/20.0))) 0.01+0.3
 ------------------------------------------------DESIGN DESCRIPTION
@@ -209,19 +209,19 @@ DSURF  2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // pusher_top
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
--------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+--------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF  1
 // struct_bottom
 E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL  1
 // poro_surface
 E 1 -
-------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
+---------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
 DSURF  1
 // all
 E 5 -
--------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
+--------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // zp
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.3
@@ -281,14 +281,14 @@ NODE 16    COORD  0.2500000000000000e+00  0.7500000000000000e+00  1.600000000000
 ------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8PORO HEX8  1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8  9 10 11 12 13 14 15 16 MAT 5 KINEM nonlinear EAS none
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -4.26921033930649074e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 4.26921033930663038e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.96398564688170241e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 8 QUANTITY velz VALUE  -8.47316838529560412e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 8 QUANTITY velx VALUE      -1.75172808607926343e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 8 QUANTITY vely VALUE  1.75172808608015074e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 8 QUANTITY velz VALUE -7.17911627051675931e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE -1.62577793788937523e-03 TOLERANCE 1e-10
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -4.26920988861257799e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE  4.26920988861257539e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.96398544349180339e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY velz VALUE -8.47310324602397816e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 8 QUANTITY velx VALUE -1.75172617906888895e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 8 QUANTITY vely VALUE  1.75172617906460765e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 8 QUANTITY velz VALUE -7.17911400855874085e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE -1.62576765864682173e-03 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

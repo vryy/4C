@@ -1,27 +1,27 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 3D finite deformation contact test
 // - first-order interpolation (hex8 elements)
 // - augmented Lagrange solution scheme
 // - standard Lagrange multiplier interpolation
 // - generalized alpha time integration
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        129
 NODES                           251
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
@@ -29,7 +29,7 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -47,10 +47,10 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
--------------------------------------------------------------CONTACT DYNAMIC
+---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Uzawa
 PENALTYPARAM                    20000
@@ -59,39 +59,39 @@ UZAWACONSTRTOL                  1.0E-8
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              none
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          24
 NDSURF                          12
 NDVOL                           2
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
 //E 1 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1 1 2
------------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
+--------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master
 E 7 - 1 Slave
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 249 DNODE 1
 NODE 175 DNODE 2
 NODE 1 DNODE 3
@@ -108,7 +108,7 @@ NODE 125 DNODE 13
 NODE 106 DNODE 14
 NODE 167 DNODE 15
 NODE 188 DNODE 16
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 249 DLINE 1
 NODE 244 DLINE 1
 NODE 237 DLINE 1
@@ -217,7 +217,7 @@ NODE 132 DLINE 23
 NODE 167 DLINE 23
 NODE 158 DLINE 24
 NODE 188 DLINE 24
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 249 DSURFACE 1
 NODE 175 DSURFACE 1
 NODE 1 DSURFACE 1
@@ -512,7 +512,7 @@ NODE 125 DSURFACE 12
 NODE 106 DSURFACE 12
 NODE 167 DSURFACE 12
 NODE 188 DSURFACE 12
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 249 DVOLUME 1
 NODE 175 DVOLUME 1
 NODE 1 DVOLUME 1
@@ -764,7 +764,7 @@ NODE 125 DVOLUME 2
 NODE 106 DVOLUME 2
 NODE 167 DVOLUME 2
 NODE 188 DVOLUME 2
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.999999911791123e+00 -1.999999911791122e+00 0.000000000000000e+00
 NODE 2 COORD -1.999999911791123e+00 -1.499999933843342e+00 0.000000000000000e+00
 NODE 3 COORD -1.499999933843343e+00 -1.999999911791123e+00 0.000000000000000e+00
@@ -1016,7 +1016,7 @@ NODE 248 COORD 1.499999933843342e+00 1.999999911791123e+00 1.000000000000000e+00
 NODE 249 COORD 1.999999911791123e+00 1.999999911791123e+00 0.000000000000000e+00
 NODE 250 COORD 1.999999911791123e+00 1.999999911791123e+00 5.000000000000000e-01
 NODE 251 COORD 1.999999911791123e+00 1.999999911791123e+00 1.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 143 141 134 137 185 180 174 178 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 153 143 137 148 193 185 178 189 MAT 1 KINEM nonlinear EAS none
 3 SOLIDH8 HEX8 165 153 148 164 207 193 189 202 MAT 1 KINEM nonlinear EAS none
@@ -1146,21 +1146,21 @@ NODE 251 COORD 1.999999911791123e+00 1.999999911791123e+00 1.000000000000000e+00
 127 SOLIDH8 HEX8 151 114 105 140 155 120 107 142 MAT 1 KINEM nonlinear EAS none
 128 SOLIDH8 HEX8 192 151 140 181 196 155 142 186 MAT 1 KINEM nonlinear EAS none
 129 SOLIDH8 HEX8 106 167 132 67 125 188 158 91 MAT 2 KINEM nonlinear EAS none
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 0 0.2
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 1 1
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 2.01550627228438556e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.97030160634972001e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.76585419362991702e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE  2.01566212761976865e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE  1.97045745968678299e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.76566409685399761e-01 TOLERANCE 1e-8
+---------------------------------------------------------------END
 //                              END

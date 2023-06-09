@@ -1,27 +1,27 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 2D self contact test (folding of simple structure)
 // - first-order interpolation (quad4 elements)
 // - semi-smooth Newton solution scheme
 // - dual Lagrange multiplier interpolation
 // - generalized alpha time integration
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        1152
 NODES                           1440
 DIM                             2
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
@@ -29,7 +29,7 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -48,38 +48,38 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
 PREDICT                         TangDis
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
--------------------------------------------------------------CONTACT DYNAMIC
+---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.5
--------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
 GHOSTING_STRATEGY               redundant_all
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         36
 NDLINE                          54
 NDSURF                          18
 NDVOL                           0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 E 21 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 49 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 FUNCT 0 1
------------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
+--------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           34
 E 3 - 3 Selfcontact
 E 4 - 2 Selfcontact
@@ -115,7 +115,7 @@ E 51 - 3 Selfcontact
 E 52 - 2 Selfcontact
 E 53 - 1 Selfcontact
 E 54 - 2 Selfcontact
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1429 DNODE 1
 NODE 1379 DNODE 2
 NODE 1166 DNODE 3
@@ -152,7 +152,7 @@ NODE 273 DNODE 33
 NODE 259 DNODE 34
 NODE 374 DNODE 35
 NODE 306 DNODE 36
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1429 DLINE 1
 NODE 1421 DLINE 1
 NODE 1411 DLINE 1
@@ -855,7 +855,7 @@ NODE 379 DLINE 54
 NODE 376 DLINE 54
 NODE 373 DLINE 54
 NODE 374 DLINE 54
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 513 DSURFACE 1
 NODE 521 DSURFACE 1
 NODE 685 DSURFACE 1
@@ -2386,7 +2386,7 @@ NODE 289 DSURFACE 18
 NODE 285 DSURFACE 18
 NODE 275 DSURFACE 18
 NODE 271 DSURFACE 18
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -2.750837401696085e+00 1.279855427156250e+01 0.000000000000000e+00
 NODE 2 COORD -2.711600055396074e+00 1.269111144672634e+01 0.000000000000000e+00
 NODE 3 COORD -2.574695213993446e+00 1.288554155873908e+01 0.000000000000000e+00
@@ -3827,7 +3827,7 @@ NODE 1437 COORD 3.388695634747128e+00 5.123649151686941e-02 0.000000000000000e+0
 NODE 1438 COORD 3.914100939883701e+00 3.107063139477804e-01 0.000000000000000e+00
 NODE 1439 COORD 3.574695213993447e+00 1.144584412609229e-01 0.000000000000000e+00
 NODE 1440 COORD 3.750837401696085e+00 2.014457284375037e-01 0.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 WALL QUAD4 547 543 519 521 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 2 WALL QUAD4 574 569 543 547 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 3 WALL QUAD4 610 597 569 574 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
@@ -4980,14 +4980,14 @@ NODE 1440 COORD 3.750837401696085e+00 2.014457284375037e-01 0.000000000000000e+0
 1150 WALL QUAD4 275 272 278 285 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1151 WALL QUAD4 271 268 272 275 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1152 WALL QUAD4 261 259 268 271 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.01
 MAT 2 ELAST_CoupNeoHooke YOUNG 15000.0 NUE 0.125
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 3 VALUES 0 7 10
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 329 QUANTITY dispx VALUE 1.64287231176420356e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15899019305031548e+00 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 329 QUANTITY dispx VALUE  1.63844165101164202e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15717429186359055e+00 TOLERANCE 1e-8
+---------------------------------------------------------------END
 //                              END
