@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "utils_local_newton.H"
 
 namespace

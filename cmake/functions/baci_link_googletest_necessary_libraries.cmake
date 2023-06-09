@@ -4,6 +4,8 @@
 #
 # where lib1, lib2, ... are libraries of BACI that are necessary to compile the test code.
 # GoogleTest and GoogleMock are automatically linked and do not need to be specified here.
+#
+# Note: This function will do nothing if unit tests are not configured.
 function(baci_link_google_test_necessary_libraries TESTNAME)
   if(NOT BACI_WITH_GOOGLETEST)
     return()

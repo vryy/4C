@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
-#include "unittests_assertions.h"
+#include <gtest/gtest.h>
+#include "unittest_utils_assertions.h"
 #include "particle_interaction_dem_contact_tangential.H"
 #include "particle_interaction_utils.H"
 

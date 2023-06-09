@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "utils_local_numeric_methods.H"
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

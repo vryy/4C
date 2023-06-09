@@ -9,7 +9,7 @@
 
 #include "lib_symbolic_expression.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 
 namespace

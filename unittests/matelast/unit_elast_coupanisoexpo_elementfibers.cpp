@@ -11,7 +11,7 @@
 
 
 #include <gtest/gtest.h>
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 #include <Teuchos_RCPDecl.hpp>
 #include <boost/mpl/protect.hpp>

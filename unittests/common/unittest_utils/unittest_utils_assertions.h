@@ -3,8 +3,8 @@
 \brief special assertions for BACI code
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef UNITTESTS_ASSERTIONS_H
-#define UNITTESTS_ASSERTIONS_H
+#ifndef UNITTEST_UTILS_ASSERTIONS_H
+#define UNITTEST_UTILS_ASSERTIONS_H
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -332,4 +332,4 @@ namespace TESTING::INTERNAL
     EXPECT_THROW(find_the_statement_below(), expectedException) << "statement: " << #statement; \
   }
 
-#endif  // UNITTESTS_COMMON_UNITTESTS_ASSERTIONS_H
+#endif
