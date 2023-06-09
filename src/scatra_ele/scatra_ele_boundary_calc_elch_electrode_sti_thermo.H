@@ -64,6 +64,7 @@ namespace DRT
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacwgt       time-integration factor times Gauss point weight
        * @param[in] detF             determinant of jacobian at current integration point
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
        *
@@ -91,7 +92,8 @@ namespace DRT
           LINALG::Matrix<nsd_, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
-          double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
+          double detF, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_ms);
 
      private:
       //! private constructor for singletons
