@@ -11,6 +11,5 @@ set(_levelset_dependencies
     linalg
     scatra
     scatra_ele
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_levelset_dependencies})

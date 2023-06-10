@@ -14,6 +14,5 @@ set(_elemag_dependencies
     mat
     scatra
     scatra_ele
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_elemag_dependencies})

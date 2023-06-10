@@ -34,7 +34,7 @@
 #include "fluid_utils.H"
 #include "fluid_result_test.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "fs3i_fps3i_partitioned_1wc.H"
 

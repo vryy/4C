@@ -10,7 +10,6 @@ set(_cardiovascular0d_dependencies
     linalg
     mor
     so3
-    solver
     solver_nonlin_nox
     structure_new
     )

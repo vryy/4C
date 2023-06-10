@@ -25,7 +25,7 @@
 #include "io_control.H"
 #include "mat_par_bundle.H"
 #include "mat_newtonianfluid.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "fluid_ele_action.H"
 #include "fluid_utils.H"
 #include "lib_periodicbc.H"

@@ -6,6 +6,5 @@ set(_nurbs_discret_dependencies
     io
     lib
     linalg
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_nurbs_discret_dependencies})

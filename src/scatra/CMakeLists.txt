@@ -18,7 +18,6 @@ set(_scatra_dependencies
     poromultiphase_scatra
     rebalance
     scatra_ele
-    solver
     solver_nonlin_nox
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_scatra_dependencies})

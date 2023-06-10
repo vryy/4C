@@ -24,7 +24,7 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "inpar_structure.H"
 

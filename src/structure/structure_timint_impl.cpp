@@ -43,7 +43,7 @@
 #include "lib_condition_utils.H"
 #include "linalg_nullspace.H"
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 #include "linalg_mapextractor.H"
 #include "linalg_utils_sparse_algebra_assemble.H"

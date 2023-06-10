@@ -16,7 +16,6 @@ set(_mat_dependencies
     scatra
     scatra_ele
     so3
-    solver
     stru_multi
     structure_new
     surfstress

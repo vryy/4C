@@ -11,7 +11,6 @@ set(_solver_nonlin_nox_dependencies
     lib
     linalg
     scatra
-    solver
     structure_new
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_solver_nonlin_nox_dependencies})

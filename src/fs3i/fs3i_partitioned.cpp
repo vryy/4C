@@ -30,7 +30,7 @@
 #include "lib_utils_createdis.H"
 #include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 // INPAR
 #include "inpar_validparameters.H"
 // ALE

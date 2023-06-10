@@ -14,7 +14,7 @@
 #include "scatra_ele_action.H"
 #include "scatra_turbulence_hit_scalar_forcing.H"
 #include "io.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "fluid_turbulence_dyn_smag.H"
 #include "fluid_turbulence_dyn_vreman.H"
 #include "lib_globalproblem.H"

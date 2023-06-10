@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "contact_nox_nln_meshtying_linearsystem.H"  // base class
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 

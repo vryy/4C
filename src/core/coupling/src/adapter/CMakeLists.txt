@@ -11,7 +11,6 @@ set(LIBS_ADAPTER_COUPLING
     linalg
     mortar
     nurbs_discret
-    solver
     )
 
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_ADAPTER_COUPLING})

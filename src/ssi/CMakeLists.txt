@@ -13,7 +13,6 @@ set(_ssi_dependencies
     rebalance
     scatra
     scatra_ele
-    solver
     solver_nonlin_nox
     structure_new
     )

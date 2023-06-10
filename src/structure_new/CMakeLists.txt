@@ -21,7 +21,6 @@ set(_structure_new_dependencies
     loca_continuation
     mat
     so3
-    solver
     solver_nonlin_nox
     struct_ale
     timestepping

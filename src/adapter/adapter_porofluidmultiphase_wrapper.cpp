@@ -10,7 +10,7 @@
 
 #include "lib_globalproblem.H"
 #include "lib_discret.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "inpar_validparameters.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

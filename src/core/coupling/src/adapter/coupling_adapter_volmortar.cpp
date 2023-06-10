@@ -19,7 +19,7 @@
 #include "coupling_volmortar_utils.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "inpar_volmortar.H"
 #include "lib_dofset_predefineddofnumber.H"
 #include "linalg_utils_sparse_algebra_create.H"

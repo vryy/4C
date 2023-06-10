@@ -25,7 +25,7 @@ interface
 #include "lib_globalproblem.H"
 #include "lib_dofset_predefineddofnumber.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_krylov_projector.H"

@@ -22,7 +22,6 @@ set(_fsi_dependencies
     poroelast
     rebalance
     so3
-    solver
     solver_nonlin_nox
     structure
     structure_new

@@ -11,6 +11,5 @@ set(_poromultiphase_dependencies
     poroelast
     porofluidmultiphase
     porofluidmultiphase_ele
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poromultiphase_dependencies})

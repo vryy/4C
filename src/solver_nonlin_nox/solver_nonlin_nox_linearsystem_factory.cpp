@@ -14,7 +14,7 @@
 #include "solver_nonlin_nox_globaldata.H"
 
 #include "utils_exceptions.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_sparseoperator.H"
 
 #include <Teuchos_ParameterList.hpp>

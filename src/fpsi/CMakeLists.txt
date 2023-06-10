@@ -15,7 +15,6 @@ set(_fpsi_dependencies
     linalg
     poroelast
     poroelast_scatra
-    solver
     structure
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fpsi_dependencies})

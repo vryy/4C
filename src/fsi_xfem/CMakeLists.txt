@@ -13,7 +13,6 @@ set(_fsi_xfem_dependencies
     lib
     linalg
     poroelast
-    solver
     structure
     xfem
     )

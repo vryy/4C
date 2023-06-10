@@ -30,7 +30,7 @@
 
 #include "linalg_mapextractor.H"
 #include "linalg_sparseoperator.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "utils_singleton_owner.H"
 
 #include "lib_utils_gid_vector.H"

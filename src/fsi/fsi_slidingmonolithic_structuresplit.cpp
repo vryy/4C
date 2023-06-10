@@ -30,7 +30,7 @@ with condensed structure interface displacements
 #include "lib_globalproblem.H"
 #include "inpar_fsi.H"
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_matrixtransform.H"
 #include "fluid_utils_mapextractor.H"

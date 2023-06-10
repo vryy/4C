@@ -20,7 +20,7 @@
 #include "lib_condition_selector.H"
 #include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "fsi_utils.H"
 
 #include "lib_condition_selector.H"

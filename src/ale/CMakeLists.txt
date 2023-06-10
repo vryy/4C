@@ -14,6 +14,5 @@ set(_ale_dependencies
     mat
     mortar
     nurbs_discret
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_ale_dependencies})

@@ -28,7 +28,7 @@
 #include "adapter_scatra_base_algorithm.H"
 #include "scatra_timint_implicit.H"
 #include "io_control.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "adapter_art_net.H"

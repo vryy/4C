@@ -18,8 +18,8 @@
 #include "lib_discret.H"
 
 #include "linalg_nullspace.H"
-#include "solver_linalg_precond.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_preconditioner_linalg.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

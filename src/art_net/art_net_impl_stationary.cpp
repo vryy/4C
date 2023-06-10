@@ -14,7 +14,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_print.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "io.H"
 #include "io_control.H"
 #include "art_net_artery_resulttest.H"

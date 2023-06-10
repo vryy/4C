@@ -9,7 +9,6 @@ set(_constraint_dependencies
     io
     lib
     linalg
-    solver
     solver_nonlin_nox
     structure_new
     truss3

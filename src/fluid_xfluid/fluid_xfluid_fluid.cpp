@@ -22,7 +22,7 @@
 #include "io_control.H"
 #include "io.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "fluid_utils.H"

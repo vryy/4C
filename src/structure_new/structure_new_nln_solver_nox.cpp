@@ -20,7 +20,7 @@
 #include "solver_nonlin_nox_globaldata.H"
 #include "solver_nonlin_nox_linearsystem.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Vector.H>

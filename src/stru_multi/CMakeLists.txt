@@ -9,7 +9,6 @@ set(_stru_multi_dependencies
     linalg
     mat
     so3
-    solver
     structure
     surfstress
     )

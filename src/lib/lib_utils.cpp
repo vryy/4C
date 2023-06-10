@@ -24,7 +24,7 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "lib_globalproblem.H"
 #include "io_control.H"
 #include "linalg_gauss.H"

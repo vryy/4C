@@ -15,14 +15,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace LINALG
+namespace CORE::LINEAR_SOLVER
 {
-  namespace SOLVER
-  {
-    class IFPACKPreconditioner;
-  }  // namespace SOLVER
-}  // namespace LINALG
-
+  class IFPACKPreconditioner;
+}
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -119,7 +115,7 @@ namespace FSI
     INPAR::FSI::LinearBlockSolver strategy_;
 
     //! IFPACK preconditioner (additive Schwarz)
-    Teuchos::RCP<LINALG::SOLVER::IFPACKPreconditioner> ifpackprec_;
+    Teuchos::RCP<CORE::LINEAR_SOLVER::IFPACKPreconditioner> ifpackprec_;
 
     //! IFPACK preconditioner (additive Schwarz)
     Teuchos::RCP<Ifpack_Preconditioner> directifpackprec_;

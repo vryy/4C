@@ -33,7 +33,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 
 /*----------------------------------------------------------------------*

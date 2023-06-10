@@ -24,7 +24,6 @@ set(_lib_dependencies
     poromultiphase_scatra
     rebalance
     scatra_ele
-    solver
     structure_new
     xfem
     )
