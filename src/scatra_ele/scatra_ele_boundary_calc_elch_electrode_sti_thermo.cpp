@@ -144,7 +144,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     EvaluateS2ICouplingODAtIntegrationPoint<distype>(matelectrode, my::ephinp_, etempnp_,
         emastertempnp, emasterphinp, pseudo_contact_fac, my::funct_, my::funct_, my::funct_,
         my::funct_, shapederivatives, my::scatraparamsboundary_, differentiationtype, timefacfac,
-        timefacwgt, detF, eslavematrix, dummymatrix);
+        timefacwgt, detF, my::numdofpernode_, eslavematrix, dummymatrix);
   }  // loop over integration points
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
    // probdim>::EvaluateS2ICouplingOD
@@ -178,8 +178,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     const LINALG::Matrix<nsd_, nen_> shapederivatives,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
     const SCATRA::DifferentiationType differentiationtype, const double timefacfac,
-    const double timefacwgt, const double detF, Epetra_SerialDenseMatrix& k_ss,
-    Epetra_SerialDenseMatrix& k_ms)
+    const double timefacwgt, const double detF, const int num_dof_per_node,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms)
 {
   // get condition specific parameters
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
           // compute matrix contributions associated with slave-side residuals
           for (int vi = 0; vi < nen_; ++vi)
           {
-            const int row_conc = vi * 2;
+            const int row_conc = vi * num_dof_per_node;
 
             for (int ui = 0; ui < nen_; ++ui)
             {
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
           {
             for (int vi = 0; vi < nen_master; ++vi)
             {
-              const int row_conc = vi * 2;
+              const int row_conc = vi * num_dof_per_node;
 
               for (int ui = 0; ui < nen_; ++ui)
               {
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
             // loop over matrix rows
             for (int vi = 0; vi < nen_; ++vi)
             {
-              const int row_conc = vi * 2;
+              const int row_conc = vi * num_dof_per_node;
               const int row_pot = row_conc + 1;
               const double vi_dj_dd_slave =
                   test_slave(vi) * pseudo_contact_fac * dj_dd_slave_timefacwgt;
@@ -375,7 +375,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
             // loop over matrix rows
             for (int vi = 0; vi < nen_; ++vi)
             {
-              const int row_conc = vi * 2;
+              const int row_conc = vi * num_dof_per_node;
               const int row_pot = row_conc + 1;
               const double vi_dj_dT_slave =
                   test_slave(vi) * pseudo_contact_fac * djdT_slave_timefacfac;
@@ -512,7 +512,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::El
         const LINALG::Matrix<
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const LINALG::Matrix<nsd_, nen_>, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const,
-        const SCATRA::DifferentiationType, const double, const double, const double,
+        const SCATRA::DifferentiationType, const double, const double, const double, const int,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::Element::quad4>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(
@@ -529,7 +529,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::El
         const LINALG::Matrix<
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const LINALG::Matrix<nsd_, nen_>, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const,
-        const SCATRA::DifferentiationType, const double, const double, const double,
+        const SCATRA::DifferentiationType, const double, const double, const double, const int,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::Element::tri3>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::quad4>(
@@ -546,7 +546,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::El
         const LINALG::Matrix<
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
         const LINALG::Matrix<nsd_, nen_>, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const,
-        const SCATRA::DifferentiationType, const double, const double, const double,
+        const SCATRA::DifferentiationType, const double, const double, const double, const int,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::Element::tri3>::
     EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(
@@ -563,5 +563,5 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::El
         const LINALG::Matrix<
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
         const LINALG::Matrix<nsd_, nen_>, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const,
-        const SCATRA::DifferentiationType, const double, const double, const double,
+        const SCATRA::DifferentiationType, const double, const double, const double, const int,
         Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&);

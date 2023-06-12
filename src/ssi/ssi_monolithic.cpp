@@ -1685,7 +1685,7 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
   {
     auto manifold_cond = coup->ManifoldMapExtractor()->ExtractCondVector(*phi);
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
-    coup->ScaTraMapExtractor()->AddCondVector(manifold_on_scatra_cond, manifold_on_scatra);
+    coup->ScaTraMapExtractor()->InsertCondVector(manifold_on_scatra_cond, manifold_on_scatra);
   }
   ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
 }

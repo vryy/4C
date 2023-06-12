@@ -268,12 +268,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
       // transport
       for (int irow = 0; irow < nen_; ++irow)
       {
-        const int row_conc = irow * 2;
+        const int row_conc = irow * my::numdofpernode_;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
         for (int icol = 0; icol < nen_; ++icol)
         {
-          const int col_conc = icol * 2;
+          const int col_conc = icol * my::numdofpernode_;
           const int col_pot = col_conc + 1;
 
           eslavematrix(row_conc, col_conc) +=
@@ -295,12 +295,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   // electric potential
   for (int irow = 0; irow < nen_; ++irow)
   {
-    const int row_conc = irow * 2;
+    const int row_conc = irow * my::numdofpernode_;
     const int row_pot = row_conc + 1;
 
     for (int icol = 0; icol < nen_; ++icol)
     {
-      const int col_conc = icol * 2;
+      const int col_conc = icol * my::numdofpernode_;
       const int col_pot = col_conc + 1;
 
       eslavematrix(row_pot, col_conc) += numelectrons * eslavematrix(row_conc, col_conc);
@@ -487,7 +487,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       // compute linearizations associated with equations for lithium transport
       for (int irow = 0; irow < nen_; ++irow)
       {
-        const int row_conc = irow * 2;
+        const int row_conc = irow * my::numdofpernode_;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
         for (int icol = 0; icol < nen_; ++icol)
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // compute linearizations associated with closing equations for electric potential
   for (int irow = 0; irow < nen_; ++irow)
   {
-    const int row_conc = irow * 2;
+    const int row_conc = irow * my::numdofpernode_;
     const int row_pot = row_conc + 1;
 
     for (int icol = 0; icol < nen_; ++icol)
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
         for (int icol = 0; icol < nen_; ++icol)
         {
-          const int col_conc = icol * 2;
+          const int col_conc = icol * my::numdofpernode_;
           const int col_pot = col_conc + 1;
 
           eslavematrix(irow, col_pot) +=

@@ -645,7 +645,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-        GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        GetFRT(), my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -699,8 +699,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
-      r_m);
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), my::numdofpernode_slave_,
+      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 
@@ -880,7 +880,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, dummy_shapederivatives, my::scatraparamsboundary_,
-        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF, k_ss, k_ms);
+        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF,
+        my::numdofpernode_slave_, k_ss, k_ms);
   }  // loop over integration points
 }
 
