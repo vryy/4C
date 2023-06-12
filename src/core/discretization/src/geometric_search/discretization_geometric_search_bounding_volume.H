@@ -13,14 +13,14 @@
 #ifndef DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 #define DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif
 
 #include "linalg_fixedsizematrix.H"
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 namespace ArborX::Details
 {
   /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
@@ -59,7 +59,7 @@ namespace CORE::GEOMETRICSEARCH
    */
   struct BoundingVolume
   {
-#ifndef HAVE_ARBORX
+#ifndef BACI_WITH_ARBORX
     /*! \brief This class can not be used without ArborX, add empy methods and a controlled error.
      */
     BoundingVolume()

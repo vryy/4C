@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 
 #include "discretization_geometric_search.H"
 #include "discretization_geometric_search_utils.H"

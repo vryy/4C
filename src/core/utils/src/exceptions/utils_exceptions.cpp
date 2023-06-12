@@ -17,9 +17,7 @@
 #include <sstream>
 
 #include <mpi.h>
-#ifdef ENABLE_STACKTR
 #include <execinfo.h>
-#endif
 #include <stdio.h>
 
 
@@ -86,7 +84,6 @@ extern "C" void cpp_dserror_func(const char* text, ...)
       errbuf, BUFLEN, "PROC %d ERROR in %s, line %i:\n", myrank, latest_file.c_str(), latest_line);
   vsnprintf(&errbuf[strlen(errbuf)], BUFLEN - strlen(errbuf), text, ap);
 
-#ifdef ENABLE_STACKTR
   // print stacktrace
   int nptrs;
   void* buffer[100];
@@ -179,7 +176,6 @@ extern "C" void cpp_dserror_func(const char* text, ...)
   snprintf(&errbuf[strlen(errbuf)], BUFLEN - strlen(errbuf), "\n------------------\n");
 
   free(strings);
-#endif
 
   va_end(ap);
 

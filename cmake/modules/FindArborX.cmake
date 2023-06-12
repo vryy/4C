@@ -1,8 +1,5 @@
-option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
+baci_process_global_option(BACI_WITH_ARBORX "Use ArborX for search algorithms" OFF)
 if(BACI_WITH_ARBORX)
-
-  message(STATUS "Search algorithms with ArborX: enabled")
-
   # Unconditionally turn on MPI support inside ArborX
   set(ARBORX_ENABLE_MPI "ON")
   fetchcontent_declare(
@@ -14,8 +11,5 @@ if(BACI_WITH_ARBORX)
 
   list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS ArborX::ArborX)
 
-  add_definitions("-DHAVE_ARBORX")
-  set(HAVE_ARBORX ON)
-else()
-  message(STATUS "Search algorithms with ArborX: disabled")
+  set(BACI_WITH_ARBORX ON)
 endif()
