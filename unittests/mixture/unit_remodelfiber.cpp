@@ -11,7 +11,7 @@
 #include <Sacado.hpp>
 
 #include "mat_par_material.H"
-#include "mixture_growth_evolution_linear_cauchy.H"
+#include "mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 #include "mixture_remodelfiber.H"
 #include "mixture_constituent_remodelfiber_material_exponential.H"
 #include "mixture_remodelfiber-internal.H"
@@ -41,10 +41,8 @@ namespace
       const auto material =
           std::make_shared<const MIXTURE::RemodelFiberMaterialExponential<FADdouble>>(
               fiber_material_parameter_.get());
-      const auto growth_evolution =
-          std::make_shared<const MIXTURE::CauchyLinearGrowthEvolution<FADdouble>>(3.4);
-      MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, T> fiber(
-          material, growth_evolution, 12.0, 1.1);
+
+      MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, T> fiber(material, {3.4, 12.0}, 1.1);
       return fiber;
     }
 

@@ -9,12 +9,15 @@
 #include "mixture_constituent_remodelfiber_material_exponential_active.H"
 #include <memory>
 #include "mat_par_bundle.H"
+#include "mixture_constituent_remodelfiber_lib.H"
 #include <Sacado.hpp>
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : RemodelFiberMaterialExponential<T>(matdata),
+    : RemodelFiberMaterial<T>(matdata),
+      passive_params_{matdata->GetDouble("K1"), matdata->GetDouble("K2"),
+          static_cast<bool>(matdata->GetInt("COMPRESSION"))},
       initial_reference_density_(matdata->GetDouble("DENS")),
       sigma_act_max_(matdata->GetDouble("SIGMA_MAX")),
       lambda_act_max_(matdata->GetDouble("LAMBDAMAX")),
@@ -37,24 +40,28 @@ MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::CreateRemodelFiberMateri
 template <typename T>
 MIXTURE::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const PAR::RemodelFiberMaterialExponentialActive<T>* matdata)
-    : RemodelFiberMaterialExponential<T>(matdata), params_(matdata)
+    : params_(matdata)
 {
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetPsi(T I4) const
+T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetCauchyStress(T I4) const
 {
-  return MIXTURE::RemodelFiberMaterialExponential<T>::GetPsi(I4) +
-         params_->sigma_act_max_ / params_->initial_reference_density_ *
-             (params_->lambda_act_ +
-                 1.0 / 3.0 * std::pow(params_->lambda_act_max_ - params_->lambda_act_, 3) /
-                     std::pow(params_->lambda_act_max_ - params_->lambda_act_0_, 2));
+  const T dPIact = params_->dPsiAct_;
+
+  return GetExponentialFiberCauchyStress<T>(params_->passive_params_, I4) + dPIact;
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetFirstDerivativeActive() const
+T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetDCauchyStressDI4(T I4) const
 {
-  return params_->dPsiAct_;
+  return GetDExponentialFiberCauchyStressDI4<T>(params_->passive_params_, I4);
+}
+
+template <typename T>
+T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetDCauchyStressDI4DI4(T I4) const
+{
+  return GetDExponentialFiberCauchyStressDI4DI4<T>(params_->passive_params_, I4);
 }
 
 template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>;
