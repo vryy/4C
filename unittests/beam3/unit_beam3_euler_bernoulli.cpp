@@ -12,7 +12,7 @@
 #include <Epetra_SerialComm.h>
 #include <array>
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 #include "lib_element.H"
 #include "beam3_euler_bernoulli.H"
 

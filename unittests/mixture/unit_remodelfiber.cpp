@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <memory>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <Sacado.hpp>
 
@@ -18,7 +18,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

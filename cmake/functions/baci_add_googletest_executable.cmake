@@ -3,6 +3,7 @@
 # This executable may be run in serial or with NP*THREADS processors given as arguments
 # Usage: baci_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
 #
+# Note: This function will do nothing if unit tests are not configured.
 function(baci_add_google_test_executable TESTNAME)
   if(NOT BACI_WITH_GOOGLETEST)
     return()

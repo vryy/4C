@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 #include "matelast_isoogden.H"
 #include "mat_par_material.H"
