@@ -31,12 +31,14 @@ RUN apt-get update && apt-get install -y \
       doxygen \
       graphviz \
       texinfo \
+      lcov \
       libblas-dev \
       libboost-all-dev \
       libhdf5-dev \
       libhdf5-openmpi-dev \
       libnetcdf-dev \
       libfftw3-dev \
+      lld \
       python3 \
       python3.8-venv \
       python-is-python3 \
