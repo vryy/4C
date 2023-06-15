@@ -14,10 +14,10 @@
 #include <unordered_map>
 #include "solid_ele_calc_interface.H"
 #include "lib_element.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 #include "solid_ele_utils.H"
 #include "lib_element_integration_select.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 namespace DRT
@@ -40,7 +40,7 @@ namespace DRT
 
       /// Singleton access method
       static SolidEleCalcFbar<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) override;
 
@@ -82,13 +82,14 @@ namespace DRT
 
      private:
       /// static values for matrix sizes
-      static constexpr int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int nen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static constexpr int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
       static constexpr int numdofperelement_ = nen_ * nsd_;
       static constexpr int numstr_ = nsd_ * (nsd_ + 1) / 2;
 
-      DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
-      DRT::UTILS::GaussIntegration mass_matrix_integration_;
+      CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
+      CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;
     };  // class SolidEleCalcFbar
   }     // namespace ELEMENTS
 }  // namespace DRT

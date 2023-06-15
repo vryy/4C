@@ -13,8 +13,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <numeric>
 #include "lib_element.H"
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
 #include "lib_utils.H"
 #include "mat_so3_material.H"
@@ -24,10 +24,11 @@
 namespace DRT::ELEMENTS::DETAIL
 {
   template <DRT::Element::DiscretizationType distype>
-  inline static constexpr int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  inline static constexpr int nen =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   template <DRT::Element::DiscretizationType distype>
-  inline static constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+  inline static constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr int numstr = nsd<distype>*(nsd<distype> + 1) / 2;
@@ -53,27 +54,27 @@ namespace DRT::ELEMENTS
   template <>
   constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet10>()
   {
-    return DRT::UTILS::GaussRule3D::tet_4point;
+    return CORE::DRT::UTILS::GaussRule3D::tet_4point;
   }
 
   template <>
   constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet4>()
   {
-    return DRT::UTILS::GaussRule3D::tet_1point;
+    return CORE::DRT::UTILS::GaussRule3D::tet_1point;
   }
 
   // TODO: What about the stiffness matrix of tri-elements?
   template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
-  DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
+  CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
-    constexpr int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+    constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
     // setup default integration
-    DRT::UTILS::IntPointsAndWeights<nsd> intpoints(rule);
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(rule);
 
     // format as DRT::UTILS::GaussIntegration
-    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
-        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
+    Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints);
 
     std::array<double, 3> xi = {0., 0., 0.};
     for (int i = 0; i < intpoints.IP().nquad; ++i)
@@ -82,7 +83,7 @@ namespace DRT::ELEMENTS
       gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
     }
 
-    return DRT::UTILS::GaussIntegration(gp);
+    return CORE::DRT::UTILS::GaussIntegration(gp);
   }
 
   template <DRT::Element::DiscretizationType distype>
@@ -124,7 +125,7 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   LINALG::Matrix<DETAIL::nsd<distype>, 1> EvaluateParameterCoordinate(
-      const DRT::UTILS::GaussIntegration& intpoints, const int gp)
+      const CORE::DRT::UTILS::GaussIntegration& intpoints, const int gp)
   {
     LINALG::Matrix<DETAIL::nsd<distype>, 1> xi;
     for (int d = 0; d < DETAIL::nsd<distype>; ++d) xi(d) = intpoints.Point(gp)[d];
@@ -153,8 +154,8 @@ namespace DRT::ELEMENTS
       const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi)
   {
     ShapeFunctionsAndDerivatives<distype> shapefcns;
-    DRT::UTILS::shape_function<distype>(xi, shapefcns.shapefunctions_);
-    DRT::UTILS::shape_function_deriv1<distype>(xi, shapefcns.derivatives_);
+    CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns.shapefunctions_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, shapefcns.derivatives_);
 
     return shapefcns;
   }
@@ -537,7 +538,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype, typename GaussPointEvaluator>
   inline void IterateJacobianMappingAtGaussPoints(
       const NodalCoordinates<distype>& nodal_coordinates,
-      const DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
+      const CORE::DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
     {

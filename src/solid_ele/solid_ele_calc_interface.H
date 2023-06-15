@@ -13,7 +13,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_element.H"
 #include "mat_so3_material.H"
 

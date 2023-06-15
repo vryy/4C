@@ -43,7 +43,7 @@ namespace DRT
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::hex18>
     {
-      static const DRT::UTILS::GaussRule3D rule = DRT::UTILS::GaussRule3D::hex_18point;
+      static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_18point;
     };
     template <>
     struct DisTypeToOptGaussRule<DRT::Element::hex20>

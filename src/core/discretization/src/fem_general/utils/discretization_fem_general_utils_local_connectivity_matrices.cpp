@@ -553,10 +553,10 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::Discretizati
       type = DisTypeToFaceShapeType<::DRT::Element::hex8>::shape;
       break;
     case ::DRT::Element::hex18:
-      type = DisTypeToFaceShapeType<DRT::Element::hex18>::shape;
+      type = DisTypeToFaceShapeType<::DRT::Element::hex18>::shape;
       break;
     case ::DRT::Element::nurbs8:
-      type = DisTypeToFaceShapeType<DRT::Element::nurbs8>::shape;
+      type = DisTypeToFaceShapeType<::DRT::Element::nurbs8>::shape;
       break;
     case ::DRT::Element::hex20:
       type = DisTypeToFaceShapeType<::DRT::Element::hex20>::shape;

@@ -26,6 +26,7 @@ set(_adapter_dependencies
     s8
     scatra
     so3
+    solid_ele
     ssi
     struct_ale
     structure

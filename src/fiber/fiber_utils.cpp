@@ -320,17 +320,17 @@ template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex8>(
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex18>(
     const DRT::Node* const*,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex20>(
     const DRT::Node* const*,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex27>(
     const DRT::Node* const*,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tri3>(
     const DRT::Node* const*,

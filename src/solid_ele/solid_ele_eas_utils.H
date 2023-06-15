@@ -10,7 +10,7 @@
 #ifndef SOLID_ELE_EAS_UTILS_H
 #define SOLID_ELE_EAS_UTILS_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_fixedsizematrix.H"
 

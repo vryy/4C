@@ -13,7 +13,7 @@
 #ifndef STRUCTURE_NEW_ENUM_LISTS_H
 #define STRUCTURE_NEW_ENUM_LISTS_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <string>
 #include "utils_exceptions.H"
 
