@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef CONTACT_AUG_INTEGRATOR_LIST_H
-#define CONTACT_AUG_INTEGRATOR_LIST_H
+#ifndef CONTACT_AUG_INTEGRATOR_INST_H
+#define CONTACT_AUG_INTEGRATOR_INST_H
 
 #include "contact_aug_integrator_policy.H"
 

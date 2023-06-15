@@ -12,6 +12,7 @@
 #ifndef FLUID_ELE_EVALUATE_UTILS_H
 #define FLUID_ELE_EVALUATE_UTILS_H
 
+#include "fluid_ele.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
 #include "lib_element_integration_select.H"

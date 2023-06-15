@@ -11,6 +11,8 @@
 #ifndef FSI_MONOLITHICINTERFACE_H
 #define FSI_MONOLITHICINTERFACE_H
 
+#include <Epetra_Vector.h>
+
 namespace FSI
 {
   /// Interface of monolithic algorithms to NOX group

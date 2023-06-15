@@ -10,6 +10,8 @@
 #ifndef LINEAR_SOLVER_METHOD_PARAMETERS_H
 #define LINEAR_SOLVER_METHOD_PARAMETERS_H
 
+#include <Teuchos_ParameterListAcceptor.hpp>
+
 namespace DRT
 {
   class Discretization;

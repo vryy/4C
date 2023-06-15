@@ -468,4 +468,4 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGa
 }
 
 
-#include "contact_aug_integrator_list.H"
+#include "contact_aug_integrator.inst.H"

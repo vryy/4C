@@ -15,8 +15,9 @@
 
 #include <vector>
 
-
 #include "fluid_rotsym_periodicbc_utils.H"
+#include "fluid_ele.H"
+#include "lib_element.H"
 
 namespace FLD
 {

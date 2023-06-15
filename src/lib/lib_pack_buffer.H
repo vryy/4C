@@ -13,6 +13,7 @@
 #define LIB_PACK_BUFFER_H
 
 #include <vector>
+#include <cstring>
 
 namespace DRT
 {
@@ -72,7 +73,7 @@ namespace DRT
       {
         std::size_t oldsize = buf_.size();
         buf_.resize(oldsize + osize);
-        memcpy(&buf_[oldsize], &stuff, osize);
+        std::memcpy(&buf_[oldsize], &stuff, osize);
       }
     }
 
@@ -88,7 +89,7 @@ namespace DRT
       {
         std::size_t oldsize = buf_.size();
         buf_.resize(oldsize + stuffsize);
-        memcpy(&buf_[oldsize], stuff, stuffsize);
+        std::memcpy(&buf_[oldsize], stuff, stuffsize);
       }
     }
 
@@ -99,7 +100,7 @@ namespace DRT
       if (not grow_)
       {
         int osize = buf_.size() - oldsize;
-        memcpy(&buf_[oldsize - sizeof(int)], &osize, sizeof(int));
+        std::memcpy(&buf_[oldsize - sizeof(int)], &osize, sizeof(int));
       }
     }
 

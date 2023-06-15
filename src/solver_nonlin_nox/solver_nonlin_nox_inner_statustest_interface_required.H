@@ -12,6 +12,7 @@
 #define SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H
 
 #include <NOX_StatusTest_Generic.H>
+#include <NOX_Abstract_Group.H>
 
 // forward declaration
 namespace NOX

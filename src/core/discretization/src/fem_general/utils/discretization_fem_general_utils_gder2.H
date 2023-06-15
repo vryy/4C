@@ -9,6 +9,8 @@
 #define DISCRETIZATION_FEM_GENERAL_UTILS_GDER2_H
 
 #include "linalg_fixedsizematrix.H"
+#include "lib_element.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 namespace CORE::DRT::UTILS

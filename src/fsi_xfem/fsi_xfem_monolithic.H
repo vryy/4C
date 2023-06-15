@@ -15,6 +15,7 @@
 #include "inpar_fsi.H"
 
 #include "fsi_xfem_algorithm.H"
+#include "linalg_mapextractor.H"
 
 
 
@@ -31,6 +32,11 @@ namespace FSI
     class DebugWriter;
   }
 }  // namespace FSI
+
+namespace LINALG
+{
+  class Solver;
+}
 
 namespace XFEM
 {

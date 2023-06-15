@@ -13,6 +13,8 @@
 #ifndef FSI_DIRICHLETNEUMANN_FACTORY_H
 #define FSI_DIRICHLETNEUMANN_FACTORY_H
 
+#include <Teuchos_RCPDecl.hpp>
+
 class Epetra_Comm;
 
 namespace Teuchos

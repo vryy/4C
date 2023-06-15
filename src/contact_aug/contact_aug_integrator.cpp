@@ -1142,4 +1142,4 @@ template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-#include "contact_aug_integrator_list.H"
+#include "contact_aug_integrator.inst.H"

@@ -11,6 +11,8 @@
 #ifndef DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 #define DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 
+#include <Epetra_Comm.h>
+
 namespace CORE::GEOMETRICSEARCH
 {
   /*! \brief Storing information on the geometric search

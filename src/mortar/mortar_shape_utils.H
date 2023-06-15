@@ -22,12 +22,13 @@
 // nurbs specific
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
+#include "mortar_element.H"
+
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
 namespace MORTAR
 {
-  class MortarElement;
   class MortarNode;
 
   namespace UTILS

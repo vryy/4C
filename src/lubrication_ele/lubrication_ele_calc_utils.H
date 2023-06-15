@@ -10,6 +10,8 @@
 #ifndef LUBRICATION_ELE_CALC_UTILS_H
 #define LUBRICATION_ELE_CALC_UTILS_H
 
+#include "lib_element.H"
+#include "discretization_fem_general_utils_integration.H"
 
 namespace LUBRICATION
 {

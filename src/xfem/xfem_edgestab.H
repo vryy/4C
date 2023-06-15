@@ -35,6 +35,11 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+namespace MAT
+{
+  class Material;
+}
+
 namespace GEO
 {
   class CutWizard;

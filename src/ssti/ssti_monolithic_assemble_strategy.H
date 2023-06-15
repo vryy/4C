@@ -12,10 +12,12 @@
 #include <Epetra_Vector.h>
 
 #include "ssti_utils.H"
+#include "ssti_monolithic.H"
 
 #include "coupling_adapter.H"
 
 #include "linalg_utils_sparse_algebra_assemble.H"
+#include "ssi_utils.H"
 
 namespace LINALG
 {
@@ -29,7 +31,6 @@ namespace LINALG
 
 namespace SSTI
 {
-  class SSTIMono;
 
   /*!
   We have three options how the global system matrix and the sub matrices are arranged:

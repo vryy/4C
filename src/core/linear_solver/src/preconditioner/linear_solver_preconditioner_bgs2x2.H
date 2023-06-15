@@ -16,6 +16,7 @@
 #include "utils_exceptions.H"
 #include "linear_solver_preconditioner_linalg.H"
 #include "linalg_mapextractor.H"
+#include "linalg_blocksparsematrix.H"
 
 #include "linear_solver_preconditioner_type.H"
 
