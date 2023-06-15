@@ -16,7 +16,7 @@
 #include "ssi_str_model_evaluator_partitioned.H"
 #include "ssi_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_str_factory.H"
 #include "adapter_str_ssiwrapper.H"
@@ -218,8 +218,8 @@ void SSI::SSIBase::Setup()
   // set up scatra-scatra interface coupling
   if (SSIInterfaceMeshtying())
   {
-    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
-        "SSIInterfaceMeshtying", structure_->Discretization()));
+    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
+        "SSIInterfaceMeshtying", structure_->Discretization(), true, true));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
@@ -416,7 +416,9 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       {
         dserror(
             "Volmortar coupling only tested for consistent interpolation, "
-            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own "
+            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings "
+            "at "
+            "own "
             "risk.");
       }
     }

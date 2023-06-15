@@ -1,29 +1,15 @@
-set(SOURCES
-    # cmake-format: sortable
-    io.cpp
-    io_control.cpp
-    io_csv_reader.cpp
-    io_discretization_runtime_vtp_writer.cpp
-    io_discretization_runtime_vtu_writer.cpp
-    io_every_iteration_writer.cpp
-    io_gmsh.cpp
-    io_hdf.cpp
-    io_pstream.cpp
-    io_runtime_csv_writer.cpp
-    io_runtime_vtp_writer.cpp
-    io_runtime_vtu_writer.cpp
-    io_vtk_writer_base.cpp
-    io_vtp_writer.cpp
-    io_vtu_writer.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(io ${SOURCES})
-
-set(LIBS_IO
+set(_io_dependencies
     # cmake-format: sortable
+    beam3
     config
+    core
+    fluid_ele
+    geometry
+    inpar
     lib
-    pss_full
+    linalg
+    nurbs_discret
     )
-
-baci_add_dependency(io ${LIBS_IO})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_io_dependencies})

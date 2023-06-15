@@ -21,7 +21,6 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_Time.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "linalg_sparseoperator.H"
@@ -31,7 +30,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_serialdensevector.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "lib_utils_discret.H"
 
@@ -40,12 +39,12 @@
 #include "io_discretization_runtime_vtu_writer.H"
 
 #include "structure_new_discretization_runtime_vtu_output_params.H"
-#include "beam3.H"
+#include "beam3_base.H"
 #include "beam3_discretization_runtime_vtu_writer.H"
 #include "beam3_discretization_runtime_vtu_output_params.H"
 
 #include "lib_prestress_service.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -887,7 +886,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           [&](DRT::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+              CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
                   ele, *map_data.at(ele.Id()), assembled_data);
           });
     };
@@ -900,7 +899,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           [&](DRT::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
+              CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
                   ele, *map_data.at(ele.Id()), assembled_data);
           });
     };

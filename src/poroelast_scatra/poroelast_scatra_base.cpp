@@ -23,8 +23,8 @@
 #include "adapter_scatra_base_algorithm.H"
 
 // for coupling of nonmatching meshes
-#include "adapter_coupling_volmortar.H"
-#include "volmortar_utils.H"
+#include "coupling_adapter_volmortar.H"
+#include "coupling_volmortar_utils.H"
 
 #include "scatra_timint_implicit.H"
 #include "inpar_scatra.H"
@@ -286,8 +286,8 @@ void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretiza
   if (not matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_structurescatra_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
-    volcoupl_fluidscatra_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    volcoupl_structurescatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
+    volcoupl_fluidscatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     std::pair<int, int> dofsets12_structurescatra = std::pair<int, int>(2, 0);
     std::pair<int, int> dofsets21_structurescatra = std::pair<int, int>(1, 0);

@@ -17,7 +17,7 @@
 #include "lib_utils_factory.H"
 
 // for secondDerivativesZero
-#include "fem_general_utils_shapefunctions_service.H"
+#include "discretization_fem_general_utils_shapefunctions_service.H"
 
 #include "mat_structporo.H"
 #include "mat_fluidporo.H"
@@ -32,7 +32,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
       myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
+  ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
 
   invJ_.resize(numgpt_, LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);

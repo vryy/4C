@@ -21,7 +21,7 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 #include "lib_element.H"
 #include "inpar_structure.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 // include header because number of Gauss points are determined dependent on distype
 #include "thermo_ele_impl_utils.H"
@@ -97,10 +97,11 @@ namespace DRT
       DRT::Element* Clone() const;
 
       //! number of element nodes
-      static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int numdim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of dofs per node
       static const int noddof_ = 3;
@@ -450,7 +451,7 @@ namespace DRT
       DimensionalReduction planetype_;
 
      protected:
-      DRT::UTILS::IntegrationPoints2D intpoints_;
+      CORE::DRT::UTILS::IntegrationPoints2D intpoints_;
 
      private:
       // internal calculation methods
@@ -499,7 +500,7 @@ namespace DRT
           LINALG::Matrix<noddof_, noddof_>& defgrd_global) const;
 
       // determine extrapolation matrix for postprocessing purposes
-      LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
           THR::DisTypeToNumGaussPoints<distype>::nquad>
       mem_extrapolmat() const;
 
@@ -611,8 +612,8 @@ namespace DRT
       MembraneLine(const MembraneLine<distype2>& old);
 
       //! number of nodes per line
-      static const int numnod_line_ = DRT::UTILS::DisTypeToNumNodePerEle<
-          DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>::numNodePerElement;
+      static const int numnod_line_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+          CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>::numNodePerElement;
 
       static const int noddof_ = 3;
 
@@ -633,7 +634,7 @@ namespace DRT
       */
       virtual int UniqueParObjectId() const
       {
-        switch (DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
+        switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
           case DRT::Element::line2:
           {
@@ -726,7 +727,7 @@ namespace DRT
 
       virtual DRT::ElementType& ElementType() const
       {
-        switch (DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
+        switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
           case DRT::Element::line2:
           {
@@ -772,7 +773,7 @@ namespace DRT
       // don't want = operator
       MembraneLine<distype2>& operator=(const MembraneLine<distype2>& old);
 
-      DRT::UTILS::IntegrationPoints1D intpointsline_;
+      CORE::DRT::UTILS::IntegrationPoints1D intpointsline_;
 
     };  // class MembraneLine
 

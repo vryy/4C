@@ -15,8 +15,8 @@
 #include "geometry_pair_constants.H"
 
 #include "linalg_utils_densematrix_inverse.H"
-#include "lib_dserror.H"
-#include "headers_FAD_utils.H"
+#include "utils_exceptions.H"
+#include "linalg_FAD_utils.H"
 
 #include <vector>
 

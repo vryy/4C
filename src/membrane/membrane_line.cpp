@@ -38,25 +38,25 @@ DRT::ELEMENTS::Membrane_line3Type& DRT::ELEMENTS::Membrane_line3Type::Instance()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
-    : DRT::FaceElement(id, owner), intpointsline_(DRT::UTILS::GaussRule1D::line_2point)
+    : DRT::FaceElement(id, owner), intpointsline_(CORE::DRT::UTILS::GaussRule1D::line_2point)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   SetParentMasterElement(parent, lline);
-  switch (DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
+  switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
   {
     case line2:
     {
-      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_2point;
+      CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       // get gauss integration points
-      intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+      intpointsline_ = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule);
       break;
     }
     case line3:
     {
-      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_3point;
+      CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       // get gauss integration points
-      intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+      intpointsline_ = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule);
       break;
     }
     break;
@@ -96,7 +96,7 @@ DRT::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
 template <DRT::Element::DiscretizationType distype>
 DRT::Element::DiscretizationType DRT::ELEMENTS::MembraneLine<distype>::Shape() const
 {
-  return DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
+  return CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
 {
   os << "MembraneLine ";
   os << " Discretization type: "
-     << DRT::DistypeToString(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape).c_str();
+     << DRT::DistypeToString(CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape).c_str();
   Element::Print(os);
   return;
 }

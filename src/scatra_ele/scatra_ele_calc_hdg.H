@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 #include "scatra_ele_calc.H"
 #include "inpar_scatra.H"
-#include "fem_general_utils_shapevalues_hdg.H"
+#include "discretization_fem_general_utils_shapevalues_hdg.H"
 
 
 
@@ -26,19 +26,19 @@ namespace DRT
   {
     //! Scatra HDG element implementation
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcHDG : public ScaTraEleInterface
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ =
-          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
       static const unsigned int nsd_ = probdim;
 
       //! number of faces on element
-      static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /// Evaluate supporting methods of the element
       /*!
@@ -165,8 +165,8 @@ namespace DRT
       };
 
       //! local data object
-      Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
-      Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
       //! extracted values from concentrations and gradients
       Epetra_SerialDenseVector interiorPhin_;
@@ -212,8 +212,8 @@ namespace DRT
         static const unsigned int nfaces_ = ScaTraEleCalcHDG<distype, probdim>::nfaces_;
         int onfdofs_;
 
-        LocalSolver(const DRT::Element* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
-            DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
+        LocalSolver(const DRT::Element* ele, CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+            CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
             const std::string& disname, int numscal);
 
         //! compute the residual
@@ -268,10 +268,11 @@ namespace DRT
         // first come the concentration, then the concentration  gradients, and finally the trace
 
         //! evaluated shape values
-        Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
+        Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
 
         //! evaluated shape values on face
-        Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;  /// evaluated shape values
+        Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>
+            shapesface_;  /// evaluated shape values
 
         // Element matrices if one wants to compute them on the fly instead of storing them on the
         // element

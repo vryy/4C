@@ -16,7 +16,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "ale_utils_mapextractor.H"
 
 // ADAPTER includes
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 // LINALG includes
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -136,11 +136,11 @@ namespace FPSI
 
     //! @name access coupling objects
 
-    ADAPTER::Coupling& PoroFluidFluidCoupling() { return *icoup_pf_f_; }
+    CORE::ADAPTER::Coupling& PoroFluidFluidCoupling() { return *icoup_pf_f_; }
 
-    ADAPTER::Coupling& PoroStructureFluidCoupling() { return *icoup_ps_f_; }
+    CORE::ADAPTER::Coupling& PoroStructureFluidCoupling() { return *icoup_ps_f_; }
 
-    ADAPTER::Coupling& PoroStructureAleCoupling() { return *icoup_ps_a_; }
+    CORE::ADAPTER::Coupling& PoroStructureAleCoupling() { return *icoup_ps_a_; }
 
     //@}
 
@@ -207,11 +207,11 @@ namespace FPSI
     Teuchos::RCP<Epetra_Vector> c_rhs_f_;
 
     // Interface Coupling PoroFluid - Fluid velocities and pressure are/is coupled
-    Teuchos::RCP<ADAPTER::Coupling> icoup_pf_f_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_pf_f_;
     // Interface Coupling PoroStructure - Fluid
-    Teuchos::RCP<ADAPTER::Coupling> icoup_ps_f_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_ps_f_;
     // Interface Coupling PoroStructure - Ale
-    Teuchos::RCP<ADAPTER::Coupling> icoup_ps_a_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_ps_a_;
 
     // extractor for fpsi condition from fluid
     Teuchos::RCP<LINALG::MapExtractor> fluidvelpres_extractor_;

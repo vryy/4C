@@ -320,9 +320,9 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
     // in-plane shape functions and derivatives
     LINALG::Matrix<9, 1> shapefunct_q9;
-    DRT::UTILS::shape_function<DRT::Element::quad9>(So_sh18::xsi_[gp], shapefunct_q9);
+    CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(So_sh18::xsi_[gp], shapefunct_q9);
     LINALG::Matrix<2, 9> deriv_q9;
-    DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(So_sh18::xsi_[gp], deriv_q9);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(So_sh18::xsi_[gp], deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -548,7 +548,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     {
       // shape function and derivatives
       LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-      DRT::UTILS::shape_function<DRT::Element::hex18>(So_sh18::xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(So_sh18::xsi_[gp], shapefunct);
 
       double density = Material()->Density(gp);
 

@@ -986,7 +986,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets(Mesh& mesh, Element* element, plain_fac
     const Cycle& points = *i;
 
     Facet* f = mesh.NewFacet(points(), this, IsCutSide());
-    if (f == NULL) run_time_error("failed to create owned facet");
+    if (f == NULL) dserror("failed to create owned facet");
     facets_.push_back(f);
   }
 
@@ -1010,7 +1010,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets(Mesh& mesh, Element* element, plain_fac
       }
       if (facetid == facets_.size())
       {
-        run_time_error("failed to find the facet of the hole");
+        dserror("failed to find the facet of the hole");
       }
     }
 
@@ -1192,7 +1192,7 @@ void GEO::CUT::Side::MakeInternalFacets(
 
         std::cout << std::endl;
 
-        run_time_error(
+        dserror(
             "The point cycle was found on the side, but the facet was not found "
             "on the side. This shouldn't happen, since the facet has to be owned by the side "
             "in this case! Properly there is some hanging node in your cut mesh. Take a closer "
@@ -1593,7 +1593,7 @@ bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
    * inside */
-  LINALG::Matrix<dim, 1> rst_center = DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
+  LINALG::Matrix<dim, 1> rst_center = CORE::DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
 
   //-----------------------------
   // get perturbed coordinates

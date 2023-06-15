@@ -16,7 +16,7 @@ multi-scale framework
 #include "mat_elchmat.H"
 #include "mat_elchphase.H"
 #include "mat_newman_multiscale.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -25,7 +25,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>>(
@@ -34,7 +34,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   phinp[1] = my::funct_.Dot(my::ephinp_[1]);
   phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   const double detF = my::EvalDetFAtIntPoint(ele, intpoints, iquad);
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysma
   mydiffcond::Sysmat(ele, emat, erhs, subgrdiff);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all integration points

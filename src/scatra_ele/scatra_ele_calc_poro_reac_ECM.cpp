@@ -20,7 +20,7 @@
 #include "mat_scatra_mat.H"
 #include "mat_scatra_mat_poro_ecm.H"
 #include "mat_list_reactions.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,7 +45,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>*
 DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcPoroReacECM<distype>>(
@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

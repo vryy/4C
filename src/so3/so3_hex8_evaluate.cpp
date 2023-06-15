@@ -10,13 +10,13 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "so3_element_service.H"
 #include "so3_hex8.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "lib_utils_elements.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_voigt_notation.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_densematrix_inverse.H"
@@ -35,12 +35,11 @@
 #include "structure_new_gauss_point_data_output_manager.H"
 
 #include "contact_analytical.H"
-#include "patspec.H"
 #include "lib_globalproblem.H"
 
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <impl/Kokkos_Traits.hpp>
@@ -55,7 +54,7 @@
 #include "so3_defines.H"
 #include "so3_hex8_determinant_analysis.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "so3_utils.H"
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
@@ -94,10 +93,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     act = ELEMENTS::String2ActionType(action);
   }
 
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)
@@ -621,7 +616,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
+              CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -638,10 +633,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                        ->GetMutableNodalDataCount()
                        .at(quantity_name);
 
-              static auto gauss_integration = DRT::UTILS::IntegrationPoints3D(
-                  DRT::UTILS::NumGaussPointsToGaussRule<DRT::Element::DiscretizationType::hex8>(
-                      NUMGPT_SOH8));
-              DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
+              static auto gauss_integration =
+                  CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
+                      DRT::Element::DiscretizationType::hex8>(NUMGPT_SOH8));
+              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
                   DRT::Element::DiscretizationType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
@@ -689,28 +684,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case ELEMENTS::struct_calc_reset_istep:
     {
-      // do something with internal EAS, etc parameters
+      // restore EAS parameters
       if (eastype_ != soh8_easnone)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        switch (eastype_)
-        {
-          case DRT::ELEMENTS::So_hex8::soh8_easfull:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_easmild:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-            LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
-            break;
-          case DRT::ELEMENTS::So_hex8::soh8_easnone:
-            break;
-          default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
-            break;
-        }
+        soh8_easrestore();
+
+        // reset EAS internal force
+        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        oldfeas->Scale(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
@@ -724,7 +705,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (timestep == -1) dserror("Provide timestep number to be stored");
 
       // EAS
-      if (eastype_ != soh8_easnone) dserror("Storage of EAS stuff must be implemented first");
+      if (eastype_ != soh8_easnone) soh8_easupdate();
 
       // Material
       SolidMaterial()->StoreHistory(timestep);
@@ -738,7 +719,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (timestep == -1) dserror("Provide timestep number of the timestep to be recovered");
 
       // EAS
-      if (eastype_ != soh8_easnone) dserror("Recpvery of EAS stuff must be implemented first");
+      if (eastype_ != soh8_easnone) soh8_easrestore();
 
       // Material
       SolidMaterial()->SetHistory(timestep);
@@ -1219,8 +1200,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       xsi(1) = elevec2_epetra(1);
       xsi(2) = elevec2_epetra(2);
       // evaluate shape functions and derivatives at given point w.r.t r,s,t
-      DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
 
       LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
       for (int node = 0; node < NUMNOD_SOH8; ++node)
@@ -3190,7 +3171,7 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_s
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
     const LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-    DRT::UTILS::shape_function<DRT::Element::hex8>(rst_gp, shapefcts[gp]);
+    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(rst_gp, shapefcts[gp]);
   }
 
   return shapefcts;
@@ -3218,7 +3199,7 @@ void DRT::ELEMENTS::So_hex8::soh8_derivs(
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, const int gp) const
 {
   const LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-  DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_gp, derivs);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_gp, derivs);
 }
 
 /*----------------------------------------------------------------------*
@@ -3407,10 +3388,6 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
 void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
 {
-  bool remodel;
-  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-  remodel = DRT::INPUT::IntegralValue<int>(patspec, "REMODEL");
-
   // Calculate current deformation gradient
   if ((mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
       (mat->MaterialType() == INPAR::MAT::m_elasthyper) ||
@@ -3460,117 +3437,17 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
       {
         SolidMaterial()->Update(defgrd, gp, params, Id());
       }
-
-      // determine new fiber directions
-      if (remodel)
-      {
-        // determine new fiber directions
-        // Right Cauchy-Green tensor = F^T * F
-        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
-
-        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
-        glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
-        glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
-        glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
-        glstrain(3) = cauchygreen(0, 1);
-        glstrain(4) = cauchygreen(1, 2);
-        glstrain(5) = cauchygreen(2, 0);
-
-        // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-        SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
-        // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-        // Cauchy stress
-        const double detF = defgrd.Determinant();
-
-        LINALG::Matrix<3, 3> pkstress;
-        pkstress(0, 0) = stress(0);
-        pkstress(0, 1) = stress(3);
-        pkstress(0, 2) = stress(5);
-        pkstress(1, 0) = pkstress(0, 1);
-        pkstress(1, 1) = stress(1);
-        pkstress(1, 2) = stress(4);
-        pkstress(2, 0) = pkstress(0, 2);
-        pkstress(2, 1) = pkstress(1, 2);
-        pkstress(2, 2) = stress(2);
-
-        LINALG::Matrix<3, 3> temp(true);
-        LINALG::Matrix<3, 3> cauchystress(true);
-        temp.Multiply(1.0 / detF, defgrd, pkstress);
-        cauchystress.MultiplyNT(temp, defgrd);
-
-        // evaluate eigenproblem based on stress of previous step
-        LINALG::Matrix<3, 3> lambda(true);
-        LINALG::Matrix<3, 3> locsys(true);
-        LINALG::SYEV(cauchystress, lambda, locsys);
-
-        if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-        {
-          auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
-          comi->EvaluateFiberVecs(gp, locsys, defgrd);
-        }
-        else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
-        {
-          // we only have fibers at element center, thus we interpolate stress and defgrd
-          avg_stress.Update(1.0 / NUMGPT_SOH8, cauchystress, 1.0);
-          avg_defgrd.Update(1.0 / NUMGPT_SOH8, defgrd, 1.0);
-        }
-        else
-          dserror("material not implemented for remodeling");
-      }
     }  // end loop over gauss points
-
-    // determine new fiber directions
-    if (remodel)
-    {
-      if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
-      {
-        // evaluate eigenproblem based on stress of previous step
-        LINALG::Matrix<3, 3> lambda(true);
-        LINALG::Matrix<3, 3> locsys(true);
-        LINALG::SYEV(avg_stress, lambda, locsys);
-
-        // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-        double newgamma = atan2(lambda(1, 1), lambda(2, 2));
-        // compression in 2nd max direction, thus fibers are alligned to max principal direction
-        if (lambda(1, 1) < 0) newgamma = 0.0;
-
-        // new fiber vectors
-        auto* elast = dynamic_cast<MAT::ElastHyper*>(mat.get());
-        elast->EvaluateFiberVecs(newgamma, locsys, avg_defgrd);
-      }
-    }
   }
 
-  // do something with internal EAS, etc parameters
+  // store EAS parameters
   if (eastype_ != soh8_easnone)
   {
-    auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-    auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-    // alphao := alpha
-    switch (eastype_)
-    {
-      case DRT::ELEMENTS::So_hex8::soh8_easfull:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easmild:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-        LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easnone:
-        break;
-      default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
-        break;
-    }
+    soh8_easupdate();
+
+    // reset EAS internal force
+    Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldfeas->Scale(0.0);
   }
   SolidMaterial()->Update();
 
@@ -3955,7 +3832,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   static LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv(true);
   deriv.Clear();
-  DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
 
   static LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
   static LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(true);
@@ -4028,18 +3905,19 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
   static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
-  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, NUMNOD_SOH8>
+  static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+      NUMNOD_SOH8>
       deriv2(true);
   d_F_dxi.Clear();
   deriv2.Clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xXF(true);
     static LINALG::Matrix<NUMDIM_SOH8,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -4070,17 +3948,17 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->A(), true);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMNOD_SOH8>
         deriv2(true);
     deriv2.Clear();
-    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMDIM_SOH8>
         Xsec(true);
     static LINALG::Matrix<NUMNOD_SOH8,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);

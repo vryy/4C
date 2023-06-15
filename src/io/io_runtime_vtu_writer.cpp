@@ -13,7 +13,7 @@
 
 #include "io_vtu_writer.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 #include <iomanip>

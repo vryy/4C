@@ -16,7 +16,7 @@
 #include "geometry_pair_element_faces.H"
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 /**
@@ -105,7 +105,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       // Set the element parameter coordinates.
       LINALG::Matrix<2, 1, double> xi(true);
       LINALG::SerialDenseMatrix nodal_coordinates =
-          DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+          CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
               face_element_iterator.second->GetDrtFaceElement()->Shape());
 
       // Loop over element nodes.

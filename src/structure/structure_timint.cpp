@@ -42,13 +42,12 @@
 #include "constraint_springdashpot_manager.H"
 #include "beamcontact_beam3contact_manager.H"
 #include "cardiovascular0d_manager.H"
-#include "patspec.H"
 #include "stru_multi_microstatic.H"
 #include "mor_pod.H"
 
 #include "linalg_sparsematrix.H"
 #include "linalg_blocksparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_multiply.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -58,6 +57,7 @@
 #include "poroelast_utils.H"
 
 #include "io_pstream.H"
+#include "discsh3.H"
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
@@ -160,17 +160,23 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       dtsolve_(0.0),
       dtele_(0.0),
       dtcmt_(0.0),
-      pslist_(Teuchos::null),
       strgrdisp_(Teuchos::null),
       mor_(Teuchos::null),
       issetup_(false),
       isinit_(false)
 {
-  // Keep this constructor empty!
+  // Keep this constructor empty except some basic input error catching!
   // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // redistribution of elements. Only then call the setup to this class. This will call the
+  // setup to all classes in the inheritance hierarchy. This way, this class may also override
+  // a method that is called during Setup() in a base class.
+
+  if (sdynparams.get<int>("OUTPUT_STEP_OFFSET") != 0)
+  {
+    dserror(
+        "Output step offset (\"OUTPUT_STEP_OFFSET\" != 0) is not supported in the old structural "
+        "time integration");
+  }
   return;
 }
 
@@ -325,25 +331,6 @@ void STR::TimInt::Setup()
     }
   }
 
-  // check for patient specific needs
-  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-  if (DRT::INPUT::IntegralValue<int>(patspec, "PATSPEC"))
-  {
-    // check if patspeccond are already initialized
-    // this is of relevance for Montecarlo Simulation
-    std::vector<DRT::Condition*> pscond;
-    discret_->GetCondition("PatientSpecificData", pscond);
-    if (!pscond.size())
-    {
-      if (discret_->Comm().MyPID() == 0)
-      {
-        std::cout << "do we set up patspec stuff " << std::endl;
-      }
-      pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
-      // initialize patient specific parameters and conditions
-      PATSPEC::PatientSpecificGeometry(discret_, pslist_);
-    }
-  }
 
   // Check for porosity dofs within the structure and build a map extractor if necessary
   porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
@@ -565,13 +552,26 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // (1) do mortar coupling in reference configuration
     cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
 
-    // (2) perform mesh initialization for rotational invariance (interface)
-    // and return the modified slave node positions in vector Xslavemod
-    Teuchos::RCP<const Epetra_Vector> Xslavemod =
-        cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+    // perform mesh initialization if required by input parameter MESH_RELOCATION
+    auto mesh_relocation_parameter = DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+        DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
-    // (3) apply result of mesh initialization to underlying problem discretization
-    ApplyMeshInitialization(Xslavemod);
+    if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
+    {
+      // (2) perform mesh initialization for rotational invariance (interface)
+      // and return the modified slave node positions in vector Xslavemod
+      Teuchos::RCP<const Epetra_Vector> Xslavemod =
+          cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+
+      // (3) apply result of mesh initialization to underlying problem discretization
+      ApplyMeshInitialization(Xslavemod);
+    }
+    else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
+    {
+      dserror(
+          "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
+          "initial or MESH_RELOCATION no.");
+    }
   }
 
   // initialization of contact
@@ -977,7 +977,6 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
 
 
 /*----------------------------------------------------------------------*
- | add potential edge-based stabilization terms         rasthofer 06/13 |
  *----------------------------------------------------------------------*/
 void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector>& fint, const Teuchos::RCP<Epetra_Vector>& disp,
@@ -990,12 +989,98 @@ void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
     discret_->SetState("displacement", disp);
     discret_->SetState("velocity", vel);
     // Sparse Operator
-    facediscret_->EvaluateEdgeBased(stiff_, fint);
+    STR::TimInt::EvaluateEdgeBased(stiff_, fint);
     discret_->ClearState();
   }
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::TimInt::EvaluateEdgeBased(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, Teuchos::RCP<Epetra_Vector> systemvector1)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::EvaluateEdgeBased");
+
+
+  Teuchos::RCP<Epetra_Vector> residual_col =
+      LINALG::CreateVector(*(facediscret_->DofColMap()), true);
+
+  const Epetra_Map* rmap = NULL;
+
+  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
+  if (systemmatrix1 != Teuchos::null)
+  {
+    rmap = &(systemmatrix1->OperatorRangeMap());
+    //    dmap = rmap;
+    sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
+  }
+  else
+    dserror("sysmat is NULL!");
+
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg =
+      Teuchos::rcp(new LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
+          LINALG::View, true, false, LINALG::SparseMatrix::FE_MATRIX));
+
+  const int numrowintfaces = facediscret_->NumMyRowFaces();
+
+  for (int i = 0; i < numrowintfaces; ++i)
+  {
+    DRT::Element* actface = facediscret_->lRowFace(i);
+
+    if (actface->ElementType() ==
+        DRT::ELEMENTS::DiscSh3LineType::Instance())  // Discrete Structural Shell
+    {
+      DRT::ELEMENTS::DiscSh3Line* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3Line*>(actface);
+      if (ele == NULL) dserror("expect DiscSh3Line element");
+
+
+      // get the parent Shell elements
+      DRT::Element* p_master = ele->ParentMasterElement();
+      DRT::Element* p_slave = ele->ParentSlaveElement();
+
+      size_t p_master_numnode = p_master->NumNode();
+      size_t p_slave_numnode = p_slave->NumNode();
+
+      std::vector<int> nds_master;
+      nds_master.reserve(p_master_numnode);
+
+      std::vector<int> nds_slave;
+      nds_slave.reserve(p_slave_numnode);
+
+      for (size_t i = 0; i < p_master_numnode; i++) nds_master.push_back(0);
+
+      for (size_t i = 0; i < p_slave_numnode; i++) nds_slave.push_back(0);
+
+
+      // Set master ele to the Material for evaluation.
+      Teuchos::RCP<MAT::Material> material = p_master->Material();
+
+      // input parameters for structural dynamics
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
+
+      // call the egde-based assemble and evaluate routine
+      ele->AssembleInternalFacesUsingNeighborData(
+          params, ele, material, nds_master, nds_slave, *facediscret_, sysmat_linalg, residual_col);
+    }
+  }
+
+  sysmat_linalg->Complete();
+
+  (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+
+  //------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector res_tmp(systemvector1->Map(), false);
+  Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
+  int err2 = res_tmp.Export(*residual_col, exporter, Add);
+  if (err2) dserror("Export using exporter returned err=%d", err2);
+  systemvector1->Update(1.0, res_tmp, 1.0);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /* Prepare contact for new time step */
@@ -1070,8 +1155,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     // for structure ale
     if (dismat_ != Teuchos::null) discret_->SetState(0, "material_displacement", (*dismat_)(0));
-
-    PATSPEC::ComputeEleInnerRadius(discret_);
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -2122,15 +2205,6 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
 
   // write output on micro-scale (multi-scale analysis)
   if (havemicromat_) OutputMicro();
-
-  // write patient specific output
-  if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
-  {
-    OutputPatspec();
-  }
-
-  // what's next?
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -3104,19 +3178,6 @@ void STR::TimInt::OutputNodalPositions()
 }
 
 /*----------------------------------------------------------------------*/
-/* output patient specific stuff */
-void STR::TimInt::OutputPatspec()
-{
-  // do the output for the patient specific conditions (if they exist)
-  const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-  if (DRT::INPUT::IntegralValue<int>(patspec, "PATSPEC"))
-  {
-    PATSPEC::PatspecOutput(output_, discret_, pslist_);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disn, const Teuchos::RCP<Epetra_Vector> vel,
@@ -3222,11 +3283,6 @@ void STR::TimInt::ApplyForceInternal(const double time, const double dt,
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-
-  // compute new inner radius
-  discret_->ClearState();
-  discret_->SetState("displacement", dis);
-  PATSPEC::ComputeEleInnerRadius(discret_);
 
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements

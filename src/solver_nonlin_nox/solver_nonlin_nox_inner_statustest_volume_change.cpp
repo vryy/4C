@@ -12,7 +12,7 @@
 #include "solver_nonlin_nox_group.H"
 #include "solver_nonlin_nox_inner_statustest_interface_required.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Utils.H>
 #include <NOX_Solver_Generic.H>

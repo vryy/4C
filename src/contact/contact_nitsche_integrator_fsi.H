@@ -34,7 +34,7 @@ namespace CONTACT
      Note that this is \b not a collective call as overlaps are
      integrated in parallel by individual processes.<br>
      Note also that this constructor relies heavily on the
-     DRT::UTILS::IntegrationPoints structs to get Gauss points
+     CORE::DRT::UTILS::IntegrationPoints structs to get Gauss points
      and corresponding weights.
 
      */
@@ -90,12 +90,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-        GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
+        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
@@ -106,12 +106,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-        GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi) override
+        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override
     {
       dserror("2d problems not available for CoIntegratorNitscheFsi, as CutFEM is only 3D!");
     }
@@ -123,12 +123,12 @@ namespace CONTACT
     template <int dim>
     void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
-        const std::vector<GEN::pairedvector<int, double>>& dsxi,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
-        const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
-        const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-        const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
+        const double gap, const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
     void UpdateEleContactState(MORTAR::MortarElement& sele, int state);

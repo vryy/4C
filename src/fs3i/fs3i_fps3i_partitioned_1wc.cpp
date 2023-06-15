@@ -13,7 +13,7 @@
 #include "inpar_scatra.H"
 #include "inpar_validparameters.H"
 #include "io_control.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
 #include "lib_globalproblem.H"
@@ -34,7 +34,7 @@
 #include "fluid_utils.H"
 #include "fluid_result_test.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "fs3i_fps3i_partitioned_1wc.H"
 

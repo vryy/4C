@@ -20,7 +20,7 @@
 
 #include "inpar_material.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "nurbs_discret_nurbs_utils.H"
 
@@ -148,8 +148,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
         }
       }
 
-      DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
-          ele1, discretization, elevec1, mydispnp, IsNurbs<distype>::isnurbs,
+      CORE::DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
+          xyze_, ele1, discretization, elevec1, mydispnp, IsNurbs<distype>::isnurbs,
           ele1->ParentElement()->IsAle());
       break;
     }
@@ -268,7 +268,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
   const double timefacn = (1.0 - fldparatimint_->Theta()) * fldparatimint_->Dt();
 
   // get Gaussrule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get local node coordinates
@@ -381,8 +381,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
     // evaluate shape functions and their derivatives,
     // compute unit normal vector and infinitesimal area element drs
     // (evaluation of nurbs-specific stuff not activated here)
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // get the required material information
     Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
@@ -564,7 +564,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
   //     GET GENERAL ELEMENT DATA
   // ------------------------------------
   // get integration rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates
@@ -645,8 +645,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurbs specific stuff
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // Multiply the normal vector with the integration factor
     unitnormal_.Scale(fac_);
@@ -803,7 +803,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
   // set flag for type of linearization to default value (fixed-point-like)
   bool is_newton = fldpara_->IsNewton();
 
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates for nsd_-dimensional domain
@@ -891,8 +891,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
     // evaluate shape functions and their derivatives,
     // compute unit normal vector and infinitesimal area element drs
     // (evaluation of nurbs-specific stuff not activated here)
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // normal vector scaled by special factor in case of nurbs
     if (IsNurbs<distype>::isnurbs) unitnormal_.Scale(normalfac);
@@ -1019,7 +1019,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
   const bool isale = ele->ParentElement()->IsAle();
 
   // get Gaussrule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -1048,8 +1048,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -1078,7 +1078,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
   const bool isale = ele->ParentElement()->IsAle();
 
   // get Gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // node normals &
@@ -1122,7 +1122,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
   // get local node coordinates of the element
   // function gives back a matrix with the local node coordinates of the element (nsd_,bdrynen_)
   // the function gives back an Epetra_SerialDenseMatrix!!!
-  Epetra_SerialDenseMatrix xsi_ele = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix xsi_ele =
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // ============================== loop over nodes ==========================
   for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1136,14 +1137,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 
     // get shape derivatives at this node
     // shape_function_2D_deriv1(deriv_, e0, e1, distype);
-    DRT::UTILS::shape_function<distype>(xsi_node, funct_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_node, funct_);
 
     // the metric tensor and its determinant
     // Epetra_SerialDenseMatrix      metrictensor(nsd_,nsd_);
     LINALG::Matrix<bdrynsd_, bdrynsd_> metrictensor(true);
 
     // Addionally, compute metric tensor
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor, drs_);
+    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor, drs_);
 
     dxyzdrs.MultiplyNT(deriv_, xyze_);
 
@@ -1270,7 +1271,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
     dserror("Newtonian fluid material expected but got type %d", mat->MaterialType());
 
   // get Gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -1299,8 +1300,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // fac multiplied by the timefac
     const double fac_timefac = fac_ * timefac;
@@ -1446,14 +1447,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   double area = params.get<double>("area");
 
   // get Gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // add to area integral
     area += fac_;
@@ -1519,14 +1520,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   double press_int = params.get<double>("pressure boundary integral");
 
   // get Gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // add to pressure boundary integral
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1555,7 +1556,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   //------------------------------------------------------------------
 
   // get integration rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -1604,8 +1605,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
-      DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-          xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+      CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+          xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
       // global coordinates of gausspoint
       LINALG::Matrix<(nsd_), 1> coordgp(true);
@@ -1651,7 +1652,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
     Epetra_SerialDenseVector& elevec1)
 {
   // get integration rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // extract local values from the global vectors
@@ -1710,8 +1711,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // compute flowrate at gauss point
     velint_.Multiply(evelnp, funct_);
@@ -1789,7 +1790,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   }
 
   // get integration rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // order of accuracy of grid velocity determination
@@ -1846,8 +1847,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal
@@ -2052,7 +2053,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   const double pressure = params.get<double>("WindkesselPressure");
 
   // get Gaussrule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2089,8 +2090,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     const double fac_facrhs_pres = fac_ * tfacrhs * pressure;
 
@@ -2113,7 +2114,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
     Epetra_SerialDenseVector& elevec1)
 {
   // get Gaussrule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -2149,8 +2150,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     for (int node = 0; node < bdrynen_; ++node)
     {
@@ -2426,9 +2427,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   //-------------------------------------------------------------------
 
   // get Gaussrule
-  //  const DRT::UTILS::IntPointsAndWeights<bdrynsd_>
+  //  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_>
   //  intpoints(DRT::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
@@ -2466,8 +2467,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
+        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
     // Get the velocity value at the corresponding Gauss point.
     std::vector<double> vel_gps(nsd_, 0.0);

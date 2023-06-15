@@ -1,65 +1,20 @@
-set(OBJS_FLUID_ELE_LIB
-    # cmake-format: sortable
-    fluid_ele.cpp
-    fluid_ele_boundary.cpp
-    fluid_ele_boundary_calc.cpp
-    fluid_ele_boundary_calc_poro.cpp
-    fluid_ele_boundary_calc_std.cpp
-    fluid_ele_boundary_evaluate.cpp
-    fluid_ele_boundary_factory.cpp
-    fluid_ele_boundary_parent_calc.cpp
-    fluid_ele_calc.cpp
-    fluid_ele_calc_ale_service.cpp
-    fluid_ele_calc_general_service.cpp
-    fluid_ele_calc_hdg.cpp
-    fluid_ele_calc_hdg_weak_comp.cpp
-    fluid_ele_calc_immersed.cpp
-    fluid_ele_calc_intfaces_stab.cpp
-    fluid_ele_calc_loma.cpp
-    fluid_ele_calc_loma_service.cpp
-    fluid_ele_calc_newOST.cpp
-    fluid_ele_calc_poro.cpp
-    fluid_ele_calc_poro_p1.cpp
-    fluid_ele_calc_std.cpp
-    fluid_ele_calc_turbulence_service.cpp
-    fluid_ele_calc_xfem.cpp
-    fluid_ele_calc_xfem_coupling.cpp
-    fluid_ele_calc_xfem_coupling_impl_hybridlm.cpp
-    fluid_ele_calc_xfem_coupling_impl_nitsche.cpp
-    fluid_ele_calc_xfem_coupling_impl_slave_element.cpp
-    fluid_ele_calc_xwall.cpp
-    fluid_ele_calc_xwall_quadrature_service.cpp
-    fluid_ele_evaluate.cpp
-    fluid_ele_factory.cpp
-    fluid_ele_hdg.cpp
-    fluid_ele_hdg_weak_comp.cpp
-    fluid_ele_immersed.cpp
-    fluid_ele_immersed_base.cpp
-    fluid_ele_input.cpp
-    fluid_ele_intfaces.cpp
-    fluid_ele_intfaces_calc.cpp
-    fluid_ele_parameter.cpp
-    fluid_ele_parameter_intface.cpp
-    fluid_ele_parameter_poro.cpp
-    fluid_ele_parameter_std.cpp
-    fluid_ele_parameter_timint.cpp
-    fluid_ele_parameter_xfem.cpp
-    fluid_ele_poro.cpp
-    fluid_ele_poro_boundary.cpp
-    fluid_ele_poro_boundary_evaluate.cpp
-    fluid_ele_poro_evaluate.cpp
-    fluid_ele_tds.cpp
-    fluid_ele_xwall.cpp
-    fluid_ele_xwall_boundary.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_fluid ${OBJS_FLUID_ELE_LIB})
-
-set(LIBS_ELE_FLUID
+set(_fluid_ele_dependencies
     # cmake-format: sortable
-    alg_xfluid
+    bele
+    core
+    cut
+    fluid
+    geometry
+    immersed_problem
     inpar
-    lib_xfem
+    io
+    lib
+    linalg
+    mat
+    nurbs_discret
+    poroelast
+    xfem
     )
-
-baci_add_dependency(ele_fluid ${LIBS_ELE_FLUID})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_ele_dependencies})

@@ -15,11 +15,11 @@
 
 #include "elemag_ele_interface.H"
 #include "elemag_diff_ele.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 #include "inpar_elemag.H"
-#include "fem_general_utils_shapevalues_hdg.H"
+#include "discretization_fem_general_utils_shapevalues_hdg.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -33,13 +33,13 @@ namespace DRT
      public:
       /// nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ =
-          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       /// number of space dimensions
-      static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       /// number of faces on element
-      static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /// Integrate shape functions (not implemented)
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
@@ -76,14 +76,14 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
       /// Deconstructor
       virtual ~ElemagDiffEleCalc() {}
 
       /// Singleton access method.
       static ElemagDiffEleCalc<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
       void PrintTrace(DRT::Element* ele);
@@ -103,10 +103,10 @@ namespace DRT
 
         /// Init function for the struct members
         LocalSolver(const DRT::ELEMENTS::ElemagDiff* ele,
-            DRT::UTILS::ShapeValues<distype>& shapeValues,
-            Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
+            CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+            Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
             INPAR::ELEMAG::DynamicType& dyna,
-            DRT::UTILS::ShapeValues<distype>& postproc_shapeValues);
+            CORE::DRT::UTILS::ShapeValues<distype>& postproc_shapeValues);
 
         /// Compute the residual
         void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
@@ -209,13 +209,13 @@ namespace DRT
         const unsigned int ndofs_;
 
         /// evaluated shape values
-        DRT::UTILS::ShapeValues<distype>& shapes_;
+        CORE::DRT::UTILS::ShapeValues<distype>& shapes_;
 
         /// evaluated shape values
-        Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+        Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
         /// evaluated higher degree shape values
-        DRT::UTILS::ShapeValues<distype>& postproc_shapes_;
+        CORE::DRT::UTILS::ShapeValues<distype>& postproc_shapes_;
 
         // System matrices
         /// u matrix
@@ -269,13 +269,13 @@ namespace DRT
       double EstimateError(DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseVector& p);
 
       /// Local data object for element.
-      Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
 
       /// Higher degree local data object for element.
-      Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> postproc_shapes_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> postproc_shapes_;
 
       /// Local data object for face element.
-      Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
       /// Local solver object.
       Teuchos::RCP<LocalSolver> localSolver_;

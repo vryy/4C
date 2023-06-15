@@ -17,7 +17,7 @@
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
 
@@ -41,8 +41,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
-      static const int n = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
 
       DRT::Node** mynodes = ele.Points();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -75,7 +75,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_1D(val, xi[0], distype);
+                  CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
                   break;
                 }
               }
@@ -99,7 +99,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+                  CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -151,7 +151,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_1D_deriv1(deriv1, xi[0], distype);
+                  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, xi[0], distype);
                   break;
                 }
               }
@@ -176,7 +176,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
+                  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -226,7 +226,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_1D_deriv1(deriv2, xi[0], distype);
+                  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv2, xi[0], distype);
                   break;
                 }
               }
@@ -251,7 +251,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  DRT::UTILS::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
+                  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -298,8 +298,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
-      static const int n = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
 
       DRT::Node** mynodes = ele.Nodes();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -310,9 +310,9 @@ namespace MORTAR
 
       LINALG::Matrix<n, 1> val;
       if (ndim == 2)
-        DRT::UTILS::shape_function_1D(val, xi[0], distype);
+        CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
       else if (ndim == 3)
-        DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+        CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
       else
         dserror("Wrong Dimension");
 
@@ -351,8 +351,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
-      static const int n = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       if ((int)edisp.size() != n * globdim)
         dserror("ERROR: vector of element displacements has wrong dimension (%d != %d)",
@@ -367,11 +367,11 @@ namespace MORTAR
 
       LINALG::Matrix<n, 1> val;
       if (ndim == 1)
-        DRT::UTILS::shape_function_1D(val, xi[0], distype);
+        CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
       else if (ndim == 2)
-        DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
+        CORE::DRT::UTILS::shape_function_2D(val, xi[0], xi[1], distype);
       else if (ndim == 3)
-        DRT::UTILS::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
+        CORE::DRT::UTILS::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
 
       else
         dserror("Wrong Dimension");
@@ -397,8 +397,9 @@ namespace MORTAR
         double* xgl,                       // global position (input)
         double* xi)                        // local position  (output)
     {
-      static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       LINALG::Matrix<numnod, 1> funct(true);
       LINALG::Matrix<ndim, numnod> xref(true);
@@ -453,13 +454,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");
@@ -525,8 +526,9 @@ namespace MORTAR
         double* xi,
         bool& converged)  // converged solution ?
     {
-      static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       // converged
       converged = false;
@@ -580,13 +582,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");
@@ -651,8 +653,9 @@ namespace MORTAR
         double* xi, bool& converged,
         double& residual)  // converged solution ?
     {
-      static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       // converged
       converged = false;
@@ -684,13 +687,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D(funct, xi[0], xi[1], distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           dserror("ERROR");

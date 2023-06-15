@@ -11,7 +11,7 @@
 #include "w1.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;

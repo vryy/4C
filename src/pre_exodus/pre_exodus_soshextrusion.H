@@ -16,7 +16,7 @@ Here everything related with solid-shell body extrusion
 #include <iostream>
 #include <vector>
 #include <Teuchos_RCP.hpp>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "pre_exodus_reader.H"
 
 

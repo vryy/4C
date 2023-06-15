@@ -15,13 +15,13 @@
 
 // Todo @grill: check for obsolete header inclusions
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "linalg_utils_nullspace.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "lib_linedefinition.H"
 #include "inpar_structure.H"
 #include "beaminteraction_periodic_boundingbox.H"
@@ -283,7 +283,6 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
       stiff_ptc_(true),
       useFAD_(false),
-      centerline_hermite_(false),
       isinit_(false),
       jacobiGPelastf_(0),
       jacobiGPelastm_(0),
@@ -306,11 +305,9 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
 DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
     : DRT::ELEMENTS::Beam3Base(old),
       useFAD_(old.useFAD_),
-      centerline_hermite_(old.centerline_hermite_),
       isinit_(old.isinit_),
       reflength_(old.reflength_),
       theta0node_(old.theta0node_),
-      Trefnode_(old.Trefnode_),
       Tcurrnode_(old.Tcurrnode_),
       KrefGP_(old.KrefGP_),
       GammarefGP_(old.GammarefGP_),
@@ -436,7 +433,7 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, isinit_);
   AddtoPack(data, reflength_);
   AddtoPack<3, 1>(data, theta0node_);
-  AddtoPack<3, 1>(data, Trefnode_);
+  AddtoPack<3, 1>(data, Tref_);
   AddtoPack<3, 1>(data, Tcurrnode_);
   AddtoPack<3, 1>(data, KrefGP_);
   AddtoPack<3, 1>(data, GammarefGP_);
@@ -490,7 +487,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   isinit_ = ExtractInt(position, data);
   ExtractfromPack(position, data, reflength_);
   ExtractfromPack<3, 1>(position, data, theta0node_);
-  ExtractfromPack<3, 1>(position, data, Trefnode_);
+  ExtractfromPack<3, 1>(position, data, Tref_);
   ExtractfromPack<3, 1>(position, data, Tcurrnode_);
   ExtractfromPack<3, 1>(position, data, KrefGP_);
   ExtractfromPack<3, 1>(position, data, GammarefGP_);
@@ -566,7 +563,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     const IntegrationPurpose intpurpose) const
 {
   const DRT::Element::DiscretizationType distype = this->Shape();
@@ -582,30 +579,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         default:
         {
@@ -626,30 +623,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_5point;
+            return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -667,19 +664,19 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
       {
         case line2:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_5point;
+          return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -693,7 +690,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      return DRT::UTILS::GaussRule1D::line_4point;
+      return CORE::DRT::UTILS::GaussRule1D::line_4point;
     }
 
     /* 'full' integration of Neumann line loads
@@ -706,21 +703,21 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         default:
         {
@@ -738,7 +735,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     }
   }
 
-  return DRT::UTILS::GaussRule1D::undefined;
+  return CORE::DRT::UTILS::GaussRule1D::undefined;
   ;
 }
 
@@ -816,7 +813,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // beside the nodal reference positions from xrefe, this vector also holds the reference
     // tangents in case of Hermite interpolation of the beam centerline
-    LINALG::Matrix<3 * vpernode * nnodecl, 1> disp_refe_centerline;
+    LINALG::Matrix<3 * vpernode * nnodecl, 1> pos_ref_centerline;
 
     // initial curve in physical space and derivative with respect to curve parameter xi \in [-1;1]
     // on element level
@@ -840,7 +837,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     for (unsigned int node = 0; node < nnodetriad; node++)
     {
       LINALG::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
-      LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
+      CORE::LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
     }
 
     Qconvnode_ = Qnewnode_;
@@ -854,7 +851,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     triad_interpolation_scheme_ptr->Reset(Qnewnode);
 
     LINALG::Matrix<3, 3> Gref;
-    Trefnode_.resize(nnodecl);
+    Tref_.resize(nnodecl);
 
     for (unsigned int node = 0; node < nnodecl; node++)
     {
@@ -863,25 +860,20 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
       Gref.Clear();
-      LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
+      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
-      for (int i = 0; i < 3; i++) (Trefnode_[node])(i) = (Gref)(i, 0);
+      for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
       // fill disp_refe_centerline with reference nodal centerline positions and tangents
       for (int dim = 0; dim < 3; ++dim)
       {
-        disp_refe_centerline(3 * vpernode * node + dim) = xrefe[3 * node + dim];
+        pos_ref_centerline(3 * vpernode * node + dim) = xrefe[3 * node + dim];
         if (centerline_hermite_)
-          disp_refe_centerline(3 * vpernode * node + 3 + dim) = (Trefnode_[node])(dim);
+          pos_ref_centerline(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
       }
     }
 
-    /***************************** Compute the initial length of the element
-     * ******************************/
-
-    // note: in case of Hermite centerline interpolation: iteratively via Newton's method
-    Calculate_reflength<nnodecl, vpernode>(disp_refe_centerline, BEAM3RLENGTHCALCNEWTONTOL);
-
+    reflength_ = CalcReflength<nnodecl, vpernode>(pos_ref_centerline);
 
     /************************ Compute quantities required for elasticity
      ***********************************
@@ -900,7 +892,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
     jacobiGPelastf_.resize(gausspoints_elast_force.nquad);
     GammarefGP_.resize(gausspoints_elast_force.nquad);
@@ -944,7 +936,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_force.nquad; ++numgp)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point for under-integration
       jacobiGPelastf_[numgp] = dr0dxi.Norm2();
@@ -964,7 +956,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
     jacobiGPelastm_.resize(gausspoints_elast_moment.nquad);
     KrefGP_.resize(gausspoints_elast_moment.nquad);
@@ -1012,7 +1004,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_moment.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPelastm_[numgp] = dr0dxi.Norm2();
@@ -1036,8 +1028,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
-    DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
     jacobiGPmass_.resize(gausspoints_inertia.nquad);
@@ -1070,8 +1062,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs for exact integration and compute initial jacobi determinant
     for (int numgp = 0; numgp < gausspoints_inertia.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
-      Calc_r<nnodecl, vpernode, double>(disp_refe_centerline, H_i[numgp], r0);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPmass_[numgp] = dr0dxi.Norm2();
@@ -1106,10 +1098,10 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // compute Jacobi determinant at GPs for integration of damping/stochastic forces
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
+    CORE::DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
         MyGaussRule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
                                       // been applied above
-    DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
     // named 'dampstoch'
@@ -1128,7 +1120,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_damp_stoch.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPdampstoch_[numgp] = dr0dxi.Norm2();
@@ -1146,8 +1138,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
-    DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
     jacobiGPneumannline_.resize(gausspoints_neumann.nquad);
@@ -1163,7 +1155,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_neumann.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(disp_refe_centerline, H_i_xi[numgp], dr0dxi);
+      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobiGPneumannline_[numgp] = dr0dxi.Norm2();
@@ -1195,7 +1187,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    if (nodeids[this->nodeI_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //      for (int i=0; i<3; i++)
   //        Tcurrnode_[0](i)= DummyLambda(i,0);
@@ -1203,7 +1195,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    else if (nodeids[this->nodeJ_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //
   //      for (int i=0; i<3; i++)
@@ -1238,127 +1230,14 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Treffirst() const
         "vector varies along centerline!");
 
   LINALG::Matrix<3, 1> Tref;
-  double norm = Trefnode_[0].Norm2();
+  double norm = Tref_[0].Norm2();
 
   if (norm <= 1e-14)
     dserror("beam3r: cannot normalize tangent vector because its norm is close to zero!");
 
-  Tref.Update(1.0 / norm, Trefnode_[0]);
+  Tref.Update(1.0 / norm, Tref_[0]);
 
   return Tref;
-}
-
-/*--------------------------------------------------------------------------------------------*
- | Calculates the element length                                                   meier 01/16|
- *--------------------------------------------------------------------------------------------*/
-template <unsigned int nnode, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::Calculate_reflength(
-    const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
-    const double tolerance)
-{
-  // nnode: number of nodes
-  // vpernode: interpolated values per node (2: Hermite, i.e. value + derivative of value)
-
-  /* in case of Hermite centerline interpolation,
-   * the length is computed iteratively via Newton's method: f(l)=l-int(|N'd|)dxi=0*/
-
-  // safety check
-  if (vpernode == 2 and nnode != 2)
-    dserror(
-        "the function Calculate_length is implemented for 3rd order Hermite interpolation of the "
-        "centerline only!");
-
-  // initial value for iteration: difference vector of positions of boundary nodes (always ID 0 and
-  // 1) also trivial solution in case of linear Lagrange interpolation: (nnode==2 && vpernode==1)
-  if (vpernode == 2 || (nnode == 2 && vpernode == 1))
-  {
-    LINALG::Matrix<3, 1> tempvec(true);
-    for (int dim = 0; dim < 3; dim++)
-    {
-      tempvec(dim) = disp_totlag_centerline(3 * vpernode * 1 + dim) - disp_totlag_centerline(dim);
-    }
-    reflength_ = tempvec.Norm2();
-  }
-  else
-    reflength_ = 0.0;
-
-  // non-trivial solution
-  if (!(nnode == 2 && vpernode == 1))
-  {
-    // Get 'more than enough' integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
-
-    // Newton Iteration - Tolerance and residual
-    double res = 1.0;
-
-    // Integral-value for Gauss Integration
-    double int_length = 0.0;
-    // Derivative value of the length integral for Newton Iteration (=weighted sum over deriv_int,
-    // gauss quadrature of: int(d/dl(|N'd|))dxi)
-    double deriv_length = 0.0;
-    // value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
-    double deriv_int = 0.0;
-
-    // Matrices to store the function values of the shape functions
-    std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
-
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(
-        gausspoints, H_i_xi, this->Shape(), this->RefLength());
-
-    // current value of the derivative at the GP
-    LINALG::Matrix<3, 1> r_xi;
-
-    int numiter = 0;
-
-    // in case of Lagrange interpolation, one integration loop is sufficient
-    do
-    {
-      numiter++;
-      int_length = 0.0;
-      deriv_length = 0.0;
-
-      // Loop through all GPs and compute the length and the derivative of the length
-      for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
-      {
-        deriv_int = 0;
-
-        // integral of the length
-        deriv_int = 0;
-
-        Calc_r_xi<nnode, vpernode, double>(disp_totlag_centerline, H_i_xi[numgp], r_xi);
-
-        int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
-
-        // derivative only needed for Newton's method in case of Hermite interpolation
-        if (vpernode == 2)
-        {
-          // derivative of the integral of the length at GP
-          for (int dim = 0; dim < 3; dim++)
-          {
-            deriv_int += (disp_totlag_centerline(3 + dim) * H_i_xi[numgp](1) / reflength_ +
-                             disp_totlag_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) /
-                                 reflength_) *
-                         r_xi(dim);
-          }
-          deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
-        }
-      }
-
-      res = reflength_ - int_length;
-      // Update
-      reflength_ =
-          reflength_ - res / (1 - deriv_length);  // the derivative of f(l)=l-int(|N'd|)dxi=0 is
-                                                  // f'(l)=1-int(d/dl(|N'd|))dxi
-    } while (vpernode != 1 && std::fabs(res) > tolerance && numiter < 100);
-
-    if (numiter > 100)
-      dserror(
-          "failed to compute length of element in reference configuration iteratively: "
-          "Newton unconverged!");
-  }
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------------*
@@ -1392,13 +1271,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
       {
         LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 2, double>(disp_totlag_centerline_fixedsize);
-        pos = this->GetPosAtXi<2, 2>(xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       else
       {
         LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         AddRefValuesDispCenterline<2, 1, double>(disp_totlag_centerline_fixedsize);
-        pos = this->GetPosAtXi<2, 1>(xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::GetPosAtXi<2, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       break;
     }
@@ -1406,21 +1285,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     {
       LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<3, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<3, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<3, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
       LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<4, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<4, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<4, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
       LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       AddRefValuesDispCenterline<5, 1, double>(disp_totlag_centerline_fixedsize);
-      pos = this->GetPosAtXi<5, 1>(xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::GetPosAtXi<5, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     default:
@@ -1850,7 +1729,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
+    CORE::LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
   }
 
   // set differentiation variables for FAD: rotational DOFs
@@ -1871,7 +1750,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     Q_i[node].PutScalar(0.0);
-    LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
   }
 }
 
@@ -2062,22 +1941,6 @@ void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& do
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template <unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline(
-    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
-{
-  for (unsigned int dim = 0; dim < 3; ++dim)
-    for (unsigned int node = 0; node < nnodecl; ++node)
-    {
-      dofvec_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-
-      // have Hermite interpolation? then update tangent DOFs as well
-      if (vpernode == 2) dofvec_centerline(3 * vpernode * node + 3 + dim) += Trefnode_[node](dim);
-    }
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, typename T>
 void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
     const std::vector<LINALG::Matrix<3, 1, double>>& disptheta,
@@ -2092,12 +1955,12 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // get initial nodal rotation vectors and transform to quaternions
-    LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
+    CORE::LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
 
     // rotate initial triads by relative rotation vector from displacement vector (via quaternion
     // product)
-    LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
-    LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
@@ -2271,16 +2134,6 @@ template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5, 5, 1, double>(
     const std::vector<double>&, std::vector<LINALG::Matrix<3, 1, double>>&) const;
 template void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues<5, 2, 2, double>(
     const std::vector<double>&, std::vector<LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2, 1, double>(
-    LINALG::Matrix<6, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<3, 1, double>(
-    LINALG::Matrix<9, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<4, 1, double>(
-    LINALG::Matrix<12, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<5, 1, double>(
-    LINALG::Matrix<15, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3r::AddRefValuesDispCenterline<2, 2, double>(
-    LINALG::Matrix<12, 1, double>&) const;
 template void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta<2, double>(
     const std::vector<LINALG::Matrix<3, 1, double>>&,
     std::vector<LINALG::Matrix<4, 1, double>>&) const;

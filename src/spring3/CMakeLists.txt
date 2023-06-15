@@ -1,15 +1,13 @@
-set(OBJS_SP3_LIB
-    # cmake-format: sortable
-    spring3.cpp
-    spring3_evaluate.cpp
-    spring3_input.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_sp3 ${OBJS_SP3_LIB})
-
-set(LIBS_ELE_SP3
+set(_spring3_dependencies
     # cmake-format: sortable
+    beam3
+    beaminteraction
+    core
+    inpar
     lib
+    linalg
+    mat
     )
-
-baci_add_dependency(ele_sp3 ${LIBS_ELE_SP3})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_spring3_dependencies})

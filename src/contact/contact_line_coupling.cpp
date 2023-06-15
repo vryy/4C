@@ -95,8 +95,8 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     if (check == false) continue;
 
     // create empty lin vector
-    std::vector<std::vector<GEN::pairedvector<int, double>>> linvertex(
-        2, std::vector<GEN::pairedvector<int, double>>(
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
+        2, std::vector<CORE::GEN::pairedvector<int, double>>(
                3, 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode() + linsize_));
 
     // 10. linearize vertices
@@ -226,27 +226,27 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // Dual shape functions coefficient matrix and linearization
   LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
   SurfaceElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
           (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
       *(SurfaceElement().MoData().DerivDualShape());
 
   // various variables
   double detg = 0.0;
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // initialize matrices de and me
   LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
   LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
-  GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
+  CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
       (nnodes + mnodes) * ndof);
 
   // two-dim arrays of maps for linearization of me/de
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivme(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivde(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(
+      nnodes, std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivde(
+      nnodes, std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
 
   double A_tot = 0.;
 
@@ -269,7 +269,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
 
   detg = currcell->Jacobian();
   // directional derivative of cell Jacobian
-  GEN::pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
+  CORE::GEN::pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
   currcell->DerivJacobian(derivjaccell);
 
   for (int gp = 0; gp < integrator.nGP(); ++gp)
@@ -301,11 +301,11 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
 
     // additional data for contact calculation (i.e. incl. derivative of dual shape functions
     // coefficient matrix) GP slave coordinate derivatives
-    std::vector<GEN::pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
+    std::vector<CORE::GEN::pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
     // GP slave coordinate derivatives
-    std::vector<GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
+    std::vector<CORE::GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
     // global GP coordinate derivative on integration element
-    GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
+    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
 
     // compute global GP coordinate derivative
     static LINALG::Matrix<3, 1> svalcell;
@@ -388,7 +388,8 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-  typedef GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
+  typedef CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator
+      _CIM;
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
     LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
@@ -1308,7 +1309,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
  |  create integration lines                                 farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex)
 {
   // get coordinates
   LINALG::Matrix<3, 3> coords;
@@ -1333,7 +1334,7 @@ void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(
  |  linearize vertices                                       farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex)
 {
   // linearize all aux.plane slave and master nodes only ONCE
   // and use these linearizations later during lineclip linearization
@@ -1345,11 +1346,11 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
   const int nmrows = SurfaceElement().NumNode();
 
   // prepare storage for slave and master linearizations
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linsnodes(
-      nsrows, std::vector<GEN::pairedvector<int, double>>(3,
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linsnodes(
+      nsrows, std::vector<CORE::GEN::pairedvector<int, double>>(3,
                   100 + linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linmnodes(
-      nmrows, std::vector<GEN::pairedvector<int, double>>(3,
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linmnodes(
+      nmrows, std::vector<CORE::GEN::pairedvector<int, double>>(3,
                   100 + linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
 
   // compute slave linearizations (nsrows)
@@ -1366,7 +1367,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
   {
     // references to current vertex and its linearization
     MORTAR::Vertex& currv = InterSections()[i];
-    std::vector<GEN::pairedvector<int, double>>& currlin = linvertex[i];
+    std::vector<CORE::GEN::pairedvector<int, double>>& currlin = linvertex[i];
 
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType() == MORTAR::Vertex::projslave)
@@ -1452,17 +1453,17 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
-    std::vector<GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-    MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linsnodes,
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linmnodes)
+    std::vector<CORE::GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
+    MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linsnodes,
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linmnodes)
 {
   // number of nodes
   const int nsrows = LineElement()->NumNode();
   const int nmrows = SurfaceElement().NumNode();
 
   // iterator
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // compute factor Z
   std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
@@ -1550,7 +1551,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   if (k == nsrows) dserror("Slave Id1 not found!");
 
   // get the correct slave node linearization
-  std::vector<GEN::pairedvector<int, double>>& slavelin0 = linsnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& slavelin0 = linsnodes[k];
 
   k = 0;
   while (k < nsrows)
@@ -1563,7 +1564,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   if (k == nsrows) dserror("Slave Id2 not found!");
 
   // get the correct slave node linearization
-  std::vector<GEN::pairedvector<int, double>>& slavelin1 = linsnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& slavelin1 = linsnodes[k];
 
   // master vertex linearization (2x)
   int mid1 = currv.Nodeids()[2];
@@ -1581,7 +1582,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   if (k == nmrows) dserror("Master Id1 not found!");
 
   // get the correct master node linearization
-  std::vector<GEN::pairedvector<int, double>>& masterlin0 = linmnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& masterlin0 = linmnodes[k];
 
   k = 0;
   while (k < nmrows)
@@ -1594,10 +1595,10 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   if (k == nmrows) dserror("Master Id2 not found!");
 
   // get the correct master node linearization
-  std::vector<GEN::pairedvector<int, double>>& masterlin1 = linmnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   const double ZNfac = Zfac / Nfac;
   const double ZNNfac = Zfac / (Nfac * Nfac);
@@ -1719,7 +1720,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
  *----------------------------------------------------------------------*/
 bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
 {
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   int nnodes = LineElement()->NumNode();
   if (nnodes != 2) dserror("Auxiliary line calculation only for line2 elements!");
@@ -1750,7 +1751,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   Auxc()[1] = 0.0;
   Auxc()[2] = 0.0;
 
-  std::vector<GEN::pairedvector<int, double>> dauxn(3, 100);
+  std::vector<CORE::GEN::pairedvector<int, double>> dauxn(3, 100);
 
   // average nodal normals of line element
   for (int i = 0; i < nnodes; ++i)
@@ -1822,7 +1823,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
       tanplane(2, 0) * Auxn()[0] + tanplane(2, 1) * Auxn()[1] + tanplane(2, 2) * Auxn()[2];
 
   // lin tangent
-  std::vector<GEN::pairedvector<int, double>> dnmap_unit(3, linsize_ * 10);
+  std::vector<CORE::GEN::pairedvector<int, double>> dnmap_unit(3, linsize_ * 10);
   for (int i = 0; i < Dim(); ++i)
   {
     dnmap_unit[i][mycnode->Dofs()[i]] += 1;
@@ -1830,9 +1831,9 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   }
 
 
-  std::vector<GEN::pairedvector<int, double>> tplanex(3, linsize_ * 10);
-  std::vector<GEN::pairedvector<int, double>> tplaney(3, linsize_ * 10);
-  std::vector<GEN::pairedvector<int, double>> tplanez(3, linsize_ * 10);
+  std::vector<CORE::GEN::pairedvector<int, double>> tplanex(3, linsize_ * 10);
+  std::vector<CORE::GEN::pairedvector<int, double>> tplaney(3, linsize_ * 10);
+  std::vector<CORE::GEN::pairedvector<int, double>> tplanez(3, linsize_ * 10);
 
   for (_CI p = dnmap_unit[0].begin(); p != dnmap_unit[0].end(); ++p)
     tplanex[0][p->first] -= tangent[0] * p->second;
@@ -1982,7 +1983,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
  |  Linearization of slave vertex (3D) AuxPlane              farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -2021,20 +2022,20 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   }
 
   // linearization of the SlaveIntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> snodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> snodelin(0);
 
   // resize the linearizations
-  snodelin.resize(nrow, std::vector<GEN::pairedvector<int, double>>(3, 1));
+  snodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
   for (int in = 0; in < nrow; ++in)
     for (int dim = 0; dim < 3; ++dim) snodelin[in][dim][smrtrnodes[in]->Dofs()[dim]] += 1.;
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  //  std::vector<GEN::pairedvector<int  ,double> > linauxc(3,10*SurfaceElement().NumNode()); //
-  //  assume 3 dofs per node
+  //  std::vector<CORE::GEN::pairedvector<int  ,double> > linauxc(3,10*SurfaceElement().NumNode());
+  //  // assume 3 dofs per node
 
   //  for (int i = 0; i < nrow; ++i)
   //      for (int dim=0; dim<3; ++dim)
@@ -2042,13 +2043,14 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   //          linauxc[dim][p->first] = sval[i]*p->second;
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   // linearization of the MasterIntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> mnodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> mnodelin(0);
 
   // resize the linearizations
-  mnodelin.resize(LineElement()->NumNode(), std::vector<GEN::pairedvector<int, double>>(3, 1));
+  mnodelin.resize(
+      LineElement()->NumNode(), std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
   for (int in = 0; in < LineElement()->NumNode(); ++in)
@@ -2176,7 +2178,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
  |  Linearization of slave vertex (3D) AuxPlane               farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -2215,20 +2217,20 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   }
 
   // linearization of the IntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> nodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> nodelin(0);
 
   // resize the linearizations
-  nodelin.resize(nrow, std::vector<GEN::pairedvector<int, double>>(3, 1));
+  nodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
   for (int in = 0; in < nrow; ++in)
     for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][smrtrnodes[in]->Dofs()[dim]] += 1.;
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  //  std  ::vector<GEN::pairedvector<int  ,double> > linauxc(3,SurfaceElement().NumNode()); //
-  //  assume 3 dofs per node
+  //  std  ::vector<CORE::GEN::pairedvector<int  ,double> > linauxc(3,SurfaceElement().NumNode());
+  //  // assume 3 dofs per node
   //
   //  for (int i = 0; i < nrow; ++i)
   //      for (int dim=0; dim<3; ++dim)
@@ -2236,7 +2238,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   //          linauxc[dim][p->first] = sval[i]*p->second;
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   // put everything together for slave vertex linearization
   // loop over all vertices
@@ -2343,9 +2345,9 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
   double mxi = 0.0;
 
   // create empty lin vectors
-  GEN::pairedvector<int, double> dsxi(
+  CORE::GEN::pairedvector<int, double> dsxi(
       100 + 3 * LineMasterElement()->NumNode() + 3 * LineSlaveElement()->NumNode());
-  GEN::pairedvector<int, double> dmxi(
+  CORE::GEN::pairedvector<int, double> dmxi(
       100 + 3 * LineMasterElement()->NumNode() + 3 * LineSlaveElement()->NumNode());
   LineIntersection(&sxi, &mxi, dsxi, dmxi);
 
@@ -2371,7 +2373,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
  |  line-line intersection                                   farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
-    GEN::pairedvector<int, double>& dsxi, GEN::pairedvector<int, double>& dmxi)
+    CORE::GEN::pairedvector<int, double>& dsxi, CORE::GEN::pairedvector<int, double>& dmxi)
 {
   bool friction = false;
   INPAR::CONTACT::FrictionType ftype =
@@ -2400,7 +2402,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   LineMasterElement()->EvaluateShape(mxi, mval, mderiv, nnodes);
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
   typedef std::map<int, double>::const_iterator CI;
 
   int linsize = 0;
@@ -2418,10 +2420,10 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   // geometric quantities
   //**********************************************************************
   std::array<double, 3> gpn = {0.0, 0.0, 0.0};
-  GEN::pairedvector<int, double> dgapgp(
+  CORE::GEN::pairedvector<int, double> dgapgp(
       (ncol * ndof) + 10 * linsize);  // gap lin. without lm and jac.
   double gap = 0.0;
-  std::vector<GEN::pairedvector<int, double>> dnmap_unit(
+  std::vector<CORE::GEN::pairedvector<int, double>> dnmap_unit(
       3, 10 * linsize);  // deriv of x,y and z comp. of gpn (unit)
 
   //**********************************************************************
@@ -2460,17 +2462,17 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   for (int i = 0; i < Dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
   // build directional derivative of slave GP normal (non-unit)
-  GEN::pairedvector<int, double> dmap_nxsl_gp(linsize);
-  GEN::pairedvector<int, double> dmap_nysl_gp(linsize);
-  GEN::pairedvector<int, double> dmap_nzsl_gp(linsize);
+  CORE::GEN::pairedvector<int, double> dmap_nxsl_gp(linsize);
+  CORE::GEN::pairedvector<int, double> dmap_nysl_gp(linsize);
+  CORE::GEN::pairedvector<int, double> dmap_nzsl_gp(linsize);
 
   for (int i = 0; i < nrow; ++i)
   {
     CoNode* cnode = dynamic_cast<CoNode*>(mynodes[i]);
 
-    GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-    GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-    GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
+    CORE::GEN::pairedvector<int, double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
+    CORE::GEN::pairedvector<int, double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
+    CORE::GEN::pairedvector<int, double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -2712,13 +2714,13 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
     }
 
     // linearizations
-    GEN::pairedvector<int, double> sgpxoldlinx(linsize);
-    GEN::pairedvector<int, double> sgpxoldliny(linsize);
-    GEN::pairedvector<int, double> sgpxoldlinz(linsize);
+    CORE::GEN::pairedvector<int, double> sgpxoldlinx(linsize);
+    CORE::GEN::pairedvector<int, double> sgpxoldliny(linsize);
+    CORE::GEN::pairedvector<int, double> sgpxoldlinz(linsize);
 
-    GEN::pairedvector<int, double> mgpxoldlinx(linsize);
-    GEN::pairedvector<int, double> mgpxoldliny(linsize);
-    GEN::pairedvector<int, double> mgpxoldlinz(linsize);
+    CORE::GEN::pairedvector<int, double> mgpxoldlinx(linsize);
+    CORE::GEN::pairedvector<int, double> mgpxoldliny(linsize);
+    CORE::GEN::pairedvector<int, double> mgpxoldlinz(linsize);
 
     if (oldID > -1)
     {
@@ -2797,7 +2799,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
     std::vector<std::map<int, double>>& djmapfinal = cnode->CoData().GetDerivJumpltl();
 
-    std::vector<GEN::pairedvector<int, double>> djmap(3, 100);
+    std::vector<CORE::GEN::pairedvector<int, double>> djmap(3, 100);
 
     // lin slave nodes
     for (int z = 0; z < nrow; ++z)
@@ -2846,9 +2848,9 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
 
 
-    std::vector<GEN::pairedvector<int, double>> tplanex(3, 100);
-    std::vector<GEN::pairedvector<int, double>> tplaney(3, 100);
-    std::vector<GEN::pairedvector<int, double>> tplanez(3, 100);
+    std::vector<CORE::GEN::pairedvector<int, double>> tplanex(3, 100);
+    std::vector<CORE::GEN::pairedvector<int, double>> tplaney(3, 100);
+    std::vector<CORE::GEN::pairedvector<int, double>> tplanez(3, 100);
 
     for (_CI p = dnmap_unit[0].begin(); p != dnmap_unit[0].end(); ++p)
       tplanex[0][p->first] -= gpn[0] * p->second;
@@ -2947,7 +2949,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
  |  line-line intersection                                   farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* mxi,
-    GEN::pairedvector<int, double>& dsxi, GEN::pairedvector<int, double>& dmxi)
+    CORE::GEN::pairedvector<int, double>& dsxi, CORE::GEN::pairedvector<int, double>& dmxi)
 {
   // flag for debug output
   const bool out = false;
@@ -2956,7 +2958,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   const int nnodes = 2;
 
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // calculate slave vector
   CoNode* ns1 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[0]);
@@ -3201,9 +3203,9 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   for (int i = 0; i < 3; ++i) vs[i] += sval[0] * ts1[i] + sval[1] * ts2[i];
   for (int i = 0; i < 3; ++i) vm[i] += mval[0] * tm1[i] + mval[1] * tm2[i];
 
-  std::vector<GEN::pairedvector<int, double>> xLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> vsLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> vmLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> vsLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> vmLin(3, 1000);
 
   // global position difference
   for (int i = 0; i < 3; ++i) (xLin[i])[ns1->Dofs()[i]] += sval(0);
@@ -3250,8 +3252,8 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   //  for(int i=0; i<3;++i)
   //    (vmLin[i])[nm2->Dofs()[i]] -= 1;
 
-  GEN::pairedvector<int, double> f0(1000);
-  GEN::pairedvector<int, double> f1(1000);
+  CORE::GEN::pairedvector<int, double> f0(1000);
+  CORE::GEN::pairedvector<int, double> f1(1000);
 
   // lin xdiff * tangent + xdiff * lin tangent
   for (_CI p = xLin[0].begin(); p != xLin[0].end(); ++p) f0[p->first] += (p->second) * vs[0];
@@ -3346,10 +3348,10 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
  |  calc current angle (rad) between edges                   farah 09/16|
  *----------------------------------------------------------------------*/
 double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
-    GEN::pairedvector<int, double>& lineAngle)
+    CORE::GEN::pairedvector<int, double>& lineAngle)
 {
   // define iterator for linerization
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   // slave edge vector and master vector edge
   std::array<double, 3> vs = {0.0, 0.0, 0.0};
@@ -3403,8 +3405,8 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   // linearization
 
   // delta lengthM
-  std::vector<GEN::pairedvector<int, double>> DlM(3, 1000);
-  GEN::pairedvector<int, double> DlengthM(1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> DlM(3, 1000);
+  CORE::GEN::pairedvector<int, double> DlengthM(1000);
 
   // change sign of master vectors linearization
   if (switchSign)
@@ -3435,8 +3437,8 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
     (DlengthM)[p->first] += (p->second) * vm[2] * 1.0 / (lengthM);
 
   // delta lengthS
-  std::vector<GEN::pairedvector<int, double>> DlS(3, 1000);
-  GEN::pairedvector<int, double> DlengthS(1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> DlS(3, 1000);
+  CORE::GEN::pairedvector<int, double> DlengthS(1000);
 
   DlS[0][ns1->Dofs()[0]] += 1;
   DlS[0][ns2->Dofs()[0]] -= 1;
@@ -3453,7 +3455,7 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
     (DlengthS)[p->first] += (p->second) * vs[2] * 1.0 / (lengthS);
 
   // lin lengthS * lengthM
-  GEN::pairedvector<int, double> prodLength(1000);
+  CORE::GEN::pairedvector<int, double> prodLength(1000);
 
   for (CI p = DlengthS.begin(); p != DlengthS.end(); ++p)
     (prodLength)[p->first] += (p->second) * lengthM;
@@ -3461,7 +3463,7 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
     (prodLength)[p->first] += (p->second) * lengthS;
 
   // lin scaprod
-  GEN::pairedvector<int, double> scaProdlin(1000);
+  CORE::GEN::pairedvector<int, double> scaProdlin(1000);
 
   for (CI p = DlS[0].begin(); p != DlS[0].end(); ++p) (scaProdlin)[p->first] += (p->second) * vm[0];
   for (CI p = DlS[1].begin(); p != DlS[1].end(); ++p) (scaProdlin)[p->first] += (p->second) * vm[1];
@@ -3472,7 +3474,7 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   for (CI p = DlM[2].begin(); p != DlM[2].end(); ++p) (scaProdlin)[p->first] += (p->second) * vs[2];
 
   // lin scaprod/lengthprod
-  GEN::pairedvector<int, double> scaProdnormalizedLin(1000);
+  CORE::GEN::pairedvector<int, double> scaProdnormalizedLin(1000);
   for (CI p = scaProdlin.begin(); p != scaProdlin.end(); ++p)
     (scaProdnormalizedLin)[p->first] += (p->second) * 1.0 / (lengthS * lengthM);
   for (CI p = prodLength.begin(); p != prodLength.end(); ++p)

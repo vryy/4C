@@ -14,15 +14,15 @@
 #include "so3_hex8.H"
 #include "so3_tet10.H"
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "so3_hex8.H"
 #include "so3_tet10.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
@@ -62,10 +62,11 @@ template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
     const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
-  const int numNodesPerElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int numNodesPerElement =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
-  DRT::UTILS::shape_function<distype>(xi, shapefunct);
+  CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
 
   const int num_dof_per_node = static_cast<int>(nodal_quantity.size()) / numNodesPerElement;
   std::vector<double> projected_quantities(num_dof_per_node, 0.0);

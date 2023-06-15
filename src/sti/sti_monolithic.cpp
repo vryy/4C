@@ -11,7 +11,8 @@
 #include "sti_monolithic.H"
 #include "sti_monolithic_evaluate_OffDiag.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
 #include "linalg_matrixtransform.H"
 
 #include "io_control.H"
@@ -26,7 +27,7 @@
 #include "linalg_mapextractor.H"
 #include "linalg_multiply.H"
 #include "linalg_nullspace.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -796,7 +797,7 @@ void STI::Monolithic::AssembleMatAndRHS()
               {
                 case INPAR::S2I::coupling_matching_nodes:
                 {
-                  ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
+                  CORE::ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                   LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                       scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
                       nullptr, &converter, blocksystemmatrix->Matrix(iblock, nblockmapsscatra),
@@ -867,7 +868,7 @@ void STI::Monolithic::AssembleMatAndRHS()
             {
               case INPAR::S2I::coupling_matching_nodes:
               {
-                ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
+                CORE::ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                 LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(),
                     *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr,
                     &converter, blocksystemmatrix->Matrix(nblockmapsscatra, nblockmapsscatra), true,
@@ -939,7 +940,7 @@ void STI::Monolithic::AssembleMatAndRHS()
             {
               case INPAR::S2I::coupling_matching_nodes:
               {
-                ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
+                CORE::ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                 LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                     scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
                     nullptr, &converter, blocksystemmatrix->Matrix(0, 1), true, true);
@@ -1057,7 +1058,7 @@ void STI::Monolithic::AssembleMatAndRHS()
         {
           case INPAR::S2I::coupling_matching_nodes:
           {
-            ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
+            CORE::ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
             LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                 scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
                 nullptr, &converter, *systemmatrix, true, true);
@@ -1701,7 +1702,7 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
                 ? Teuchos::rcp(new LINALG::MatrixRowTransform())
                 : islavetomasterrowtransformthermood_;
         (*islavetomasterrowtransformthermood)(thermoscatrarowsslave, 1.,
-            ADAPTER::CouplingSlaveConverter(*icoupthermo_), thermoscatrablock, true);
+            CORE::ADAPTER::CouplingSlaveConverter(*icoupthermo_), thermoscatrablock, true);
       }
     }
   }

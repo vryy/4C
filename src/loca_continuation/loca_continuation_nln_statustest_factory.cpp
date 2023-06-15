@@ -16,7 +16,7 @@
 #endif
 
 #include "loca_continuation_nln_statustest_factory.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // Concrete StatusTest Objects
 #include <LOCA_StatusTest_Combo.H>

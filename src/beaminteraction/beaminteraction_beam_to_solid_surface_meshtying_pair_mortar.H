@@ -13,6 +13,7 @@
 
 
 #include "beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.H"
+#include "lib_discret.H"
 
 #include "geometry_pair_scalar_types.H"
 

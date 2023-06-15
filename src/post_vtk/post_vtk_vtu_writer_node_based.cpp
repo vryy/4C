@@ -16,14 +16,14 @@
 
 #include "lib_element_vtk_cell_type_register.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "post_common.H"
 
 #include "nurbs_discret.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "lib_element.H"
 
 #include "beam3_base.H"

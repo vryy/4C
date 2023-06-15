@@ -20,7 +20,7 @@
 #include "cut_options.H"
 #include "cut_volumecell.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #define nxyz(x, y, z)                     \
   {                                       \
@@ -4999,7 +4999,7 @@ void test_hex27_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 2; ++j)
     {
-      quad9_xyze(j, i) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
+      quad9_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
     }
     quad9_xyze(2, i) = 0;
   }
@@ -5013,7 +5013,7 @@ void test_hex27_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 3; ++j)
     {
-      hex27_xyze(j, i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
+      hex27_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
     }
   }
 
@@ -5048,7 +5048,7 @@ void test_hex20_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 2; ++j)
     {
-      quad9_xyze(j, i) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
+      quad9_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
     }
     quad9_xyze(2, i) = 0;
   }
@@ -5062,7 +5062,7 @@ void test_hex20_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 3; ++j)
     {
-      hex20_xyze(j, i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
+      hex20_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
     }
   }
 
@@ -5097,7 +5097,7 @@ void test_hex20_quad9_moved()
     nids.push_back(i);
     for (int j = 0; j < 2; ++j)
     {
-      quad9_xyze(j, i) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
+      quad9_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
     }
     quad9_xyze(2, i) = 0;
   }
@@ -5120,7 +5120,7 @@ void test_hex20_quad9_moved()
     nids.push_back(i);
     for (int j = 0; j < 3; ++j)
     {
-      hex20_xyze(j, i) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
+      hex20_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[i][j];
     }
   }
 
@@ -5155,7 +5155,7 @@ void test_tet10_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 2; ++j)
     {
-      quad9_xyze(j, i) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
+      quad9_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
     }
     quad9_xyze(2, i) = 0.2;
   }
@@ -5169,7 +5169,7 @@ void test_tet10_quad9_simple()
     nids.push_back(i);
     for (int j = 0; j < 3; ++j)
     {
-      tet10_xyze(j, i) = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[i][j];
+      tet10_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[i][j];
     }
   }
 
@@ -5205,7 +5205,7 @@ void test_tet10_quad9_moved()
     nids.push_back(i);
     for (int j = 0; j < 2; ++j)
     {
-      quad9_xyze(j, i) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
+      quad9_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][j];
     }
     quad9_xyze(2, i) = 0;
   }
@@ -5228,7 +5228,7 @@ void test_tet10_quad9_moved()
     nids.push_back(i);
     for (int j = 0; j < 3; ++j)
     {
-      tet10_xyze(j, i) = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[i][j];
+      tet10_xyze(j, i) = CORE::DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[i][j];
     }
   }
 

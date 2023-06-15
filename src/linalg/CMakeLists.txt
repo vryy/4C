@@ -1,41 +1,8 @@
-set(OBJS_LINALG
-    # cmake-format: sortable
-    linalg_blocksparsematrix.cpp
-    linalg_downwindmatrix.cpp
-    linalg_equilibrate.cpp
-    linalg_gauss.cpp
-    linalg_krylov_projector.cpp
-    linalg_mapextractor.cpp
-    linalg_matrixtransform.cpp
-    linalg_mlapi_operator.cpp
-    linalg_multiply.cpp
-    linalg_nullspace.cpp
-    linalg_projected_operator.cpp
-    linalg_projected_precond.cpp
-    linalg_serialdensematrix.cpp
-    linalg_serialdensevector.cpp
-    linalg_sparsematrix.cpp
-    linalg_sparsematrixbase.cpp
-    linalg_utils_densematrix_communication.cpp
-    linalg_utils_densematrix_determinant.cpp
-    linalg_utils_densematrix_eigen.cpp
-    linalg_utils_densematrix_inverse.cpp
-    linalg_utils_densematrix_print.cpp
-    linalg_utils_densematrix_svd.cpp
-    linalg_utils_nullspace.cpp
-    linalg_utils_sparse_algebra_assemble.cpp
-    linalg_utils_sparse_algebra_create.cpp
-    linalg_utils_sparse_algebra_manipulation.cpp
-    linalg_utils_sparse_algebra_math.cpp
-    linalg_utils_sparse_algebra_print.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(linalg ${OBJS_LINALG})
-
-set(LIBS_LINALG
+set(_linalg_dependencies
     # cmake-format: sortable
-    adapter
+    core
     lib
     )
-
-baci_add_dependency(linalg ${LIBS_LINALG})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_linalg_dependencies})

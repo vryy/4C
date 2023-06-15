@@ -78,14 +78,6 @@ namespace STR
           Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override;
       /// @}
 
-      /// @name XFEM/XSTR related methods
-      ///@{
-
-      /// destroy the nonlinear solver state and all internal stored state variables
-      bool DestroyNoxState() override;
-
-      ///@}
-
       //! print summary after step
       void PrintStep() override;
 

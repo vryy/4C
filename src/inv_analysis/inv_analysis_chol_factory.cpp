@@ -9,7 +9,7 @@
 #include "inv_analysis_chol_factory.H"
 
 #include "inv_analysis_chol_factor.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>

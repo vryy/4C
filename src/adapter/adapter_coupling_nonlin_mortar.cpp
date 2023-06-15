@@ -35,6 +35,7 @@
 #include "nurbs_discret_knotvector.H"
 
 #include "inpar_contact.H"
+#include "coupling_adapter_mortar.H"
 
 #include <Epetra_Vector.h>
 
@@ -43,7 +44,7 @@
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar()
-    : CouplingMortar(),
+    : CORE::ADAPTER::CouplingMortar(),
       issetup_(false),
       comm_(Teuchos::null),
       myrank_(-1),
@@ -260,20 +261,19 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   //            "length of coupleddof: %i",masterdis->NumDof(masterdis->lRowNode(0)), dof);
   //  }
 
-  //########## CHECK for a better implementation of this ###################
+  // ########## CHECK for a better implementation of this ###################
   // If this option is used, check functionality ... not sure if this is correct!
   // special case: sliding ale
   // In the sliding ale framework two mortar discretizations are generated from identical
-  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original elements
-  // are the same, an offset have to be defined
-  // int nodeoffset=0;
+  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original
+  // elements are the same, an offset have to be defined int nodeoffset=0;
   int dofoffset = 0;
   //  if(slidingale==true)
   //  {
   //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
   //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
   //  }
-  //########## CHECK for a better implementation of this ###################
+  // ########## CHECK for a better implementation of this ###################
 
   // feeding master nodes to the interface including ghosted nodes
   std::map<int, DRT::Node*>::const_iterator nodeiter;
@@ -356,12 +356,12 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
 
-  //########## CHECK for a better implementation of this ###################
+  // ########## CHECK for a better implementation of this ###################
   // If this option is used, check functionality ... not sure if this is correct!
   // special case: sliding ale
   // In the sliding ale framework two mortar discretizations are generated from identical
-  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original elements
-  // are the same, an offset have to be defined
+  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original
+  // elements are the same, an offset have to be defined
   int nodeoffset = 0;
   // int dofoffset=0;
   //  if(slidingale==true)
@@ -369,7 +369,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
   //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
   //  }
-  //########## CHECK for a better implementation of this ###################
+  // ########## CHECK for a better implementation of this ###################
 
 
   // We need to determine an element offset to start the numbering of the slave
@@ -890,7 +890,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
 void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
 {
   // call base function
-  CouplingMortar::MatrixRowColTransform();
+  CORE::ADAPTER::CouplingMortar::MatrixRowColTransform();
 
   // safety check
   CheckSetup();

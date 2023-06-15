@@ -11,7 +11,7 @@
 
 #include "lib_node.H"
 #include "lib_parobjectfactory.H"
-#include "headers_pairedvector.H"
+#include "utils_pairedvector.H"
 
 namespace MORTAR
 {
@@ -127,7 +127,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node
      */
-    GEN::pairedvector<int, double>& GetD() { return drows_; }
+    CORE::GEN::pairedvector<int, double>& GetD() { return drows_; }
 
     /*!
      \brief Return the 'M' map of this node
@@ -142,7 +142,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for node-to-segment
      */
-    GEN::pairedvector<int, double>& GetDnts() { return drows_nts_; }
+    CORE::GEN::pairedvector<int, double>& GetDnts() { return drows_nts_; }
 
     /*!
      \brief Return the 'M' map of this node for node-to-segment
@@ -157,7 +157,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-segment
      */
-    GEN::pairedvector<int, double>& GetDlts() { return drows_lts_; }
+    CORE::GEN::pairedvector<int, double>& GetDlts() { return drows_lts_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-segment
@@ -172,7 +172,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-line
      */
-    GEN::pairedvector<int, double>& GetDltl() { return drows_ltl_; }
+    CORE::GEN::pairedvector<int, double>& GetDltl() { return drows_ltl_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-line
@@ -229,7 +229,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for segment-to-segment
-    GEN::pairedvector<int, double> drows_;
+    CORE::GEN::pairedvector<int, double> drows_;
 
     //! Nodal rows of M matrix for segment-to-segment
     std::map<int, double> mrows_;
@@ -243,7 +243,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for node-to-segment
-    GEN::pairedvector<int, double> drows_nts_;
+    CORE::GEN::pairedvector<int, double> drows_nts_;
 
     //! Nodal rows of M matrix for node-to-segment
     std::map<int, double> mrows_nts_;
@@ -254,7 +254,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for line-to-segment
-    GEN::pairedvector<int, double> drows_lts_;
+    CORE::GEN::pairedvector<int, double> drows_lts_;
 
     //! Nodal rows of M matrix for line-to-segment
     std::map<int, double> mrows_lts_;
@@ -265,7 +265,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for lts
-    GEN::pairedvector<int, double> drows_ltl_;
+    CORE::GEN::pairedvector<int, double> drows_ltl_;
 
     //! Nodal rows of M matrix for lts
     std::map<int, double> mrows_ltl_;

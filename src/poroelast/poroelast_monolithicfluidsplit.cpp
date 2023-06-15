@@ -13,7 +13,7 @@
 
 #include "adapter_str_fpsiwrapper.H"
 #include "adapter_fld_poro.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter_converter.H"
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "fluid_utils_mapextractor.H"
@@ -211,13 +211,13 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     double timescale = FluidField()->TimeScaling();
 
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), f->Matrix(0, 1), timescale,
-        ADAPTER::CouplingSlaveConverter(*icoupfs_), k_fs->Matrix(0, 1), true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), k_fs->Matrix(0, 1), true, true);
 
     (*csggtransform_)(f->FullRowMap(), f->FullColMap(), k_sf->Matrix(1, 1), timescale,
-        ADAPTER::CouplingSlaveConverter(*icoupfs_), *s, true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *s, true, true);
 
     (*csigtransform_)(f->FullRowMap(), f->FullColMap(), k_sf->Matrix(0, 1), timescale,
-        ADAPTER::CouplingSlaveConverter(*icoupfs_), *s, true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *s, true, true);
   }
 
   /*----------------------------------------------------------------------*/

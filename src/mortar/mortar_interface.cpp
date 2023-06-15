@@ -3395,10 +3395,10 @@ void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
     /**************************************************** D-matrix ******/
     if ((mrtrnode->MoData().GetD()).size() > 0)
     {
-      const GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
+      const CORE::GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
       int rowsize = mrtrnode->NumDof();
 
-      GEN::pairedvector<int, double>::const_iterator colcurr;
+      CORE::GEN::pairedvector<int, double>::const_iterator colcurr;
 
       for (colcurr = dmap.begin(); colcurr != dmap.end(); ++colcurr)
       {
@@ -3788,7 +3788,7 @@ void MORTAR::MortarInterface::AssembleTrafo(
         int index1 = 0;
         int index2 = 0;
         int hoindex = mrtrele->GetLocalNodeId(gid);
-        DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
+        CORE::DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
 
         // find adjacent corner nodes globally
         int gindex1 = mrtrele->NodeIds()[index1];
@@ -3973,7 +3973,7 @@ void MORTAR::MortarInterface::AssembleTrafo(
           int index1 = 0;
           int index2 = 0;
           int hoindex = mrtrele->GetLocalNodeId(gid);
-          DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
+          CORE::DRT::UTILS::getCornerNodeIndices(index1, index2, hoindex, shape);
 
           // find adjacent corner nodes globally
           int gindex1 = mrtrele->NodeIds()[index1];
@@ -4087,7 +4087,7 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
     auto* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // perform detection
-    const GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
+    const CORE::GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
     const std::map<int, double>& mmap = mrtrnode->MoData().GetM();
     int sized = dmap.size();
     int sizem = mmap.size();

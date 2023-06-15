@@ -1127,8 +1127,6 @@ DRT::INPUT::ValidConditions()
 
   INPAR::PARTICLE::SetValidConditions(condlist);
 
-  INPAR::PATSPEC::SetValidConditions(condlist);
-
   INPAR::LEVELSET::SetValidConditions(condlist);
 
   INPAR::ELEMAG::SetValidConditions(condlist);

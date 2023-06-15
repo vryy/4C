@@ -16,7 +16,7 @@
 
 
 #include "fluid_ele.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 
 namespace DRT
 {
@@ -140,7 +140,7 @@ namespace DRT
       */
       virtual int NumDofPerFace(const unsigned face) const
       {
-        return DRT::UTILS::getDimension(distype_) * NumDofPerComponent(face);
+        return CORE::DRT::UTILS::getDimension(distype_) * NumDofPerComponent(face);
       }
 
       /*!
@@ -148,8 +148,8 @@ namespace DRT
       */
       virtual int NumDofPerComponent(const unsigned face) const
       {
-        return DRT::UTILS::getBasisSize(
-            DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
+        return CORE::DRT::UTILS::getBasisSize(
+            CORE::DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
       }
 
       /*!
@@ -173,8 +173,9 @@ namespace DRT
        */
       int NumDofPerElementAuxiliary() const
       {
-        const int nsd_ = DRT::UTILS::getDimension(distype_);
-        return (nsd_ * (nsd_ + 1) + 1) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_) +
+        const int nsd_ = CORE::DRT::UTILS::getDimension(distype_);
+        return (nsd_ * (nsd_ + 1) + 1) *
+                   CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_) +
                1;
       }
 

@@ -11,7 +11,7 @@
 #include "membrane.H"
 
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "structure_new_elements_paramsinterface.H"
 
 
@@ -90,8 +90,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
     double gpweight = intpointsline_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_1D(shapefcts, xi_gp, Shape());
-    DRT::UTILS::shape_function_1D_deriv1(derivs, xi_gp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(shapefcts, xi_gp, Shape());
+    CORE::DRT::UTILS::shape_function_1D_deriv1(derivs, xi_gp, Shape());
 
     switch (ltype)
     {

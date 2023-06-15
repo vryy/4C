@@ -8,7 +8,7 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_std.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -19,7 +19,7 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcStd<distype, probdim>>(
@@ -27,7 +27,7 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
       });
 
   return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

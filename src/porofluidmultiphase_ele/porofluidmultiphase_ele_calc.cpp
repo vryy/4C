@@ -14,15 +14,15 @@
 
 #include "mat_fluidporo_multiphase.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
 #include "geometry_position_array.H"
 
 #include "lib_discret.H"
 #include "lib_utils.H"
 
 #include "mat_material.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -60,7 +60,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleCalc<distype>>(
@@ -68,7 +68,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
       });
 
   return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Ele
   PrepareGaussPointLoop(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
   PrepareGaussPointLoop(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
   PrepareGaussPointLoop(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop(D
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -288,7 +288,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -325,7 +325,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -510,8 +510,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeVa
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int iquad                                          ///< id of current Gauss point
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int iquad                                                ///< id of current Gauss point
 )
 {
   // coordinates of the current integration point
@@ -530,7 +530,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   if (use2ndderiv_)
   {
     // get global second derivatives
-    DRT::UTILS::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    CORE::DRT::UTILS::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();
@@ -564,12 +564,12 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   double det = 0.0;
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_, funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+  CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
   if (use2ndderiv_)
   {
     // get the second derivatives of standard element at current GP
-    DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
   }
 
   // compute Jacobian matrix and determinant
@@ -603,7 +603,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(const int inode)
 {
   // get parameter space coordinates of current node
-  LINALG::Matrix<3, 1> myXi = DRT::UTILS::getNodeCoordinates(inode, distype);
+  LINALG::Matrix<3, 1> myXi = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = myXi(idim);
 
   det_ = EvalShapeFuncAndDerivsInParameterSpace();

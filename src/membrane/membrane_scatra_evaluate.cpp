@@ -10,7 +10,7 @@
 
 #include "membrane_scatra.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "lib_discret.H"
 #include "lib_utils.H"
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
         double eta_gp = (Membrane<distype>::intpoints_).qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
+        CORE::DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

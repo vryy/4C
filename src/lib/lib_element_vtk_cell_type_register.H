@@ -14,7 +14,7 @@
 
 /* headers */
 #include "lib_element.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <vector>
 

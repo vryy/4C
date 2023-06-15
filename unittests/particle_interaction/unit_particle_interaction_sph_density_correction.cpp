@@ -4,7 +4,7 @@
 \level 3
 */
 /*---------------------------------------------------------------------------*/
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "particle_interaction_sph_density_correction.H"
 
 

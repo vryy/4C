@@ -16,8 +16,8 @@
 #include "poroelast_defines.H"
 #include "poroelast_utils.H"
 
-#include "adapter_coupling.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_fld_poro.H"
 #include "adapter_str_fpsiwrapper.H"
@@ -39,7 +39,7 @@
 
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 // contact
 #include "mortar_manager_base.H"
@@ -68,7 +68,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   {
     Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("porofluid");
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    volcoupl_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // build material strategy
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
@@ -452,7 +452,7 @@ void POROELAST::PoroBase::SetupCoupling()
     }
   }
 
-  coupling_fluid_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupling_fluid_structure_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   int ndof = ndim;
 
   // if the porosity is a primary variable, we get one more dof

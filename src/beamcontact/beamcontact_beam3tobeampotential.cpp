@@ -14,16 +14,15 @@
 #include "inpar_contact.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 
 #include "structure_timint_impl.H"
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include "beaminteraction_beam3contact_defines.H"
@@ -179,10 +178,10 @@ void CONTACT::Beam3tobeampotential<numnodes,
     numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
   // Set gauss integration rule
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::line_10point;
+  CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_10point;
 
   // Get gauss points (gp) for integration
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
   // number of gps
   const int numgp = gausspoints.nquad;
 
@@ -629,7 +628,7 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::GetShapeFunctions(
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N2_i,
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N2_i_xi,
-    DRT::UTILS::IntegrationPoints1D& gausspoints)
+    CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get both discretization types
   const DRT::Element::DiscretizationType distype1 = element1_->Shape();
@@ -640,10 +639,10 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::GetShapeFunctions(
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      DRT::UTILS::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
-      DRT::UTILS::shape_function_1D(N2_i[gp], gausspoints.qxg[gp][0], distype2);
-      DRT::UTILS::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
-      DRT::UTILS::shape_function_1D_deriv1(N2_i_xi[gp], gausspoints.qxg[gp][0], distype2);
+      CORE::DRT::UTILS::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
+      CORE::DRT::UTILS::shape_function_1D(N2_i[gp], gausspoints.qxg[gp][0], distype2);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(N2_i_xi[gp], gausspoints.qxg[gp][0], distype2);
     }
   }
   else if (numnodalvalues == 2)
@@ -651,13 +650,13 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::GetShapeFunctions(
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      DRT::UTILS::shape_function_hermite_1D(
+      CORE::DRT::UTILS::shape_function_hermite_1D(
           N1_i[gp], gausspoints.qxg[gp][0], ele1length_, distype1);
-      DRT::UTILS::shape_function_hermite_1D(
+      CORE::DRT::UTILS::shape_function_hermite_1D(
           N2_i[gp], gausspoints.qxg[gp][0], ele2length_, distype2);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
           N1_i_xi[gp], gausspoints.qxg[gp][0], ele1length_, distype1);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
           N2_i_xi[gp], gausspoints.qxg[gp][0], ele2length_, distype2);
     }
   }

@@ -22,7 +22,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "lib_element.H"
 #include "lib_elementtype.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_structure.H"
 
@@ -104,7 +104,7 @@ namespace DRT
       };
 
       //! \brief Return number of lines of this element
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
 
       //! \brief Return number of surfaces of this element
       virtual int NumSurface() const
@@ -436,7 +436,7 @@ namespace DRT
       virtual int NumLine() const
       {
         // get spatial dimension of boundary
-        const int nsd = DRT::UTILS::getDimension(ParentElement()->Shape()) - 1;
+        const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape()) - 1;
 
         if ((NumNode() == 4) or (NumNode() == 8) or (NumNode() == 9))
           return 4;
@@ -459,7 +459,7 @@ namespace DRT
       virtual int NumSurface() const
       {
         // get spatial dimension of parent element
-        const int nsd = DRT::UTILS::getDimension(ParentElement()->Shape());
+        const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape());
 
         if (nsd == 3)
           return 1;

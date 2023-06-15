@@ -20,9 +20,9 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcLoma<distype>>(
@@ -73,7 +73,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // rotationally symmetric periodic bc's: do setup for current element
   my::rotsymmpbc_->Setup(ele);
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
     const LINALG::Matrix<nen_, 1>& escabofoaf, const LINALG::Matrix<nsd_, nen_>& eveln,
     const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nsd_, nen_>& edispnp,
     const LINALG::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<MAT::Material> mat, bool isale,
-    double CsDeltaSq, double CiDeltaSq, const DRT::UTILS::GaussIntegration& intpoints)
+    double CsDeltaSq, double CiDeltaSq, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // flag for higher order elements
   my::is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(const LINALG::Matrix<nsd
     const LINALG::Matrix<nsd_, nen_>& egridv, LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif,
     const double thermpressaf, const double thermpressam, const double thermpressdtaf,
     const double thermpressdtam, Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq,
-    double& Ci_delta_sq, bool isale, const DRT::UTILS::GaussIntegration& intpoints)
+    double& Ci_delta_sq, bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // definition of temperature-based residual vector for continuity
   // and energy-conservation equation
@@ -326,7 +326,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(const LINALG::Matrix<nsd
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point

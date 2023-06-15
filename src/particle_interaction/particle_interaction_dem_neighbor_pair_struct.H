@@ -11,6 +11,14 @@
 #ifndef PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 #define PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 
+#include <set>
+#include "particle_engine_typedefs.H"
+
+namespace DRT
+{
+  class Element;
+}
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/

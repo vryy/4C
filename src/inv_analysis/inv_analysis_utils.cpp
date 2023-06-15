@@ -9,7 +9,7 @@
 
 #include "inv_analysis_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Epetra_SerialDenseVector.h>
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "inv_analysis_DcsMatrix.H"

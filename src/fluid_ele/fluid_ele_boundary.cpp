@@ -39,7 +39,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
   SetParentMasterElement(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  distype_ = DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  distype_ = CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 
   numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
   // Safety check if all nodes have the same number of dofs!

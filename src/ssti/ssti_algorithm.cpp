@@ -200,8 +200,8 @@ void SSTI::SSTIAlgorithm::Setup()
       dserror("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // setup everything for SSTI structure meshtying
-    ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
-        "SSTIInterfaceMeshtying", structure_->Discretization()));
+    ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
+        "SSTIInterfaceMeshtying", structure_->Discretization(), true, true));
   }
 
   issetup_ = true;

@@ -12,10 +12,10 @@
 #include "ale_ale2.H"
 #include "lib_discret.H"
 #include "nurbs_discret.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "mat_stvenantkirchhoff.H"
 #include "mat_elasthyper.H"
@@ -602,8 +602,8 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   const DiscretizationType distype = Shape();
 
   // gaussian points
-  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -646,8 +646,8 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -809,8 +809,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   Epetra_SerialDenseMatrix xji(2, 2);
 
   // Gauss quadrature points
-  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
   //  double min_detF = 0.0;         /* minimal Jacobian determinant   */
   //  ale2_min_jaco(Shape(),xyze,&min_detF);
 
@@ -825,8 +825,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -835,7 +835,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
       gp(0) = e1;
       gp(1) = e2;
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          funct, deriv, gp, myknots, weights, distype);
     }
 
     // compute jacobian matrix
@@ -1301,8 +1302,8 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(
 
     // get values of shape functions and derivatives in the gausspoint
     // shape functions and their derivatives for polynomials
-    DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+    CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
 
     /*--------------------------------------- compute jacobian Matrix */
     JacobianMatrix(xrefe, deriv, xjm, &det, numnode);

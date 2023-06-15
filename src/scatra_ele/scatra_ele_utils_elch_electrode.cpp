@@ -11,7 +11,7 @@
 #include "scatra_ele_calc_elch_electrode.H"
 
 #include "mat_electrode.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -21,7 +21,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElchElectrode<distype>>(
@@ -29,7 +29,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

@@ -106,8 +106,7 @@ void GEO::CUT::Facet::Register(VolumeCell* cell)
 
     std::ostringstream ostr;
     ostr << "Too many volume cells at facet! ( num cells = " << cells_.size() << " )";
-    //    dserror(ostr.str().c_str());
-    run_time_error(ostr.str().c_str());
+    dserror(ostr.str().c_str());
   }
 }
 
@@ -992,7 +991,7 @@ bool GEO::CUT::Facet::Equals(DRT::Element::DiscretizationType distype)
         return KERNEL::IsValidTri3(corner_points_);
         break;
       default:
-        run_time_error("unsupported distype requested");
+        dserror("unsupported distype requested");
         break;
     }
   }
@@ -1014,8 +1013,7 @@ unsigned GEO::CUT::Facet::Normal(const std::vector<Point*>& points, LINALG::Matr
   b1.Update(1, x2, -1, x1, 0);
   b1.Scale(1. / b1.Norm2());
 
-  if (b1.Norm2() < std::numeric_limits<double>::min())
-    run_time_error("same point in facet not supported");
+  if (b1.Norm2() < std::numeric_limits<double>::min()) dserror("same point in facet not supported");
 
   bool found = false;
   unsigned i = 2;
@@ -1114,7 +1112,7 @@ void GEO::CUT::Facet::NewQuad4Cell(Mesh& mesh, VolumeCell* volume,
  *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::NewArbitraryCell(Mesh& mesh, VolumeCell* volume,
     const std::vector<Point*>& points, plain_boundarycell_set& bcells,
-    const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal)
+    const CORE::DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal)
 {
   BoundaryCell* bc = mesh.NewArbitraryCell(volume, this, points, gp, normal);
   bcells.insert(bc);
@@ -1235,7 +1233,7 @@ void GEO::CUT::Facet::Print(std::ostream& stream) const
  *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsTriangle(const std::vector<Point*>& tri) const
 {
-  if (tri.size() != 3) run_time_error("three points expected");
+  if (tri.size() != 3) dserror("three points expected");
 
   return points_.size() == 3 and not IsTriangulated() and not HasHoles() and Contains(tri);
 }

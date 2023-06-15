@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "fsi_debugwriter.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid_fsi.H"
 #include "adapter_ale_fsi.H"
@@ -33,7 +33,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
 
   dis_->FillComplete(true, true, true);
 
-  coup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   const int ndim = DRT::Problem::Instance()->NDim();
   coup_->SetupCoupling(*dis, *dis_, *DRT::UTILS::ConditionNodeRowMap(*dis, "FSICoupling"),
       *dis_->NodeRowMap(), ndim);

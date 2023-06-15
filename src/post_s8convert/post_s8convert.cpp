@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <vector>
 
-#include "pss_full_cpp.h"
+#include "io_legacy_table_cpp.h"
 
 class Converter
 {

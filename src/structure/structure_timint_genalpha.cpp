@@ -278,6 +278,9 @@ void STR::TimIntGenAlpha::PredictConstDisConsistVelAcc()
   accn_->Update(-1. / (beta_ * (*dt_)[0]), *(*vel_)(0), (2. * beta_ - 1.) / (2. * beta_),
       *(*acc_)(0), 1. / (beta_ * (*dt_)[0] * (*dt_)[0]));
 
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
+
   // watch out
   return;
 }
@@ -301,6 +304,9 @@ void STR::TimIntGenAlpha::PredictConstVelConsistAcc()
   accn_->Update(-1. / (beta_ * (*dt_)[0]), *(*vel_)(0), (2. * beta_ - 1.) / (2. * beta_),
       *(*acc_)(0), 1. / (beta_ * (*dt_)[0] * (*dt_)[0]));
 
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
+
   // That's it!
   return;
 }
@@ -321,6 +327,9 @@ void STR::TimIntGenAlpha::PredictConstAcc()
 
   // constant accelerations (equal to consistent accelerations)
   accn_->Update(1.0, (*acc_)[0], 0.0);
+
+  // reset the residual displacement
+  disi_->PutScalar(0.0);
 
   // That's it!
   return;

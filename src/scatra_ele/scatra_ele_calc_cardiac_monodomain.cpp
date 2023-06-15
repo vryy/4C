@@ -21,7 +21,7 @@
 
 #include "inpar_cardiac_monodomain.H"
 #include "scatra_ele_parameter_std.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,7 +45,7 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcCardiacMonodomain<distype, probdim>>(
@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       deg = 4 * ele->Degree();
     else
       deg = 3 * ele->Degree();
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
     // loop over integration points
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

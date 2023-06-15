@@ -21,7 +21,7 @@
 #include "config_revision.H"
 #include "config_compile_settings.H"
 
-#include "pss_full_cpp.h"  // access to legacy parser module
+#include "io_legacy_table_cpp.h"  // access to legacy parser module
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

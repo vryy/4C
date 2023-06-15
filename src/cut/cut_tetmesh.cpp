@@ -318,25 +318,25 @@ void GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 
       cell_domain.Fill();
 
-      //#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      //      std::cout << "cell_domain.Members().size(): " << cell_domain.Members().size();
-      //      std::cout << ", cell_domain.Border().size(): " << cell_domain.Border().size() <<
-      //      std::endl; std::cout << "Tet-IDs: "; for(unsigned j=0; j<cell_domain.Members().size();
-      //      j++)
-      //      {
-      //        std::cout << cell_domain.Members()[j]->Id() << ", ";
-      //      }
-      //      std::cout << "Border-IDs: ";
-      //      for(unsigned j=0; j<cell_domain.Border().size(); j++)
-      //      {
-      //        std::cout << std::endl << cell_domain.Border()[j]->Id() << ": ";
-      //        for(unsigned l=0; l<3; l++)
-      //        {
-      //          std::cout << cell_domain.Border()[j]->GetHandle()[l] << ", ";
-      //        }
-      //      }
-      //      std::cout << std::endl;
-      //#endif
+      // #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
+      //       std::cout << "cell_domain.Members().size(): " << cell_domain.Members().size();
+      //       std::cout << ", cell_domain.Border().size(): " << cell_domain.Border().size() <<
+      //       std::endl; std::cout << "Tet-IDs: "; for(unsigned j=0;
+      //       j<cell_domain.Members().size(); j++)
+      //       {
+      //         std::cout << cell_domain.Members()[j]->Id() << ", ";
+      //       }
+      //       std::cout << "Border-IDs: ";
+      //       for(unsigned j=0; j<cell_domain.Border().size(); j++)
+      //       {
+      //         std::cout << std::endl << cell_domain.Border()[j]->Id() << ": ";
+      //         for(unsigned l=0; l<3; l++)
+      //         {
+      //           std::cout << cell_domain.Border()[j]->GetHandle()[l] << ", ";
+      //         }
+      //       }
+      //       std::cout << std::endl;
+      // #endif
 
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
@@ -458,7 +458,7 @@ void GEO::CUT::TetMesh::CallQHull(
   if (n < 4)
   {
     dserror("where coming from?");
-    run_time_error("illegal element topology");
+    dserror("illegal element topology");
   }
   //   if ( n == 4 )
   //   {
@@ -1097,7 +1097,7 @@ void GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
           std::vector<int> side(3);
           for (int j = 0; j < 3; ++j)
           {
-            side[j] = original_tet[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
+            side[j] = original_tet[CORE::DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
           }
           if (tri->Equals(side))
           {

@@ -41,6 +41,7 @@ CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
 Makefile
+CMakeUserPresets.json
 
 # SVN
 .svn
@@ -103,3 +104,6 @@ utilities/baci-python-venv/*
 
 # CLion
 .idea/
+
+# clangd
+.clangd

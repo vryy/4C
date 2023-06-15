@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "lib_resulttest.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "io_control.H"
 #include "io_pstream.H"
@@ -512,7 +512,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION",
+      "The result of the simulation with respect to specific quantities at concrete points "
+      "can be tested against particular values with a given tolerance."));
   lines->Add(structure);
   lines->Add(structure_special);
   lines->Add(fluid_node);

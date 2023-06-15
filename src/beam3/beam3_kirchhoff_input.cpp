@@ -15,7 +15,7 @@
 
 #include "lib_linedefinition.H"
 
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -75,19 +75,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   // quaternions at each node, respectively
   std::vector<double> nodal_thetas;
   linedef->ExtractDoubleVector("TRIADS", nodal_thetas);
-  theta0_.resize(BEAM3K_COLLOCATION_POINTS);
-  for (int i = 0; i < BEAM3K_COLLOCATION_POINTS; i++)
-  {
-    for (int j = 0; j < 3; j++) (theta0_[i])(j) = nodal_thetas[3 * i + j];
-
-    // Shift angles by 2PI in case these angles are not in the interval [-PI,PI].
-    if (theta0_[i].Norm2() > M_PI)
-    {
-      LINALG::Matrix<4, 1> Q(true);
-      LARGEROTATIONS::angletoquaternion(theta0_[i], Q);
-      LARGEROTATIONS::quaterniontoangle(Q, theta0_[i]);
-    }
-  }
+  this->SetUpInitialRotations(nodal_thetas);
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
   useFAD_ = linedef->HaveNamed("FAD") ? true : false;

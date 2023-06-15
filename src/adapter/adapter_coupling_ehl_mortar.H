@@ -16,7 +16,7 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "adapter_coupling_nonlin_mortar.H"
 
 /*---------------------------------------------------------------------*
@@ -164,13 +164,7 @@ namespace ADAPTER
     {
       dserror("stop");
     }
-    virtual void SetupForUQAbuseNormalCalculation(
-        Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
-        const Epetra_Comm& comm                      ///< communicator
-    )
-    {
-      dserror("stop");
-    }
+
     virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
             intcells  //!< vector of mortar integration cells
     )

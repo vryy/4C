@@ -24,6 +24,7 @@
 
 #include "contact_poro_lagrange_strategy.H"
 #include "adapter_coupling_nonlin_mortar.H"
+#include "coupling_adapter.H"
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/
@@ -64,7 +65,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
         const Teuchos::RCP<DRT::Discretization> sdis, Teuchos::RCP<LINALG::SparseMatrix>& f,
         Teuchos::RCP<LINALG::SparseMatrix>& k_fs, Teuchos::RCP<Epetra_Vector>& frhs,
-        ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fdofrowmap);
+        CORE::ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void UpdatePoroMt();
 

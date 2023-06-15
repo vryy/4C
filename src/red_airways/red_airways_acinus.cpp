@@ -12,10 +12,10 @@
 #include "red_airways_elementbase.H"
 #include "mat_maxwell_0d_acinus.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
-using namespace DRT::UTILS;
+using namespace CORE::DRT::UTILS;
 
 DRT::ELEMENTS::RedAcinusType DRT::ELEMENTS::RedAcinusType::instance_;
 

@@ -15,7 +15,7 @@
 
 #include <vector>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Teuchos_RCP.hpp>
 #include <Epetra_FEVector.h>
 #include "fbi_fluid_assembly_strategy.H"

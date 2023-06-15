@@ -19,13 +19,13 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // Todo check and get rid of outdated header inclusions
 #include "inpar_beamcontact.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_sphere_contact_params.H"
@@ -910,9 +910,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_1D(N1_i, eta, distype1);
-    DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
-    DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D(N1_i, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
   }
   else if (numnodalvalues == 2)
   {
@@ -921,9 +921,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
     const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
 
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N1_i_xi, eta, beamele_reflength_, distype1herm);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
+        N1_i_xixi, eta, beamele_reflength_, distype1herm);
   }
   else
     dserror(

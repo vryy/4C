@@ -262,9 +262,9 @@ namespace DRT
         Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
-        const Epetra_Map& noderowmap, DRT::Element* const* coleles, const unsigned& numcolele,
-        const std::string& statename, const int& numvec, Teuchos::ParameterList& params,
-        const int& solvernumber, const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
+        const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
+        const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
+        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
         const Epetra_Map* fullnoderowmap = NULL,
         const std::map<int, int>* slavetomastercolnodesmap = NULL,
         Epetra_Vector* const sys_mat_diagonal_ptr = NULL);

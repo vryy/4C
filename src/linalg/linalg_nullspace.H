@@ -10,7 +10,7 @@
 #define LINALG_NULLSPACE_H
 
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_exporter.H"
 #include "lib_elementtype.H"
 

@@ -15,12 +15,12 @@
 #include "w1.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "lib_element.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 
 #include "mat_stvenantkirchhoff.H"
@@ -43,7 +43,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(Epetra_SerialDenseMatrix& boplin0,
   Epetra_SerialDenseMatrix deriv0;
   deriv0.Shape(2, NumNode());
 
-  DRT::UTILS::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
 
   // compute jacobian matrix at origin
   memset(xjm0.A(), 0, xjm0.N() * xjm0.M() * sizeof(double));

@@ -14,8 +14,8 @@
 
 #include "beaminteraction_periodic_boundingbox.H"
 #include "beaminteraction_calc_utils.H"
-#include "geometric_search_bounding_volume.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
 
 #include "structure_new_elements_paramsinterface.H"
 
@@ -24,13 +24,15 @@
 #include "lib_globalproblem.H"
 #include "lib_globalproblem.H"
 
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
     : DRT::Element(id, owner),
+      Tref_(0),
+      centerline_hermite_(true),
       filamenttype_(INPAR::BEAMINTERACTION::filtype_arbitrary),
       interface_ptr_(Teuchos::null),
       browndyn_interface_ptr_(Teuchos::null)
@@ -41,7 +43,11 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
-    : DRT::Element(old), bspotposxi_(old.bspotposxi_), filamenttype_(old.filamenttype_)
+    : DRT::Element(old),
+      Tref_(old.Tref_),
+      centerline_hermite_(old.centerline_hermite_),
+      bspotposxi_(old.bspotposxi_),
+      filamenttype_(old.filamenttype_)
 {
   // empty
 }
@@ -418,16 +424,16 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3, 3>& triad
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
     const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       discret, this, result_data_dofbased, element_posdofvec);
-  GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
   LINALG::Matrix<3, 1, double> point;
 

@@ -400,7 +400,7 @@ void WEAR::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     {
       // map iterator
       typedef std::map<int, double>::const_iterator CI;
-      typedef GEN::pairedvector<int, double>::const_iterator _CI;
+      typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
       std::map<int, double>& nmap = fnode->WearData().GetT()[0];
 
@@ -415,7 +415,7 @@ void WEAR::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
 
         for (int u = 0; u < Dim(); ++u)
         {
-          GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
+          CORE::GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -542,7 +542,7 @@ void WEAR::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal
     {
       // map iterator
       typedef std::map<int, double>::const_iterator CI;
-      typedef GEN::pairedvector<int, double>::const_iterator _CI;
+      typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
       std::map<int, double>& nmap = fnode->WearData().GetT()[0];
 
@@ -557,7 +557,7 @@ void WEAR::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal
 
         for (int u = 0; u < Dim(); ++u)
         {
-          GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
+          CORE::GEN::pairedvector<int, double>& numap = csnode->CoData().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -946,7 +946,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
   std::map<int, std::vector<double>> teta_y_val;
   std::map<int, std::vector<double>> teta_z_val;
 
-  GEN::pairedvector<int, double>::iterator iter;
+  CORE::GEN::pairedvector<int, double>::iterator iter;
 
   // --------------------------------------------------------------------------------------
   // for both-sided discrete wear we need the same normal information on the master side:
@@ -978,9 +978,9 @@ void WEAR::WearInterface::ExportNodalNormals() const
       triad[gid] = loc;
 
       // fill nodal derivative vectors
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
       for (iter = derivn[0].begin(); iter != derivn[0].end(); ++iter)
       {
@@ -1081,9 +1081,9 @@ void WEAR::WearInterface::ExportNodalNormals() const
       cnode->CoData().teta()[2] = (*loc)(2, 2);
 
       // extract derivative info
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivtxi = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivteta = cnode->CoData().GetDerivTeta();
 
       for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
       derivn.resize(3, linsize);
@@ -1290,9 +1290,9 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
       std::map<int, double> dgmap = cnode->CoData().GetDerivG();
 
       // check for Dimension of derivative maps
@@ -1318,7 +1318,7 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);
@@ -1583,8 +1583,8 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
         dserror("AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
@@ -1599,7 +1599,7 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);
@@ -1799,9 +1799,9 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -1991,9 +1991,9 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -2020,7 +2020,7 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);

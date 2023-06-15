@@ -11,7 +11,7 @@
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

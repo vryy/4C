@@ -19,10 +19,10 @@ Pack, Unpack, NumDofPerNode etc.
 #include <Teuchos_RCP.hpp>
 
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_polynomial.H"
 
 const bool trac_with_pml_elemag = false;
 
@@ -124,17 +124,23 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(distype_); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+      }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return DRT::UTILS::getNumberOfElementVolumes(distype_); }
+      virtual int NumVolume() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -212,7 +218,7 @@ namespace DRT
       */
       virtual int NumDofPerFace(const unsigned face) const
       {
-        return (DRT::UTILS::getDimension(distype_) - 1) *
+        return (CORE::DRT::UTILS::getDimension(distype_) - 1) *
                NumDofPerComponent(face);  // seems redundant, but this is different for
                                           // fluid_ele_hdg and Elemag_ele!
       }
@@ -225,7 +231,7 @@ namespace DRT
       */
       virtual int NumDofPerComponent(const unsigned face) const
       {
-        return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_),
+        return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(distype_),
             (this->Faces()[face])->Degree(), completepol_);
       }
 
@@ -236,8 +242,8 @@ namespace DRT
       */
       virtual int NumDofPerElementAuxiliary() const
       {
-        return (DRT::UTILS::getDimension(distype_) * 2) *
-               DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (CORE::DRT::UTILS::getDimension(distype_) * 2) *
+               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
       }
 
       /// Number of degrees of freedom per element
@@ -486,12 +492,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -755,12 +764,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

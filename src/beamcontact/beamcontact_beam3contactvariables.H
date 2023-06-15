@@ -13,7 +13,7 @@
 #include "beaminteraction_beam3contact_utils.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include <Sacado.hpp>
 
 #include "beaminteraction_beam3contact_defines.H"

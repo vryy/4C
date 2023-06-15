@@ -9,8 +9,8 @@
 #include "so3_sh18.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "mat_so3_material.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 #include "structure_new_elements_paramsinterface.H"
 
@@ -39,9 +39,9 @@ int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
 
     // in-plane shape functions and derivatives
     LINALG::Matrix<9, 1> shapefunct_q9;
-    DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
+    CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
     LINALG::Matrix<2, 9> deriv_q9;
-    DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
 
     for (int dim = 0; dim < 3; ++dim)
       for (int k = 0; k < 9; ++k)
@@ -134,9 +134,9 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
   {
     // in-plane shape functions and derivatives
     LINALG::Matrix<9, 1> shapefunct_q9;
-    DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
+    CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
     LINALG::Matrix<2, 9> deriv_q9;
-    DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     {
       // shape function and derivatives
       LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-      DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
 
       double density = Material()->Density(gp);
 
@@ -1134,9 +1134,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
+  CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1155,10 +1155,10 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
 
         // shape function
         LINALG::Matrix<9, 1> shape_gp;
-        DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
+        CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
         // derivative
         LINALG::Matrix<2, 9> deriv_gp;
-        DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
+        CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
@@ -1179,9 +1179,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
+  CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1201,10 +1201,10 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<
 
         // shape function
         LINALG::Matrix<9, 1> shape_gp;
-        DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
+        CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
         // derivative
         LINALG::Matrix<2, 9> deriv_gp;
-        DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
+        CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
@@ -1227,9 +1227,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
   // integration
   const std::array<double, 2> coord_refNode = {0., 0.};
   const LINALG::Matrix<18, 3> coords = NodeParamCoord();
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
+  CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   LINALG::Matrix<2, 9> deriv_xieta;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_xieta);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_xieta);
 
   for (int k = 0; k < 9; ++k)
     for (int l = 0; l < 9; ++l)
@@ -1254,9 +1254,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
               xsi_g_h(0) = g_loc;
               xsi_g_h(1) = h_loc;
               LINALG::Matrix<2, 9> deriv_g_eta;
-              DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_eta, deriv_g_eta);
+              CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_eta, deriv_g_eta);
               LINALG::Matrix<2, 9> deriv_g_h;
-              DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_h, deriv_g_h);
+              CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_h, deriv_g_h);
 
               if (coords(r, 0) != coord_refNode[0] && coords(s, 1) != coord_refNode[1])
                 dsg_membrane_rs(k, l) += deriv_xieta(0, r) * deriv_g_eta(1, s) * deriv_g_h(0, k) *
@@ -1278,9 +1278,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
+  CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1300,7 +1300,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
 
         // derivative
         LINALG::Matrix<2, 9> deriv_gp;
-        DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
+        CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         // fill up array
         for (int k = 0; k < 9; ++k)
@@ -1323,9 +1323,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
   const std::array<double, 2> coord_refNode = {0., 0.};
 
   LINALG::Matrix<2, 9> deriv;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
-  DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::GaussRule1D::line_2point);
+  CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
@@ -1345,7 +1345,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
 
         // derivative
         LINALG::Matrix<2, 9> deriv_gp;
-        DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
+        CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         // fill up array
         for (int k = 0; k < 9; ++k)
@@ -1367,13 +1367,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_transverse_t(
   // reset
   dsg_transverse_t.Clear();
   LINALG::Matrix<9, 1> shape;
-  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shape);
+  CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shape);
 
   for (int i = 0; i < 9; ++i)
   {
     const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
     LINALG::Matrix<9, 1> shape_gp;
-    DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i, shape_gp);
+    CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i, shape_gp);
     for (int k = 0; k < 9; ++k)
       for (int l = 0; l < 9; ++l) dsg_transverse_t(k, l) += shape(i) * shape_gp(k) * shape_gp(l);
   }
@@ -1540,9 +1540,9 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
   LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac0inv;
   LINALG::Matrix<2, 1> xsi_center(true);
   LINALG::Matrix<2, 9> deriv_q9;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center, deriv_q9);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center, deriv_q9);
   LINALG::Matrix<9, 1> shapefunct_q9;
-  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center, shapefunct_q9);
+  CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center, shapefunct_q9);
   for (int dim = 0; dim < 3; ++dim)
     for (int k = 0; k < 9; ++k)
     {

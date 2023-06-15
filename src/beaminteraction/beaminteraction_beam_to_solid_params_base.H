@@ -12,10 +12,10 @@
 #define BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_H
 
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_beam_to_solid.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 namespace BEAMINTERACTION
@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
      * \brief Returns the Gauss rule.
      * @return gauss rule.
      */
-    inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
+    inline CORE::DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
     double penalty_parameter_;
 
     //! Gauss rule to be used.
-    DRT::UTILS::GaussRule1D gauss_rule_;
+    CORE::DRT::UTILS::GaussRule1D gauss_rule_;
   };
 
 }  // namespace BEAMINTERACTION

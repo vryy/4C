@@ -21,9 +21,9 @@
 
 // include header because number of Gauss points are determined
 // dependent on distype
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
@@ -95,7 +95,7 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       //! number of space dimensions
       static const int nsd_ = 3;
       //! number of dofs per node
@@ -1061,7 +1061,7 @@ namespace DRT
       {
         // element coordinate derivatives at centroid
         static LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-        DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
         // inverse jacobian matrix at centroid
         SetJac_0().Multiply(N_rst_0, Xrefe());
@@ -1114,19 +1114,19 @@ namespace DRT
       inline void EvaluateShape(const LINALG::Matrix<3, 1>& xi)
       {
         if (distype == DRT::Element::nurbs27)
-          DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+          CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
-          DRT::UTILS::shape_function<distype>(xi, SetShapeFunction());
+          CORE::DRT::UTILS::shape_function<distype>(xi, SetShapeFunction());
       }
 
       inline void EvaluateShapeDeriv(const LINALG::Matrix<3, 1>& xi)
       {
         if (distype == DRT::Element::nurbs27)
-          DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+          CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
-          DRT::UTILS::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
+          CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
       }
 
       void GetNurbsEleInfo(DRT::Discretization* dis = nullptr);

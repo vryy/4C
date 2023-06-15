@@ -11,8 +11,8 @@
 #define CONTACT_AUG_ELEMENT_UTILS_H
 
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "mortar_element.H"
 
 namespace CONTACT
@@ -56,7 +56,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
-      DRT::UTILS::shape_function<type>(xi, val);
+      CORE::DRT::UTILS::shape_function<type>(xi, val);
       return true;
     }
 
@@ -70,7 +70,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
-      DRT::UTILS::shape_function_deriv1<type>(xi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<type>(xi, deriv);
       return true;
     }
 
@@ -99,7 +99,7 @@ namespace CONTACT
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
-      DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
+      CORE::DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -114,9 +114,9 @@ namespace CONTACT
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      DRT::UTILS::shape_function<type>(xi, val);
-      DRT::UTILS::shape_function_deriv1<type>(xi, deriv1);
-      DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
+      CORE::DRT::UTILS::shape_function<type>(xi, val);
+      CORE::DRT::UTILS::shape_function_deriv1<type>(xi, deriv1);
+      CORE::DRT::UTILS::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -177,12 +177,13 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
-      static const unsigned NUMNODE = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
       LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return DRT::NURBS::UTILS::nurbs_get_funct(val, xi, ele.Knots(), weights, type);
+      return CORE::DRT::NURBS::UTILS::nurbs_get_funct(val, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the first derivative w.r.t. xi of the shape function
@@ -195,13 +196,15 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
-      static const unsigned NUMNODE = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
       LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
       LINALG::Matrix<NUMNODE, 1> val(false);
-      return DRT::NURBS::UTILS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
+      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+          val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the value as well as the first derivative w.r.t. xi of
@@ -214,12 +217,14 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
     {
-      static const unsigned NUMNODE = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
       LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return DRT::NURBS::UTILS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
+      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+          val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the second order derivative w.r.t. xi and eta of the shape
@@ -232,15 +237,16 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
-      static const unsigned NUMNODE = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
-      static const unsigned DIM = DRT::UTILS::DisTypeToDim<type>::dim;
+      static const unsigned NUMNODE =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
 
       LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
       LINALG::Matrix<NUMNODE, 1> val(false);
       LINALG::Matrix<DIM, NUMNODE> deriv1(false);
-      return DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 
@@ -255,12 +261,13 @@ namespace CONTACT
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      static const unsigned NUMNODE = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
       LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 

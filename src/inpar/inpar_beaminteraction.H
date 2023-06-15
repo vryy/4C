@@ -13,9 +13,9 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 // forward declaration
 namespace DRT

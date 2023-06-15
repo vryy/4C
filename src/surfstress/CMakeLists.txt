@@ -1,13 +1,10 @@
-set(OBJS_SURFSTRESS
-    # cmake-format: sortable
-    surfstress_manager.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(lib_surfstress ${OBJS_SURFSTRESS})
-
-set(LIBS_LIB_STURFSTRESS
+set(_surfstress_dependencies
     # cmake-format: sortable
+    inpar
+    io
     lib
+    linalg
     )
-
-baci_add_dependency(lib_surfstress ${LIBS_LIB_STURFSTRESS})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_surfstress_dependencies})

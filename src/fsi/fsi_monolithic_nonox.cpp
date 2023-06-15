@@ -7,8 +7,6 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "fsi_debugwriter.H"
 #include "fsi_monolithic_nonox.H"
@@ -17,7 +15,7 @@
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -28,9 +26,8 @@
 
 #include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
-#include "ale_utils_mapextractor.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "adapter_fld_fluid_fluid_fsi.H"
@@ -91,10 +88,10 @@ void FSI::MonolithicNoNOX::SetupSystem()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // structure to fluid
 
@@ -373,7 +370,6 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // displacement of the last time step. So we need to build the
     // sum of all increments and give it to ALE.
 
-    Teuchos::Time ta("", true);
     AleField()->Evaluate(ax);
   }
 

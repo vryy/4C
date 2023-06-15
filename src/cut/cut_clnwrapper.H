@@ -11,7 +11,7 @@
 #ifndef CUT_CLNWRAPPER_H
 #define CUT_CLNWRAPPER_H
 #include <stddef.h>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <unordered_map>
 #include "cut_memory_manager.H"
 #include <sstream>

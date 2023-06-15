@@ -10,9 +10,9 @@
 
 #include "bele_bele3.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_function.H"
 #include "lib_globalproblem.H"
 #include "lib_utils.H"
@@ -99,8 +99,8 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
 
   // allocate vector for shape functions and for derivatives
@@ -123,8 +123,8 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    DRT::UTILS::shape_function_1D(funct, e1, distype);
-    DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+    CORE::DRT::UTILS::shape_function_1D(funct, e1, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);
@@ -179,17 +179,17 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
     const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
@@ -234,8 +234,8 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
 
   // gaussian points
   const DiscretizationType distype = this->Shape();
-  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector funct(iel);
@@ -267,8 +267,8 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    DRT::UTILS::shape_function_1D(funct, e1, distype);
-    DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+    CORE::DRT::UTILS::shape_function_1D(funct, e1, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);

@@ -1,17 +1,15 @@
-set(OBJS_STRU_MULTI
-    # cmake-format: sortable
-    stru_multi_convert_mat.cpp
-    stru_multi_microstatic.cpp
-    stru_multi_microstatic_npsupport.cpp
-    stru_multi_microstatic_service.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(stru_multi ${OBJS_STRU_MULTI})
-
-set(LIBS_STRU_MULTI
+set(_stru_multi_dependencies
     # cmake-format: sortable
+    comm
     inpar
+    io
     lib
+    linalg
+    mat
+    so3
+    structure
+    surfstress
     )
-
-baci_add_dependency(stru_multi ${LIBS_STRU_MULTI})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_stru_multi_dependencies})

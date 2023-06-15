@@ -11,7 +11,7 @@
 
 #include "fbi_fluid_assembly_strategy.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_element.H"
 #include "beam3_base.H"
 #include "linalg_serialdensevector.H"

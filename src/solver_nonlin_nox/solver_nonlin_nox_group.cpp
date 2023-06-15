@@ -305,7 +305,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
   const bool success =
       nlnSharedLinearSystem->computeCorrectionSystem(type, *this, xVector, RHSVector);
 
-  if (not success) run_time_error("computeCorrectionSystem failed!");
+  if (not success) dserror("computeCorrectionSystem failed!");
 
   isValidRHS = true;
   isValidJacobian = true;

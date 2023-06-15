@@ -13,7 +13,7 @@
 #include "scatra_ele_interface.H"
 #include "mat_list.H"
 #include "mat_myocard.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "scatra_ele_hdg_intfaces_calc.H"
 #include "scatra_ele_hdg_boundary_calc.H"
@@ -23,7 +23,7 @@
 #include "inpar_scatra.H"
 #include "lib_linedefinition.H"
 #include "lib_discret_faces.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 #include "lib_globalproblem.H"
 
 
@@ -347,8 +347,8 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
     }
     else
     {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(
-          DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature_(
+          CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
       gp = quadrature_->NumPoints();
     }
     if (actmat->Parameter() != NULL and
@@ -641,7 +641,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 
@@ -878,7 +878,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

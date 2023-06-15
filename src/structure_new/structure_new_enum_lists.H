@@ -15,6 +15,7 @@
 
 #include "lib_dserror.H"
 #include <string>
+#include "utils_exceptions.H"
 
 namespace STR
 {

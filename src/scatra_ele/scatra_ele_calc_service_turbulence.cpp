@@ -21,7 +21,7 @@
 #include "mat_newtonianfluid.H"
 #include "mat_list.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
   zcenter /= nen_;
 
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   EvalShapeFuncAndDerivsAtIntPoint(intpoints, 0);
@@ -386,7 +386,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   DRT::UTILS::ExtractMyNodeBasedValues(ele, ephiexpression_hat, col_filtered_phiexpression, 1);
   DRT::UTILS::ExtractMyNodeBasedValues(ele, ealphaijsc_hat, col_filtered_alphaijsc, nsd_ * nsd_);
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
   double volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints, 0);
 
@@ -1210,7 +1210,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     case INPAR::FLUID::cube_edge:
     {
       // c) cubic element length
-      hk = std::pow(vol, (1.0 / (double(nsd_))));
+      hk = std::pow(vol, (1.0 / static_cast<double>(nsd_)));
 
       break;
     }
@@ -1682,7 +1682,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   //                       INTEGRATION LOOP
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {

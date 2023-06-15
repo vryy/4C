@@ -21,7 +21,7 @@ transport problems
 #include "scatra_ele_action.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include <filesystem>
 

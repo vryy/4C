@@ -26,11 +26,11 @@
 #include "particle_wall_interface.H"
 #include "particle_wall_datastate.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "lib_element.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -618,7 +618,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
-      DRT::UTILS::shape_function_2D(
+      CORE::DRT::UTILS::shape_function_2D(
           funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
 
       // get location vector of wall element

@@ -21,19 +21,10 @@
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::EvaluateInitialField(const DRT::DiscretizationInterface& discret,
     const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
-    const std::vector<int> locids)
+    const std::vector<int>& locids)
 {
-  // check for valid input
-  bool invalid = false;
-  if (fieldstring == "Velocity" && (int)locids.size() != 3) invalid = true;
-  if (fieldstring == "Pressure" && (int)locids.size() != 1) invalid = true;
-  if (fieldstring == "Temperature" && (int)locids.size() != 1) invalid = true;
-  if (fieldstring == "Porosity" && (int)locids.size() != 1) invalid = true;
-  if (fieldstring == "Artery" && (int)locids.size() != 1) invalid = true;
-  if (invalid) dserror("ERROR: Invalid input to EvaluateInitialField().");
-
   // get initial field conditions
-  std::vector<DRT::Condition*> initfieldconditions(0);
+  std::vector<DRT::Condition*> initfieldconditions;
   discret.GetCondition("Initfield", initfieldconditions);
 
   //--------------------------------------------------------
@@ -46,121 +37,85 @@ void DRT::UTILS::EvaluateInitialField(const DRT::DiscretizationInterface& discre
   //                SurfaceInitfield
   //                LineInitfield
   //                PointInitfield
-  // This way, lower entities override higher ones. Whether
-  // this is really useful for Initfield BCs, I don't know... (popp 06/11)
+  // This way, lower entities override higher ones.
+  const std::vector<Condition::ConditionType> evaluation_type_order = {
+      DRT::Condition::VolumeInitfield, DRT::Condition::SurfaceInitfield,
+      DRT::Condition::LineInitfield, DRT::Condition::PointInitfield};
 
-  // Do VolumeInitfield first
-  for (int i = 0; i < (int)initfieldconditions.size(); ++i)
+  for (const auto& type : evaluation_type_order)
   {
-    if (initfieldconditions[i]->Type() != DRT::Condition::VolumeInitfield) continue;
-    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
-    if (*condstring != fieldstring) continue;
-    DoInitialField(discret, *initfieldconditions[i], fieldvector, locids);
+    for (const auto& initfieldcondition : initfieldconditions)
+    {
+      if (initfieldcondition->Type() != type) continue;
+      const std::string condstring = *initfieldcondition->Get<std::string>("Field");
+      if (condstring != fieldstring) continue;
+      DoInitialField(discret, *initfieldcondition, *fieldvector, locids);
+    }
   }
-
-  // Do SurfaceInitfield
-  for (int i = 0; i < (int)initfieldconditions.size(); ++i)
-  {
-    if (initfieldconditions[i]->Type() != DRT::Condition::SurfaceInitfield) continue;
-    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
-    if (*condstring != fieldstring) continue;
-    DoInitialField(discret, *initfieldconditions[i], fieldvector, locids);
-  }
-
-  // Do LineInitfield
-  for (int i = 0; i < (int)initfieldconditions.size(); ++i)
-  {
-    if (initfieldconditions[i]->Type() != DRT::Condition::LineInitfield) continue;
-    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
-    if (*condstring != fieldstring) continue;
-    DoInitialField(discret, *initfieldconditions[i], fieldvector, locids);
-  }
-
-  // Do PointInitfield
-  for (int i = 0; i < (int)initfieldconditions.size(); ++i)
-  {
-    if (initfieldconditions[i]->Type() != DRT::Condition::PointInitfield) continue;
-    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
-    if (*condstring != fieldstring) continue;
-    DoInitialField(discret, *initfieldconditions[i], fieldvector, locids);
-  }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DoInitialField(const DRT::DiscretizationInterface& discret, DRT::Condition& cond,
-    Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int> locids)
+    Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
-  const std::vector<int>* nodeids = cond.Nodes();
-  if (!nodeids) dserror("Initfield condition does not have nodal cloud");
-  const int nnode = (*nodeids).size();
-  const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
-
-  // check fieldvector
-  if (fieldvector == Teuchos::null) dserror("ERROR: Fieldvector must not be Teuchos::null");
+  const std::vector<int> cond_nodeids = *cond.Nodes();
+  if (cond_nodeids.empty()) dserror("Initfield condition does not have nodal cloud.");
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
-  for (int i = 0; i < nnode; ++i)
+  const auto* funct = cond.Get<std::vector<int>>("funct");
+  if (funct->empty()) dserror("Cannot get function.");
+  if (funct->size() != 1) dserror("Only one function expected function.");
+
+  for (const int cond_nodeid : cond_nodeids)
   {
     // do only nodes in my row map
-    int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
-    if (nlid < 0) continue;
-    DRT::Node* actnode = discret.lRowNode(nlid);
+    int cond_node_lid = discret.NodeRowMap()->LID(cond_nodeid);
+    if (cond_node_lid < 0) continue;
+    DRT::Node* node = discret.lRowNode(cond_node_lid);
 
     // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = discret.Dof(0, actnode);
-    const unsigned total_numdf = dofs.size();
+    std::vector<int> node_dofs = discret.Dof(0, node);
+    const int total_numdof = static_cast<int>(node_dofs.size());
 
     // Get native number of dofs at this node. There might be multiple dofsets
     // (in xfem cases), thus the size of the dofs vector might be a multiple
     // of this.
-    const int numele = actnode->NumElement();
-    const DRT::Element* const* myele = actnode->Elements();
-    int numdf = 0;
-    for (int j = 0; j < numele; ++j) numdf = std::max(numdf, myele[j]->NumDofPerNode(*actnode));
+    auto* const myeles = node->Elements();
+    auto* ele_with_max_dof = std::max_element(myeles, myeles + node->NumElement(),
+        [&](Element* a, Element* b) { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
+    const int numdof = (*ele_with_max_dof)->NumDofPerNode(*node);
 
-    if ((total_numdf % numdf) != 0) dserror("illegal dof set number");
+    if ((total_numdof % numdof) != 0) dserror("illegal dof set number");
 
     // now loop over all relevant DOFs
-    for (unsigned j = 0; j < total_numdf; ++j)
+    for (int j = 0; j < total_numdof; ++j)
     {
-      // check if something needs to be done for this DOF
-      bool dosomething = false;
-      int localdof = j % numdf;
+      int localdof = j % numdof;
 
-      // something needs to be done if local DOF id exists
+      // evaluate function if local DOF id exists
       // in the given locids vector
-      for (int k = 0; k < (int)(locids.size()); ++k)
-        if (localdof == locids[k]) dosomething = true;
-
-      // evaluate function
-      if (dosomething)
+      for (const int locid : locids)
       {
-        double time = 0.0;  // dummy time here
-        double functfac = 0.0;
-        int funct_num = -1;
-        if (funct)
+        if (localdof == locid)
         {
-          funct_num = (*funct)[0];
-          if (funct_num > 0)
-            functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                           .Evaluate(actnode->X(), time, localdof);
+          const double time = 0.0;  // dummy time here
+          const int funct_num = (*funct)[0];
+          const double functfac =
+              funct_num > 0 ? DRT::Problem::Instance()
+                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                                  .Evaluate(node->X(), time, localdof)
+                            : 0.0;
+
+          // assign value
+          const int gid = node_dofs[j];
+          const int lid = fieldvector.Map().LID(gid);
+          if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+          fieldvector[lid] = functfac;
         }
-
-        // assign value
-        const int gid = dofs[j];
-        const int lid = (*fieldvector).Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
-        (*fieldvector)[lid] = functfac;
-
-      }  // if dosomething
-    }    // loop over nodal DOFs
-  }      // loop over nodes
-
-  return;
+      }
+    }
+  }
 }

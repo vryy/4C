@@ -23,8 +23,8 @@ additional static parameters required for scalar transport element evaluation.
 #include "inpar_elch.H"
 #include "inpar_parameterlist_utils.H"
 
-#include "lib_dserror.H"
-#include "headers_singleton_owner.H"
+#include "utils_exceptions.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -34,14 +34,14 @@ DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterElchDiffCond>(
             new ScaTraEleParameterElchDiffCond(disname));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*

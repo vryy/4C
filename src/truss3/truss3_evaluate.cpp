@@ -324,8 +324,8 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
 }
 
 /*------------------------------------------------------------------------------------------------------------*
- | nonlinear stiffness and mass matrix (private) tk 10/08| | engineering strain measure, large
- displacements and rotations                                                |
+ | linear stiffness and mass matrix (private) | engineering strain measure, small displacements and
+ rotations |
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     const std::map<std::string, std::vector<double>>& ele_state,
@@ -337,63 +337,42 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
-  // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6, 1> xcurr;
-
-  // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  // auxiliary vector for both internal force and stiffness matrix
   LINALG::Matrix<6, 1> aux;
 
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
 
-  // current nodal position
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
-
-  // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = xcurr(0) - xcurr(3);
-  aux(1) = xcurr(1) - xcurr(4);
-  aux(2) = xcurr(2) - xcurr(5);
-  aux(3) = xcurr(3) - xcurr(0);
-  aux(4) = xcurr(4) - xcurr(1);
-  aux(5) = xcurr(5) - xcurr(2);
-
-  double lcurr = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
-
-  // calculating Green-Lagrange strain epsilon from node position by scalar product:
-  const double epsilon = (lcurr - lrefe_) / lrefe_;
-
-  const double density = Material()->Density();
+  // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xref
+  aux(0) = X_(0) - X_(3);
+  aux(1) = X_(1) - X_(4);
+  aux(2) = X_(2) - X_(5);
+  aux(3) = X_(3) - X_(0);
+  aux(4) = X_(4) - X_(1);
+  aux(5) = X_(5) - X_(2);
 
   // resulting force scaled by current length
   const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
-  const double PK2 = mat->EvaluatePK2(epsilon);
 
-  double forcescalar = (PK2 * crosssec_) / lcurr;
-
-  // computing global internal forces
-  for (int i = 0; i < ndof; ++i) DummyForce(i) = forcescalar * aux(i);
+  // displacement vector
+  Epetra_SerialDenseVector disp(ndof);
 
   // computing linear stiffness matrix
-  for (int i = 0; i < ndof_per_node; ++i)
-  {
-    // stiffness entries for first node
-    DummyStiffMatrix(i, i) = forcescalar;
-    DummyStiffMatrix(i, ndof_per_node + i) = -forcescalar;
-    // stiffness entries for second node
-    DummyStiffMatrix(i + ndof_per_node, i + ndof_per_node) = forcescalar;
-    DummyStiffMatrix(i + ndof_per_node, i) = -forcescalar;
-  }
-
   for (int i = 0; i < ndof; ++i)
   {
+    disp(i) = disp_ele[i];
     for (int j = 0; j < ndof; ++j)
-      DummyStiffMatrix(i, j) +=
-          (mat->EvaluateStiffness() * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
+      DummyStiffMatrix(i, j) =
+          (mat->EvaluateStiffness() * crosssec_ / (lrefe_ * lrefe_ * lrefe_)) * aux(i) * aux(j);
   }
+
+  // computing internal forces
+  DummyStiffMatrix.Multiply(false, disp, DummyForce);
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
   {
+    const double density = Material()->Density();
     for (int i = 0; i < ndof_per_node; ++i)
     {
       (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3.0;
@@ -521,7 +500,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
   }
 
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
   Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 

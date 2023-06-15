@@ -14,6 +14,7 @@
 
 #include "scatra_timint_elch.H"
 #include "io_runtime_csv_writer.H"
+#include "coupling_adapter.H"
 
 /*==========================================================================*/
 // forward declarations
@@ -125,7 +126,7 @@ namespace SCATRA
     Teuchos::RCP<LINALG::MapExtractor> macro_coupling_dofs_;
 
     //! coupling adapter between micro (slave) and macro discretization (master).
-    Teuchos::RCP<ADAPTER::Coupling> macro_micro_coupling_adapter_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> macro_micro_coupling_adapter_;
 
     //! map extractor to get micro and macro dofs from global vector
     //! cond. map: micro, other map: macro

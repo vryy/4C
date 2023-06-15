@@ -16,9 +16,9 @@ correct implementation is still missing.
 #define ELEMAG_ELE_BOUNDARY_CALC_H
 
 #include "lib_element.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -73,16 +73,17 @@ namespace DRT
      public:
       /// Singleton access method
       static ElemagBoundaryImpl<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Constructor
       ElemagBoundaryImpl();
 
       //! number of element nodes
-      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions of the ElemagBoundary element
-      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of space dimensions of the parent element
       static const int nsd_ = bdrynsd_ + 1;

@@ -15,7 +15,7 @@
 
 
 #include "binstrategy_utils.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_params.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 // forward declaration ...
@@ -264,7 +264,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
       //! data container holding all geometric search related parameters
-      Teuchos::RCP<GEOMETRICSEARCH::GeometricSearchParams> geometric_search_params_ptr_;
+      Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchParams> geometric_search_params_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;

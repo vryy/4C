@@ -17,12 +17,13 @@
 template <DRT::Element::DiscretizationType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::MortarElement* mele,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                             num_dof_per_node,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+            num_dof_per_node,
         1>& rhs,
     std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc)
 {
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
   if (num_dof_per_node * nen > dofs.size())
     dserror("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
@@ -41,12 +42,12 @@ template <DRT::Element::DiscretizationType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
     const std::unordered_map<int,
-        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
                            num_dof_per_node,
             1>>& k,
     std::vector<int>& dofs, Teuchos::RCP<LINALG::SparseMatrix> kc)
 {
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
   if (kc != Teuchos::null)
   {
@@ -73,7 +74,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
   switch (row)
   {
     case DRT::UTILS::VecBlockType::displ:
-      AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleRHS<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, rhs_, mele->MoData().ParentDof(), fc);
       break;
     case DRT::UTILS::VecBlockType::temp:
@@ -82,7 +83,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
       break;
     case DRT::UTILS::VecBlockType::porofluid:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
-        AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
+        AssembleRHS<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.rhs_p_, mele->MoData().ParentPFDof(), fc);
       break;
     case DRT::UTILS::VecBlockType::scatra:
@@ -105,11 +106,11 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
   switch (block)
   {
     case DRT::UTILS::MatBlockType::displ_displ:
-      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, k_, mele->MoData().ParentDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::displ_temp:
-      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, tsi_data_.k_dt_, mele->MoData().ParentDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::temp_displ:
@@ -121,21 +122,21 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
         AssembleMatrix<1>(mele, tsi_data_.k_tt_, mele->MoData().ParentTempDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::displ_porofluid:
-      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, poro_data_.k_dp_, mele->MoData().ParentDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::porofluid_displ:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
-        AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
+        AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.k_pd_, mele->MoData().ParentPFDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::porofluid_porofluid:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
-        AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
+        AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.k_pp_, mele->MoData().ParentPFDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::displ_scatra:
-      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, ssi_data_.k_ds_, mele->MoData().ParentDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::scatra_displ:
@@ -147,7 +148,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
         AssembleMatrix<1>(mele, ssi_data_.k_ss_, mele->MoData().ParentScalarDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::displ_elch:
-      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+      AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, ssi_elch_data_.k_de_, mele->MoData().ParentDof(), kc);
       break;
     case DRT::UTILS::MatBlockType::elch_displ:

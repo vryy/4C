@@ -15,7 +15,7 @@
 
 #include "geometry_intersection_math.H"
 #include "lib_element.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "geometry_geo_utils.H"
 
 
@@ -195,7 +195,7 @@ namespace GEO
       XAABB(dim, 1) = xyze(dim, 0) + TOL7;
     }
     // remaining nodes
-    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     for (int i = 1; i < numNodes; ++i)
       for (int dim = 0; dim < ndim; dim++)
       {

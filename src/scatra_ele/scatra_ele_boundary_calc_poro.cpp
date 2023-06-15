@@ -15,42 +15,42 @@
 #include "scatra_ele.H"
 
 #include "lib_globalproblem.H"
-#include "fem_general_utils_boundary_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 #include "nurbs_discret_nurbs_utils.H"
 #include "geometry_position_array.H"
 #include "fluid_rotsym_periodicbc.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype>>(
-            new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype, probdim>>(
+            new ScaTraEleBoundaryCalcPoro<distype, probdim>(numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Private constructor                                   hemmler 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCalcPoro(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(
+    : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
           numdofpernode, numscal, disname),
       eporosity_(true),
       eprenp_(true),
@@ -62,9 +62,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
@@ -111,16 +111,16 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
       // construct location vector for velocity related dofs
-      std::vector<int> lmvel(nsd_ * nen_, -1);
+      std::vector<int> lmvel(nsd_ele_ * nen_, -1);
       for (int inode = 0; inode < nen_; ++inode)
-        for (int idim = 0; idim < nsd_; ++idim)
-          lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
+        for (int idim = 0; idim < nsd_ele_; ++idim)
+          lmvel[inode * nsd_ele_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
-      // we deal with a (nsd_+1)-dimensional flow field
-      LINALG::Matrix<nsd_ + 1, nen_> econvel(true);
+      // we deal with a nsd_-dimensional flow field
+      LINALG::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_ + 1, nen_>>(*convel, econvel, lmvel);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -128,14 +128,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
       // construct location vector for pressure dofs
       std::vector<int> lmpre(nen_, -1);
       for (int inode = 0; inode < nen_; ++inode)
-        lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
+        lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_ele_];
 
       // extract local values of pressure field from global state vector
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
 
       // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
       // dimension. If so, we assume that this is the porosity
-      if (discretization.NumDof(1, ele->Nodes()[0]) == nsd_ + 2)
+      if (discretization.NumDof(1, ele->Nodes()[0]) == nsd_ele_ + 2)
       {
         isnodalporosity_ = true;
 
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
           DRT::UTILS::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
 
           for (int inode = 0; inode < nen_; ++inode)  // number of nodes
-            eporosity_(inode, 0) = mydisp[nsd_ + 1 + (inode * (nsd_ + 2))];
+            eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ele_ + 2))];
         }
         else
           dserror("Cannot get state vector displacement");
@@ -179,13 +179,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
  | calculate integral of convective flux across boundary    vuong 07/15 |
  | (overwrites method in ScaTraEleBoundaryCalc)                         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConvectiveFlux(
+template <DRT::Element::DiscretizationType distype, int probdim>
+std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::CalcConvectiveFlux(
     const DRT::FaceElement* ele, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-    const LINALG::Matrix<nsd_ + 1, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
+    const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   std::vector<double> integralflux(my::numscal_);
@@ -230,8 +230,8 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConve
 /*----------------------------------------------------------------------*
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ComputePorosity(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ComputePorosity(
     const DRT::FaceElement* ele  //!< the element we are dealing with
 )
 {
@@ -251,12 +251,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ComputePorosity(
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::nurbs9, 3>;

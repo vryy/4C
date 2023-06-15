@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fsi_overlapprec_fsiamg.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include <Teuchos_Time.hpp>
 #include <ml_MultiLevelPreconditioner.h>

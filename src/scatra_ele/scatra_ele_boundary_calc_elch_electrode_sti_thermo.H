@@ -20,20 +20,22 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
-        : public ScaTraEleBoundaryCalcElchElectrode<distype>
+        : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
-      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -62,6 +64,7 @@ namespace DRT
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacwgt       time-integration factor times Gauss point weight
        * @param[in] detF             determinant of jacobian at current integration point
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
        *
@@ -73,23 +76,24 @@ namespace DRT
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          LINALG::Matrix<nsd_ + 1, nen_> shapederivatives,
+          LINALG::Matrix<nsd_, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
-          double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
+          double detF, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_ms);
 
      private:
       //! private constructor for singletons

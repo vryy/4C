@@ -1,20 +1,15 @@
-set(OBJS_POROMULTIPHASE
-    # cmake-format: sortable
-    poromultiphase_base.cpp
-    poromultiphase_dyn.cpp
-    poromultiphase_monolithic.cpp
-    poromultiphase_monolithic_twoway.cpp
-    poromultiphase_partitioned.cpp
-    poromultiphase_partitioned_twoway.cpp
-    poromultiphase_utils.cpp
-    poromultiphase_utils_clonestrategy.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_poromultiphase ${OBJS_POROMULTIPHASE})
-
-set(LIBS_ALG_PROMULTIPHASE
+set(_poromultiphase_dependencies
     # cmake-format: sortable
+    adapter
     inpar
+    io
+    lib
+    linalg
+    mat
+    poroelast
+    porofluidmultiphase
+    porofluidmultiphase_ele
     )
-
-baci_add_dependency(alg_poromultiphase ${LIBS_ALG_PROMULTIPHASE})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poromultiphase_dependencies})

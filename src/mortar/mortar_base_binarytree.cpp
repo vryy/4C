@@ -7,7 +7,7 @@
 */
 /*---------------------------------------------------------------------*/
 #include "mortar_base_binarytree.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 #include "mortar_element.H"
 #include "mortar_node.H"

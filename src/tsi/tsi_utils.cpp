@@ -32,7 +32,7 @@
 #include "lib_discret.H"
 #include "lib_periodicbc.H"
 
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
@@ -255,12 +255,14 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
   // call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar, ele1, ids_2, dis1, dis2);
+  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+      volmortar, ele1, ids_2, dis1, dis2);
 
   // done
   return;
@@ -270,15 +272,17 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(const VOLMORTAR::VolMor
 /*----------------------------------------------------------------------*
 |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;
 
   // call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(volmortar, ele2, ids_1, dis1, dis2);
+  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+      volmortar, ele2, ids_1, dis1, dis2);
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element

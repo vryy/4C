@@ -9,7 +9,6 @@ equations
 #include <memory>
 #include <cstdlib>
 
-#include "mixture_growth_evolution_linear_cauchy.H"
 #include "mixture_constituent.H"
 #include "mixture_constituent_remodelfiber_expl.H"
 #include "lib_voigt_notation.H"
@@ -21,6 +20,7 @@ equations
 #include "mixture_constituent_remodelfiber_material_exponential_active.H"
 #include "matelast_aniso_structuraltensor_strategy.H"
 #include "mixture_constituent_remodelfiber_lib.H"
+#include "mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 
 // anonymous namespace for helper classes and functions
 namespace
@@ -110,14 +110,13 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::Initialize()
 {
   std::shared_ptr<const RemodelFiberMaterial<double>> material =
       params_->fiber_material_->CreateRemodelFiberMaterial();
-  auto growth_evolution =
-      std::make_shared<const CauchyLinearGrowthEvolution<double>>(params_->growth_constant_);
 
   remodel_fiber_.clear();
   for (int gp = 0; gp < NumGP(); ++gp)
   {
-    remodel_fiber_.emplace_back(
-        material, growth_evolution, params_->poisson_decay_time_, EvaluateDepositionStretch(0.0));
+    LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
+        params_->growth_constant_, params_->poisson_decay_time_);
+    remodel_fiber_.emplace_back(material, growth_evolution, EvaluateDepositionStretch(0.0));
   }
 }
 

@@ -16,7 +16,7 @@
 #include "fluid_ele.H"
 #include "fluid_ele_tds.H"
 
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_gder2.H"
 
 #include "fluid_rotsym_periodicbc.H"
 
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::FluidEleCalc::Evaluate" );
 
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
         {
           // Intpoints are changed. For sine and cosine, this new rule is utilized for error
           // computation compared to analytical solution.
-          DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
+          CORE::DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
           intpoints_ = intpoints_tmp;
           break;
         }
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
             {
               // Intpoints are changed. For sine and cosine, this new rule is utilized for error
               // computation compared to analytical solution.
-              DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
+              CORE::DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree() * 2 + 3);
               intpoints_ = intpoints_tmp;
               break;
             }
@@ -555,7 +555,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
     const LINALG::Matrix<nen_, 1>& eporo, const LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
     const LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<MAT::Material> mat, bool isale,
     bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn, double* sveln, double* svelnp,
-    const DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
 {
   if (offdiag) dserror("No-off-diagonal matrix evaluation in standard fluid implementation!!");
 
@@ -656,7 +656,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     const double thermpressaf, const double thermpressam, const double thermpressdtaf,
     const double thermpressdtam, Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq,
     double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
@@ -780,8 +780,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
   }
 
   // get Gaussian integration points
-  // const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
-  // const DRT::UTILS::IntPointsAndWeights<nsd_>
+  // const CORE::DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  // const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>
   // intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
@@ -789,7 +789,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
   //------------------------------------------------------------------------
   // for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 
-  for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -1663,7 +1663,7 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
   EvalShapeFuncAndDerivsAtIntPoint((intpoints_stab.IP().qxg)[0], intpoints_stab.IP().qwgt[0]);
@@ -1689,22 +1689,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtIntP
   if (not isNurbs_)
   {
     // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
     derxy2_.Clear();
     if (is_higher_order_ele_)
     {
       // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
+      CORE::DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
     }
   }
   else
   {
     if (is_higher_order_ele_)
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
           funct_, deriv_, deriv2_, xsi_, myknots_, weights_, distype);
     else
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+          funct_, deriv_, xsi_, myknots_, weights_, distype);
   }
 
   //
@@ -1743,7 +1744,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtIntP
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    DRT::UTILS::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    CORE::DRT::UTILS::gder2<distype, nen_>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();

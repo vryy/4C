@@ -15,7 +15,7 @@
 #include "adapter_fld_fluid.H"
 #include "fluid_discretization_runtime_vtu_output_params.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

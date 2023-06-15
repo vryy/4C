@@ -12,7 +12,7 @@
 
 #include "lib_element.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include "beaminteraction_potential_params.H"
@@ -204,37 +204,37 @@ void BEAMINTERACTION::BeamPotentialPair::CheckInitSetup() const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
+CORE::DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
 {
   switch (Params()->NumberGaussPoints())
   {
     case 5:
     {
-      return DRT::UTILS::GaussRule1D::line_5point;
+      return CORE::DRT::UTILS::GaussRule1D::line_5point;
       break;
     }
 
     case 10:
     {
-      return DRT::UTILS::GaussRule1D::line_10point;
+      return CORE::DRT::UTILS::GaussRule1D::line_10point;
       break;
     }
 
     case 20:
     {
-      return DRT::UTILS::GaussRule1D::line_20point;
+      return CORE::DRT::UTILS::GaussRule1D::line_20point;
       break;
     }
 
     case 32:
     {
-      return DRT::UTILS::GaussRule1D::line_32point;
+      return CORE::DRT::UTILS::GaussRule1D::line_32point;
       break;
     }
 
     case 50:
     {
-      return DRT::UTILS::GaussRule1D::line_50point;
+      return CORE::DRT::UTILS::GaussRule1D::line_50point;
       break;
     }
 
@@ -242,5 +242,5 @@ DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
       dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
-  return DRT::UTILS::GaussRule1D::undefined;
+  return CORE::DRT::UTILS::GaussRule1D::undefined;
 }

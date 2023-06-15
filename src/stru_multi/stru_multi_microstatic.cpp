@@ -13,10 +13,6 @@
 
 #include <Epetra_LinearProblem.h>
 
-#ifndef HAVENOT_UMFPACK
-#include <Amesos_Umfpack.h>
-#endif
-
 #include "stru_multi_microstatic.H"
 #include "lib_discret.H"
 #include "lib_condition.H"
@@ -29,7 +25,7 @@
 #include "lib_elementtype.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_sparsematrix.H"
 #include "io_control.H"
 #include "io.H"
@@ -233,7 +229,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     // action for elements
     p.set("action", "calc_init_vol");
     p.set("V0", 0.0);
-    discret_->EvaluateCondition(p, null, null, null, null, null, "MicroBoundary");
+    discret_->EvaluateCondition(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+        Teuchos::null, "MicroBoundary");
     V0_ = p.get<double>("V0", -1.0);
     if (V0_ == -1.0) dserror("Calculation of initial volume failed");
   }

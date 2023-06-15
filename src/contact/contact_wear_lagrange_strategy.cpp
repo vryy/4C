@@ -35,7 +35,7 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include <Epetra_FEVector.h>
-
+#include <Teuchos_Time.hpp>
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/

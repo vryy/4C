@@ -19,7 +19,7 @@
 
 #include "inpar_fluid.H"
 #include "inpar_poroelast.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations

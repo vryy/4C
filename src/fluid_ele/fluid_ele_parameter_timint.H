@@ -19,7 +19,7 @@ with different parameters in more than one fluid field is not yet supported.
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "inpar_fluid.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -31,7 +31,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleParameterTimInt* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! time parameter are set
       void SetElementTimeParameter(Teuchos::ParameterList& params  //> parameter list

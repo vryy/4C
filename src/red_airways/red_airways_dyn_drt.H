@@ -14,11 +14,10 @@
 #ifndef RED_AIRWAYS_DYN_DRT_H
 #define RED_AIRWAYS_DYN_DRT_H
 
-#include <Teuchos_Time.hpp>
 #include <Teuchos_RCP.hpp>
 #include "lib_discret.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "io.H"
 #include "red_airways_implicitintegration.H"
 

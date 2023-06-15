@@ -11,7 +11,7 @@
 
 
 #include "lib_linedefinition.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <iterator>
 #include <utility>
 #include "lib_utils_linedefinition.H"

@@ -16,8 +16,8 @@
 
 #include "fluid_rotsym_periodicbc.H"
 
-#include "fem_general_utils_gder2.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 #include "geometry_position_array.H"
 
@@ -36,9 +36,9 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoro<distype>* DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcPoro<distype>>(
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
@@ -483,7 +483,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Teuchos::ParameterList& p
     const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
     const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nen_, 1>* eporositynp,
     const LINALG::Matrix<nen_, 1>* eporositydot, const LINALG::Matrix<nen_, 1>* eporositydotn,
-    Teuchos::RCP<MAT::Material> mat, bool isale, const DRT::UTILS::GaussIntegration& intpoints)
+    Teuchos::RCP<MAT::Material> mat, bool isale,
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // flag for higher order elements
   Base::is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -516,7 +517,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList&
     const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
     const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nsd_, nen_>& emhist,
     const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
-    Teuchos::RCP<MAT::Material> mat, bool isale, const DRT::UTILS::GaussIntegration& intpoints)
+    Teuchos::RCP<MAT::Material> mat, bool isale,
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // flag for higher order elements
   Base::is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -555,7 +557,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& pa
     const LINALG::Matrix<nen_, 1>* eporositydotn,
     LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
     LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
-    bool isale, const DRT::UTILS::GaussIntegration& intpoints)
+    bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
@@ -709,7 +711,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& 
     const LINALG::Matrix<nen_, 1>* eporositynp,
     LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
     LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
-    bool isale, const DRT::UTILS::GaussIntegration& intpoints)
+    bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
@@ -1101,7 +1103,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
     LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
     LINALG::Matrix<nen_, 1>& preforce, LINALG::Matrix<nsd_, nen_>& velforce,
-    Teuchos::RCP<const MAT::Material> material, const DRT::UTILS::GaussIntegration& intpoints)
+    Teuchos::RCP<const MAT::Material> material, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
   static LINALG::Matrix<nsd_ * nsd_, nen_> lin_resM_Du(true);
@@ -1112,7 +1114,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
   // set element area or volume
   const double vol = Base::fac_;
 
-  for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -1597,7 +1599,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
     LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
     LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u, LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
-    Teuchos::RCP<const MAT::Material> material, const DRT::UTILS::GaussIntegration& intpoints)
+    Teuchos::RCP<const MAT::Material> material, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
   static LINALG::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus(true);
@@ -1606,7 +1608,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
   // set element area or volume
   const double vol = Base::fac_;
 
-  for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // reset matrix
@@ -4825,7 +4827,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::SetupMaterialDerivatives()
   if (Base::is_higher_order_ele_)
   {
     // get the second derivatives of standard element at current GP w.r.t. XYZ
-    DRT::UTILS::gder2<distype, nen_>(xjm0, N_XYZ_, Base::deriv2_, xyze0_, N_XYZ2_);
+    CORE::DRT::UTILS::gder2<distype, nen_>(xjm0, N_XYZ_, Base::deriv2_, xyze0_, N_XYZ2_);
 
     if (nsd_ == 3)
     {
@@ -6049,7 +6051,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
   Base::xyze_ += edispnp;
 
   // integration loop
-  for (DRT::UTILS::GaussIntegration::iterator iquad = Base::intpoints_.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = Base::intpoints_.begin();
        iquad != Base::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -6113,7 +6115,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
-  const DRT::UTILS::GaussIntegration intpoints(distype, 5);
+  const CORE::DRT::UTILS::GaussIntegration intpoints(distype, 5);
   return ComputeError(ele, params, mat, discretization, lm, elevec1, intpoints);
 }
 
@@ -6121,7 +6123,7 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
   LINALG::Matrix<nsd_, 1> u(true);
@@ -6173,8 +6175,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     Base::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());

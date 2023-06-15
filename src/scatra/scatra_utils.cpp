@@ -17,7 +17,7 @@
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "geometry_position_array.H"
 
 
@@ -348,7 +348,7 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid)
 {
   // number of nodes of this element for interpolation
-  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   LINALG::Matrix<dim, 1> node_gradphi_smoothed(true);
 
   // number of elements located around this node
@@ -408,7 +408,7 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       for (int icomp = 0; icomp < dim; ++icomp)
       {
         node_Xicoordinates(icomp) =
-            DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
+            CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
       }
 
       // get derivatives of shape functions at node
@@ -416,19 +416,19 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       {
         case 3:
         {
-          DRT::UTILS::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
               node_Xicoordinates(1), node_Xicoordinates(2), DISTYPE);
           break;
         }
         case 2:
         {
-          DRT::UTILS::shape_function_2D_deriv1(
+          CORE::DRT::UTILS::shape_function_2D_deriv1(
               deriv3Dele, node_Xicoordinates(0), node_Xicoordinates(1), DISTYPE);
           break;
         }
         case 1:
         {
-          DRT::UTILS::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), DISTYPE);
+          CORE::DRT::UTILS::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), DISTYPE);
           break;
         }
         default:

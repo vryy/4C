@@ -16,7 +16,7 @@
 
 #include <set>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_structure.H"
 
 // include of nox nln enumerators

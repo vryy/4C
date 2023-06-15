@@ -16,9 +16,9 @@
 #include "inpar_bio.H"
 
 #include "lib_discret.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "mat_cnst_1d_art.H"
 #include "mat_list.H"
@@ -107,16 +107,17 @@ int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
 
 
 // get optimal gaussrule for discretization type
-GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const DiscretizationType& distype)
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
+    const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

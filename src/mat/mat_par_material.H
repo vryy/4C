@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "lib_container.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_material.H"
 #include "lib_parobjectfactory.H"
 #include "mat_par_parameter.H"

@@ -12,7 +12,7 @@
 #include "lib_element.H"
 #include "lib_node.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_condition.H"
 #include "lib_utils_factory.H"
 #include "lib_linedefinition.H"
@@ -24,8 +24,8 @@
 #include <Shards_BasicTopologies.hpp>
 #include <utility>
 
-#include "geometric_search_bounding_volume.H"
-#include "geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -445,7 +445,7 @@ void DRT::Element::NodalConnectivity(
   // put squared weight on edges
   weight *= weight;
 
-  std::vector<std::vector<int>> lines = DRT::UTILS::getEleNodeNumberingLines(Shape());
+  std::vector<std::vector<int>> lines = CORE::DRT::UTILS::getEleNodeNumberingLines(Shape());
   size_t nodesperline = lines[0].size();
   if (nodesperline == 2)
   {
@@ -979,7 +979,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
  *----------------------------------------------------------------------*/
 int DRT::Element::NumFace() const
 {
-  switch (DRT::UTILS::getDimension(this->Shape()))
+  switch (CORE::DRT::UTILS::getDimension(this->Shape()))
   {
     case 2:
       return NumLine();
@@ -1055,7 +1055,7 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& 
   return -1;
 }
 
-int DRT::Element::Degree() const { return DRT::UTILS::getDegree(Shape()); }
+int DRT::Element::Degree() const { return CORE::DRT::UTILS::getDegree(Shape()); }
 
 /*----------------------------------------------------------------------*
  |  check if the element has only ghost nodes (public)       vuong 09/14|
@@ -1143,11 +1143,12 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(const DRT::Discretization& discret,
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
+    const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
-  GEOMETRICSEARCH::BoundingVolume bounding_box;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_box;
   LINALG::Matrix<3, 1, double> point;
 
   // The default bounding box is simply the bounding box of all element nodes.

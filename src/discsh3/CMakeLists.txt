@@ -1,17 +1,11 @@
-set(OBJS_DISCSH3_LIB
-    # cmake-format: sortable
-    discsh3.cpp
-    discsh3_evaluate.cpp
-    discsh3_input.cpp
-    discsh3_line.cpp
-    discsh3_line_evaluate.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_discsh3 ${OBJS_DISCSH3_LIB})
-
-set(LIBS_ELE_DISCSH3
+set(_discsh3_dependencies
     # cmake-format: sortable
+    core
+    inpar
+    lib
     linalg
+    mat
     )
-
-baci_add_dependency(ele_discsh3 ${LIBS_ELE_DISCSH3})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_discsh3_dependencies})

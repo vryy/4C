@@ -23,11 +23,11 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_node.H"
-#include "fem_general_largerotations.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 #include <Sacado.hpp>
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include "structure_new_elements_paramsinterface.H"
 
@@ -47,11 +47,6 @@ namespace LARGEROTATIONS
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
 }
-
-#define BEAM3RLENGTHCALCNEWTONTOL \
-  10e-12  // Tolerance for iterative determination of element
-          // length.
-// DEFAULT: 10e-12
 
 // #define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the
 // element
@@ -260,11 +255,6 @@ namespace DRT
       */
       virtual void Print(std::ostream& os) const;
 
-      /*!
-      \brief return flag whether Hermite polynomials are applied for centerline interpolation
-      */
-      virtual inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_; }
-
       /** \brief get centerline position at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
@@ -351,7 +341,7 @@ namespace DRT
       /*!
       \brief get tangent of centerline at all nodes in reference configuration
       */
-      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Trefnode_; }
+      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
 
       /*!
       \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element
@@ -725,26 +715,6 @@ namespace DRT
           const std::vector<LINALG::Matrix<4, 1, double>>& Qnode,
           Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* inertia_force);
 
-      /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      // Todo: think about moving this method to Beam3Base (as protected) and call it from
-      //       all derived beam elements in public method GetPosAtXi with correct template
-      //       parameters :-)
-      template <unsigned int nnodecl, unsigned int vpernode>
-      LINALG::Matrix<3, 1> GetPosAtXi(const double& xi,
-          const LINALG::Matrix<3 * nnodecl * vpernode, 1, double>& disp_totlag) const
-      {
-        LINALG::Matrix<3, 1> r;
-        LINALG::Matrix<1, vpernode * nnodecl, double> N_i;
-
-        DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
-            xi, N_i, this->Shape(), this->RefLength());
-        this->Calc_r<nnodecl, vpernode, double>(disp_totlag, N_i, r);
-
-        return r;
-      }
-
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
        *  \author grill
@@ -765,7 +735,7 @@ namespace DRT
           {
             disp_centerline_ref(3 * vpernode * node + dim) = Nodes()[node]->X()[dim];
             if (vpernode == 2)
-              disp_centerline_ref(3 * vpernode * node + 3 + dim) = (Trefnode_[node])(dim);
+              disp_centerline_ref(3 * vpernode * node + 3 + dim) = (Tref_[node])(dim);
           }
         }
 
@@ -827,7 +797,7 @@ namespace DRT
          * the element type considered here),
          * or Jelenic 1999, paragraph on page 153 between NOTE 5 and NOTE 6*/
         LINALG::Matrix<3, 3, T> Tinv(true);
-        Tinv = LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
+        Tinv = CORE::LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
         // It is important to use the transposed matrix Tinv^T instead of Tinv (these two only
         // differ in one of three terms)
         K.MultiplyTN(Tinv, Psi_l_s);
@@ -987,11 +957,6 @@ namespace DRT
       void ExtractRotVecDofValues(const std::vector<double>& dofvec,
           std::vector<LINALG::Matrix<3, 1, double>>& dofvec_rotvec) const;
 
-      //! add reference positions and tangents to (centerline) displacement state vector
-      template <unsigned int nnodecl, unsigned int vpernode, typename T>
-      void AddRefValuesDispCenterline(
-          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const;
-
       //! compute nodal triads from current nodal rotation vectors ("displacement", i.e. relative
       //! rotations)
       template <unsigned int nnodetriad, typename T>
@@ -1021,17 +986,11 @@ namespace DRT
 
      public:
       //! determine Gauss rule from required type of integration and parameter list
-      DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
-
-     private:
-      //! calculates the element length in reference configuration
-      template <unsigned int nnode, unsigned int vpernode>
-      void Calculate_reflength(
-          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_totlag_centerline,
-          const double tolerance);
+      CORE::DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
       //@}
 
+     private:
       //! @name Methods for Brownian dynamics simulations
 
       //! computes rotational damping forces and stiffness
@@ -1071,10 +1030,6 @@ namespace DRT
       //! bool storing whether automatic differentiation shall be used for this element evaluation
       bool useFAD_;
 
-      //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange
-      //! interpolation)
-      bool centerline_hermite_;
-
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
 
@@ -1084,9 +1039,6 @@ namespace DRT
 
       //! rotational pseudovectors at nodes in reference configuration
       std::vector<LINALG::Matrix<3, 1>> theta0node_;
-
-      //! vector holding reference tangent at the centerline nodes
-      std::vector<LINALG::Matrix<3, 1>> Trefnode_;
 
       //! vector holding current tangent at the centerline nodes Todo needed?
       std::vector<LINALG::Matrix<3, 1>> Tcurrnode_;

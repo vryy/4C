@@ -13,7 +13,7 @@
 #include "mat_elchmat.H"
 #include "mat_elchphase.H"
 #include "mat_scl.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>*
 DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElchScl<distype>>(
@@ -30,7 +30,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

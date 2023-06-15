@@ -11,14 +11,14 @@
 #include "lib_utils.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "mat_stvenantkirchhoff.H"
 #include "linalg_serialdensevector.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

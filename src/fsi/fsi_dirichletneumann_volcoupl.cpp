@@ -39,6 +39,8 @@
 // search
 #include "geometry_searchtree.H"
 #include "geometry_searchtree_service.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -75,7 +77,7 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
 {
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  coupsa_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // do a dynamic cast here
   Teuchos::RCP<ADAPTER::FluidAle> fluidale = Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(fluid_);
@@ -191,7 +193,7 @@ void FSI::InterfaceCorrector::Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::SetInterfaceDisplacements(
-    Teuchos::RCP<Epetra_Vector>& idisp_struct, ADAPTER::Coupling& icoupfs)
+    Teuchos::RCP<Epetra_Vector>& idisp_struct, CORE::ADAPTER::Coupling& icoupfs)
 {
   idisp_ = idisp_struct;
   icoupfs_ = Teuchos::rcpFromRef(icoupfs);

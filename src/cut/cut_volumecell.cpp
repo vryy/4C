@@ -406,7 +406,7 @@ void GEO::CUT::VolumeCell::NewBoundaryCell(
 {
   if (facets_.count(f) == 0)
   {
-    run_time_error("facet does not belong to volume cell");
+    dserror("facet does not belong to volume cell");
   }
   switch (shape)
   {
@@ -459,7 +459,7 @@ void GEO::CUT::VolumeCell::NewQuad4Cell(Mesh& mesh, Facet* f, const std::vector<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewArbitraryCell(Mesh& mesh, Facet* f, const std::vector<Point*>& x,
-    const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal)
+    const CORE::DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal)
 {
   f->NewArbitraryCell(mesh, this, x, bcells_, gp, normal);
 }
@@ -489,7 +489,7 @@ int GEO::CUT::VolumeCell::NumGaussPoints(DRT::Element::DiscretizationType shape)
 
     // Create (unmodified) gauss points for integration cell with requested
     // polynomial order. This is supposed to be fast, since there is a cache.
-    DRT::UTILS::GaussIntegration gi(ic->Shape(), ic->CubatureDegree(shape));
+    CORE::DRT::UTILS::GaussIntegration gi(ic->Shape(), ic->CubatureDegree(shape));
 
     // we just need the number of points per cell
     numgp += gi.NumPoints();
@@ -924,8 +924,8 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
 
   DumpGmsh(file);
 
-  Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-      Teuchos::rcp(new DRT::UTILS::GaussPointsComposite(0));
+  Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc =
+      Teuchos::rcp(new CORE::DRT::UTILS::GaussPointsComposite(0));
 
   const plain_integrationcell_set& cells = IntegrationCells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -935,13 +935,13 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
     {
       case DRT::Element::hex8:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>(ic);
+        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>(ic);
         gpc->Append(gp);
         break;
       }
       case DRT::Element::tet4:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>(ic);
+        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -953,10 +953,11 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
     }
   }
 
-  DRT::UTILS::GaussIntegration gpv(gpc);
+  CORE::DRT::UTILS::GaussIntegration gpv(gpc);
 
   file << "View \" Gauss Points \" {\n";
-  for (DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
+       ++iquad)
   {
     const LINALG::Matrix<3, 1> eta(iquad.Point());
     file << "SP(" << eta(0, 0) << "," << eta(1, 0) << "," << eta(2, 0) << ",1){0.0};\n";
@@ -976,8 +977,8 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
  *----------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
 {
-  Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-      Teuchos::rcp(new DRT::UTILS::GaussPointsComposite(0));
+  Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc =
+      Teuchos::rcp(new CORE::DRT::UTILS::GaussPointsComposite(0));
 
   const plain_integrationcell_set& cells = IntegrationCells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -987,13 +988,13 @@ void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
     {
       case DRT::Element::hex8:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>(ic);
+        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>(ic);
         gpc->Append(gp);
         break;
       }
       case DRT::Element::tet4:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>(ic);
+        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -1005,10 +1006,11 @@ void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
     }
   }
 
-  DRT::UTILS::GaussIntegration gpv(gpc);
+  CORE::DRT::UTILS::GaussIntegration gpv(gpc);
 
   double intVal = 0.0;
-  for (DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
+       ++iquad)
   {
     double weight = iquad.Weight();
 
@@ -1024,10 +1026,10 @@ void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
 }
 
 template <DRT::Element::DiscretizationType distype>
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::CreateProjected(
+Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::CreateProjected(
     GEO::CUT::IntegrationCell* ic)
 {
-  const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   LINALG::Matrix<3, nen> xie;
 
@@ -1043,18 +1045,19 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::CreateProjected(
     std::copy(xi.A(), xi.A() + 3, &xie(0, i));
   }
 
-  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussIntegration::CreateProjected<distype>(
-      xie, ic->CubatureDegree(element_->Shape()));
+  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+      CORE::DRT::UTILS::GaussIntegration::CreateProjected<distype>(
+          xie, ic->CubatureDegree(element_->Shape()));
   return gp;
 }
 
 /*------------------------------------------------------------------------------------------------------*
     convert the Gaussian points and weights into appropriate Gauss rule as per BACI implementation
 *-------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
+Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
 {
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints(0));
+  Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(0));
 
   for (unsigned i = 0; i < gausPts_.size(); i++)
   {
@@ -1198,8 +1201,8 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
         double jaco = areaGlobal / areaLocal;
 
         int numBcellpts = BcellgausPts_.size();
-        Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp =
-            Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints(numBcellpts));
+        Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
+            Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(numBcellpts));
 
         LINALG::Matrix<3, 1> xeLocal, xeGlobal;
         for (unsigned i = 0; i < BcellgausPts_.size(); i++)
@@ -1227,7 +1230,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
             normalFac * sqrt(eqnfac[0] * eqnfac[0] + eqnfac[1] * eqnfac[1] + eqnfac[2] * eqnfac[2]);
         for (unsigned i = 0; i < 3; i++) normal(i, 0) = eqnfac[i] / normalFac;
 
-        DRT::UTILS::GaussIntegration gi(cgp);
+        CORE::DRT::UTILS::GaussIntegration gi(cgp);
         NewArbitraryCell(mesh, fac, corners, gi, normal);
       }
     }
@@ -1436,25 +1439,25 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
    When DirectDivergence method is used for gauss point generation, for every gauss point
    on the facet, an internal gauss rule is to be generated to find the modified integrand
 *-------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaussRule(
-    Teuchos::RCP<DRT::UTILS::GaussPoints>& gp)
+Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaussRule(
+    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gp)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
 
 
-  DRT::UTILS::GaussIntegration grule(gp);
+  CORE::DRT::UTILS::GaussIntegration grule(gp);
 
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints(0));
+  Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(0));
 
-  for (DRT::UTILS::GaussIntegration::iterator quadint = grule.begin(); quadint != grule.end();
+  for (CORE::DRT::UTILS::GaussIntegration::iterator quadint = grule.begin(); quadint != grule.end();
        ++quadint)
   {
     const LINALG::Matrix<3, 1> etaFacet(
         quadint.Point());  // coordinates and weight of main gauss point
     LINALG::Matrix<3, 1> intpt(etaFacet);
 
-    DRT::UTILS::GaussIntegration gi(
+    CORE::DRT::UTILS::GaussIntegration gi(
         DRT::Element::line2, (DIRECTDIV_GAUSSRULE - 1));  // internal gauss rule for interval (-1,1)
 
     // x-coordinate of main Gauss point is projected in the reference plane
@@ -1467,7 +1470,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaus
     // -----------------------------------------------------------------------------
     // project internal gauss point from interval (-1,1) to the actual interval
     // -----------------------------------------------------------------------------
-    for (DRT::UTILS::GaussIntegration::iterator iqu = gi.begin(); iqu != gi.end(); ++iqu)
+    for (CORE::DRT::UTILS::GaussIntegration::iterator iqu = gi.begin(); iqu != gi.end(); ++iqu)
     {
       const LINALG::Matrix<1, 1> eta(iqu.Point());
       double weight = iqu.Weight();
@@ -1571,13 +1574,13 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
 
   RefEqnPlane_.reserve(4);  // it has to store a,b,c,d in ax+by+cz=d
 
-  Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
+  Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
       dd.VCIntegrationRule(RefEqnPlane_);  // compute main gauss points
   gp_ = GenerateInternalGaussRule(gp);  // compute internal gauss points for every main gauss point
 
 #ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
   {
-    DRT::UTILS::GaussIntegration gpi(gp_);
+    CORE::DRT::UTILS::GaussIntegration gpi(gp_);
     dd.DivengenceCellsGMSH(gpi, gp);
   }
 #endif
@@ -1587,7 +1590,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
   // also check this vc can be eliminated due to its very small volume
   bool isNegVol = false;
   {
-    DRT::UTILS::GaussIntegration gpi(gp_);
+    CORE::DRT::UTILS::GaussIntegration gpi(gp_);
     dd.DebugVolume(gpi, isNegVol);
 
     // then this vol is extremely small that we erase the gauss points
@@ -1622,7 +1625,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
   if (element_->Shape() != DRT::Element::hex8)
     dserror("Currently Direct divergence in global coordinates works only for hex8 elements\n");
 
-  DRT::UTILS::GaussIntegration intpoints(gp_);
+  CORE::DRT::UTILS::GaussIntegration intpoints(gp_);
 
   if (element_->isShadow() && (element_->getQuadShape() == DRT::Element::hex20 ||
                                   element_->getQuadShape() == DRT::Element::hex27))
@@ -1633,16 +1636,16 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
       {
         LINALG::Matrix<3, 20> xyze;
         element_->CoordinatesQuad(xyze.A());
-        gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>(
-            xyze, intpoints, false);
+        gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<
+            DRT::Element::hex20>(xyze, intpoints, false);
         break;
       }
       case DRT::Element::hex27:
       {
         LINALG::Matrix<3, 27> xyze;
         element_->CoordinatesQuad(xyze.A());
-        gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex27>(
-            xyze, intpoints, false);
+        gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<
+            DRT::Element::hex27>(xyze, intpoints, false);
         break;
       }
       default:
@@ -1658,7 +1661,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
   {
     LINALG::Matrix<3, 8> xyze;
     element_->Coordinates(xyze.A());
-    gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex8>(
+    gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex8>(
         xyze, intpoints, false);
   }
 }

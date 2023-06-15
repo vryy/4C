@@ -15,7 +15,7 @@
 #include "fluid_ele_parameter.H"
 #include "inpar_poroelast.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -28,7 +28,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleParameterPoro* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void SetElementPoroParameter(Teuchos::ParameterList& params, int myrank);
 

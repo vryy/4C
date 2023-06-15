@@ -15,7 +15,7 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_calc.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 // includes gauss points
 #include "lib_utils.H"
@@ -42,7 +42,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcXWall<distype, enrtype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
@@ -90,7 +90,7 @@ namespace DRT
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const DRT::UTILS::GaussIntegration& intpoints) override;
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
       virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -106,7 +106,8 @@ namespace DRT
       );
 
      private:
-      const static int enren_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const static int enren_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       /// private Constructor since we are a Singleton.
       FluidEleCalcXWall();
@@ -283,7 +284,7 @@ namespace DRT
       int numgpplane_;
 
       //! object to construct gauss points in several dimensions
-      Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp_;
+      Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

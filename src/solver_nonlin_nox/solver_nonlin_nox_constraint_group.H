@@ -17,7 +17,7 @@
 #include "solver_nonlin_nox_group.H"
 #include "solver_nonlin_nox_constraint_interface_required.H"
 #include "solver_nonlin_nox_enum_lists.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // forward declaration
 namespace STR

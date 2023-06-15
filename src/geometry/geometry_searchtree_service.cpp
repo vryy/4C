@@ -441,7 +441,7 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(const DRT::Discretization&
            eleIter != (labelIter->second).end(); eleIter++)
       {
         DRT::Element* element = dis.gElement(*eleIter);
-        for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
           nodeList[labelIter->first].insert(element->NodeIds()[i]);
       }
     }
@@ -490,7 +490,7 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(
            eleIter != (labelIter->second).end(); eleIter++)
       {
         DRT::Element* element = dis.gElement(*eleIter);
-        for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
           nodeList[labelIter->first].insert(element->NodeIds()[i]);
       }
     }
@@ -649,7 +649,7 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
         }
       }
       // collect nodes
-      for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+      for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
@@ -712,7 +712,7 @@ void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
       }
 
       // collect nodes
-      for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+      for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
@@ -793,7 +793,7 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
         }
       }
       // collect nodes
-      for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+      for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
@@ -904,7 +904,7 @@ double GEO::nearestNodeInNode(const Teuchos::RCP<DRT::Discretization> dis,
     DRT::Element* element = (eleIter->second).get();
 
     // collect nodes
-    for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+    for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
       nodeList.insert(element->NodeIds()[i]);
   }
 
@@ -986,8 +986,8 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
             }
           }
           // collect nodes
-          for (int i_node = 0; i_node < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape());
-               i_node++)
+          for (int i_node = 0;
+               i_node < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i_node++)
             nodeList.insert(element->NodeIds()[i_node]);
         }  // loop over structure
 
@@ -1081,7 +1081,8 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
           }
         }
         // collect nodes
-        for (int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::tri3); i++)
+        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::tri3);
+             i++)
           nodeList[labelIter->first].insert(triangleList[*eleIter][i]);
       }  // if(labelIter->first!=pointLabel)
     }    // for element iter
@@ -1156,7 +1157,7 @@ bool GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
   if (eleGeoType == GEO::HIGHERORDER)
   {
     LINALG::SerialDenseMatrix eleCoordMatrix =
-        DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
+        CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
     for (int i = 0; i < surfaceElement->NumNode(); i++)
     {
       // use nodes as starting values
@@ -1251,7 +1252,7 @@ bool GEO::getDistanceToLine(const DRT::Element* lineElement,
   if (eleGeoType == GEO::HIGHERORDER)
   {
     LINALG::SerialDenseMatrix eleCoordMatrix =
-        DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape());
+        CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape());
     // use end nodes as starting values in addition
     for (int i = 0; i < 2; i++)
     {
@@ -1694,7 +1695,7 @@ bool GEO::inSameNodeBox(const LINALG::Matrix<3, 2>& AABB_old, const LINALG::Matr
 void GEO::checkRoughGeoType(const DRT::Element* element,
     const LINALG::SerialDenseMatrix xyze_element, GEO::EleGeoType& eleGeoType)
 {
-  const int order = DRT::UTILS::getOrder(element->Shape());
+  const int order = CORE::DRT::UTILS::getOrder(element->Shape());
 
   if (order == 1)
     eleGeoType = GEO::LINEAR;  // TODO check for bilinear elements in the tree they count as
@@ -1715,7 +1716,7 @@ void GEO::checkRoughGeoType(const DRT::Element* element,
 void GEO::checkRoughGeoType(const Teuchos::RCP<DRT::Element> element,
     const LINALG::SerialDenseMatrix xyze_element, GEO::EleGeoType& eleGeoType)
 {
-  const int order = DRT::UTILS::getOrder(element->Shape());
+  const int order = CORE::DRT::UTILS::getOrder(element->Shape());
 
   if (order == 1)
     eleGeoType = GEO::LINEAR;  // TODO check for bilinear elements in the tree they count as

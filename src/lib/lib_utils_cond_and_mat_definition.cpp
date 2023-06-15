@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils_cond_and_mat_definition.H"
 
 // Convert a string to a number, i.e. to an int or a double

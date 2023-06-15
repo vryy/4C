@@ -10,7 +10,7 @@
 #ifndef SCATRA_ELE_UTILS_ELCH_H
 #define SCATRA_ELE_UTILS_ELCH_H
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_elch.H"
 
@@ -27,10 +27,10 @@ namespace DRT
     {
      protected:
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
      public:
       //! singleton access method

@@ -1,39 +1,5 @@
 ###------------------------------------------------------------------ Test definitions
 
-# Determine timeout for each test. Use default one, if it is not passed from the outside.
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT})
-  set(GLOBAL_TEST_TIMEOUT $ENV{GLOBAL_TEST_TIMEOUT})
-  message("Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s (before scaling).")
-else()
-  # default test timeout, if not passed as an environment variable
-  set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
-
-  message(
-    "Global test timeout is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT} s (before scaling)."
-    )
-endif()
-
-# Determine timeout scale factor. Use default one, if it is not passed from the outside
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  set(GLOBAL_TEST_TIMEOUT_SCALE $ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  message("Global test timeout scale is $ENV{GLOBAL_TEST_TIMEOUT_SCALE}.")
-else()
-  # default test timeout scale, if not passed as an environment variable
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-    set(GLOBAL_TEST_TIMEOUT_SCALE 4) # Default timeout scale for debug configuration
-  else()
-    set(GLOBAL_TEST_TIMEOUT_SCALE 1) # Default timeout scale
-  endif()
-
-  message(
-    "Global test timeout scale is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT_SCALE} for this kind of build."
-    )
-endif()
-
-# Determine scaled global test timeout
-math(EXPR GLOBAL_TEST_TIMEOUT_SCALED "${GLOBAL_TEST_TIMEOUT}*${GLOBAL_TEST_TIMEOUT_SCALE}")
-message("The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
-
 ####################################################################
 ################        Definition of macros       #################
 ####################################################################
@@ -177,6 +143,59 @@ macro(
     set_timeout(${name_of_test}-restart ${actualtesttimeout})
   endif(${restart_step})
 endmacro(baci_test_extended_timeout)
+
+# DEFAULT BACI TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
+# Usage in TestingFrameworkListOfTests.cmake: "baci_omp_test(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
+# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <num_proc>: number of mpi-processors the test should use
+# <num_omp_threads>: number of OpenMP threads per proccessor the test should use
+# <restart_step>: number of restart step; <""> indicates no restart
+# optional: <label>: add a label to the test
+macro(
+  baci_omp_test
+  name_of_input_file
+  num_proc
+  num_omp_threads
+  restart_step
+  )
+  set(name_of_test ${name_of_input_file}-p${num_proc}-t${num_omp_threads})
+  set(test_directory
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc}_t${num_omp_threads}
+      )
+  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+
+  add_test(
+    NAME ${name_of_input_file}-p${num_proc}-t${num_omp_threads}
+    COMMAND
+      bash -c
+      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
+    )
+
+  # Calculate the total number of processors required
+  math(EXPR total_num_proc "${num_proc}*${num_omp_threads}")
+
+  require_fixture(${name_of_test} test_cleanup)
+  set_processors(${name_of_test} ${total_num_proc})
+  define_setup_fixture(${name_of_test} ${name_of_test})
+  set_timeout(${name_of_test})
+
+  if(NOT "${ARGN}" STREQUAL "")
+    set_label(${name_of_test} ${ARGN})
+  endif()
+
+  if(${restart_step})
+    add_test(
+      NAME ${name_of_test}-restart
+      COMMAND
+        bash -c
+        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
+      )
+
+    require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
+    set_processors(${name_of_test}-restart ${total_num_proc})
+    set_timeout(${name_of_test}-restart)
+  endif(${restart_step})
+endmacro(baci_omp_test)
 
 # DEFAULT BACI TEST + POST ENSIGHT - run BACI test and subsequent post ensight test in serial and parallel
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_and_post_ensight_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
@@ -465,7 +484,10 @@ macro(cut_test num_proc)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/cut_test_p${num_proc})
 
   set(RUNTESTS
-      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test
+      # Run all the cuttests with num_proc except from alex53
+      ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test\ --ignore_test=alex53
+      # Run alex53 serially
+      ${PROJECT_BINARY_DIR}/cut_test\ --test=alex53
       )
 
   add_test(
@@ -547,7 +569,7 @@ macro(
     set(FIELD "")
   endif()
 
-  set(name_of_test ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp)
+  set(name_of_test "${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp")
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
       ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
@@ -558,16 +580,13 @@ macro(
 
   # specify test case
   add_test(
-    NAME ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
+    NAME "${name_of_test}"
     COMMAND
       sh -c
       " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
-  require_fixture(
-    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
-    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
-    )
+  require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
   set_environment(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
@@ -702,7 +721,7 @@ macro(
 
   # add test to testing framework
   add_test(
-    NAME ${name_of_test}-p${num_proc_base_run}
+    NAME "${name_of_test}-p${num_proc_base_run}"
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}

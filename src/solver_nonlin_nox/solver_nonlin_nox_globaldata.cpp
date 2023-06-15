@@ -24,14 +24,14 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "inpar_structure.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*

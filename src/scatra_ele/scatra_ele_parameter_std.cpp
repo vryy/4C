@@ -20,8 +20,8 @@ coexist with this general class.
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "lib_dserror.H"
-#include "headers_singleton_owner.H"
+#include "utils_exceptions.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                             thon/vuong 07/15 |
@@ -30,10 +30,11 @@ DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Inst
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
-      { return std::unique_ptr<ScaTraEleParameterStd>(new ScaTraEleParameterStd(disname)); });
+  static auto singleton_map =
+      CORE::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+          { return std::unique_ptr<ScaTraEleParameterStd>(new ScaTraEleParameterStd(disname)); });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*

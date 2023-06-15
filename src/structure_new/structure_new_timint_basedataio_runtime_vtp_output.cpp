@@ -10,27 +10,11 @@
 
 #include "structure_new_timint_basedataio_runtime_vtp_output.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "inpar_parameterlist_utils.H"
 
 #include "beam3_discretization_runtime_vtu_output_params.H"
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-STR::TIMINT::ParamsRuntimeVtpOutput::ParamsRuntimeVtpOutput()
-    : isinit_(false),
-      issetup_(false),
-      output_data_format_(INPAR::IO_RUNTIME_VTP_STRUCTURE::vague),
-      output_interval_steps_(-1),
-      output_every_iteration_(false),
-      output_owner_(false),
-      output_orientationandlength_(false),
-      output_numberofbonds_(false),
-      output_linkingforce_(false)
-{
-  // empty constructor
-}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -46,6 +30,8 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
           IO_vtp_structure_paramslist, "OUTPUT_DATA_FORMAT");
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
+
+  output_step_offset_ = IO_vtp_structure_paramslist.get<int>("STEP_OFFSET");
 
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");

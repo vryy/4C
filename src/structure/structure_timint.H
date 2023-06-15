@@ -484,9 +484,6 @@ namespace STR
     //! Output on the micro-scale (multi-scale analysis)
     void OutputMicro();
 
-    //! Patient Specific Output
-    void OutputPatspec();
-
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
@@ -1057,6 +1054,10 @@ namespace STR
     /// Contract the dbc map by dofs provided in Epetra_Map maptoremove
     virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
+    /// prepares and evalutes egde-based internal face integrals
+    void EvaluateEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Epetra_Vector> systemvector1);
+
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
@@ -1253,11 +1254,6 @@ namespace STR
     double dtele_;                       //!< element evaluation time
     double dtcmt_;                       //!< contact / meshtying evaluation time
     double inttime_global_;              //!< global integration time for contact evaluation
-    //@}
-
-    //! @name Patient specific stuff
-    //@{
-    Teuchos::RCP<Teuchos::ParameterList> pslist_;
     //@}
 
     //! @name Biofilm specific stuff

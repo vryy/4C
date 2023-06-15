@@ -9,17 +9,18 @@
 #ifndef POROELAST_BASE_H
 #define POROELAST_BASE_H
 
-#include <Teuchos_Time.hpp>
 
 #include <utility>
 
 #include "adapter_algorithmbase.H"
 #include "adapter_field.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "poroelast_utils.H"
 
 #include "linalg_mapextractor.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 
 namespace DRT
 {
@@ -205,7 +206,7 @@ namespace POROELAST
     bool HasSubmeshes() { return submeshes_; }
 
     //! return coupling object
-    ADAPTER::Coupling& FluidStructureCoupling() { return *coupling_fluid_structure_; }
+    CORE::ADAPTER::Coupling& FluidStructureCoupling() { return *coupling_fluid_structure_; }
 
    protected:
     //! @name Transfer helpers
@@ -256,7 +257,7 @@ namespace POROELAST
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_;
     //!@}
 
     //! flag for old time integration
@@ -279,7 +280,7 @@ namespace POROELAST
     bool submeshes_;
 
     //! coupling of fluid and structure (whole field)
-    Teuchos::RCP<ADAPTER::Coupling> coupling_fluid_structure_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupling_fluid_structure_;
 
     //! @name Underlying fields
 

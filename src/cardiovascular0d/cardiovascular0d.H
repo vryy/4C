@@ -17,7 +17,7 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_FECrsMatrix.h>
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_cardiovascular0d.H"
 
 
@@ -146,7 +146,7 @@ namespace UTILS
     const INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
     const INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
     //! gaussian integration to be used
-    DRT::UTILS::GaussRule2D gaussrule_;
+    CORE::DRT::UTILS::GaussRule2D gaussrule_;
 
    private:
     // don't want = operator, cctor and destructor

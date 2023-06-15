@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include "ale_ale3.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;

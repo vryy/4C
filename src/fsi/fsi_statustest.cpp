@@ -11,8 +11,9 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
 
-#include "adapter_coupling.H"
-#include "lib_dserror.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+#include "utils_exceptions.H"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>
@@ -194,7 +195,7 @@ double NOX::FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 /*----------------------------------------------------------------------*/
 NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name, const LINALG::MapExtractor& extractor1,
     double scale1, const LINALG::MapExtractor& extractor2, double scale2,
-    Teuchos::RCP<ADAPTER::CouplingConverter> converter, double tolerance, ScaleType stype)
+    Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter, double tolerance, ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, NOX::Abstract::Vector::TwoNorm, stype),
       extractor1_(extractor1),
       extractor2_(extractor2),

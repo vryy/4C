@@ -15,12 +15,12 @@
  | storage mode is t[e11 e12 e13 e22 e23 e33]                           |
  | Must be called with contravariant base vectors !                     |
  *----------------------------------------------------------------------*/
-void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon)
+void s8_kov_cuca(double *t, const double **gkon)
 {
-  INT i, j;
-  DOUBLE T[3][3], Tcart[3][3];
+  int i, j;
+  double T[3][3], Tcart[3][3];
   /*
-  DOUBLE c[3][3];
+  double c[3][3];
   */
   /*----------------------------------------------------------------------*/
   T[0][0] = t[0];
@@ -75,12 +75,12 @@ void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon)
  | storage mode is t[e11 e12 e13 e22 e23 e33]                           |
  | Must be called with contravariant base vectors !                     |
  *----------------------------------------------------------------------*/
-void s8_kon_cacu(DOUBLE *t, DOUBLE **gkon)
+void s8_kon_cacu(double *t, double **gkon)
 {
-  INT i, j;
-  DOUBLE T[3][3], Tcart[3][3];
+  int i, j;
+  double T[3][3], Tcart[3][3];
   /*
-  DOUBLE c[3][3];
+  double c[3][3];
   */
   /*----------------------------------------------------------------------*/
   Tcart[0][0] = t[0];
@@ -136,12 +136,12 @@ void s8_kon_cacu(DOUBLE *t, DOUBLE **gkon)
  | storage mode is t[e11 e12 e13 e22 e23 e33]                           |
  | Must be called with covariant base vectors !                         |
  *----------------------------------------------------------------------*/
-void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov)
+void s8_kov_cacu(double *t, const double **gkov)
 {
-  INT i, j;
-  DOUBLE T[3][3], Tcart[3][3];
+  int i, j;
+  double T[3][3], Tcart[3][3];
   /*
-  DOUBLE c[3][3];
+  double c[3][3];
   */
   /*----------------------------------------------------------------------*/
   Tcart[0][0] = t[0];
@@ -196,11 +196,11 @@ void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov)
  | cartesian to curvilinear                                             |
  | Must be called with contravariant base vectors base vectors !        |
  *----------------------------------------------------------------------*/
-void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], DOUBLE **gkon)
+void s8_4kon_cacu(double Ccart[][3][3][3], double **gkon)
 {
-  INT i, j, k, l;
-  INT m, n, p, q;
-  DOUBLE C[3][3][3][3];
+  int i, j, k, l;
+  int m, n, p, q;
+  double C[3][3][3][3];
   /*----------------------------------------------------------------------*/
   for (i = 0; i < 3; i++)
     for (j = 0; j < 3; j++)
@@ -228,7 +228,7 @@ void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], DOUBLE **gkon)
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-void s8_c4_to_C2(DOUBLE C[][3][3][3], DOUBLE **CC)
+void s8_c4_to_C2(double C[][3][3][3], double **CC)
 {
   /*----------------------------------------------------------------------*/
   CC[0][0] = C[0][0][0][0];
@@ -280,12 +280,12 @@ void s8_c4_to_C2(DOUBLE C[][3][3][3], DOUBLE **CC)
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel_cart(STVENANT *mat, DOUBLE C[][3][3][3], DOUBLE **CC, DOUBLE *strain)
+void s8_mat_linel_cart(STVENANT *mat, double C[][3][3][3], double **CC, double *strain)
 {
-  DOUBLE emod, nue;
-  DOUBLE l1, l2, ll2;
+  double emod, nue;
+  double l1, l2, ll2;
   /*
-  DOUBLE e[3][3];
+  double e[3][3];
   */
   /*----------------------------------------------------------------------*/
   emod = mat->youngs;

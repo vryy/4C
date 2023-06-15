@@ -16,7 +16,7 @@ is handed to a c++ object mesh.
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "pre_exodus_soshextrusion.H"  //for gmsh plot
 
 #include <exodusII.h>
@@ -519,8 +519,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   Teuchos::RCP<Teuchos::Time> time3 = Teuchos::TimeMonitor::getNewTimer("Get Ele Conn");
   Teuchos::RCP<Teuchos::Time> time4 = Teuchos::TimeMonitor::getNewTimer("Get one Ele");
   Teuchos::RCP<Teuchos::Time> time5 = Teuchos::TimeMonitor::getNewTimer("Build one Side Conn");
-  Teuchos::RCP<Teuchos::Time> time6 = Teuchos::TimeMonitor::getNewTimer("One Side Set");
-  Teuchos::RCP<Teuchos::Time> time7 =
+  Teuchos::RCP<Teuchos::Time> time6 =
       Teuchos::TimeMonitor::getNewTimer("Get all Eblocks and Econns");
   Teuchos::RCP<Teuchos::TimeMonitor> tm_total = Teuchos::rcp(new Teuchos::TimeMonitor(*timetot));
 
@@ -537,7 +536,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   // Also we once get all EBlocks and EConns to enable quick access
   std::vector<EXODUS::ElementBlock> eblocks;
   std::vector<std::map<int, std::vector<int>>> econns;
-  Teuchos::RCP<Teuchos::TimeMonitor> tm7 = Teuchos::rcp(new Teuchos::TimeMonitor(*time7));
+  Teuchos::RCP<Teuchos::TimeMonitor> tm6 = Teuchos::rcp(new Teuchos::TimeMonitor(*time6));
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs)
   {
     rangebreak += i_ebs->second->GetNumEle();
@@ -545,7 +544,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
     eblocks.push_back(*i_ebs->second);
     econns.push_back(*(i_ebs->second->GetEleConn()));
   }
-  tm7 = Teuchos::null;
+  tm6 = Teuchos::null;
 
   // fill SideSet Connectivity
   // int perc = 1;
@@ -598,8 +597,8 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       case ElementBlock::pyramid5:
       {
         //      vector<std::vector<int> > test =
-        //      DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned int
-        //      j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
+        //      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
+        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
         actface = PyrSideNumberExoToBaci(actface);
         pyrc++;
         break;
@@ -607,8 +606,8 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       case ElementBlock::wedge6:
       {
         //      vector<std::vector<int> > test =
-        //      DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned int
-        //      j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
+        //      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
+        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
         wedgc++;
         break;
       }
@@ -620,7 +619,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       }
     }
     std::vector<int> childmap =
-        DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     std::vector<int> child;
     for (unsigned int j = 0; j < childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
@@ -750,7 +749,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       }
     }
     std::vector<int> childmap =
-        DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
 
     std::vector<int> child;
     if (checkoutside)
@@ -1459,7 +1458,8 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
        elem != eleconn->end(); ++elem)
   {
-    if (DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
+    if (CORE::DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) !=
+        (int)elem->second.size())
     {
       dserror("number of read nodes does not fit the distype");
     }

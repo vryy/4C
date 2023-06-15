@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 
 #include "fsi_algorithm.H"
+#include "coupling_adapter_mortar.H"
 
 // forward declarations
 
@@ -58,7 +59,7 @@ namespace FSI
     /// interface structural operator
 
     /// coupling of structure and fluid at the interface, with mortar. Experimental!
-    Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     /// nodes at the fluid-structure interface match
     bool matchingnodes_;

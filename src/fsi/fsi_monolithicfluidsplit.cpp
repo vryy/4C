@@ -24,12 +24,14 @@ with condensed fluid interface velocities
 #include "adapter_str_structure.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid_fsi.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_converter.H"
+
 #include "structure_aux.H"
 #include "fluid_utils_mapextractor.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "ale_utils_mapextractor.H"
 #include "adapter_ale_fsi.H"
 
@@ -589,9 +591,9 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupSystemMatrix");
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get info about STC feature
   INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
@@ -650,13 +652,13 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   s->UnComplete();
 
   (*fggtransform_)(fgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale * timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, true,
-      true);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+      *s, true, true);
 
   Teuchos::RCP<LINALG::SparseMatrix> lfgi =
       Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
   (*fgitransform_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-      ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
 
   lfgi->Complete(fgi.DomainMap(), s->RangeMap());
 
@@ -671,14 +673,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     Teuchos::RCP<LINALG::SparseMatrix> lfig =
         Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(), 81, false));
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), fig, timescale,
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
   }
   else
   {
     Teuchos::RCP<LINALG::SparseMatrix> lfig =
         Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(), 81, false));
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), fig, timescale,
-        ADAPTER::CouplingSlaveConverter(coupsf), *lfig);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfig);
 
     lfig->Complete(s->DomainMap(), fig.RangeMap());
 
@@ -695,14 +697,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   if (stcalgo == INPAR::STR::stc_none)
   {
     (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
+        CORE::ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
   }
   else
   {
     Teuchos::RCP<LINALG::SparseMatrix> laig =
         Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(), 81, false));
-    (*aigtransform_)(
-        a->FullRowMap(), a->FullColMap(), aig, 1., ADAPTER::CouplingSlaveConverter(coupsa), *laig);
+    (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
+        CORE::ADAPTER::CouplingSlaveConverter(coupsa), *laig);
 
     laig->Complete(s->DomainMap(), laig->RangeMap());
 
@@ -733,14 +735,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     if (stcalgo == INPAR::STR::stc_none)
     {
       (*figtransform_)(f->FullRowMap(), f->FullColMap(), fmig, 1.,
-          ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), false, true);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), false, true);
     }
     else
     {
       Teuchos::RCP<LINALG::SparseMatrix> lfmig =
           Teuchos::rcp(new LINALG::SparseMatrix(fmig.RowMap(), 81, false));
       (*figtransform_)(f->FullRowMap(), f->FullColMap(), fmig, 1.,
-          ADAPTER::CouplingSlaveConverter(coupsf), *lfmig, false, true);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfmig, false, true);
 
 
       lfmig->Complete(s->DomainMap(), fmig.RangeMap());
@@ -754,20 +756,20 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     }
 
     (*fmggtransform_)(fmgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, false,
-        true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), *s, false, true);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
 
     {
       Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
           Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
       (*fmgitransform_)(fmgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-          ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingMasterConverter(coupfa), *lfmgi,
-          false, false);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+          CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
       lfmgi->Complete(aii.DomainMap(), s->RangeMap());
 
@@ -1533,9 +1535,9 @@ void FSI::MonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv,
-    Teuchos::RCP<const Epetra_Vector> av, bool fullvectors)
+    Teuchos::RCP<const Epetra_Vector> av, const bool slave_vectors_contain_interface_dofs)
 {
-  if (fullvectors)
+  if (slave_vectors_contain_interface_dofs)
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Epetra_Vector> fov = FluidField()->Interface()->ExtractOtherVector(fv);
@@ -1543,9 +1545,7 @@ void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
     // put them together
-    Extractor().AddVector(*sv, 0, v);
-    Extractor().AddVector(*fov, 1, v);
-    Extractor().AddVector(*aov, 2, v);
+    FSI::Monolithic::CombineFieldVectors(v, sv, fov, aov);
   }
   else
     FSI::Monolithic::CombineFieldVectors(v, sv, fv, av);

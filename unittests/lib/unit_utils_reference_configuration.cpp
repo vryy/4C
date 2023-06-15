@@ -12,7 +12,7 @@
 #include "so3_tet4.H"
 #include "so3_hex8.H"
 #include "contact_element.H"
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 #include <Epetra_SerialComm.h>
 

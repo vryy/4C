@@ -49,11 +49,6 @@ namespace DRT
   class DiscretizationInterface;
 }  // namespace DRT
 
-namespace XFEM
-{
-  class XFieldState;
-}  // namespace XFEM
-
 namespace ADAPTER
 {
   class StructureNew : public Structure
@@ -543,26 +538,6 @@ namespace ADAPTER
      *  \date 10/17
      */
     void SetState(const Teuchos::RCP<Epetra_Vector>& x) override = 0;
-
-    ///@}
-
-    /// @name XFEM related methods
-    ///@{
-
-    /// access the xfield state pointer
-    virtual Teuchos::RCP<XFEM::XFieldState> XFieldState() = 0;
-
-    /// access the xfield state pointer ( read-only )
-    [[nodiscard]] virtual Teuchos::RCP<const XFEM::XFieldState> XFieldState() const = 0;
-
-    /// destroy the current state variables
-    virtual bool DestroyState() = 0;
-
-    /// create a new xfield state ( should happen before you destroy the current state )
-    virtual void CreateNewXFieldState(const Teuchos::RCP<XFEM::XFieldState>& new_xstate) const = 0;
-
-    /// reset the non-standard / enrichment dofs of the xfield state object
-    virtual void ResetXFieldNonStandardDofs() = 0;
 
     ///@}
 

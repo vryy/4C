@@ -13,7 +13,7 @@
 #ifndef STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 #define STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_structure.H"
 
 #include "lib_utils_matrix_vector_enums.H"

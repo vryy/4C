@@ -15,7 +15,7 @@
 #include "structure_new_model_evaluator_data.H"
 #include "structure_new_utils.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Epetra_Comm.h>
 #include "solver_nonlin_nox_floating_point_exception.H"

@@ -50,9 +50,9 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include <Epetra_Vector.h>
 #include "lib_elementtype.H"
 #include "lib_node.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include <Sacado.hpp>
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include "beam3_base.H"
 
@@ -80,12 +80,9 @@ dserror(
 #endif
 
 #define MYGAUSSRULEBEAM3K \
-  GaussRule1D::line_4point  // define gauss rule; intrule_line_1point - intrule_line_10point
-                            // is implemented.
+  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                                // intrule_line_10point is implemented.
 // DEFAULT: intrule_line_4point
-
-#define LENGTHCALCNEWTONTOL 10e-12  // Tolerance for iterative determination of element length.
-// DEFAULT: 10e-12
 
 #define BEAM3K_COLLOCATION_POINTS \
   3  // defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner
@@ -231,11 +228,6 @@ namespace DRT
       \brief get reference rotation vector i.e. theta0_
       */
       std::vector<LINALG::Matrix<3, 1>> Theta0() const { return theta0_; }
-
-      /*!
-       \brief Get centerline position at given parameter coordinate xi
-      */
-      LINALG::Matrix<3, 1> GetPos(const double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
 
       /*!
        \brief Get (non-unit) tangent vectors at the two boundary nodes
@@ -423,12 +415,6 @@ namespace DRT
       */
       virtual int NumDofPerElement() const { return 0; }
 
-      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual inline bool HermiteCenterlineInterpolation() const { return true; }
-
       /*!
       \brief Print this element
       */
@@ -516,6 +502,15 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1);
 
+      /*!
+      \brief Set rotations in the initial configuration
+
+       Set the initial rotations based on nodal rotation (pseudo) vectors.
+       The nodal rotation vectors are independent of the subsequent used
+       rotational interpolation method.
+      */
+      void SetUpInitialRotations(const std::vector<double>& nodal_thetas);
+
 
       //! sets up from current nodal position all geometric parameters (considering current position
       //! as reference configuration)
@@ -528,7 +523,7 @@ namespace DRT
       /*!
       \brief get (non-unit) tangent vectors at the two boundary nodes in the initial configuration
       */
-      std::vector<LINALG::Matrix<3, 1>> Tref() const { return T0_; }
+      std::vector<LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
       //@}
 
       /** \brief add indices of those DOFs of a given node that are positions
@@ -1090,7 +1085,7 @@ namespace DRT
       void computestrain(const LINALG::Matrix<3, 1, T>& theta,
           const LINALG::Matrix<3, 1, T>& theta_deriv, LINALG::Matrix<3, 1, T>& K) const
       {
-        LINALG::Matrix<3, 3, T> Tinv = LARGEROTATIONS::Tinvmatrix(theta);
+        LINALG::Matrix<3, 3, T> Tinv = CORE::LARGEROTATIONS::Tinvmatrix(theta);
 
         K.Clear();
         K.MultiplyTN(Tinv, theta_deriv);
@@ -1110,10 +1105,10 @@ namespace DRT
         LINALG::Matrix<3, 3, T> triad_bar(true);
 
         // Compute triad_bar via SR mapping from triad_ref onto r_s
-        LARGEROTATIONS::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
+        CORE::LARGEROTATIONS::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
 
         // Compute triad via relative rotation of triad_bar
-        LARGEROTATIONS::RotateTriad<T>(triad_bar, phi, triad);
+        CORE::LARGEROTATIONS::RotateTriad<T>(triad_bar, phi, triad);
       }
 
       template <typename T1, typename T2>
@@ -1153,11 +1148,6 @@ namespace DRT
           const LINALG::Matrix<3 * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec,
           LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
           bool add_reference_values = false) const;
-
-      //! add reference positions and tangents to (centerline) displacement state vector
-      template <unsigned int nnodecl, unsigned int vpernode, typename T>
-      void AddRefValuesDispCenterline(
-          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const;
 
       //! "add" reference values to displacement state vector (multiplicative in case of rotation
       //! pseudo vectors)
@@ -1208,18 +1198,13 @@ namespace DRT
       //! lump mass matrix
       void Lumpmass(Epetra_SerialDenseMatrix* emass);
 
-      //! Computes the length of the element and its Jacobi based upon a hermitian interpolation of
-      //! the geometry
-      void Calculate_length(const std::vector<LINALG::Matrix<3, 1>>& xrefe,
-          const std::vector<LINALG::Matrix<3, 1>>& trefe, double tolerance);
-
       template <typename T>
       void Calculate_clcurvature(LINALG::Matrix<3, 1, T>& r_s, LINALG::Matrix<3, 1, T>& r_ss,
           LINALG::Matrix<3, 1, T>& kappacl) const
       {
         // spinmatrix Sr' = r'x
         LINALG::Matrix<3, 3, T> Srs(true);
-        LARGEROTATIONS::computespin(Srs, r_s);
+        CORE::LARGEROTATIONS::computespin(Srs, r_s);
 
         // cross-product r'xr''
         LINALG::Matrix<3, 1, T> Srsrss(true);
@@ -1325,7 +1310,7 @@ namespace DRT
         rttmodconvmass_[num].Clear();
         rttmodnewmass_[num].Clear();
 
-        LARGEROTATIONS::triadtoquaternion(triad_mat, Qconvmass_[num]);
+        CORE::LARGEROTATIONS::triadtoquaternion(triad_mat, Qconvmass_[num]);
         Qnewmass_[num] = Qconvmass_[num];
         rconvmass_[num] = r;
         rnewmass_[num] = r;
@@ -1342,7 +1327,7 @@ namespace DRT
       {
         LINALG::Matrix<3, 3, FAD> auxmatrix1(true);
         LINALG::Matrix<3, 1, FAD> auxvec1(true);
-        LARGEROTATIONS::computespin(auxmatrix1, vec1);
+        CORE::LARGEROTATIONS::computespin(auxmatrix1, vec1);
         auxvec1.Multiply(auxmatrix1, vec2);
         vec_out.MultiplyTN(mat1, auxvec1);
 
@@ -1574,8 +1559,6 @@ namespace DRT
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
 
-      //! tangent vectors at the two boundary nodes in the initial configuration
-      std::vector<LINALG::Matrix<3, 1>> T0_;
       //! current (non-unit) tangent vectors at the two boundary nodes
       std::vector<LINALG::Matrix<3, 1>> T_;
       // Variables needed by all local triads

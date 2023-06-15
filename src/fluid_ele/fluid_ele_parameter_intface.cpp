@@ -19,14 +19,14 @@ be set in problem specific parameter lists derived from this class.
 
 #include <string>
 #include <iostream>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "io_pstream.H"
 
 
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterIntFace>(

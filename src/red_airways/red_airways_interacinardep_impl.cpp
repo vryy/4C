@@ -23,7 +23,8 @@
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_function_of_time.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "red_airways_evaluation_data.h"
 #include <fstream>
 #include <iomanip>
 
@@ -98,12 +99,12 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Epetra_SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   // Set the generation number for the inter-acinar linker element to -2.0
   int gid = ele->Id();
   double val = -2.0;
-  generations->ReplaceGlobalValues(1, &val, &gid);
+  evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
 
   // In this element, each node of an inter-acinar linker element has
   // one linker. The final sum of linkers for each node is automatically
@@ -153,8 +154,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 {
   const int myrank = discretization.Comm().MyPID();
 
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+
   // Get total time
-  const double time = params.get<double>("total time");
+  const double time = evaluation_data.time;
 
   // Get the number of nodes
   const int numnode = lm.size();
@@ -258,15 +261,6 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
          **/
         if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
-
           if (Bc == "VolumeDependentPleuralPressure")
           {
             DRT::Condition* pplCond =
@@ -313,36 +307,39 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
                     "TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
               }
 
+              DRT::REDAIRWAYS::EvaluationData& evaluation_data =
+                  DRT::REDAIRWAYS::EvaluationData::get();
+
               if (ppl_Type == "Linear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Linear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Linear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double lungVolumenp = evaluation_data.lungVolume_n;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else if (ppl_Type == "Nonlinear_Polynomial")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = ap + bp * (lungVolumenp - RV) + cp * pow((lungVolumenp - RV), dp);
               }
               else if (ppl_Type == "Nonlinear_Exponential")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 const double TLCnp = (lungVolumenp - RV) / (TLC - RV);
                 Pp_np = ap + bp * TLCnp + cp * exp(dp * TLCnp);
               }
               else if (ppl_Type == "Nonlinear_Ogden")
               {
-                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double lungVolumenp = evaluation_data.lungVolume_np;
                 Pp_np = RV / lungVolumenp * cp / dp * (1 - pow(RV / lungVolumenp, dp));
               }
               else
@@ -361,17 +358,18 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             BCin += Pp_np;
           }
 
+          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
           // Set pressure at node i
           int gid;
           double val;
 
           gid = lm[i];
           val = BCin;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
         else
         {
@@ -396,14 +394,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             exit(1);
           }
 
-          Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
-
-          if (bcval == Teuchos::null || dbctog == Teuchos::null)
-          {
-            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-            exit(1);
-          }
+          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
           // Set pressure at node i
           int gid;
@@ -411,11 +402,11 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
           gid = lm[i];
           val = 0.0;
-          bcval->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.bcval->ReplaceGlobalValues(1, &val, &gid);
 
           gid = lm[i];
           val = 1;
-          dbctog->ReplaceGlobalValues(1, &val, &gid);
+          evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
       }  // END of if there is no BC but the node still is at the terminal
     }    // END of if node is available on this processor

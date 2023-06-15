@@ -27,7 +27,7 @@ namespace DRT
 
      protected:
       //! number of element nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! protected constructor for singletons
       ScaTraEleSTIElch(const int numdofpernode, const int numscal, const std::string& disname);

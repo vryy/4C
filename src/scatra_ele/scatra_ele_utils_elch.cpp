@@ -12,7 +12,7 @@
 
 #include "mat_ion.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -25,7 +25,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<di
     const std::string& disname  ///< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElch<distype>>(
@@ -33,7 +33,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<di
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

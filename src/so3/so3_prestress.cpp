@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_prestress.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::ELEMENTS::PreStressType DRT::ELEMENTS::PreStressType::instance_;

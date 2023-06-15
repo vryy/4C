@@ -14,6 +14,7 @@
 #include "inpar_ale.H"
 
 #include "linalg_mapextractor.H"
+#include "coupling_adapter_mortar.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -109,7 +110,7 @@ namespace ALE
     virtual void DofRowMaps();
 
     //! Get function for the P matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo();
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixP();
 
     //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
@@ -187,7 +188,7 @@ namespace ALE
     Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;

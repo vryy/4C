@@ -9,7 +9,7 @@
 
 #include "lib_symbolic_expression.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 
 namespace
@@ -125,7 +125,7 @@ namespace
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
         DRT::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), std::runtime_error,
-        "unexpected token %d");
+        "unexpected token 7");
   }
 
 
@@ -140,7 +140,7 @@ namespace
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
         DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "),
-        std::runtime_error, "unexpected token %d");
+        std::runtime_error, "unexpected token 1");
   }
 
 

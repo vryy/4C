@@ -12,7 +12,7 @@
 #define GEOMETRY_ELEMENT_NORMALS_H
 
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 
 namespace GEO
@@ -28,7 +28,7 @@ namespace GEO
   inline void computeNormalToSurfaceElementViaShape(
       const M1& deriv, const M2& xyze, LINALG::Matrix<3, 1>& unrm)
   {
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // compute dXYZ / drs
     static LINALG::Matrix<3, 2> dxyzdrs;
@@ -74,7 +74,7 @@ namespace GEO
   inline void computeNormalAndTangentToSurfaceElementViaShape(const M1& deriv, const M2& xyze,
       LINALG::Matrix<3, 1>& unrm, LINALG::Matrix<3, 1>& utang1, LINALG::Matrix<3, 1>& utang2)
   {
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // compute dXYZ / drs
     static LINALG::Matrix<3, 2> dxyzdrs;
@@ -129,9 +129,9 @@ namespace GEO
   inline void computeNormalToSurfaceElementT(
       const M& xyze_surfaceElement, const V& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec)
   {
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<2, numnode> deriv_boundary;
-    DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
 
     computeNormalToSurfaceElementViaShape<DISTYPE>(
         deriv_boundary, xyze_surfaceElement, unitnormalvec);
@@ -152,9 +152,9 @@ namespace GEO
       const LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec,
       LINALG::Matrix<3, 1>& unittang1vec, LINALG::Matrix<3, 1>& unittang2vec)
   {
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<2, numnode> deriv_boundary;
-    DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
 
     computeNormalAndTangentToSurfaceElementViaShape<DISTYPE>(
         deriv_boundary, xyze_surfaceElement, unitnormalvec, unittang1vec, unittang2vec);

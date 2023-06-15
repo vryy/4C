@@ -21,7 +21,7 @@
 
 #include "solver_nonlin_nox_enum_lists.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 // forward declaration

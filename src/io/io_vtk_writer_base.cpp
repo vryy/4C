@@ -14,9 +14,9 @@
 #include <cmath>
 #include <filesystem>
 
-#include "pss_full_cpp.h"
+#include "io_legacy_table_cpp.h"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 
 #include "io_pstream.H"

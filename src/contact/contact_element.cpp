@@ -160,7 +160,7 @@ int CONTACT::CoElement::Evaluate(Teuchos::ParameterList& params,
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
-    std::vector<GEN::pairedvector<int, double>>& derivn)
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn)
 {
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -179,7 +179,7 @@ void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMa
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
-    std::vector<GEN::pairedvector<int, double>>& derivn)
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivn)
 {
   // initialize variables
   const int nnodes = NumNode();
@@ -384,7 +384,7 @@ void CONTACT::CoElement::PrepareDderiv(const std::vector<MORTAR::MortarElement*>
   int numderiv = 0;
   numderiv += NumNode() * 3 * 12;
   for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->NumNode() * 3;
-  dMatrixDeriv_ = Teuchos::rcp(new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
+  dMatrixDeriv_ = Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
       numderiv, 0, Epetra_SerialDenseMatrix(NumNode(), NumNode())));
 }
 
@@ -395,7 +395,7 @@ void CONTACT::CoElement::PrepareMderiv(
   int numderiv = 0;
   numderiv += NumNode() * 3 * 12;
   for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->NumNode() * 3;
-  mMatrixDeriv_ = Teuchos::rcp(new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
+  mMatrixDeriv_ = Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
       numderiv, 0, Epetra_SerialDenseMatrix(NumNode(), meles.at(m)->NumNode())));
 }
 
@@ -418,7 +418,7 @@ void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
         CONTACT::CoNode* cnode_k = dynamic_cast<CONTACT::CoNode*>(Nodes()[k]);
         std::map<int, double>& ddmap_jk = cnode_j->CoData().GetDerivD()[cnode_k->Id()];
 
-        for (GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
+        for (CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
                  dMatrixDeriv_->begin();
              p != dMatrixDeriv_->end(); ++p)
           ddmap_jk[p->first] += (p->second)(j, k);
@@ -428,7 +428,7 @@ void CONTACT::CoElement::AssembleDderivToNodes(bool dual)
     {
       std::map<int, double>& ddmap_jj = cnode_j->CoData().GetDerivD()[cnode_j->Id()];
 
-      for (GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
+      for (CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
                dMatrixDeriv_->begin();
            p != dMatrixDeriv_->end(); ++p)
         ddmap_jj[p->first] += (p->second)(j, j);
@@ -452,7 +452,7 @@ void CONTACT::CoElement::AssembleMderivToNodes(MORTAR::MortarElement& mele)
       CONTACT::CoNode* cnode_k = dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[k]);
       std::map<int, double>& dmmap_jk = cnode_j->CoData().GetDerivM()[cnode_k->Id()];
 
-      for (GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
+      for (CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator p =
                mMatrixDeriv_->begin();
            p != mMatrixDeriv_->end(); ++p)
         dmmap_jk[p->first] += (p->second)(j, k);

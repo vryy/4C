@@ -13,6 +13,8 @@
 #define FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
 
 #include "inpar_xfem.H"
+#include "lib_element.H"
+#include "fluid_ele_calc_xfem_coupling.H"
 
 //   qnuP - option SHOULD BE ON!
 //     projects the given velocity into normal direction in case there
@@ -41,14 +43,15 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = DRT::UTILS::DisTypeToDim<slave_distype>::dim;
+        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim;
         /// number of slave element's nodes
         static const unsigned slave_nen_ =
-            DRT::UTILS::DisTypeToNumNodePerEle<slave_distype>::numNodePerElement;
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<slave_distype>::numNodePerElement;
 
         //! ctor
         SlaveElementRepresentation(Epetra_SerialDenseMatrix& slave_xyze)
@@ -259,11 +262,12 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         /// just for compatibility...
         static const unsigned slave_nen_ = nen_;
 

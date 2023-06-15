@@ -1,19 +1,11 @@
-set(OBJS_PARTICLE_RIGIDBODY
-    # cmake-format: sortable
-    particle_rigidbody.cpp
-    particle_rigidbody_affiliation_pairs.cpp
-    particle_rigidbody_datastate.cpp
-    particle_rigidbody_result_test.cpp
-    particle_rigidbody_runtime_vtp_writer.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_particle_rigidbody ${OBJS_PARTICLE_RIGIDBODY})
-
-set(LIBS_ALG_PARTICLE_RIGIDBODY
+set(_particle_rigidbody_dependencies
     # cmake-format: sortable
+    inpar
     io
     lib
-    particleengine
+    particle_engine
+    particle_interaction
     )
-
-baci_add_dependency(alg_particle_rigidbody ${LIBS_ALG_PARTICLE_RIGIDBODY})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_particle_rigidbody_dependencies})

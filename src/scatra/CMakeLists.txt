@@ -1,56 +1,23 @@
-set(OBJS_SCATRA
-    # cmake-format: sortable
-    scatra_algorithm.cpp
-    scatra_cardiac_monodomain_dyn.cpp
-    scatra_dyn.cpp
-    scatra_nox_nln_scatra_linearsystem.cpp
-    scatra_resulttest.cpp
-    scatra_resulttest_elch.cpp
-    scatra_resulttest_hdg.cpp
-    scatra_timint_bdf2.cpp
-    scatra_timint_cardiac_monodomain.cpp
-    scatra_timint_cardiac_monodomain_scheme.cpp
-    scatra_timint_cardiac_monodomain_scheme_hdg.cpp
-    scatra_timint_convcheck_strategies.cpp
-    scatra_timint_elch.cpp
-    scatra_timint_elch_scheme.cpp
-    scatra_timint_elch_scl.cpp
-    scatra_timint_elch_service.cpp
-    scatra_timint_genalpha.cpp
-    scatra_timint_hdg.cpp
-    scatra_timint_heterogeneous_reaction_strategy.cpp
-    scatra_timint_implicit.cpp
-    scatra_timint_implicit_service.cpp
-    scatra_timint_loma.cpp
-    scatra_timint_loma_genalpha.cpp
-    scatra_timint_loma_ost.cpp
-    scatra_timint_meshtying_strategy_artery.cpp
-    scatra_timint_meshtying_strategy_fluid.cpp
-    scatra_timint_meshtying_strategy_fluid_elch.cpp
-    scatra_timint_meshtying_strategy_s2i.cpp
-    scatra_timint_meshtying_strategy_s2i_elch.cpp
-    scatra_timint_meshtying_strategy_std.cpp
-    scatra_timint_meshtying_strategy_std_elch.cpp
-    scatra_timint_ost.cpp
-    scatra_timint_poromulti.cpp
-    scatra_timint_stat.cpp
-    scatra_timint_stat_hdg.cpp
-    scatra_turbulence_hit_initial_scalar_field.cpp
-    scatra_turbulence_hit_scalar_forcing.cpp
-    scatra_utils.cpp
-    scatra_utils_clonestrategy.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_scatra ${OBJS_SCATRA})
-
-set(LIBS_ALG_SCATRA
+set(_scatra_dependencies
     # cmake-format: sortable
     adapter
-    alg_fluid_turbulence
-    alg_poromultiphase_scatra
+    binstrategy
+    core
+    fluid
+    fluid_turbulence
+    geometry
     inpar
+    io
     lib
-    lib_poromulti_art_coupl
+    linalg
+    mat
+    mortar
+    nurbs_discret
+    poromultiphase_scatra
+    rebalance
+    scatra_ele
+    solver_nonlin_nox
     )
-
-baci_add_dependency(alg_scatra ${LIBS_ALG_SCATRA})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_scatra_dependencies})

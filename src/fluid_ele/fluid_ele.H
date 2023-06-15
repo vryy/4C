@@ -25,7 +25,7 @@ of errors, turbulence statistics etc.).
 
 
 #include "lib_elementtype.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 // forward declarations
@@ -144,17 +144,23 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(distype_); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+      }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      virtual int NumVolume() const { return DRT::UTILS::getNumberOfElementVolumes(distype_); }
+      virtual int NumVolume() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -235,7 +241,7 @@ namespace DRT
       virtual int NumDofPerNode(const DRT::Node& node) const
       {
         // number of Dof's is fluid-specific.
-        const int nsd = DRT::UTILS::getDimension(distype_);
+        const int nsd = CORE::DRT::UTILS::getDimension(distype_);
         if (nsd > 1)
           return nsd + 1;
         else
@@ -489,12 +495,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -796,12 +805,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

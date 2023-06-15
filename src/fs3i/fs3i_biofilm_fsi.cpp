@@ -27,7 +27,7 @@
 #include "ale_utils_clonestrategy.H"
 #include "ale_utils_mapextractor.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_ale_fsi.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
@@ -180,26 +180,26 @@ void FS3I::BiofilmFSI::Setup()
   const int ndim = DRT::Problem::Instance()->NDim();
 
   // set up ale-fluid couplings
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoupfa_->SetupConditionCoupling(*(fsi_->FluidField()->Discretization()),
       (fsi_->FluidField()->Interface()->FSICondMap()), *(fsi_->AleField()->Discretization()),
       (fsi_->AleField()->Interface()->FSICondMap()), condname, ndim);
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fsi_->FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* fluidalenodemap = fsi_->AleField()->Discretization()->NodeRowMap();
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   coupfa_->SetupCoupling(*(fsi_->FluidField()->Discretization()),
       *(fsi_->AleField()->Discretization()), *fluidnodemap, *fluidalenodemap, ndim);
 
   // set up structale-structure couplings
-  icoupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoupsa_->SetupConditionCoupling(*(fsi_->StructureField()->Discretization()),
       fsi_->StructureField()->Interface()->FSICondMap(), *structaledis,
       ale_->Interface()->FSICondMap(), condname, ndim);
   // the structure-structale coupling always matches
   const Epetra_Map* structurenodemap = fsi_->StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* structalenodemap = structaledis->NodeRowMap();
-  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   coupsa_->SetupCoupling(*(fsi_->StructureField()->Discretization()), *structaledis,
       *structurenodemap, *structalenodemap, ndim);
 

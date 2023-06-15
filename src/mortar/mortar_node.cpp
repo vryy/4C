@@ -10,7 +10,7 @@
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_defines.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_discret.H"
 
 

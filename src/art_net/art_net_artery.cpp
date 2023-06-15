@@ -10,7 +10,7 @@
 #include "art_net_artery.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
 using namespace DRT::UTILS;
@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
     : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), data_()
 {
-  gaussrule_ = GaussRule1D::undefined;
+  gaussrule_ = CORE::DRT::UTILS::GaussRule1D::undefined;
 
   return;
 }

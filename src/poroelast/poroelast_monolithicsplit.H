@@ -13,11 +13,7 @@
 
 
 #include "poroelast_monolithic.H"
-
-namespace ADAPTER
-{
-  class CouplingConverter;
-}
+#include "coupling_adapter.H"
 
 namespace POROELAST
 {
@@ -74,7 +70,7 @@ namespace POROELAST
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a
     //! split, i.e. structure or fluid split.
-    Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfs_;
 
     //! flag indicating whether there are no slip conditions to be evaluated at the interface
     bool evaluateinterface_;

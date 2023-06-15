@@ -18,9 +18,10 @@
 #include "geometry_pair.H"
 #include "geometry_pair_element.H"
 #include "geometry_pair_scalar_types.H"
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
+#include "linalg_sparsematrix.H"
 #include "geometry_pair_element_functions.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "inpar_beam_to_solid.H"
 #include "beam3_reissner.H"
 #include "beam3_triad_interpolation_local_rotation_vectors.H"
@@ -299,7 +300,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   LINALG::Matrix<4, 1, scalar_type> quaternion_beam_ref_fad;
   for (unsigned int i = 0; i < 4; i++) quaternion_beam_ref_fad(i) = quaternion_beam_ref(i);
   LINALG::Matrix<3, 3, scalar_type> ref_triad;
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
   LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
       xi, q_solid_ref, q_solid, deformation_gradient, element);
@@ -348,8 +349,8 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   rot_vec.CrossProduct(projected_basis[0], average_vector);
   rot_vec.Scale(0.5 * (M_PI - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before, should
                                                               // already be length one.
-  LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
-  LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+  CORE::LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
   start_vec.Multiply(rot_mat, projected_basis[0]);
 
   // Rotate to the new basis vectors.
@@ -358,16 +359,16 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   {
     rot_vec = average_vector;
     rot_vec.Scale(alpha + i_basis * M_PI * 2.0 / 3.0);
-    LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
-    LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+    CORE::LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+    CORE::LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
 
     temp_vec.Multiply(rot_mat, start_vec);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) new_basis(i_dim, i_basis) = temp_vec(i_dim);
   }
 
   // Get the rotation angle.
-  LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
-  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+  CORE::LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 }
 
 
@@ -384,7 +385,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossS
 {
   // Get basis vectors of reference triad in the current configuration.
   LINALG::Matrix<3, 3, double> ref_triad;
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, ref_triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, ref_triad);
   LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
       xi, q_solid_ref, q_solid, deformation_gradient, element);
@@ -452,14 +453,14 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossS
   LINALG::Matrix<3, 3, scalar_type> solid_triad_rel(true);
 
   rot_vec(0) = -M_PI_4;
-  LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
-  LARGEROTATIONS::quaterniontotriad(rot_quat, solid_triad_rel);
+  CORE::LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontotriad(rot_quat, solid_triad_rel);
 
   // Get the rotation angle.
   LINALG::Matrix<3, 3, scalar_type> solid_triad;
   solid_triad.Multiply(solid_triad_ref, solid_triad_rel);
-  LARGEROTATIONS::triadtoquaternion(solid_triad, rot_quat);
-  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+  CORE::LARGEROTATIONS::triadtoquaternion(solid_triad, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 }
 
 /**
@@ -477,7 +478,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
   LINALG::Matrix<4, 1, scalar_type> quaternion_beam_ref_fad;
   for (unsigned int i = 0; i < 4; i++) quaternion_beam_ref_fad(i) = quaternion_beam_ref(i);
   LINALG::Matrix<3, 3, scalar_type> ref_triad;
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
   LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
       xi, q_solid_ref, q_solid, deformation_gradient, element);
@@ -527,8 +528,8 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
   {
     rot_vec = normalized_base_1;
     rot_vec.Scale(alpha + i_basis * M_PI * 0.5);
-    LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
-    LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+    CORE::LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+    CORE::LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
 
     temp_vec.Multiply(rot_mat, projected_basis[0]);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -536,8 +537,8 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
   }
 
   // Get the rotation angle.
-  LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
-  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+  CORE::LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 }
 
 /**
@@ -556,7 +557,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
   LINALG::Matrix<4, 1, scalar_type> quaternion_beam_ref_fad;
   for (unsigned int i = 0; i < 4; i++) quaternion_beam_ref_fad(i) = quaternion_beam_ref(i);
   LINALG::Matrix<3, 3, scalar_type> ref_triad;
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
   LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
       xi, q_solid_ref, q_solid, deformation_gradient, element);
@@ -622,8 +623,8 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
 
   // Convert the triad into a rotation vector.
   LINALG::Matrix<4, 1, scalar_type> solid_quaternion;
-  LARGEROTATIONS::triadtoquaternion(solid_triad, solid_quaternion);
-  LARGEROTATIONS::quaterniontoangle(solid_quaternion, psi_solid);
+  CORE::LARGEROTATIONS::triadtoquaternion(solid_triad, solid_quaternion);
+  CORE::LARGEROTATIONS::quaterniontoangle(solid_quaternion, psi_solid);
 }
 
 /**
@@ -647,7 +648,7 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
 
   // Reference rotation of beam cross-section in plane.
   LINALG::Matrix<3, 1, double> beam_ref_psi;
-  LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
+  CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
   double reference_rotation_beam = FADUTILS::VectorNorm(beam_ref_psi);
 
   // Perform a polar decomposition of the 2D deformation gradient.
@@ -724,7 +725,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient2D(
 
   // Reference rotation of beam cross-section in plane.
   LINALG::Matrix<3, 1, double> beam_ref_psi;
-  LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
+  CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
   double reference_rotation_beam = FADUTILS::VectorNorm(beam_ref_psi);
 
   // Get the rotation of the solid.
@@ -771,7 +772,7 @@ void BEAMINTERACTION::CheckPlaneRotations(
         FADUTILS::sqrt(out_of_plane_values), tol);
   LINALG::Matrix<2, 1, double> projection_on_x;
   LINALG::Matrix<3, 1, double> beam_ref_psi;
-  LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
+  CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
   for (unsigned int i = 0; i < 2; i++) projection_on_x(i) = beam_ref_psi(i + 1);
   if (FADUTILS::VectorNorm(projection_on_x) > tol)
     dserror("The beam reference rotation is not just in plane. Projection value: %f, tolerance: %f",

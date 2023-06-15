@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_poro_wrapper.H"
 #include "adapter_fld_poro.H"
 #include "poroelast_monolithic.H"
@@ -19,7 +19,7 @@
 #include "linalg_blocksparsematrix.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -198,8 +198,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
   //-------------------------------------------------------------------------
   // Finish standard FluidField()->Init()!
-  // REMARK: We don't want to do this at the beginning, to be able to use std ADAPTER::Coupling for
-  // FA-Coupling
+  // REMARK: We don't want to do this at the beginning, to be able to use std
+  // ADAPTER::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
   const int restart = DRT::Problem::Instance()->Restart();
   if (not restart)

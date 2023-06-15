@@ -42,7 +42,7 @@
 #include "fluid_utils_infnormscaling.H"
 #include "fluid_ele.H"
 #include "linalg_krylov_projector.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "io.H"
 #include "io_discretization_runtime_vtu_writer.H"
 #include "lib_condition_utils.H"
@@ -51,7 +51,7 @@
 #include "lib_assemblestrategy.H"
 #include "lib_locsys.H"
 #include "comm_utils.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "nurbs_discret_apply_nurbs_initial_condition.H"
 #include "mat_par_bundle.H"
 #include "mat_newtonianfluid.H"
@@ -73,6 +73,7 @@
 #include "lib_discret_faces.H"
 
 #include "geometry_position_array.H"
+#include "fluid_ele_intfaces_calc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1861,11 +1862,138 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
     Teuchos::ParameterList params;
     if (params_->sublist("RESIDUAL-BASED STABILIZATION").isParameter("POROUS-FLOW STABILIZATION"))
       params.set<INPAR::XFEM::FaceType>("FaceType", INPAR::XFEM::face_type_porof);
-
-    facediscret_->EvaluateEdgeBased(sysmat_, residual_, params);
+    // set action for elements
+    params.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
+    EvaluateFluidEdgeBased(sysmat_, residual_, params);
 
     discret_->ClearState();
   }
+}
+
+
+void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, Teuchos::RCP<Epetra_Vector> systemvector1,
+    Teuchos::ParameterList edgebasedparams)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidImplicitTimeInt::EvaluateEdgeBased");
+
+
+  Teuchos::RCP<Epetra_Vector> residual_col =
+      LINALG::CreateVector(*(facediscret_->DofColMap()), true);
+
+  const Epetra_Map* rmap = NULL;
+
+  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
+  if (systemmatrix1 != Teuchos::null)
+  {
+    rmap = &(systemmatrix1->OperatorRangeMap());
+    sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
+  }
+  else
+    dserror("sysmat is NULL!");
+
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg =
+      Teuchos::rcp(new LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
+          LINALG::View, true, false, LINALG::SparseMatrix::FE_MATRIX));
+
+  const int numrowintfaces = facediscret_->NumMyRowFaces();
+
+  for (int i = 0; i < numrowintfaces; ++i)
+  {
+    DRT::Element* actface = facediscret_->lRowFace(i);
+
+    {
+      DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
+      if (ele == NULL) dserror("expect FluidIntFace element");
+
+      // get the parent fluid elements
+      DRT::Element* p_master = ele->ParentMasterElement();
+      DRT::Element* p_slave = ele->ParentSlaveElement();
+
+      size_t p_master_numnode = p_master->NumNode();
+      size_t p_slave_numnode = p_slave->NumNode();
+
+
+      std::vector<int> nds_master;
+      nds_master.reserve(p_master_numnode);
+
+      std::vector<int> nds_slave;
+      nds_slave.reserve(p_slave_numnode);
+
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
+
+        for (size_t i = 0; i < p_master_numnode; i++) nds_master.push_back(0);
+
+        for (size_t i = 0; i < p_slave_numnode; i++) nds_slave.push_back(0);
+      }
+
+      // call the internal faces stabilization routine for the current side/surface
+      TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty");
+
+
+
+      // Set master ele to the Material for evaluation.
+      Teuchos::RCP<MAT::Material> material = p_master->Material();
+
+#ifdef DEBUG
+      // Set master ele to the Material for slave.
+      Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
+
+      // Test whether the materials for the parent and slave element are the same.
+      if (material->MaterialType() != material_s->MaterialType())
+        dserror(" not the same material for master and slave parent element");
+#endif
+
+      // call the egde-based assemble and evaluate routine
+      DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(
+          ele, material, nds_master, nds_slave, INPAR::XFEM::face_type_std, edgebasedparams,
+          *facediscret_, sysmat_linalg, residual_col);
+    }
+  }
+
+  sysmat_linalg->Complete();
+
+  // if the fluid system matrix is of type BlockSparseMatrix, we cannot add
+  // and have to split sysmat_linalg - therefore, we try to cast the fluid system matrix!
+  // we need RTTI here - the type-IDs are compared and the dynamic cast is only performed,
+  // if we really have an underlying BlockSparseMatrix; hopefully that saves some
+  // runtime.. (kruse, 09/14)
+  if (typeid(*systemmatrix1) == typeid(*sysmat_linalg))
+  {
+    (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+  }
+  else
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> block_sysmat =
+        Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix1, false);
+    if (block_sysmat == Teuchos::null)
+      dserror("Expected fluid system matrix as BlockSparseMatrix. Failed to cast to it.");
+    Teuchos::RCP<LINALG::SparseMatrix> f00, f01, f10, f11;
+    Teuchos::RCP<Epetra_Map> domainmap_00 =
+        Teuchos::rcp(new Epetra_Map(block_sysmat->DomainMap(0)));
+    Teuchos::RCP<Epetra_Map> domainmap_11 =
+        Teuchos::rcp(new Epetra_Map(block_sysmat->DomainMap(1)));
+
+    // Split sparse system matrix into blocks according to the given maps
+    LINALG::SplitMatrix2x2(
+        sysmat_linalg, domainmap_00, domainmap_11, domainmap_00, domainmap_11, f00, f01, f10, f11);
+    // add the blocks subsequently
+    block_sysmat->Matrix(0, 0).Add(*f00, false, 1.0, 1.0);
+    block_sysmat->Matrix(0, 1).Add(*f01, false, 1.0, 1.0);
+    block_sysmat->Matrix(1, 0).Add(*f10, false, 1.0, 1.0);
+    block_sysmat->Matrix(1, 1).Add(*f11, false, 1.0, 1.0);
+  }
+
+  //------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector res_tmp(systemvector1->Map(), false);
+  Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
+  int err2 = res_tmp.Export(*residual_col, exporter, Add);
+  if (err2) dserror("Export using exporter returned err=%d", err2);
+  systemvector1->Update(1.0, res_tmp, 1.0);
+
+  return;
 }
 
 

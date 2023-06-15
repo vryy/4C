@@ -18,9 +18,9 @@
 #include "lib_utils.H"
 #include "lib_discret.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "geometry_integrationcell_coordtrafo.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 #define USE_PHIN_FOR_VEL
 
@@ -31,7 +31,7 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>*
 DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcLsReinit<distype, probDim>>(
@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -224,7 +224,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -515,7 +516,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -785,7 +787,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -1183,7 +1186,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
   // evaluate shape functions at the cut position
   // --------------------------------------------------------------------------
   my::funct_.Clear();
-  DRT::UTILS::shape_function<distype>(posXiDomain, my::funct_);
+  CORE::DRT::UTILS::shape_function<distype>(posXiDomain, my::funct_);
 
   //--------------------------------------------------------------------------
   // evaluate element matrix (mass matrix-like)
@@ -1217,7 +1220,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
 )
 {
   // get number of vertices of cell
-  const unsigned numvertices = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+  const unsigned numvertices =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
   const unsigned nsd = 3;
   if (nsd_ != 3) dserror("Extend for other dimensions");
   const size_t nsd_cell = 2;  // nsd_-1;
@@ -1231,7 +1235,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   // integration loop over Gaussian points
   //----------------------------------------------------------------------------------------------
   // integrations points and weights
-  DRT::UTILS::IntegrationPoints2D intpoints(SCATRA::CellTypeToOptGaussRule<celldistype>::rule);
+  CORE::DRT::UTILS::IntegrationPoints2D intpoints(
+      SCATRA::CellTypeToOptGaussRule<celldistype>::rule);
 
   for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
   {
@@ -1247,7 +1252,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     // Jacobian for coupled transformation
     // get derivatives dxi_3D/deta_2D
     static LINALG::Matrix<nsd_cell, numvertices> deriv_eta2D;
-    DRT::UTILS::shape_function_2D_deriv1(
+    CORE::DRT::UTILS::shape_function_2D_deriv1(
         deriv_eta2D, gpinEta2D(0, 0), gpinEta2D(1, 0), celldistype);
 
     // calculate dxi3Ddeta2D
@@ -1269,7 +1274,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
     static LINALG::Matrix<nsd, nen_> deriv_xi3D;
-    DRT::UTILS::shape_function_3D_deriv1(
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv_xi3D, gpinXi3D(0, 0), gpinXi3D(1, 0), gpinXi3D(2, 0), distype);
 
     // calculate dx3Ddxi3D
@@ -1309,7 +1314,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     // evaluate shape functions and their first derivatives at this Gaussian point
     //--------------------------------------------------------------------------------------------
     my::funct_.Clear();
-    DRT::UTILS::shape_function_3D(
+    CORE::DRT::UTILS::shape_function_3D(
         my::funct_, posXiDomain(0), posXiDomain(1), posXiDomain(2), distype);
 
     //--------------------------------------------------------------------------------------------

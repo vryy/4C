@@ -14,7 +14,7 @@
 #include "lib_node.H"
 #include "lib_element.H"
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 
 
@@ -191,7 +191,7 @@ namespace DRT
       StructuralLine& operator=(const StructuralLine& old);
 
       //! gaussian integration to be used
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! line integration
       void LineIntegration(

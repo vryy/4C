@@ -14,6 +14,9 @@
 
 
 /*----------------------------------------------------------------------*/
+#include <Teuchos_RCPDecl.hpp>
+#include <Teuchos_ParameterList.hpp>
+
 namespace INPAR
 {
   namespace VOLMORTAR

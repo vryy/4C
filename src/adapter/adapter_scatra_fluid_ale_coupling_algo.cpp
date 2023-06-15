@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "fluid_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 #include "lib_globalproblem.H"
@@ -63,12 +63,12 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
   const int ndim = DRT::Problem::Instance()->NDim();
 
   // set up couplings
-  icoupfa_ = Teuchos::rcp(new Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), condname_, ndim);
 
-  fscoupfa_ = Teuchos::rcp(new Coupling());
+  fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
@@ -77,7 +77,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap = AleField()->Discretization()->NodeRowMap();
 
-  coupfa_ = Teuchos::rcp(new Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   coupfa_->SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
       *fluidnodemap, *alenodemap, ndim);
 

@@ -15,7 +15,7 @@
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "mat_list.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>* DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcElchNP<distype>>(
@@ -31,7 +31,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>* DRT::ELEMENTS::ScaTraEleCalcElchNP<
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

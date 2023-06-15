@@ -293,7 +293,7 @@ double GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
 
     if (cln::fabs(l2_cln) < (p1->Tolerance() + p2->Tolerance()))
     {
-      run_time_error("edge with no length");
+      dserror("edge with no length");
     }
 
 
@@ -325,7 +325,7 @@ double GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
 
     if (fabs(l2) < (p1->Tolerance() + p2->Tolerance()))
     {
-      run_time_error("edge with no length");
+      dserror("edge with no length");
     }
 
     double z = l1 / l2;

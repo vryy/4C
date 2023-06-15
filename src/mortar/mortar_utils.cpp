@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 #include "mortar_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_exporter.H"
 #include "lib_globalproblem.H"
 #include "linalg_sparsematrix.H"

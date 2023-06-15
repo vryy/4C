@@ -26,34 +26,34 @@
 #include "scatra_ele_parameter_std.H"
 
 #include "fluid_rotsym_periodicbc.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcLoma<distype>>(
-            new ScaTraEleBoundaryCalcLoma<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcLoma<distype, probdim>>(
+            new ScaTraEleBoundaryCalcLoma<distype, probdim>(numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::ScaTraEleBoundaryCalcLoma(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundaryCalcLoma(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructor of base class
       my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
@@ -65,9 +65,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::ScaTraEleBoundaryCalcLoma(
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::EvaluateAction(
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
@@ -99,9 +99,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(DRT::FaceE
 /*----------------------------------------------------------------------*
  | calculate loma therm pressure                              vg 03/09  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPress(
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get location vector associated with primary dofset
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::
   std::vector<double> mynormvel(lm.size());
 
   // determine constant outer normal to this element
-  my::GetConstNormal(my::normal_, my::xyze_);
+  my::normal_ = my::GetConstNormal(my::xyze_);
 
   // extract temperature flux vector for each node of the parent element
   LINALG::SerialDenseMatrix eflux(3, nenparent);
@@ -165,10 +165,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::
     {
       mynormdiffflux[i] = 0.0;
       mynormvel[i] = 0.0;
-      for (int l = 0; l < nsd_ + 1; l++)
+      for (int l = 0; l < nsd_; l++)
       {
         mynormdiffflux[i] += eflux(l, j) * my::normal_(l);
-        mynormvel[i] += myconvel[i * (nsd_ + 1) + l] * my::normal_(l);
+        mynormvel[i] += myconvel[i * nsd_ + l] * my::normal_(l);
       }
     }
   }
@@ -185,10 +185,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(DRT::
 /*----------------------------------------------------------------------*
  | calculate Neumann inflow boundary conditions              fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(const DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow(
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs)
 {
   // set thermodynamic pressure
   thermpress_ = params.get<double>("thermodynamic pressure");
@@ -197,14 +198,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(const DRT:
   my::NeumannInflow(ele, params, discretization, la, emat, erhs);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow
 
 
 /*----------------------------------------------------------------------*
  | get density at integration point                          fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
     Teuchos::RCP<const MAT::Material> material, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
     const int k)
 {
@@ -321,14 +322,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   }
 
   return density;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity
 
 
 /*----------------------------------------------------------------------*
  | calculate integral of normal diffusive flux and velocity     vg 09/08|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegral(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAndVelIntegral(
     const DRT::Element* ele, Teuchos::ParameterList& params,
     const std::vector<double>& enormdiffflux, const std::vector<double>& enormvel)
 {
@@ -337,7 +338,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegr
   double normvelint = params.get<double>("normal velocity integral");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -358,16 +359,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegr
   params.set<double>("normal velocity integral", normvelint);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegral
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAndVelIntegral
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs9, 3>;

@@ -11,7 +11,7 @@
 #ifndef CUT_FACET_H
 #define CUT_FACET_H
 
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "cut_line.H"
 
@@ -226,7 +226,7 @@ namespace GEO
       dealt with when moment fitting is used for boun.cell integration
        */
       void NewArbitraryCell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
-          plain_boundarycell_set& bcells, const DRT::UTILS::GaussIntegration& gp,
+          plain_boundarycell_set& bcells, const CORE::DRT::UTILS::GaussIntegration& gp,
           const LINALG::Matrix<3, 1>& normal);
 
       /// Get the BoundaryCells created on this facet
@@ -354,7 +354,7 @@ namespace GEO
           }
           else
           {
-            run_time_error("not unique");
+            dserror("not unique");
           }
         }
       }

@@ -82,7 +82,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

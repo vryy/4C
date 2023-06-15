@@ -11,11 +11,11 @@
 
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_elementtype.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_solverparameters.H"
+#include "linear_solver_method_parameters.H"
 
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
@@ -101,7 +101,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
-  LINALG::SOLVER::Parameters::ComputeSolverParameters(*this, mllist);
+  CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(*this, mllist);
 }
 
 /*----------------------------------------------------------------------*

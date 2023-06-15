@@ -22,8 +22,9 @@
 #include "lib_function.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
+#include "red_airways_evaluation_data.h"
 #include <fstream>
 #include <iomanip>
 
@@ -82,7 +83,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -91,7 +92,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
   {
     int gid = ele->Id();
     double val = -2.0;
-    generations->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
   }
 
 }  // RedAirBloodScatraImpl::Initial
@@ -201,8 +202,10 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
 {
   // const int   myrank  = discretization.Comm().MyPID();
 
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+
   // get time-step size
-  const double dt = params.get<double>("time step size");
+  const double dt = evaluation_data.dt;
 
 
   Teuchos::RCP<const Epetra_Vector> volnp = discretization.GetState("volumenp");

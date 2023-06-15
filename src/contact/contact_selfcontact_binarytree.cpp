@@ -14,7 +14,6 @@
 #include "lib_discret.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_densematrix_communication.H"
-#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|

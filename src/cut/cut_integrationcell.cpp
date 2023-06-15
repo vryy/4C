@@ -48,7 +48,7 @@ bool GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<3, 1>& x)
 template <unsigned probdim, DRT::Element::DiscretizationType celltype>
 bool GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<probdim, 1>& x)
 {
-  const int ncn = DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
+  const int ncn = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
 
   LINALG::Matrix<probdim, ncn> coords(xyz_);
 
@@ -122,7 +122,7 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree(
     case DRT::Element::pyramid5:
       return 6;
     default:
-      run_time_error("no rule defined for this element type");
+      dserror("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }
@@ -151,7 +151,7 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree(
     case DRT::Element::pyramid5:
       return 6;
     default:
-      run_time_error("no rule defined for this element type");
+      dserror("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }

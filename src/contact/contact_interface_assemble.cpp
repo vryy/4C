@@ -17,7 +17,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
@@ -157,8 +157,8 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
       std::map<int, double>::iterator gcurr;
 
       // contribution of derivative of normal
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
-      GEN::pairedvector<int, double>::iterator ncurr;
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      CORE::GEN::pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {
@@ -318,7 +318,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -336,7 +336,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -377,7 +377,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -396,7 +396,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -665,7 +665,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -683,7 +683,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -726,7 +726,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -745,7 +745,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < cnode->NumDof(); ++dimrow)
@@ -1172,8 +1172,8 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
-      std::vector<GEN::pairedvector<int, double>>& dtmap = cnode->CoData().GetDerivTxi();
-      GEN::pairedvector<int, double>::iterator colcurr;
+      std::vector<CORE::GEN::pairedvector<int, double>>& dtmap = cnode->CoData().GetDerivTxi();
+      CORE::GEN::pairedvector<int, double>::iterator colcurr;
 
       for (int dim = 0; dim < Dim() - 1; ++dim)  // for both tangents
       {
@@ -1243,8 +1243,8 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
 
     if (nderivglobal != Teuchos::null)  // assemble normal derivs?
     {
-      std::vector<GEN::pairedvector<int, double>>& dnmap = cnode->CoData().GetDerivN();
-      GEN::pairedvector<int, double>::iterator colcurr;
+      std::vector<CORE::GEN::pairedvector<int, double>>& dnmap = cnode->CoData().GetDerivN();
+      CORE::GEN::pairedvector<int, double>::iterator colcurr;
 
       int colsize = (int)dnmap[0].size();
       int mapsize = (int)dnmap.size();
@@ -1800,14 +1800,14 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     }
 
     // prepare assembly, get information from node
-    std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-    std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-    std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+    std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+    std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+    std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
     std::map<int, double> dscmap;
 
     // iterator for maps
     std::map<int, double>::iterator colcurr;
-    GEN::pairedvector<int, double>::iterator _colcurr;
+    CORE::GEN::pairedvector<int, double>::iterator _colcurr;
 
     // row number of entries
     std::vector<int> row(Dim() - 1);
@@ -2601,9 +2601,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double ct_input = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
 
       double cn = cn_input;
       double ct = ct_input;
@@ -2632,7 +2632,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double wgap = cnode->CoData().Getg();
 
       // iterator for maps
-      GEN::pairedvector<int, double>::iterator colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries
@@ -3635,10 +3635,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
 
       // iterator
-      GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
       std::map<int, double>::iterator colcurr;
 
       std::vector<std::map<int, double>> dtmap(Dim());
@@ -4361,9 +4361,9 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
-      std::vector<GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->CoData().GetDerivN();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->CoData().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -4389,7 +4389,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       double wgap = cnode->CoData().Getg();
 
       // iterator for maps
-      GEN::pairedvector<int, double>::iterator colcurr;
+      CORE::GEN::pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries
@@ -5165,7 +5165,7 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleNCoupLin(
-    LINALG::SparseMatrix& sglobal, ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
+    LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;

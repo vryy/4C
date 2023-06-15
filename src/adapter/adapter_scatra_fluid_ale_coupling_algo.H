@@ -15,6 +15,7 @@
 
 #include "adapter_ale_fluid.H"
 #include "adapter_scatra_fluid_coupling_algorithm.H"
+#include "coupling_adapter.H"
 
 
 namespace ADAPTER
@@ -93,13 +94,13 @@ namespace ADAPTER
     Teuchos::RCP<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// condition name
     const std::string condname_;

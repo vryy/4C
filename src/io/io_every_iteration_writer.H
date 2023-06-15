@@ -10,7 +10,7 @@
 #ifndef IO_EVERY_ITERATION_WRITER_H
 #define IO_EVERY_ITERATION_WRITER_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

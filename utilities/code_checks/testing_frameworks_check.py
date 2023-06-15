@@ -219,6 +219,11 @@ def check_inputtests(look_cmd, allerrors):
                 mpirank_group=1,
             ),
             TestMacro(
+                re.compile(r"baci_omp_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
+                "baci_omp_test",
+                mpirank_group=1,
+            ),
+            TestMacro(
                 re.compile(
                     r"baci_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),

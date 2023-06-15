@@ -13,6 +13,13 @@
 #ifndef XFEM_XFLUID_TIMEINT_BASE_H
 #define XFEM_XFLUID_TIMEINT_BASE_H
 
+#include <Epetra_Map.h>
+
+#include "lib_node.H"
+#include "lib_element.H"
+#include "utils_exceptions.H"
+#include "inpar_xfem.H"
+#include "lib_utils.H"
 
 namespace GEO
 {

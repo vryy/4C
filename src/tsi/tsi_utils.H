@@ -6,19 +6,14 @@
 \level 2
 */
 
-/*----------------------------------------------------------------------*
- | definitions                                               dano 11/09 |
- *----------------------------------------------------------------------*/
 #ifndef TSI_UTILS_H
 #define TSI_UTILS_H
 
 
-/*----------------------------------------------------------------------*
- | header                                                    dano 11/09 |
- *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
 
-#include "volmortar_utils.H"
+#include "coupling_volmortar_utils.H"
 
 namespace DRT
 {
@@ -86,7 +81,7 @@ namespace TSI
 
      \author vuong 10/14
      */
-    class TSIMaterialStrategy : public VOLMORTAR::UTILS::DefaultMaterialStrategy
+    class TSIMaterialStrategy : public CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy
     {
      public:
       //! constructor
@@ -96,12 +91,12 @@ namespace TSI
       virtual ~TSIMaterialStrategy(){};
 
       //! assignment of thermo material to structure material
-      virtual void AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar,
+      virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
           DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
           Teuchos::RCP<DRT::Discretization> dis2);
 
       //! assignment of structure material to thermo material
-      virtual void AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar,
+      virtual void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
           DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
           Teuchos::RCP<DRT::Discretization> dis2);
     };

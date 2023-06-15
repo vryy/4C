@@ -14,7 +14,7 @@
 
 #include "lib_globalproblem.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

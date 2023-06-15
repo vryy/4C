@@ -13,12 +13,12 @@
 
 #include "lib_element.H"
 
-#include "fem_general_largerotations.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_largerotations.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "linalg_fixedsizematrix.H"
 
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include <Sacado.hpp>
 
@@ -47,8 +47,8 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNod
   // The node numbering applied in Crisfield 1999 differs from the order in which nodal quantities
   // are stored in BACI.
   // Therefore we have to apply the following transformation:
-  nodeI_ = LARGEROTATIONS::NumberingTrafo(nodeI, numnodes);
-  nodeJ_ = LARGEROTATIONS::NumberingTrafo(nodeJ, numnodes);
+  nodeI_ = CORE::LARGEROTATIONS::NumberingTrafo(nodeI, numnodes);
+  nodeJ_ = CORE::LARGEROTATIONS::NumberingTrafo(nodeJ, numnodes);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -61,24 +61,24 @@ LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType(
   {
     case 2:
     {
-      return DRT::Element::line2;
+      return ::DRT::Element::line2;
     }
     case 3:
     {
-      return DRT::Element::line3;
+      return ::DRT::Element::line3;
     }
     case 4:
     {
-      return DRT::Element::line4;
+      return ::DRT::Element::line4;
     }
     case 5:
     {
-      return DRT::Element::line5;
+      return ::DRT::Element::line5;
     }
     default:
     {
       dserror("only 2...5 nodes allowed here! got %d", numnodes);
-      return DRT::Element::max_distype;
+      return ::DRT::Element::max_distype;
     }
   }
 }
@@ -123,7 +123,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
 
   for (unsigned int inode = 0; inode < numnodes; ++inode)
   {
-    LARGEROTATIONS::triadtoquaternion(nodal_triads[inode], nodal_quaternions[inode]);
+    CORE::LARGEROTATIONS::triadtoquaternion(nodal_triads[inode], nodal_quaternions[inode]);
   }
 
   Reset(nodal_quaternions);
@@ -138,7 +138,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetInt
   LINALG::Matrix<4, 1, T> quaternion;
   GetInterpolatedQuaternionAtXi(quaternion, xi);
 
-  LARGEROTATIONS::quaterniontotriad(quaternion, triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion, triad);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -150,7 +150,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetInt
   LINALG::Matrix<4, 1, T> quaternion;
   GetInterpolatedQuaternion(quaternion, Psi_l);
 
-  LARGEROTATIONS::quaterniontotriad(quaternion, triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion, triad);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -185,7 +185,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions at xi
   LINALG::Matrix<1, numnodes> I_i(true);
 
-  DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
 
   Calc_Psi_l(Psi_li_, I_i, Psi_l);
 }
@@ -210,7 +210,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   // values of individual shape functions derivatives at xi
   LINALG::Matrix<1, numnodes> I_i_xi(true);
 
-  DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(I_i_xi, xi, distype_);
 
   Calc_Psi_l_s(Psi_li_, I_i_xi, jacobifac, Psi_l_s);
 }
@@ -235,7 +235,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 {
   // transform stored reference quaternion to triad
   LINALG::Matrix<3, 3, T> Lambda_r(true);
-  LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
+  CORE::LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
 
   // compute angle of relative rotation between node I and J
   LINALG::Matrix<3, 1, T> Phi_IJ(true);
@@ -243,7 +243,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 
   // values of individual shape functions at xi
   LINALG::Matrix<1, numnodes> I_i(true);
-  DRT::UTILS::shape_function_1D(I_i, xi, distype_);
+  CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype_);
 
   // compute interpolated local relative rotation vector \Psi^l
   LINALG::Matrix<3, 1, T> Psi_l(true);
@@ -263,7 +263,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 {
   // transform stored reference quaternion to triad
   LINALG::Matrix<3, 3, T> Lambda_r(true);
-  LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
+  CORE::LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
 
   // compute angle of relative rotation between node I and J
   LINALG::Matrix<3, 1, T> Phi_IJ(true);
@@ -300,7 +300,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 {
   // transform stored reference quaternion to triad
   LINALG::Matrix<3, 3, T> Lambda_r(true);
-  LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
+  CORE::LARGEROTATIONS::quaterniontotriad(Q_r_, Lambda_r);
 
   // compute angle of relative rotation between node I and J
   LINALG::Matrix<3, 1, T> Phi_IJ(true);
@@ -328,9 +328,9 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcRe
 
   // quaternion of half relative rotation between node I and J according to (3.9), Jelenic 1999
   LINALG::Matrix<4, 1, T> QIJhalf(true);
-  LARGEROTATIONS::angletoquaternion<T>(Phi_IJhalf, QIJhalf);
+  CORE::LARGEROTATIONS::angletoquaternion<T>(Phi_IJhalf, QIJhalf);
 
-  LARGEROTATIONS::quaternionproduct(QIJhalf, Q_nodeI, Q_r);
+  CORE::LARGEROTATIONS::quaternionproduct(QIJhalf, Q_nodeI, Q_r);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -345,8 +345,9 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPh
   LINALG::Matrix<4, 1, T> QIJ(true);
 
   // computation according to (3.10), Jelenic 1999
-  LARGEROTATIONS::quaternionproduct(Q_nodeJ, LARGEROTATIONS::inversequaternion(Q_nodeI), QIJ);
-  LARGEROTATIONS::quaterniontoangle(QIJ, Phi_IJ);
+  CORE::LARGEROTATIONS::quaternionproduct(
+      Q_nodeJ, CORE::LARGEROTATIONS::inversequaternion(Q_nodeI), QIJ);
+  CORE::LARGEROTATIONS::quaterniontoangle(QIJ, Phi_IJ);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -360,8 +361,9 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPs
   Psi_li.Clear();
   LINALG::Matrix<4, 1, T> Q_li(true);
 
-  LARGEROTATIONS::quaternionproduct(Q_i, LARGEROTATIONS::inversequaternion<T>(Q_r), Q_li);
-  LARGEROTATIONS::quaterniontoangle<T>(Q_li, Psi_li);
+  CORE::LARGEROTATIONS::quaternionproduct(
+      Q_i, CORE::LARGEROTATIONS::inversequaternion<T>(Q_r), Q_li);
+  CORE::LARGEROTATIONS::quaterniontoangle<T>(Q_li, Psi_li);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -411,14 +413,14 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_L
   LINALG::Matrix<4, 1, T> Qgauss;
 
   // c ompute relative rotation between triad at Gauss point and reference triad Qr
-  LARGEROTATIONS::angletoquaternion(Psi_l, Ql);
+  CORE::LARGEROTATIONS::angletoquaternion(Psi_l, Ql);
 
   // compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in
   // Crisfield 1999, eq. (4.7)
-  LARGEROTATIONS::quaternionproduct(Ql, Q_r, Qgauss);
+  CORE::LARGEROTATIONS::quaternionproduct(Ql, Q_r, Qgauss);
 
   // compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
-  LARGEROTATIONS::quaterniontotriad(Qgauss, Lambda);
+  CORE::LARGEROTATIONS::quaterniontotriad(Qgauss, Lambda);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -433,11 +435,11 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Q
   LINALG::Matrix<4, 1, T> Ql;
 
   // compute relative rotation between triad at Gauss point and reference triad Qr
-  LARGEROTATIONS::angletoquaternion(Psi_l, Ql);
+  CORE::LARGEROTATIONS::angletoquaternion(Psi_l, Ql);
 
   // compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in
   // Crisfield 1999, eq. (4.7)
-  LARGEROTATIONS::quaternionproduct(Ql, Q_r, Qgauss);
+  CORE::LARGEROTATIONS::quaternionproduct(Ql, Q_r, Qgauss);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -453,7 +455,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   LINALG::Matrix<3, 3, T> auxmatrix(true);
   LINALG::Matrix<3, 3, T> auxmatrix2(true);
 
-  LINALG::Matrix<3, 3, T> Tinv_Psil = LARGEROTATIONS::Tinvmatrix(Psil);
+  LINALG::Matrix<3, 3, T> Tinv_Psil = CORE::LARGEROTATIONS::Tinvmatrix(Psil);
 
   // make sure that Itilde has proper dimensions
   Itilde.resize(numnodes);
@@ -465,7 +467,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   {
     auxmatrix.Clear();
 
-    auxmatrix = LARGEROTATIONS::Tmatrix(Psili[node]);
+    auxmatrix = CORE::LARGEROTATIONS::Tmatrix(Psili[node]);
     auxmatrix.Scale(funct(node));
     auxmatrix2.Update(-1.0, auxmatrix, 1.0);
   }
@@ -481,7 +483,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   {
     // compute rightmost term in curley brackets in (3.18), Jelenic 1999
     Itilde[node].Clear();
-    Itilde[node].Multiply(Tinv_Psil, LARGEROTATIONS::Tmatrix(Psili[node]));
+    Itilde[node].Multiply(Tinv_Psil, CORE::LARGEROTATIONS::Tmatrix(Psili[node]));
     Itilde[node].Scale(funct(node));
 
     // if node i is node I then add squared brackets term times v_I
@@ -524,13 +526,13 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
 
   // matrix d(T^{-1})/dx
   LINALG::Matrix<3, 3, T> dTinvdx(true);
-  LARGEROTATIONS::computedTinvdx(Psil, Psilprime, dTinvdx);
+  CORE::LARGEROTATIONS::computedTinvdx(Psil, Psilprime, dTinvdx);
 
   // compute T^{~} according to remark subsequent to (3.19), Jelenic 1999
   LINALG::Matrix<3, 3, T> Ttilde(true);
   for (unsigned int node = 0; node < numnodes; ++node)
   {
-    auxmatrix = LARGEROTATIONS::Tmatrix(Psili[node]);
+    auxmatrix = CORE::LARGEROTATIONS::Tmatrix(Psili[node]);
     auxmatrix.Scale(funct(node));
     Ttilde += auxmatrix;
   }
@@ -539,7 +541,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   LINALG::Matrix<3, 3, T> Ttildeprime(true);
   for (unsigned int node = 0; node < numnodes; ++node)
   {
-    auxmatrix = LARGEROTATIONS::Tmatrix(Psili[node]);
+    auxmatrix = CORE::LARGEROTATIONS::Tmatrix(Psili[node]);
     auxmatrix.Scale(deriv_s(node));
     Ttildeprime += auxmatrix;
   }
@@ -547,7 +549,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   // compute first squared brackets term in (3.18), Jelenic 1999
   LINALG::Matrix<3, 3, T> squaredbrackets(true);
   squaredbrackets.Multiply(dTinvdx, Ttilde);
-  auxmatrix.Multiply(LARGEROTATIONS::Tinvmatrix(Psil), Ttildeprime);
+  auxmatrix.Multiply(CORE::LARGEROTATIONS::Tinvmatrix(Psil), Ttildeprime);
   squaredbrackets += auxmatrix;
 
   LINALG::Matrix<3, 3, T> v_matrix(true);
@@ -561,14 +563,14 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
 
     // compute second term in second squared brackets
     auxmatrix.Clear();
-    auxmatrix += LARGEROTATIONS::Tinvmatrix(Psil);
+    auxmatrix += CORE::LARGEROTATIONS::Tinvmatrix(Psil);
     auxmatrix.Scale(deriv_s(node));
 
     // compute second squared brackets
     auxmatrix += Itildeprime[node];
 
     // compute second squared brackets time T(\Psi^l_j)
-    Itildeprime[node].Multiply(auxmatrix, LARGEROTATIONS::Tmatrix(Psili[node]));
+    Itildeprime[node].Multiply(auxmatrix, CORE::LARGEROTATIONS::Tmatrix(Psili[node]));
 
     // if node i is node I then add first squared brackets term times v_I
     if (node == nodeI_)
@@ -601,7 +603,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
   // matrix v_I
   vI.Clear();
 
-  LARGEROTATIONS::computespin(vI, phiIJ);
+  CORE::LARGEROTATIONS::computespin(vI, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
   if (FADUTILS::VectorNorm(phiIJ) == 0.0)
     vI.Scale(0.25);
@@ -623,7 +625,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
   // matrix v_J
   vJ.Clear();
 
-  LARGEROTATIONS::computespin(vJ, phiIJ);
+  CORE::LARGEROTATIONS::computespin(vJ, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
   if (FADUTILS::VectorNorm(phiIJ) == 0.0)
     vJ.Scale(-0.25);

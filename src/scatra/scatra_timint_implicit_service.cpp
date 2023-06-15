@@ -12,7 +12,7 @@
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "scatra_utils.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "fluid_turbulence_dyn_smag.H"
@@ -25,7 +25,7 @@
 
 #include "scatra_ele_action.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 

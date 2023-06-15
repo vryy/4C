@@ -263,14 +263,12 @@ namespace INPAR
       mes_isovarga,          ///< isotropic isochoric Varga material
       mes_isovolaaagasser,   ///< isochoric and volumetric summands for thrombus material (variable
                              ///< stiffness)
-      mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent
-                                      ///< material
-      mes_isoyeoh,                    ///< isochoric Yeoh hyperelastic potential summand
-      mes_remodelfiber,               ///< general fiber material for remodeling
-      mes_vologden,         ///< Ogden volumetric part of the  hyperelastic potential summand
-      mes_volpenalty,       ///< Penalty volumetric part of the  hyperelastic potential summand
-      mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
-      mes_volpow,           ///< volumetric power law hyperelastic potential summand
+      mes_isoyeoh,           ///< isochoric Yeoh hyperelastic potential summand
+      mes_remodelfiber,      ///< general fiber material for remodeling
+      mes_vologden,          ///< Ogden volumetric part of the  hyperelastic potential summand
+      mes_volpenalty,        ///< Penalty volumetric part of the  hyperelastic potential summand
+      mes_volsussmanbathe,   ///< volumetric SussmanBathe hyperelastic potential summand
+      mes_volpow,            ///< volumetric power law hyperelastic potential summand
       mes_structuraltensorstratgy,  ///< structural tensor in anisotropic materials
       mfi_lin_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                              ///< is a linear function of the scalar (in material configuration)
@@ -282,6 +280,7 @@ namespace INPAR
                            ///< linear function of the temperature
       mfi_no_growth,  ///< material with no volume change, i.e. inelastic deformation gradient is an
                       ///< identity tensor
+      mfi_time_funct,                 ///< growth evaluated by a function
       mfi_poly_intercal_frac_aniso,   ///< volume change due to (anisotropic) inelastic deformation
                                       ///< gradient is a polynomial function of the intercalation
                                       ///< fraction that causes the volume change
@@ -295,13 +294,15 @@ namespace INPAR
                                       ///< stiffness)
       mix_rule_simple,                ///< Simple rule for the mixture model
       mix_rule_growthremodel,         ///< Homogenized constrained mixture
-      mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
-      mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry
-      mix_prestress_strategy_constant,   ///< Constant, predefined prestretch
-      mix_elasthyper,                    ///< Elast Hyper toolbox for Constituents
-      mix_elasthyper_damage,             ///< Elast hyper toolbox with temporal damage
-      mix_elasthyper_elastin_membrane,   ///< Elast Hyper toolbox with temporal damage and 2D
-                                         ///< membrane material
+      mix_prestress_strategy_cylinder,     ///< Prestress strategy for a cylinder
+      mix_prestress_strategy_iterative,    ///< Iterative prestress strategy for any geometry
+      mix_prestress_strategy_constant,     ///< Constant, predefined prestretch
+      mix_elasthyper,                      ///< Elast Hyper toolbox for Constituents
+      mix_elasthyper_damage,               ///< Elast hyper toolbox with temporal damage
+      mix_elasthyper_elastin_membrane,     ///< Elast Hyper toolbox with temporal damage and 2D
+                                           ///< membrane material
+      mix_full_constrained_mixture_fiber,  ///< A quasi 1D fiber that growths with the full
+                                           ///< constrained mixture model
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
       mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model

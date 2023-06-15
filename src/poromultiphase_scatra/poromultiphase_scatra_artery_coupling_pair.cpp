@@ -17,12 +17,12 @@
 #include "lib_globalproblem.H"
 #include "lib_get_functionofanything.H"
 #include "mat_cnst_1d_art.H"
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 #include "porofluidmultiphase_ele_parameter.H"
 #include "geometry_coordinate_system_utils.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element_integration_select.H"
 
 #include <Epetra_MultiVector.h>
@@ -563,8 +563,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   n_gp_ = 0;
 
   // we use always 25 integration points per integration patch
-  DRT::UTILS::IntegrationPoints2D gaussPointsperPatch =
-      DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::quad_25point);
+  CORE::DRT::UTILS::IntegrationPoints2D gaussPointsperPatch =
+      CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_25point);
   n_gp_per_patch_ = gaussPointsperPatch.nquad;
   n_gp_ = n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_;
   // define Gauss points and n_gp-sized quantities
@@ -656,10 +656,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // arbitrary integration in element
   // --> we need 4 gp for exact integration
 
-  DRT::UTILS::IntegrationPoints1D gaussPoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
+  CORE::DRT::UTILS::IntegrationPoints1D gaussPoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_3point);
   if (numdim_ == 3)
-    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
+    gaussPoints = CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_4point);
 
   n_gp_ = gaussPoints.nquad;
   // define Gauss points and n_gp-sized quantities
@@ -1029,7 +1029,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     dim>::CalculateVol2D3D() const
 {
   // use one-point Gauss rule
-  DRT::UTILS::IntPointsAndWeights<numdim_> intpoints_stab(
+  CORE::DRT::UTILS::IntPointsAndWeights<numdim_> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<distypeCont>::rule);
 
   const double* gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
@@ -1042,8 +1042,8 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
   static LINALG::Matrix<numdim_, numdim_> xji;
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distypeCont>(xsi, funct);
-  DRT::UTILS::shape_function_deriv1<distypeCont>(xsi, deriv);
+  CORE::DRT::UTILS::shape_function<distypeCont>(xsi, funct);
+  CORE::DRT::UTILS::shape_function_deriv1<distypeCont>(xsi, deriv);
 
   //
 
@@ -1194,10 +1194,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     etaA = -1.0 + 2.0 * (length_so_far / arteryelelength_);
     etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / arteryelelength_);
 
-    DRT::UTILS::IntegrationPoints1D gaussPoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
+    CORE::DRT::UTILS::IntegrationPoints1D gaussPoints =
+        CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_3point);
     if (numdim_ == 3)
-      gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
+      gaussPoints =
+          CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_4point);
 
     // distribute new Gauss points
     const double determinant = (etaB - etaA) / 2.0;
@@ -2123,10 +2124,10 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
   FAD length = 0.0;
 
   // define GPs
-  DRT::UTILS::IntegrationPoints1D gaussPoints =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_3point);
+  CORE::DRT::UTILS::IntegrationPoints1D gaussPoints =
+      CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_3point);
   if (numdim_ == 3)
-    gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_4point);
+    gaussPoints = CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_4point);
 
   static LINALG::Matrix<1, numnodescont_, FAD> N2(true);           // = N2
   static LINALG::Matrix<numdim_, numnodescont_, FAD> N2_xi(true);  // = N2,xi1
@@ -3487,8 +3488,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   const DRT::Element::DiscretizationType distype = element1_->Shape();
 
   // Get values and derivatives of shape functions
-  DRT::UTILS::shape_function_1D(N1, eta, distype);
-  DRT::UTILS::shape_function_1D_deriv1(N1_eta, eta, distype);
+  CORE::DRT::UTILS::shape_function_1D(N1, eta, distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(N1_eta, eta, distype);
 
   return;
 }
@@ -3511,16 +3512,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // 2D case
     case DRT::Element::quad4:
     {
-      DRT::UTILS::shape_function_2D(N2, xi[0], xi[1], distypeCont);
-      DRT::UTILS::shape_function_2D_deriv1(N2_xi, xi[0], xi[1], distypeCont);
+      CORE::DRT::UTILS::shape_function_2D(N2, xi[0], xi[1], distypeCont);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(N2_xi, xi[0], xi[1], distypeCont);
       break;
     }
       // 3D case
     case DRT::Element::hex8:
     case DRT::Element::tet4:
     {
-      DRT::UTILS::shape_function_3D(N2, xi[0], xi[1], xi[2], distypeCont);
-      DRT::UTILS::shape_function_3D_deriv1(N2_xi, xi[0], xi[1], xi[2], distypeCont);
+      CORE::DRT::UTILS::shape_function_3D(N2, xi[0], xi[1], xi[2], distypeCont);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(N2_xi, xi[0], xi[1], xi[2], distypeCont);
       break;
     }
     default:

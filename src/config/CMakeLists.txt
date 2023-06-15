@@ -14,5 +14,19 @@ configure_file(
   "config_trilinos_version.H.in" "${CMAKE_CURRENT_BINARY_DIR}/config_trilinos_version.H"
   )
 
+set(_headers
+    ${CMAKE_CURRENT_BINARY_DIR}/config_compile_settings.H
+    ${CMAKE_CURRENT_BINARY_DIR}/config_revision.H
+    ${CMAKE_CURRENT_BINARY_DIR}/config_trilinos_version.H
+    )
+
 add_library(config INTERFACE)
-target_include_directories(config INTERFACE "${CMAKE_CURRENT_BINARY_DIR}")
+target_sources(
+  config
+  INTERFACE FILE_SET
+            HEADERS
+            BASE_DIRS
+            ${CMAKE_CURRENT_BINARY_DIR}
+            FILES
+            ${_headers}
+  )

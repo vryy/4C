@@ -16,7 +16,7 @@
 #include "scatra_ele_hdg.H"
 
 
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 
 namespace DRT
 {
@@ -24,7 +24,7 @@ namespace DRT
   {
     /// Scatra HDG element implementation
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcHDGCardiacMonodomain : public ScaTraEleCalcHDG<distype, probdim>
     {
      protected:
@@ -122,7 +122,7 @@ namespace DRT
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim>> polySpace_;
+      Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace_;
     };
 
   }  // namespace ELEMENTS

@@ -14,7 +14,7 @@ bridge between the xfluid class and the cut-library
 #define XFEM_COUPLING_LEVELSET_H
 
 #include "xfem_coupling_base.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "inpar_twophase.H"
 #include "cut_point.H"
 
@@ -429,10 +429,10 @@ namespace XFEM
       //-------------------------------------------------------------------------
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* actele = cutter_dis_->gElement(eid);
@@ -613,10 +613,10 @@ namespace XFEM
 
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -648,10 +648,10 @@ namespace XFEM
       CheckForValidVectors();
 
       // number space dimensions for element
-      //    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      //    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -676,7 +676,7 @@ namespace XFEM
         const M4& esmoothedcurvature_T, const int numnode)
     {
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       double icurvature = 0.0;
 
@@ -774,7 +774,7 @@ namespace XFEM
       CheckForValidVectors();
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -982,10 +982,10 @@ namespace XFEM
         M1& gradphi, double& curvature, const DRT::Element* cutter_ele, const M2& funct)
     {
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
       Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
@@ -1107,7 +1107,7 @@ namespace XFEM
       const int cutter_eid = eid;
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       DRT::Element* cutter_ele = cutter_dis_->gElement(cutter_eid);
       if (cutter_ele == NULL) dserror("element not available");

@@ -13,7 +13,7 @@
 #include <Epetra_Vector.h>
 
 #include "linalg_sparseoperator.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "ssi_utils.H"
 
 namespace LINALG

@@ -14,7 +14,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace TUTORIAL
 {
@@ -36,7 +36,7 @@ namespace TUTORIAL
      public:
       /// Singleton access method
       static TutorialEleCalc* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
       virtual ~TutorialEleCalc(){};

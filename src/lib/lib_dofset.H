@@ -21,7 +21,7 @@
 #include <Epetra_Map.h>
 
 #include "lib_dofset_base.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_element.H"
 #include "lib_node.H"
 

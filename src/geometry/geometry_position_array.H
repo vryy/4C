@@ -11,7 +11,7 @@
 
 
 #include "lib_node.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include <Epetra_SerialDenseMatrix.h>
 
 
@@ -67,7 +67,7 @@ namespace GEO
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,
@@ -102,7 +102,7 @@ namespace GEO
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,

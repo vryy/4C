@@ -1,15 +1,9 @@
-set(OBJS_COMM
-    # cmake-format: sortable
-    comm_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(comm ${OBJS_COMM})
-
-set(LIBS_COMM
+set(_comm_dependencies
     # cmake-format: sortable
+    io
     lib
-    nurbs_discret
-    rebalance
+    linalg
     )
-
-baci_add_dependency(comm ${LIBS_COMM})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_comm_dependencies})

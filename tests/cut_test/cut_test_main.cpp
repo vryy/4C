@@ -8,7 +8,7 @@
 
 #include "cut_mesh.H"
 #include "cut_element.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 #include "lib_globalproblem.H"
 #include "cut_test_utils.H"
 
@@ -296,75 +296,124 @@ void test_hex8quad4alignedEdges();
 
 typedef void (*testfunct)();
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-int runtests(char** argv, const std::map<std::string, testfunct>& functable, std::string testname)
+/**
+ * \brief Run a given test and store errors if necessary.
+ *
+ * @param iterator Iterator of a map with the cuttest functions.
+ * @param failures Vector that stores the errors if they occur.
+ * @param msgs Vector that stores an error message.
+ */
+void testfunction(std::map<std::string, testfunct>::const_iterator iterator,
+    std::vector<std::string>& failures, std::vector<std::string>& msgs)
 {
-  bool select_testcases = testname.find("(R)") != std::string::npos;
-  int counter = 0;
-  if (select_testcases) testname.erase(0, 3);
-
-  if (testname == "(all)" || select_testcases)
+  try
   {
-    std::vector<std::string> failures;
-    std::vector<std::string> msgs;
-
-    for (std::map<std::string, testfunct>::const_iterator i = functable.begin();
-         i != functable.end(); ++i)
-    {
-      try
-      {
-        if (!select_testcases || i->first.find(testname) != std::string::npos)
-        {
-          std::cout << "Testing " << i->first << " ...\n";
-          counter++;
-          (*i->second)();
-        }
-      }
-      catch (std::runtime_error& err)
-      {
-        std::cout << "FAILED: " << err.what() << "\n";
-        failures.push_back(i->first);
-        msgs.push_back(err.what());
-      }
-    }
-
-    if (failures.size() > 0)
-    {
-      std::cout << "\n" << failures.size() << " out of " << counter << " tests failed.\n";
-      for (std::vector<std::string>::iterator i = failures.begin(); i != failures.end(); ++i)
-      {
-        std::string& txt = *i;
-        std::cout << "    " << txt;
-        for (unsigned j = 0; j < 40 - txt.length(); ++j) std::cout << " ";
-        std::cout << "(" << msgs[i - failures.begin()] << ")"
-                  << "\n";
-      }
-    }
-    else
-    {
-      std::cout << "\nall " << counter << " tests succeeded.\n";
-    }
-    return failures.size();
+    std::cout << "Testing " << iterator->first << " ...\n";
+    (*iterator->second)();
   }
-  else
+  catch (std::runtime_error& err)
   {
-    std::map<std::string, testfunct>::const_iterator i = functable.find(testname);
-    if (i == functable.end())
-    {
-      std::cerr << argv[0] << ": test '" << testname << "' not found\n";
-      return 1;
-    }
-    else
-    {
-      (*i->second)();
-      return 0;
-    }
+    std::cout << "FAILED: " << err.what() << "\n";
+    failures.push_back(iterator->first);
+    msgs.push_back(err.what());
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/**
+ * \brief Run the cuttests.
+ *
+ * @param argv
+ * @param functable Map that stores all cuttest with a string key.
+ * @param testname If this string is different than "(all)", the function runs the cuttests that
+ * contain this string.
+ * @param ignore_testname If this string is defined, the function doesn't run the cuttests that
+ * contain this string.
+ */
+int runtests(char** argv, std::map<std::string, testfunct>& functable, std::string testname,
+    std::string ignore_testname)
+{
+  // Check if a test name was specified. The default case of testname is (all)
+  bool select_testcases;
+  if (testname == "(all)")
+    select_testcases = false;
+  else
+    select_testcases = true;
+
+  // Remove tests that should be ignored from functable
+  if (!ignore_testname.empty())
+  {
+    for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
+         iterator != functable.end();)
+    {
+      if (iterator->first.find(ignore_testname) != std::string::npos)
+        iterator = functable.erase(iterator);
+      else
+        ++iterator;
+    }
+  }
+
+  // Define helper variables and the final functable size
+  std::vector<std::string> failures;
+  std::vector<std::string> msgs;
+  int counter_tests = 0;
+  int number_tests = functable.size();
+
+  if (select_testcases)
+  {
+    bool testname_exist = false;
+
+    for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
+         iterator != functable.end(); iterator++)
+    {
+      if (iterator->first.find(testname) != std::string::npos)
+      {
+        counter_tests++;
+
+        testname_exist = true;
+        testfunction(iterator, failures, msgs);
+      }
+      else if ((testname_exist == false) && (counter_tests == number_tests))
+      {
+        std::cerr << argv[0] << ": test '" << testname << "' not found\n";
+        return 1;
+      }
+    }
+  }
+  else
+  {
+    for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
+         iterator != functable.end(); ++iterator)
+    {
+      counter_tests++;
+      testfunction(iterator, failures, msgs);
+    }
+  }
+
+  // Show failed tests if there are any
+  if (failures.size() > 0)
+  {
+    std::cout << "\n" << failures.size() << " out of " << counter_tests << " tests failed.\n";
+    for (std::vector<std::string>::iterator i = failures.begin(); i != failures.end(); ++i)
+    {
+      std::string& txt = *i;
+      std::cout << "    " << txt;
+      for (unsigned j = 0; j < 40 - txt.length(); ++j) std::cout << " ";
+      std::cout << "(" << msgs[i - failures.begin()] << ")"
+                << "\n";
+    }
+  }
+  else
+  {
+    std::cout << "\nall " << counter_tests << " tests succeeded.\n";
+  }
+
+  return failures.size();
+}
+
+/**
+ * \brief Set the dimension and the parameters for this problem.
+ *
+ */
 void SetProblemDimension(const std::map<std::string, testfunct>& functable)
 {
   DRT::Problem& problem = (*DRT::Problem::Instance());
@@ -382,8 +431,10 @@ void SetProblemDimension(const std::map<std::string, testfunct>& functable)
   problem.setParameterList(pptr);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/**
+ * \brief Main function that defines and runs the cuttests.
+ *
+ */
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
@@ -696,10 +747,7 @@ int main(int argc, char** argv)
 
   std::string indent = "\t\t\t\t\t";
   std::stringstream doc;
-  doc << "Available tests:\n"
-      << indent << "(all)\n"
-      << indent
-      << "put '(R)' in front of parts of a testname to test all matching cut_tests (e.g. (R)sc)!\n";
+  doc << "Available tests:\n" << indent << "(all)\n";
   for (std::map<std::string, testfunct>::iterator i = functable.begin(); i != functable.end(); ++i)
   {
     const std::string& name = i->first;
@@ -707,7 +755,10 @@ int main(int argc, char** argv)
   }
 
   std::string testname = "(all)";
+  std::string ignore_testname = "";
+
   clp.setOption("test", &testname, doc.str().c_str());
+  clp.setOption("ignore_test", &ignore_testname, doc.str().c_str());
 
   switch (clp.parse(argc, argv))
   {
@@ -723,7 +774,7 @@ int main(int argc, char** argv)
   }
 
   SetProblemDimension(functable);
-  int result = runtests(argv, functable, testname);
+  int result = runtests(argv, functable, testname, ignore_testname);
   DRT::Problem::Done();
   MPI_Finalize();
   return result;

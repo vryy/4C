@@ -15,9 +15,8 @@ template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : RemodelFiberMaterial<T>(matdata),
-      k1_(matdata->GetDouble("K1")),
-      k2_(matdata->GetDouble("K2")),
-      supports_compression_(matdata->GetInt("COMPRESSION"))
+      params_{matdata->GetDouble("K1"), matdata->GetDouble("K2"),
+          static_cast<bool>(matdata->GetInt("COMPRESSION"))}
 {
 }
 
@@ -36,44 +35,21 @@ MIXTURE::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetPsi(T I4) const
+T MIXTURE::RemodelFiberMaterialExponential<T>::GetCauchyStress(T I4) const
 {
-  if (I4 < 0 && !params_->supports_compression_)
-    dserror("The fiber is under compression, but does not support that.");
-
-  return (params_->k1_ / (2.0 * params_->k2_)) *
-         (std::exp(params_->k2_ * (I4 - 1.0) * (I4 - 1.0)) - 1.0);
+  return MIXTURE::GetExponentialFiberCauchyStress<T>(params_->params_, I4);
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetFirstDerivativeI4(T I4) const
+T MIXTURE::RemodelFiberMaterialExponential<T>::GetDCauchyStressDI4(T I4) const
 {
-  if (I4 < 0 && !params_->supports_compression_)
-    dserror("The fiber is under compression, but does not support that.");
-
-  return params_->k1_ * (I4 - 1.0) * std::exp(params_->k2_ * (I4 - 1.0) * (I4 - 1.0));
+  return MIXTURE::GetDExponentialFiberCauchyStressDI4<T>(params_->params_, I4);
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetSecondDerivativeI4(T I4) const
+T MIXTURE::RemodelFiberMaterialExponential<T>::GetDCauchyStressDI4DI4(T I4) const
 {
-  if (I4 < 0 && !params_->supports_compression_)
-    dserror("The fiber is under compression, but does not support that.");
-
-  return (1.0 + 2.0 * params_->k2_ * std::pow((I4 - 1.0), 2)) * params_->k1_ *
-         std::exp(params_->k2_ * std::pow((I4 - 1.0), 2));
-}
-
-template <typename T>
-T MIXTURE::RemodelFiberMaterialExponential<T>::GetThirdDerivativeI4(T I4) const
-{
-  if (I4 < 0 && !params_->supports_compression_)
-    dserror("The fiber is under compression, but does not support that.");
-
-  return 4 * params_->k2_ * (I4 - 1.0) * params_->k1_ *
-             std::exp(params_->k2_ * (I4 - 1.0) * (I4 - 1.0)) +
-         (1 + 2 * params_->k2_ * (I4 - 1.0) * (I4 - 1.0)) * params_->k1_ * 2 * params_->k2_ *
-             (I4 - 1.0) * std::exp(params_->k2_ * (I4 - 1.0) * (I4 - 1.0));
+  return MIXTURE::GetDExponentialFiberCauchyStressDI4DI4<T>(params_->params_, I4);
 }
 
 template class MIXTURE::PAR::RemodelFiberMaterialExponential<double>;

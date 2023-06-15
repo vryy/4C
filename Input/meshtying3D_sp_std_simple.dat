@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 3D Meshtying in saddle-point formulation with fully coupled AMG
 preconditioner from MueLu
@@ -29,7 +26,6 @@ STRUCT_SE                       No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_STRAIN                   No
-FILESTEPS                       1000
 STDOUTEVRY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No

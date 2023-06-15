@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 2D small deformation meshtying patch test
 // - first-order interpolation (quad4 elements)
@@ -21,18 +16,13 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
@@ -41,9 +31,6 @@ NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0
-DAMPING                         No
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
@@ -562,4 +549,3 @@ STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -0.500 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 70 QUANTITY dispy VALUE -0.500 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 82 QUANTITY dispy VALUE -0.500 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
-//                              END

@@ -253,14 +253,15 @@ double MAT::LinElast1DGrowth::EvaluateElasticEnergy(double def_grad, double conc
  *----------------------------------------------------------------------*/
 double MAT::LinElast1DGrowth::GetGrowthFactorConcProp(const double conc) const
 {
-  return DRT::UTILS::Polynomial(growth_params_->poly_params_).Evaluate(conc - growth_params_->c0_);
+  return CORE::DRT::UTILS::Polynomial(growth_params_->poly_params_)
+      .Evaluate(conc - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const double def_grad) const
 {
-  return DRT::UTILS::Polynomial(growth_params_->poly_params_)
+  return CORE::DRT::UTILS::Polynomial(growth_params_->poly_params_)
       .Evaluate(conc * def_grad - growth_params_->c0_);
 }
 
@@ -269,7 +270,7 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const do
 double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
     const double conc, const double def_grad) const
 {
-  const double first_deriv = DRT::UTILS::Polynomial(growth_params_->poly_params_)
+  const double first_deriv = CORE::DRT::UTILS::Polynomial(growth_params_->poly_params_)
                                  .EvaluateDerivative(conc * def_grad - growth_params_->c0_, 1);
 
   return first_deriv * conc;

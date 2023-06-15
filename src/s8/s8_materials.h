@@ -24,7 +24,7 @@ typedef enum _MATERIAL_TYP
  *----------------------------------------------------------------------*/
 typedef struct _MATERIAL
 {
-  INT Id; /* Id of the material */
+  int Id; /* Id of the material */
 
   enum _MATERIAL_TYP mattyp; /* type of material */
 
@@ -43,10 +43,10 @@ typedef struct _MATERIAL
  *----------------------------------------------------------------------*/
 typedef struct _STVENANT
 {
-  DOUBLE youngs;       /* Young's modulus */
-  DOUBLE possionratio; /* Possion ratio */
-  DOUBLE density;      /* material specific weight */
-  DOUBLE thermexpans;  /* coefficient of thermal expansion */
+  double youngs;       /* Young's modulus */
+  double possionratio; /* Possion ratio */
+  double density;      /* material specific weight */
+  double thermexpans;  /* coefficient of thermal expansion */
 } STVENANT;
 
 
@@ -55,9 +55,9 @@ typedef struct _STVENANT
  *----------------------------------------------------------------------*/
 typedef struct _NEO_HOOKE
 {
-  DOUBLE youngs;       /* Young's modulus */
-  DOUBLE possionratio; /* Possion ratio */
-  DOUBLE density;      /* material specific weight */
+  double youngs;       /* Young's modulus */
+  double possionratio; /* Possion ratio */
+  double density;      /* material specific weight */
 } NEO_HOOKE;
 
 
@@ -66,15 +66,15 @@ typedef struct _NEO_HOOKE
  *----------------------------------------------------------------------*/
 typedef struct _COMPOGDEN
 {
-  INT init;        /* init flag */
-  DOUBLE nue;      /* Possion ratio */
-  DOUBLE beta;     /* the unphysical material constant called beta */
-  DOUBLE alfap[3]; /* three parameters alfap */
-  DOUBLE mup[3];   /* three parameters nuep */
-  DOUBLE density;  /* material specific weight */
-  DOUBLE lambda;   /* 1. lame constant */
-  DOUBLE kappa;    /* bulkmodulus */
-  DOUBLE l[3];
+  int init;        /* init flag */
+  double nue;      /* Possion ratio */
+  double beta;     /* the unphysical material constant called beta */
+  double alfap[3]; /* three parameters alfap */
+  double mup[3];   /* three parameters nuep */
+  double density;  /* material specific weight */
+  double lambda;   /* 1. lame constant */
+  double kappa;    /* bulkmodulus */
+  double l[3];
 } COMPOGDEN;
 
 /*----------------------------------------------------------------------*
@@ -82,17 +82,17 @@ typedef struct _COMPOGDEN
  *----------------------------------------------------------------------*/
 typedef struct _VISCOHYPER
 {
-  INT init;        /* init flag */
-  DOUBLE nue;      /* Possion ratio */
-  DOUBLE beta;     /* the unphysical material constant called beta */
-  DOUBLE alfap[3]; /* three parameters alfap */
-  DOUBLE mup[3];   /* three parameters nuep */
-  DOUBLE density;  /* material specific weight */
-  DOUBLE lambda;   /* 1. lame constant */
-  DOUBLE kappa;    /* bulkmodulus */
-  INT nmaxw;       /* number of maxwell elements in the material (1-4) */
-  DOUBLE tau[4];   /* relaxation times of hte maxwell elements */
-  DOUBLE betas[4]; /* strain energy factors of the springs of the maxwell elements */
+  int init;        /* init flag */
+  double nue;      /* Possion ratio */
+  double beta;     /* the unphysical material constant called beta */
+  double alfap[3]; /* three parameters alfap */
+  double mup[3];   /* three parameters nuep */
+  double density;  /* material specific weight */
+  double lambda;   /* 1. lame constant */
+  double kappa;    /* bulkmodulus */
+  int nmaxw;       /* number of maxwell elements in the material (1-4) */
+  double tau[4];   /* relaxation times of hte maxwell elements */
+  double betas[4]; /* strain energy factors of the springs of the maxwell elements */
 } VISCOHYPER;
 
 #endif

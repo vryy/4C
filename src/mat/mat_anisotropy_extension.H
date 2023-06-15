@@ -17,7 +17,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "mat_anisotropy.H"
 #include "lib_linedefinition.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_pack_buffer.H"
 #include "mat_anisotropy_extension_base.H"
 #include "mat_anisotropy_fiber_provider.H"

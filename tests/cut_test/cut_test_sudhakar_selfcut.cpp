@@ -20,7 +20,7 @@
 #include "cut_options.H"
 #include "cut_volumecell.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 void test_sud_sc1()
 {

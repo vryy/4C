@@ -888,12 +888,12 @@ void INVANA::Triangulation::ApplyNoise(const extract_type& normals, const extrac
   if (err) dserror("Surface current noise covariance factorization failed with err %d", err);
 
   // get the lower factor
-  Epetra_SerialDenseMatrix* L = solver.FactoredMatrix();
+  Epetra_SerialSymDenseMatrix* L = solver.SymFactoredMatrix();
 
 
   // correlate noise
   Epetra_SerialDenseMatrix n_blurred(size, 3);
-  L->Multiply(false, n_blur, n_blurred);
+  n_blurred.Multiply('L', 1.0, *L, n_blur, 0.0);
 
   // add noise to normals and put back to extract type format
   std::vector<double> n(3);

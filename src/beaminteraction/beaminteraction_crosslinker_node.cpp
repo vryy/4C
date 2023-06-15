@@ -13,7 +13,7 @@
 
 #include "beaminteraction_crosslinker_node.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "mat_crosslinkermat.H"
 #include "lib_utils_factory.H"
 

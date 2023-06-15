@@ -22,7 +22,7 @@
 #include "particle_engine_container.H"
 #include "particle_engine_object.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "lib_globalproblem.H"
 

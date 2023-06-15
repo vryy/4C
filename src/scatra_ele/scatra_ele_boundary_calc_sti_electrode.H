@@ -28,17 +28,19 @@ namespace DRT
     class ScaTraEleBoundaryCalcElchElectrodeUtils;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcSTIElectrode<distype>* Instance(
+      static ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /*!
@@ -73,15 +75,15 @@ namespace DRT
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF, Epetra_SerialDenseMatrix& k_ss,
@@ -116,20 +118,20 @@ namespace DRT
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           SCATRA::DifferentiationType differentiationtype,
-          const LINALG::Matrix<nsd_ + 1, nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
+          const LINALG::Matrix<nsd_, nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm);
 
      private:

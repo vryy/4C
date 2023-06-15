@@ -9,12 +9,12 @@
 /*---------------------------------------------------------------------------*/
 #include "s8_shell8.h"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  | get density out of material law                        m.gee 2/02    |
  *----------------------------------------------------------------------*/
-void s8_getdensity(MATERIAL *mat, DOUBLE *density)
+void s8_getdensity(MATERIAL *mat, double *density)
 {
   /*----------------------------------------------------------------------*/
   /*------------------------------------------------ switch material type */

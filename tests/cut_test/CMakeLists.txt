@@ -74,13 +74,14 @@ set(OBJS_CUT_TEST
     )
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
+
+# ignore selected cut test
+option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
+if(IGNORE_UNSTABLE_CUTTEST)
+  message(STATUS "Ignoring unstable cut test!")
+  target_compile_definitions(cut_test PRIVATE IGNORE_UNSTABLE_CUTTEST)
+endif(IGNORE_UNSTABLE_CUTTEST)
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(
-  cut_test
-  lib_cut
-  ${QHULL_LIBRARIES}
-  ${LAPACK_LIBRARIES}
-  -Wl,--start-group
-  ${BACI_LIBRARIES}
-  -Wl,--end-group
-  )
+baci_add_dependency(cut_test cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES})
+
+baci_target_requires_cyclic_legacy_linking(cut_test)

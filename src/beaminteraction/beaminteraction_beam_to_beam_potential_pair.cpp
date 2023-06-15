@@ -16,16 +16,16 @@
 #include "beam3_base.H"
 #include "beam3_spatial_discretization_utils.H"
 
-#include "fem_general_utils_integration.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
 
 #include "inpar_beampotential.H"
 
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_function_of_time.H"
 
-#include "headers_FAD_utils.H"
+#include "linalg_FAD_utils.H"
 
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
@@ -213,10 +213,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
   // number of Gauss points per integration segment and in total per element
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
@@ -590,10 +590,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
   // number of Gauss points per integration segment and in total per element
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
@@ -1094,10 +1094,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
   // Set Gauss integration rule applied in each integration segment
-  DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
+  CORE::DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
   // Get Gauss points (gp) for integration
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   // number of Gauss points per integration segment and in total
   int numgp_persegment = gausspoints.nquad;
@@ -1720,7 +1720,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
          * part of) rotation vector theta_perp describing cross-section orientation can be used to
          *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
          */
-        LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+        CORE::LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
         moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave),
             spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(t_slave));
@@ -1740,7 +1740,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_master));
 
-        LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+        CORE::LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
         moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_master),
             spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(t_master));
@@ -3189,7 +3189,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
    */
   LINALG::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
 
-  LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+  CORE::LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
   T norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
 
@@ -3238,7 +3238,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   moment_pot_tmp.UpdateT(FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
       FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
-  LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+  CORE::LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
   T norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
 
@@ -3520,7 +3520,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetS
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,
     std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
-    DRT::UTILS::IntegrationPoints1D& gausspoints) const
+    CORE::DRT::UTILS::IntegrationPoints1D& gausspoints) const
 {
   DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
       gausspoints, N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_);

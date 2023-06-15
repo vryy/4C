@@ -43,7 +43,7 @@
 #include "io_control.H"
 #include "io_pstream.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

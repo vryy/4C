@@ -33,7 +33,7 @@ namespace DRT
      MAT_scatra_reaction
      */
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:
