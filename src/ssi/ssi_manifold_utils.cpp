@@ -458,7 +458,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       auto matrix_scatra_structure_cond_slave_side_disp =
           Teuchos::rcp(new LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
@@ -482,7 +482,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
           *matrix_scatra_structure_cond_slave_side_disp, false, 1.0, 0.0);
 
       // Add master side disp. contributions
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto converter = meshtying->SlaveSideConverter();
@@ -843,7 +843,7 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
     ssi_meshtying_ = Teuchos::rcp(
         new SSI::UTILS::SSIMeshTying("SSISurfaceManifold", scatra_manifold_dis, false, false));
 
-    if (ssi_meshtying_->MeshtyingHandlers().empty())
+    if (ssi_meshtying_->MeshTyingHandlers().empty())
     {
       dserror(
           "Could not create mesh tying between manifold fields. They are not intersecting. "
@@ -852,7 +852,7 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
 
     // merge slave dof maps from all mesh tying conditions
     Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
-    for (const auto& meshtying : ssi_meshtying_->MeshtyingHandlers())
+    for (const auto& meshtying : ssi_meshtying_->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       if (slave_dof_map == Teuchos::null)
@@ -902,7 +902,7 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
   if (is_manifold_meshtying_)
   {
     // couple meshyting_handler_ and condensed_block_dof_map_ to meshtying_block_handler_
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto slave_dof_map = coupling_adapter->SlaveDofMap();
@@ -972,7 +972,7 @@ void SSI::ManifoldMeshTyingStrategyBase::ApplyMeshTyingToManifoldRHS(
 {
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto multimap = meshtying->SlaveMasterExtractor();
@@ -1000,7 +1000,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
@@ -1020,7 +1020,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
 
     // Finalize: put 1.0 on main diag of slave dofs
     const double one = 1.0;
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
@@ -1150,7 +1150,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldScatraMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
@@ -1227,7 +1227,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatr
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
 
@@ -1319,7 +1319,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToScatraManifoldMatrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : MeshTyingHandlers())
+    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
 

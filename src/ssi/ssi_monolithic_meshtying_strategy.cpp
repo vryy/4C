@@ -136,7 +136,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map, *master_dof_map, 1.0,
       nullptr, nullptr, ssi_structure_matrix, true, true);
 
-  for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+  for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -157,7 +157,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_structure_matrix, true, true);
 
-    for (const auto& meshtying2 : ssi_structure_meshtying_->MeshtyingHandlers())
+    for (const auto& meshtying2 : ssi_structure_meshtying_->MeshTyingHandlers())
     {
       auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
       auto converter2 = meshtying2->SlaveSideConverter();
@@ -192,7 +192,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToXXXStructure(
   LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
       *master_dof_map, 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
 
-  auto meshtying_handlers = ssi_structure_meshtying_->MeshtyingHandlers();
+  auto meshtying_handlers = ssi_structure_meshtying_->MeshTyingHandlers();
 
   for (const auto& meshtying : meshtying_handlers)
   {
@@ -215,7 +215,7 @@ Epetra_Vector SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureRHS(
 
   auto rhs_structure_master = LINALG::CreateVector(*ssi_maps_->StructureDofRowMap(), true);
 
-  for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+  for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
   {
     auto coupling_adapter = meshtying->SlaveMasterCoupling();
     auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
@@ -391,7 +391,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureXXX(
       structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
 
-  for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+  for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();

@@ -409,7 +409,7 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> InteriorMap() const { return interior_map_; }
 
       //! vector of all mesh tying handlers
-      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> MeshtyingHandlers() const
+      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> MeshTyingHandlers() const
       {
         return meshtying_handlers_;
       }

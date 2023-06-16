@@ -474,7 +474,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
       // Second, copy master side displacements and increments to slave side for meshtying
       if (InterfaceMeshtying())
       {
-        for (const auto& meshtying : SSTIStructureMeshTying()->MeshtyingHandlers())
+        for (const auto& meshtying : SSTIStructureMeshTying()->MeshTyingHandlers())
         {
           auto coupling_adapter = meshtying->SlaveMasterCoupling();
           auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
