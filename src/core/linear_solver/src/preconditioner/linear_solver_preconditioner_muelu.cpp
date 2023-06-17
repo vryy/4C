@@ -919,7 +919,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
   const int numFluidDofsPerNode = fluidList.get<int>("PDE equations");
   const int numAleDofsPerNode = aleList.get<int>("PDE equations");
 
-  // explizit information about the fluid
+  // explicit information about the fluid
   const int numVelocityDofsPerNode =
       fluidList.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
   const int numPressureDofsPerNode =
