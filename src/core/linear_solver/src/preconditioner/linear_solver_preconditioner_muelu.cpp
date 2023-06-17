@@ -915,27 +915,27 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
   Teuchos::ParameterList& aleList = muelulist_.sublist("Inverse3");
 
   // information about the fsi subproblems
-  const int numSolidDofs = solidList.get<int>("PDE equations");
-  const int numFluidDofs = fluidList.get<int>("PDE equations");
-  const int numAleDofs = aleList.get<int>("PDE equations");
+  const int numSolidDofsPerNode = solidList.get<int>("PDE equations");
+  const int numFluidDofsPerNode = fluidList.get<int>("PDE equations");
+  const int numAleDofsPerNode = aleList.get<int>("PDE equations");
 
   // explizit information about the fluid
-  const int numVelocityDofs =
+  const int numVelocityDofsPerNode =
       fluidList.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
-  const int numPressureDofs =
+  const int numPressureDofsPerNode =
       fluidList.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
 
-  if (numFluidDofs != (numVelocityDofs + numPressureDofs))
+  if (numFluidDofsPerNode != (numVelocityDofsPerNode + numPressureDofsPerNode))
     dserror("Number of fluid dofs does not match the number of velocity and pressure dofs");
 
   // define strided maps
   std::vector<size_t> solidStriding;
   std::vector<size_t> fluidStriding;
   std::vector<size_t> aleStriding;
-  solidStriding.push_back(numSolidDofs);
-  fluidStriding.push_back(numVelocityDofs);
-  fluidStriding.push_back(numPressureDofs);
-  aleStriding.push_back(numAleDofs);
+  solidStriding.push_back(numSolidDofsPerNode);
+  fluidStriding.push_back(numVelocityDofsPerNode);
+  fluidStriding.push_back(numPressureDofsPerNode);
+  aleStriding.push_back(numAleDofsPerNode);
 
   Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> solidmap =
       Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA11->getRowMap()->lib(),
@@ -992,7 +992,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
 
       const int solidDimns = solidList.get<int>("null space: dimension", -1);
-      if (solidDimns == -1 || numSolidDofs == -1)
+      if (solidDimns == -1 || numSolidDofsPerNode == -1)
         dserror("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
@@ -1000,7 +1000,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
               solidmap, muelulist_.sublist("Inverse1"));
 
       const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
-      if (fluidDimns == -1 || numFluidDofs == -1)
+      if (fluidDimns == -1 || numFluidDofsPerNode == -1)
         dserror("Error: PDE equations of fluid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
@@ -1008,7 +1008,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
               fluidmap, muelulist_.sublist("Inverse2"));
 
       const int aleDimns = aleList.get<int>("null space: dimension", -1);
-      if (aleDimns == -1 || numAleDofs == -1)
+      if (aleDimns == -1 || numAleDofsPerNode == -1)
         dserror("Error: PDE equations of ale or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
