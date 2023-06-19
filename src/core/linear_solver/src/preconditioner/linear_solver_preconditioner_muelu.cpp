@@ -718,7 +718,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   return;
 }
 
-#ifdef TRILINOS_DEVELOP
+#ifdef BACI_WITH_TRILINOS_DEVELOP
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

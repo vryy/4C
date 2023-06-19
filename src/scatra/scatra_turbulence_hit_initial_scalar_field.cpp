@@ -13,7 +13,7 @@ transport
 #include <complex>
 #include <math.h>
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
 
@@ -189,7 +189,7 @@ namespace SCATRA
    *--------------------------------------------------------------*/
   void HomIsoTurbInitialScalarField::CalculateInitialField()
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // set and initialize working arrays
     Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::rcp(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
@@ -382,7 +382,7 @@ namespace SCATRA
     // fast Fourier transformation using FFTW
     //----------------------------------------
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
         (reinterpret_cast<fftw_complex*>(phi_hat_fftw->data())), phi->data(), FFTW_ESTIMATE);

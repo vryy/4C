@@ -205,7 +205,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     }
     else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
-#ifdef TRILINOS_DEVELOP
+#ifdef BACI_WITH_TRILINOS_DEVELOP
       preconditioner_ = Teuchos::rcp(
           new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(outfile_, Params()));
 #else

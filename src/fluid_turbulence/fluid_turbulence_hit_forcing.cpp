@@ -11,7 +11,7 @@
 
 #include <complex>
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
 
@@ -413,7 +413,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcing::CalculateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // check if forcing is selected
     if (flow_type_ == forced_homogeneous_isotropic_turbulence or
         (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
@@ -527,7 +527,7 @@ namespace FLD
       // note: this is not very efficient, since each
       // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // set-up
       fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
           (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -847,7 +847,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcing::UpdateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // check if forcing is selected
     if (activate_ and
         (flow_type_ == forced_homogeneous_isotropic_turbulence or
@@ -961,7 +961,7 @@ namespace FLD
       // note: this is not very efficient, since each
       // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // set-up
       fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
           (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -1027,7 +1027,7 @@ namespace FLD
       // fast Fourier transformation using FFTW
       //----------------------------------------
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
           (reinterpret_cast<fftw_complex*>(f1_hat->data())), f1->data(), FFTW_ESTIMATE);
@@ -1242,7 +1242,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcingHDG::CalculateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // check if forcing is selected
     if (flow_type_ == forced_homogeneous_isotropic_turbulence or
         (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
@@ -1368,7 +1368,7 @@ namespace FLD
       // note: this is not very efficient, since each
       // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // set-up
       fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
           (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -1689,7 +1689,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbForcingHDG::UpdateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // check if forcing is selected
     if (activate_ and
         (flow_type_ == forced_homogeneous_isotropic_turbulence or
@@ -1811,7 +1811,7 @@ namespace FLD
       // note: this is not very efficient, since each
       // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // set-up
       fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
           (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -1878,7 +1878,7 @@ namespace FLD
       // fast Fourier transformation using FFTW
       //----------------------------------------
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
           (reinterpret_cast<fftw_complex*>(f1_hat->data())), f1->data(), FFTW_ESTIMATE);
