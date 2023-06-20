@@ -997,6 +997,34 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
   auto normal_parent_ele = GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
   normal = GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
 
+  // compute inward vector and check if its scalar product with the normal vector is negative.
+  // Otherwise, change the sign of the normal vector
+  LINALG::Matrix<3, 1> distance(true), inward_vector(true);
+  // find node on parent element, that has non-zero distance to all boundary nodes
+  for (int i_parent_node = 0; i_parent_node < 3; ++i_parent_node)
+  {
+    bool is_boundary_node = false;
+    for (int i_boundary_node = 0; i_boundary_node < nen_; ++i_boundary_node)
+    {
+      for (int dim = 0; dim < 3; ++dim)
+        distance(dim, 0) = nodes_parent_ele(dim, i_parent_node) - xyze(dim, i_boundary_node);
+
+      // if the distance of the parent element to one boundary node is zero, it cannot be a
+      // non-boundary node
+      if (distance.Norm2() < 1.0e-10)
+      {
+        is_boundary_node = true;
+        break;
+      }
+    }
+    if (!is_boundary_node)
+    {
+      inward_vector.Update(1.0, distance, 0.0);
+      break;
+    }
+  }
+  if (inward_vector.Dot(normal) >= 0.0) normal.Scale(-1.0);
+
   const double length = normal.Norm2();
   if (length < 1.0e-10) dserror("Zero length for element normal");
 

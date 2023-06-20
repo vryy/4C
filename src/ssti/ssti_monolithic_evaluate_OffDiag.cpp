@@ -216,7 +216,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       // assemble into auxiliary system matrix
       for (int iblock = 0; iblock < numberthermoblocks; ++iblock)
       {
-        for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+        for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
         {
           auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
           auto slave_side_converter_struct = meshtying->SlaveSideConverter();
@@ -251,7 +251,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
-      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto slave_side_converter_struct = meshtying->SlaveSideConverter();
@@ -342,7 +342,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
       // "slave side" from thermo and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
@@ -380,7 +380,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
       // "slave side" from thermo and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying

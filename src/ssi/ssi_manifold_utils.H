@@ -343,10 +343,7 @@ namespace SSI
         Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix, bool do_uncomplete) = 0;
 
     //! coupling adpaters, maps, and extractors for mesh tying
-    std::vector<Teuchos::RCP<UTILS::SSIMeshTyingHandler>> MeshTyingHandlers() const
-    {
-      return ssi_meshtying_->MeshtyingHandlers();
-    }
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSIMeshTying() const { return ssi_meshtying_; }
 
    protected:
     //! should meshtying between manifold fields be applied?

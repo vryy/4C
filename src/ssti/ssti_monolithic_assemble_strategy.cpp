@@ -215,7 +215,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map, *master_dof_map, 1.0,
       nullptr, nullptr, systemmatrix_structure, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -240,7 +240,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureMeshtying(
     LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
         *cond_slave_dof_map, 1.0, &(*converter), &(*converter), systemmatrix_structure, true, true);
 
-    for (const auto& meshtying2 : SSTIStructureMeshtying()->MeshtyingHandlers())
+    for (const auto& meshtying2 : SSTIStructureMeshtying()->MeshTyingHandlers())
     {
       if (meshtying2 != meshtying)
       {
@@ -423,7 +423,7 @@ void SSTI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.RangeMap(),
       *master_dof_map, 1.0, nullptr, nullptr, systemmatrix_x_structure, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -685,7 +685,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureXXXMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(structures_x_matrix, *master_dof_map,
       structures_x_matrix.DomainMap(), 1.0, nullptr, nullptr, systemmatrix_structure_x, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -1220,7 +1220,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     auto rhs_structure_master = LINALG::CreateVector(*StructureField()->DofRowMap(), true);
 
-    for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();

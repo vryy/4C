@@ -254,7 +254,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       // assemble into auxiliary system matrix
       for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
       {
-        for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+        for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
         {
           auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
           auto slave_side_converter_struct = meshtying->SlaveSideConverter();
@@ -291,7 +291,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // copy slave side values to master side and scale with minus 1. Insert into
       // scatrastructureinterface_sparse
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto slave_side_converter_struct = meshtying->SlaveSideConverter();
@@ -421,7 +421,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
 
@@ -494,7 +494,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
@@ -638,7 +638,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
@@ -676,7 +676,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying

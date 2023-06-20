@@ -664,7 +664,7 @@ void SSI::SSIMono::PrepareTimeStep()
   // Newton step on the slave side in case of interface mesh tying
   if (SSIInterfaceMeshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
@@ -1016,7 +1016,8 @@ void SSI::SSIMono::UpdateIterScaTra()
     // reconstruct slave side solution from master side
     if (IsScaTraManifoldMeshtying())
     {
-      for (const auto& meshtying : strategy_manifold_meshtying_->MeshTyingHandlers())
+      for (const auto& meshtying :
+          strategy_manifold_meshtying_->SSIMeshTying()->MeshTyingHandlers())
       {
         auto coupling_adapter = meshtying->SlaveMasterCoupling();
         auto multimap = meshtying->SlaveMasterExtractor();
@@ -1043,7 +1044,7 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();

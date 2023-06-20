@@ -72,7 +72,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map, *cond_master_dof_map,
         1.0, nullptr, nullptr, jac_new, true, true);
 
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
       auto converter = meshtying->SlaveSideConverter();
@@ -97,7 +97,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      for (const auto& meshtying2 : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
+      for (const auto& meshtying2 : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
       {
         auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
         auto converter2 = meshtying2->SlaveSideConverter();
@@ -130,7 +130,7 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying())
   {
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
 
@@ -163,7 +163,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying() and ssi_part_->IsSetup())
   {
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
       // transform and assemble slave-side part of structural right-hand side vector to master side
