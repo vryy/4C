@@ -6,6 +6,15 @@ FSI:                            iter_monolithicstructuresplit
 Fluid: Np_Gen_Alpha with constant_acceleration
 Structure: GenAlpha with ConstVel
 ==> comparison to analytical solution
+We prescribe a time-dependent displacement BC at the dry solid nodes
+with the curve d(t) = -t^3. By choosing a very high Youngs' modulus,
+we obtain quasi-rigid behavior of the solid. Hence, the interface
+displacement should match d_gamma(t) = -t^3 and the interface
+velocity (of the solid) is expected to be v_gamma(t) = -3*t^2.
+Displacement of the fluid/ALE is directly coupled to the solid,
+so this should match. Fluid velocity is not coupled directly, but
+involves the ALE grid velocity conversion. Hence, it does not match
+exactly, but only under refinement of the time step size.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         24
@@ -202,10 +211,15 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 3 FLUID HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE
 4 FLUID HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE
 ------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.66666666639677552e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.70999999999278884e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.07999999997809866e+01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999999667e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 16 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.70999999999e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY velx VALUE -2.70999999999e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.0799999999e+01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 17 QUANTITY velx VALUE -3.0e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 24 QUANTITY velx VALUE -3.0e+00 TOLERANCE 1e-8
 FSI NODE 20 QUANTITY lambdax VALUE 2.72408720128806037e+00 TOLERANCE 1e-5
 FSI NODE 20 QUANTITY lambday VALUE -1.16779625585039071e+00 TOLERANCE 1e-5
 FSI NODE 20 QUANTITY lambdaz VALUE -1.16779951492994316e+00 TOLERANCE 1e-5
