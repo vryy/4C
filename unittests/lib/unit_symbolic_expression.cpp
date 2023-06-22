@@ -60,8 +60,12 @@ namespace
 
   TEST(SymbolicExpressionTest, TestFirstDeriv)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*Variable1*Constant1*Variable2");
-
+    DRT::UTILS::SymbolicExpression<double> symbolicexpression_bilin(
+        "2*Variable1*Constant1*Variable2");
+    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx(
+        "2*Variable1*Variable1*Constant1*Variable2*Variable2");
+    DRT::UTILS::SymbolicExpression<double> symbolicexpression_pow2(
+        "2*Variable1^2*Constant1*Variable2^2");
     std::map<std::string, double> constants{{"Constant1", 2.0}};
 
     std::vector<std::pair<std::string, double>> variables;
@@ -76,10 +80,14 @@ namespace
     std::copy(variables_FAD.begin(), variables_FAD.end(),
         std::inserter(variable_values, variable_values.begin()));
 
-    auto fdfad = symbolicexpression.FirstDerivative(variable_values, constants);
+    auto fdfad_bilin = symbolicexpression_bilin.FirstDerivative(variable_values, constants);
+    auto fdfad_xtimesx = symbolicexpression_xtimesx.FirstDerivative(variable_values, constants);
+    auto fdfad_pow2 = symbolicexpression_pow2.FirstDerivative(variable_values, constants);
 
-    EXPECT_DOUBLE_EQ(fdfad.dx(0), 12.0);  // dFunction/dVariable1
-    EXPECT_DOUBLE_EQ(fdfad.dx(1), 24.0);  // dFunction/dVariable2
+    EXPECT_DOUBLE_EQ(fdfad_bilin.dx(0), 12.0);                    // dFunction1/dVariable1
+    EXPECT_DOUBLE_EQ(fdfad_bilin.dx(1), 24.0);                    // dFunction1/dVariable2
+    EXPECT_NEAR(fdfad_xtimesx.dx(0), fdfad_pow2.dx(0), 1.0e-14);  // dFunction2/dVariable1
+    EXPECT_NEAR(fdfad_xtimesx.dx(1), fdfad_pow2.dx(1), 1.0e-14);  // dFunction2/dVariable1
   }
 
   TEST(SymbolicExpressionTest, TestValidFunctionsAndOperators)
@@ -95,6 +103,9 @@ namespace
 
     DRT::UTILS::SymbolicExpression<double> symbolicexpression_atan2("atan2(2,4)");
 
+    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xpow2("x^2");
+    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx("x * x");
+
     EXPECT_NEAR(
         symbolicexpression_sincostan.Value({{"x", 0.2}, {"y", 0.4}}), 1.4114033869288349, 1.0e-14);
 
@@ -104,6 +115,8 @@ namespace
     EXPECT_NEAR(symbolicexpression_sqrtheavisidefabs.Value({}), 5.3, 1.0e-14);
 
     EXPECT_NEAR(symbolicexpression_atan2.Value({}), 0.46364760900080609, 1.0e-14);
+    EXPECT_NEAR(symbolicexpression_xpow2.Value({{"x", 0.2}}),
+        symbolicexpression_xtimesx.Value({{"x", 0.2}}), 1.0e-14);
   }
 
   TEST(SymbolicExpressionTest, TestValidLiterals)
