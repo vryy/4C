@@ -1950,14 +1950,14 @@ namespace DRT
     conditions also needs to be considered
     */
     void FindAssociatedEleIDs(
-        Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
+        Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
     /*!
     \brief Build the geometry of lines for a certain line condition
 
     */
-    virtual bool BuildLinesinCondition(const std::string name, Teuchos::RCP<DRT::Condition> cond);
+    virtual bool BuildLinesinCondition(const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Build the geometry of surfaces for a certain surface condition.
@@ -1971,13 +1971,14 @@ namespace DRT
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
     virtual bool BuildSurfacesinCondition(
-        const std::string name, Teuchos::RCP<DRT::Condition> cond);
+        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
-    virtual bool BuildVolumesinCondition(const std::string name, Teuchos::RCP<DRT::Condition> cond);
+    virtual bool BuildVolumesinCondition(
+        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)

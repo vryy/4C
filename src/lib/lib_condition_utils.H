@@ -60,15 +60,15 @@ namespace DRT
       \date 06/07
     */
     void FindConditionedNodes(
-        const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes);
+        const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes);
+
+    /// find all local nodes from discretization marked with condition
+    void FindConditionedNodes(const DRT::Discretization& dis, const std::string& condname,
+        std::map<int, DRT::Node*>& nodes);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(
-        const DRT::Discretization& dis, std::string condname, std::map<int, DRT::Node*>& nodes);
-
-    /// find all local nodes from discretization marked with condition
-    void FindConditionedNodes(
-        const DRT::Discretization& dis, std::string condname, std::set<int>& nodeset);
+        const DRT::Discretization& dis, const std::string& condname, std::set<int>& nodeset);
 
     /// find all local nodes from discretization marked with condition
     /*!
@@ -185,7 +185,7 @@ namespace DRT
       \param colmap : (in) whether we want to create a (ghosted) column map
     */
     Teuchos::RCP<Epetra_Map> ConditionElementMap(
-        const DRT::Discretization& dis, std::string condname, bool colmap);
+        const DRT::Discretization& dis, const std::string& condname, bool colmap);
 
     /// Find all conditions with given name that all nodes of the element have in common
     /*!
@@ -215,13 +215,6 @@ namespace DRT
      */
     Teuchos::RCP<std::set<int>> ConditionedElementMap(
         const DRT::Discretization& dis, const std::string& condname);
-
-    //! collects elements by labels (have to be implemented in the corresponding condition
-    void CollectElementsByConditionLabel(
-        const DRT::Discretization& discret,             ///< discretization with condition
-        std::map<int, std::set<int>>& elementsByLabel,  ///< map from label to set of element GID
-        const std::string& name                         ///< name of the condition
-    );
 
     /// Writes debug output for volumetric coupling
     void WriteBoundarySurfacesVolumeCoupling(
