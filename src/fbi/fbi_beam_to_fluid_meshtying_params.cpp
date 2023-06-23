@@ -11,7 +11,7 @@
 #include "fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "inpar_fbi.H"
 #include "inpar_geometry_pair.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 
 /**
@@ -23,7 +23,7 @@ FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
       constraint_enforcement_(INPAR::FBI::BeamToFluidConstraintEnforcement::none),
       meshtying_discretization_(INPAR::FBI::BeamToFluidDiscretization::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(DRT::UTILS::GaussRule1D::undefined),
+      gauss_rule_(CORE::DRT::UTILS::GaussRule1D::undefined),
       calcfluidweakdirichletforce_(false),
       mortar_shape_function_(INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::none)
 {

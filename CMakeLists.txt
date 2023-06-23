@@ -1,11 +1,9 @@
 # Build system for baci and support tools.
-# Including nightly test definitions.
-#
 
 #
 ### General Setup
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.25)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
@@ -23,6 +21,11 @@ project(baci CXX C Fortran)
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
+# Enforce the C++ standard we are using and turn off compiler-specific extensions
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_EXTENSIONS Off)
+
 # The version number.
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
@@ -36,7 +39,7 @@ include(CheckCXXSourceCompiles)
 include(FetchContent)
 
 # include our own functions and macros
-file(GLOB _function_files "cmake/functions/*.cmake")
+file(GLOB _function_files CONFIGURE_DEPENDS "cmake/functions/*.cmake")
 foreach(_file ${_function_files})
   message(STATUS "Include ${_file}")
   include(${_file})
@@ -46,67 +49,21 @@ endforeach()
 ### Build in default values
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE
-      RelWithDebInfo
-      CACHE STRING
-            "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-            FORCE
-      )
-endif(NOT CMAKE_BUILD_TYPE)
+  message(FATAL_ERROR "Choose a build type. Options are Debug and Release.")
+endif()
 
 ###------------------------------------------------------------------- Default cmake settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-### compile time options
-
 if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-  add_definitions("-DDEBUG=ON")
+  set_property(GLOBAL APPEND PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS "DEBUG")
 endif()
 
-option(
-  DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF
-  )
-if(DEBUGCUTLIBRARY)
-  add_definitions("-DDEBUGCUTLIBRARY")
-endif(DEBUGCUTLIBRARY)
-
-option(
-  TRILINOS_DEVELOP
-  "Select Trilinos installation based on current develop branch (highly experimental!)"
-  OFF
-  )
-if(TRILINOS_DEVELOP)
-  message("II Trilinos installation: develop branch (highly experimental!)")
-  add_definitions("-DTRILINOS_DEVELOP")
-endif(TRILINOS_DEVELOP)
-
-option(ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
-if(ENABLE_STACKTR)
-  message("II Print stacktrace in dserror")
-  add_definitions("-DENABLE_STACKTR")
-endif(ENABLE_STACKTR)
-
-# ignore selected cut test
-option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
-if(IGNORE_UNSTABLE_CUTTEST)
-  message("-- Ignore unstable cut test ")
-  add_definitions("-DIGNORE_UNSTABLE_CUTTEST")
-endif(IGNORE_UNSTABLE_CUTTEST)
-
-# fancy stuff
-
-option(DSERROR_DUMP "dserror creates a core file" OFF)
-if(DSERROR_DUMP)
-  add_definitions("-DDSERROR_DUMP")
-endif(DSERROR_DUMP)
-
-option(TRAP_FE "crash baci if a nan of inf occurs" ON)
-if(TRAP_FE)
-  add_definitions("-DTRAP_FE")
-endif(TRAP_FE)
+### process global options
+include(cmake/setup_global_options.cmake)
 
 # Run some system checks
-file(GLOB _check_files "cmake/checks/*.cmake")
+file(GLOB _check_files CONFIGURE_DEPENDS "cmake/checks/*.cmake")
 foreach(_file ${_check_files})
   message(STATUS "Include ${_file}")
   include(${_file})
@@ -137,152 +94,12 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 
-###------------------------------------------------------------------ List of files
+### end of configuration and feature detection
 
-### LEGACY
-# Define variables that gather the names of all to-be-created libraries. These will be used
-# for the executables that link against all libraries.
-
-set(ELEMENT_LIBRARIES
-    # cmake-format: sortable
-    ele_ale
-    ele_beam3
-    ele_bele
-    ele_discsh3
-    ele_elemag
-    ele_fluid
-    ele_lubrication
-    ele_membrane
-    ele_porofluidmultiphase
-    ele_rigidsphere
-    ele_s8
-    ele_scatra
-    ele_so
-    ele_so_plast
-    ele_solid
-    ele_sp3
-    ele_t3
-    ele_t3cl
-    ele_thermo
-    ele_to3
-    ele_w1
-    )
-
-set(MULTIFIELD_LIBRARIES
-    # cmake-format: sortable
-    alg_ehl
-    alg_elch
-    alg_fbi
-    alg_fpsi
-    alg_fs3i
-    alg_fsi
-    alg_fsi_xfem
-    alg_immersed_problem
-    alg_loma
-    alg_pasi
-    alg_poroelast
-    alg_poroelast_scatra
-    alg_poromultiphase
-    alg_poromultiphase_scatra
-    alg_ssi
-    alg_ssti
-    alg_sti
-    alg_tsi
-    alg_two_phase
-    alg_wear
-    )
-
-set(SINGLEFIELD_LIBRARIES
-    # cmake-format: sortable
-    alg_ale
-    alg_artnet
-    alg_contact
-    alg_contact_aug
-    alg_elemag
-    alg_fluid
-    alg_fluid_turbulence
-    alg_lubrication
-    alg_particle_algorithm
-    alg_particle_engine
-    alg_particle_interaction
-    alg_particle_rigidbody
-    alg_particle_wall
-    alg_porofluidmultiphase
-    alg_scatra
-    alg_statinvanalysis
-    alg_structure
-    alg_structure_new
-    alg_thermo
-    alg_tutorial
-    alg_xfluid
-    alg_xstructure
-    )
-
-set(SUPPORT_LIBRARIES
-    # cmake-format: sortable
-    fem_general
-    geometry_pair
-    inpar
-    io
-    levelset
-    lib
-    lib_artnet
-    lib_beamcontact
-    lib_beaminteraction
-    lib_binstrategy
-    lib_browniandyn
-    lib_constraint
-    lib_contact
-    lib_contact_constitutivelaw
-    lib_cut
-    lib_fiber
-    lib_geometric_search
-    lib_immersed
-    lib_io
-    lib_mortar
-    lib_poromulti_art_coupl
-    lib_statinv_ana
-    lib_struct_ale
-    lib_surfstress
-    lib_xfem
-    lib_xfem_manag
-    particleengine
-    patspec
-    red_airways
-    )
-
-set(BACI_LIBRARIES
-    # cmake-format: sortable
-    ${ELEMENT_LIBRARIES}
-    ${MULTIFIELD_LIBRARIES}
-    ${SINGLEFIELD_LIBRARIES}
-    ${SUPPORT_LIBRARIES}
-    adapter
-    cardiovascular0d
-    comm
-    constraint
-    geometry
-    headers
-    linalg
-    locacontinuation
-    mat
-    matelast
-    mixture
-    mor
-    mortar
-    nlnsolver_nox
-    nurbs_discret
-    pss_full
-    rebalance
-    solver
-    stru_multi
-    timestepping
-    volmortar
-    )
+# Get the global compile definitions which have been populated until here
+get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
-
-###------------------------------------------------------------------ Binaries
 
 # hide libraries
 
@@ -310,7 +127,12 @@ set(FULL_TARGETS
 
 add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
+include(cmake/setup_tests.cmake)
+
+# Read in the source directory which defines all modules and executables
 add_subdirectory(src)
+
+# Process documentation
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
@@ -321,8 +143,19 @@ set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
     )
 
 enable_testing()
-include(CTest)
 
+add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
-include(UnittestingFramework.cmake)
+
+# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
+get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
+
+## After we defined all targets, we can now resolve the legacy linking
+get_property(
+  BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING GLOBAL
+  PROPERTY BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING
+  )
+foreach(target ${BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING})
+  baci_link_executable_with_all(${target})
+endforeach()

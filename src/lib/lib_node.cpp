@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "lib_node.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 DRT::NodeType DRT::NodeType::instance_;

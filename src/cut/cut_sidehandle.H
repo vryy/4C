@@ -62,9 +62,9 @@ namespace GEO
       \brief Get the Gaussian rule projected on the side. Not used now
        */
       template <DRT::Element::DiscretizationType distype>
-      Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected(BoundaryCell* bc)
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(BoundaryCell* bc)
       {
-        const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
         LINALG::Matrix<2, nen> xie;
 
@@ -78,8 +78,8 @@ namespace GEO
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
 
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
-            DRT::UTILS::GaussIntegration::CreateProjected<distype>(xie, bc->CubatureDegree());
+        Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
+            CORE::DRT::UTILS::GaussIntegration::CreateProjected<distype>(xie, bc->CubatureDegree());
         return gp;
       }
 

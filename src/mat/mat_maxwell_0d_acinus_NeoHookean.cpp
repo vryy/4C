@@ -23,6 +23,7 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 #include "mat_par_bundle.H"
 #include "red_airways_elementbase.H"
 #include "lib_linedefinition.H"
+#include "red_airways_elem_params.h"
 
 
 
@@ -131,8 +132,8 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Setup(DRT::INPUT::LineDefinition* linede
  *----------------------------------------------------------------------*/
 void MAT::Maxwell_0d_acinus_NeoHookean::Evaluate(Epetra_SerialDenseVector& epnp,
     Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
-    const double Vo, double time, double dt)
+    Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+    const double NumOfAcini, const double Vo, double time, double dt)
 {
   // Set sysmat and rhs to zero
   sysmat.Scale(0.0);

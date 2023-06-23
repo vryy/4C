@@ -20,8 +20,8 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include "lib_dserror.H"
-#include "adapter_coupling_mortar.H"
+#include "utils_exceptions.H"
+#include "coupling_adapter_mortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
@@ -46,7 +46,7 @@ namespace LINALG
 
 namespace ADAPTER
 {
-  class CouplingNonLinMortar : public CouplingMortar
+  class CouplingNonLinMortar : public CORE::ADAPTER::CouplingMortar
   {
    public:
     /*!

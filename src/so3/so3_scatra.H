@@ -13,8 +13,8 @@
 
 #include "so3_scatra_eletypes.H"
 
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "inpar_scatra.H"
 
@@ -69,12 +69,13 @@ namespace DRT
       So3_Scatra& operator=(const So3_Scatra& old) = delete;
       //@}
 
-      // static const DRT::UTILS::GaussIntegration intpoints_ =
-      // DRT::UTILS::GaussIntegration(distype);
+      // static const CORE::DRT::UTILS::GaussIntegration intpoints_ =
+      // CORE::DRT::UTILS::GaussIntegration(distype);
 
 
       //! number of element nodes (
-      static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       //! number of space dimensions
       static const int numdim_ = 3;
       //! number of dofs per node
@@ -336,7 +337,7 @@ namespace DRT
       };
 
       // integration points
-      const DRT::UTILS::IntegrationPoints3D intpoints_;
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints_;
       //! total gauss points per element
       const int numgpt_;
       //! vector of coordinates of current integration point in reference coordinates

@@ -15,8 +15,9 @@
 
 #include <vector>
 
-
 #include "fluid_rotsym_periodicbc_utils.H"
+#include "fluid_ele.H"
+#include "lib_element.H"
 
 namespace FLD
 {
@@ -37,11 +38,12 @@ namespace FLD
   {
    public:
     /// number of nodes for this element type including virtual nodes
-    static const int elenumnode = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode *
-                                  DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int elenumnode =
+        DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode *
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     /// number of nodes for this element type (only real nodes)
     static const int elenumnodereal =
-        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     /// standard constructor
     explicit RotationallySymmetricPeriodicBC() : rotangle_(0.0), rotmat_(true) { return; };

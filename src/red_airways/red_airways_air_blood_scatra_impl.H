@@ -15,7 +15,7 @@
 #define RED_AIRWAYS_AIR_BLOOD_SCATRA_IMPL_H
 
 #include "red_airways_elementbase.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "linalg_fixedsizematrix.H"
 
 
@@ -91,7 +91,7 @@ namespace DRT
       explicit RedAirBloodScatraImpl();
 
       //! number of nodes
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
 
       /// Evaluate

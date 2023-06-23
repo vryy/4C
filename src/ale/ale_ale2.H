@@ -19,7 +19,7 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -274,7 +274,7 @@ namespace DRT
       //! @name Other
 
       /// set number of gauss points to element shape default
-      DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
       //@}
 

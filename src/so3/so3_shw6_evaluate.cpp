@@ -9,12 +9,12 @@
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "mat_viscoanisotropic.H"
 #include "mat_micromaterial.H"
@@ -408,8 +408,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   soshw6_anssetup(xrefe, xcurr, &deriv_sp, jac_sps, jac_cur_sps, B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 6-node wedge
   // necessary for ANS interpolation
-  const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::GaussRule3D::wedge_6point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
 
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing
@@ -856,7 +856,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
     {
-      DRT::UTILS::shape_function_3D_deriv1(df_sp[i], r[i], s[i], t[i], wedge6);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(df_sp[i], r[i], s[i], t[i], wedge6);
     }
 
     // return adresses of just evaluated matrices
@@ -1015,9 +1015,10 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
     const LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe)  // material element coords
 {
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::wedge_1point);
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(
+      CORE::DRT::UTILS::GaussRule3D::wedge_1point);
   LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> df0;
-  DRT::UTILS::shape_function_3D_deriv1(
+  CORE::DRT::UTILS::shape_function_3D_deriv1(
       df0, intpoints.qxg[0][0], intpoints.qxg[0][1], intpoints.qxg[0][2], DRT::Element::wedge6);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
@@ -1042,7 +1043,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   else
   {
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
-    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::GaussRule3D::wedge_6point);
+    const CORE::DRT::UTILS::IntegrationPoints3D intpoints(
+        CORE::DRT::UTILS::GaussRule3D::wedge_6point);
 
     // fill up M at each gp
     if (eastype_ == soshw6_easpoisthick)

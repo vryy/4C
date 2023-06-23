@@ -6,5 +6,9 @@ set(OBJS_POST_VTK
     post_vtk_writer.cpp
     )
 
-baci_add_library(post_vtk_lib ${OBJS_POST_VTK})
+set(_headers
+    post_vtk_vti_writer.H post_vtk_vtu_writer.H post_vtk_vtu_writer_node_based.H post_vtk_writer.H
+    )
+
+baci_add_library(post_vtk_lib SOURCES ${OBJS_POST_VTK} HEADERS)
 baci_add_dependency(post_vtk_lib post_common)

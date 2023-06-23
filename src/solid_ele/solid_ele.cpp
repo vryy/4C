@@ -9,7 +9,7 @@
 #include <memory>
 #include "solid_ele_utils.H"
 #include "lib_linedefinition.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "lib_utils_factory.H"
 #include "so3_line.H"
 #include "so3_surface.H"
@@ -219,16 +219,19 @@ DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
 
 DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new DRT::ELEMENTS::Solid(*this); }
 
-int DRT::ELEMENTS::Solid::NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
+int DRT::ELEMENTS::Solid::NumLine() const
+{
+  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+}
 
 int DRT::ELEMENTS::Solid::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
 }
 
 int DRT::ELEMENTS::Solid::NumVolume() const
 {
-  return DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()

@@ -18,8 +18,8 @@
 #include "lib_element.H"
 #include "lib_elementtype.H"
 #include "lib_parobjectfactory.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "linalg_serialdensevector.H"
 #include "lib_node.H"
@@ -433,7 +433,7 @@ namespace DRT
       // Nodal positions at previous time step
       LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_1_;
 
-      DRT::UTILS::GaussRule2D gaussrule_;  ///< Gaussrule
+      CORE::DRT::UTILS::GaussRule2D gaussrule_;  ///< Gaussrule
 
       //! container containing all kind of discsh3 thisandthat
       DRT::Container data_;

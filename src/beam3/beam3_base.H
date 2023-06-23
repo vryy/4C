@@ -21,10 +21,11 @@
 #include "inpar_beaminteraction.H"
 #include "lib_element.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "beam3_spatial_discretization_utils.H"
+#include "utils_local_newton.H"
 
 
 // forward declaration ...
@@ -158,12 +159,6 @@ namespace DRT
        *  \author grill
        *  \date 10/16 */
       virtual bool IsCenterlineNode(const DRT::Node& node) const = 0;
-
-      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
-       *
-       *  \author grill
-       *  \date 05/16 */
-      virtual bool HermiteCenterlineInterpolation() const = 0;
 
       /** \brief return GIDs of all additive DoFs for a given node
        *
@@ -396,7 +391,18 @@ namespace DRT
           const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
           bool add_reference_values = false) const = 0;
 
+      /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+       */
+      inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_; }
+
      protected:
+      //! vector holding reference tangent at the centerline nodes
+      std::vector<LINALG::Matrix<3, 1>> Tref_;
+
+      //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange
+      //! interpolation)
+      bool centerline_hermite_;
+
       /** \brief get access to the interface
        *
        *  \author hiermeier
@@ -410,6 +416,90 @@ namespace DRT
       inline BROWNIANDYN::ParamsInterface& BrownianDynParamsInterface() const
       {
         return *browndyn_interface_ptr_;
+      }
+
+      /** \brief add reference positions and tangents to (centerline) displacement state vector
+       *
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
+       *
+       * @param pos_ref_centerline Vector containing the centerline reference position values
+       */
+      template <unsigned int nnodecl, unsigned int vpernode, typename T>
+      void AddRefValuesDispCenterline(
+          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& pos_ref_centerline) const
+      {
+        for (unsigned int dim = 0; dim < 3; ++dim)
+          for (unsigned int node = 0; node < nnodecl; ++node)
+          {
+            pos_ref_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
+            if (HermiteCenterlineInterpolation())
+              pos_ref_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
+          }
+      }
+
+      /** \brief calculates the element length in reference configuration
+       *
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
+       *
+       * For Lagrange centerline interpolation the difference between both boundary points is used
+       * as reference length. In the case of Hermite centerline interpolation the value is used as
+       * start for a newton iteration.
+       *
+       * see "Meier, C.: Geometrically exact finite element formulations for slender beams and
+       * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
+       */
+      template <unsigned int nnode, unsigned int vpernode>
+      double CalcReflength(
+          const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline)
+      {
+        LINALG::Matrix<3, 1> tempvec(true);
+
+        for (int dim = 0; dim < 3; dim++)
+          tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
+        double reflength = tempvec.Norm2();
+
+        if (HermiteCenterlineInterpolation())
+        {
+          const auto gausspoints =
+              CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_10point);
+          const auto distype = this->Shape();
+
+          auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
+                                                 double reflength)
+          {
+            return DRT::UTILS::BEAM::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
+                vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
+          };
+
+          const double newton_tolerance = 1e-12;
+          const int max_iterations = 200;
+          reflength = CORE::UTILS::SolveLocalNewton(
+              lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
+        }
+
+        return reflength;
+      }
+
+      /*! \brief Get centerline position at given parameter coordinate xi
+       *
+       * @tparam nnode number of nodes
+       * @tparam vpernode values per nodal direction
+       *
+       * The parameter disp_totlag has to contain the absolute (total Lagrange) values of the
+       * centerline degrees of freedom, i.e., the reference values + the current displacement
+       * values (\ref UpdateDispTotlag or \ref AddRefValuesDispCenterline).
+       */
+      template <unsigned int nnode, unsigned int vpernode, typename T>
+      void GetPosAtXi(LINALG::Matrix<3, 1, T>& r, const double& xi,
+          const LINALG::Matrix<3 * nnode * vpernode, 1, T>& disp_totlag) const
+      {
+        LINALG::Matrix<1, vpernode * nnode, T> N_i;
+
+        DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
+            xi, N_i, Shape(), RefLength());
+        Calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
 
       /** \brief compute beam centerline position vector at position \xi in element parameter space
@@ -601,9 +691,10 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
           const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-          const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const override;
+          const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params)
+          const override;
 
      private:
       //! position of binding spots on beam element in local coordinate system

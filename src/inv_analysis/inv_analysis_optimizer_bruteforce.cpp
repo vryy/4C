@@ -13,7 +13,7 @@
 #include "inv_analysis_base.H"
 #include "inv_analysis_matpar_manager.H"
 #include "inv_analysis_objective_funct.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <fstream>
 

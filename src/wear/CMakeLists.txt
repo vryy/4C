@@ -1,16 +1,21 @@
-set(OBJS_WEAR
-    # cmake-format: sortable
-    wear_algorithm.cpp
-    wear_dyn.cpp
-    wear_partitioned.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_wear ${OBJS_WEAR})
-
-set(LIBS_ALG_WEAR
+set(_wear_dependencies
     # cmake-format: sortable
     adapter
-    alg_fs3i
+    ale
+    contact
+    contact_aug
+    core
+    fs3i
+    fsi
+    inpar
+    lib
+    linalg
+    mortar
+    nurbs_discret
+    so3
+    structure
+    w1
     )
-
-baci_add_dependency(alg_wear ${LIBS_ALG_WEAR})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_wear_dependencies})

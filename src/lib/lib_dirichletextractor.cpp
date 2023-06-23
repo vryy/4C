@@ -13,8 +13,7 @@
 
 #include "lib_discret.H"
 #include "lib_condition_selector.H"
-#include "lib_condition_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 /*----------------------------------------------------------------------*/

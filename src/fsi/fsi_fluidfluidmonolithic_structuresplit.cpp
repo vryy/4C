@@ -19,7 +19,7 @@
 #include "inpar_fsi.H"
 #include "inpar_ale.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 
 #include "io_control.H"

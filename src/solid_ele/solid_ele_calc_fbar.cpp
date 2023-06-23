@@ -12,24 +12,24 @@
 #include <Teuchos_ParameterList.hpp>
 #include <memory>
 #include <optional>
-#include "lib_dserror.H"
-#include "fem_general_utils_integration.H"
+#include "utils_exceptions.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_utils.H"
 #include "lib_voigt_notation.H"
 #include "solid_ele.H"
 #include "lib_discret.H"
 #include "mat_so3_material.H"
 #include "solid_ele_utils.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "fiber_node.H"
 #include "fiber_utils.H"
 #include "fiber_nodal_fiber_holder.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
-#include "fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 
 #include "structure_new_gauss_point_data_output_manager.H"
 #include "so3_element_service.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace
 {
@@ -206,9 +206,9 @@ namespace
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalcFbar<distype>* DRT::ELEMENTS::SolidEleCalcFbar<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::SolidEleCalcFbar<distype>>(
@@ -468,7 +468,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::MaterialPostSetup(
           for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
           {
             LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
-            DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
+            CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
           }
           return shapefcns;
         });
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
           // compute average of the quantities
           Teuchos::RCP<Epetra_MultiVector> global_data =
               gp_data_output_manager.GetMutableElementCenterData().at(quantity_name);
-          DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
+          CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
           break;
         }
         case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -548,7 +548,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
           Epetra_IntVector& global_nodal_element_count =
               *gp_data_output_manager.GetMutableNodalDataCount().at(quantity_name);
 
-          DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<distype>(
+          CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<distype>(
               ele, gp_data, *global_data, false, stiffness_matrix_integration_);
           DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
           break;

@@ -13,7 +13,7 @@
 #define CONTACT_AUG_INTEGRATOR_H
 
 #include "contact_integrator.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "contact_aug_integrator_policy.H"
 
 namespace MORTAR
@@ -373,7 +373,7 @@ namespace CONTACT
       // Jacobian derivative (1-st order)
       Deriv1stMap derivjac_;
 
-      GEN_DATA::pairedvector<int, LINALG::Matrix<3, 1>> lingp_;
+      CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp_;
 
       // directional derivative of slave GP normal (non-unit)
       Deriv1stMap dmap_nxsl_gp_;

@@ -19,7 +19,7 @@
 #include "cut_options.H"
 #include "cut_volumecell.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 #define TETMESH_EXTENDED_DEBUG_OUTPUT  // for debuggin the triangulization where it fails

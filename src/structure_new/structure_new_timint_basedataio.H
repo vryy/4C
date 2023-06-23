@@ -132,6 +132,15 @@ namespace STR
       /// \brief return TRUE if the restart state shall be written for this load/time step
       bool ShouldWriteRestartForStep(int step) const;
 
+      /// \brief return TRUE if reaction forces shall be written for this load/time step
+      bool ShouldWriteReactionForcesForThisStep(int step) const;
+
+      /// \brief return TRUE if stress and strain data shall be written for this load/time step
+      bool ShouldWriteStressStrainForThisStep(int step) const;
+
+      /// \brief return TRUE if energy data shall be written for this load/time step
+      bool ShouldWriteEnergyForThisStep(int step) const;
+
       /// \brief return the number of the load/time step for which the results have been written
       int GetLastWrittenResults() const;
 
@@ -254,6 +263,13 @@ namespace STR
         CheckInitSetup();
         return outputcounter_;
       };
+
+      /// returns the offset added to the current step to shift the steps to be written
+      int GetWriteTimestepOffset() const
+      {
+        CheckInitSetup();
+        return writetimestepoffset_;
+      }
 
       /// write restart every given step. if 0, restart is not written
       const int& GetWriteRestartEveryNStep() const
@@ -397,6 +413,9 @@ namespace STR
 
       /// output counter for OutputEveryIter
       int outputcounter_;
+
+      /// offset added on the current step to determine if output/restart should be written
+      int writetimestepoffset_ = 0;
 
       /// write restart every given step. if 0, restart is not written
       int writerestartevery_;

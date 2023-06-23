@@ -14,11 +14,11 @@
 
 #include "inpar_parameterlist_utils.H"
 
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "lib_globalproblem.H"  // for curves and functions
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
@@ -28,14 +28,15 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
             new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[disname].Instance(
+      CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -175,7 +176,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
     DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
@@ -242,8 +243,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int iquad,                                         ///< id of current Gauss point
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int iquad,                                               ///< id of current Gauss point
     LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
 )
 {
@@ -255,13 +256,13 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFunc
   }
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_, funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+  CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
       xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor

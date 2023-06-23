@@ -35,7 +35,7 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 #include "mat_service.H"
 #include "mat_par_bundle.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "io_control.H"
 
@@ -610,7 +610,8 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // Setting up gauss quadrature (do not forget to adapt defines "numbgp" and "twice" in
   // activefiber.H)
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_10point);
+  const CORE::DRT::UTILS::IntegrationPoints1D gausspoints(
+      CORE::DRT::UTILS::GaussRule1D::line_10point);
 
 
   double tol = 1e-12;
@@ -1258,7 +1259,8 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   double dt = params.get<double>("delta time", -1.0);
 
   // Setup integration rule
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_10point);
+  const CORE::DRT::UTILS::IntegrationPoints1D gausspoints(
+      CORE::DRT::UTILS::GaussRule1D::line_10point);
 
   // Jacobi Determinant
   const double detF = defgrd.Determinant();

@@ -447,9 +447,6 @@ void DRT::Condition::Print(std::ostream& os) const
     case RedAirwayPrescribedExternalPressure:
       os << "Reduced d airway prescribed external pressure boundary condition";
       break;
-    case PatientSpecificData:
-      os << "Various Geometric Patient Specific Data";
-      break;
     case VolumetricSurfaceFlowCond:
       os << "Volumetric Surface Flow Profile";
       break;

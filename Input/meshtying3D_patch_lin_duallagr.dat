@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 3D small deformation contact patch test
 // - first-order interpolation (hex8 elements)
@@ -17,17 +12,12 @@ General Data File BACI
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
@@ -104,9 +94,7 @@ E 8 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
-//                              slave
 E 2 - 1 Slave Active
-//                              master
 E 3 - 1 Master
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -570,4 +558,3 @@ STRUCTURE DIS structure NODE 157 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 157 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 157 QUANTITY dispz VALUE -3.99800000050019085e-03 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
-//                              END

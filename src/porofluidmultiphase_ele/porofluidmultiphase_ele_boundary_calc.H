@@ -14,7 +14,7 @@
 #include "porofluidmultiphase_ele_interface.H"
 #include "porofluidmultiphase_ele_calc_utils.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "lib_element.H"
 
 namespace DRT
@@ -45,10 +45,10 @@ namespace DRT
       virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of boundary(!) space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! Evaluate the element (using location array)
       virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -79,8 +79,8 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at int. point
       double EvalShapeFuncAndIntFac(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          const int iquad,                                         ///< id of current Gauss point
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          const int iquad,                               ///< id of current Gauss point
           LINALG::Matrix<1 + nsd_, 1>* normalvec = NULL  ///< normal vector at Gauss point(optional)
       );
 

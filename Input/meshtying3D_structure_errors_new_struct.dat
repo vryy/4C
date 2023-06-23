@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 3D small deformation mesh tying test
 // - first-order interpolation (hex8 elements)
@@ -17,17 +12,12 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -3333,4 +3323,3 @@ NODE 1650 COORD -2.00000000e+00 3.65286171e-01 -5.00000000e-01
 1119 SOLID HEX8 1368 1631 1633 1364 1365 1647 1649 1361 MAT 1 KINEM nonlinear EAS none
 1120 SOLID HEX8 1631 1632 1634 1633 1647 1648 1650 1649 MAT 1 KINEM nonlinear EAS none
 -------------------------------------------------------------------------END
-//                              END

@@ -14,7 +14,7 @@
 #include "contact_aug_contact_integrator_utils.H"
 
 #include "linalg_serialdensevector.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
@@ -181,8 +181,8 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_augA_.resize(dentries);
   d_kappa_.resize(dentries);
 
-  GEN_DATA::reset(dentries, dd_augA_);
-  GEN_DATA::reset(dentries, dd_kappa_);
+  CORE::GEN::reset(dentries, dd_augA_);
+  CORE::GEN::reset(dentries, dd_kappa_);
 
   d_wgap_sl_.resize(dentries);
   d_wgap_ma_.resize(mentries_);
@@ -190,8 +190,8 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_wgap_sl_complete_ = Teuchos::rcp(new Deriv1stMap(dentries));
   d_wgap_ma_complete_ = Teuchos::rcp(new Deriv1stMap(mentries_));
 
-  GEN_DATA::reset(dentries, dd_wgap_sl_);
-  GEN_DATA::reset(mentries_, dd_wgap_ma_);
+  CORE::GEN::reset(dentries, dd_wgap_sl_);
+  CORE::GEN::reset(mentries_, dd_wgap_ma_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -257,8 +257,8 @@ void CONTACT::AUG::NodeDataContainer::Debug::Complete()
   d_.complete();
   dd_.complete();
 
-  GEN_DATA::complete(d_vec_);
-  GEN_DATA::complete(dd_vec_);
+  CORE::GEN::complete(d_vec_);
+  CORE::GEN::complete(dd_vec_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1003,14 +1003,14 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   //**************************************************
   //      LINEARIZATION
   //**************************************************
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   for (int j = 0; j < (int)((CoData().GetDerivTangent()).size()); ++j)
     (CoData().GetDerivTangent())[j].clear();
   (CoData().GetDerivTangent()).resize(0, 0);
   if ((int)CoData().GetDerivTangent().size() == 0) CoData().GetDerivTangent().resize(3, 2 * 100);
 
-  std::vector<GEN::pairedvector<int, double>> lint(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> lint(3, 100);  // added all sizes
   if (n1 != NULL)
   {
     lint[0][n1->Dofs()[0]] += 1;
@@ -1024,12 +1024,12 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
     lint[2][n2->Dofs()[2]] -= 1;
   }
   // first part
-  std::vector<GEN::pairedvector<int, double>> Lin1(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> Lin1(3, 100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p) Lin1[0][p->first] += p->second / length;
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p) Lin1[1][p->first] += p->second / length;
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p) Lin1[2][p->first] += p->second / length;
 
-  GEN::pairedvector<int, double> Lin2(100);  // added all sizes
+  CORE::GEN::pairedvector<int, double> Lin2(100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[0];
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p)
@@ -1037,7 +1037,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[2];
 
-  std::vector<GEN::pairedvector<int, double>> Lin3(3, 100);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> Lin3(3, 100);  // added all sizes
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
     Lin3[0][p->first] += p->second * MoData().EdgeTangent()[0] / (length * length * length);
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
@@ -1234,13 +1234,13 @@ void CONTACT::CoNode::DerivAveragedNormal(
   // normalize directional derivative
   // (length differs for weighted/unweighted case but not the procedure!)
   // (be careful with reference / copy of derivative maps!)
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
-  GEN::pairedvector<int, double>& derivnx = CoData().GetDerivN()[0];
-  GEN::pairedvector<int, double>& derivny = CoData().GetDerivN()[1];
-  GEN::pairedvector<int, double>& derivnz = CoData().GetDerivN()[2];
-  GEN::pairedvector<int, double> cderivnx = CoData().GetDerivN()[0];
-  GEN::pairedvector<int, double> cderivny = CoData().GetDerivN()[1];
-  GEN::pairedvector<int, double> cderivnz = CoData().GetDerivN()[2];
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+  CORE::GEN::pairedvector<int, double>& derivnx = CoData().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double>& derivny = CoData().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double>& derivnz = CoData().GetDerivN()[2];
+  CORE::GEN::pairedvector<int, double> cderivnx = CoData().GetDerivN()[0];
+  CORE::GEN::pairedvector<int, double> cderivny = CoData().GetDerivN()[1];
+  CORE::GEN::pairedvector<int, double> cderivnz = CoData().GetDerivN()[2];
   const double nxnx = MoData().n()[0] * MoData().n()[0];
   const double nxny = MoData().n()[0] * MoData().n()[1];
   const double nxnz = MoData().n()[0] * MoData().n()[2];
@@ -1305,8 +1305,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
 
     for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] = -(p->second);
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p) derivtxiy[p->first] = (p->second);
@@ -1323,9 +1323,9 @@ void CONTACT::CoNode::DerivAveragedNormal(
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
+    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
@@ -1348,8 +1348,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     // use definitions for txi from BuildAveragedNormal()
     if (abs(MoData().n()[0]) > 1.0e-4 || abs(MoData().n()[1]) > 1.0e-4)
     {
-      GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-      GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -1357,8 +1357,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
     }
     else
     {
-      GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-      GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
+      CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+      CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -1367,13 +1367,13 @@ void CONTACT::CoNode::DerivAveragedNormal(
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
-    typedef GEN::pairedvector<int, double>::const_iterator CI;
-    GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
-    GEN::pairedvector<int, double> cderivtxix = CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int, double> cderivtxiy = CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int, double> cderivtxiz = CoData().GetDerivTxi()[2];
+    typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+    CORE::GEN::pairedvector<int, double>& derivtxix = CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double>& derivtxiy = CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double>& derivtxiz = CoData().GetDerivTxi()[2];
+    CORE::GEN::pairedvector<int, double> cderivtxix = CoData().GetDerivTxi()[0];
+    CORE::GEN::pairedvector<int, double> cderivtxiy = CoData().GetDerivTxi()[1];
+    CORE::GEN::pairedvector<int, double> cderivtxiz = CoData().GetDerivTxi()[2];
     const double txtx = CoData().txi()[0] * CoData().txi()[0];
     const double txty = CoData().txi()[0] * CoData().txi()[1];
     const double txtz = CoData().txi()[0] * CoData().txi()[2];
@@ -1435,9 +1435,9 @@ void CONTACT::CoNode::DerivAveragedNormal(
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    GEN::pairedvector<int, double>& derivtetax = CoData().GetDerivTeta()[0];
-    GEN::pairedvector<int, double>& derivtetay = CoData().GetDerivTeta()[1];
-    GEN::pairedvector<int, double>& derivtetaz = CoData().GetDerivTeta()[2];
+    CORE::GEN::pairedvector<int, double>& derivtetax = CoData().GetDerivTeta()[0];
+    CORE::GEN::pairedvector<int, double>& derivtetay = CoData().GetDerivTeta()[1];
+    CORE::GEN::pairedvector<int, double>& derivtetaz = CoData().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {

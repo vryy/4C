@@ -22,7 +22,7 @@
 #include "io.H"
 #include "io_control.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 
 /*----------------------------------------------------------------------*

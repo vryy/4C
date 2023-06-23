@@ -21,7 +21,7 @@
 
 // LINALG includes
 #include "linalg_nullspace.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -38,6 +38,7 @@
 
 // OTHER includes
 #include "io_control.H"
+#include "coupling_adapter.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -82,12 +83,12 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
   if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
-  coupsf_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupsa_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfa_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoupfa_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
@@ -271,7 +272,7 @@ void FPSI::Monolithic::SetupSystem()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap = AleField()->Discretization()->NodeRowMap();
@@ -300,9 +301,9 @@ void FPSI::Monolithic::SetupSystem_FSI()
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
-  ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
-  ADAPTER::Coupling& icoupfa_fsi = InterfaceFluidAleCoupling_FSI();
+  CORE::ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
+  CORE::ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
+  CORE::ADAPTER::Coupling& icoupfa_fsi = InterfaceFluidAleCoupling_FSI();
 
   // structure to fluid
   coupsf_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),

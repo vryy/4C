@@ -16,87 +16,87 @@ int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distyp
   switch (distype)
   {
     case DRT::Element::hex8:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex8>::rule)
           .IP()
           .nquad;
     case DRT::Element::hex18:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex18>::rule)
           .IP()
           .nquad;
     case DRT::Element::hex20:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex20>::rule)
           .IP()
           .nquad;
     case DRT::Element::hex27:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex27>::rule)
           .IP()
           .nquad;
     case DRT::Element::nurbs27:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::nurbs27>::rule)
           .IP()
           .nquad;
     case DRT::Element::tet4:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::tet4>::rule)
           .IP()
           .nquad;
     case DRT::Element::tet10:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::tet10>::rule)
           .IP()
           .nquad;
     case DRT::Element::wedge6:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::wedge6>::rule)
           .IP()
           .nquad;
     case DRT::Element::pyramid5:
-      return DRT::UTILS::IntPointsAndWeights<3>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::pyramid5>::rule)
           .IP()
           .nquad;
     case DRT::Element::quad4:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule)
           .IP()
           .nquad;
     case DRT::Element::quad8:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad8>::rule)
           .IP()
           .nquad;
     case DRT::Element::quad9:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad9>::rule)
           .IP()
           .nquad;
     case DRT::Element::nurbs9:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::nurbs9>::rule)
           .IP()
           .nquad;
     case DRT::Element::tri3:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::tri3>::rule)
           .IP()
           .nquad;
     case DRT::Element::tri6:
-      return DRT::UTILS::IntPointsAndWeights<2>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::tri6>::rule)
           .IP()
           .nquad;
     case DRT::Element::line2:
-      return DRT::UTILS::IntPointsAndWeights<1>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<1>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::line2>::rule)
           .IP()
           .nquad;
     case DRT::Element::line3:
-      return DRT::UTILS::IntPointsAndWeights<1>(
+      return CORE::DRT::UTILS::IntPointsAndWeights<1>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::line3>::rule)
           .IP()
           .nquad;

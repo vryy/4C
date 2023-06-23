@@ -17,7 +17,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
@@ -256,7 +256,7 @@ class BeamDiscretizationRuntimeVtuWriter
    * @param gauss_point_values (in) Values at Gauss points
    * @param coefficients (out) Polynomial coefficients of the interpolated the Gauss point values.
    */
-  void CalcInterpolationPolynomialCoefficients(const DRT::UTILS::GaussRule1D& gauss_rule,
+  void CalcInterpolationPolynomialCoefficients(const CORE::DRT::UTILS::GaussRule1D& gauss_rule,
       const std::vector<double>& gauss_point_values,
       std::vector<double>& polynomial_coefficients) const;
 

@@ -1,20 +1,19 @@
-set(OBJS_POROELAST_SCATRA
-    # cmake-format: sortable
-    poroelast_scatra_base.cpp
-    poroelast_scatra_dyn.cpp
-    poroelast_scatra_monolithic.cpp
-    poroelast_scatra_part.cpp
-    poroelast_scatra_part_1wc.cpp
-    poroelast_scatra_part_2wc.cpp
-    poroelast_scatra_utils.cpp
-    poroelast_scatra_utils_clonestrategy.cpp
-    )
-baci_add_library(alg_poroelast_scatra ${OBJS_POROELAST_SCATRA})
+baci_auto_define_module()
 
-set(LIBS_ALG_POROELAST_SCATRA
+set(_poroelast_scatra_dependencies
     # cmake-format: sortable
-    alg_poroelast
+    adapter
+    core
+    fluid_ele
+    inpar
+    io
     lib
+    linalg
+    mat
+    poroelast
+    scatra
+    scatra_ele
+    so3
+    w1
     )
-
-target_link_libraries(alg_poroelast_scatra PUBLIC ${LIBS_ALG_POROELAST_SCATRA})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poroelast_scatra_dependencies})

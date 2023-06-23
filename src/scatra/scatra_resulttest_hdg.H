@@ -12,6 +12,7 @@
 #define SCATRA_RESULTTEST_HDG_H
 
 #include "scatra_resulttest.H"
+#include <Epetra_SerialDenseVector.h>
 
 namespace SCATRA
 {

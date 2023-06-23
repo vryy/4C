@@ -22,17 +22,17 @@
 #include "lib_globalproblem.H"  // for time curve in body force
 
 #include "lib_utils.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_gder2.H"
 #include "geometry_position_array.H"
 #include "lib_condition_utils.H"
 
 #include "mat_list.H"
 #include "mat_newtonianfluid.H"
 #include "mat_scatra_mat_aniso.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcAniso<distype, probdim>>(
@@ -49,7 +49,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

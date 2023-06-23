@@ -314,8 +314,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
     }
   }
 
-  GEN_DATA::complete(dn_non_unit);
-  GEN_DATA::complete(ddn_non_unit);
+  CORE::GEN::complete(dn_non_unit);
+  CORE::GEN::complete(ddn_non_unit);
 
   // unify the gauss point normal
   LINALG::Matrix<probdim, 1> unit_gp_normal(gpn, true);
@@ -468,4 +468,4 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGa
 }
 
 
-#include "contact_aug_integrator_list.H"
+#include "contact_aug_integrator.inst.H"

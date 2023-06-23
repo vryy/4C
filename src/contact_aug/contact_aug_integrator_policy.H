@@ -10,8 +10,6 @@
 #ifndef CONTACT_AUG_INTEGRATOR_POLICY_H
 #define CONTACT_AUG_INTEGRATOR_POLICY_H
 
-//#define SWITCH_2ND_DERIV_NORMAL_OFF
-
 #include "contact_aug_contact_integrator_utils.H"
 #include "contact_aug_timemonitor.H"
 
@@ -27,9 +25,9 @@ namespace CONTACT
     class BaseSlaveIntPolicy
     {
      protected:
-      static const unsigned SLAVEDIM = DRT::UTILS::DisTypeToDim<slavetype>::dim;
+      static const unsigned SLAVEDIM = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
       static const unsigned SLAVENUMNODE =
-          DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
 
      public:
       /// constructor
@@ -104,9 +102,9 @@ namespace CONTACT
       typedef BaseSlaveIntPolicy<probdim, slavetype> my;
 
      protected:
-      static const unsigned MASTERDIM = DRT::UTILS::DisTypeToDim<mastertype>::dim;
+      static const unsigned MASTERDIM = CORE::DRT::UTILS::DisTypeToDim<mastertype>::dim;
       static const unsigned MASTERNUMNODE =
-          DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement;
 
      public:
       /// constructor
@@ -218,7 +216,7 @@ namespace CONTACT
           const Deriv1stMap& d_alpha, Deriv2ndVecMap& dd_mxigp) const
       {
         // do nothing
-        GEN_DATA::reset(2, 0, dd_mxigp);
+        CORE::GEN::reset(2, 0, dd_mxigp);
       }
 
       void Get_Deriv1st_GapN(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

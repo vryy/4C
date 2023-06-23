@@ -13,7 +13,7 @@
 #define LIB_DISCRET_FACES_H
 
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

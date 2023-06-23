@@ -13,12 +13,11 @@
 #include "inpar_contact.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beaminteraction_beam3contact_defines.H"
@@ -56,11 +55,10 @@ CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Beam3tospherecontact(
   const DRT::ElementType& eot1 = element1_->ElementType();
   const DRT::ElementType& eot2 = element2_->ElementType();
 
-  if (eot1 != DRT::ELEMENTS::Beam3Type::Instance() and
-      eot1 != DRT::ELEMENTS::Beam3rType::Instance() and
+  if (eot1 != DRT::ELEMENTS::Beam3rType::Instance() and
       eot1 != DRT::ELEMENTS::Beam3ebType::Instance())
   {
-    dserror("How did you get here? element1_ has to be of type beam3, beam3r or beam3eb!!!");
+    dserror("How did you get here? element1_ has to be of type beam3r or beam3eb!!!");
   }
 
   if (eot2 != DRT::ELEMENTS::RigidsphereType::Instance())
@@ -983,9 +981,9 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::GetShapeFunctions(
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_1D(N1_i, eta, distype1);
-    DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
-    DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D(N1_i, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
   }
   else if (numnodalvalues == 2)
   {
@@ -995,9 +993,9 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::GetShapeFunctions(
     double length1 = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
 
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N1_i, eta, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, length1, distype1);
   }
   else
     dserror(

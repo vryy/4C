@@ -14,7 +14,7 @@
 
 #include "fluid_ele_calc.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -38,7 +38,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcImmersed<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
 
      protected:

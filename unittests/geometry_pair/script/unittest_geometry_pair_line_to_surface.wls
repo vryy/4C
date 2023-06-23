@@ -165,7 +165,7 @@ Normalize[{1,0.2,0.1}]
 replaceUnkownsBeam=Flatten[{
 Thread[Flatten[unknownsBeam\[Transpose]]->Flatten[beamCoordinates]],
 (*The ref length is taken from baci*)
-{lenDof->1.806414770494717547677510083303786814213}
+{lenDof->1.807519343263254585}
 }];
 
 getCodeForCpp[getRotationVector[{1,0,0},beamCoordinates[[2]]],"a"]

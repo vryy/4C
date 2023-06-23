@@ -11,7 +11,7 @@
 #include "art_net_timint.H"
 #include "inpar_bio.H"
 #include "lib_globalproblem.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "art_net_artery_resulttest.H"
 
 

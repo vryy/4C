@@ -15,9 +15,9 @@
 #include "geometry_pair_element_classes.H"
 
 #include "lib_element.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "beam3.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "beam3_base.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
 #include "lib_globalproblem.H"
 
@@ -48,14 +48,14 @@ namespace GEOMETRYPAIR
     static const DRT::Element::DiscretizationType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static const unsigned int dim_ = DRT::UTILS::DisTypeToDim<discretization_>::dim;
+    static const unsigned int dim_ = CORE::DRT::UTILS::DisTypeToDim<discretization_>::dim;
 
     //! Number of values per node.
     static const unsigned int n_val_ = values_per_node;
 
     //! Number of nodes for this element.
     static const unsigned int n_nodes_ =
-        DRT::UTILS::DisTypeToNumNodePerEle<discretization_>::numNodePerElement;
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<discretization_>::numNodePerElement;
 
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
@@ -95,7 +95,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_1D(N, xi, discretization);
+      CORE::DRT::UTILS::shape_function_1D(N, xi, discretization);
     };
 
     /**
@@ -118,7 +118,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
+      CORE::DRT::UTILS::shape_function_2D(N, xi(0), xi(1), discretization);
     };
 
     /**
@@ -142,7 +142,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_2D_deriv1(dN, xi(0), xi(1), discretization);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(dN, xi(0), xi(1), discretization);
     };
 
     /**
@@ -165,7 +165,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_3D(N, xi(0), xi(1), xi(2), discretization);
+      CORE::DRT::UTILS::shape_function_3D(N, xi(0), xi(1), xi(2), discretization);
     };
 
     /**
@@ -188,7 +188,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), discretization);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), discretization);
     };
   };  // namespace GEOMETRYPAIR
 
@@ -231,7 +231,7 @@ namespace GEOMETRYPAIR
       const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_hermite_1D(N, xi, length, discretization);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N, xi, length, discretization);
     };
 
     /**
@@ -263,7 +263,7 @@ namespace GEOMETRYPAIR
       const double length = beam_element->RefLength();
 
       // Evaluate the shape functions.
-      DRT::UTILS::shape_function_hermite_1D_deriv1(dN, xi, length, discretization);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(dN, xi, length, discretization);
     };
   };
 
@@ -316,7 +316,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::NURBS::UTILS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(
           N, xi, myknots, weights, discretization);
     };
 
@@ -350,7 +350,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
     };
 
     /**
@@ -394,7 +394,7 @@ namespace GEOMETRYPAIR
       // Evaluate the shape functions.
       using type_dummy = LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type>;
       type_dummy N_dummy;
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
           typename V::scalar_type>(N_dummy, dN, xi, myknots, weights, discretization);
     };
 
@@ -429,7 +429,8 @@ namespace GEOMETRYPAIR
 
       // Evaluate the shape functions.
       LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(dummy, dN, xi, myknots, weights, discretization);
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+          dummy, dN, xi, myknots, weights, discretization);
     };
   };
 

@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
   std::copy(
       third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A() + 3, &linkeletriad(0, 2));
 
-  LARGEROTATIONS::triadtoquaternion(linkeletriad, bspottriad1_);
+  CORE::LARGEROTATIONS::triadtoquaternion(linkeletriad, bspottriad1_);
   bspottriad2_ = bspottriad1_;
 
   /* store relative rotation matrix between triads of connecting element and
@@ -276,11 +276,11 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
    *       side */
   LINALG::Matrix<3, 3, double> currenttriad(true);
   currenttriad.Multiply(bspottriad[0], Lambdarel1_);
-  LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad1_);
+  CORE::LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
   currenttriad.Clear();
   currenttriad.Multiply(bspottriad[1], Lambdarel2_);
-  LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad2_);
+  CORE::LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad2_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -301,10 +301,10 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print(std::ostream& out) const
 
   out << "\nbspottriad1_ = ";
   LINALG::Matrix<3, 3, double> triad;
-  LARGEROTATIONS::quaterniontotriad(bspottriad1_, triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(bspottriad1_, triad);
   triad.Print(out);
   out << "\nbspottriad2_ = ";
-  LARGEROTATIONS::quaterniontotriad(bspottriad2_, triad);
+  CORE::LARGEROTATIONS::quaterniontotriad(bspottriad2_, triad);
   triad.Print(out);
   out << "\n";
 }

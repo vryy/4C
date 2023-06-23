@@ -10,7 +10,7 @@
  *----------------------------------------------------------------------*/
 #include "thermo_timint_expleuler.H"
 #include "thermo_ele_action.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "io.H"
 

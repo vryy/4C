@@ -8,8 +8,9 @@
 #ifndef MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 #define MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 
-#include <Teuchos_RCPDecl.hpp>
+#include <Teuchos_RCP.hpp>
 #include <memory>
+#include "mixture_constituent_remodelfiber_lib.H"
 #include "mixture_constituent_remodelfiber_material.H"
 
 // forward declarations
@@ -39,11 +40,7 @@ namespace MIXTURE
 
       /// @name parameters of the exponential strain energy function
       /// @{
-
-      const double k1_;
-      const double k2_;
-      const bool supports_compression_;
-
+      MIXTURE::PAR::ExponentialFiberParameters params_;
       /// @}
     };
   }  // namespace PAR
@@ -54,17 +51,11 @@ namespace MIXTURE
    public:
     RemodelFiberMaterialExponential(const PAR::RemodelFiberMaterialExponential<T>* matdata);
 
+    [[nodiscard]] T GetCauchyStress(T I4) const final;
 
-    [[nodiscard]] T GetPsi(T I4) const override;
+    [[nodiscard]] T GetDCauchyStressDI4(T I4) const final;
 
-
-    [[nodiscard]] T GetFirstDerivativeI4(T I4) const override;
-
-
-    [[nodiscard]] T GetSecondDerivativeI4(T I4) const override;
-
-
-    [[nodiscard]] T GetThirdDerivativeI4(T I4) const override;
+    [[nodiscard]] T GetDCauchyStressDI4DI4(T I4) const final;
 
    private:
     const PAR::RemodelFiberMaterialExponential<T>* params_;

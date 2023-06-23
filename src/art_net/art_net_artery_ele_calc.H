@@ -13,7 +13,7 @@
 
 #include "art_net_artery.H"
 #include "art_net_artery_ele_action.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "linalg_fixedsizematrix.H"
 #include "art_net_artery_ele_interface.H"
 
@@ -65,7 +65,7 @@ namespace DRT
 
      public:
       //! number of nodes
-      static const int iel_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       /*!
        * \brief  calculate element length

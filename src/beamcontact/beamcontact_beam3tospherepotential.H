@@ -13,8 +13,8 @@
 
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_integration.H"
 #include <Sacado.hpp>
 
 #include "beaminteraction_beam3contact_defines.H"
@@ -259,7 +259,7 @@ namespace CONTACT
     */
     void GetShapeFunctions(std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
         std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
-        DRT::UTILS::IntegrationPoints1D& gausspoints);
+        CORE::DRT::UTILS::IntegrationPoints1D& gausspoints);
 
     /*!
     \brief Compute coordinates of centreline points from the discretization

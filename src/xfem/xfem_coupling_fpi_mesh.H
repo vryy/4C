@@ -13,9 +13,9 @@ xfluid class and the cut-library
 #define XFEM_COUPLING_FPI_MESH_H
 
 #include "xfem_coupling_mesh.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_create.H"

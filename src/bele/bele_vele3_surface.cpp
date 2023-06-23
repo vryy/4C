@@ -10,7 +10,7 @@
 
 #include "bele_vele3.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils_factory.H"
 
 
@@ -139,24 +139,24 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
+CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
     const DRT::Element::DiscretizationType& distype) const
 {
-  DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::undefined;
+  CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
     case DRT::Element::quad4:
-      rule = DRT::UTILS::GaussRule2D::quad_4point;
+      rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
     case DRT::Element::quad8:
     case DRT::Element::quad9:
-      rule = DRT::UTILS::GaussRule2D::quad_9point;
+      rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case DRT::Element::tri3:
-      rule = DRT::UTILS::GaussRule2D::tri_3point;
+      rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
     case DRT::Element::tri6:
-      rule = DRT::UTILS::GaussRule2D::tri_6point;
+      rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

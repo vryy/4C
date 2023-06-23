@@ -12,7 +12,7 @@
 
 #include "adapter_algorithmbase.H"
 #include "adapter_poromultiphase.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 namespace ADAPTER
 {

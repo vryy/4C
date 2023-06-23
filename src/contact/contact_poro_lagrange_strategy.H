@@ -12,7 +12,8 @@ interface
 #define CONTACT_PORO_LAGRANGE_STRATEGY_H
 
 #include "contact_monocoupled_lagrange_strategy.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
+#include "coupling_adapter.H"
 
 namespace ADAPTER
 {
@@ -80,8 +81,8 @@ namespace CONTACT
     //Todo to be updated the global derivative matrices S and P and Tresca friction matrix L +
     vector r.
     */
-    void PoroInitialize(
-        ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit = true);
+    void PoroInitialize(CORE::ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs,
+        bool fullinit = true);
 
     /*!
     \brief as D and M Matrices are initialized here

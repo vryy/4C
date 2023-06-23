@@ -1,24 +1,10 @@
-set(OBJS_TUTORIAL
-    # cmake-format: sortable
-    tutorial_dyn.cpp
-    tutorial_fixedpoint_scheme.cpp
-    tutorial_inpar.cpp
-    tutorial_nln_truss.cpp
-    tutorial_struct_ale_coupling.cpp
-    tutorial_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_tutorial ${OBJS_TUTORIAL})
-
-set(LIBS_ALG_TUTORIAL
+set(_tutorial_dependencies
     # cmake-format: sortable
-    alg_tutorial_ele
-    alg_tutorial_material
+    core
     inpar
+    lib
     linalg
     )
-
-baci_add_dependency(alg_tutorial ${LIBS_ALG_TUTORIAL})
-
-add_subdirectory(tutorial_ele)
-add_subdirectory(tutorial_material)
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_tutorial_dependencies})

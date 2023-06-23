@@ -22,8 +22,9 @@
 #include "lib_function.H"
 #include "lib_utils.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_gder2.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_gder2.H"
+#include "red_airways_evaluation_data.h"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -80,7 +81,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
+  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -89,7 +90,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
   {
     int gid = ele->Id();
     double val = -2.0;
-    generations->ReplaceGlobalValues(1, &val, &gid);
+    evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
   }
 
 }  // RedAirBloodScatraLine3Impl::Initial

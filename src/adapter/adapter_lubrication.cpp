@@ -16,7 +16,7 @@
 #include "io_control.H"
 #include "io.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "lubrication_resulttest.H"
 

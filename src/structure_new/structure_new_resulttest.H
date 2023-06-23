@@ -14,7 +14,7 @@
 
 #include <Epetra_Vector.h>
 #include "lib_resulttest.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 // forward declarations

@@ -28,7 +28,7 @@ GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) run_time_error("Holes are not yet considered for the simple case!");
+    if (f->HasHoles()) dserror("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets
@@ -117,7 +117,7 @@ GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) run_time_error("Holes are not yet considered for the simple case!");
+    if (f->HasHoles()) dserror("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets

@@ -17,7 +17,7 @@
 #include "inpar_structure.H"
 #include "mat_material.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element_integration_select.H"
 
 
@@ -42,11 +42,12 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 /// Gauss integration rule
 struct GP_RULE_SOH8
 {
-  static const enum DRT::UTILS::GaussRule3D rule =
+  static const enum CORE::DRT::UTILS::GaussRule3D rule =
       DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex8>::rule;
 };
 /// total gauss points per element
-const unsigned NUMGPT_SOH8 = DRT::UTILS::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
+const unsigned NUMGPT_SOH8 =
+    CORE::DRT::UTILS::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
 
 namespace DRT
 {
@@ -610,6 +611,13 @@ namespace DRT
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
+
+      //! EAS technology, update
+      void soh8_easupdate();
+
+      //! EAS technology, restore
+      void soh8_easrestore();
+
       /*!
        * \brief Computes the deformation gradient at a Gauss point
        *
@@ -730,7 +738,7 @@ namespace DRT
       void soh8_recover_from_eas_backup_state();
 
      private:
-      static const DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;
+      static const CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;
     };  // class So_hex8
 
 

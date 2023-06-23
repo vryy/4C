@@ -14,8 +14,8 @@
 #include "fsi_utils.H"
 
 #include "adapter_str_fsiwrapper.H"
-#include "adapter_coupling.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 #include "adapter_fld_fluid_xfem.H"
 #include "adapter_fld_fluid.H"
 #include "adapter_fld_fluid_xfsi.H"
@@ -81,8 +81,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 {
   if (Comm().MyPID() == 0) std::cout << "\n SetupCoupling in FSI::Partitioned ..." << std::endl;
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
 
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
@@ -871,7 +871,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);
@@ -887,7 +887,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.SlaveToMaster(iv);
@@ -907,11 +907,14 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() { return *coupsfm_; }
+CORE::ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar()
+{
+  return *coupsfm_;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() const
+const CORE::ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() const
 {
   return *coupsfm_;
 }

@@ -14,19 +14,20 @@ general static parameters required for scalar transport element evaluation.
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "scatra_ele_parameter_timint.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
     const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
-      { return std::unique_ptr<ScaTraEleParameterTimInt>(new ScaTraEleParameterTimInt); });
+  static auto singleton_map =
+      CORE::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+          { return std::unique_ptr<ScaTraEleParameterTimInt>(new ScaTraEleParameterTimInt); });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 

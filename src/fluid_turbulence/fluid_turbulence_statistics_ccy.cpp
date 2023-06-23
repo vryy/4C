@@ -15,7 +15,7 @@
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "nurbs_discret.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_control_point.H"
 #include "mat_newtonianfluid.H"
 
@@ -223,7 +223,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
             uv(0) = 1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            DRT::NURBS::UTILS::nurbs_get_3D_funct(
+            CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -247,7 +247,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
             {
               uv(1) += 2.0 / (numsubdivisions - 1);
 
-              DRT::NURBS::UTILS::nurbs_get_3D_funct(
+              CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -271,7 +271,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = -1.0;
-              DRT::NURBS::UTILS::nurbs_get_3D_funct(
+              CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -767,7 +767,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          DRT::NURBS::UTILS::nurbs_get_3D_funct(
+          CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
               nurbs_shape_funct, uv, knots, weights, actele->Shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -863,7 +863,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
           {
             uv(1) += 2.0 / (numsubdivisions - 1);
 
-            DRT::NURBS::UTILS::nurbs_get_3D_funct(
+            CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -963,7 +963,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
             uv(0) = 1.0;
             uv(1) = 1.0;
             uv(2) = -1.0;
-            DRT::NURBS::UTILS::nurbs_get_3D_funct(
+            CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {

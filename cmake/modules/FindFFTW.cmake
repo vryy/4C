@@ -46,7 +46,7 @@ if(FFTW_FOUND)
   message(STATUS "FFTW libraries: ${FFTW_LIBRARY}")
 
   list(APPEND BACI_ALL_ENABLED_EXTERNAL_LIBS fftw::fftw)
-  add_definitions("-DHAVE_FFTW") # HAVE_FFTW preprocessor flag for BACI
+  target_compile_definitions(fftw::fftw INTERFACE "HAVE_FFTW")
   set(HAVE_FFTW ON)
 else()
   message("WW *************************************************************")

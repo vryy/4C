@@ -11,6 +11,7 @@ transform matrixes, vectors, ...
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include "coupling_adapter.H"
 
 #define COUP_MANAGER_DEBUG_OUT
 
@@ -30,11 +31,11 @@ namespace LINALG
   class MatrixLogicalSplitAndTransform;
 }  // namespace LINALG
 
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
   class CouplingConverter;
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #ifndef FSI_XFEM_COUPLING_COMM_MANAGER_H
 #define FSI_XFEM_COUPLING_COMM_MANAGER_H
@@ -107,9 +108,9 @@ namespace XFEM
     Teuchos::RCP<LINALG::MultiMapExtractor> GetMapExtractor(int idx);
 
    protected:
-    Teuchos::RCP<ADAPTER::CouplingConverter> GetCouplingConverter(int idxA, int idxB);
+    Teuchos::RCP<CORE::ADAPTER::CouplingConverter> GetCouplingConverter(int idxA, int idxB);
 
-    Teuchos::RCP<ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
+    Teuchos::RCP<CORE::ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
 
     Teuchos::RCP<LINALG::MultiMapExtractor> GetFullMapExtractor() { return fullextractor_; }
 
@@ -139,7 +140,7 @@ namespace XFEM
     std::map<int, Teuchos::RCP<LINALG::MultiMapExtractor>> mme_;
 
     // Couling Objects will just be initizalized in case we have more discretizations!
-    std::map<std::pair<int, int>, Teuchos::RCP<ADAPTER::Coupling>> coup_;
+    std::map<std::pair<int, int>, Teuchos::RCP<CORE::ADAPTER::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
     std::map<int, Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform>> transform_;

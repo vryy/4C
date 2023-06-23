@@ -52,7 +52,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     const double thermpressaf, const double thermpressam, const double thermpressdtaf,
     const double thermpressdtam, Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq,
     double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
@@ -180,8 +180,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
   }
 
   // get Gaussian integration points
-  // const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
-  // const DRT::UTILS::IntPointsAndWeights<nsd_>
+  // const CORE::DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  // const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>
   // intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
   //------------------------------------------------------------------------
   // for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 
-  for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point

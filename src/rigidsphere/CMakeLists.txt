@@ -1,15 +1,13 @@
-set(OBJS_ELE_RIGIDSPHERE
-    # cmake-format: sortable
-    rigidsphere.cpp
-    rigidsphere_evaluate.cpp
-    rigidsphere_input.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(ele_rigidsphere ${OBJS_ELE_RIGIDSPHERE})
-
-set(LIBS_ELE_RIGIDSPHERE
+set(_rigidsphere_dependencies
     # cmake-format: sortable
+    beaminteraction
+    core
+    inpar
+    lib
     linalg
+    mat
+    structure_new
     )
-
-baci_add_dependency(ele_rigidsphere ${LIBS_ELE_RIGIDSPHERE})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_rigidsphere_dependencies})

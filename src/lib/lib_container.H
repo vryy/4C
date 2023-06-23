@@ -19,7 +19,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 #include "lib_parobject.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_parobjectfactory.H"
 
 class Epetra_MultiVector;

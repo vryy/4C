@@ -14,7 +14,7 @@ MATLAB, PGFPlot or other tools.
 #include "contact_aug_plot.H"
 #include "contact_aug_strategy.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "inpar_contact.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

@@ -25,7 +25,7 @@
 #include "scatra_ele_action.H"
 
 #include "linalg_krylov_projector.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -37,7 +37,7 @@
 #include "scatra_timint_elch_service.H"
 #include "scatra_resulttest_elch.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "lib_utils_parallel.H"
 
@@ -294,34 +294,30 @@ void SCATRA::ScaTraTimIntElch::Setup()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
 {
-  // prepare sets for concentration and potential dofs
-  std::set<int> conddofset;
-  std::set<int> otherdofset;
+  // prepare sets for concentration (other) and potential (cond) dofs. In case of current as
+  // solution variable, the current dofs are also stored in potdofs
+  std::vector<int> conc_dofs;
+  std::vector<int> pot_dofs;
 
-  // fill sets
   for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
   {
     std::vector<int> dofs = discret_->Dof(0, discret_->lRowNode(inode));
     for (unsigned idof = 0; idof < dofs.size(); ++idof)
     {
       if (idof < static_cast<unsigned>(NumScal()))
-        otherdofset.insert(dofs[idof]);
+        conc_dofs.emplace_back(dofs[idof]);
       else
-        conddofset.insert(dofs[idof]);
+        pot_dofs.emplace_back(dofs[idof]);
     }
   }
 
-  // transform sets to maps
-  std::vector<int> conddofmapvec(conddofset.begin(), conddofset.end());
-  const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(conddofmapvec.size()), conddofmapvec.data(), 0, discret_->Comm()));
-  std::vector<int> otherdofmapvec(otherdofset.begin(), otherdofset.end());
-  const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(otherdofmapvec.size()), otherdofmapvec.data(), 0, discret_->Comm()));
+  auto concdofmap = Teuchos::rcp(new const Epetra_Map(
+      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->Comm()));
+  auto potdofmap = Teuchos::rcp(new const Epetra_Map(
+      -1, static_cast<int>(pot_dofs.size()), pot_dofs.data(), 0, discret_->Comm()));
 
   // set up concentration-potential splitter
-  splitter_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(), conddofmap, otherdofmap));
+  splitter_ = Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(), potdofmap, concdofmap));
 }
 
 /*---------------------------------------------------------------------*
@@ -330,9 +326,9 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
 {
   // prepare sets for dofs associated with electrolyte concentration, electrolyte potential, and
   // electrode potential
-  std::set<int> dofset_conc_el;
-  std::set<int> dofset_pot_el;
-  std::set<int> dofset_pot_ed;
+  std::vector<int> conc_dofs;
+  std::vector<int> pot_el_dofs;
+  std::vector<int> pot_ed_dofs;
 
   // fill sets
   for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
@@ -340,26 +336,23 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
     std::vector<int> dofs = discret_->Dof(0, discret_->lRowNode(inode));
     for (unsigned idof = 0; idof < dofs.size(); ++idof)
     {
-      if (idof < (unsigned)NumScal())
-        dofset_conc_el.insert(dofs[idof]);
-      else if (idof == (unsigned)NumScal())
-        dofset_pot_el.insert(dofs[idof]);
+      if (idof < static_cast<unsigned>(NumScal()))
+        conc_dofs.emplace_back(dofs[idof]);
+      else if (idof == static_cast<unsigned>(NumScal()))
+        pot_el_dofs.emplace_back(dofs[idof]);
       else
-        dofset_pot_ed.insert(dofs[idof]);
+        pot_ed_dofs.emplace_back(dofs[idof]);
     }
   }
 
   // transform sets to maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(3, Teuchos::null);
-  std::vector<int> dofmapvec_conc_el(dofset_conc_el.begin(), dofset_conc_el.end());
-  maps[0] = Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dofmapvec_conc_el.size()),
-      dofmapvec_conc_el.data(), 0, discret_->Comm()));
-  std::vector<int> dofmapvec_pot_el(dofset_pot_el.begin(), dofset_pot_el.end());
+  maps[0] = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->Comm()));
   maps[1] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_el.size()), dofmapvec_pot_el.data(), 0, discret_->Comm()));
-  std::vector<int> dofmapvec_pot_ed(dofset_pot_ed.begin(), dofset_pot_ed.end());
+      -1, static_cast<int>(pot_el_dofs.size()), pot_el_dofs.data(), 0, discret_->Comm()));
   maps[2] = Teuchos::rcp(new Epetra_Map(
-      -1, static_cast<int>(dofmapvec_pot_ed.size()), dofmapvec_pot_ed.data(), 0, discret_->Comm()));
+      -1, static_cast<int>(pot_ed_dofs.size()), pot_ed_dofs.data(), 0, discret_->Comm()));
 
   // set up concentration-potential-potential splitter
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
@@ -3116,9 +3109,8 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
           elchtimint->ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
   {
     // shape of local row element(0) -> number of space dimensions
-    // int dim = problem_->NDim();
-    int dim = DRT::UTILS::getDimension(elchtimint->Discretization()->lRowElement(0)->Shape());
-    // number of concentrations transported is numdof-1-nsd
+    int dim = DRT::Problem::Instance()->NDim();
+    // number of concentrations transported is numdof-1-dim
     numscal_.clear();
     numscal_.insert(NumDofPerNode() - 1 - dim);
   }

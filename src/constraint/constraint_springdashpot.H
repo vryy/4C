@@ -14,7 +14,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "headers_pairedvector.H"
+#include "utils_pairedvector.H"
 
 // forward declarations
 class Epetra_Vector;
@@ -204,7 +204,7 @@ namespace UTILS
     std::map<int, std::vector<double>> normals_;
 
     //! Linearization of nodal normal
-    std::map<int, std::vector<GEN::pairedvector<int, double>>> dnormals_;
+    std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>> dnormals_;
 
     //! Nodal force applied by spring dashpot BC for output
     std::map<int, std::vector<double>> springstress_;

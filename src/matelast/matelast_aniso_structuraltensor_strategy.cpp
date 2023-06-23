@@ -12,7 +12,7 @@ materials
 #include "mat_par_material.H"
 #include "mat_service.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_voigt_notation.H"
 
 
@@ -125,7 +125,8 @@ void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::GaussRule1D::line_50point);
+  const CORE::DRT::UTILS::IntegrationPoints1D gausspoints(
+      CORE::DRT::UTILS::GaussRule1D::line_50point);
   LINALG::Matrix<numbgp, twice> rho;
 
   // constants for distribution around fiber_vector

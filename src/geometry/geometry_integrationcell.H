@@ -15,7 +15,7 @@
 
 
 #include "lib_element.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 namespace GEO
 {
@@ -275,8 +275,9 @@ namespace GEO
    *
    *  \author hiermeier \date 11/16 */
   template <unsigned probDim, DRT::Element::DiscretizationType cellType,
-      unsigned dim = DRT::UTILS::DisTypeToDim<cellType>::dim,
-      unsigned numNodePerEle = DRT::UTILS::DisTypeToNumNodePerEle<cellType>::numNodePerElement>
+      unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim,
+      unsigned numNodePerEle =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<cellType>::numNodePerElement>
   class ConcreteBoundaryIntCell : public BoundaryIntCell
   {
    public:

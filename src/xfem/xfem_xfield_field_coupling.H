@@ -14,8 +14,8 @@
 #define XFEM_XFIELD_FIELD_COUPLING_H
 
 
-#include "adapter_coupling.H"
-#include "lib_dserror.H"
+#include "coupling_adapter.H"
+#include "utils_exceptions.H"
 // due to enum use ...
 #include "xfem_multi_field_mapextractor.H"
 
@@ -23,7 +23,7 @@ namespace XFEM
 {
   namespace XFieldField
   {
-    class Coupling : public ADAPTER::Coupling
+    class Coupling : public CORE::ADAPTER::Coupling
     {
      public:
       /** \brief enumerator specifying which interface discretization (slave

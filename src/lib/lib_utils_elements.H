@@ -12,7 +12,7 @@
 #ifndef LIB_UTILS_ELEMENTS_H
 #define LIB_UTILS_ELEMENTS_H
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 namespace DRT
 {
@@ -29,23 +29,23 @@ namespace DRT
     double GetMinimalJacDeterminantAtNodes(const LINALG::Matrix<numdim, numnode>& xcurr)
     {
       // check input
-      static_assert(
-          numnode == DisTypeToNumNodePerEle<type>::numNodePerElement, "Wrong matrix dimension.");
-      static_assert(numdim == DisTypeToDim<type>::dim, "Wrong matrix dimension.");
+      static_assert(numnode == CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement,
+          "Wrong matrix dimension.");
+      static_assert(numdim == CORE::DRT::UTILS::DisTypeToDim<type>::dim, "Wrong matrix dimension.");
 
       LINALG::Matrix<numdim, numnode> deriv_at_c(false);
       LINALG::Matrix<numdim, numdim> jac_at_c(false);
 
       // parametric coordinates of the HEX8 corners
       static const LINALG::SerialDenseMatrix rst =
-          DRT::UTILS::getEleNodeNumbering_nodes_paramspace(type);
+          CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(type);
       double min_detJ = std::numeric_limits<double>::max();
 
       for (unsigned c = 0; c < numnode; ++c)
       {
         const LINALG::Matrix<numdim, 1> rst_c(&rst(0, c), true);
 
-        DRT::UTILS::shape_function_deriv1<type>(rst_c, deriv_at_c);
+        CORE::DRT::UTILS::shape_function_deriv1<type>(rst_c, deriv_at_c);
         jac_at_c.MultiplyNT(deriv_at_c, xcurr);
 
         const double detJ_at_c = jac_at_c.Determinant();

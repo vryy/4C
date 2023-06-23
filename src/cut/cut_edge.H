@@ -11,7 +11,7 @@
 #define CUT_EDGE_H
 
 #include "inpar_cut.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "cut_node.H"
 #include "cut_tolerance.H"
@@ -284,8 +284,9 @@ namespace GEO
 
     /*--------------------------------------------------------------------------*/
     template <unsigned probDim, DRT::Element::DiscretizationType edgeType,
-        unsigned dimEdge = DRT::UTILS::DisTypeToDim<edgeType>::dim,
-        unsigned numNodesEdge = DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
+        unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
+        unsigned numNodesEdge =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
     class ConcreteEdge : public Edge
     {
      public:

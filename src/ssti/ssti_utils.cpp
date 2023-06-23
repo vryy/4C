@@ -713,8 +713,6 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
   auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
-    // set material
-    trans->SetMaterial(matid, oldele);
     // set distype as well!
     trans->SetDisType(oldele->Shape());
 
@@ -740,6 +738,9 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
       else
         dserror("Something went wrong");
     }
+
+    // set material
+    trans->SetMaterial(matid, oldele);
   }
   else
   {

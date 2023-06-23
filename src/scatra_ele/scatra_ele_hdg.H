@@ -18,7 +18,7 @@ of the usual Lagrangian polynomials for standard transport elements
 
 
 #include "scatra_ele.H"
-#include "fem_general_utils_polynomial.H"
+#include "discretization_fem_general_utils_polynomial.H"
 
 namespace DRT
 {
@@ -159,7 +159,7 @@ namespace DRT
       //! Get number of dofs per component per face
       virtual int NumDofPerComponent(const unsigned face) const
       {
-        return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(this->distype_),
+        return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(this->distype_),
             (this->Faces()[face])->Degree(), completepol_);
       }
 
@@ -220,8 +220,8 @@ namespace DRT
       //! Returns the degree of the element for the interior DG space
       int NumDofPerElementAuxiliary() const
       {
-        return (DRT::UTILS::getDimension(distype_) + 1) *
-               DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (CORE::DRT::UTILS::getDimension(distype_) + 1) *
+               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
@@ -442,12 +442,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -722,12 +725,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

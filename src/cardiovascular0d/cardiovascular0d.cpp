@@ -16,9 +16,9 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "so3_surface.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 #include "cardiovascular0d.H"
 
 
@@ -45,7 +45,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
               DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
-      gaussrule_(DRT::UTILS::GaussRule2D::undefined)
+      gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined)
 {
   actdisc_->GetCondition(conditionname, cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
@@ -353,29 +353,29 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       switch (shape)
       {
         case DRT::Element::tri3:
-          gaussrule_ = DRT::UTILS::GaussRule2D::tri_3point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point;
           break;
         case DRT::Element::tri6:
-          gaussrule_ = DRT::UTILS::GaussRule2D::tri_6point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_6point;
           break;
         case DRT::Element::quad4:
-          gaussrule_ = DRT::UTILS::GaussRule2D::quad_4point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_4point;
           break;
         case DRT::Element::quad8:
-          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
         case DRT::Element::quad9:
-          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
         case DRT::Element::nurbs9:
-          gaussrule_ = DRT::UTILS::GaussRule2D::quad_9point;
+          gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
         default:
           dserror("shape type unknown!\n");
           break;
       }
 
-      const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         // set gausspoints from integration rule
@@ -385,8 +385,8 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
         // get shape functions and derivatives in the plane of the element
 
-        DRT::UTILS::shape_function_2D(funct, e(0), e(1), shape);
-        DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), shape);
+        CORE::DRT::UTILS::shape_function_2D(funct, e(0), e(1), shape);
+        CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), shape);
 
         // stuff to get spatial Neumann
         const int numdim = 3;

@@ -11,6 +11,11 @@
 #ifndef THERMO_ELE_ACTION_H
 #define THERMO_ELE_ACTION_H
 
+#include <string>
+#include <iostream>
+
+#include "utils_exceptions.H"
+
 namespace THR
 {
   /*--------------------------------------------------------------------------

@@ -24,10 +24,10 @@
 #include "lib_parobjectfactory.H"
 #include "lib_node.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_structure.H"
 
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
 #include "so3_base.H"
 
@@ -316,7 +316,7 @@ namespace DRT
       // line search parameter (old step length)
       double old_step_length_;
       /// gaussian points
-      DRT::UTILS::GaussRule2D gaussrule_;
+      CORE::DRT::UTILS::GaussRule2D gaussrule_;
       /// problem type
       DimensionalReduction wtype_;
       /// type of stress calculation
@@ -760,7 +760,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      DRT::UTILS::GaussRule2D getGaussrule(int* ngp  ///< number of Gauss points
+      CORE::DRT::UTILS::GaussRule2D getGaussrule(int* ngp  ///< number of Gauss points
       );
     };  // class Wall1
 
@@ -968,7 +968,7 @@ namespace DRT
           const Epetra_SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
-      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
     };  // class Wall1Line
 

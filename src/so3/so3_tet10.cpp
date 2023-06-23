@@ -15,15 +15,15 @@
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
 #include "linalg_utils_nullspace.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "lib_dserror.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "mat_so3_material.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "so3_prestress.H"
 #include "fiber_node.H"
@@ -94,8 +94,6 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
       .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 
@@ -378,7 +376,7 @@ std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOTET10, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
-  DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   LINALG::Matrix<1, NUMDIM_SOTET10> midpoint;
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);

@@ -11,8 +11,9 @@
 #define CONTACT_TSI_LAGRANGE_STRATEGY_H
 
 #include "contact_lagrange_strategy.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "contact_defines.H"
+#include "coupling_adapter.H"
 #include <Epetra_Operator.h>
 
 // forward declarations
@@ -111,7 +112,7 @@ namespace CONTACT
 
      */
     virtual void Evaluate(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<ADAPTER::Coupling> coupST,
+        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
     /*!
@@ -123,10 +124,10 @@ namespace CONTACT
 
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
         Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment
-        Teuchos::RCP<ADAPTER::Coupling> coupST);
+        Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
 
     void StoreNodalQuantities(
-        MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<ADAPTER::Coupling> coupST);
+        MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
 
     /*!
      \brief Update contact at end of time step
@@ -165,7 +166,7 @@ namespace CONTACT
     void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
-    void SetCoupling(Teuchos::RCP<ADAPTER::Coupling> coupST) { coupST_ = coupST; };
+    void SetCoupling(Teuchos::RCP<CORE::ADAPTER::Coupling> coupST) { coupST_ = coupST; };
 
     //@}
 
@@ -212,7 +213,7 @@ namespace CONTACT
         rt_a_;  // Part of structural residual that corresponds to active slave rows
 
     // pointer to TSI coupling object
-    Teuchos::RCP<ADAPTER::Coupling> coupST_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;
   };  // class CoTSILagrangeStrategy
 
   namespace UTILS

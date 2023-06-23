@@ -12,7 +12,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include "lib_elementtype.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include <Sacado.hpp>
 using FAD = Sacado::Fad::DFad<double>;
@@ -229,7 +229,7 @@ namespace DRT
           std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration
-      DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+      CORE::DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
       //! calculation of elastic energy
       //!
@@ -249,7 +249,7 @@ namespace DRT
       double lrefe_;
 
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
      private:
       //! possible kinematic types

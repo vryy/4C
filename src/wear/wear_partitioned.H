@@ -26,6 +26,7 @@
 #include "wear_algorithm.H"
 
 #include "adapter_str_fsiwrapper.H"
+#include "coupling_adapter.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
@@ -173,8 +174,8 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector> delta_ale_;
     Teuchos::RCP<Epetra_Vector> ale_i_;
 
-    Teuchos::RCP<::ADAPTER::Coupling> coupstrualei_;     // ale struct coupling on ale interface
-    Teuchos::RCP<::ADAPTER::CouplingBase> coupalestru_;  // ale struct cpupling
+    Teuchos::RCP<::CORE::ADAPTER::Coupling> coupstrualei_;  // ale struct coupling on ale interface
+    Teuchos::RCP<::CORE::ADAPTER::CouplingBase> coupalestru_;  // ale struct cpupling
 
     Teuchos::ParameterList alepara_;  // ale parameter list
 

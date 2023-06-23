@@ -15,10 +15,10 @@
 
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -88,7 +88,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidBoundaryParentInterface* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Constructor with number of nodes
       FluidBoundaryParent();

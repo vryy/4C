@@ -11,7 +11,6 @@
 #include <Teuchos_RCPDecl.hpp>
 #include <cmath>
 #include "mat_par_material.H"
-#include "mixture_growth_evolution.H"
 #include "mixture_constituent.H"
 #include "mixture_constituent_remodelfiber_material.H"
 #include "mat_anisotropy_extension_default.H"

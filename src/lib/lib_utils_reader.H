@@ -17,6 +17,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <cctype>
 #include <cstring>
+#include <boost/algorithm/string/split.hpp>
 #endif
 
 
@@ -36,6 +37,12 @@ namespace DRT
     */
     /*----------------------------------------------------------------------*/
     std::string Trim(const std::string& line);
+
+
+    /**
+     * Split the @p input string into multiple substrings between the @p delimiter.
+     */
+    std::vector<std::string> Split(const std::string& input, const std::string& delimiter);
 
     /*----------------------------------------------------------------------*/
     /*!

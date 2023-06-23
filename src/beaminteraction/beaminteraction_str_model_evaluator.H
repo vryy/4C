@@ -16,6 +16,7 @@
 #include "inpar_beaminteraction.H"
 #include "linalg_mapextractor.H"
 #include "structure_new_enum_lists.H"
+#include "coupling_adapter.H"
 
 
 // forward declaration ...
@@ -259,7 +260,7 @@ namespace STR
       int myrank_;
 
       //! coupling adapter to transfer vectors and matrices between Discret() and intactids_
-      Teuchos::RCP<ADAPTER::Coupling> coupsia_;
+      Teuchos::RCP<CORE::ADAPTER::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
       Teuchos::RCP<LINALG::MatrixRowTransform> siatransform_;

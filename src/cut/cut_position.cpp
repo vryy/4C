@@ -47,7 +47,7 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const LINALG::Matrix
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = DRT::UTILS::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
     dserror(
@@ -84,7 +84,7 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const Epetra_SerialD
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = DRT::UTILS::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
   if (static_cast<unsigned>(xyze.M()) < probdim or static_cast<unsigned>(xyze.N()) != num_nodes_ele)
     dserror(
@@ -522,26 +522,26 @@ template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::line2>;
 // template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::wedge15>;
 
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::tri3,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::tri6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad9,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<2, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 /* --- ComputePosition --- */
 // non-embedded cases (only)
 template class GEO::CUT::ComputePosition<1, DRT::Element::line2>;
@@ -564,55 +564,55 @@ template class GEO::CUT::ComputePosition<3, DRT::Element::wedge6>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::wedge15>;
 
 template class GEO::CUT::ComputePosition<1, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 
 template class GEO::CUT::ComputePosition<2, DRT::Element::tri3,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<2, DRT::Element::tri6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<2, DRT::Element::quad4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<2, DRT::Element::quad8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<2, DRT::Element::quad9,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
 
 template class GEO::CUT::ComputePosition<3, DRT::Element::tet4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::tet10,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::hex8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::hex16,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::hex18,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::hex20,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::hex27,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::pyramid5,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::wedge6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::wedge15,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;
 
 /* --- PositionGeneric --- */
 // embedded cases
@@ -652,75 +652,75 @@ template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge15>;
 
 // embedded cases
 template class GEO::CUT::PositionGeneric<3, DRT::Element::tri3,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::tri6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::quad4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::quad8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::quad9,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<2, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 
 // non-embedded cases
 template class GEO::CUT::PositionGeneric<1, DRT::Element::line2,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 
 template class GEO::CUT::PositionGeneric<2, DRT::Element::tri3,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<2, DRT::Element::tri6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<2, DRT::Element::quad4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<2, DRT::Element::quad8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<2, DRT::Element::quad9,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
 
 template class GEO::CUT::PositionGeneric<3, DRT::Element::tet4,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::tet10,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::hex8,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::hex16,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::hex18,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::hex20,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::hex27,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::pyramid5,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge6,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
 template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge15,
-    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
-    DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;

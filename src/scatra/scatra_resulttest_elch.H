@@ -12,11 +12,10 @@
 #define SCATRA_RESULTTEST_ELCH_H
 
 #include "scatra_resulttest.H"
+#include "scatra_timint_elch.H"
 
 namespace SCATRA
 {
-  // forward declaration
-  class ScaTraTimIntElch;
 
   // class implementation
   class ElchResultTest : public ScaTraResultTest

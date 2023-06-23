@@ -15,10 +15,17 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #ifndef MAT_GROWTH_LAW_H
 #define MAT_GROWTH_LAW_H
 
+#include <Teuchos_ParameterList.hpp>
+#include "linalg_fixedsizematrix.H"
+#include "inpar_material.H"
+#include "mat_par_material.H"
+#include "mat_material.H"
+
 /* forward declarations */
 namespace MAT
 {
   class Growth;
+  class So3Material;
 
   /*----------------------------------------------------------------------*/
   /*! \class GrowthLaw

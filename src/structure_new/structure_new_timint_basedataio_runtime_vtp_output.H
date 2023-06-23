@@ -39,11 +39,8 @@ namespace STR
     class ParamsRuntimeVtpOutput
     {
      public:
-      /// constructor
-      ParamsRuntimeVtpOutput();
-
       /// destructor
-      virtual ~ParamsRuntimeVtpOutput(){};
+      virtual ~ParamsRuntimeVtpOutput() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtp_structure_paramslist);
@@ -65,6 +62,12 @@ namespace STR
         CheckInitSetup();
         return output_interval_steps_;
       };
+
+      [[nodiscard]] int OutputStepOffset() const
+      {
+        CheckInitSetup();
+        return output_step_offset_;
+      }
 
       /// whether to write output in every iteration of the nonlinear solver
       bool OutputEveryIteration() const
@@ -130,34 +133,38 @@ namespace STR
       /// @name variables for internal use only
       /// @{
       ///
-      bool isinit_;
+      bool isinit_ = false;
 
-      bool issetup_;
+      bool issetup_ = false;
       /// @}
 
       /// @name variables controlling output
       /// @{
 
       /// data format for numeric output data
-      INPAR::IO_RUNTIME_VTP_STRUCTURE::OutputDataFormat output_data_format_;
+      INPAR::IO_RUNTIME_VTP_STRUCTURE::OutputDataFormat output_data_format_ =
+          INPAR::IO_RUNTIME_VTP_STRUCTURE::vague;
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
-      int output_interval_steps_;
+      int output_interval_steps_ = -1;
+
+      /// An offset added to the current step to shift the steps to be written
+      int output_step_offset_ = 0;
 
       /// whether to write output in every iteration of the nonlinear solver
-      bool output_every_iteration_;
+      bool output_every_iteration_ = false;
 
       /// whether to write owner at visualization point
-      bool output_owner_;
+      bool output_owner_ = false;
 
       /// whether to write orientation at visualization point
-      bool output_orientationandlength_;
+      bool output_orientationandlength_ = false;
 
       /// whether to write number of bonds at visualization point
-      bool output_numberofbonds_;
+      bool output_numberofbonds_ = false;
 
       /// whether to write force acting on linker
-      bool output_linkingforce_;
+      bool output_linkingforce_ = false;
 
       /*    /// whether to write displacement output
           bool output_displacement_state_;*/

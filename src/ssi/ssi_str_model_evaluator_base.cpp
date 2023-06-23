@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "ssi_str_model_evaluator_base.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_ssiwrapper.H"
 #include "lib_exporter.H"
 #include "lib_utils_gid_vector.H"
@@ -17,7 +17,7 @@
 #include "io.H"
 #include "structure_new_model_evaluator_data.H"
 #include "structure_new_timint_basedataglobalstate.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   Discret().Evaluate(
       [&](DRT::Element& ele)
       {
-        DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+        CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
             ele, *stresses->at(ele.Id()), nodal_stresses_source);
       });
 

@@ -9,6 +9,9 @@
 #ifndef MORTAR_INTERFACE_UTILS_H
 #define MORTAR_INTERFACE_UTILS_H
 
+#include <vector>
+#include <string>
+
 namespace MORTAR
 {
   namespace INTERFACEUTILS

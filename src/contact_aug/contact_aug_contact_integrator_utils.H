@@ -11,7 +11,7 @@
 #define CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H
 
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "contact_aug_utils.H"
 #include <unordered_map>
 
@@ -31,7 +31,7 @@ namespace CONTACT
     class UniqueProjInfo;
 
     /// type definitions
-    typedef GEN_DATA::pairedvector<MORTAR::MortarElement*, CONTACT::INTEGRATOR::UniqueProjInfo>
+    typedef CORE::GEN::pairedvector<MORTAR::MortarElement*, CONTACT::INTEGRATOR::UniqueProjInfo>
         UniqueProjInfoPair;
     typedef CONTACT::AUG::Deriv1stMap Deriv1stMap;
     typedef CONTACT::AUG::Deriv1stVecMap Deriv1stVecMap;

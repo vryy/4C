@@ -11,6 +11,9 @@
 #ifndef INPAR_SOLVER_NONLIN_H
 #define INPAR_SOLVER_NONLIN_H
 
+#include <Teuchos_RCPDecl.hpp>
+#include <Teuchos_ParameterList.hpp>
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

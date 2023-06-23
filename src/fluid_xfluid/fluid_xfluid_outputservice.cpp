@@ -892,9 +892,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             case DRT::Element::hex8:
             {
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -908,9 +909,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             {
               // TODO: check the output for hex20
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -924,9 +926,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             {
               // TODO: check the output for hex27
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1023,9 +1026,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::hex8:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1039,9 +1042,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             // TODO: check the output for hex20
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1055,9 +1058,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             // TODO: check the output for hex27
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1070,9 +1073,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::wedge6:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::wedge6);
+            CORE::DRT::UTILS::shape_function_3D(
+                funct, rst(0), rst(1), rst(2), DRT::Element::wedge6);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1085,9 +1089,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::wedge15:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::wedge15);
+            CORE::DRT::UTILS::shape_function_3D(
+                funct, rst(0), rst(1), rst(2), DRT::Element::wedge15);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1100,9 +1105,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::tet4:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet4);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet4);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1115,9 +1120,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::tet10:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet10);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet10);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1236,44 +1241,44 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
           case DRT::Element::quad4:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad4);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad4);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::tri3:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::tri3);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::tri3);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::quad8:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad8);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad8);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::quad9:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad9);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad9);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }

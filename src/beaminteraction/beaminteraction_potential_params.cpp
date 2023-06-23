@@ -12,7 +12,7 @@
 #include "beaminteraction_potential_runtime_vtk_output_params.H"
 
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // Todo get rid of this as soon as historic dependency on INPAR::BEAMCONTACT::OctreeType is fully
 // gone

@@ -7,8 +7,6 @@
 */
 /*----------------------------------------------------------------------------*/
 
-//#define CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
-
 #include "contact_aug_integrator_policy.H"
 
 #include "mortar_element.H"
@@ -28,7 +26,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
     const Deriv1stVecMap& d_non_unit_normal, Deriv2ndMap& dd_jac) const
 {
   // do nothing
-  GEN_DATA::reset(0, dd_jac);
+  CORE::GEN::reset(0, dd_jac);
 }
 
 /*----------------------------------------------------------------------------*
@@ -73,7 +71,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_Jacobian(
     const LINALG::Matrix<probdim, 1>& unit_normal, const Deriv1stVecMap& d_non_unit_normal,
     Deriv1stMap& d_jac) const
 {
-  GEN_DATA::reset(probdim * SLAVENUMNODE, d_jac);
+  CORE::GEN::reset(probdim * SLAVENUMNODE, d_jac);
 
   for (unsigned n_dof = 0; n_dof < probdim; ++n_dof)
   {
@@ -103,7 +101,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_Jacobian(
 #ifdef CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-  GEN_DATA::reset(probdim * SLAVENUMNODE, dd_jac);
+  CORE::GEN::reset(probdim * SLAVENUMNODE, dd_jac);
 
   // (1) Inner product of varied non-unit normal and linearized unit-normal
   for (unsigned n_dof = 0; n_dof < probdim; ++n_dof)
@@ -157,7 +155,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
 
-  if (reset) GEN_DATA::reset(probdim, SLAVENUMNODE * probdim, d_unit_normal);
+  if (reset) CORE::GEN::reset(probdim, SLAVENUMNODE * probdim, d_unit_normal);
   // safety check
   else
   {
@@ -189,7 +187,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
     }
   }
 
-  GEN_DATA::complete(d_unit_normal);
+  CORE::GEN::complete(d_unit_normal);
 
 #ifdef CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
   for (unsigned n_dof = 0; n_dof < probdim; ++n_dof)
@@ -243,7 +241,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
   this->timer_.start(TimeID::Deriv1st_NonUnitSlaveElementNormal);
 
   const double normal_fac = sele.NormalFac();
-  GEN_DATA::reset(probdim, SLAVENUMNODE * probdim, d_non_unit_normal);
+  CORE::GEN::reset(probdim, SLAVENUMNODE * probdim, d_non_unit_normal);
 
   // loop over all components of the normal vector
   for (unsigned n_dof = 0; n_dof < probdim; ++n_dof)
@@ -305,7 +303,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
     }
   }
 
-  GEN_DATA::complete(d_non_unit_normal);
+  CORE::GEN::complete(d_non_unit_normal);
 
   this->timer_.stop(TimeID::Deriv1st_NonUnitSlaveElementNormal);
 }
@@ -329,7 +327,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
   {
     Deriv2ndMap& dd_n_dof = dd_non_unit_normal[n_dof];
 
-    GEN_DATA::reset(SLAVENUMNODE * probdim, dd_n_dof);
+    CORE::GEN::reset(SLAVENUMNODE * probdim, dd_n_dof);
 
     // loop over all nodes of the current element for the variation
     for (unsigned n_j = 0; n_j < SLAVENUMNODE; ++n_j)
@@ -373,7 +371,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
     }
   }
 
-  GEN_DATA::complete(dd_non_unit_normal);
+  CORE::GEN::complete(dd_non_unit_normal);
 
   this->timer_.stop(TimeID::Deriv2nd_NonUnitSlaveElementNormal);
 }
@@ -390,9 +388,9 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
 
   // temporal data structures
   Deriv1stMap dn_n(0);
-  GEN_DATA::reset(d_non_unit_normal[0].capacity(), dn_n);
+  CORE::GEN::reset(d_non_unit_normal[0].capacity(), dn_n);
   Deriv2ndMap dn_dn(0);
-  GEN_DATA::reset(d_non_unit_normal[0].capacity(), d_unit_normal[0].capacity(), dn_dn);
+  CORE::GEN::reset(d_non_unit_normal[0].capacity(), d_unit_normal[0].capacity(), dn_dn);
 
   /*--------------------------------------------------------------------------*/
   // (0-0) evaluate the scalar product of unit-normal vector and the first
@@ -512,7 +510,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
     }
   }
 
-  GEN_DATA::complete(dd_unit_normal);
+  CORE::GEN::complete(dd_unit_normal);
   this->timer_.stop(TimeID::Deriv2nd_UnitSlaveElementNormal);
 }
 
@@ -678,7 +676,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
     }
   }
 
-  GEN_DATA::complete(d_mxi);
+  CORE::GEN::complete(d_mxi);
   d_alpha.complete();
 
   this->timer_.stop(TimeID::Deriv1st_MXiGP);
@@ -714,7 +712,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
 
   this->Add_Alpha_Deriv2nd_Normal(lmat_inv, alpha, sele, sval, dd_mxigp);
 
-  GEN_DATA::complete(dd_mxigp);
+  CORE::GEN::complete(dd_mxigp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1223,7 +1221,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1stGa
       Deriv1stMap& d_wgap_ma = cnode.AugData().GetDeriv1st_WGapMa();
       for (auto& d_gapn_ma_var : d_gapn_ma)
       {
-        GEN_DATA::increaseCapacity(d_wgap_ma);
+        CORE::GEN::increaseCapacity(d_wgap_ma);
         d_wgap_ma(d_gapn_ma_var.first) += tmp * d_gapn_ma_var.second;
       }
     }
@@ -1325,12 +1323,12 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       // smooth normal
       for (unsigned d = 0; d < probdim; ++d)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(sdof[d], my::gp_id_);
 
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
               tmp * sval(k, 0) * d_n_unit_lin.second;
         }
@@ -1342,7 +1340,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
     {
       for (auto& d_n_unit_var : d_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
@@ -1352,7 +1350,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
           const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
           const int* sdof = snode.Dofs();
 
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(sdof[d], my::gp_id_) += sval(k, 0) * val;
         }
       }
@@ -1369,14 +1367,14 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
       for (unsigned d = 0; d < probdim; ++d)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(mdof[d], my::gp_id_);
 
         // variation of the master position multiplied with the linearized
         // smooth normal
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
               tmp * mval(k, 0) * d_n_unit_lin.second;
         }
@@ -1391,7 +1389,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
                 val * d_mxigp_j_lin.second;
           }
@@ -1404,7 +1402,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
     {
       for (auto& d_n_unit_var : d_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
@@ -1416,7 +1414,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
           const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
           const int* mdof = mnode.Dofs();
 
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += val * mval(k, 0);
         }
 
@@ -1429,7 +1427,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
                 d_mxigp_j_lin.second * val_1;
           }
@@ -1448,21 +1446,21 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
       for (auto& dd_n_unit_var : dd_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(dd_n_unit_var.first, my::gp_id_);
 
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(dd_n_unit_var.first, my::gp_id_);
 
         for (auto& dd_n_unit_var_lin : dd_n_unit_var.second)
         {
           const int gid_lin = dd_n_unit_var_lin.first;
 
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(gid_lin, my::gp_id_) +=
               val_sl * dd_n_unit_var_lin.second;
 
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(gid_lin, my::gp_id_) +=
               val_ma * dd_n_unit_var_lin.second;
         }
@@ -1569,14 +1567,14 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_GapN_L
      * jacobian */
     for (auto& d_gapn_sl_var : d_gapn_sl)
     {
-      GEN_DATA::increaseCapacity(dd_wgap_sl);
+      CORE::GEN::increaseCapacity(dd_wgap_sl);
       Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_gapn_sl_var.first, my::gp_id_);
 
       const double val = tmp * d_gapn_sl_var.second;
 
       for (auto& d_jac_lin : d_jac)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+        CORE::GEN::increaseCapacity(dd_wgap_sl_var);
         dd_wgap_sl_var.repetitive_access(d_jac_lin.first, my::gp_id_) += d_jac_lin.second * val;
       }
     }
@@ -1589,14 +1587,14 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_GapN_L
      * jacobian */
     for (auto& d_gapn_ma_var : d_gapn_ma)
     {
-      GEN_DATA::increaseCapacity(dd_wgap_ma);
+      CORE::GEN::increaseCapacity(dd_wgap_ma);
       Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_gapn_ma_var.first, my::gp_id_);
 
       const double val = tmp * d_gapn_ma_var.second;
 
       for (auto& d_jac_lin : d_jac)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+        CORE::GEN::increaseCapacity(dd_wgap_ma_var);
         dd_wgap_ma_var.repetitive_access(d_jac_lin.first, my::gp_id_) += d_jac_lin.second * val;
       }
     }
@@ -1632,11 +1630,11 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_Jac_Li
       const double val = tmp * d_jac_var.second;
 
       // linearized slave part of the normal gap
-      GEN_DATA::increaseCapacity(dd_wgap_sl);
+      CORE::GEN::increaseCapacity(dd_wgap_sl);
       Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_jac_var.first, my::gp_id_);
       for (auto& d_gapn_sl_lin : d_gapn_sl)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+        CORE::GEN::increaseCapacity(dd_wgap_sl_var);
         dd_wgap_sl_var.repetitive_access(d_gapn_sl_lin.first, my::gp_id_) +=
             d_gapn_sl_lin.second * val;
       }
@@ -1645,7 +1643,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_Jac_Li
       Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_jac_var.first, my::gp_id_);
       for (auto& d_gapn_ma_lin : d_gapn_ma)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+        CORE::GEN::increaseCapacity(dd_wgap_ma_var);
         dd_wgap_ma_var.repetitive_access(d_gapn_ma_lin.first, my::gp_id_) +=
             d_gapn_ma_lin.second * val;
       }
@@ -1732,12 +1730,12 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
       // smooth normal
       for (unsigned d = 0; d < probdim; ++d)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(sdof[d], my::gp_id_);
 
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
               tmp * sval(k, 0) * d_n_unit_lin.second;
         }
@@ -1749,7 +1747,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     {
       for (auto& d_n_unit_var : d_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
@@ -1759,7 +1757,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
           const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
           const int* sdof = snode.Dofs();
 
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(sdof[d], my::gp_id_) += sval(k, 0) * val;
         }
       }
@@ -1775,14 +1773,14 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
       for (unsigned d = 0; d < probdim; ++d)
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(mdof[d], my::gp_id_);
 
         // variation of the master position multiplied with the linearized
         // smooth normal
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
               tmp * mval(k, 0) * d_n_unit_lin.second;
         }
@@ -1797,7 +1795,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
                 val * d_mxigp_j_lin.second;
           }
@@ -1808,7 +1806,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
       {
         for (auto& d_mxigp_j_var : d_mxigp[j])
         {
-          GEN_DATA::increaseCapacity(dd_wgap_ma);
+          CORE::GEN::increaseCapacity(dd_wgap_ma);
           Deriv1stMap& dd_wgap_ma_var =
               dd_wgap_ma.repetitive_access(d_mxigp_j_var.first, my::gp_id_);
 
@@ -1822,7 +1820,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
             //            if ( val == 0)
             //              continue;
 
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += gpn[d] * val;
           }
 
@@ -1840,7 +1838,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
             for (auto& d_mxigp_l_lin : d_mxigp[l])
             {
-              GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+              CORE::GEN::increaseCapacity(dd_wgap_ma_var);
               double& dd_wgap_ma_var_lin =
                   dd_wgap_ma_var.repetitive_access(d_mxigp_l_lin.first, my::gp_id_);
 
@@ -1865,13 +1863,13 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     {
       for (auto& dd_mxigp_j_var : dd_mxigp[j])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var =
             dd_wgap_ma.repetitive_access(dd_mxigp_j_var.first, my::gp_id_);
 
         for (auto& dd_mxigp_j_var_lin : dd_mxigp_j_var.second)
         {
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           double& dd_wgap_ma_var_lin =
               dd_wgap_ma_var.repetitive_access(dd_mxigp_j_var_lin.first, my::gp_id_);
 
@@ -1894,7 +1892,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     {
       for (auto& d_mxigp_j_var : d_mxigp[j])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_mxigp_j_var.first, my::gp_id_);
 
         for (unsigned d = 0; d < probdim; ++d)
@@ -1903,7 +1901,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
           for (auto& d_n_unit_lin : d_n_unit[d])
           {
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
                 val * d_n_unit_lin.second;
           }
@@ -1916,7 +1914,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     {
       for (auto& d_n_unit_var : d_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_ma);
+        CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
@@ -1928,7 +1926,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
           const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
           const int* mdof = mnode.Dofs();
 
-          GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+          CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += val * mval(k, 0);
         }
 
@@ -1941,7 +1939,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
-            GEN_DATA::increaseCapacity(dd_wgap_ma_var);
+            CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
                 d_mxigp_j_lin.second * val_1;
           }
@@ -1958,14 +1956,14 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
       for (auto& dd_n_unit_var : dd_n_unit[d])
       {
-        GEN_DATA::increaseCapacity(dd_wgap_sl);
+        CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(dd_n_unit_var.first, my::gp_id_);
 
         for (auto& dd_n_unit_var_lin : dd_n_unit_var.second)
         {
           const int gid_lin = dd_n_unit_var_lin.first;
 
-          GEN_DATA::increaseCapacity(dd_wgap_sl_var);
+          CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(gid_lin, my::gp_id_) +=
               val_sl_ma * dd_n_unit_var_lin.second;
         }
@@ -2014,7 +2012,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
 
     for (const auto& d_gap_ma_j : d_gapn_ma)
     {
-      GEN_DATA::increaseCapacity(error_ma_i);
+      CORE::GEN::increaseCapacity(error_ma_i);
       error_ma_i[d_gap_ma_j.first] += tmp_ma * d_gap_ma_j.second;
     }
 
@@ -2026,7 +2024,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
 
     for (auto& d_jac_var : d_jac)
     {
-      GEN_DATA::increaseCapacity(error_jac_i);
+      CORE::GEN::increaseCapacity(error_jac_i);
       error_jac_i(d_jac_var.first) += tmp_jac * d_jac_var.second;
     }
   }

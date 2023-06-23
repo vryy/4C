@@ -31,7 +31,7 @@
 
 #include "adapter_ale_fsi.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_fld_fluid_fsi.H"
 #include "adapter_ale.H"
 #include "adapter_str_fsiwrapper.H"
@@ -48,10 +48,9 @@
 
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
-#include "fsi_overlapprec_amgnxn.H"
 #include "fsi_overlapprec_hybrid.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
@@ -78,10 +77,10 @@ FSI::MonolithicBase::MonolithicBase(
   CreateStructureTimeIntegrator(timeparams, structdis);
   CreateFluidAndALETimeIntegrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
 
@@ -377,10 +376,10 @@ void FSI::Monolithic::SetupSystem()
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // structure to fluid
 
@@ -1141,7 +1140,7 @@ void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::CreateSystemMatrix(
-    Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat, bool structuresplit)
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1205,7 +1204,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   {
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
-    case INPAR::FSI::LinalgSolver:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
@@ -1215,21 +1213,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
     }
-    case INPAR::FSI::AMGnxn:
-    {
-      // TODO This is a temporary hack to input the xml file without adding a new input parameter in
-      // FSI/DYNAMIC MONOLITHIC SOLVER. We assume that the xml file is given in the first position
-      // of the BLOCKSMOOTHER list
-      std::string amgnxn_xml = "none";
-      if ((int)blocksmoother.size() > 0)
-        amgnxn_xml = blocksmoother[0];
-      else
-        dserror("Not found xml file in the first position of the BLOCKSMOOTHER list");
-      mat = Teuchos::rcp(new OverlappingBlockMatrixAMGnxn(Extractor(), *StructureField(),
-          *FluidField(), *AleField(), structuresplit, amgnxn_xml,
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
-    }
-    break;
     case INPAR::FSI::HybridSchwarz:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(Extractor(), *StructureField(),
@@ -1240,14 +1223,18 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           interfaceprocs_, verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
     }
+    case INPAR::FSI::LinalgSolver:
+    {
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          Extractor(), Extractor(), 81, false, true));
+      break;
+    }
     default:
     {
       dserror("Unsupported type of monolithic solver/preconditioner");
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1277,7 +1264,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
     case INPAR::FSI::HybridSchwarz:
-    case INPAR::FSI::AMGnxn:
     {
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));

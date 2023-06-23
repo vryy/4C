@@ -54,13 +54,13 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_sparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "ale_utils_mapextractor.H"
 #include "ale_utils_mapextractor.H"
 
-#include "adapter_coupling.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_ale_wear.H"
 
@@ -81,15 +81,15 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   {
     // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an
     // error !!!
-    coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
-    Teuchos::rcp_dynamic_cast<ADAPTER::Coupling>(coupalestru_)
+    coupalestru_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::Coupling>(coupalestru_)
         ->SetupCoupling(*AleField().Discretization(), *StructureField()->Discretization(),
             *aledofmap, *structdofmap, ndim);
   }
   else
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    coupalestru_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    coupalestru_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // projection ale -> structure : all ndim dofs (displacements)
     std::vector<int> coupleddof12 = std::vector<int>(ndim, 1);
@@ -101,7 +101,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     std::pair<int, int> dofset21(0, 0);
 
     // init coupling
-    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)
+    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
         ->Init(DRT::Problem::Instance()->GetDis("ale"),
             DRT::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21, &dofset12,
             &dofset21, Teuchos::null, false);
@@ -110,11 +110,11 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     //    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Redistribute();
 
     // setup projection matrices
-    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
+    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
   }
 
   // create interface coupling
-  coupstrualei_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupstrualei_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   coupstrualei_->SetupConditionCoupling(*StructureField()->Discretization(),
       StructureField()->Interface()->AleWearCondMap(), *AleField().Discretization(),
       AleField().Interface()->Map(AleField().Interface()->cond_ale_wear), "AleWear", ndim);

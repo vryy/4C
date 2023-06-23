@@ -11,8 +11,8 @@ distributions
 #ifndef MORTAR_MATRIX_TRANSFORM_H
 #define MORTAR_MATRIX_TRANSFORM_H
 
-#include "lib_dserror.H"
-#include "headers_pairedvector.H"
+#include "utils_exceptions.H"
+#include "utils_pairedvector.H"
 #include "lib_utils_matrix_vector_enums.H"
 
 #include <Teuchos_RCP.hpp>
@@ -27,11 +27,11 @@ namespace MORTAR
 {
   class MatrixRowColTransformer
   {
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:

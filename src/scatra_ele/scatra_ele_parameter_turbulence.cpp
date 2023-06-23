@@ -17,8 +17,8 @@ general static parameters required for scalar transport element evaluation.
 #include "scatra_ele_parameter_turbulence.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "lib_dserror.H"
-#include "headers_singleton_owner.H"
+#include "utils_exceptions.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
@@ -26,14 +26,14 @@ general static parameters required for scalar transport element evaluation.
 DRT::ELEMENTS::ScaTraEleParameterTurbulence* DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(
     const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterTurbulence>(
             new ScaTraEleParameterTurbulence(disname));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 

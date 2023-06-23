@@ -82,7 +82,7 @@ void test_unit_intersection_touch()
       GEO::CUT::Point* p = *i;
       if (p->Id() != 8)
       {
-        run_time_error("unexpected nodal id");
+        dserror("unexpected nodal id");
       }
     }
   }

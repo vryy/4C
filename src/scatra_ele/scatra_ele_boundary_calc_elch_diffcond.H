@@ -21,19 +21,21 @@ namespace DRT
     class ScaTraEleParameterElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcElchDiffCond : public ScaTraEleBoundaryCalcElchElectrode<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcElchDiffCond
+        : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
-      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
 
      protected:
       using my::nen_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchDiffCond<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 

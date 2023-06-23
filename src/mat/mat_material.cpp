@@ -821,7 +821,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_structuraltensorstratgy:
     case INPAR::MAT::mes_coupvarga:
     case INPAR::MAT::mes_isovarga:
-    case INPAR::MAT::mes_isovolHUdependentneohooke:
     case INPAR::MAT::mes_isovolaaagasser:
     case INPAR::MAT::mes_isotestmaterial:
     case INPAR::MAT::mes_coupmyocard:
@@ -846,6 +845,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mfi_lin_scalar_iso:
     case INPAR::MAT::mfi_lin_temp_iso:
     case INPAR::MAT::mfi_no_growth:
+    case INPAR::MAT::mfi_time_funct:
     case INPAR::MAT::mfi_poly_intercal_frac_aniso:
     case INPAR::MAT::mfi_poly_intercal_frac_iso:
     case INPAR::MAT::mix_rule_simple:
@@ -853,6 +853,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_elasthyper:
     case INPAR::MAT::mix_elasthyper_damage:
     case INPAR::MAT::mix_elasthyper_elastin_membrane:
+    case INPAR::MAT::mix_full_constrained_mixture_fiber:
     case INPAR::MAT::mix_solid_material:
     case INPAR::MAT::mix_growth_strategy_anisotropic:
     case INPAR::MAT::mix_growth_strategy_isotropic:

@@ -8,7 +8,7 @@
 
 #include "adapter_scatra_wrapper.H"
 #include "scatra_timint_implicit.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_sparseoperator.H"
 
 

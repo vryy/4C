@@ -12,7 +12,7 @@
 #include "so3_plast_ssn.H"
 
 #include "lib_linedefinition.H"
-#include "fem_general_utils_shapefunctions_service.H"
+#include "discretization_fem_general_utils_shapefunctions_service.H"
 #include "lib_utils_factory.H"
 #include "lib_utils_parameter_list.H"
 #include "mat_plasticelasthyper.H"
@@ -569,7 +569,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     {
       case 8:
       {
-        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::GaussRule3D::hex_8point);
+        CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+            CORE::DRT::UTILS::GaussRule3D::hex_8point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -583,7 +584,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
       }
       case 9:
       {
-        DRT::UTILS::GaussIntegration ip(distype, 3);
+        CORE::DRT::UTILS::GaussIntegration ip(distype, 3);
         numgpt_ = ip.NumPoints() + 1;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -602,7 +603,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
       }
       case 27:
       {
-        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::GaussRule3D::hex_27point);
+        CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+            CORE::DRT::UTILS::GaussRule3D::hex_27point);
         numgpt_ = intpoints.IP().nquad;
         xsi_.resize(numgpt_);
         wgt_.resize(numgpt_);
@@ -621,7 +623,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   }
   else  // default integration
   {
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+        THR::DisTypeToOptGaussRule<distype>::rule);
     numgpt_ = intpoints.IP().nquad;
     xsi_.resize(numgpt_);
     wgt_.resize(numgpt_);

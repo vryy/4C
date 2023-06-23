@@ -215,7 +215,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInte
  |  Linearization of clip polygon vertices (3D)               popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::VertexLinearization(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex,
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
     std::map<int, double>& projpar, bool printderiv)
 {
   // linearize all aux.plane slave and master nodes only ONCE
@@ -228,10 +228,10 @@ bool CONTACT::CoCoupling3d::VertexLinearization(
   const int nmrows = MasterIntElement().NumNode();
 
   // prepare storage for slave and master linearizations
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linsnodes(
-      nsrows, std::vector<GEN::pairedvector<int, double>>(3, 3 * SlaveElement().NumNode()));
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linmnodes(
-      nmrows, std::vector<GEN::pairedvector<int, double>>(
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linsnodes(
+      nsrows, std::vector<CORE::GEN::pairedvector<int, double>>(3, 3 * SlaveElement().NumNode()));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linmnodes(
+      nmrows, std::vector<CORE::GEN::pairedvector<int, double>>(
                   3, 3 * SlaveElement().NumNode() + 3 * MasterElement().NumNode()));
 
   // compute slave linearizations (nsrows)
@@ -248,7 +248,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(
   {
     // references to current vertex and its linearization
     MORTAR::Vertex& currv = Clip()[i];
-    std::vector<GEN::pairedvector<int, double>>& currlin = linvertex[i];
+    std::vector<CORE::GEN::pairedvector<int, double>>& currlin = linvertex[i];
 
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType() == MORTAR::Vertex::slave)
@@ -334,7 +334,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -373,13 +373,13 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
   }
 
   // linearization of the IntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> nodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> nodelin(0);
   MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
 
   if (sIntEle == NULL)
   {
     // resize the linearizations
-    nodelin.resize(nrow, std::vector<GEN::pairedvector<int, double>>(3, 1));
+    nodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < nrow; ++in)
@@ -389,9 +389,9 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
     sIntEle->NodeLinearization(nodelin);
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  std ::vector<GEN::pairedvector<int, double>> linauxc(
+  std ::vector<CORE::GEN::pairedvector<int, double>> linauxc(
       3, SlaveElement().NumNode());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
@@ -400,7 +400,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   // put everything together for slave vertex linearization
   // loop over all vertices
@@ -473,7 +473,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::MasterVertexLinearization(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -512,13 +512,13 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
   }
 
   // linearization of the SlaveIntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> snodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> snodelin(0);
   MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
 
   if (sIntEle == NULL)
   {
     // resize the linearizations
-    snodelin.resize(nrow, std::vector<GEN::pairedvector<int, double>>(3, 1));
+    snodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < nrow; ++in)
@@ -528,9 +528,9 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
     sIntEle->NodeLinearization(snodelin);
 
   // map iterator
-  typedef GEN::pairedvector<int, double>::const_iterator
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  std ::vector<GEN::pairedvector<int, double>> linauxc(
+  std ::vector<CORE::GEN::pairedvector<int, double>> linauxc(
       3, SlaveElement().NumNode());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
@@ -539,17 +539,17 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   // linearization of the MasterIntEle spatial coords
-  std::vector<std::vector<GEN::pairedvector<int, double>>> mnodelin(0);
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> mnodelin(0);
   MORTAR::IntElement* mIntEle = dynamic_cast<MORTAR::IntElement*>(&MasterIntElement());
 
   if (mIntEle == NULL)
   {
     // resize the linearizations
     mnodelin.resize(
-        MasterIntElement().NumNode(), std::vector<GEN::pairedvector<int, double>>(3, 1));
+        MasterIntElement().NumNode(), std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < MasterIntElement().NumNode(); ++in)
@@ -636,17 +636,17 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
-    std::vector<GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-    MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linsnodes,
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linmnodes)
+    std::vector<CORE::GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
+    MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linsnodes,
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linmnodes)
 {
   // number of nodes
   const int nsrows = SlaveIntElement().NumNode();
   const int nmrows = MasterIntElement().NumNode();
 
   // iterator
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // compute factor Z
   std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
@@ -734,7 +734,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k == nsrows) dserror("Slave Id1 not found!");
 
   // get the correct slave node linearization
-  std::vector<GEN::pairedvector<int, double>>& slavelin0 = linsnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& slavelin0 = linsnodes[k];
 
   k = 0;
   while (k < nsrows)
@@ -747,7 +747,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k == nsrows) dserror("Slave Id2 not found!");
 
   // get the correct slave node linearization
-  std::vector<GEN::pairedvector<int, double>>& slavelin1 = linsnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& slavelin1 = linsnodes[k];
 
   // master vertex linearization (2x)
   int mid1 = currv.Nodeids()[2];
@@ -765,7 +765,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k == nmrows) dserror("Master Id1 not found!");
 
   // get the correct master node linearization
-  std::vector<GEN::pairedvector<int, double>>& masterlin0 = linmnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& masterlin0 = linmnodes[k];
 
   k = 0;
   while (k < nmrows)
@@ -778,10 +778,10 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k == nmrows) dserror("Master Id2 not found!");
 
   // get the correct master node linearization
-  std::vector<GEN::pairedvector<int, double>>& masterlin1 = linmnodes[k];
+  std::vector<CORE::GEN::pairedvector<int, double>>& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  std::vector<GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::pairedvector<int, double>>& linauxn = GetDerivAuxn();
 
   const double ZNfac = Zfac / Nfac;
   const double ZNNfac = Zfac / (Nfac * Nfac);
@@ -842,12 +842,12 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
  |  Linearization of clip polygon center (3D)                 popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::CenterLinearization(
-    const std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex,
-    std::vector<GEN::pairedvector<int, double>>& lincenter)
+    const std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
+    std::vector<CORE::GEN::pairedvector<int, double>>& lincenter)
 {
   // preparations
   int clipsize = (int)(Clip().size());
-  typedef GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   // number of nodes
   const int nsrows = SlaveElement().NumNode();
@@ -905,7 +905,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
   double n = fac;
 
   // first we need linearization of node averaged center
-  std::vector<GEN::pairedvector<int, double>> linnac(3, 3 * (nsrows + nmrows));
+  std::vector<CORE::GEN::pairedvector<int, double>> linnac(3, 3 * (nsrows + nmrows));
   const double clipsizeinv = 1.0 / clipsize;
 
   for (int i = 0; i < clipsize; ++i)
@@ -949,7 +949,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
     double Atri = 0.5 * sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // linearization of cross
-    std::vector<GEN::pairedvector<int, double>> lincross(3, 3 * (nsrows + nmrows));
+    std::vector<CORE::GEN::pairedvector<int, double>> lincross(3, 3 * (nsrows + nmrows));
 
     for (CI p = linvertex[i][0].begin(); p != linvertex[i][0].end(); ++p)
     {
@@ -1006,7 +1006,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(
     }
 
     // linearization of triangle area
-    GEN::pairedvector<int, double> linarea(3 * (nsrows + nmrows));
+    CORE::GEN::pairedvector<int, double> linarea(3 * (nsrows + nmrows));
     for (int k = 0; k < 3; ++k)
       for (CI p = lincross[k].begin(); p != lincross[k].end(); ++p)
         linarea[p->first] += 0.25 / Atri * cross[k] * (p->second);
@@ -1690,27 +1690,27 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
   // Dual shape functions coefficient matrix and linearization
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
           (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // various variables
   double detg = 0.0;
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // initialize matrices de and me
   LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
   LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
-  GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
+  CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
       (nnodes + mnodes) * ndof);
 
   // two-dim arrays of maps for linearization of me/de
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivme(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
-  std::vector<std::vector<GEN::pairedvector<int, double>>> derivde(
-      nnodes, std::vector<GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(
+      nnodes, std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivde(
+      nnodes, std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
 
   double A_tot = 0.;
   // loop over all master elements associated with this slave element
@@ -1742,7 +1742,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
       detg = currcell->Jacobian();
       // directional derivative of cell Jacobian
-      GEN::pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
+      CORE::GEN::pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
       currcell->DerivJacobian(derivjaccell);
 
       for (int gp = 0; gp < integrator.nGP(); ++gp)
@@ -1792,11 +1792,11 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
         // additional data for contact calculation (i.e. incl. derivative of dual shape functions
         // coefficient matrix) GP slave coordinate derivatives
-        std::vector<GEN::pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
+        std::vector<CORE::GEN::pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
         // GP slave coordinate derivatives
-        std::vector<GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
+        std::vector<CORE::GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
         // global GP coordinate derivative on integration element
-        GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
+        CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
 
         // compute global GP coordinate derivative
         static LINALG::Matrix<3, 1> svalcell;
@@ -1936,7 +1936,8 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-  typedef GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
+  typedef CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator
+      _CIM;
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
     LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];

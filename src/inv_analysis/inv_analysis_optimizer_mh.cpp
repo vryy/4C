@@ -21,7 +21,7 @@
 
 #include "lib_globalproblem.H"
 #include "comm_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "timestepping_mstep.H"
 #include "io.H"
 #include "io_control.H"

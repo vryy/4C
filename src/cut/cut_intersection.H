@@ -389,10 +389,12 @@ namespace GEO
      *  \author ager, hiermeier */
     template <unsigned probdim, DRT::Element::DiscretizationType edgetype,
         DRT::Element::DiscretizationType sidetype, bool debug = false,
-        unsigned dimedge = DRT::UTILS::DisTypeToDim<edgetype>::dim,
-        unsigned dimside = DRT::UTILS::DisTypeToDim<sidetype>::dim,
-        unsigned numNodesEdge = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
-        unsigned numNodesSide = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement>
+        unsigned dimedge = CORE::DRT::UTILS::DisTypeToDim<edgetype>::dim,
+        unsigned dimside = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim,
+        unsigned numNodesEdge =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+        unsigned numNodesSide =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement>
     class Intersection : public IntersectionBase
     {
      public:
@@ -469,7 +471,7 @@ namespace GEO
         LINALG::Matrix<probdim, 1> x_edge_1;
         x_edge_1 = 0;
         LINALG::Matrix<numNodesEdge, 1> edge_funct_1;
-        DRT::UTILS::shape_function<edgetype>(xsi_edge_, edge_funct_1);
+        CORE::DRT::UTILS::shape_function<edgetype>(xsi_edge_, edge_funct_1);
         for (unsigned inode = 0; inode < numNodesEdge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_1(isd) += xyze_lineElement_(isd, inode) * edge_funct_1(inode);
@@ -481,7 +483,7 @@ namespace GEO
         LINALG::Matrix<probdim, 1> x_edge_2;
         x_edge_2 = 0;
         LINALG::Matrix<numNodesSide, 1> edge_funct_2;
-        DRT::UTILS::shape_function<sidetype>(xsi_side_, edge_funct_2);
+        CORE::DRT::UTILS::shape_function<sidetype>(xsi_side_, edge_funct_2);
         for (unsigned inode = 0; inode < numNodesSide; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_2(isd) += xyze_surfaceElement_(isd, inode) * edge_funct_2(inode);
@@ -535,7 +537,7 @@ namespace GEO
         // get final point
         x = 0;
         LINALG::Matrix<numNodesEdge, 1> lineFunct;
-        DRT::UTILS::shape_function<edgetype>(xsi_edge, lineFunct);
+        CORE::DRT::UTILS::shape_function<edgetype>(xsi_edge, lineFunct);
         for (unsigned inode = 0; inode < numNodesEdge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x(isd) += xyze_lineElement_(isd, inode) * lineFunct(inode);

@@ -21,8 +21,8 @@
 #include "post_common.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
-#include "fem_general_utils_gauss_point_postprocess.H"
-#include "pss_full_cpp.h"
+#include "discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "io_legacy_table_cpp.h"
 #include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*/
@@ -865,8 +865,10 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
   Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
   dis->Evaluate(
-      [&](DRT::Element& ele) {
-        DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(ele, *data->at(ele.Id()), nodal_stress);
+      [&](DRT::Element& ele)
+      {
+        CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
+            ele, *data->at(ele.Id()), nodal_stress);
       });
 
   if (nodeowner_)

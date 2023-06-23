@@ -86,7 +86,10 @@ namespace GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim; };
+      virtual unsigned Dim() const
+      {
+        return CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
+      };
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
 
@@ -103,7 +106,10 @@ namespace GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim; };
+      virtual unsigned Dim() const
+      {
+        return CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim;
+      };
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
@@ -120,7 +126,10 @@ namespace GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim; };
+      virtual unsigned Dim() const
+      {
+        return CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
+      };
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 

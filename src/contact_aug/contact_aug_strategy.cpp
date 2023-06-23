@@ -1868,7 +1868,7 @@ void CONTACT::AUG::Strategy::EvalWeightedGapGradientError(CONTACT::ParamsInterfa
     IO::cout(IO::standard) << "total_error = " << total_error << IO::endl;
   }
 
-  cparams.ClearAll(GEN::AnyDataContainer::DataType::unordered_map);
+  cparams.ClearAll(CORE::GEN::AnyDataContainer::DataType::unordered_map);
 
   return;
 }

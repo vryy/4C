@@ -18,14 +18,14 @@
 #include "lib_discret.H"
 #include "nurbs_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "lib_utils_elements.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 #include "lib_element.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "lib_globalproblem.H"
 #include "contact_analytical.H"
@@ -385,7 +385,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
         Epetra_SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
         Epetra_SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
 
@@ -480,7 +480,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         Epetra_SerialDenseVector funct(numnode);
         Epetra_SerialDenseMatrix deriv;
         deriv.Shape(2, numnode);
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
         // get displacements and extract values of this element
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -524,8 +524,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
           {
             // shape functions and their derivatives for polynomials
-            DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-            DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+            CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
           }
           else
           {
@@ -534,7 +534,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             gp(0) = e1;
             gp(1) = e2;
 
-            DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+            CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
                 funct, deriv, gp, myknots, weights, distype);
           }
 
@@ -725,7 +725,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Epetra_SerialDenseVector funct(numnode);
       Epetra_SerialDenseMatrix deriv;
       deriv.Shape(2, numnode);
-      const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -792,8 +792,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
         {
           // shape functions and their derivatives for polynomials
-          DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+          CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
         }
         else
         {
@@ -802,7 +802,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           gp(0) = e1;
           gp(1) = e2;
 
-          DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+          CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+              funct, deriv, gp, myknots, weights, distype);
         }
 
         // REF ------------------------
@@ -993,7 +994,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   //  std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
@@ -1026,8 +1027,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D(shapefcts, e1, e2, distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D(shapefcts, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1036,7 +1037,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
       gp(0) = e1;
       gp(1) = e2;
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(shapefcts, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          shapefcts, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1257,7 +1259,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   const DiscretizationType distype = Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -1355,8 +1357,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1365,7 +1367,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1635,7 +1638,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   const DiscretizationType distype = Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -1670,8 +1673,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1680,7 +1683,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -2143,7 +2147,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   const int edof = numnode * Wall1::noddof_;
   const DiscretizationType distype = Shape();
   // Gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   // internal/strain energy
   double internal_energy = 0.0;
@@ -2203,7 +2207,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");
 
     // derivatives at origin
-    DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
     // material-to-parameter space Jacobian at origin
     w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
     // calculate linear B-operator at origin
@@ -2221,8 +2225,8 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
-    DRT::UTILS::shape_function_2D(shpfct, xi1, xi2, distype);
-    DRT::UTILS::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
+    CORE::DRT::UTILS::shape_function_2D(shpfct, xi1, xi2, distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
 
     // compute Jacobian matrix
     w1_jacobianmatrix(Xe, shpdrv, Xjm, &Xjdet, numnode);

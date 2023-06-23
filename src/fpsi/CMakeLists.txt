@@ -1,20 +1,20 @@
-set(OBJS_FPSI
-    # cmake-format: sortable
-    fpsi.cpp
-    fpsi_coupling.cpp
-    fpsi_dyn.cpp
-    fpsi_monolithic.cpp
-    fpsi_monolithic_plain.cpp
-    fpsi_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_fpsi ${OBJS_FPSI})
-
-set(LIBS_ALG_FPSI
+set(_fpsi_dependencies
     # cmake-format: sortable
     adapter
-    alg_poroelast
+    ale
+    constraint
+    core
+    fluid
+    fluid_ele
+    fsi
     inpar
+    io
+    lib
+    linalg
+    poroelast
+    poroelast_scatra
+    structure
     )
-
-baci_add_dependency(alg_fpsi ${LIBS_ALG_FPSI})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fpsi_dependencies})

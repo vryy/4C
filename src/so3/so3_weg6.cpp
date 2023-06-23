@@ -14,13 +14,13 @@
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
 #include "linalg_utils_nullspace.H"
-#include "lib_dserror.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "utils_exceptions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "so3_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -88,8 +88,6 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("FIBER1", 3)
       .AddOptionalNamedDoubleVector("FIBER2", 3)
       .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("HU")
-      .AddOptionalNamedDouble("lambda")
       .AddOptionalNamedDouble("GROWTHTRIG");
 }
 
@@ -283,7 +281,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
-  DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
   LINALG::Matrix<1, NUMDIM_WEG6> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

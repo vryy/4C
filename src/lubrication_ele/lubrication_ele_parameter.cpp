@@ -17,8 +17,8 @@ parameters required for Lubrication element evaluation.
 
 #include "lubrication_ele_parameter.H"
 
-#include "lib_dserror.H"
-#include "headers_singleton_owner.H"
+#include "utils_exceptions.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
@@ -27,10 +27,11 @@ DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+      [](const std::string& disname)
       { return std::unique_ptr<LubricationEleParameter>(new LubricationEleParameter(disname)); });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 

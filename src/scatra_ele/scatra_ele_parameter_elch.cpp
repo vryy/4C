@@ -14,10 +14,10 @@ general static parameters required for scalar transport element evaluation.
 
 */
 /*----------------------------------------------------------------------*/
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include "scatra_ele_parameter_elch.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 
 /*----------------------------------------------------------------------*
@@ -27,10 +27,11 @@ DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::In
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
-      { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
+  static auto singleton_map =
+      CORE::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+          { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 

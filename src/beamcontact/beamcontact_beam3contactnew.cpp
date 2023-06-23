@@ -14,13 +14,12 @@
 #include "inpar_contact.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_globalproblem.H"
 
 #include "structure_timint_impl.H"
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 
@@ -112,9 +111,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
 
   const DRT::ElementType& eot1 = element1_->ElementType();
 
-  if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3Type::Instance() and
-      eot1 != DRT::ELEMENTS::Beam3rType::Instance())
-    dserror("Tangent smoothing only implemented for beams of type beam3 and beam3r!");
+  if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3rType::Instance())
+    dserror("Tangent smoothing only implemented for beams of type beam3r!");
 
   // For both elements the 2 direct neighbor elements are determined and saved in the
   // B3CNeighbor-Class variables neighbors1_ and neighbors2_. The neighbors are not only necessary
@@ -2751,12 +2749,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_1D(N1_i, eta1, distype1);
-    DRT::UTILS::shape_function_1D(N2_i, eta2, distype2);
-    DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
-    DRT::UTILS::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
-    DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
-    DRT::UTILS::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D(N1_i, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D(N2_i, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
   }
   else if (numnodalvalues == 2)
   {
@@ -2770,12 +2768,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
     double length2 = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->jacobi();
 
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
   }
   else
     dserror(
@@ -3828,10 +3826,6 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Elemen
   if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
     jacobi = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1))->GetJacobi();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
-  {
-    jacobi = (static_cast<DRT::ELEMENTS::Beam3*>(element1))->GetJacobi();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {

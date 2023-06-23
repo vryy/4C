@@ -6,14 +6,13 @@
 #include "so3_tet4.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_voigt_notation.H"
 #include "lib_prestress_service.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include "linalg_utils_densematrix_eigen.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "patspec.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "mat_elasthyper.H"
 #include "mat_stvenantkirchhoff.H"
@@ -26,7 +25,7 @@
 #include "so3_prestress.H"
 
 #include "structure_new_elements_paramsinterface.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_thermostvenantkirchhoff.H"
 #include "mat_thermoplastichyperelast.H"
 #include "mat_robinson.H"
@@ -136,11 +135,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else
     dserror("Unknown type of action for So_tet4");
-
-  // check for patient specific data
-  PATSPEC::GetILTDistance(Id(), params, discretization);
-  PATSPEC::GetLocalRadius(Id(), params, discretization);
-  PATSPEC::GetInnerRadius(Id(), params, discretization);
 
   // what should the element do
   switch (act)
@@ -568,15 +562,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-
-      // determine new fiber directions
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec, "REMODEL");
-      if (remodel)
-      {
-        so_tet4_remodel(lm, mydisp, params, Material());
-      }
 
       if (SolidMaterial()->UsesExtendedUpdate())
       {
@@ -2293,7 +2278,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   static LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
   deriv.Clear();
-  DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
 
   static LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
   static LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ(true);
@@ -2366,7 +2351,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
-  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+  static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
       NUMNOD_SOTET4>
       deriv2(true);
   static LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
@@ -2375,11 +2360,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(true);
     static LINALG::Matrix<NUMDIM_SOTET4,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -2410,11 +2395,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->A(), true);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
         NUMDIM_SOTET4>
         Xsec(true);
     static LINALG::Matrix<NUMNOD_SOTET4,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);

@@ -10,11 +10,10 @@
 /*---------------------------------------------------------------------*/
 
 #include <Epetra_FECrsGraph.h>
-#include <Teuchos_Time.hpp>
 
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_dofset_pbc.H"
 #include "linalg_utils_densematrix_communication.H"
 

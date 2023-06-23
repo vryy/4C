@@ -12,6 +12,8 @@
 
 #include "linalg_fixedsizematrix.H"
 
+#include <Teuchos_ParameterList.hpp>
+
 // forward declarations
 namespace Teuchos
 {

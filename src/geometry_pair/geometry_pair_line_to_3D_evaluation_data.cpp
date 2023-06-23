@@ -19,7 +19,7 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     const Teuchos::ParameterList& input_parameter_list)
     : GeometryEvaluationDataBase(input_parameter_list),
       strategy_(INPAR::GEOMETRYPAIR::LineTo3DStrategy::none),
-      gauss_rule_(DRT::UTILS::GaussRule1D::undefined),
+      gauss_rule_(CORE::DRT::UTILS::GaussRule1D::undefined),
       integration_points_circumference_(-1),
       gauss_point_projection_tracker_(),
       n_search_points_(0),

@@ -971,7 +971,7 @@ void GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> 
 
             // eval shape function
             LINALG::Matrix<4, 1> funct;
-            DRT::UTILS::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
+            CORE::DRT::UTILS::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
 
             LINALG::Matrix<3, 1> newpos(true);
             newpos.Multiply(XYZE, funct);

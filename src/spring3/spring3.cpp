@@ -11,9 +11,9 @@
 #include "beam3_euler_bernoulli.H"
 #include "beam3_reissner.H"
 #include "lib_discret.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_linedefinition.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "linalg_utils_nullspace.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;
@@ -186,17 +186,17 @@ void DRT::ELEMENTS::Spring3::GetCurrTangents(
     deltatheta -= dispthetaold_[node];
 
     // compute quaternion from rotation angle relative to last configuration
-    LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
+    CORE::LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
     // multiply relative rotation with rotation in last configuration to get rotation in new
     // configuration
-    LARGEROTATIONS::quaternionproduct(Qold_[node], deltaQ, Qnew_[node]);
+    CORE::LARGEROTATIONS::quaternionproduct(Qold_[node], deltaQ, Qnew_[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
     Qnew_[node].Scale(1 / Qnew_[node].Norm2());
 
     LINALG::Matrix<3, 3> Triad(true);
-    LARGEROTATIONS::quaterniontotriad(Qnew_[node], Triad);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qnew_[node], Triad);
     for (int i = 0; i < 3; i++)
       Tcurr[node](i) = Triad(i, 0);  // reference CheckOrientation StatMechManager
 
@@ -378,7 +378,7 @@ void DRT::ELEMENTS::Spring3::SetInitialTangents(std::vector<LINALG::Matrix<4, 1>
         Qold_[node](j) = initquaternions[node](j);
       }
 
-      LARGEROTATIONS::quaterniontotriad(initquaternions[node], Triad);
+      CORE::LARGEROTATIONS::quaterniontotriad(initquaternions[node], Triad);
       trefNode_[node].Clear();
       for (int i = 0; i < 3; i++)
       {

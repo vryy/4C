@@ -19,11 +19,11 @@
 #include "lib_utils_discret.H"
 #include "inpar_contact.H"
 #include "beam3_base.H"
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 #include "structure_new_utils.H"
 #include "contact_meshtying_abstract_strategy.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -34,7 +34,6 @@
 #include "solver_nonlin_nox_group_prepostoperator.H"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_Time.hpp>
 
 #include <NOX_Epetra_Vector.H>
 
@@ -1234,15 +1233,15 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   {
     // create a LINALG::Matrix from reference to three x vector entries
     LINALG::Matrix<3, 1> theta(&x_rotvec[i], true);
-    LARGEROTATIONS::angletoquaternion(theta, Qold);
+    CORE::LARGEROTATIONS::angletoquaternion(theta, Qold);
 
     // same for relative rotation angle deltatheta
     LINALG::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
     deltatheta.Scale(step);
 
-    LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
-    LARGEROTATIONS::quaternionproduct(Qold, deltaQ, Qnew);
-    LARGEROTATIONS::quaterniontoangle(Qnew, theta);
+    CORE::LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(Qold, deltaQ, Qnew);
+    CORE::LARGEROTATIONS::quaterniontoangle(Qnew, theta);
   }
 
   // first update entire x vector in an additive manner

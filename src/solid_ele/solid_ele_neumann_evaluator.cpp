@@ -11,8 +11,8 @@
 #include "lib_function.H"
 #include "lib_globalproblem.H"
 #include "solid_ele_calc_lib.H"
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -67,9 +67,9 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const std::vector<int>& dof_index_array, Epetra_SerialDenseVector& element_force_vector,
     double total_time)
 {
-  constexpr auto numdim = DRT::UTILS::DisTypeToDim<distype>::dim;
-  constexpr auto numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  DRT::UTILS::GaussIntegration gauss_integration =
+  constexpr auto numdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  constexpr auto numnod = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  CORE::DRT::UTILS::GaussIntegration gauss_integration =
       CreateGaussIntegration<distype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<distype>());
 
   // get values and switches from the condition

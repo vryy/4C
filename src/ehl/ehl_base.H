@@ -19,6 +19,7 @@ algorithms
 #include "inpar_ehl.H"
 
 #include "linalg_utils_sparse_algebra_math.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace ADAPTER
@@ -114,9 +115,9 @@ namespace EHL
     Teuchos::RCP<LINALG::SparseMatrix> slavemaptransform_;
 
     //! several adapters to transform maps
-    Teuchos::RCP<ADAPTER::Coupling> ada_strDisp_to_lubDisp_;
-    Teuchos::RCP<ADAPTER::Coupling> ada_strDisp_to_lubPres_;
-    Teuchos::RCP<ADAPTER::Coupling> ada_lubPres_to_lubDisp_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_strDisp_to_lubDisp_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_strDisp_to_lubPres_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_lubPres_to_lubDisp_;
 
     //! height old vector to calculate the time derivative of height (Squeeze term)
     Teuchos::RCP<const Epetra_Vector> heightold_;

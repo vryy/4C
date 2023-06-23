@@ -11,7 +11,7 @@
 
 
 #include "lib_dofset_proxy.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 
 /*----------------------------------------------------------------------*

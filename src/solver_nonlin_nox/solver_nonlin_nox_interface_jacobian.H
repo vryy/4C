@@ -16,6 +16,9 @@
 
 #include <NOX_Epetra_Interface_Jacobian.H>  // base class
 #include <NOX_Epetra_Interface_Required.H>
+#include <Teuchos_RCPDecl.hpp>
+
+#include "solver_nonlin_nox_enum_lists.H"
 
 // forward declaration
 namespace LINALG

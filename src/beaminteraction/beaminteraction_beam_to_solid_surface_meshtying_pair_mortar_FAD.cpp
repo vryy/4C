@@ -7,9 +7,9 @@ evaluated with FAD.
 \level 3
 */
 
-
 #include "beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.H"
 
+#include "beam3_reissner.H"
 #include "beaminteraction_contact_params.H"
 #include "beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"
@@ -293,7 +293,7 @@ void GetSurfaceRotationVectorAveraged(const LINALG::Matrix<3, 1, double>& xi,
 {
   // Get beam basis vectors in reference configuration.
   LINALG::Matrix<3, 3, double> triad_beam_ref(true);
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, triad_beam_ref);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, triad_beam_ref);
 
   // Calculate surface basis coordinate transformation matrix.
   LINALG::Matrix<3, 3, double> surface_basis_ref_inverse;
@@ -330,7 +330,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, dou
 {
   // Get beam basis vectors in reference configuration.
   LINALG::Matrix<3, 3, double> triad_beam_ref(true);
-  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, triad_beam_ref);
+  CORE::LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, triad_beam_ref);
 
   // Get the surface basis vectors in the reference configuration.
   LINALG::Matrix<3, 3, double> surface_basis_ref;
@@ -414,8 +414,8 @@ void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, dou
 
   // Get the rotation angle.
   LINALG::Matrix<4, 1, scalar_type_rot_vec> rot_quat;
-  LARGEROTATIONS::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
-  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+  CORE::LARGEROTATIONS::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
+  CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 
 #ifdef DEBUG
   LINALG::Matrix<3, 1, scalar_type_rot_vec> current_normal;
@@ -581,12 +581,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Calculate the rotation vector of this cross section.
         triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
             quaternion_beam_double, projected_gauss_point.GetEta());
-        LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
+        CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
               3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
-        LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
-        quaternion_beam_inv = LARGEROTATIONS::inversequaternion(quaternion_beam);
+        CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
+        quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
         // Get the surface rotation vector.
         ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
@@ -596,16 +596,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             surface_triad_type, psi_surface, this->face_element_->GetDrtFaceElement());
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_surface_val(i_dim) = psi_surface(i_dim).val();
-        LARGEROTATIONS::angletoquaternion(psi_surface_val, quaternion_surface);
+        CORE::LARGEROTATIONS::angletoquaternion(psi_surface_val, quaternion_surface);
 
         // Calculate the relative rotation vector.
-        LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_surface, quaternion_rel);
-        LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+        CORE::LARGEROTATIONS::quaternionproduct(
+            quaternion_beam_inv, quaternion_surface, quaternion_rel);
+        CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
         // Calculate the transformation matrices.
-        T_rel = LARGEROTATIONS::Tmatrix(psi_rel);
-        T_beam = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-        T_surface = LARGEROTATIONS::Tmatrix(psi_surface_val);
+        T_rel = CORE::LARGEROTATIONS::Tmatrix(psi_rel);
+        T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+        T_surface = CORE::LARGEROTATIONS::Tmatrix(psi_surface_val);
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
 
@@ -619,7 +620,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Get the shape functions for the interpolation of the beam rotations. This is currently
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
-        DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+        CORE::DRT::UTILS::shape_function_1D(
+            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -821,12 +823,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Calculate the rotation vector of this cross section.
         triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
             quaternion_beam_double, projected_gauss_point.GetEta());
-        LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
+        CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
               3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
-        LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
-        quaternion_beam_inv = LARGEROTATIONS::inversequaternion(quaternion_beam);
+        CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
+        quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
         // Get the surface rotation vector.
         ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
@@ -834,16 +836,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         GetSurfaceRotationVector(projected_gauss_point.GetXi(),
             this->face_element_->GetFaceReferencePosition(), q_surface, quaternion_beam_ref,
             surface_triad_type, psi_surface, this->face_element_->GetDrtFaceElement());
-        LARGEROTATIONS::angletoquaternion(psi_surface, quaternion_surface);
+        CORE::LARGEROTATIONS::angletoquaternion(psi_surface, quaternion_surface);
 
         // Calculate the relative rotation vector.
-        LARGEROTATIONS::quaternionproduct(quaternion_beam_inv, quaternion_surface, quaternion_rel);
-        LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+        CORE::LARGEROTATIONS::quaternionproduct(
+            quaternion_beam_inv, quaternion_surface, quaternion_rel);
+        CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
         // Calculate the transformation matrices.
-        T_rel = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
-        T_beam = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-        T_surface = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_surface));
+        T_rel = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
+        T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+        T_surface = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_surface));
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
 
@@ -857,7 +860,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Get the shape functions for the interpolation of the beam rotations. This is currently
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
-        DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+        CORE::DRT::UTILS::shape_function_1D(
+            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);

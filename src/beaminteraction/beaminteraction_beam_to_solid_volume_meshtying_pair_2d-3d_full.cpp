@@ -161,11 +161,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
       // Get the rotation vector at this Gauss point.
       triad_interpolation_scheme_.GetInterpolatedQuaternionAtXi(quaternion_double, eta);
-      LARGEROTATIONS::quaterniontoangle(quaternion_double, rotation_vector_double);
-      T_beam_double = LARGEROTATIONS::Tmatrix(rotation_vector_double);
+      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, rotation_vector_double);
+      T_beam_double = CORE::LARGEROTATIONS::Tmatrix(rotation_vector_double);
       set_q_fad(rotation_vector_double, rotation_vector_fad, beam::n_dof_ + solid::n_dof_);
-      LARGEROTATIONS::angletoquaternion(rotation_vector_fad, quaternion_fad);
-      LARGEROTATIONS::quaterniontotriad(quaternion_fad, triad_fad);
+      CORE::LARGEROTATIONS::angletoquaternion(rotation_vector_fad, quaternion_fad);
+      CORE::LARGEROTATIONS::quaterniontotriad(quaternion_fad, triad_fad);
     }
 
     // Get the shape function matrices.

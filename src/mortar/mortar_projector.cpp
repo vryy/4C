@@ -18,7 +18,7 @@
 #include "linalg_serialdensevector.H"
 #include "linalg_serialdensematrix.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "contact_element.H"
 #include "contact_node.H"
@@ -437,9 +437,9 @@ MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::MortarProjectorCalc_El
 
 template <DRT::Element::DiscretizationType distype>
 MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<MORTAR::MortarProjectorCalc<distype>>(
@@ -451,9 +451,10 @@ MORTAR::MortarProjectorCalc<distype>* MORTAR::MortarProjectorCalc<distype>::Inst
 
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>*
-MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(::UTILS::SingletonAction action)
+MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(
+    CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
+  static CORE::UTILS::SingletonOwner<MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>>
       singleton_owner(
           []()
           {
@@ -616,7 +617,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
     else
-      DRT::UTILS::shape_function_1D(val, gpeta[0], distypeS);
+      CORE::DRT::UTILS::shape_function_1D(val, gpeta[0], distypeS);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -865,7 +866,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     }
     else
     {
-      DRT::UTILS::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
+      CORE::DRT::UTILS::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
     }
 
     // get interpolated GP normal and GP coordinates
@@ -1154,7 +1155,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1245,7 +1246,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
@@ -1317,7 +1318,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1408,7 +1409,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
@@ -1437,8 +1438,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     LINALG::Matrix<n_, 1> mval;
     LINALG::Matrix<2, n_> mderiv;
 
-    DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
-    DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
+    CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1555,8 +1556,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   LINALG::Matrix<n_, 1> mval;
   LINALG::Matrix<2, n_> mderiv;
 
-  DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
-  DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+  CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -1577,7 +1578,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // get linsize
   int linsize = 0;
@@ -1589,14 +1590,16 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     linsize += mnode->GetLinsize();
   }
 
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
 
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, linsize);  // linsize of all mnodes
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, linsize);   // linsize of all mnodes
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(
+      3, linsize);  // linsize of all mnodes
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(
+      3, linsize);  // linsize of all mnodes
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
 
 
   //--------------------------
@@ -1664,9 +1667,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> n_eta0_deriv(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> n_eta1_deriv(3, linsize + n_ + 1);  // added all sizes
-  std::vector<GEN::pairedvector<int, double>> n_n_deriv(3, linsize);              // linsize
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(
+      3, linsize + n_ + 1);  // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(
+      3, linsize + n_ + 1);                                                 // added all sizes
+  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
 
   for (int k = 0; k < n_; ++k)
   {
@@ -1722,7 +1727,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
-    double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    double& dist, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2DLin is only for 2D problems!");
 
@@ -1751,8 +1756,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     LINALG::Matrix<n_, 1> mval;
     LINALG::Matrix<1, n_> mderiv;
 
-    DRT::UTILS::shape_function_1D(mval, eta[0], distype);
-    DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1863,8 +1868,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   LINALG::Matrix<n_, 1> mval;
   LINALG::Matrix<1, n_> mderiv;
 
-  DRT::UTILS::shape_function_1D(mval, eta[0], distype);
-  DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -1885,13 +1890,13 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
@@ -1907,9 +1912,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
 
   //--------------------------
   // normal part:
-  std::vector<GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   for (int i = 0; i < n_; ++i)
   {
@@ -1962,10 +1967,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> n_eta0_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> n_eta1_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> n_n_deriv(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   for (int k = 0; k < n_; ++k)
   {
@@ -2079,7 +2084,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2163,7 +2168,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
@@ -2230,7 +2235,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2312,18 +2317,18 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
   LINALG::Matrix<n_, 1> val;
-  DRT::UTILS::shape_function_1D(val, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
 
   for (int i = 0; i < n_; ++i)
   {
@@ -2337,12 +2342,12 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
 
   //--------------------------
   // normal part:
-  std::vector<GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   LINALG::Matrix<1, n_> deriv1;
-  DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
@@ -2426,14 +2431,14 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
-  std::vector<GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
+  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   LINALG::Matrix<1, n_> deriv;
-  DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
 
   LINALG::Matrix<1, n_> deriv2;
-  DRT::UTILS::shape_function_1D_deriv2(deriv2, eta[0], distype);
+  CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
@@ -2516,7 +2521,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(MORTAR::MortarN
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   bool success = false;
 
@@ -2542,7 +2547,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR:
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
-    std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ == 2)
   {
@@ -2650,7 +2655,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
   }
   else
-    DRT::UTILS::shape_function_1D(val, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
 
   // get interpolated normal and proj. coordinates for current eta
   double nn[ndim_];
@@ -2729,8 +2734,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   }
   else
   {
-    DRT::UTILS::shape_function_1D(val, eta[0], distype);
-    DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
   }
 
   // get interpolated normal and proj. coordinates for current eta

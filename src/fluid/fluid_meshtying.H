@@ -15,6 +15,7 @@
 #include "inpar_fluid.H"
 
 #include "linalg_mapextractor.H"
+#include "coupling_adapter_mortar.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -302,7 +303,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;

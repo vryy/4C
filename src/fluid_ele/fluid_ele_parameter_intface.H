@@ -21,7 +21,7 @@ be set in problem specific parameter lists derived from this class.
 #include "inpar_xfem.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -32,7 +32,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleParameterIntFace* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       virtual ~FluidEleParameterIntFace() = default;
 

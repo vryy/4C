@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "mat_list.H"
 #include "mat_list_reactions.H"
 #include "mat_list_chemotaxis.H"
@@ -20,8 +20,8 @@
 #include "mat_elasthyper.H"
 #include "lib_globalproblem.H"
 #include "lib_linedefinition.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "linalg_utils_nullspace.H"
 
@@ -620,7 +620,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
 }
 
 
@@ -629,7 +629,7 @@ int DRT::ELEMENTS::Transport::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
 }
 
 
@@ -638,7 +638,7 @@ int DRT::ELEMENTS::Transport::NumSurface() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::NumVolume() const
 {
-  return DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
 
 
@@ -841,8 +841,8 @@ int DRT::ELEMENTS::Transport::Initialize()
       deg = 4 * this->Degree();
     else
       deg = 3 * this->Degree();
-    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature(
-        DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
+    Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature(
+        CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
     int gp = quadrature->NumPoints();
     if (actmat->Parameter() != NULL and
         !actmat->MyocardMat())  // in case we are not in post-process mode
@@ -898,7 +898,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -952,7 +952,7 @@ int DRT::ELEMENTS::TransportBoundary::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*

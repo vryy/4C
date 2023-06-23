@@ -43,36 +43,28 @@ namespace MIXTURE
     virtual ~RemodelFiberMaterial() = default;
 
     /*!
-     * @brief Evaluates the strain energy function
+     * @brief Evaluates the Cauchy stress as a function of I4
      *
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetPsi(T I4) const = 0;
+    [[nodiscard]] virtual T GetCauchyStress(T I4) const = 0;
 
     /*!
-     * @brief Evaluates the first derivative of the strain energy function w.r.t. I4
+     * @brief Evaluates the first derivative of the Cauchy stress w.r.t. I4
      *
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetFirstDerivativeI4(T I4) const = 0;
+    [[nodiscard]] virtual T GetDCauchyStressDI4(T I4) const = 0;
 
     /*!
-     * @brief Evaluates the second derivative of the strain energy function w.r.t. I4
+     * @brief Evaluates the second derivative of the Cauchy stress w.r.t. I4
      *
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetSecondDerivativeI4(T I4) const = 0;
-
-    /*!
-     * @brief Evaluates the third derivative of the strain energy function w.r.t. I4
-     *
-     * @param I4 Fourth invariant of the Cauchy-Green tensor
-     * @return T
-     */
-    [[nodiscard]] virtual T GetThirdDerivativeI4(T I4) const = 0;
+    [[nodiscard]] virtual T GetDCauchyStressDI4DI4(T I4) const = 0;
   };
 
 }  // namespace MIXTURE

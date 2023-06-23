@@ -13,6 +13,7 @@
 #include "mat_service.H"
 #include "linalg_utils_densematrix_eigen.H"
 
+#include <Epetra_Vector.h>
 #include "lib_voigt_notation.H"
 
 void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,

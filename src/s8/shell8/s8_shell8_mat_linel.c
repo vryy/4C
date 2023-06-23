@@ -16,10 +16,10 @@
  |  or                                                                  |
  |  r(I) += A(I,K)*b(K)*factor                                          |
  *----------------------------------------------------------------------*/
-void math_matvecdense(DOUBLE *r, DOUBLE **A, DOUBLE *b, INT ni, INT nk, INT init, DOUBLE factor)
+void math_matvecdense(double *r, double **A, double *b, int ni, int nk, int init, double factor)
 {
-  INT i, k;
-  DOUBLE sum;
+  int i, k;
+  double sum;
   /*----------------------------------------------------------------------*/
   if (init == 0)
   {
@@ -39,16 +39,16 @@ void math_matvecdense(DOUBLE *r, DOUBLE **A, DOUBLE *b, INT ni, INT nk, INT init
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC)
+void s8_mat_linel(STVENANT *mat, double **g, double **CC)
 {
-  INT i, j, k, l;
+  int i, j, k, l;
 
   /*----- shear correction coefficient not yet introduced */
-  /* DOUBLE xsi=1.0;  */
+  /* double xsi=1.0;  */
 
-  DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
-  DOUBLE l1, l2;        /*----------------------------------------- lame constants */
-  DOUBLE emod, nue;     /*--------------------------------------- mat constants */
+  double C[3][3][3][3]; /*--------------------------- constitutive tensor */
+  double l1, l2;        /*----------------------------------------- lame constants */
+  double emod, nue;     /*--------------------------------------- mat constants */
   /*----------------------------------------------------------------------*/
   emod = mat->youngs;
   nue = mat->possionratio;
@@ -108,9 +108,9 @@ void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC)
 /*----------------------------------------------------------------------*
  | PK II stresses                                         m.gee 6/01    |
  *----------------------------------------------------------------------*/
-void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
+void s8_mat_stress1(double *stress, double *strain, double **C)
 {
-  DOUBLE E[6];
+  double E[6];
   /*----------------------------------------------------------------------*/
   E[0] = strain[0];
   E[3] = strain[3];
@@ -125,20 +125,20 @@ void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
 /*----------------------------------------------------------------------*
  | neohooke material from habil wriggers                  m.gee 3/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_neohooke(NEO_HOOKE *mat, DOUBLE *stress, DOUBLE **CC, DOUBLE **gmkonr, DOUBLE **gmkonc,
-    DOUBLE detr, DOUBLE detc)
+void s8_mat_neohooke(NEO_HOOKE *mat, double *stress, double **CC, double **gmkonr, double **gmkonc,
+    double detr, double detc)
 {
-  INT i, j, k, l;
+  int i, j, k, l;
 
   /*----- shear correction coefficient not yet introduced */
-  /* DOUBLE xsi=1.0; */
+  /* double xsi=1.0; */
 
-  DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
-  DOUBLE sp[3][3];      /*---------------------------------------- PK2 stresses */
-  DOUBLE l1, l2;        /*----------------------------------------- lame constants */
-  DOUBLE emod, nue;     /*--------------------------------------- mat constants */
-  DOUBLE xj;
-  DOUBLE F1;
+  double C[3][3][3][3]; /*--------------------------- constitutive tensor */
+  double sp[3][3];      /*---------------------------------------- PK2 stresses */
+  double l1, l2;        /*----------------------------------------- lame constants */
+  double emod, nue;     /*--------------------------------------- mat constants */
+  double xj;
+  double F1;
   /*----------------------------------------------------------------------*/
   emod = mat->youngs;
   nue = mat->possionratio;

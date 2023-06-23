@@ -23,7 +23,7 @@
 #include "scatra_ele.H"
 
 #include "linalg_sparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 #include "rebalance_utils.H"
 

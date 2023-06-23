@@ -10,7 +10,7 @@ interaction.
 #ifndef FBI_CONSTRAINTENFORCER_H
 #define FBI_CONSTRAINTENFORCER_H
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>

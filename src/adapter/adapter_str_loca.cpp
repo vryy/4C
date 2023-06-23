@@ -14,7 +14,7 @@
 
 #include "structure_new_timint_base.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 
 #include <Teuchos_ParameterList.hpp>

@@ -14,7 +14,7 @@
 
 #include "fluid_ele_parameter.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 namespace DRT
 {
@@ -25,7 +25,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleParameterStd* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
      private:
      protected:

@@ -10,53 +10,53 @@
 #ifndef SOLID_ELE_UTILS_H
 #define SOLID_ELE_UTILS_H
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element.H"
 #include "linalg_utils_densematrix_eigen.H"
 
 namespace STR::UTILS
 {
-  template <DRT::UTILS::GaussRule3D rule>
+  template <CORE::DRT::UTILS::GaussRule3D rule>
   struct IntRuleToNquad
   {
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_8point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_8point>
   {
     static const int ngp = 8;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_27point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_27point>
   {
     static const int ngp = 27;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::hex_18point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_18point>
   {
     static const int ngp = 18;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::pyramid_1point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::pyramid_1point>
   {
     static const int ngp = 1;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::pyramid_8point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::pyramid_8point>
   {
     static const int ngp = 8;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_1point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_1point>
   {
     static const int ngp = 1;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_4point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_4point>
   {
     static const int ngp = 4;
   };
   template <>
-  struct IntRuleToNquad<DRT::UTILS::GaussRule3D::tet_11point>
+  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_11point>
   {
     static const int ngp = 11;
   };

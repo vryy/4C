@@ -13,7 +13,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "structure_new_elements_paramsinterface.H"
 #include "solid_ele_neumann_evaluator.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "solid_ele.H"
 #include "solid_ele_factory.H"
 #include "solid_ele_calc_interface.H"

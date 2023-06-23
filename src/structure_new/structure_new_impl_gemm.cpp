@@ -11,7 +11,7 @@
 
 #include "structure_new_impl_gemm.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_sparseoperator.H"
 
 #include <Epetra_Vector.h>

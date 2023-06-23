@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "adapter_str_factory.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 // supported structural adapters
 #include "adapter_str_loca.H"

@@ -1,10 +1,7 @@
 # Find the MIRCO includes and libraries
-option(BACI_WITH_MIRCO "Use MIRCO as a contact constitutive law" OFF)
+baci_process_global_option(BACI_WITH_MIRCO "Use MIRCO as a contact constitutive law" OFF)
+
 if(BACI_WITH_MIRCO)
-
-  message(STATUS "MIRCO is: enabled")
-  add_definitions("-DBACI_WITH_MIRCO")
-
   option(MIRCO_DEVELOP "Use MIRCO experimental" OFF)
   if(MIRCO_DEVELOP)
 
@@ -28,12 +25,9 @@ if(BACI_WITH_MIRCO)
     fetchcontent_declare(
       mirco
       GIT_REPOSITORY https://github.com/imcs-compsim/MIRCO.git
-      GIT_TAG 03a8ab0129d9c75748036418230d1119441aae79 #v0.1.0
+      GIT_TAG a02aa9ae757ca49325d030d9f17dc03ab8bfa5cd
       )
     fetchcontent_makeavailable(mirco)
 
   endif()
-
-else()
-  message(STATUS "MIRCO is: disabled")
-endif(BACI_WITH_MIRCO)
+endif()

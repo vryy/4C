@@ -17,9 +17,9 @@
 #include "mortar_calc_utils.H"
 #include "lib_globalproblem.H"
 #include "lib_assemblestrategy.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 #include "lib_exporter.H"
 #include "cut_boundingbox.H"
 
@@ -411,8 +411,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-    static const int target_dim = DRT::UTILS::DisTypeToDim<targetdistype>::dim;
+    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int target_dim = CORE::DRT::UTILS::DisTypeToDim<targetdistype>::dim;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -931,7 +931,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1256,11 +1256,12 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
-    static const int fluid_dim = DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
+    static const int struct_dim = CORE::DRT::UTILS::DisTypeToDim<structdistype>::dim;
+    static const int fluid_dim = CORE::DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
 
     // get integration rule of structural surface element
-    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::quad_36point);
+    const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+        CORE::DRT::UTILS::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
     LINALG::Matrix<4, 1> shapefcts(true);
@@ -1459,7 +1460,7 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
+                    CORE::DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
                     LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)

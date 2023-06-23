@@ -1,20 +1,19 @@
-set(OBJS_SSTI
-    # cmake-format: sortable
-    ssti_algorithm.cpp
-    ssti_dyn.cpp
-    ssti_monolithic.cpp
-    ssti_monolithic_assemble_strategy.cpp
-    ssti_monolithic_evaluate_OffDiag.cpp
-    ssti_resulttest.cpp
-    ssti_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_ssti ${OBJS_SSTI})
-
-set(LIBS_ALG_SSTI
+set(_ssti_dependencies
     # cmake-format: sortable
     adapter
-    alg_sti
+    core
+    inpar
+    io
+    lib
+    linalg
+    mat
+    scatra
+    scatra_ele
+    so3
+    ssi
+    sti
+    structure_new
     )
-
-baci_add_dependency(alg_ssti ${LIBS_ALG_SSTI})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_ssti_dependencies})

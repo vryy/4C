@@ -1664,22 +1664,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-  // isochoric and volumetric contribution of HU dependent NeoHooke
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolHUDependentNeoHooke",
-        "isochoric and volumetric part of HU dependent neo-Hooke material",
-        INPAR::MAT::mes_isovolHUdependentneohooke));
-
-    AddNamedReal(m, "ALPHA_MAX", "");
-    AddNamedReal(m, "CT_MIN", "");
-    AddNamedReal(m, "CT_MAX", "");
-    AddNamedReal(m, "NUE", "");
-    AddNamedReal(m, "BETA", "");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
   // isochoric and volumetric contribution of AAAGasser
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolAAAGasser",
@@ -2524,6 +2508,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "Temp_GrowthFac", "isotropic growth factor due to temperature");
     AddNamedReal(m, "RefTemp", "reference temperature causing no strains");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradTimeFunct",
+        "Time-dependent growth law. Determinant of volume change dependent on time function "
+        "defined "
+        "by 'FUNCT_NUM",
+        INPAR::MAT::mfi_time_funct));
+
+    AddNamedInt(m, "FUNCT_NUM",
+        "Time-dependent function of the determinant of the inelastic deformation gradient");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3887,6 +3885,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "mixture framework.",
         INPAR::MAT::mix_prestress_strategy_iterative));
     AddNamedBool(m, "ISOCHORIC", "Flag whether prestretch tensor is isochoric", false, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for a full constrained mixture fiber
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_FullConstrainedMixtureFiber",
+        "A 1D constituent that grows with the full constrained mixture fiber theory",
+        INPAR::MAT::mix_full_constrained_mixture_fiber));
+
+    AddNamedInt(m, "FIBER_ID", "Id of the fiber");
+    AddNamedInt(m, "FIBER_MATERIAL_ID", "Id of fiber material");
+    AddNamedBool(m, "GROWTH_ENABLED", "Switch for the growth", true, true);
+    AddNamedReal(m, "DECAY_TIME", "Decay time of deposited tissue");
+    AddNamedReal(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
+    AddNamedReal(m, "DEPOSITION_STRETCH", "Stretch at which the fiber is deposited");
+    AddNamedInt(m, "INITIAL_DEPOSITION_STRETCH_TIMEFUNCT",
+        "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
+    AddNamedInt(m, "INIT", "Initialization mode for fibers (1=element fibers, 3=nodal fibers)");
+    AddNamedBool(m, "ADAPTIVE_HISTORY", "Adaptively remove history snapshots based on a tolerance",
+        false, true);
+    AddNamedReal(m, "ADAPTIVE_HISTORY_TOLERANCE", "Tolerance of the adaptive history", 1e-6, true);
 
     AppendMaterialDefinition(matlist, m);
   }

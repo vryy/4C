@@ -466,15 +466,15 @@ namespace
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
-    xi_result(0, 1) = 0.5441734719700435;
-    xi_result(1, 0) = 0.1074360140351795;
-    xi_result(1, 1) = 0.4558265280299565;
-    xi_result(2, 0) = 0.1140207710811362;
-    xi_result(2, 1) = 0.00821450263257107;
+    xi_result(0, 1) = 0.5442036547500066;
+    xi_result(1, 0) = 0.1074351908646558;
+    xi_result(1, 1) = 0.4557963452499935;
+    xi_result(2, 0) = 0.1140198081425712;
+    xi_result(2, 1) = 0.00817486544751219;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.959535845440973;
-    eta_result(1) = -0.2754895911921936;
+    eta_result(0) = -0.959558791949879;
+    eta_result(1) = -0.2755154609844958;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -519,15 +519,15 @@ namespace
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.;
-    xi_result(0, 1) = 0.5449151431901401;
-    xi_result(1, 0) = 0.0892976752542103;
-    xi_result(1, 1) = 0.4550848568098599;
-    xi_result(2, 0) = 0.1071908576829917;
-    xi_result(2, 1) = 0.00852036464820085;
+    xi_result(0, 1) = 0.5449417178907668;
+    xi_result(1, 0) = 0.0892959494780295;
+    xi_result(1, 1) = 0.4550582821092332;
+    xi_result(2, 0) = 0.1071885022364286;
+    xi_result(2, 1) = 0.00847913923973852;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.933108361186308;
-    eta_result(1) = -0.2769233373990823;
+    eta_result(0) = -0.933144945731849;
+    eta_result(1) = -0.2769426498640102;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -571,15 +571,15 @@ namespace
 
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
-    xi_result(0, 1) = 0.661306368091275;
-    xi_result(1, 0) = 0.1351724121757158;
-    xi_result(1, 1) = 0.338693631908725;
-    xi_result(2, 0) = 0.1130371451881858;
-    xi_result(2, 1) = 0.133409588649314;
+    xi_result(0, 1) = 0.6613364114808006;
+    xi_result(1, 0) = 0.1351609040799041;
+    xi_result(1, 1) = 0.3386635885191994;
+    xi_result(2, 0) = 0.1130261935455847;
+    xi_result(2, 1) = 0.133359925421189;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.845498535448603;
-    eta_result(1) = -0.1960742371555871;
+    eta_result(0) = -0.845578728729394;
+    eta_result(1) = -0.1960488586704193;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -623,17 +623,16 @@ namespace
     EXPECT_EQ(intersection_points.size(), 2);
 
     LINALG::Matrix<3, 2, double> xi_result;
-    xi_result(0, 0) = 0.;
-    xi_result(0, 1) = 0.6584629848688872;
-    xi_result(1, 0) = 0.1326786387805501;
-    xi_result(1, 1) = 0.3415370151311128;
-    xi_result(2, 0) = 0.1167772617143948;
-    xi_result(2, 1) = 0.117654537323362;
+    xi_result(0, 0) = 0.0;
+    xi_result(0, 1) = 0.6584930664718799;
+    xi_result(1, 0) = 0.1326645539292272;
+    xi_result(1, 1) = 0.3415069335281202;
+    xi_result(2, 0) = 0.1167653982105834;
+    xi_result(2, 1) = 0.1176127305359125;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.834928214700044;
-    eta_result(1) = -0.1707134503670001;
-
+    eta_result(0) = -0.835011952021638;
+    eta_result(1) = -0.1706930518170407;
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
       EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
@@ -677,14 +676,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.785985513536155;
-    xi_result(1, 1) = 0.0135117312962169;
-    xi_result(2, 0) = 0.113108951013877;
-    xi_result(2, 1) = 0.1177337444785567;
+    xi_result(1, 0) = -0.7859873421054778;
+    xi_result(1, 1) = 0.01350316176774645;
+    xi_result(2, 0) = 0.1131078893969968;
+    xi_result(2, 1) = 0.1177634472685727;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.957076826689831;
-    eta_result(1) = 0.4600569936643898;
+    eta_result(0) = -0.957101099360353;
+    eta_result(1) = 0.4601648421155885;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -730,14 +729,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.825474249880623;
-    xi_result(1, 1) = -0.01145366341249682;
-    xi_result(2, 0) = 0.107340226468075;
-    xi_result(2, 1) = 0.119547807682323;
+    xi_result(1, 0) = -0.825477582092077;
+    xi_result(1, 1) = -0.01147092212982951;
+    xi_result(2, 0) = 0.1073378316553475;
+    xi_result(2, 1) = 0.11957685229373;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.932605711413924;
-    eta_result(1) = 0.4202318513645913;
+    eta_result(0) = -0.932642561926223;
+    eta_result(1) = 0.4203246988865186;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -782,14 +781,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.7289003389787947;
-    xi_result(1, 1) = -0.2401689430824591;
-    xi_result(2, 0) = 0.1151116342572037;
-    xi_result(2, 1) = 0.3985715991803625;
+    xi_result(1, 0) = -0.7289250572942389;
+    xi_result(1, 1) = -0.24019526509169;
+    xi_result(2, 0) = 0.1150995008049619;
+    xi_result(2, 1) = 0.3986046875693287;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.839363025185972;
-    eta_result(1) = 0.5611477338536844;
+    eta_result(0) = -0.839447041376278;
+    eta_result(1) = 0.5612360819815785;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -835,14 +834,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.6839738851708264;
-    xi_result(1, 1) = -0.3051161431281305;
-    xi_result(2, 0) = 0.1455754614884382;
-    xi_result(2, 1) = 0.5364371832797651;
+    xi_result(1, 0) = -0.684038067025361;
+    xi_result(1, 1) = -0.3051565576006982;
+    xi_result(2, 0) = 0.1455461215481048;
+    xi_result(2, 1) = 0.5364549622511008;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.7799706383258106;
-    eta_result(1) = 0.2729951612552455;
+    eta_result(0) = -0.7800927748816529;
+    eta_result(1) = 0.273043123755964;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -887,14 +886,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.7317907464850744;
-    xi_result(1, 1) = -0.02799989440327506;
-    xi_result(2, 0) = 0.1080035769948319;
-    xi_result(2, 1) = 0.3188357119982439;
+    xi_result(1, 0) = -0.7318086192269153;
+    xi_result(1, 1) = -0.02799916735239928;
+    xi_result(2, 0) = 0.107995627440907;
+    xi_result(2, 1) = 0.3188379218922715;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.865583933012948;
-    eta_result(1) = 0.926806412303738;
+    eta_result(0) = -0.865652166867077;
+    eta_result(1) = 0.92684679887125;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
@@ -940,14 +939,14 @@ namespace
     LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
-    xi_result(1, 0) = -0.6516378999140468;
-    xi_result(1, 1) = -0.03862428489685134;
-    xi_result(2, 0) = 0.111426072236278;
-    xi_result(2, 1) = 0.33200167129208;
+    xi_result(1, 0) = -0.6516666236508463;
+    xi_result(1, 1) = -0.0386216926927474;
+    xi_result(2, 0) = 0.1114178909512789;
+    xi_result(2, 1) = 0.3320135883392168;
 
     LINALG::Matrix<2, 1, double> eta_result;
-    eta_result(0) = -0.869816485526844;
-    eta_result(1) = 0.808011110533093;
+    eta_result(0) = -0.869880338147344;
+    eta_result(1) = 0.808094949905998;
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {

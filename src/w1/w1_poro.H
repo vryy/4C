@@ -12,7 +12,7 @@
 #define W1_PORO_H
 
 #include "inpar_structure.H"
-#include "fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_gausspoints.H"
 
 #include "w1.H"
 #include "w1_poro_eletypes.H"
@@ -60,13 +60,14 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of strains per node
       static const int numstr_ = 3;
 
       //! number or second derivatives
-      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numderiv2_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! number of degrees of freedom of element
       static const int numdof_ = numnod_ * noddof_;
@@ -593,7 +594,7 @@ namespace DRT
           const LINALG::Matrix<numnod_, 1>& shapefct) const;
 
       //! Gauss integration rule
-      DRT::UTILS::GaussIntegration intpoints_;
+      CORE::DRT::UTILS::GaussIntegration intpoints_;
 
       //! flag indicating higher order element
       bool ishigherorder_;

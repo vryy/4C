@@ -15,7 +15,7 @@
 #define RED_AIRWAYS_ACINUS_IMPL_H
 
 #include "red_airways_elementbase.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "linalg_fixedsizematrix.H"
 
 
@@ -120,7 +120,7 @@ namespace DRT
       explicit AcinusImpl();
 
       //! number of nodes
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
 
       /// Evaluate
@@ -132,26 +132,6 @@ namespace DRT
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
           Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
-
-      /*!
-        \brief calculate element matrix and rhs
-
-        \param ele              (i) the element those matrix is calculated
-        \param eqnp             (i) nodal volumetric flow rate at n+1
-        \param evelnp           (i) nodal velocity at n+1
-        \param eareanp          (i) nodal cross-sectional area at n+1
-        \param eprenp           (i) nodal pressure at n+1
-        \param estif            (o) element matrix to calculate
-        \param eforce           (o) element rhs to calculate
-        \param material         (i) acinus material/dimesion
-        \param time             (i) current simulation time
-        \param dt               (i) timestep
-      */
-      void Sysmat(RedAcinus* ele, Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
-          Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& estif,
-          Epetra_SerialDenseVector& eforce, Teuchos::RCP<const MAT::Material> material,
-          Teuchos::ParameterList& params, double time, double dt);
-
 
       virtual void EvaluateTerminalBC(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,

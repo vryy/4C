@@ -1,15 +1,7 @@
-set(OBJS_ELE_SOLID
-    solid_ele_calc.cpp
-    solid_ele_calc_fbar.cpp
-    solid_ele_evaluate.cpp
-    solid_ele_factory.cpp
-    solid_ele_neumann_evaluator.cpp
-    solid_ele.cpp
-    solid_ele_utils.cpp
+baci_auto_define_module()
+
+set(_solid_ele_dependencies
+    # cmake-format: sortable
+    lib
     )
-
-baci_add_library(ele_solid ${OBJS_ELE_SOLID})
-baci_link_default_libraries(ele_solid)
-
-# TODO: This module requires more includes that are currently included transitively from lib
-target_link_libraries(ele_solid PUBLIC lib)
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_solid_ele_dependencies})

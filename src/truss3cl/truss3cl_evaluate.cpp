@@ -11,11 +11,11 @@
 
 #include "truss3cl.H"
 #include "lib_globalproblem.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "lib_function_of_time.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -213,7 +213,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
   // declaration of variable in order to store shape function
   Epetra_SerialDenseVector funct(NumNode());
@@ -235,7 +235,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
     const double wgt = intpoints.qwgt[ip];
 
     // evaluation of shape funcitons at Gauss points
-    DRT::UTILS::shape_function_1D(funct, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D(funct, xi, distype);
 
     double fac = 0;
     fac = wgt * det;
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::Truss3CL::t3_energy(
   const DiscretizationType distype = this->Shape();
   for (int filament = 0; filament < 2; filament++)
   {
-    DRT::UTILS::shape_function_hermite_1D(
+    CORE::DRT::UTILS::shape_function_hermite_1D(
         Ibp[filament], mybindingposition_[filament], LengthofElementatRef[filament], distype);
   }
 
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
   std::vector<LINALG::Matrix<1, 4>> Ibp(2);
   const DiscretizationType distype = this->Shape();
   for (int filament = 0; filament < 2; filament++)
-    DRT::UTILS::shape_function_hermite_1D(
+    CORE::DRT::UTILS::shape_function_hermite_1D(
         Ibp[filament], mybindingposition_[filament], LengthofElementatRef[filament], distype);
 
   // calculate interpolated fictitious nodal displacaments.
@@ -892,7 +892,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(
   IntegrationType integrationtype = gaussexactintegration;
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode, integrationtype));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode, integrationtype));
 
   // matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1, fnnode> funct;
@@ -908,8 +908,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     // evaluate basis functions and their derivatives at current Gauss point
-    DRT::UTILS::shape_function_1D(funct, gausspoints.qxg[gp][0], Shape());
-    DRT::UTILS::shape_function_1D_deriv1(deriv, gausspoints.qxg[gp][0], Shape());
+    CORE::DRT::UTILS::shape_function_1D(funct, gausspoints.qxg[gp][0], Shape());
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, gausspoints.qxg[gp][0], Shape());
 
     // compute point in phyiscal space corresponding to Gauss point
     evaluationpoint.PutScalar(0);
@@ -1004,7 +1004,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(
   IntegrationType integrationtype = gaussexactintegration;
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode, integrationtype));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode, integrationtype));
 
   // matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1, fnnode> funct;
@@ -1028,8 +1028,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     // evaluate basis functions and their derivatives at current Gauss point
-    DRT::UTILS::shape_function_1D(funct, gausspoints.qxg[gp][0], Shape());
-    DRT::UTILS::shape_function_1D_deriv1(deriv, gausspoints.qxg[gp][0], Shape());
+    CORE::DRT::UTILS::shape_function_1D(funct, gausspoints.qxg[gp][0], Shape());
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, gausspoints.qxg[gp][0], Shape());
 
     // compute tangent vector t_{\par} at current Gauss point
     LINALG::Matrix<ndim, 1> tpar(true);
@@ -1220,7 +1220,7 @@ inline void DRT::ELEMENTS::Truss3CL::ComputeRefDOFs(LINALG::Matrix<6, 1>& Xstart
 
   for (int filament = 0; filament < 2; filament++)
   {
-    DRT::UTILS::shape_function_1D(Ibp[filament], mybindingposition_[filament], distype);
+    CORE::DRT::UTILS::shape_function_1D(Ibp[filament], mybindingposition_[filament], distype);
   }
 
   for (int filament = 0; filament < 2; filament++)

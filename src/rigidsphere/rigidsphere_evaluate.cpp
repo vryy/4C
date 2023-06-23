@@ -12,21 +12,21 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_stvenantkirchhoff.H"
 #include "linalg_fixedsizematrix.H"
-#include "fem_general_largerotations.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "inpar_structure.H"
 #include <Epetra_CrsMatrix.h>
 
 #include "inpar_browniandyn.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "geometric_search_params.H"
-#include "geometric_search_bounding_volume.H"
+#include "discretization_geometric_search_params.H"
+#include "discretization_geometric_search_bounding_volume.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
@@ -332,10 +332,10 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
+CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
     const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
@@ -350,7 +350,7 @@ GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
 
-  GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.

@@ -16,7 +16,7 @@
 #include "lib_assemblestrategy.H"
 #include "io_control.H"
 #include "inpar_solver.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"

@@ -14,8 +14,8 @@
 #include "geometry_pair_scalar_types.H"
 
 #include "linalg_utils_densematrix_inverse.H"
-#include "lib_dserror.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "utils_exceptions.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 /**
@@ -363,7 +363,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
   LINALG::Matrix<2, 1, double> xi_corner_node;
   LINALG::Matrix<3, 1, LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
   LINALG::SerialDenseMatrix nodal_coordinates =
-      DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)

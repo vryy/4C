@@ -14,32 +14,32 @@
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Instance(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleBoundaryCalcElchNP<distype>>(
-            new ScaTraEleBoundaryCalcElchNP<distype>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleBoundaryCalcElchNP<distype, probdim>>(
+            new ScaTraEleBoundaryCalcElchNP<distype, probdim>(numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryCalcElchNP(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructor of base class
       myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
@@ -51,8 +51,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction(
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele,                     //!< boundary element
     Teuchos::ParameterList& params,            //!< parameter list
     DRT::Discretization& discretization,       //!< discretization
@@ -86,16 +86,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction(
   }  // switch action
 
   return 0;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
 
 
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar)
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeumann(
+    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Condition& condition, DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+    const double scalar)
 {
   // call base class routine
   my::EvaluateNeumann(ele, params, discretization, condition, la, elevec1, scalar);
@@ -139,8 +140,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(DRT::Fa
 /*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKinetics(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchBoundaryKinetics(
     const DRT::Element* ele,         ///< current element
     Epetra_SerialDenseMatrix& emat,  ///< element matrix
     Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
@@ -233,14 +234,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKi
   }  // switch(myelch::elchparams_->EquPot())
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKinetics
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchBoundaryKinetics
 
 
 /*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 02/15 |
  *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::GetValence(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
     const Teuchos::RCP<const MAT::Material>& material,  // element material
     const int k                                         // species number
 ) const
@@ -273,12 +274,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::GetValence(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<DRT::Element::nurbs9, 3>;

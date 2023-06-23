@@ -8,7 +8,7 @@
 
 #include "lib_discret.H"
 #include "lib_utils.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_utils_densematrix_inverse.H"
 #include <Epetra_SerialDenseSolver.h>
 

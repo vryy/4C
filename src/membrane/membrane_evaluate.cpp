@@ -11,7 +11,7 @@
 #include <Teuchos_RCP.hpp>
 #include "membrane.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_utils_densematrix_eigen.H"
@@ -299,7 +299,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         double gpweight = intpoints_.qwgt[gp];
 
         // get shape function derivatives in the plane of the element
-        DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+        CORE::DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
 
         /*===============================================================================*
          | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -544,8 +544,8 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
-    DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+    CORE::DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -662,8 +662,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
-    DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+    CORE::DRT::UTILS::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -743,7 +743,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
       // center of element in reference configuration
       LINALG::Matrix<numnod_, 1> funct_center;
-      DRT::UTILS::shape_function_2D(funct_center, 0.0, 0.0, distype);
+      CORE::DRT::UTILS::shape_function_2D(funct_center, 0.0, 0.0, distype);
       LINALG::Matrix<1, noddof_> midpoint;
       midpoint.MultiplyTN(funct_center, xrefe);
       params.set("elecenter", midpoint);
@@ -1435,7 +1435,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
     THR::DisTypeToNumGaussPoints<distype>::nquad>
 DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 {
@@ -1461,7 +1461,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 
     // shape functions for the extrapolated coordinates
     LINALG::Matrix<numgpt_post_, 1> funct;
-    DRT::UTILS::shape_function_2D(funct, e1, e2, Shape());
+    CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, Shape());
 
     for (int i = 0; i < numgpt_post_; ++i) extrapol(nd, i) = funct(i);
   }
@@ -1506,7 +1506,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
       double eta_gp = intpoints_.qxg[gp][1];
 
       // get derivatives in the plane of the element
-      DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
 
       /*===============================================================================*
        | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |

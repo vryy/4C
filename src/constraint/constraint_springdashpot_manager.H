@@ -29,6 +29,12 @@ namespace LINALG
   class SparseMatrix;
 }  // namespace LINALG
 
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}  // namespace IO
+
 namespace UTILS
 {
   class SpringDashpot;

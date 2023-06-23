@@ -17,10 +17,10 @@
 #include "lib_discret.H"
 #include "lib_function_of_time.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_boundary_integration.H"
 #include "geometry_position_array.H"
-#include "fem_general_utils_nurbs_shapefunctions.H"
+#include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
 
@@ -583,7 +583,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
   GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   const double time = params.get("total time", -1.0);
@@ -660,7 +660,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -759,7 +759,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights for 2D, i.e. dim of boundary element
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // set up matrices and parameters needed for the evaluation of current
@@ -932,9 +932,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
-    const int& iquad,                                        // id of current Gauss point
-    const int& eleid                                         // the element id
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
+    const int& iquad,                                              // id of current Gauss point
+    const int& eleid                                               // the element id
 )
 {
   // coordinates of the current (Gauss) integration point (xsi_)
@@ -948,16 +948,17 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   // deriv_ == deriv(LENA), dxydrs (LENA)
   if (myknots_.size() == 0)
   {
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);  // nsd_ x nen_
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);  // nsd_ x nen_
   }
   else
-    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+    CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+        funct_, deriv_, xsi_, myknots_, weights_, distype);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // initialise the determinant: drs = srqt( det(metrictensor_) )
   double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_,
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_,
       metrictensor_,  // metrictensor between material coordinates xyze_ and coordinate space xi_i
       drs);
 
@@ -1036,7 +1037,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
   GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -1100,7 +1101,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   // dxyzdrs = deriv . xyze
   // dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
   // be careful: normal
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xcurr_T, deriv_,
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xcurr_T, deriv_,
       metrictensor_,  // metric tensor between coordinate space and AK
       detA
       // normalvector==NULL // we don't need the unit normal vector, but the

@@ -17,7 +17,7 @@
 
 #include "so3_base.H"
 
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10 10       ///< number of nodes
@@ -430,7 +430,7 @@ namespace DRT
        * \param derivs First derivatives of the shape functions
        * \param gp Gauss point
        */
-      template <DRT::UTILS::GaussRule3D intrule>
+      template <CORE::DRT::UTILS::GaussRule3D intrule>
       void so_tet10_derivs(LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, int gp) const;
 
       //! Evaluate Tet10 Weights at 4 gausspoints to keep them static

@@ -118,7 +118,7 @@ bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
   // Clone it now.
   if (cloneit and ismyele)
   {
-    const int nsd = DRT::UTILS::getDimension(actele->Shape());
+    const int nsd = CORE::DRT::UTILS::getDimension(actele->Shape());
     if (nsd == 3)
       eletype.push_back("ALE3");
     else if (nsd == 2)

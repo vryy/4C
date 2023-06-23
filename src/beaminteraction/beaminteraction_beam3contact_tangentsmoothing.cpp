@@ -11,7 +11,7 @@
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 
 #include "lib_node.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -39,8 +39,7 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
   int numnode = element1->NumNode();
 
   // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
-  // node (at xi = -1) allways has the local ID 1 For documentation of the node numbering see also
-  // the file beam3.H
+  // node (at xi = -1) allways has the local ID 1
   int n_right;
   if (numnode == 2)
     n_right = 1;
@@ -155,13 +154,13 @@ Teuchos::SerialDenseMatrix<int, double> CONTACT::B3TANGENTSMOOTHING::GetNodalDer
   Teuchos::SerialDenseMatrix<int, double> deriv1(1, nnode);
 
   if (node == nnode)
-    DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
   else
   {
     if (node == 1)
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
     else
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
   }
 
   for (int i = 0; i < nnode; i++) deriv1(0, i) = 2.0 * deriv1(0, i) / length;

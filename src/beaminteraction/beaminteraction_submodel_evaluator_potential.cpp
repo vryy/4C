@@ -10,7 +10,7 @@
 
 #include "beaminteraction_submodel_evaluator_potential.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"

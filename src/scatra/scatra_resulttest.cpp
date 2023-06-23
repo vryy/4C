@@ -15,7 +15,7 @@
 #include "lib_discret.H"
 #include "lib_linedefinition.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

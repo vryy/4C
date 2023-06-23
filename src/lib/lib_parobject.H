@@ -22,7 +22,7 @@
 #include <Epetra_SerialDenseVector.h>
 #include "linalg_fixedsizematrix.H"
 #include "lib_pack_buffer.H"
-#include "headers_pairedmatrix.H"
+#include "utils_pairedmatrix.H"
 
 namespace DRT
 {
@@ -332,7 +332,7 @@ namespace DRT
 
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const GEN::pairedvector<Ts...>& stuff)
+    static void AddtoPack(PackBuffer& data, const CORE::GEN::pairedvector<Ts...>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -357,7 +357,8 @@ namespace DRT
 
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const std::vector<GEN::pairedvector<Ts...>>& stuff)
+    static void AddtoPack(
+        PackBuffer& data, const std::vector<CORE::GEN::pairedvector<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -381,13 +382,14 @@ namespace DRT
 
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const std::vector<GEN::pairedmatrix<Ts...>>& stuff)
+    static void AddtoPack(
+        PackBuffer& data, const std::vector<CORE::GEN::pairedmatrix<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
 
       int i = 0;
-      for (const typename GEN::pairedmatrix_base<Ts...>::type& paired_mat : stuff)
+      for (const typename CORE::GEN::pairedmatrix_base<Ts...>::type& paired_mat : stuff)
       {
         AddtoPack(data, paired_mat);
         ++i;
@@ -756,7 +758,7 @@ namespace DRT
      */
     template <typename Key, typename T0, typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, GEN::pairedvector<Key, T0, Ts...>& stuff)
+        const std::vector<char>& data, CORE::GEN::pairedvector<Key, T0, Ts...>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -789,7 +791,7 @@ namespace DRT
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<GEN::pairedvector<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<CORE::GEN::pairedvector<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -797,7 +799,7 @@ namespace DRT
       stuff.clear();
       stuff.resize(numentries);
 
-      GEN::pairedvector<Ts...> paired_vec;
+      CORE::GEN::pairedvector<Ts...> paired_vec;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_vec);
@@ -820,7 +822,7 @@ namespace DRT
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<GEN::pairedmatrix<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<CORE::GEN::pairedmatrix<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -828,7 +830,7 @@ namespace DRT
       stuff.clear();
       stuff.resize(numentries);
 
-      typename GEN::pairedmatrix_base<Ts...>::type paired_mat;
+      typename CORE::GEN::pairedmatrix_base<Ts...>::type paired_mat;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_mat);

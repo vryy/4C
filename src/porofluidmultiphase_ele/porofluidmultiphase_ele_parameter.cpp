@@ -9,8 +9,8 @@
 
 #include "porofluidmultiphase_ele_parameter.H"
 
-#include "lib_dserror.H"
-#include "headers_singleton_owner.H"
+#include "utils_exceptions.H"
+#include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |
@@ -20,14 +20,14 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleParameter>(
             new PoroFluidMultiPhaseEleParameter(disname));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
 }
 
 

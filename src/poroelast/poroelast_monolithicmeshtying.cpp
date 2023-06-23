@@ -14,7 +14,7 @@
 
 #include "lib_globalproblem.H"
 
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_coupling_poro_mortar.H"
 
 #include "adapter_str_fpsiwrapper.H"

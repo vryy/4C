@@ -191,6 +191,19 @@ CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+std::vector<std::string>
+CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::WriteReadTheDocs() const
+{
+  std::vector<std::string> tablerow;
+
+  tablerow.push_back(separator_);
+  tablerow.push_back((optional_ ? "yes" : ""));
+  std::string descriptionstring = "";
+  tablerow.push_back(description_);
+  return tablerow;
+}
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::RealContactConstitutiveLawComponent(
     std::string name, const double defaultvalue, bool optional)
     : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)

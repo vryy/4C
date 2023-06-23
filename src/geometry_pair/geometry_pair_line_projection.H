@@ -22,13 +22,10 @@ namespace LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace DRT
+namespace CORE::DRT::UTILS
 {
-  namespace UTILS
-  {
-    struct IntegrationPoints1D;
-  }
-}  // namespace DRT
+  struct IntegrationPoints1D;
+}  // namespace CORE::DRT::UTILS
 namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;
@@ -147,8 +144,8 @@ namespace GEOMETRYPAIR
     static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
         const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        const DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment,
-        optional_type... optional_args);
+        const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points,
+        LineSegment<scalar_type>& segment, optional_type... optional_args);
 
     /**
      * \brief Intersect a line with all surfaces of an other geometry. Use default starting values

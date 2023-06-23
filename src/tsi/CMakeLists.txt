@@ -1,19 +1,17 @@
-set(OBJS_TSI
-    # cmake-format: sortable
-    tsi_algorithm.cpp
-    tsi_dyn.cpp
-    tsi_monolithic.cpp
-    tsi_partitioned.cpp
-    tsi_utils.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(alg_tsi ${OBJS_TSI})
-
-set(LIBS_ALG_TSI
+set(_tsi_dependencies
     # cmake-format: sortable
     adapter
-    ele_thermo
-    volmortar
+    contact
+    core
+    inpar
+    io
+    lib
+    linalg
+    mortar
+    so3
+    structure_new
+    thermo
     )
-
-baci_add_dependency(alg_tsi ${LIBS_ALG_TSI})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_tsi_dependencies})

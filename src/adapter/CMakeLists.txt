@@ -1,108 +1,38 @@
-set(OBJS_ADAPT
-    # cmake-format: sortable
-    adapter_ale.cpp
-    adapter_ale_fluid.cpp
-    adapter_ale_fpsi.cpp
-    adapter_ale_fsi.cpp
-    adapter_ale_fsi_msht.cpp
-    adapter_ale_wear.cpp
-    adapter_ale_wrapper.cpp
-    adapter_ale_xffsi.cpp
-    adapter_algorithmbase.cpp
-    adapter_coupling.cpp
-    adapter_coupling_ehl_mortar.cpp
-    adapter_coupling_mortar.cpp
-    adapter_coupling_nonlin_mortar.cpp
-    adapter_coupling_poro_mortar.cpp
-    adapter_coupling_volmortar.cpp
-    adapter_field_wrapper.cpp
-    adapter_fld_base_algorithm.cpp
-    adapter_fld_fbi_movingboundary.cpp
-    adapter_fld_fbi_wrapper.cpp
-    adapter_fld_fluid.cpp
-    adapter_fld_fluid_ac_fsi.cpp
-    adapter_fld_fluid_ale.cpp
-    adapter_fld_fluid_ale_xfem.cpp
-    adapter_fld_fluid_fluid_fsi.cpp
-    adapter_fld_fluid_fluid_xfsi.cpp
-    adapter_fld_fluid_fpsi.cpp
-    adapter_fld_fluid_fsi.cpp
-    adapter_fld_fluid_fsi_msht.cpp
-    adapter_fld_fluid_immersed.cpp
-    adapter_fld_fluid_xfem.cpp
-    adapter_fld_fluid_xfsi.cpp
-    adapter_fld_lung.cpp
-    adapter_fld_moving_boundary.cpp
-    adapter_fld_poro.cpp
-    adapter_lubrication.cpp
-    adapter_porofluidmultiphase_wrapper.cpp
-    adapter_scatra_base_algorithm.cpp
-    adapter_scatra_fluid_ale_coupling_algo.cpp
-    adapter_scatra_fluid_coupling_algorithm.cpp
-    adapter_scatra_wrapper.cpp
-    adapter_str_constr_merged.cpp
-    adapter_str_factory.cpp
-    adapter_str_fbiwrapper.cpp
-    adapter_str_fpsiwrapper.cpp
-    adapter_str_fsi_timint_adaptive.cpp
-    adapter_str_fsiwrapper.cpp
-    adapter_str_fsiwrapper_immersed.cpp
-    adapter_str_invana.cpp
-    adapter_str_loca.cpp
-    adapter_str_loca_wrapper.cpp
-    adapter_str_lung.cpp
-    adapter_str_pasiwrapper.cpp
-    adapter_str_poro_wrapper.cpp
-    adapter_str_redairway.cpp
-    adapter_str_ssiwrapper.cpp
-    adapter_str_structalewrapper.cpp
-    adapter_str_structure.cpp
-    adapter_str_structure_new.cpp
-    adapter_str_timeloop.cpp
-    adapter_str_timint_adaptive.cpp
-    adapter_str_wrapper.cpp
-    adapter_structure_scatra_ele.cpp
-    adapter_thermo.cpp
-    )
+baci_auto_define_module()
 
-baci_add_library(adapter ${OBJS_ADAPT})
-
-set(LIBS_ADAPTER
+set(_adapter_dependencies
     # cmake-format: sortable
-    alg_ale
-    alg_contact
-    alg_fluid
-    alg_fpsi
-    alg_fsi
-    alg_lubrication
-    alg_pasi
-    alg_poroelast
-    alg_porofluidmultiphase
-    alg_scatra
-    alg_ssi
-    alg_structure
-    alg_structure_new
-    alg_thermo
-    alg_xfluid
+    ale
+    beaminteraction
     comm
     constraint
-    ele_fluid
-    ele_s8
-    ele_so
-    ele_so_plast
-    ele_solid
+    contact
+    core
+    fluid
+    fpsi
+    fsi
     io
     levelset
     lib
-    lib_beaminteraction
-    lib_mortar
-    lib_struct_ale
-    lib_xfem_manag
     linalg
+    lubrication
     mat
+    membrane
+    mortar
     nurbs_discret
-    solver
-    volmortar
+    pasi
+    poroelast
+    porofluidmultiphase
+    s8
+    scatra
+    so3
+    solid_ele
+    ssi
+    struct_ale
+    structure
+    structure_new
+    thermo
+    xfem
     )
 
-baci_add_dependency(adapter ${LIBS_ADAPTER})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_adapter_dependencies})

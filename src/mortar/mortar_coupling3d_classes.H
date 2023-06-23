@@ -87,8 +87,8 @@ namespace MORTAR
     \brief Affine map of IntElement coordinate derivatives to parent element
 
     */
-    virtual bool MapToParent(const std::vector<GEN::pairedvector<int, double>>& dxi,
-        std::vector<GEN::pairedvector<int, double>>& dparxi);
+    virtual bool MapToParent(const std::vector<CORE::GEN::pairedvector<int, double>>& dxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dparxi);
 
     virtual DRT::Node** Nodes()
     {
@@ -109,7 +109,7 @@ namespace MORTAR
            inner vector for the spatial dimensions, map for the derivatives.
     */
     virtual void NodeLinearization(
-        std::vector<std::vector<GEN::pairedvector<int, double>>>& nodelin);
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin);
 
    protected:
     // don't want = operator and cctor
@@ -163,10 +163,10 @@ namespace MORTAR
     */
     IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, double* auxn,
         const DRT::Element::DiscretizationType& shape,
-        std::vector<GEN::pairedvector<int, double>>& linv1,
-        std::vector<GEN::pairedvector<int, double>>& linv2,
-        std::vector<GEN::pairedvector<int, double>>& linv3,
-        std::vector<GEN::pairedvector<int, double>>& linauxn);
+        std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
+        std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
+        std::vector<CORE::GEN::pairedvector<int, double>>& linv3,
+        std::vector<CORE::GEN::pairedvector<int, double>>& linauxn);
 
     /*!
     \brief Destructor
@@ -263,7 +263,7 @@ namespace MORTAR
     is addressed by an int-variable and checked internally.
 
     */
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivVertex(int i)
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivVertex(int i)
     {
       if (shape_ == DRT::Element::line2)
       {
@@ -281,7 +281,7 @@ namespace MORTAR
     \brief Return the 'DerivAuxn' map (vector) of this intcell
 
     */
-    virtual std::vector<GEN::pairedvector<int, double>>& GetDerivAuxn() { return linauxn_; }
+    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivAuxn() { return linauxn_; }
 
     //@}
 
@@ -323,7 +323,7 @@ namespace MORTAR
            Note that this is a linearization with respect to the intcell
            vertices, which themselves have to be linearized later, of course!
     */
-    virtual void DerivJacobian(GEN::pairedvector<int, double>& derivjac);
+    virtual void DerivJacobian(CORE::GEN::pairedvector<int, double>& derivjac);
 
     //@}
 
@@ -342,9 +342,10 @@ namespace MORTAR
 
     bool auxplane_;                           // flag indicating coupling strategy (true = auxplane)
     DRT::Element::DiscretizationType shape_;  // shape of this element (always tri3)
-    std::vector<std::vector<GEN::pairedvector<int, double>>>
-        linvertex_;                                        // derivatives of the 3 vertices
-    std::vector<GEN::pairedvector<int, double>> linauxn_;  // derivatives of auxiliary plane normal
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>
+        linvertex_;  // derivatives of the 3 vertices
+    std::vector<CORE::GEN::pairedvector<int, double>>
+        linauxn_;  // derivatives of auxiliary plane normal
 
   };  // class IntCell
 

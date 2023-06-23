@@ -288,16 +288,6 @@ namespace DRT::ELEMENTS
 
     virtual void SetEAStype(::STR::ELEMENTS::EASType type) { eastype_ = type; }
 
-    virtual void SetElementCondensator(Teuchos::RCP<STR::ELEMENTS::CondensatorBase> data)
-    {
-      element_condensator_ = data;
-    }
-
-    virtual Teuchos::RCP<STR::ELEMENTS::CondensatorBase> GetElementCondensator()
-    {
-      return element_condensator_;
-    }
-
     virtual ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
     virtual ::INPAR::STR::KinemType GetKinemType() { return kintype_; }
     virtual const std::set<INPAR::STR::EleTech>& GetEleTech() { return eletech_; }
@@ -345,12 +335,6 @@ namespace DRT::ELEMENTS
      *
      *  data exchange between the element and the time integrator. */
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
-
-    //! manager for condensation at element level
-    Teuchos::RCP<STR::ELEMENTS::CondensatorBase> element_condensator_;
-
-    //! manager for condensation at Gauss point level
-    Teuchos::RCP<std::vector<STR::ELEMENTS::CondensatorBase>> gp_condensator_;
 
     //! element calculation interface
     std::unique_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;

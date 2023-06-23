@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 #include "so3_hex8.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_node.H"
 
 
@@ -18,7 +18,7 @@ void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(
 {
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOH8, 1> funct;
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   centercoord.MultiplyTN(funct, xrefe);
   return;
 }

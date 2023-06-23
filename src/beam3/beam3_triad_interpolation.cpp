@@ -12,7 +12,7 @@
 
 #include "beam3_triad_interpolation_local_rotation_vectors.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Sacado.hpp>

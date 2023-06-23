@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fem_general_largerotations.H"
+#include "discretization_fem_general_largerotations.H"
 
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 

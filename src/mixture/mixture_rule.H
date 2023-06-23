@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations

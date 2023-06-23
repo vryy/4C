@@ -10,7 +10,7 @@
 #ifndef MORTAR_PARAMSINTERFACE_H
 #define MORTAR_PARAMSINTERFACE_H
 
-#include "headers_any_data_container.H"
+#include "utils_any_data_container.H"
 
 namespace MORTAR
 {
@@ -98,7 +98,7 @@ namespace MORTAR
    * Necessary for the communication between the structural time integration framework and the
    * mortar strategies.
    */
-  class ParamsInterface : public GEN::AnyDataContainer
+  class ParamsInterface : public CORE::GEN::AnyDataContainer
   {
    public:
     //! destructor

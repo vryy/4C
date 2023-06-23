@@ -11,7 +11,7 @@
 #define CONTACT_AUG_PROJECTOR_H
 
 #include "lib_element.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 namespace MORTAR
@@ -83,13 +83,13 @@ namespace CONTACT
         DRT::Element::DiscretizationType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
-      static const unsigned REF_DIM = DRT::UTILS::DisTypeToDim<ref_type>::dim;
+      static const unsigned REF_DIM = CORE::DRT::UTILS::DisTypeToDim<ref_type>::dim;
       static const unsigned REF_NUMNODES =
-          DRT::UTILS::DisTypeToNumNodePerEle<ref_type>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<ref_type>::numNodePerElement;
 
-      static const unsigned TAR_DIM = DRT::UTILS::DisTypeToDim<tar_type>::dim;
+      static const unsigned TAR_DIM = CORE::DRT::UTILS::DisTypeToDim<tar_type>::dim;
       static const unsigned TAR_NUMNODES =
-          DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
 
      public:
       static ProjectorBase* Instance();
@@ -156,7 +156,7 @@ namespace CONTACT
        *
        *  \author  hiermeier \date 07/17 */
       template <DRT::Element::DiscretizationType type,
-          unsigned numnodes = DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
+          unsigned numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
       bool GetGlobalPosition(MORTAR::MortarElement& ele,
           const LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
           LINALG::Matrix<probdim, 1>& pos) const;

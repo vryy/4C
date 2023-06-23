@@ -15,7 +15,7 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_calc.H"
 
-#include "headers_singleton_owner.H"
+#include "utils_singleton_owner.H"
 
 // includes gauss points
 #include "lib_utils.H"
@@ -37,7 +37,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcLoma<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
@@ -52,7 +52,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
      private:
       /// private Constructor since we are a Singleton.
@@ -75,7 +75,7 @@ namespace DRT
           const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& escaam,
           const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& egridv,
           Teuchos::RCP<MAT::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
           \brief calculate element matrix for off-diagonal matrix block for monolithic
@@ -113,7 +113,7 @@ namespace DRT
           const double thermpressaf, const double thermpressam, const double thermpressdtaf,
           const double thermpressdtam, Teuchos::RCP<const MAT::Material> material,
           double& Cs_delta_sq, double& Ci_delta_sq, bool isale,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

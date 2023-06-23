@@ -21,6 +21,7 @@
 #include "linalg_mapextractor.H"
 
 #include "inpar_fsi.H"
+#include "coupling_adapter.H"
 
 // forward declarations
 namespace ADAPTER
@@ -207,15 +208,15 @@ namespace FSI
 
     //! @name Coupling objects
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
-    ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
-    ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
-    ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
+    CORE::ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
+    CORE::ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
+    CORE::ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
+    CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
-    const ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
-    const ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
-    const ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
+    const CORE::ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
+    const CORE::ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
+    const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
+    const CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
 
     //@}
 
@@ -251,16 +252,16 @@ namespace FSI
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling> coupsf_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling> coupsa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
 
     //@}
   };
@@ -467,36 +468,40 @@ namespace FSI
      *  is allowed to contain interface DOFs. All vectors are put together.
      *  As usual, the ordering is: structure --  fluid -- ALE
      *
-     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+     *  @param [in/out] v Composed vector containing all field vectors
+     *  @param [in] sv Structural DOFs
+     *  @param [in] fv Fluid DOFs
+     *  @param [in] av ALE DOfs
      */
-    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-        Teuchos::RCP<const Epetra_Vector> av    ///< ale DOFs
-    );
+    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av);
 
-    /*! \brief Put three field vectors together to a monolithic vector
+    /*! @brief Put three field vectors together to a monolithic vector
      *
-     *  Slave vectors are only allowed to contain inner DOFs. Only master vector
-     *  is allowed to contain interface DOFs. All vectors are put together.
+     *  The monolithic vector is defined on the DofRowMap() of the underlying coupling class.
+     * Depending on the formulation, certain sets of degrees of freedom at the FSI interface have
+     * been condensed before building the monolithic system. Hence, we cannot assemble into those
+     * DOFs.
+     *
+     *  As a consequence, slave vectors are only allowed to contain inner DOFs. Only the master
+     * vector is allowed to contain interface DOFs.
+     *
+     *  The user needs to indicate in the function call, wheter the input vectors have already been
+     * stripped off the condensed DOFs or if this has to happen internally.
+     *
+     *  All vectors are put together.
      *  As usual, the ordering is: structure --  fluid -- ALE
      *
-     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+     *  @param [in/out] v Composed vector containing all field vectors
+     *  @param [in] sv Structural DOFs
+     *  @param [in] fv Fluid DOFs
+     *  @param [in] av ALE DOfs
+     *  @param [in] slave_vectors_contain_interface_dofs  Flag to indicate wheter all vectors
+     * contain all DOFs (true) or slave vectors contain only inner DOFs (false)
      */
-    virtual void CombineFieldVectors(
-        Epetra_Vector& v,                      ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,  ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid DOFs
-        Teuchos::RCP<const Epetra_Vector> av,  ///< ale DOFs
-        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
-                          ///< (false)
-        ) = 0;
+    virtual void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
+        const bool slave_vectors_contain_interface_dofs) = 0;
 
     //! @name Access methods for subclasses
 
@@ -1244,7 +1249,7 @@ namespace FSI
     virtual void PrepareTimeStepPreconditioner();
 
     /// create the composed system matrix
-    void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat, bool structuresplit);
+    void CreateSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
@@ -1253,25 +1258,9 @@ namespace FSI
         Teuchos::RCP<NOX::Utils> utils     ///< NOX utils
     );
 
-    /*! Put three field vectors together to a monolithic vector
-     *
-     *  Slave vectors are only allowed to contain inner DOFs. Only master vector
-     *  is allowed to contain interface DOFs. All vectors are put together.
-     *  As usual, the ordering is: structure --  fluid -- ALE
-     *
-     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
-     */
-    virtual void CombineFieldVectors(
-        Epetra_Vector& v,                      ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,  ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid DOFs
-        Teuchos::RCP<const Epetra_Vector> av,  ///< ale DOFs
-        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
-                          ///< (false)
-    ){};
+    virtual void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
+        const bool slave_vectors_contain_interface_dofs){};
 
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;

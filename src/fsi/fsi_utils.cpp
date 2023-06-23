@@ -39,11 +39,11 @@
 #include "geometry_searchtree.H"
 #include "geometry_searchtree_service.H"
 #include "adapter_fld_fluid_ale.H"
-#include "adapter_coupling_mortar.H"
+#include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_ale_fsi.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -173,13 +173,13 @@ bool FSI::UTILS::FluidAleNodesDisjoint(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> structdis,
-    Teuchos::RCP<DRT::Discretization> fluiddis, ADAPTER::CouplingMortar& coupsf,
+    Teuchos::RCP<DRT::Discretization> fluiddis, CORE::ADAPTER::CouplingMortar& coupsf,
     bool structcoupmaster, INPAR::FSI::SlideALEProj aleproj)
     : aletype_(aleproj)
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
@@ -305,7 +305,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structure,
     Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<Epetra_Vector> idispale,
-    Teuchos::RCP<Epetra_Vector> iprojdispale, ADAPTER::CouplingMortar& coupsf,
+    Teuchos::RCP<Epetra_Vector> iprojdispale, CORE::ADAPTER::CouplingMortar& coupsf,
     const Epetra_Comm& comm)
 {
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
@@ -354,7 +354,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisptotal,
-    Teuchos::RCP<Epetra_Vector> ifluid, ADAPTER::CouplingMortar& coupsf)
+    Teuchos::RCP<Epetra_Vector> ifluid, CORE::ADAPTER::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
   idispms_->Scale(0.0);
@@ -529,7 +529,7 @@ std::map<int, LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::CurrentStructPos(
 void FSI::UTILS::SlideAleUtils::SlideProjection(
     ADAPTER::FSIStructureWrapper& structure, Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<Epetra_Vector> idispale, Teuchos::RCP<Epetra_Vector> iprojdispale,
-    ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm
+    CORE::ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm
 
 )
 {
@@ -667,7 +667,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 }
 
 void FSI::UTILS::SlideAleUtils::RedundantElements(
-    ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm)
+    CORE::ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm)
 {
   // We need the structure elements (NOT THE MORTAR-ELEMENTS!) on every processor for the projection
   // of the fluid nodes. Furthermore we need the current position of the structnodes on every

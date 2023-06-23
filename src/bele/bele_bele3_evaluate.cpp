@@ -12,12 +12,12 @@
 #include "so3_surface.H"
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "mat_newtonianfluid.H"
 
@@ -199,7 +199,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -215,8 +215,8 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, 
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -287,8 +287,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, 
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);

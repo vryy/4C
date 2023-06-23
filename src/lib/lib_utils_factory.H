@@ -13,7 +13,7 @@
 #define LIB_UTILS_FACTORY_H
 
 #include "lib_discret.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 namespace DRT
 {
@@ -96,13 +96,13 @@ namespace DRT
         case buildSurfaces:
         {
           nele = ele->NumSurface();
-          connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+          connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
           break;
         }
         case buildLines:
         {
           nele = ele->NumLine();
-          connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+          connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
           break;
         }
         default:

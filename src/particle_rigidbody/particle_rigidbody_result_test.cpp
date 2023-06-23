@@ -14,7 +14,7 @@
 #include "particle_rigidbody_datastate.H"
 
 #include "lib_linedefinition.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

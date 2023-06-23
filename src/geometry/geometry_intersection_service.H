@@ -13,7 +13,7 @@
 
 #include "geometry_geo_utils.H"
 #include "geometry_intersection_math.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 namespace GEO
@@ -127,11 +127,11 @@ namespace GEO
     bool cartesian = true;
     int CartesianCount = 0;
     const int dimCoord = 3;
-    const int eleDim = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int eleDim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
-    if (DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order == 1)
+    if (CORE::DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order == 1)
       eleGeoType = LINEAR;
-    else if (DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order == 2)
+    else if (CORE::DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order == 2)
       eleGeoType = HIGHERORDER;
     else
       dserror("order of element shapefunction is not correct");
@@ -140,7 +140,7 @@ namespace GEO
     if (eleDim == 3)
     {
       const std::vector<std::vector<int>> eleNodeNumbering =
-          DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
+          CORE::DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
       const std::vector<Teuchos::RCP<DRT::Element>> surfaces =
           (const_cast<DRT::Element*>(element))->Surfaces();
       for (int i = 0; i < element->NumSurface(); i++)

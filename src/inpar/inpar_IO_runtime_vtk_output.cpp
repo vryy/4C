@@ -39,6 +39,11 @@ namespace INPAR
           &sublist_IO_VTK_structure);
 
 
+      IntParameter("STEP_OFFSET", 0,
+          "An offset added to the current step to shift the steps to be written.",
+          &sublist_IO_VTK_structure);
+
+
       // data format for written numeric data
       setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "binary",
           "data format for written numeric data",

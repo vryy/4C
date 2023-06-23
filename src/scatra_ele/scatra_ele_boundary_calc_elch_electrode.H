@@ -30,20 +30,22 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
       using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      protected:
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrode<distype, probdim>* Instance(
           int numdofpernode, int numscal, const std::string& disname);
 
 
@@ -71,6 +73,7 @@ namespace DRT
        *                             domain-integration factor
        * @param[in] detF             determinant of jacobian at current integration point
        * @param[in] frt              factor F/(RT)
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm            linearizations of slave-side residuals w.r.t. master-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
@@ -86,22 +89,22 @@ namespace DRT
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          double timefacfac, double timefacrhsfac, double detF, double frt,
+          double timefacfac, double timefacrhsfac, double detF, double frt, int num_dof_per_node,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
           Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
           Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
@@ -128,6 +131,7 @@ namespace DRT
        * @param[in] timefacfac     time-integration factor times domain-integration factor
        * @param[in] timefacrhsfac  time-integration factor for right-hand side times
        *                           domain-integration factor
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss  linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms  linearizations of master-side residuals w.r.t. slave-side dofs
        * @param[out] r_s   slave-side residual vector
@@ -139,22 +143,22 @@ namespace DRT
       static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephidtnp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphidtnp,
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          double timederivfac, double timefacfac, double timefacrhsfac,
+          double timederivfac, double timefacfac, double timefacrhsfac, int num_dof_per_node,
           Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
@@ -185,6 +189,7 @@ namespace DRT
        * @param[in] dj_dpot_master   linearization of Butler-Volmer mass flux density w.r.t.
        *                             electric potential on master-side
        * @param[in] j                Butler-Volmer mass flux density
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm            linearizations of slave-side residuals w.r.t. master-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
@@ -197,15 +202,15 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystem(const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           double pseudo_contact_fac, double numelectrons, int nen_master, double timefacfac,
           double timefacrhsfac, double dj_dc_slave, double dj_dc_master, double dj_dpot_slave,
-          double dj_dpot_master, double j, Epetra_SerialDenseMatrix& k_ss,
+          double dj_dpot_master, double j, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
           Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
           Epetra_SerialDenseVector& r_m);
@@ -228,6 +233,7 @@ namespace DRT
        * @param[in] jC              capacitance mass flux density
        * @param[in] djC_dpot_slave  derivative of capacitance mass flux density w.r.t. electric
        *                            potential at the slave-side
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss  linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms  linearizations of master-side residuals w.r.t. slave-side dofs
        * @param[out] r_s   slave-side residual vector
@@ -239,12 +245,12 @@ namespace DRT
       static void CalculateRHSandGlobalSystemCapacitiveFlux(
           const LINALG::Matrix<nen_, 1>& funct_slave, const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           double pseudo_contact_fac, int numelectrons, double timefacfac, double timefacrhsfac,
-          int nen_master, double jC, double djC_dpot_slave, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          int nen_master, double jC, double djC_dpot_slave, int num_dof_per_node,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
      protected:
       //! protected constructor for singletons

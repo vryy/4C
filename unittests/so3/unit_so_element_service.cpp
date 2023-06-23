@@ -10,9 +10,9 @@
 #include <vector>
 #include "lib_element.H"
 #include "so3_element_service.H"
-#include "fem_general_utils_gauss_point_extrapolation.H"
-#include "fem_general_utils_gausspoints.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "discretization_fem_general_utils_gausspoints.H"
+#include "discretization_fem_general_utils_integration.H"
 #include "lib_element_integration_select.H"
 
 namespace
@@ -76,12 +76,12 @@ namespace
     constexpr DRT::Element::DiscretizationType distype = DRT::Element::DiscretizationType::hex8;
     constexpr int nsd = 3;
 
-    DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
         DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // format as DRT::UTILS::GaussIntegration
-    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> gp =
-        Teuchos::rcp(new DRT::UTILS::CollectedGaussPoints);
+    Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints);
 
     std::array<double, nsd> xi{};
     for (int i = 0; i < intpoints.IP().nquad; ++i)
@@ -91,9 +91,9 @@ namespace
     }
 
     // save default integration rule
-    DRT::UTILS::GaussIntegration integration(gp);
+    CORE::DRT::UTILS::GaussIntegration integration(gp);
     LINALG::SerialDenseMatrix m =
-        DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
+        CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
   }
 
 }  // namespace

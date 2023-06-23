@@ -47,7 +47,7 @@ namespace SSI
 {
   namespace UTILS
   {
-    class SSIStructureMeshTying;
+    class SSIMeshTying;
   }
 }  // namespace SSI
 
@@ -90,7 +90,7 @@ namespace SSTI
     {
       return meshtying_strategy_thermo_;
     }
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> SSTIStructureMeshTying() const
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSTIStructureMeshTying() const
     {
       return ssti_structure_meshtying_;
     }
@@ -160,7 +160,7 @@ namespace SSTI
     //@{
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
-    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying_;
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssti_structure_meshtying_;
     //@}
 
     //! bool indicating if we have at least one ssi interface meshtying condition

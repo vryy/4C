@@ -29,47 +29,47 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   std::cout << " distype " << distype << std::endl;
 
-  DRT::UTILS::GaussRule3D gaussrule;
+  CORE::DRT::UTILS::GaussRule3D gaussrule;
 
   switch (shape)
   {
     case hex8:
     {
-      gaussrule = DRT::UTILS::GaussRule3D::hex_8point;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
     }
     case hex20:
     case hex27:
     {
-      gaussrule = DRT::UTILS::GaussRule3D::hex_27point;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
     }
     case pyramid5:
     {
-      gaussrule = DRT::UTILS::GaussRule3D::pyramid_8point;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     }
     case tet4:
     {
-      gaussrule = DRT::UTILS::GaussRule3D::tet_1point;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
     }
     case tet10:
     {
-      gaussrule = DRT::UTILS::GaussRule3D::tet_4point;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
     }
     default:
       dserror("Unknown distype %s for ALE3 element", distype.c_str());
       // just set to something to shutup compiler
-      gaussrule = DRT::UTILS::GaussRule3D::undefined;
+      gaussrule = CORE::DRT::UTILS::GaussRule3D::undefined;
       break;
   }  // end switch distype
 
   // set up of materials with GP data (e.g., history variables)
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
 
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   const int numgp = intpoints.nquad;
   so3mat->Setup(numgp, linedef);
 

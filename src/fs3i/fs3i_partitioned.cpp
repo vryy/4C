@@ -30,17 +30,17 @@
 #include "lib_utils_createdis.H"
 #include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 // INPAR
 #include "inpar_validparameters.H"
 // ALE
 #include "ale_utils_clonestrategy.H"
 // ADAPTER
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid_fsi.H"
 #include "adapter_ale_fsi.H"
-#include "adapter_coupling_volmortar.H"
+#include "coupling_adapter_volmortar.H"
 #include "adapter_structure_scatra_ele.H"
 // SCATRA
 #include "scatra_algorithm.H"
@@ -335,7 +335,7 @@ void FS3I::PartFS3I::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
+Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis)
 {
   // copy conditions
@@ -376,8 +376,8 @@ Teuchos::RCP<::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  Teuchos::RCP<::ADAPTER::MortarVolCoupl> volume_coupling_object =
-      Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+  Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volume_coupling_object =
+      Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
   volume_coupling_object->Init(masterdis, slavedis);

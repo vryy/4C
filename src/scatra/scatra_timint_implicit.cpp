@@ -63,7 +63,7 @@
 
 #include "linalg_krylov_projector.H"
 #include "linalg_nullspace.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*

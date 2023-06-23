@@ -15,8 +15,8 @@
 
 #include "fluid_ele_boundary_interface.H"
 #include "lib_element.H"
-#include "fem_general_utils_integration.H"
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -82,10 +82,11 @@ namespace DRT
           Epetra_SerialDenseVector& elevec3);
 
       //! number of element nodes
-      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of spatial dimensions of parent element
       static const int nsd_ = bdrynsd_ + 1;

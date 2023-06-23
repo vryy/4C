@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 #include "lib_element.H"
 
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_utils.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensevector.H"
@@ -50,8 +50,9 @@ namespace WEAR
         const std::vector<int>& lm,                     // in
         bool& found, double* e)
     {
-      static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numnod =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       LINALG::Matrix<numnod, 1> funct;
       LINALG::Matrix<ndim, numnod> xcure;
@@ -90,13 +91,13 @@ namespace WEAR
 
         if (ndim == 2)
         {
-          DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
+          CORE::DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
         }
         else if (ndim == 3)
         {
-          DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
+          CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
         }
         else
           dserror("Wrong dimension!");
@@ -163,9 +164,9 @@ namespace WEAR
       for (int p = 0; p < ndim; ++p) xmat[p] = 0.0;
 
       if (ndim == 2)
-        DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
+        CORE::DRT::UTILS::shape_function_2D(funct, e[0], e[1], distype);
       else
-        DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
+        CORE::DRT::UTILS::shape_function_3D(funct, e[0], e[1], e[2], distype);
 
       for (int k = 0; k < numnod; ++k)
         for (int p = 0; p < ndim; ++p)

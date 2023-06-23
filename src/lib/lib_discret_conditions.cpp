@@ -11,14 +11,12 @@
 
 #include "lib_discret.H"
 #include "lib_exporter.H"
-#include "lib_dserror.H"
-#include "lib_parobject.H"
+#include "utils_exceptions.H"
 
 #include "lib_globalproblem.H"
 #include "lib_condition_utils.H"
 #include "linalg_utils_densematrix_communication.H"
 
-#include <numeric>
 #include <algorithm>
 
 

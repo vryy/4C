@@ -27,9 +27,6 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "mat_par_parameter.H"
 
-#include "mat_par_bundle.H"
-#include "mat_newtonianfluid.H"
-
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
     : DiscretizationFaces(name, comm)
@@ -96,7 +93,7 @@ int DRT::DiscretizationHDG::FillComplete(
     const int* nodeIds = f->second->NodeIds();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+        CORE::DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->NumNode(); ++i)

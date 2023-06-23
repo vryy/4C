@@ -11,7 +11,7 @@
 
 #include "fsi_algorithm.H"
 #include "fsi_str_model_evaluator_partitioned.H"
-#include "adapter_coupling.H"
+#include "coupling_adapter.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "adapter_str_fsiwrapper.H"
@@ -120,7 +120,7 @@ void FSI::Algorithm::Setup()
           DRT::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
   fluid_ = MBFluidbase->MBFluidField();
 
-  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
 
@@ -195,12 +195,12 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() { return *coupsf_; }
+CORE::ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() const { return *coupsf_; }
+const CORE::ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() const { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/

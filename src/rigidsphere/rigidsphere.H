@@ -18,9 +18,9 @@
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 #include "lib_elementtype.H"
-#include "fem_general_largerotations.H"
-#include "fem_general_utils_fem_shapefunctions.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_largerotations.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
+#include "discretization_fem_general_utils_integration.H"
 
 #include "beaminteraction_calc_utils.H"
 
@@ -407,9 +407,10 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
           const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-          const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const override;
+          const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params)
+          const override;
 
       //@}
 

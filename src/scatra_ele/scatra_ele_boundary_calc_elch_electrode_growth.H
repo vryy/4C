@@ -27,20 +27,22 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeGrowth
-        : public ScaTraEleBoundaryCalcElchElectrode<distype>
+        : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype> myelectrode;
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim> myelch;
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim> myelectrode;
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils myelectrodegrowthutils;
       using my::nen_;
       using my::nsd_;
+      using my::nsd_ele_;
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor

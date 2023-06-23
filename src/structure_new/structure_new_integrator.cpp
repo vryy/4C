@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "structure_new_integrator.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_epetra_utils.H"
 
 #include "io_pstream.H"

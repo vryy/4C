@@ -13,7 +13,7 @@
 #include "geometry_pair_utility_classes.H"
 
 #include "lib_element.H"
-#include "fem_general_utils_integration.H"
+#include "discretization_fem_general_utils_integration.H"
 
 
 #include "geometry_pair_line_projection.H"

@@ -457,8 +457,8 @@ and so on. The loop starts as follows:
  \texttt{~~ELEMENT{*}~actele~=~actpdis->element{[}i];~}~\\
  \texttt{~~if~((actele->Id{\_}loc~>=~dst{\_}first{\_}id)~{\&}{\&}~}~\\
  \texttt{~~~~~~(actele->Id{\_}loc~<~dst{\_}first{\_}id+dst{\_}num))~{\{}~}~\\
- \texttt{~~~~DOUBLE{*}~dst{\_}ptr;~}~\\
- \texttt{~~~~INT{*}~size{\_}dst{\_}ptr; }
+ \texttt{~~~~double{*}~dst{\_}ptr;~}~\\
+ \texttt{~~~~int{*}~size{\_}dst{\_}ptr; }
 \end{quote}
 Please note that we know the elements are ordered by their \texttt{Id{\_}loc},
 but we don't own a consecutive list. After all, we are just one processor
@@ -845,8 +845,8 @@ If we know how many numbers we have to send and receive the MPI call
 itself is pretty simple: 
 
 \begin{quote}
-\texttt{err~=~MPI{\_}Sendrecv(send{\_}buf,~send{\_}count,~MPI{\_}DOUBLE,~dst,~tag{\_}base+i,~}~\\
- \texttt{~~~~~~~~~~~~~~~~~~~recv{\_}buf,~recv{\_}count,~MPI{\_}DOUBLE,~src,~tag{\_}base+i,~}~\\
+\texttt{err~=~MPI{\_}Sendrecv(send{\_}buf,~send{\_}count,~MPI{\_}double,~dst,~tag{\_}base+i,~}~\\
+ \texttt{~~~~~~~~~~~~~~~~~~~recv{\_}buf,~recv{\_}count,~MPI{\_}double,~src,~tag{\_}base+i,~}~\\
  \texttt{~~~~~~~~~~~~~~~~~~~context->actintra->MPI{\_}INTRA{\_}COMM,~{\&}status); }
 \end{quote}
 To figure out these counts some more communication is needed. But

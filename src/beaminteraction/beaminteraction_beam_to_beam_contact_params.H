@@ -15,7 +15,7 @@
 
 #include "inpar_beamcontact.H"
 
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 
 namespace BEAMINTERACTION
 {

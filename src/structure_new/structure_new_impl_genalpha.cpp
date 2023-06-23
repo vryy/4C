@@ -18,7 +18,7 @@
 #include "structure_new_timint_base.H"
 
 #include "inpar_structure.H"
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "io.H"
 #include "io_pstream.H"
@@ -203,7 +203,10 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
         "Choose GenAlphaLieGroup instead!");
   }
 
-  EquilibrateInitialState();
+  if (not SDyn().NeglectInertia())
+  {
+    EquilibrateInitialState();
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -303,6 +306,8 @@ void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
   CheckInitSetup();
 
   if (IsPredictorState()) return;
+
+  UpdateConstantStateContributions();
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------

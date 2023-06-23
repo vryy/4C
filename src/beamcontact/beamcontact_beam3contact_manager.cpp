@@ -23,7 +23,6 @@
 #include "linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 
-#include "beam3.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
 #include "beam3_kirchhoff.H"
@@ -1688,7 +1687,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
               ele2_type != pair1_ele1_type))
       {
         dserror(
-            "All contacting beam elements have to be of the same type (beam3k, beam3eb, beam3 or "
+            "All contacting beam elements have to be of the same type (beam3k, beam3eb or "
             "beam3r). Check your input file!");
       }
     }
@@ -2840,7 +2839,6 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         // no output for solid elements here
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
-            eot != DRT::ELEMENTS::Beam3Type::Instance() and
             eot != DRT::ELEMENTS::Beam3rType::Instance() and
             eot != DRT::ELEMENTS::Beam3kType::Instance() and
             eot != DRT::ELEMENTS::RigidsphereType::Instance())
@@ -2850,8 +2848,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // BEAM3R
         //**********
         // standard procedure for Reissner beams or rigid spheres
-        if (eot == DRT::ELEMENTS::Beam3Type::Instance() or
-            eot == DRT::ELEMENTS::Beam3rType::Instance() or
+        if (eot == DRT::ELEMENTS::Beam3rType::Instance() or
             eot == DRT::ELEMENTS::RigidsphereType::Instance())
         {
           //*******************************************************************
@@ -3013,24 +3010,22 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
           if (nnodes == 2)
           {
-            LINALG::Matrix<12, 1> disp_totlag(true);
+            std::vector<double> disp_totlag(12, 0.0);
             for (int i = 0; i < 3; i++)
             {
-              disp_totlag(i) = nodalcoords(i, 0);
-              disp_totlag(i + 6) = nodalcoords(i, 1);
-              disp_totlag(i + 3) = nodaltangents(i, 0);
-              disp_totlag(i + 9) = nodaltangents(i, 1);
+              disp_totlag[i] = nodalcoords(i, 0);
+              disp_totlag[i + 6] = nodalcoords(i, 1);
+              disp_totlag[i + 3] = nodaltangents(i, 0);
+              disp_totlag[i + 9] = nodaltangents(i, 1);
             }
             // Calculate axial positions within the element by using the Hermite interpolation of
             // Kirchhoff beams
             for (int i = 0; i < n_axial; i++)
             {
-              double xi =
-                  -1.0 +
-                  i * 2.0 /
-                      (n_axial - 1);  // parameter coordinate of position vector on beam centerline
-              LINALG::Matrix<3, 1> r =
-                  ele->GetPos(xi, disp_totlag);  // position vector on beam centerline
+              // parameter coordinate of position vector on beam centerline
+              double xi = -1.0 + i * 2.0 / (n_axial - 1);
+              LINALG::Matrix<3, 1> r;
+              ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
             }
@@ -3095,7 +3090,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               theta(1) = nodaltangents(1, j);
               theta(2) = nodaltangents(2, j);
               R.Clear();
-              LARGEROTATIONS::angletotriad(theta, R);
+              CORE::LARGEROTATIONS::angletotriad(theta, R);
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
               nodaltangents(0, j) = (1.0 + lt) * R(0, 0);
@@ -3109,13 +3104,13 @@ void CONTACT::Beam3cmanager::GmshOutput(
           // of interest here, the beam3k element is a 2-noded element with Hermite interpolation
           if (nnodes == 3)
           {
-            LINALG::Matrix<12, 1> disp_totlag(true);
+            std::vector<double> disp_totlag(12, 0.0);
             for (int i = 0; i < 3; i++)
             {
-              disp_totlag(i) = nodalcoords(i, 0);
-              disp_totlag(i + 6) = nodalcoords(i, 1);
-              disp_totlag(i + 3) = nodaltangents(i, 0);
-              disp_totlag(i + 9) = nodaltangents(i, 1);
+              disp_totlag[i] = nodalcoords(i, 0);
+              disp_totlag[i + 6] = nodalcoords(i, 1);
+              disp_totlag[i + 3] = nodaltangents(i, 0);
+              disp_totlag[i + 9] = nodaltangents(i, 1);
             }
             // Calculate axial positions within the element by using the Hermite interpolation of
             // Kirchhoff beams
@@ -3125,8 +3120,8 @@ void CONTACT::Beam3cmanager::GmshOutput(
                   -1.0 +
                   i * 2.0 /
                       (n_axial - 1);  // parameter coordinate of position vector on beam centerline
-              LINALG::Matrix<3, 1> r =
-                  ele->GetPos(xi, disp_totlag);  // position vector on beam centerline
+              LINALG::Matrix<3, 1> r;
+              ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
             }
@@ -3233,7 +3228,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // for creating an unique filename if contact forces should be written in a text file
 
       // Get number of Gauss points used for one contact interval
-      const int numgp = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
+      const int numgp = CORE::DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
 
       // Get moment of inertia
       // double Iyy1 = 0.0;

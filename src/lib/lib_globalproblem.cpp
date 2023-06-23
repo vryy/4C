@@ -188,7 +188,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/BEAMS", *list);
   reader.ReadGidSection("--IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
-  reader.ReadGidSection("--PATIENT SPECIFIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);

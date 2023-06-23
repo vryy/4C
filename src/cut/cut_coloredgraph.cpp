@@ -45,8 +45,8 @@ bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
 // add connection in the graph
 void GEO::CUT::COLOREDGRAPH::Graph::Add(int row, int col)
 {
-  if (row >= color_split_ and col >= color_split_) run_time_error("two lines connected");
-  if (row < color_split_ and col < color_split_) run_time_error("two facets connected");
+  if (row >= color_split_ and col >= color_split_) dserror("two lines connected");
+  if (row < color_split_ and col < color_split_) dserror("two facets connected");
   graph_[row].insert(col);
   graph_[col].insert(row);
 }
@@ -146,7 +146,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
       // Check your cut_mesh from cut_mesh*.pos
       // -------------------------------------------------------------------
       dserror("open point in colored graph ( facet-id = %d )", i->first);
-      run_time_error("open point in colored graph");
+      dserror("open point in colored graph");
     }
   }
 }
@@ -162,7 +162,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
       plain_int_set& row = i->second;
       if (row.size() < 3)
       {
-        run_time_error("facets need at least three lines");
+        dserror("facets need at least three lines");
       }
     }
   }
@@ -282,7 +282,7 @@ namespace GEO
           if (visited[line] < 0) throw std::runtime_error("too few facets at line");
         }
         visited[facet] -= 1;
-        if (visited[facet] < 0) run_time_error("facet left more than once");
+        if (visited[facet] < 0) dserror("facet left more than once");
       }
 
       bool VisitFacetDFS(Graph& graph, Graph& used, plain_int_set& free, int facet,
@@ -340,7 +340,7 @@ namespace GEO
                   // otherwise throw error, we could not find what lines split the volume
                   if (split_trace.size() == 0)
                   {
-                    run_time_error("no split trace");
+                    dserror("no split trace");
                   }
 
                   return true;
@@ -485,7 +485,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& used, pl
     }
     else if (*i > 1)
     {
-      run_time_error("same facet was visited twice");
+      dserror("same facet was visited twice");
     }
   }
 }
@@ -665,7 +665,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
   if (facet_row->size() != 2)
   {
     // This might happen and it might be a valid split. How to deal with it?
-    run_time_error("expect two facets at line");
+    dserror("expect two facets at line");
   }
 
   plain_int_set::iterator facet_it = facet_row->begin();
@@ -726,7 +726,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
       }
       else
       {
-        run_time_error("open line after graph split");
+        dserror("open line after graph split");
       }
 
       if (open_cycle != NULL)
@@ -753,7 +753,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
         const std::vector<int>& isolated_split_trace = *c_it;
 
         plain_int_set& facet_row = at(line);
-        if (facet_row.size() != 2) run_time_error("Expect two facets at line");
+        if (facet_row.size() != 2) dserror("Expect two facets at line");
         plain_int_set::iterator i = facet_row.begin();
         int f1 = *i;
         ++i;
@@ -769,7 +769,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
         }
         else
         {
-          run_time_error("Could fill found the seed facet for cycle creation");
+          dserror("Could fill found the seed facet for cycle creation");
         }
       }
     }
@@ -879,7 +879,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Gra
 
           // this is happens when after finding split trace, both division along it produces same
           // cycles
-          run_time_error("bad luck");
+          dserror("bad luck");
 
           cycles_.erase(*ilist);
           found = true;
@@ -895,7 +895,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Gra
           if (f >= c().Split()) break;
           if (connection.count(f) == 0 and c1.count(f) > 0 and c2.count(f) > 0)
           {
-            run_time_error("not a valid split");
+            dserror("not a valid split");
           }
         }
 
@@ -939,7 +939,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
 #ifdef DEBUGCUTLIBRARY
         DumpGraph("failedgraph.py");
 #endif
-        run_time_error("colored graph not properly split");
+        dserror("colored graph not properly split");
       }
     }
   }

@@ -63,7 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(const int id, con
 void DRT::ELEMENTS::FluidHDGType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = DRT::UTILS::getDimension(dwele->Shape()) + 1;
+  numdf = CORE::DRT::UTILS::getDimension(dwele->Shape()) + 1;
   dimns = numdf;
   nv = numdf - 1;
   np = 1;
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
     for (int i = 0; i < frowmap->NumMyElements(); ++i)
     {
       std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
-      const unsigned int dim = DRT::UTILS::getDimension(facedis->lRowFace(i)->Shape()) + 1;
+      const unsigned int dim = CORE::DRT::UTILS::getDimension(facedis->lRowFace(i)->Shape()) + 1;
       dsassert(dofs.size() % dim == 0, "Could not match face dofs");
       const unsigned int ndofs = dofs.size() / dim;
       for (unsigned int i = 0; i < dofs.size(); ++i)
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
       std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
       dsassert(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
       const unsigned int lid = rowmap->LID(dofs[0]);
-      const unsigned int dim = DRT::UTILS::getDimension(dis.lRowElement(i)->Shape());
+      const unsigned int dim = CORE::DRT::UTILS::getDimension(dis.lRowElement(i)->Shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
       mode[dim][lid] = 1.;
     }

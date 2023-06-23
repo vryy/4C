@@ -12,10 +12,12 @@
 
 #include "scatra_timint_meshtying_strategy_base.H"
 
-#include "fem_general_utils_local_connectivity_matrices.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include "inpar_s2i.H"
 #include "inpar_scatra.H"
+#include "coupling_adapter.H"
+#include "coupling_adapter_mortar.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
@@ -31,17 +33,18 @@ namespace DRT
 {
   class Condition;
 
-  namespace UTILS
-  {
-    template <const int NSD>
-    class IntPointsAndWeights;
-  }
   namespace ELEMENTS
   {
     class ScaTraEleParameterBoundary;
   }
 
 }  // namespace DRT
+
+namespace CORE::DRT::UTILS
+{
+  template <const int NSD>
+  class IntPointsAndWeights;
+}
 
 namespace LINALG
 {
@@ -112,7 +115,7 @@ namespace SCATRA
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
+    const Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_; }
@@ -292,10 +295,10 @@ namespace SCATRA
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
-    Teuchos::RCP<ADAPTER::Coupling> icoup_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_;
 
     //! mortar interface coupling adapters
-    std::map<int, Teuchos::RCP<ADAPTER::CouplingMortar>> icoupmortar_;
+    std::map<int, Teuchos::RCP<CORE::ADAPTER::CouplingMortar>> icoupmortar_;
 
     //! mortar integration cells
     std::map<int, std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>, INPAR::SCATRA::ImplType>>>
@@ -842,16 +845,18 @@ namespace SCATRA
 
    protected:
     //! number of slave element nodes
-    static const int nen_slave_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int nen_slave_ =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
 
     //! number of master element nodes
-    static const int nen_master_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nen_master_ =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
     //! spatial dimensionality of slave elements
-    static const int nsd_slave_ = DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int nsd_slave_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
 
     //! spatial dimensionality of master elements
-    static const int nsd_master_ = DRT::UTILS::DisTypeToDim<distypeM>::dim;
+    static const int nsd_master_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim;
 
     //! protected constructor for singletons
     MortarCellCalc(const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -966,14 +971,14 @@ namespace SCATRA
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
         MORTAR::MortarElement& masterelement,  //!< master-side mortar element
         MORTAR::IntCell& cell,                 //!< mortar integration cell
-        const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
-        const int iquad                                                //!< ID of integration point
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
+        const int iquad  //!< ID of integration point
     );
 
     //! evaluate slave-side shape functions and domain integration factor at element integration
     //! point
     double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::MortarElement& element,  //!< mortar element
-        const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,           //!< quadrature rule
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,     //!< quadrature rule
         const int iquad  //!< ID of integration point
     );
 

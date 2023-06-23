@@ -16,7 +16,7 @@ is handed to a c++ object mesh.
 #include <string>
 #include <iostream>
 #include <vector>
-#include "lib_dserror.H"
+#include "utils_exceptions.H"
 #include "lib_element.H"
 
 namespace EXODUS

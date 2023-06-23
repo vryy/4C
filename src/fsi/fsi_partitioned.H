@@ -31,6 +31,7 @@
 
 #include "fsi_algorithm.H"
 #include "io.H"
+#include "coupling_adapter_mortar.H"
 
 // forward declarations
 namespace ADAPTER
@@ -197,10 +198,10 @@ namespace FSI
     Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
     /// return coupsfm_
-    ADAPTER::CouplingMortar& StructureFluidCouplingMortar();
+    CORE::ADAPTER::CouplingMortar& StructureFluidCouplingMortar();
 
     /// return coupsfm_
-    const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const;
+    const CORE::ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const;
 
     /// access to iteration counter
     virtual std::vector<int> IterationCounter() { return counter_; };
@@ -257,7 +258,7 @@ namespace FSI
 
 
     /// coupling of structure and fluid at the interface, with mortar.
-    Teuchos::RCP<ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     /// nodes at the fluid-structure interface match
     bool matchingnodes_;

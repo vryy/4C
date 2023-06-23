@@ -11,8 +11,8 @@
 #include "w1.H"
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "lib_dserror.H"
-#include "fem_general_utils_fem_shapefunctions.H"
+#include "utils_exceptions.H"
+#include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_linedefinition.H"
 #include "linalg_utils_nullspace.H"
 
@@ -149,7 +149,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
-      gaussrule_(DRT::UTILS::GaussRule2D::undefined),
+      gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined),
       wtype_(plane_none),
       stresstype_(w1_none),
       iseas_(false),
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::Wall1::Print(std::ostream& os) const
 {
   os << "Wall1 ";
   Element::Print(os);
-  os << " gaussrule_: " << DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
+  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
   return;
 }
 

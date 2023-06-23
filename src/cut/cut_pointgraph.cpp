@@ -25,7 +25,7 @@
 
 
 #define DEBUG_POINTGRAPH false
-//#define CLN_CALC_OUTSIDE_KERNEL
+// #define CLN_CALC_OUTSIDE_KERNEL
 #ifdef CLN_CALC_OUTSIDE_KERNEL
 #include "cut_clnwrapper.H"
 #endif
@@ -455,7 +455,7 @@ bool GEO::CUT::IMPL::FindCycles(graph_t &g, GEO::CUT::Cycle &cycle,
             << previous->Id() << std::endl;
         file.close();
 
-        run_time_error(err_msg.str());
+        dserror(err_msg.str());
       }
 
       arcs[arc] = *ai;
@@ -674,7 +674,7 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycle)
       {
         if (main_cycles_.size() != 0)
         {
-          run_time_error("one set of main cycles only");
+          dserror("one set of main cycles only");
         }
         std::swap(main_cycles_, filtered_cycles);
       }
@@ -836,7 +836,7 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
         GnuplotDumpCycles("cycles", main_cycles_);
         boost::print_graph(g, boost::get(boost::vertex_name, g));
 
-        run_time_error("cycle needs to contain side edges");
+        dserror("cycle needs to contain side edges");
       }
     }
     else if (num_comp > 1)
@@ -857,7 +857,7 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
         {
           if (main_cycles_.size() != 0)
           {
-            run_time_error("one set of main cycles only");
+            dserror("one set of main cycles only");
           }
           std::swap(main_cycles_, filtered_cycles);
         }
@@ -870,12 +870,12 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
 
       if (location == element_side and main_cycles_.size() == 0)
       {
-        run_time_error("cycle needs to contain side edges");
+        dserror("cycle needs to contain side edges");
       }
     }
     else
     {
-      if (location == element_side) run_time_error("empty graph discovered");
+      if (location == element_side) dserror("empty graph discovered");
     }
   }
 

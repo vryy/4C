@@ -12,6 +12,7 @@
 #define SCATRA_TIMINT_BDF2_H
 
 #include "scatra_timint_implicit.H"
+#include "linalg_sparsematrix.H"
 
 namespace SCATRA
 {
