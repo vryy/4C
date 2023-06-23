@@ -21,7 +21,7 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_MpiComm.h>
 
-#include "geometry_geo_utils.H"
+#include "discretization_geometry_geo_utils.H"
 // only due to enumerator use (can be resolved with C++11)
 #include "cut_point.H"
 

@@ -10,12 +10,12 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
-#define GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
+#ifndef DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
+#define DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_COORDTRAFO_H
 
 
-#include "geometry_element_coordtrafo.H"
-#include "geometry_integrationcell.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_integrationcell.H"
 
 
 namespace GEO

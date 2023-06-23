@@ -3,7 +3,6 @@ baci_auto_define_module()
 set(_particle_wall_dependencies
     # cmake-format: sortable
     binstrategy
-    geometry
     inpar
     io
     lib

@@ -6,7 +6,6 @@ set(_ale_dependencies
     contact
     core
     fluid_ele
-    geometry
     inpar
     io
     lib

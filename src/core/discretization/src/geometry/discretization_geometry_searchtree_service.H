@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_SEARCHTREE_SERVICE_H
-#define GEOMETRY_SEARCHTREE_SERVICE_H
+#ifndef DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
+#define DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
 
 #include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"
-#include "geometry_geo_utils.H"
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_geo_utils.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 
 // forward declarations
 namespace DRT

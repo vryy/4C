@@ -21,7 +21,7 @@
 #include "discretization_fem_general_utils_integration.H"
 #include "discretization_fem_general_utils_gausspoints.H"
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_element_integration_select.H"
 #include "lib_discret.H"
 

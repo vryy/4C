@@ -9,7 +9,7 @@ concentrations and with advanced reaction terms
 
 #include "scatra_ele_boundary_calc_refconc_reac.H"
 #include "scatra_ele_parameter_std.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_utils.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
 #include "utils_singleton_owner.H"

@@ -18,7 +18,7 @@
 
 #include "linalg_utils_sparse_algebra_math.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "inpar_xfem.H"
 

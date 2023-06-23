@@ -5,7 +5,6 @@ set(_poromultiphase_scatra_dependencies
     adapter
     art_net
     core
-    geometry
     inpar
     io
     lib

@@ -27,8 +27,8 @@
 #include "cut_boundingbox.H"
 #include "cut_position.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,

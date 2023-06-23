@@ -22,11 +22,11 @@
 
 #include "linalg_utils_densematrix_communication.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
-#include "geometry_position_array.H"
-#include "geometry_intersection_service_templates.H"
-#include "geometry_intersection_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_position_array.H"
+#include "discretization_geometry_intersection_service_templates.H"
+#include "discretization_geometry_intersection_service.H"
 #include "inpar_bio.H"
 
 

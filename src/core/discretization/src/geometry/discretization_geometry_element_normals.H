@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_ELEMENT_NORMALS_H
-#define GEOMETRY_ELEMENT_NORMALS_H
+#ifndef DISCRETIZATION_GEOMETRY_ELEMENT_NORMALS_H
+#define DISCRETIZATION_GEOMETRY_ELEMENT_NORMALS_H
 
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
@@ -238,4 +238,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // GEOMETRY_ELEMENT_NORMALS_H
+#endif  // DISCRETIZATION_GEOMETRY_ELEMENT_NORMALS_H

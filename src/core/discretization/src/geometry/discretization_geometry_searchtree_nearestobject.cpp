@@ -8,7 +8,7 @@
  */
 
 
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 
 
 /*----------------------------------------------------------------------*

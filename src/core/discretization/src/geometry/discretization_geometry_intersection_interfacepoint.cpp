@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_intersection_interfacepoint.H"
+#include "discretization_geometry_intersection_interfacepoint.H"
 
 
 

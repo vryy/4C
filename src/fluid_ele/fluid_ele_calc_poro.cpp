@@ -19,7 +19,7 @@
 #include "discretization_fem_general_utils_gder2.H"
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "mat_fluidporo.H"
 #include "mat_structporo.H"

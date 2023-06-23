@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_POSITION_ARRAY_H
-#define GEOMETRY_POSITION_ARRAY_H
+#ifndef DISCRETIZATION_GEOMETRY_POSITION_ARRAY_H
+#define DISCRETIZATION_GEOMETRY_POSITION_ARRAY_H
 
 
 #include "lib_node.H"

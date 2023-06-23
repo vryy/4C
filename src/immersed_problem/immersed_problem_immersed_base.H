@@ -23,8 +23,8 @@
 #include "lib_exporter.H"
 #include "cut_boundingbox.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include "inpar_fluid.H"
 

@@ -8,7 +8,6 @@ set(_immersed_problem_dependencies
     cut
     fluid_ele
     fsi
-    geometry
     inpar
     io
     lib

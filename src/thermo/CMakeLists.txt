@@ -5,7 +5,6 @@ set(_thermo_dependencies
     adapter
     contact
     core
-    geometry
     inpar
     io
     lib

@@ -36,8 +36,8 @@
 #include "so3_line.H"
 
 #include "fsi_debugwriter.H"
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 #include "adapter_fld_fluid_ale.H"
 #include "coupling_adapter_mortar.H"
 #include "mortar_interface.H"

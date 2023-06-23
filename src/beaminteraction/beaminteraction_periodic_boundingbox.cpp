@@ -23,7 +23,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 #include "inpar_binningstrategy.H"
 
 

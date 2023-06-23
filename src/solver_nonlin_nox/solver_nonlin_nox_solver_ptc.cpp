@@ -26,7 +26,7 @@
 
 #include "utils_exceptions.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_Direction_Generic.H>

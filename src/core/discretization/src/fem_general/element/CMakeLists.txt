@@ -3,7 +3,6 @@ baci_auto_define_module()
 set(LIBS_FEM_GENERAL_ELEMENT
     # cmake-format: sortable
     cut
-    geometry
     lib
     )
 

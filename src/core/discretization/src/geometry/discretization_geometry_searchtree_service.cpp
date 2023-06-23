@@ -7,14 +7,14 @@
 
  */
 
-#include "geometry_element_coordtrafo.H"
-#include "geometry_element_normals.H"
-#include "geometry_intersection_interfacepoint.H"
-#include "geometry_intersection_service_templates.H"
-#include "geometry_intersection_service.H"
-#include "geometry_position_array.H"
-#include "geometry_searchtree_service.H"
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_normals.H"
+#include "discretization_geometry_intersection_interfacepoint.H"
+#include "discretization_geometry_intersection_service_templates.H"
+#include "discretization_geometry_intersection_service.H"
+#include "discretization_geometry_position_array.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 #include "lib_discret.H"
 
 /*----------------------------------------------------------------------*

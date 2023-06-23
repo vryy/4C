@@ -12,8 +12,8 @@
 #define SCATRA_ELE_CALC_LSREINIT_H
 
 #include "scatra_ele_calc.H"
-#include "geometry_integrationcell.H"
-#include "geometry_geo_utils.H"
+#include "discretization_geometry_integrationcell.H"
+#include "discretization_geometry_geo_utils.H"
 
 namespace DRT
 {

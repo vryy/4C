@@ -15,7 +15,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_discret.H"  // for time curve in body force
 #include "lib_utils.H"
 #include "lib_globalproblem.H"  // consistency check of formulation and material

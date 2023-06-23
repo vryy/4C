@@ -24,8 +24,8 @@
 #include "linalg_utils_densematrix_communication.H"
 
 // search tree related
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 // time monitoring
 #include <Teuchos_TimeMonitor.hpp>

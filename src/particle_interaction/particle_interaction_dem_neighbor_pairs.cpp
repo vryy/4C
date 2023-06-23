@@ -19,9 +19,9 @@
 
 #include "mat_particle_wall_dem.H"
 
-#include "geometry_searchtree_service.H"
-#include "geometry_position_array.H"
-#include "geometry_element_coordtrafo.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_position_array.H"
+#include "discretization_geometry_element_coordtrafo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

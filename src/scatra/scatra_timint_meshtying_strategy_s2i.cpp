@@ -18,7 +18,7 @@
 #include "fluid_utils.H"
 #include "linalg_matrixtransform.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "io.H"
 #include "io_control.H"

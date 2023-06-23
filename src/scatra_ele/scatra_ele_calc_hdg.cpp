@@ -17,7 +17,7 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_elementtype.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "mat_scatra_mat.H"
 #include "mat_list.H"

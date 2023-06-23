@@ -37,8 +37,8 @@
 #include "lib_globalproblem.H"
 
 // search
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 #include "coupling_adapter.H"
 #include "coupling_adapter_volmortar.H"
 

@@ -34,7 +34,7 @@
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

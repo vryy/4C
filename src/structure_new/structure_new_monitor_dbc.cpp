@@ -26,7 +26,7 @@
 #include "io_every_iteration_writer.H"
 
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "geometry_element_volume.H"
+#include "discretization_geometry_element_volume.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

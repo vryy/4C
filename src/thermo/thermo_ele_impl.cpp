@@ -11,7 +11,7 @@
 #include "inpar_structure.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_condition_utils.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"

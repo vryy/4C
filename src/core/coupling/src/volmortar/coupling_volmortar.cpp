@@ -42,8 +42,8 @@
 #include "cut_cutwizard.H"
 
 // search
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include "utils_pairedvector.H"
 #include <Teuchos_Time.hpp>

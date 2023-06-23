@@ -35,7 +35,7 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include "binstrategy_meshfree_multibin.H"
 

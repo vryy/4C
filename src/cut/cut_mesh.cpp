@@ -20,10 +20,10 @@ mesh
 #include "cut_output.H"
 #include "cut_parallel.H"
 
-#include "geometry_element_volume.H"
+#include "discretization_geometry_element_volume.H"
 
 // search
-#include "geometry_searchtree.H"
+#include "discretization_geometry_searchtree.H"
 
 
 /*-------------------------------------------------------------------------------------*

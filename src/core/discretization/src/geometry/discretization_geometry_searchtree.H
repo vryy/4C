@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_SEARCHTREE_H
-#define GEOMETRY_SEARCHTREE_H
+#ifndef DISCRETIZATION_GEOMETRY_SEARCHTREE_H
+#define DISCRETIZATION_GEOMETRY_SEARCHTREE_H
 
 #include <set>
 
 #include <Teuchos_RCP.hpp>
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations

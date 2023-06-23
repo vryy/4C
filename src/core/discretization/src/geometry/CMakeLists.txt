@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_geometry_dependencies
     # cmake-format: sortable
-    core
     cut
     io
     lib

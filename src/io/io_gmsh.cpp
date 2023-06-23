@@ -17,8 +17,8 @@
 #include "lib_utils_parallel.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
 #include "linalg_serialdensevector.H"
-#include "geometry_intersection_service.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_intersection_service.H"
+#include "discretization_geometry_position_array.H"
 
 
 /*------------------------------------------------------------------------------------------------*

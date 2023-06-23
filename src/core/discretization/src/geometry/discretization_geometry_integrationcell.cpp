@@ -10,9 +10,9 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_integrationcell.H"
-#include "geometry_element_coordtrafo.H"
-#include "geometry_element_volume.H"
+#include "discretization_geometry_integrationcell.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_volume.H"
 #include "io_gmsh.H"
 
 #include "lib_globalproblem.H"

@@ -7,12 +7,12 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_INTERSECTION_SERVICE_H
-#define GEOMETRY_INTERSECTION_SERVICE_H
+#ifndef DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H
+#define DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H
 
 
-#include "geometry_geo_utils.H"
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_geo_utils.H"
+#include "discretization_geometry_intersection_math.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
@@ -227,4 +227,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // GEOMETRY_INTERSECTION_SERVICE_H
+#endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H

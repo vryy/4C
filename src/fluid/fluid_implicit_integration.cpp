@@ -72,7 +72,7 @@
 // allows for dealing with edged-based stabilization
 #include "lib_discret_faces.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "fluid_ele_intfaces_calc.H"
 
 

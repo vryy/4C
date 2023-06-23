@@ -7,7 +7,6 @@ set(_scatra_dependencies
     core
     fluid
     fluid_turbulence
-    geometry
     inpar
     io
     lib

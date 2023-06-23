@@ -14,12 +14,12 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_utils.H"
 #include "lib_discret.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "geometry_integrationcell_coordtrafo.H"
+#include "discretization_geometry_integrationcell_coordtrafo.H"
 #include "utils_singleton_owner.H"
 
 #define USE_PHIN_FOR_VEL

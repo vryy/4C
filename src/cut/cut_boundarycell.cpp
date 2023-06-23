@@ -15,7 +15,7 @@
 #include "cut_output.H"
 #include "cut_side.H"
 
-#include "geometry_element_volume.H"
+#include "discretization_geometry_element_volume.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

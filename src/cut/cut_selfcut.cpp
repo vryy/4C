@@ -18,13 +18,13 @@
 #include "cut_options.H"
 #include "cut_output.H"
 
-#include "geometry_searchtree.H"
+#include "discretization_geometry_searchtree.H"
 
 #include "cut_selfcut.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-//#define DEBUG_SELFCUT
+// #define DEBUG_SELFCUT
 
 /*-------------------------------------------------------------------------------------*
  * constructor                                                              wirtz 05/13

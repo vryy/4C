@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_ELEMENT_VOLUME_H
-#define GEOMETRY_ELEMENT_VOLUME_H
+#ifndef DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H
+#define DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H
 
 
 #include "discretization_fem_general_utils_gausspoints.H"
@@ -240,4 +240,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // GEOMETRY_ELEMENT_VOLUME_H
+#endif  // DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H

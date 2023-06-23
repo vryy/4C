@@ -25,7 +25,7 @@
 #include "rigidsphere.H"
 #include "so3_base.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include "lib_globalproblem.H"
 

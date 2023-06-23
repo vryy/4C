@@ -22,8 +22,8 @@
 #include "lib_dofset_independent.H"
 #include "comm_utils.H"
 
-#include "geometry_searchtree_service.H"
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"

@@ -19,7 +19,7 @@
 #include "mat_cnst_1d_art.H"
 #include "linalg_FAD_utils.H"
 #include "porofluidmultiphase_ele_parameter.H"
-#include "geometry_coordinate_system_utils.H"
+#include "discretization_geometry_coordinate_system_utils.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_integration.H"

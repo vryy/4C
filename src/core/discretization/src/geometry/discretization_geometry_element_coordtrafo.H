@@ -9,12 +9,12 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_ELEMENT_COORDTRAFO_H
-#define GEOMETRY_ELEMENT_COORDTRAFO_H
+#ifndef DISCRETIZATION_GEOMETRY_ELEMENT_COORDTRAFO_H
+#define DISCRETIZATION_GEOMETRY_ELEMENT_COORDTRAFO_H
 
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 #include "linalg_gauss.H"
 
 
@@ -1392,4 +1392,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // GEOMETRY_ELEMENT_COORDTRAFO_H
+#endif  // DISCRETIZATION_GEOMETRY_ELEMENT_COORDTRAFO_H

@@ -11,12 +11,12 @@ header file
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_GEO_UTILS_H
-#define GEOMETRY_GEO_UTILS_H
+#ifndef DISCRETIZATION_GEOMETRY_GEO_UTILS_H
+#define DISCRETIZATION_GEOMETRY_GEO_UTILS_H
 
 
 #include <vector>
-#include "geometry_integrationcell.H"
+#include "discretization_geometry_integrationcell.H"
 
 
 // forward declarations
@@ -41,4 +41,4 @@ namespace GEO
   };
 }  // namespace GEO
 
-#endif  // GEOMETRY_GEO_UTILS_H
+#endif  // DISCRETIZATION_GEOMETRY_GEO_UTILS_H

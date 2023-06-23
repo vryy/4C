@@ -12,7 +12,7 @@
 
 #include "discretization_fem_general_utils_boundary_integration.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include "lib_discret.H"

@@ -6,7 +6,6 @@ set(_scatra_ele_dependencies
     fiber
     fluid
     fluid_ele
-    geometry
     inpar
     lib
     linalg

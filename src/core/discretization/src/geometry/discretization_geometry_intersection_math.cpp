@@ -14,7 +14,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 #include "linalg_serialdensematrix.H"
 
 

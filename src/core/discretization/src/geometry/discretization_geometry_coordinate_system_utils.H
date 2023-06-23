@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef GEOMETRY_COORDINATE_SYSTEM_UTILS_H
-#define GEOMETRY_COORDINATE_SYSTEM_UTILS_H
+#ifndef DISCRETIZATION_GEOMETRY_COORDINATE_SYSTEM_UTILS_H
+#define DISCRETIZATION_GEOMETRY_COORDINATE_SYSTEM_UTILS_H
 
 #include "linalg_fixedsizematrix.H"
 
@@ -53,4 +53,4 @@ namespace GEO
 }  // namespace GEO
 
 
-#endif  // GEOMETRY_COORDINATE_SYSTEM_UTILS_H
+#endif  // DISCRETIZATION_GEOMETRY_COORDINATE_SYSTEM_UTILS_H
