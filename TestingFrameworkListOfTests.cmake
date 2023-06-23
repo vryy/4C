@@ -1524,6 +1524,7 @@ baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_3x3 3 8 amgnxn
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6 3 8 amgnxn)
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_11x11 3 8 amgnxn)
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_cycling 3 40)
+result_file_rel(ssi_mono_3D_tet4_elch_s2i_butlervolmer_cycling 1 3 cell_voltage-csv xxx-cell_voltage.csv ref/ssi_mono_3D_tet4_elch_s2i_butlervolmer_cycling_cell_voltage.csv 1.0e-6 1.0e-16)
 baci_test(ssi_mono_3D_tet10_elch 1 30)
 baci_test(ssi_oneway_scatra_to_solid_3D_line2_elch_s2i_butlervolmer_multiscale 1 45)
 baci_test(ssi_twoway_3D_1hex8_scatra 3 5)
