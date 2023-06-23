@@ -5767,7 +5767,7 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 4171 BELE3_3 TRI3 811 876 415 MAT 2
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of a points on top of the cylinder
-STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 1.03721839040628528e-06 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 2.32687780383785181e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 1.03721839040620016e-06 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 2.32687780383759701e-01 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

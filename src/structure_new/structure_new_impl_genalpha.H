@@ -194,41 +194,20 @@ namespace STR
       void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
-       * \f$t_{n+1}\f$
+       * \f$ t_{n+1} \f$ based on the generalized alpha scheme:
        *
-       *  The constant contributions are stored in the const_vel_acc_update_ptr_ multi-vector
-       *  pointer. The 1st entry represents the velocity, and the 2nd the acceleration.
+       * \f[
+       *      V_{n+1} = (2.0 * \beta - \gamma)/(2.0 * \beta) * dt * A_{n} + (\beta - \gamma)/\beta
+       *              * V_{n} - \gamma/(\beta * dt) * D_{n} + \gamma/(\beta * dt) * D_{n+1}
+       *      A_{n+1} = (2.0 * \beta - 1.0)/(2.0 * \beta) * A_{n} - 1.0/(\beta * dt) * V_{n}
+       *              - 1.0/(\beta * dt^2) * D_{n} + 1.0/(\beta * dt^2) * D_{n+1}
+       * \f]
        *
-       *  Calculate the consistent velocity update part:
-       *  \f[
-       *    V_{n+1}^{0} =   \frac{\beta-\gamma}{\beta} V_{n}
-       *                  + \frac{(2 \beta - \gamma) \Delta t}{2 \beta} A_{n}
-       *  \f]
+       * Only the constant contributions, i.e. all components that depend on the state n are stored
+       * in the const_vel_acc_update_ptr_ multi-vector pointer. The 1st entry represents the
+       * velocity, and the 2nd the acceleration.
        *
-       *  Calculate the consistent acceleration update part:
-       *  \f[
-       *    A_{n+1}^{0} = - \frac{1}{\beta (\Delta t)^{2}} V_{n}
-       *                  + \frac{2 \beta - 1}{2 \beta} A_{n}
-       *  \f]
-       *
-       *  Set the new DBC values at time \f$t=t_{n+1}\f$:
-       *  \f[
-       *    D_{n+1}^{0} \leftarrow DBC(D_{n+1}^{0}, t_{n+1}) \\
-       *    V_{n+1}^{0} \leftarrow DBC(V_{n+1}^{0}, t_{n+1}) \\
-       *    A_{n+1}^{0} \leftarrow DBC(A_{n+1}^{0}, t_{n+1})
-       *  \f]
-       *
-       *  Finally, add the constant displacement update part to the constant velocity and
-       *  acceleration vectors:
-       *  \f[
-       *    \tilde{V}_{n+1} = V_{n+1}^{0} - \frac{\gamma}{\beta \Delta t} D_{n+1}^{0} \\
-       *    \tilde{A}_{n+1} = A_{n+1}^{0} - \frac{1}{\beta (\Delta t)^{2}} D_{n+1}^{0}
-       *  \f]
-       *
-       *  See the SetState() routine for the iterative update of the current state.
-       *
-       *  \author hiermeier
-       *  \date 03/2016 */
+       *  See the SetState() routine for the iterative update of the current state. */
       void UpdateConstantStateContributions() override;
 
       /// set the time integration coefficients

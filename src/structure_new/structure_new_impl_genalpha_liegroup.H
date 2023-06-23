@@ -159,49 +159,33 @@ namespace STR
       void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
-       * \f$t_{n+1}\f$
+       * \f$ t_{n+1} \f$ based on the generalized alpha scheme for Lie group extensions:
        *
-       *  The constant contributions are stored in the const_vel_acc_update_ptr_ multi-vector
-       *  pointer. The 1st entry represents the velocity, and the 2nd the acceleration.
+       * \f[
+       *     V_{n+1} = (1.0 - \gamma/(2.0 * \beta)) * dt * A_{mod,n} + (1.0 - \gamma/\beta) * V_{n}
+       *             - \gamma/(\beta * dt) * D_{n} + \gamma/(\beta * dt) * D_{n+1}
+       *     A_{n+1} = [ \alpha_m/(1.0 - \alpha_f) - (1.0 - \alpha_m) * (0.5 - \beta) /
+       *               (\beta * (1.0 - \alpha_f) ] * A_{mod,n} - \alpha_f/(1.0 - \alpha_f) * A_{n}
+       *             - (1.0 - \alpha_m)/(\beta * dt * (1.0 - \alpha_f)) * V_{n}
+       *             - (1.0 - \alpha_m)/(\beta * dt^2 * (1.0 - \alpha_f) * D_{n}
+       *             + (1.0 - \alpha_m)/(\beta * dt^2 * (1.0 - \alpha_f) * D_{n+1}
+       * \f]
        *
-       *  Calculate the consistent velocity update part:
-       *  \f[
-       *    V_{n+1}^{0} =   \frac{\beta-\gamma}{\beta} V_{n}
-       *                  + \frac{(2 \beta - \gamma) \Delta t}{2 \beta} A_{mod,n}
-       *  \f]
-       *
-       *  Calculate the consistent acceleration update part:
-       *  \f[
-       *    A_{n+1}^{0} = - \frac{1 - \alpha_m}{\beta \Delta t (1-\alpha_f)} V_{n}
-       *                  - \frac{\alpha_f}{1-\alpha_f} A_{n}
-       *                  + ( \frac{\alpha_m}{1-\alpha_f} - \frac{(1-\alpha_m)(0.5-\beta)}{\beta
-       * (1-\alpha_f)} ) A_{mod,n} \f]
-       *
-       *  Set the new DBC values at time \f$t=t_{n+1}\f$:
-       *  \f[
-       *    D_{n+1}^{0} \leftarrow DBC(D_{n+1}^{0}, t_{n+1}) \\
-       *    V_{n+1}^{0} \leftarrow DBC(V_{n+1}^{0}, t_{n+1}) \\
-       *    A_{n+1}^{0} \leftarrow DBC(A_{n+1}^{0}, t_{n+1})
-       *  \f]
-       *
-       *  Finally, add the constant displacement update part to the constant velocity and
-       *  acceleration vectors:
-       *  \f[
-       *    \tilde{V}_{n+1} = V_{n+1}^{0} - \frac{\gamma}{\beta \Delta t} D_{n+1}^{0} \\
-       *    \tilde{A}_{n+1} = A_{n+1}^{0} - \frac{1-\alpha_m}{\beta (\Delta t)^{2} (1-\alpha_f)}
-       * D_{n+1}^{0} \f]
+       * Only the constant contributions, i.e. all components that depend on the state n are stored
+       * in the const_vel_acc_update_ptr_ multi-vector pointer. The 1st entry represents the
+       * velocity, and the 2nd the acceleration.
        *
        *  See the SetState() routine for the iterative update of the current state.
        *
-       *  A_{mod,n} is updated in method UpdateStepState() according to
+       *  \f$ A_{mod,n} \f$ is updated in the method UpdateStepState() according to
        *  \f[
-       *    A_{mod,n+1} = \frac{1}{1-\alpha_m} ( (1-\alpha_f) A_{n+1} + \alpha_f A_n - \alpha_m
-       * A_{mod,n} ) \f]
+       *    A_{mod,n+1} =
+       *    \frac{1}{1-\alpha_m} ( (1-\alpha_f) A_{n+1} + \alpha_f A_n - \alpha_m * A_{mod,n} )
+       * \f]
        *
-       *  [derived]
-       *
-       *  \author grill
-       *  \date 07/2016 */
+       * \note: For more information see e.g. the dissertation of Christoph Meier: "Geometrically
+       * exact finite element formulations for slender beams and their contact interaction"
+       * */
       void UpdateConstantStateContributions() override;
 
      private:

@@ -639,14 +639,12 @@ namespace STR
 
     //! Update iteration incrementally
     //!
-    //! This update is carried out by computing the new #veln_ and #accn_
-    //! from scratch by using the newly updated #disn_ according to the time
-    //! integration scheme.
-    //! The method respects the Dirichlet DOFs which are not touched.
-    //! We have to use this update routine if we are not sure whether velocities
-    //! and accelerations have been computed consistently to the displacements
-    //! based on time integration scheme specific formulas. Hence, this method
-    //! is necessary for certain predictors (like #PredictConstDisVelAcc).
+    //! This update is carried out by computing the new #veln_ and #accn_ from scratch by using the
+    //! newly updated #disn_ according to the time integration scheme.
+    //! We have to use this update routine if we are not sure whether velocities and accelerations
+    //! have been computed consistently to the displacements based on time integration scheme
+    //! specific formulas. Hence, this method is necessary for certain predictors (like
+    //! #PredictConstDisVelAcc).
     virtual void UpdateIterIncrementally() = 0;
 
     //! Update iteration incrementally with prescribed residual

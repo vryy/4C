@@ -338,15 +338,11 @@ double STR::TimIntStatics::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-/* incremental iteration update of state */
 void STR::TimIntStatics::UpdateIterIncrementally()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/

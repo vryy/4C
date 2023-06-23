@@ -51,18 +51,18 @@ COUPLE_BOUNDARY_FLUXES          No
 CYCLING_TIMESTEP                0.1
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
--------------------------------------------------------SSTI CONTROL
+------------------------------------------------------SSTI CONTROL
 NUMSTEP                         100
 TIMESTEP                        0.35
 COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
 RESTARTEVRY                     10
 ADAPTIVE_TIMESTEPPING           Yes
---------------------------------------------SSTI CONTROL/MONOLITHIC
+-------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
 ABSTOLRES                       0
-------------------------------------------------SSTI CONTROL/THERMO
+-----------------------------------------------SSTI CONTROL/THERMO
 LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 INITTHERMOFUNCT                 4
@@ -119,7 +119,7 @@ STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE  0.00000000000000000e+00 TO
 STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
 STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE  4.93346282909023969e-05 TOLERANCE 4.9e-13
 SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  1.65719675941107774e+01 TOLERANCE 1.7e-07
-SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  -8.52792110082342125e-02 TOLERANCE 8.5e-10
+SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE -8.52792110082342125e-02 TOLERANCE 8.5e-10
 SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  9.65936879422169113e+03 TOLERANCE 9.7e-05
 SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.99856563550398732e+02 TOLERANCE 3.0e-06
 SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.00243115885693385e+02 TOLERANCE 3.0e-06
@@ -181,7 +181,7 @@ E 3 - 0 Master
 E 4 - 1 Master
 // cath_el_cath_side
 E 5 - 1 Slave KINETIC_MODEL Butler-VolmerReduced_ThermoResistance NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0  THERMOPERM  1.0e-4 MOLAR_HEAT_CAPACITY 1.0e-5
---------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
+-------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
 E 2 - 0 Slave S2I_KINETICS_ID  0

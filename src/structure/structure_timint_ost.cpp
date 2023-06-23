@@ -553,36 +553,21 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-/* incremental iteration update of state */
 void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 {
-  // Auxiliary vector holding new velocities and accelerations
-  // by extrapolation/scheme on __all__ DOFs. This includes
-  // the Dirichlet DOFs as well. Thus we need to protect those
-  // DOFs of overwriting; they already hold the
-  // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*DofRowMapView(), false);
-
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  aux->Update(1.0 / (theta_ * (*dt_)[0]), *disn_, -1.0 / (theta_ * (*dt_)[0]), *(*dis_)(0), 0.0);
-  aux->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
-  // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
+  veln_->Update(1.0 / (theta_ * (*dt_)[0]), *disn_, -1.0 / (theta_ * (*dt_)[0]), *(*dis_)(0), 0.0);
+  veln_->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
 
   // new end-point accelerations
-  aux->Update(1.0 / (theta_ * theta_ * (*dt_)[0] * (*dt_)[0]), *disn_,
+  accn_->Update(1.0 / (theta_ * theta_ * (*dt_)[0] * (*dt_)[0]), *disn_,
       -1.0 / (theta_ * theta_ * (*dt_)[0] * (*dt_)[0]), *(*dis_)(0), 0.0);
-  aux->Update(-1.0 / (theta_ * theta_ * (*dt_)[0]), *(*vel_)(0), -(1.0 - theta_) / theta_,
+  accn_->Update(-1.0 / (theta_ * theta_ * (*dt_)[0]), *(*vel_)(0), -(1.0 - theta_) / theta_,
       *(*acc_)(0), 1.0);
-  // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), accn_);
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/

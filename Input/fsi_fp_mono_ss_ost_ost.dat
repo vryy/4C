@@ -1,27 +1,36 @@
 //
 //
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:                            iter_monolithicstructuresplit
 Fluid: One_Step_Theta with constant_acceleration
 Structure: OneStepTheta with ConstAcc
 ==> comparison to analytical solution
-----------------------------------------------------------------PROBLEM SIZE
+We prescribe a time-dependent displacement BC at the dry solid nodes
+with the curve d(t) = -t^3. By choosing a very high Youngs' modulus,
+we obtain quasi-rigid behavior of the solid. Hence, the interface
+displacement should match d_gamma(t) = -t^3 and the interface
+velocity (of the solid) is expected to be v_gamma(t) = -3*t^2.
+Displacement of the fluid/ALE is directly coupled to the solid,
+so this should match. Fluid velocity is not coupled directly, but
+involves the ALE grid velocity conversion. Hence, it does not match
+exactly, but only under refinement of the time step size.
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         24
 DIM                             3
------------------------------------------------------------------ALE DYNAMIC
+-------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid_linear
 UPDATEMATRIX                    no
 LINEAR_SOLVER                   1
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
----------------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------FLUID DYNAMIC
 CONVFORM                        convective
 LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
@@ -29,7 +38,7 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       constant_acceleration
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
------------------------------------------------------------------FSI DYNAMIC
+-------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicstructuresplit
 MAXTIME                         1.0
 NUMSTEP                         10
@@ -37,7 +46,7 @@ RESTARTEVRY                     1
 SECONDORDER                     no
 TIMESTEP                        0.1
 RESULTSEVRY                           1
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+-------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 ITEMAX                          10
@@ -61,62 +70,62 @@ TOL_VEL_INC_INF                 1e-06
 TOL_VEL_INC_L2                  1e-06
 TOL_VEL_RES_INF                 1e-06
 TOL_VEL_RES_L2                  1e-06
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 PREDICT                         ConstAcc
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.8
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200000000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -t*t*t
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
 NDSURF                          3
 NDVOL                           3
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // fsi_str_nodes
 E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // str_dry_nodes
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // fluid_volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // str_vol
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // fluid_outflow
 E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 // fluid_outflow
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
+----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // fluid_volume
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // fsi_fluid_interface
 E 1 - 1
 // fsi_structure_interface
 E 2 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 13 DNODE 1
 NODE 14 DNODE 1
 NODE 15 DNODE 1
@@ -129,7 +138,7 @@ NODE 21 DNODE 3
 NODE 22 DNODE 3
 NODE 23 DNODE 3
 NODE 24 DNODE 3
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 13 DSURFACE 1
 NODE 14 DSURFACE 1
 NODE 15 DSURFACE 1
@@ -142,7 +151,7 @@ NODE 1 DSURFACE 3
 NODE 2 DSURFACE 3
 NODE 3 DSURFACE 3
 NODE 4 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
 NODE 3 DVOL 1
@@ -167,7 +176,7 @@ NODE 21 DVOL 2
 NODE 22 DVOL 2
 NODE 23 DVOL 2
 NODE 24 DVOL 2
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
 NODE 2 COORD -1.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
 NODE 3 COORD -1.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
@@ -192,19 +201,24 @@ NODE 21 COORD 2.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e
 NODE 22 COORD 2.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
 NODE 23 COORD 2.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
 NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 17 18 19 20 21 22 23 24 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
 2 FLUID HEX8 1 2 3 4 5 6 7 8 MAT 2 NA ALE
 3 FLUID HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE
 4 FLUID HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE
-----------------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.7099999999 TOLERANCE 1e-8
+------------------------------------------------RESULT DESCRIPTION
+ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 16 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.70999999999e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY velx VALUE -2.70999999999e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.120826821e+01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999e-01 TOLERANCE 1e-9
-FSI NODE 20 QUANTITY lambdax VALUE 2.80206831228418096 TOLERANCE 1e-5
-FSI NODE 20 QUANTITY lambday VALUE -1.2011209693 TOLERANCE 1e-6
-FSI NODE 20 QUANTITY lambdaz VALUE -1.2011231761 TOLERANCE 1e-5
--------------------------------------------------------------------------END
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 17 QUANTITY velx VALUE -2.820399999e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 24 QUANTITY velx VALUE -2.820399999e+00 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambdax VALUE  2.80206496523493120e+00 TOLERANCE 1e-5
+FSI NODE 20 QUANTITY lambday VALUE -1.20111455778956633e+00 TOLERANCE 1e-5
+FSI NODE 20 QUANTITY lambdaz VALUE -1.20111674082155173e+00 TOLERANCE 1e-5
+---------------------------------------------------------------END
 //                              END

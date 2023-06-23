@@ -22,7 +22,7 @@ Academic test case for multi-scale electrochemistry:
 DIM           3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
@@ -33,7 +33,7 @@ PREDICT                         TangDis
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
-------------------------------------------------STRUCT NOX/Printing
+-----------------------------------------------STRUCT NOX/Printing
 Outer Iteration StatusTest      = No
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
@@ -48,7 +48,7 @@ STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0.0
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
@@ -67,7 +67,7 @@ RESTARTEVRY                     5
 COUPALGO                        ssi_OneWay_ScatraToSolid
 SCATRATIMINTTYPE                Elch
 ADAPTIVE_TIMESTEPPING           Yes
---------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1.0e-06
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -116,7 +116,7 @@ NDLINE  4
 DPOINT 1
 // clamping on one side of the truss
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
------------------------DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS
+----------------------DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS
 DPOINT 1
 // spring on other side ot the truss
 E 2 - NUMDOF 3 ONOFF 1 0 0 STIFF 5.0e9 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0  TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION xyz COUPLING none
@@ -135,20 +135,20 @@ E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 1.2e3 0.0 0.0 FUNCT none none none
 DPOINT 1
 // set electrical potential at anode side to 0
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT none none
---------------------------DESIGN CCCV CELL CYCLING POINT CONDITIONS
+-------------------------DESIGN CCCV CELL CYCLING POINT CONDITIONS
 DPOINT 1
 E 2 -  NUMBER_OF_HALF_CYCLES  2 BEGIN_WITH_CHARGING 1 CONDITION_ID_FOR_CHARGE 1 CONDITION_ID_FOR_DISCHARGE 2 INIT_RELAX_TIME -1.0 ADAPTIVE_TIME_STEPPING_INIT_RELAX 0 NUM_ADD_ADAPT_TIME_STEPS 3 MIN_TIME_STEPS_DURING_INIT_RELAX 0
-----------------------------DESIGN CCCV HALF-CYCLE POINT CONDITIONS
+---------------------------DESIGN CCCV HALF-CYCLE POINT CONDITIONS
 DPOINT  2
 E 2 - ID 1 CURRENT 1.0e-3 CUT_OFF_VOLTAGE 4.19 CUT_OFF_C_RATE 100.0 RELAX_TIME -1.0 ADAPTIVE_TIME_STEPPING_PHASE_ON_OFF 1 0 0
 E 2 - ID 2 CURRENT -1.0e-3 CUT_OFF_VOLTAGE 3.42 CUT_OFF_C_RATE 100.0 RELAX_TIME -1.0 ADAPTIVE_TIME_STEPPING_PHASE_ON_OFF 1 0 0
---------------------DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS
+-------------------DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS
 DPOINT  2
 // anode_side_of_an-el_interface
 E 3 - 0 Slave S2I_KINETICS_ID  0
 // electrolyte_side_of_an-el_interf
 E 4 - 0 Master S2I_KINETICS_ID  0
--------------------------------DESIGN S2I KINETICS POINT CONDITIONS
+------------------------------DESIGN S2I KINETICS POINT CONDITIONS
 DPOINT  2
 // anode_side_of_an-el_interface
 E 3 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  5.0e-5 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
@@ -168,7 +168,7 @@ E 1 - ScaTra 1
 E 2 - ScaTra 2
 // cathode
 E 3 - ScaTra 3
------------------------DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS
+----------------------DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS
 DLINE  3
 // anode
 E 1 - ID 0
@@ -176,7 +176,7 @@ E 1 - ID 0
 E 2 - ID 1
 // cathode
 E 3 - ID 2
--------------------DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS
+------------------DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS
 DLINE   1
 // cathode
 E 3 - ID 3 C_0% 4.5e4 C_100% 2.0e4 ONE_HOUR 3600000

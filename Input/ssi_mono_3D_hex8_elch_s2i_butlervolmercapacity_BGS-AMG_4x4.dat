@@ -2,7 +2,7 @@
 ==================================================================
                   General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Simple academic test case consisting of 6 hex8 elements:
 - domain is split into 3 regions: anode, electrolyte, cathode (with 2 elements each)
 - one interface uses the reduced Butler-Volmer interface condition,
@@ -10,32 +10,32 @@ Simple academic test case consisting of 6 hex8 elements:
   including an interface capacitance
 - system is excited with a cosine-shaped current to trigger the capacitive effects
 - domain is stretched in axial direction as defined by Function 5
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 NUMSTEP                         50
 TIMESTEP                        0.1
 MAXTIME                         5000
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Elch
-------------------------------------------------------SSI CONTROL/MONOLITHIC
+--------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
 ABSTOLRES                       0.0
-------------------------------------------------------------SSI CONTROL/ELCH
+--------------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   3
 INT_STRATEGY                    Standard
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
@@ -43,37 +43,37 @@ VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
 SKIPINITDER                     Yes
 MATRIXTYPE                      block_condition
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0
-----------------------------------------------------------------ELCH CONTROL
+------------------------------------------------------ELCH CONTROL
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
----------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
+-----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4.xml
 AZOUTPUT                        10
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 SOLVER                          Belos
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_scatra.xml
 AZOUTPUT                        10
---------------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 SOLVER                          Belos
 AZPREC                          MueLu
 MUELU_XML_FILE                  ssi_mono_3D_hex8_elch_s2i_butlervolmercapacity_BGS-AMG_4x4_structure.xml
 AZOUTPUT                        10
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 4 NUMFACINEL 1 INELDEFGRADFACIDS 5 DENS 1.0
 MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 4 NUMFACINEL 1 INELDEFGRADFACIDS 5 DENS 1.0
 MAT 3 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 4 NUMFACINEL 1 INELDEFGRADFACIDS 5 DENS 1.0
@@ -103,27 +103,27 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME -2.0e-4*(1.0-cos(pi/2.5*t))
 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 20 VALUES 0.0 0.0 0.002
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi1 VALUE  1.01546947957014133e+01 TOLERANCE 1.0e-07
-SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE  7.27210379042216903e+00 TOLERANCE 7.3e-08
-SCATRA DIS scatra NODE 14 QUANTITY phi1 VALUE  1.17240647075028903e+00 TOLERANCE 1.2e-08
-SCATRA DIS scatra NODE 26 QUANTITY phi1 VALUE  1.36530363601060518e+01 TOLERANCE 1.4e-07
-SCATRA DIS scatra NODE 26 QUANTITY phi2 VALUE  3.59995264351122435e+00 TOLERANCE 3.6e-08
-SCATRA DIS scatra NODE 34 QUANTITY phi1 VALUE  1.08557251816512395e+01 TOLERANCE 1.1e-07
-SCATRA DIS scatra NODE 34 QUANTITY phi2 VALUE  3.59995264351122524e+00 TOLERANCE 3.6e-08
-STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  1.10170352693442720e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE  1.10170352693541602e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE  1.40350877193911444e-04 TOLERANCE 1.4e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -1.10170352693258930e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE  1.10170352693159014e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE  1.40350877193911390e-04 TOLERANCE 1.4e-12
-STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE  1.10170352693149951e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE  1.10170352693245869e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE  2.80701754387099943e-04 TOLERANCE 2.8e-12
-STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE  1.10170352692272544e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE  1.10170352692361685e-05 TOLERANCE 1.1e-13
+SCATRA DIS scatra NODE 2 QUANTITY phi1 VALUE  1.01546947957021612e+01 TOLERANCE 1.0e-07
+SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE  7.27210379042201538e+00 TOLERANCE 7.3e-08
+SCATRA DIS scatra NODE 14 QUANTITY phi1 VALUE  1.17240647075028948e+00 TOLERANCE 1.2e-08
+SCATRA DIS scatra NODE 26 QUANTITY phi1 VALUE  1.36664650824250646e+01 TOLERANCE 1.4e-07
+SCATRA DIS scatra NODE 26 QUANTITY phi2 VALUE  3.59995264351122879e+00 TOLERANCE 3.6e-08
+SCATRA DIS scatra NODE 34 QUANTITY phi1 VALUE  1.07873225473308221e+01 TOLERANCE 1.1e-07
+SCATRA DIS scatra NODE 34 QUANTITY phi2 VALUE  3.59995264351122923e+00 TOLERANCE 3.6e-08
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  1.10170352693503553e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE  1.10170352693565387e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE  1.40350877193941531e-04 TOLERANCE 1.4e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -1.10170352693252239e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE  1.10170352693280869e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE  1.40350877193940691e-04 TOLERANCE 1.4e-12
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE  1.10170352693206059e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE  1.10170352693272652e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE  2.80701754387157948e-04 TOLERANCE 2.8e-12
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE  1.10170352692311100e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE  1.10170352692379388e-05 TOLERANCE 1.1e-13
 STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE  4.21052631578947229e-04 TOLERANCE 4.2e-12
-STRUCTURE DIS structure NODE 34 QUANTITY dispy VALUE  1.10170352691282904e-05 TOLERANCE 1.1e-13
-STRUCTURE DIS structure NODE 34 QUANTITY dispz VALUE  1.10170352691420361e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 34 QUANTITY dispy VALUE  1.10170352691140010e-05 TOLERANCE 1.1e-13
+STRUCTURE DIS structure NODE 34 QUANTITY dispz VALUE  1.10170352691206874e-05 TOLERANCE 1.1e-13
 SSI SPECIAL QUANTITY numiterlastlinearsolve VALUE  3.00000000000000000e+00 TOLERANCE 1.0e-16
 SSI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE  6.00000000000000000e+00 TOLERANCE 1.0e-16
 ------------------------------------------------DESIGN DESCRIPTION
