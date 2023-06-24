@@ -304,7 +304,6 @@ namespace DRT
           const Teuchos::ParameterEntry &entry = list.entry(it);
           if (entry.isList() != loop_isList) continue;
           const std::string &name = list.name(it);
-          if (name == INPUT::PrintEqualSign()) continue;
           Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
 
           std::string doc = (entry.docString() == "") ? "no description yet" : entry.docString();

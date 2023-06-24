@@ -185,7 +185,6 @@ void DRT::INPUT::PrintDatHeader(
       if (entry.isList() && j == 0) continue;
       if ((!entry.isList()) && j == 1) continue;
       const std::string& name = list.name(i);
-      if (name == PrintEqualSign()) continue;
       Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
 
       if (comment)
@@ -459,32 +458,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 }
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::string DRT::INPUT::PrintEqualSign() { return "*PrintEqualSign*"; }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::INPUT::SetPrintEqualSign(Teuchos::ParameterList& list, const bool& pes)
-{
-  std::string printequalsign = PrintEqualSign();
-  list.set<bool>(printequalsign, pes);
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
-  const std::string printequalsign = PrintEqualSign();
-  bool pes = false;
-  try
+  const auto key_or_value_contains_space = [](const auto& entry)
   {
-    pes = list.get<bool>(printequalsign);
-  }
-  catch (const Teuchos::Exceptions::InvalidParameter&)
-  {
-    pes = false;
-  }
-  return pes;
+    const auto string_has_space = [](const std::string& s)
+    { return std::any_of(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }); };
+
+    const auto& value = entry.second;
+    const bool value_has_space = value.template isType<std::string>() &&
+                                 string_has_space(Teuchos::getValue<std::string>(value));
+
+    return value_has_space || string_has_space(entry.key);
+  };
+
+  return std::any_of(list.begin(), list.end(), key_or_value_contains_space);
 }
