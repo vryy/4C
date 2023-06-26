@@ -905,13 +905,13 @@ bool XFEM::ConditionManager::HasAveragingStrategy(INPAR::XFEM::AveragingStrategy
 }
 
 void XFEM::ConditionManager::GetVolumeCellMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const GEO::CUT::VolumeCell* vc)
+    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele, mat, vc->Position());
 }
 
 void XFEM::ConditionManager::GetInterfaceMasterMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const GEO::CUT::VolumeCell* vc)
+    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele, mat, vc->Position());
 }
@@ -934,7 +934,7 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
         coup_sid);
 }
 
-bool XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)

@@ -13,14 +13,14 @@
 #include "cut_output.H"
 
 
-std::ostream& operator<<(std::ostream& stream, const GEO::CUT::Cycle& cycle)
+std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::Cycle& cycle)
 {
   std::copy(cycle.points_.begin(), cycle.points_.end(),
-      std::ostream_iterator<GEO::CUT::Point*>(stream, " "));
+      std::ostream_iterator<CORE::GEO::CUT::Point*>(stream, " "));
   return stream << "\n";
 }
 
-bool GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
+bool CORE::GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
 {
   cycle.clear();
   std::vector<Point*> frompoints;
@@ -59,7 +59,7 @@ bool GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
   return true;
 }
 
-bool GEO::CUT::Cycle::IsValid() const
+bool CORE::GEO::CUT::Cycle::IsValid() const
 {
   if (points_.size() < 3) return false;
 
@@ -76,7 +76,7 @@ bool GEO::CUT::Cycle::IsValid() const
   return true;
 }
 
-bool GEO::CUT::Cycle::IsCut(Element* element) const
+bool CORE::GEO::CUT::Cycle::IsCut(Element* element) const
 {
   for (std::vector<Point*>::const_iterator i = points_.begin(); i != points_.end(); ++i)
   {
@@ -89,7 +89,7 @@ bool GEO::CUT::Cycle::IsCut(Element* element) const
   return true;
 }
 
-void GEO::CUT::Cycle::Add(point_line_set& lines) const
+void CORE::GEO::CUT::Cycle::Add(point_line_set& lines) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
@@ -116,7 +116,7 @@ void GEO::CUT::Cycle::Add(point_line_set& lines) const
   }
 }
 
-void GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
+void CORE::GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
 {
   std::vector<Point*>::const_iterator i = points_.begin();
   if (i != points_.end())
@@ -138,7 +138,7 @@ void GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
   }
 }
 
-void GEO::CUT::Cycle::CommonSides(plain_side_set& sides) const
+void CORE::GEO::CUT::Cycle::CommonSides(plain_side_set& sides) const
 {
   std::vector<Point*>::const_iterator i = points_.begin();
   if (i != points_.end())
@@ -160,7 +160,7 @@ void GEO::CUT::Cycle::CommonSides(plain_side_set& sides) const
   }
 }
 
-void GEO::CUT::Cycle::Intersection(plain_side_set& sides) const
+void CORE::GEO::CUT::Cycle::Intersection(plain_side_set& sides) const
 {
   for (std::vector<Point*>::const_iterator i = points_.begin(); i != points_.end(); ++i)
   {
@@ -170,7 +170,7 @@ void GEO::CUT::Cycle::Intersection(plain_side_set& sides) const
   }
 }
 
-bool GEO::CUT::Cycle::Equals(const Cycle& other)
+bool CORE::GEO::CUT::Cycle::Equals(const Cycle& other)
 {
   if (size() != other.size())
   {
@@ -190,7 +190,7 @@ bool GEO::CUT::Cycle::Equals(const Cycle& other)
   return true;
 }
 
-void GEO::CUT::Cycle::DropPoint(Point* p)
+void CORE::GEO::CUT::Cycle::DropPoint(Point* p)
 {
   std::vector<Point*>::iterator j = std::find(points_.begin(), points_.end(), p);
   if (j != points_.end())
@@ -220,7 +220,7 @@ void GEO::CUT::Cycle::DropPoint(Point* p)
   }
 }
 
-void GEO::CUT::Cycle::TestUnique()
+void CORE::GEO::CUT::Cycle::TestUnique()
 {
   PointSet c_copy;
   c_copy.insert(points_.begin(), points_.end());
@@ -243,7 +243,7 @@ void GEO::CUT::Cycle::TestUnique()
   }
 }
 
-void GEO::CUT::Cycle::GnuplotDump(std::ostream& stream) const
+void CORE::GEO::CUT::Cycle::GnuplotDump(std::ostream& stream) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
@@ -257,7 +257,7 @@ void GEO::CUT::Cycle::GnuplotDump(std::ostream& stream) const
 }
 
 
-void GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
+void CORE::GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
@@ -266,18 +266,18 @@ void GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
     Point* p2 = points_[(i + 1) % points_.size()];
     std::stringstream section_name;
     section_name << "Line" << i;
-    GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-    GEO::CUT::OUTPUT::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
-    GEO::CUT::OUTPUT::GmshEndSection(file, false);
+    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+    CORE::GEO::CUT::OUTPUT::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
   }
 }
 
 
-void GEO::CUT::Cycle::reverse() { std::reverse(points_.begin(), points_.end()); }
+void CORE::GEO::CUT::Cycle::reverse() { std::reverse(points_.begin(), points_.end()); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Cycle::Print() const
+void CORE::GEO::CUT::Cycle::Print() const
 {
   std::cout << "--- Cycle ---" << std::endl;
   for (std::vector<Point*>::const_iterator cit = points_.begin(); cit != points_.end(); ++cit)

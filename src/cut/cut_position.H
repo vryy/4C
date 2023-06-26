@@ -16,7 +16,7 @@
 #include "cut_element.H"
 #include "cut_kernel.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -106,13 +106,13 @@ namespace GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
       static Teuchos::RCP<Position> Create(const LINALG::Matrix<rdim, cdim>& xyze,
-          const LINALG::Matrix<rdim_2, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+          const LINALG::Matrix<rdim_2, 1>& xyz, const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// \brief build variant #3-1 (Epetra_SerialDenseMatrix)
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const Epetra_SerialDenseMatrix& xyze,
-          const LINALG::Matrix<rdim, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+          const LINALG::Matrix<rdim, 1>& xyz, const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #4
@@ -126,7 +126,7 @@ namespace GEO
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
           const LINALG::Matrix<rdim, 1>& xyz,
-          DRT::Element::DiscretizationType distype = DRT::Element::dis_none,
+          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// @}
@@ -248,7 +248,7 @@ namespace GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
@@ -397,7 +397,7 @@ namespace GEO
     /** \brief class for the position computation in the standard/non-embedded case
      *
      *  \author hiermeier \date 08/16 */
-    template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
@@ -447,7 +447,7 @@ namespace GEO
     /** \brief class for the position computation in the embedded case
      *
      *  \author hiermeier \date 08/16 */
-    template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
@@ -577,7 +577,7 @@ namespace GEO
        *  \param distype (in) : element discretization type.
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const double* xyze, const double* xyz,
-          const DRT::Element::DiscretizationType& distype,
+          const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #4
@@ -587,7 +587,7 @@ namespace GEO
        *  \param distype (in) : element discretization type. (optional)
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
-          DRT::Element::DiscretizationType distype = DRT::Element::dis_none,
+          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /// \brief specify general floattype for all geometric operations in GEO::CUT::POSITON
@@ -603,7 +603,7 @@ namespace GEO
      private:
       /// template class for the actual position creation
       template <bool isembedded, unsigned probdim, unsigned dim,
-          DRT::Element::DiscretizationType eletype,
+          ::DRT::Element::DiscretizationType eletype,
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       class PositionCreator
@@ -621,7 +621,7 @@ namespace GEO
       ///       If more wrong combinations come up, add them here.            hiermeier 04/17
       /// @{
 
-      template <unsigned dim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <unsigned dim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
       class PositionCreator<true, dim, dim, eletype, numNodesElement>
       {
        public:
@@ -636,7 +636,7 @@ namespace GEO
         }
       };
 
-      template <DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
       class PositionCreator<true, 1, 2, eletype, numNodesElement>
       {
        public:
@@ -651,7 +651,7 @@ namespace GEO
         }
       };
 
-      template <DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
       class PositionCreator<true, 1, 3, eletype, numNodesElement>
       {
        public:
@@ -666,7 +666,7 @@ namespace GEO
         }
       };
 
-      template <DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
       class PositionCreator<true, 2, 3, eletype, numNodesElement>
       {
        public:
@@ -681,7 +681,7 @@ namespace GEO
         }
       };
 
-      template <unsigned probdim, unsigned dim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, unsigned dim, ::DRT::Element::DiscretizationType eletype,
           unsigned numNodesElement>
       class PositionCreator<false, probdim, dim, eletype, numNodesElement>
       {
@@ -700,7 +700,7 @@ namespace GEO
       /// @}
 
       /// create an embedded position object ( dim < probdim )
-      template <unsigned probdim, unsigned dim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, unsigned dim, ::DRT::Element::DiscretizationType eletype,
           unsigned numNodesElement>
       class PositionCreator<true, probdim, dim, eletype, numNodesElement>
       {
@@ -733,7 +733,7 @@ namespace GEO
       };
 
       /// create a standard position object ( probdim == dim )
-      template <unsigned dim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
+      template <unsigned dim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement>
       class PositionCreator<false, dim, dim, eletype, numNodesElement>
       {
        public:
@@ -777,7 +777,7 @@ namespace GEO
        *  \param point   (in) : Given global point
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -809,7 +809,7 @@ namespace GEO
       }
 
       /// concrete create variant #1
-      template <DRT::Element::DiscretizationType eletype>
+      template <::DRT::Element::DiscretizationType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -847,7 +847,7 @@ namespace GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -879,7 +879,7 @@ namespace GEO
 
      private:
       /// concrete create variant #2
-      template <DRT::Element::DiscretizationType eletype>
+      template <::DRT::Element::DiscretizationType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -922,7 +922,7 @@ namespace GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -952,7 +952,7 @@ namespace GEO
 
      private:
       /// concrete create variant #3
-      template <DRT::Element::DiscretizationType eletype>
+      template <::DRT::Element::DiscretizationType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -992,7 +992,7 @@ namespace GEO
        *  \param xyz   (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, DRT::Element::DiscretizationType eletype,
+      template <unsigned probdim, ::DRT::Element::DiscretizationType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
@@ -1034,7 +1034,7 @@ namespace GEO
 
      private:
       /// concrete create variant #4
-      template <DRT::Element::DiscretizationType eletype>
+      template <::DRT::Element::DiscretizationType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const std::vector<Node*> nodes,
           const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
@@ -1075,7 +1075,7 @@ namespace GEO
 
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif

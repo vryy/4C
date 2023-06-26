@@ -15,7 +15,7 @@
 
 class Epetra_SerialDenseMatrix;
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -82,8 +82,8 @@ namespace GEO
        *
        * Which implies that the level set function of the element has values which
        * are positive and negative. */
-      GEO::CUT::ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype,
+      CORE::GEO::CUT::ElementHandle* AddElement(int eid, const std::vector<int>& nids,
+          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           const double* lsv, const bool lsv_only_plus_domain = false,
           const bool& check_lsv = false);
 
@@ -110,6 +110,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -15,7 +15,8 @@
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
-    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel, Teuchos::RCP<GEO::CutWizard> wizard)
+    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel,
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard)
     : DRT::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
 {
   return;
@@ -25,7 +26,7 @@ int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node)
 {
   if (wizard_ != Teuchos::null)
   {
-    GEO::CUT::Node *n = wizard_->GetNode(node.Id());
+    CORE::GEO::CUT::Node *n = wizard_->GetNode(node.Id());
     if (n != NULL)
     {
       int numdofpernode = DRT::DofSet::NumDofPerNode(node);

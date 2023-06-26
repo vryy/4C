@@ -22,7 +22,7 @@ equations
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -41,7 +41,7 @@ namespace GEO
     {
      public:
       VolumeIntegration(VolumeCell* volcell, Element* elem,
-          const GEO::CUT::Point::PointPosition posi, int num_func)
+          const CORE::GEO::CUT::Point::PointPosition posi, int num_func)
           : volcell_(volcell), elem1_(elem), position_(posi), num_func_(num_func)
       {
       }
@@ -131,7 +131,7 @@ namespace GEO
       actually lies with in the facet area
       */
       int pnpoly(const std::vector<std::vector<double>>& xp, const LINALG::Matrix<3, 1>& pt,
-          GEO::CUT::ProjectionDirection projType);
+          CORE::GEO::CUT::ProjectionDirection projType);
 
       /*!
       \brief Adds linear combination of first order base function to the moment fitting system of
@@ -189,7 +189,7 @@ namespace GEO
       Element* elem1_;
 
       //! position (inside or outside) of volumecell
-      const GEO::CUT::Point::PointPosition position_;
+      const CORE::GEO::CUT::Point::PointPosition position_;
 
       //! defines the base function to be integrated
       int num_func_;
@@ -201,6 +201,6 @@ namespace GEO
       std::vector<std::vector<double>> eqn_facets_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

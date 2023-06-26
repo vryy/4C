@@ -15,7 +15,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 
-namespace GEO
+namespace CORE::GEO
 {
   /*!
    * a common task is to get an array of the positions of all nodes of this element
@@ -31,11 +31,11 @@ namespace GEO
    * \date 02/08
    */
   template <class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
   {
     const int numnode = ele->NumNode();
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const ::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -63,13 +63,13 @@ namespace GEO
    * \author a.ger
    * \date 02/08
    */
-  template <DRT::Element::DiscretizationType distype, class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  template <::DRT::Element::DiscretizationType distype, class M>
+  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const ::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -98,13 +98,13 @@ namespace GEO
    * \author gjb
    * \date 12/08
    */
-  template <DRT::Element::DiscretizationType distype, int dim, class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  template <::DRT::Element::DiscretizationType distype, int dim, class M>
+  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const ::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != NULL,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -133,7 +133,7 @@ namespace GEO
    * \author schott
    * \date 01/15
    */
-  void InitialPositionArray(Epetra_SerialDenseMatrix& xyze, const DRT::Element* const ele);
+  void InitialPositionArray(Epetra_SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element
@@ -146,7 +146,7 @@ namespace GEO
    * \author a.ger
    * \date 02/08
    */
-  LINALG::SerialDenseMatrix InitialPositionArray(const DRT::Element* const
+  LINALG::SerialDenseMatrix InitialPositionArray(const ::DRT::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -163,7 +163,7 @@ namespace GEO
    * \date 02/08
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const DRT::Element* const ele,  ///< element with nodal pointers
+      const ::DRT::Element* const ele,  ///< element with nodal pointers
       const std::map<int, LINALG::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
   );
@@ -181,7 +181,7 @@ namespace GEO
    * \date 09/09
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const Teuchos::RCP<const DRT::Element> ele,  ///< pointer on element
+      const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
       const std::map<int, LINALG::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );
@@ -196,7 +196,7 @@ namespace GEO
    * \date 11/08
    */
   template <class M>
-  void fillCurrentNodalPositions(const DRT::Element* const ele,  ///< element with nodal pointers
+  void fillCurrentNodalPositions(const ::DRT::Element* const ele,  ///< element with nodal pointers
       const std::map<int, LINALG::Matrix<3, 1>>&
           currentpositions,  ///< current positions of all cutter nodes
       M& xyze                ///< position array (3,numnode) to be filled
@@ -213,6 +213,6 @@ namespace GEO
     }
   }
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

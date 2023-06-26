@@ -16,10 +16,10 @@
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "cut_kernel.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   //! calculates the length of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class matrixtype>
+  template <::DRT::Element::DiscretizationType distype, class matrixtype>
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
@@ -57,7 +57,7 @@ namespace GEO
   }
 
   //! calculates the area of an element in given configuration
-  template <DRT::Element::DiscretizationType distype, class matrixtype>
+  template <::DRT::Element::DiscretizationType distype, class matrixtype>
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
@@ -100,7 +100,7 @@ namespace GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <DRT::Element::DiscretizationType distype, class matrixtype>
+  template <::DRT::Element::DiscretizationType distype, class matrixtype>
   double ElementVolumeT(const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
@@ -152,9 +152,9 @@ namespace GEO
    *
    *  \author hiermeier \date 11/16 */
   template <class matrixtype>
-  double ElementLength(const DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
+  double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
-    if (distype != DRT::Element::line2 or xyze.N() != 2)
+    if (distype != ::DRT::Element::line2 or xyze.N() != 2)
       dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
@@ -171,26 +171,26 @@ namespace GEO
    *
    *  \author hiermeier \date 11/16 */
   template <class matrixtype>
-  double ElementArea(const DRT::Element::DiscretizationType distype, const matrixtype& xyze)
+  double ElementArea(const ::DRT::Element::DiscretizationType distype, const matrixtype& xyze)
   {
     switch (distype)
     {
       // --- 2-D boundary elements
-      case DRT::Element::line2:
+      case ::DRT::Element::line2:
         return ElementLength(distype, xyze);
-      case DRT::Element::line3:
-        return ElementLengthT<DRT::Element::line3>(xyze);
+      case ::DRT::Element::line3:
+        return ElementLengthT<::DRT::Element::line3>(xyze);
       // --- 3-D boundary elements
-      case DRT::Element::tri3:
-        return ElementAreaT<DRT::Element::tri3>(xyze);
-      case DRT::Element::tri6:
-        return ElementAreaT<DRT::Element::tri6>(xyze);
-      case DRT::Element::quad4:
-        return ElementAreaT<DRT::Element::quad4>(xyze);
-      case DRT::Element::quad8:
-        return ElementAreaT<DRT::Element::quad8>(xyze);
-      case DRT::Element::quad9:
-        return ElementAreaT<DRT::Element::quad9>(xyze);
+      case ::DRT::Element::tri3:
+        return ElementAreaT<::DRT::Element::tri3>(xyze);
+      case ::DRT::Element::tri6:
+        return ElementAreaT<::DRT::Element::tri6>(xyze);
+      case ::DRT::Element::quad4:
+        return ElementAreaT<::DRT::Element::quad4>(xyze);
+      case ::DRT::Element::quad8:
+        return ElementAreaT<::DRT::Element::quad8>(xyze);
+      case ::DRT::Element::quad9:
+        return ElementAreaT<::DRT::Element::quad9>(xyze);
       default:
         dserror("Unsupported surface element type!");
         exit(EXIT_FAILURE);
@@ -201,43 +201,43 @@ namespace GEO
 
   //! calculates the volume of an element in given configuration          u.may
   template <class matrixtype>
-  double ElementVolume(const DRT::Element::DiscretizationType distype,
+  double ElementVolume(const ::DRT::Element::DiscretizationType distype,
       const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)
     {
       // --- 1-D elements -----------------------------------------------------
-      case DRT::Element::line2:
+      case ::DRT::Element::line2:
         return ElementLength(distype, xyze);
       // --- 2-D elements -----------------------------------------------------
-      case DRT::Element::quad4:
-      case DRT::Element::tri3:
+      case ::DRT::Element::quad4:
+      case ::DRT::Element::tri3:
         return ElementArea(distype, xyze);
       // --- 3-D elements -----------------------------------------------------
-      case DRT::Element::hex8:
-        return ElementVolumeT<DRT::Element::hex8>(xyze);
-      case DRT::Element::hex20:
-        return ElementVolumeT<DRT::Element::hex20>(xyze);
-      case DRT::Element::hex27:
-        return ElementVolumeT<DRT::Element::hex27>(xyze);
-      case DRT::Element::tet4:
-        return ElementVolumeT<DRT::Element::tet4>(xyze);
-      case DRT::Element::tet10:
-        return ElementVolumeT<DRT::Element::tet10>(xyze);
-      case DRT::Element::wedge6:
-        return ElementVolumeT<DRT::Element::wedge6>(xyze);
-      case DRT::Element::wedge15:
-        return ElementVolumeT<DRT::Element::wedge15>(xyze);
-      case DRT::Element::pyramid5:
-        return ElementVolumeT<DRT::Element::pyramid5>(xyze);
+      case ::DRT::Element::hex8:
+        return ElementVolumeT<::DRT::Element::hex8>(xyze);
+      case ::DRT::Element::hex20:
+        return ElementVolumeT<::DRT::Element::hex20>(xyze);
+      case ::DRT::Element::hex27:
+        return ElementVolumeT<::DRT::Element::hex27>(xyze);
+      case ::DRT::Element::tet4:
+        return ElementVolumeT<::DRT::Element::tet4>(xyze);
+      case ::DRT::Element::tet10:
+        return ElementVolumeT<::DRT::Element::tet10>(xyze);
+      case ::DRT::Element::wedge6:
+        return ElementVolumeT<::DRT::Element::wedge6>(xyze);
+      case ::DRT::Element::wedge15:
+        return ElementVolumeT<::DRT::Element::wedge15>(xyze);
+      case ::DRT::Element::pyramid5:
+        return ElementVolumeT<::DRT::Element::pyramid5>(xyze);
       default:
         dserror("add you distype here");
     }
     return -1.0;
   }
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H

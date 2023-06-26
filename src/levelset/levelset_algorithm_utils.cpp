@@ -96,7 +96,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
         discret_->AddMultiVectorToParameterList(params, "gradphi", nb_grad_val_);
 
       // add interface integration cells
-      params.set<Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>>>(
+      params.set<Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>>>(
           "boundary cells", interface_eleq_);
     }
   }
@@ -109,7 +109,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::CaptureInterface(
-    std::map<int, GEO::BoundaryIntCells>& interface, const bool writetofile)
+    std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile)
 {
   double volminus = 0.0;
   double volplus = 0.0;

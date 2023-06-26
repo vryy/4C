@@ -438,7 +438,7 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       // reconstruct XYZ-gradient
       // get node coordinates of this element
       static LINALG::Matrix<dim, numnode> xyze_adj;
-      GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+      CORE::GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
 
       // get Jacobi-Matrix for transformation
       static LINALG::Matrix<dim, dim> xjm_ele_XiToXYZ;

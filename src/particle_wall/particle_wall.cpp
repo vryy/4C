@@ -366,7 +366,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
 
         // get coordinates of closest point on current column wall element to particle
         LINALG::Matrix<3, 1> closestpos;
-        GEO::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
+        CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
 
         // distance vector from particle to closest point on current column wall element
         double dist[3];

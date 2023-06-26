@@ -157,7 +157,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   }
 
   // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)

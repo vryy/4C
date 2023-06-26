@@ -10,7 +10,7 @@
 
 #include "cut_find_cycles.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -291,4 +291,4 @@ namespace GEO
 
     }  // namespace IMPL
   }    // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO

@@ -449,7 +449,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
     DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
   // get element coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze0_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze0_);
 
   // set current coordinates to initial coordinates
   // the displacements will be added later in ExtractElementAndNodeValues() for the moving mesh case

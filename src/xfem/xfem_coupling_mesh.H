@@ -15,7 +15,7 @@ between the xfluid class and the cut-library
 
 #include "xfem_coupling_base.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -665,7 +665,7 @@ namespace XFEM
     void RegisterSideProc(int sid);
 
     /// Initialize Fluid State
-    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

@@ -15,7 +15,7 @@
 #include "linalg_fixedsizematrix.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   //! possible positions of a point with respect to an element
   enum pointType
@@ -49,14 +49,14 @@ namespace GEO
     \param surfId               (in)        : xfem surface Ids ids the interface point is lying on
     \param coordinates          (in)        : coordinates of the interface points
     */
-    InterfacePoint(GEO::pointType& pType, int nodeId, std::vector<int>& lineId,
+    InterfacePoint(CORE::GEO::pointType& pType, int nodeId, std::vector<int>& lineId,
         std::vector<int>& surfId, LINALG::Matrix<3, 1>& coordinates);
 
 
     /*!
     \brief copy constructor
     */
-    InterfacePoint(const GEO::InterfacePoint& old);
+    InterfacePoint(const CORE::GEO::InterfacePoint& old);
 
 
     //! destructor
@@ -72,7 +72,7 @@ namespace GEO
 
     \param pType            (in)        : point Type of interface point
     */
-    void setNodeLineSurfNumbers(const GEO::pointType pType);
+    void setNodeLineSurfNumbers(const CORE::GEO::pointType pType);
 
 
     /*!
@@ -80,7 +80,7 @@ namespace GEO
 
     \param pType            (in)        : point Type of interface point
     */
-    void setPointType(const GEO::pointType pType);
+    void setPointType(const CORE::GEO::pointType pType);
 
     /*!
     \brief  set xfem node Ids the interface points is lying on
@@ -178,13 +178,13 @@ namespace GEO
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
      */
-    inline GEO::pointType getPointType() const { return pType_; }
+    inline CORE::GEO::pointType getPointType() const { return pType_; }
 
 
 
    private:
     //! pointType NOTYPE INTERNAL SURFACE LINE NODE
-    GEO::pointType pType_;
+    CORE::GEO::pointType pType_;
 
     //! number of xfem nodes the point is lying on
     int nnode_;
@@ -209,7 +209,7 @@ namespace GEO
   };
 
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_INTERFACEPOINT_H

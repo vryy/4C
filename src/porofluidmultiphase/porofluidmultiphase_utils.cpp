@@ -316,18 +316,18 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   std::map<int, std::set<int>> nearbyelepairs;
 
   // search tree
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
+  Teuchos::RCP<CORE::GEO::SearchTree> searchTree = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // nodal positions of 2D/3D-discretization
   std::map<int, LINALG::Matrix<3, 1>> my_positions_cont =
       GetNodalPositions(contdis, contdis->NodeColMap());
   // axis-aligned bounding boxes of all elements of 2D/3D discretization
   std::map<int, LINALG::Matrix<3, 2>> aabb_cont =
-      GEO::getCurrentXAABBs(*contdis, my_positions_cont);
+      CORE::GEO::getCurrentXAABBs(*contdis, my_positions_cont);
 
   // find the bounding box of the 2D/3D discretization
-  const LINALG::Matrix<3, 2> sourceEleBox = GEO::getXAABBofDis(*contdis);
-  searchTree->initializeTree(sourceEleBox, *contdis, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofDis(*contdis);
+  searchTree->initializeTree(sourceEleBox, *contdis, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
@@ -405,11 +405,12 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
     std::map<int, LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
-  const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(ele, positions));
-  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-  GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
+  const LINALG::SerialDenseMatrix xyze_element(CORE::GEO::getCurrentNodalPositions(ele, positions));
+  CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+  CORE::GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  LINALG::Matrix<3, 2> aabb_artery = GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+  LINALG::Matrix<3, 2> aabb_artery =
+      CORE::GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
 
   // add radius to axis aligned bounding box of artery element (in all coordinate directions) in
   // case of evaluation on lateral surface

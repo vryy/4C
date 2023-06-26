@@ -19,13 +19,13 @@ levelset
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool GEO::CUT::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
+bool CORE::GEO::CUT::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
 {
   return edge.LevelSetCut(mesh, *this, cut_points);
 }
 
 template <int probdim>
-bool GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
+bool CORE::GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
     Mesh& mesh, Element* element, Side& side, Edge& e)
 {
   return e.FindCutPointsLevelSet(mesh, element, side, *this);
@@ -34,7 +34,7 @@ bool GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-void GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
+void CORE::GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
     Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   Teuchos::RCP<IMPL::PointGraph> pg = Teuchos::rcp(IMPL::PointGraph::Create(
@@ -50,7 +50,7 @@ void GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
+bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   // More than two cut points show a touch.
@@ -58,14 +58,14 @@ bool GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
   // (1) If all nodes are caught and nothing else, the cut surface has hit this
   //     surface exactly. No need to cut anything. However, the surface might be
   //     required for integration.
-  if (GEO::CUT::Side::FindTouchingCutLines(mesh, element, side, cut)) return true;
+  if (CORE::GEO::CUT::Side::FindTouchingCutLines(mesh, element, side, cut)) return true;
 
   switch (side.Shape())
   {
-    case DRT::Element::line2:
-    case DRT::Element::tri3:
+    case ::DRT::Element::line2:
+    case ::DRT::Element::tri3:
       return false;
-    case DRT::Element::quad4:
+    case ::DRT::Element::quad4:
     {
       switch (cut.size())
       {
@@ -148,7 +148,7 @@ bool GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           // find levelset value at side center
           LINALG::Matrix<4, 1> lsv;
           LINALG::Matrix<4, 1> funct;
-          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., DRT::Element::quad4);
+          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., ::DRT::Element::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
@@ -289,14 +289,14 @@ bool GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           return false;
       }
       break;
-    }  // case DRT::Element::quad4:
+    }  // case ::DRT::Element::quad4:
     default:
       dserror("Unsupported side shape! (shape = %d | %s )", side.Shape(),
-          DRT::DistypeToString(side.Shape()).c_str());
+          ::DRT::DistypeToString(side.Shape()).c_str());
       break;
   }
   return false;
 }
 
-template class GEO::CUT::LevelSetSide<2>;
-template class GEO::CUT::LevelSetSide<3>;
+template class CORE::GEO::CUT::LevelSetSide<2>;
+template class CORE::GEO::CUT::LevelSetSide<3>;

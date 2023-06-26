@@ -37,7 +37,7 @@ namespace XFEM
   class ConditionManager;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -59,7 +59,8 @@ namespace GEO
     {
      public:
       /// constructor
-      explicit BackMesh(const Teuchos::RCP<DRT::Discretization>& backdis, GEO::CutWizard* wizard)
+      explicit BackMesh(
+          const Teuchos::RCP<::DRT::Discretization>& backdis, CORE::GEO::CutWizard* wizard)
           : wizard_(wizard),
             back_discret_(backdis),
             back_disp_col_(Teuchos::null),
@@ -73,15 +74,15 @@ namespace GEO
       void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
-      const Teuchos::RCP<DRT::Discretization>& GetPtr() { return back_discret_; }
+      const Teuchos::RCP<::DRT::Discretization>& GetPtr() { return back_discret_; }
 
-      DRT::Discretization& Get() { return *back_discret_; }
+      ::DRT::Discretization& Get() { return *back_discret_; }
 
-      const DRT::Discretization& Get() const { return *back_discret_; }
+      const ::DRT::Discretization& Get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 
-      virtual const DRT::Element* lColElement(int lid) const;
+      virtual const ::DRT::Element* lColElement(int lid) const;
 
       inline bool IsBackDisp() const { return (not back_disp_col_.is_null()); }
 
@@ -103,11 +104,11 @@ namespace GEO
 
 
      protected:
-      GEO::CutWizard* wizard_;
+      CORE::GEO::CutWizard* wizard_;
 
      private:
       /// background discretization
-      Teuchos::RCP<DRT::Discretization> back_discret_;
+      Teuchos::RCP<::DRT::Discretization> back_discret_;
 
       /// col vector holding background ALE displacements for backdis
       Teuchos::RCP<const Epetra_Vector> back_disp_col_;
@@ -124,7 +125,7 @@ namespace GEO
     {
      public:
       //! ctor
-      CutterMesh(Teuchos::RCP<DRT::Discretization> cutterdis,
+      CutterMesh(Teuchos::RCP<::DRT::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
           : cutterdis_(cutterdis), cutter_disp_col_(cutter_disp_col), start_ele_gid_(start_ele_gid)
       {
@@ -138,7 +139,7 @@ namespace GEO
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
-      Teuchos::RCP<DRT::Discretization> cutterdis_;  ///< cutter discretization
+      Teuchos::RCP<::DRT::Discretization> cutterdis_;  ///< cutter discretization
       //@}
 
       //---------------------------------state vectors ----------------------------
@@ -159,7 +160,7 @@ namespace GEO
     /*!
     \brief Constructor
     */
-    CutWizard(const Teuchos::RCP<DRT::Discretization>& backdis);
+    CutWizard(const Teuchos::RCP<::DRT::Discretization>& backdis);
 
 
     /*!
@@ -193,17 +194,17 @@ namespace GEO
         int level_set_sid       //!< global id for level-set side
     );
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<::DRT::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<::DRT::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
     void SetMarkedConditionSides(
         // const int mc_idx,
-        Teuchos::RCP<DRT::Discretization> cutter_dis,
+        Teuchos::RCP<::DRT::Discretization> cutter_dis,
         // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid);
 
@@ -224,31 +225,31 @@ namespace GEO
     /*========================================================================*/
 
     //! Get this side (not from cut meshes) (faces of background elements) from the cut libraries
-    GEO::CUT::SideHandle* GetSide(std::vector<int>& nodeids);
+    CORE::GEO::CUT::SideHandle* GetSide(std::vector<int>& nodeids);
 
     //! Get this side (not from cut meshes) from the cut libraries
-    GEO::CUT::SideHandle* GetSide(int sid);
+    CORE::GEO::CUT::SideHandle* GetSide(int sid);
 
     //! Get this side from cut meshes from the cut libraries
-    GEO::CUT::SideHandle* GetCutSide(int sid);
+    CORE::GEO::CUT::SideHandle* GetCutSide(int sid);
 
     //! Get this element from the cut libraries by element id
-    GEO::CUT::ElementHandle* GetElement(const int eleid) const;
+    CORE::GEO::CUT::ElementHandle* GetElement(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    GEO::CUT::ElementHandle* GetElement(const DRT::Element* ele) const;
+    CORE::GEO::CUT::ElementHandle* GetElement(const ::DRT::Element* ele) const;
 
     //! Get this node from the cut libraries
-    GEO::CUT::Node* GetNode(int nid);
+    CORE::GEO::CUT::Node* GetNode(int nid);
 
     //! Get the sidehandle for cutting sides
-    GEO::CUT::SideHandle* GetMeshCuttingSide(int sid, int mi);
+    CORE::GEO::CUT::SideHandle* GetMeshCuttingSide(int sid, int mi);
 
     //! is there a level-set side with the given sid?
     bool HasLSCuttingSide(int sid);
 
     //! update the coordinates of the cut boundary cells
-    void UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
@@ -265,7 +266,7 @@ namespace GEO
     Teuchos::RCP<const BackMesh> BackMeshPtr() const { return back_mesh_.getConst(); }
 
     virtual void GetPhysicalNodalCoordinates(
-        const DRT::Element* element, LINALG::SerialDenseMatrix& xyze) const;
+        const ::DRT::Element* element, LINALG::SerialDenseMatrix& xyze) const;
 
     /// run after the Run_Cut routine has been called
     virtual void Post_Run_Cut(bool include_inner);
@@ -273,7 +274,7 @@ namespace GEO
     /// If Cut Offset is used, reposition boundary cells for subsequent interface integration
     virtual void Post_UpdateBC_Offset();
 
-    GEO::CUT::CombIntersection& Intersection()
+    CORE::GEO::CUT::CombIntersection& Intersection()
     {
       if (intersection_.is_null()) dserror("NULL pointer!");
 
@@ -299,17 +300,17 @@ namespace GEO
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
-    void AddMeshCuttingSide(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
     void AddMeshCuttingSide(
-        int mi, DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze, const int start_ele_gid);
+        int mi, ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void AddElement(const DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze,
+    void AddElement(const ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze,
         double* myphinp = NULL, bool ls_only_plus_domain = false);
 
     //@}
@@ -364,7 +365,7 @@ namespace GEO
 
     //---------------------------------main intersection class----------------------------
     //! @name main intersection class and flags
-    Teuchos::RCP<GEO::CUT::CombIntersection>
+    Teuchos::RCP<CORE::GEO::CUT::CombIntersection>
         intersection_;  ///< combined intersection object which handles cutting mesh sides and a
                         ///< level-set side
 
@@ -397,6 +398,6 @@ namespace GEO
     //@}
 
   };  // class CutWizard
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

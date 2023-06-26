@@ -28,7 +28,7 @@ The current implementation does not scale at all!
 FBI::FBIGeometryCoupler::FBIGeometryCoupler()
     : fluidpositions_(new std::map<int, LINALG::Matrix<3, 1>>),
       beampositions_(new std::map<int, LINALG::Matrix<3, 1>>),
-      searchtree_(new GEO::SearchTree(5)),
+      searchtree_(new CORE::GEO::SearchTree(5)),
       searchradius_(DRT::Problem::Instance()
                         ->FBIParams()
                         .sublist("BEAM TO FLUID MESHTYING")
@@ -54,10 +54,11 @@ void FBI::FBIGeometryCoupler::Setup(std::vector<Teuchos::RCP<DRT::Discretization
   ComputeFixedPositions(*discretizations[1], fluidpositions_);
 
   // Computes a bounding box for the fluid elements, within which the search will be done
-  LINALG::Matrix<3, 2> fluidBox = GEO::getXAABBofPositions(*fluidpositions_);
+  LINALG::Matrix<3, 2> fluidBox = CORE::GEO::getXAABBofPositions(*fluidpositions_);
 
   // Sets-up the searchtree (octtree) for the fluid elements in the given bounding box
-  searchtree_->initializeTree(fluidBox, *discretizations[1], GEO::TreeType(GEO::OCTTREE));
+  searchtree_->initializeTree(
+      fluidBox, *discretizations[1], CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 }
 /*----------------------------------------------------------------------*/
 

@@ -15,7 +15,7 @@
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   /*!
   \brief calculate surface element normal vector in gausspoint (r,s)
@@ -24,7 +24,7 @@ namespace GEO
   \param xyze               (in)        : element nodal coordinates in (x,y,z) space -> (3,numnode)
   \param unrm               (out)       : unit normal vector at (r,s)
   */
-  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template <::DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
   inline void computeNormalToSurfaceElementViaShape(
       const M1& deriv, const M2& xyze, LINALG::Matrix<3, 1>& unrm)
   {
@@ -70,7 +70,7 @@ namespace GEO
   \param utang1             (out)       : unit tangential vector at (r,s)
   \param utang2             (out)       : unit tangential vector at (r,s)
   */
-  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template <::DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
   inline void computeNormalAndTangentToSurfaceElementViaShape(const M1& deriv, const M2& xyze,
       LINALG::Matrix<3, 1>& unrm, LINALG::Matrix<3, 1>& utang1, LINALG::Matrix<3, 1>& utang2)
   {
@@ -125,7 +125,7 @@ namespace GEO
   \param eleCoord              (in)   node in element coordinates (r, s)
   \param unitnormalvec         (out)  unit normal vector
   */
-  template <DRT::Element::DiscretizationType DISTYPE, class M, class V>
+  template <::DRT::Element::DiscretizationType DISTYPE, class M, class V>
   inline void computeNormalToSurfaceElementT(
       const M& xyze_surfaceElement, const V& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec)
   {
@@ -147,7 +147,7 @@ namespace GEO
   \param unittang1vec          (out):  unit tangential vector
   \param unittang2vec          (out):  unit tangential vector
   */
-  template <DRT::Element::DiscretizationType DISTYPE, class M>
+  template <::DRT::Element::DiscretizationType DISTYPE, class M>
   inline void computeNormalAndTangentToSurfaceElementT(const M& xyze_surfaceElement,
       const LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec,
       LINALG::Matrix<3, 1>& unittang1vec, LINALG::Matrix<3, 1>& unittang2vec)
@@ -170,33 +170,33 @@ namespace GEO
   \param unitnormalvec         (out):  unit normal vector
   */
   template <class M, class V>
-  inline void computeNormalToSurfaceElement(const DRT::Element::DiscretizationType distype,
+  inline void computeNormalToSurfaceElement(const ::DRT::Element::DiscretizationType distype,
       const M& xyze_surfaceElement, const V& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec)
   {
     switch (distype)
     {
-      case DRT::Element::quad4:
-        computeNormalToSurfaceElementT<DRT::Element::quad4>(
+      case ::DRT::Element::quad4:
+        computeNormalToSurfaceElementT<::DRT::Element::quad4>(
             xyze_surfaceElement, eleCoord, unitnormalvec);
         break;
-      case DRT::Element::quad8:
-        computeNormalToSurfaceElementT<DRT::Element::quad8>(
+      case ::DRT::Element::quad8:
+        computeNormalToSurfaceElementT<::DRT::Element::quad8>(
             xyze_surfaceElement, eleCoord, unitnormalvec);
         break;
-      case DRT::Element::quad9:
-        computeNormalToSurfaceElementT<DRT::Element::quad9>(
+      case ::DRT::Element::quad9:
+        computeNormalToSurfaceElementT<::DRT::Element::quad9>(
             xyze_surfaceElement, eleCoord, unitnormalvec);
         break;
-      case DRT::Element::tri3:
-        computeNormalToSurfaceElementT<DRT::Element::tri3>(
+      case ::DRT::Element::tri3:
+        computeNormalToSurfaceElementT<::DRT::Element::tri3>(
             xyze_surfaceElement, eleCoord, unitnormalvec);
         break;
-      case DRT::Element::tri6:
-        computeNormalToSurfaceElementT<DRT::Element::tri6>(
+      case ::DRT::Element::tri6:
+        computeNormalToSurfaceElementT<::DRT::Element::tri6>(
             xyze_surfaceElement, eleCoord, unitnormalvec);
         break;
       default:
-        std::cout << DRT::DistypeToString(distype) << " not found!" << std::endl;
+        std::cout << ::DRT::DistypeToString(distype) << " not found!" << std::endl;
         dserror("please add your distype!");
     }
     return;
@@ -214,28 +214,28 @@ namespace GEO
   */
   template <class M>
   inline void computeNormalAndTangentToSurfaceElement(
-      const DRT::Element::DiscretizationType distype, const M& xyze_surfaceElement,
+      const ::DRT::Element::DiscretizationType distype, const M& xyze_surfaceElement,
       const LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec,
       LINALG::Matrix<3, 1>& unittang1vec, LINALG::Matrix<3, 1>& unittang2vec)
   {
     switch (distype)
     {
-      case DRT::Element::quad4:
-        computeNormalAndTangentToSurfaceElementT<DRT::Element::quad4>(
+      case ::DRT::Element::quad4:
+        computeNormalAndTangentToSurfaceElementT<::DRT::Element::quad4>(
             xyze_surfaceElement, eleCoord, unitnormalvec, unittang1vec, unittang2vec);
         break;
-      case DRT::Element::tri3:
-        computeNormalAndTangentToSurfaceElementT<DRT::Element::tri3>(
+      case ::DRT::Element::tri3:
+        computeNormalAndTangentToSurfaceElementT<::DRT::Element::tri3>(
             xyze_surfaceElement, eleCoord, unitnormalvec, unittang1vec, unittang2vec);
         break;
       default:
-        std::cout << DRT::DistypeToString(distype) << " not found!" << std::endl;
+        std::cout << ::DRT::DistypeToString(distype) << " not found!" << std::endl;
         dserror("please add your distype!");
     }
     return;
   }
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // DISCRETIZATION_GEOMETRY_ELEMENT_NORMALS_H

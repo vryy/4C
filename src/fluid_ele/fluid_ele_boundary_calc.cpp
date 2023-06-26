@@ -274,7 +274,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
   // get local node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
 
   // THESE ARE NEEDED IF DENSITY OR A SCALAR IS USED in the BC (which normally is NOT the case)
@@ -568,7 +568,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // ------------------------------------
   // get statevectors from discretisation
@@ -808,7 +808,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 
   // get global node coordinates for nsd_-dimensional domain
   // (nsd_: number of spatial dimensions of FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1025,7 +1025,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   if (isale)
   {
@@ -1091,7 +1091,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   if (isale)
   {
@@ -1277,7 +1277,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   if (isale)
   {
@@ -1420,7 +1420,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   // start of actual area calculation
   //------------------------------------------------------------------
   // get node coordinates (nsd_: dimension of boundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1493,7 +1493,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   }
 
   // get node coordinates (nsd_: dimension of boundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
   // GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -1680,7 +1680,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
   // GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -1803,7 +1803,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   if (isale)
   {
@@ -2059,7 +2059,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -2119,7 +2119,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
 
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -2435,7 +2435,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements

@@ -127,7 +127,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // get local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
   LINALG::Matrix<pnsd, pnen> pxyze0(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
   pxyze = pxyze0;
 
   if (my::scatraparams_->IsAle())

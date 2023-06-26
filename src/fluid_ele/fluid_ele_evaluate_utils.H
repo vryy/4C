@@ -3116,7 +3116,7 @@ namespace FLD
     // get node coordinates
     // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
     // element!)
-    GEO::fillInitialPositionArray<DISTYPE, nsd, LINALG::Matrix<nsd, iel>>(ele, xyze);
+    CORE::GEO::fillInitialPositionArray<DISTYPE, nsd, LINALG::Matrix<nsd, iel>>(ele, xyze);
 
     /*
     // get node coordinates

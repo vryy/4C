@@ -34,13 +34,13 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 namespace STR
 {
   namespace ELEMENTS
@@ -375,11 +375,11 @@ namespace DRT
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
       //! conditions
       virtual void UnShiftNodePosition(std::vector<double>& disp,  //!< element disp vector
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
 
       //! get directions in which element might be cut by a periodic boundary
       virtual void GetDirectionsOfShifts(std::vector<double>& disp,
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
           std::vector<bool>& shift_in_dim) const;
 
       /** \brief extract values for those Dofs relevant for centerline-interpolation from total
@@ -607,7 +607,7 @@ namespace DRT
       //! coordinates \in [-1,1] from displacement state vector
       void GetPosOfBindingSpot(LINALG::Matrix<3, 1>& pos, std::vector<double>& disp,
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
 
       //! get triad at binding spot with locn x stored in element parameter space coordinates \in
       //! [-1,1] from displacement state vector

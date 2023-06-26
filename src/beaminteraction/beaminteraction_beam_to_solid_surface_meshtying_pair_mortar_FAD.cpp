@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda,
@@ -122,7 +122,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
     LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
     LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -460,7 +460,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda,
@@ -718,7 +718,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
     LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
     LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -967,7 +967,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetPairRotationalGIDs(const DRT::Discretization& discret,
+    mortar>::GetPairRotationalGIDs(const ::DRT::Discretization& discret,
     std::vector<int>& gid_surface, LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.

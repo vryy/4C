@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::InterfacePoint::InterfacePoint() : pType_(NOTYPE), nnode_(0), nline_(0), nsurf_(0)
+CORE::GEO::InterfacePoint::InterfacePoint() : pType_(NOTYPE), nnode_(0), nline_(0), nsurf_(0)
 {
   nodeId_ = -1;
   lineId_.clear();
@@ -29,8 +29,8 @@ GEO::InterfacePoint::InterfacePoint() : pType_(NOTYPE), nnode_(0), nline_(0), ns
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::InterfacePoint::InterfacePoint(GEO::pointType& pType, int nodeId, std::vector<int>& lineId,
-    std::vector<int>& surfId, LINALG::Matrix<3, 1>& coordinates)
+CORE::GEO::InterfacePoint::InterfacePoint(CORE::GEO::pointType& pType, int nodeId,
+    std::vector<int>& lineId, std::vector<int>& surfId, LINALG::Matrix<3, 1>& coordinates)
     : pType_(pType), nodeId_(nodeId), lineId_(lineId), surfId_(surfId), coord_(coordinates)
 {
   setNodeLineSurfNumbers(pType);
@@ -41,7 +41,7 @@ GEO::InterfacePoint::InterfacePoint(GEO::pointType& pType, int nodeId, std::vect
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::InterfacePoint::InterfacePoint(const GEO::InterfacePoint& old)
+CORE::GEO::InterfacePoint::InterfacePoint(const CORE::GEO::InterfacePoint& old)
     : pType_(old.pType_),
       nnode_(old.nnode_),
       nline_(old.nline_),
@@ -59,13 +59,14 @@ GEO::InterfacePoint::InterfacePoint(const GEO::InterfacePoint& old)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::InterfacePoint::~InterfacePoint() { return; }
+CORE::GEO::InterfacePoint::~InterfacePoint() { return; }
 
 
 /*----------------------------------------------------------------------*
  * assignment operator                                       u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::InterfacePoint& GEO::InterfacePoint::operator=(const GEO::InterfacePoint& point)
+CORE::GEO::InterfacePoint& CORE::GEO::InterfacePoint::operator=(
+    const CORE::GEO::InterfacePoint& point)
 {
   pType_ = point.pType_;
   nnode_ = point.nnode_;
@@ -83,7 +84,7 @@ GEO::InterfacePoint& GEO::InterfacePoint::operator=(const GEO::InterfacePoint& p
  |  set xfem number of nodes, lines, surfaces the interface  u.may 07/08|
  |  point is lying on according to point type                           |
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setNodeLineSurfNumbers(const GEO::pointType pType)
+void CORE::GEO::InterfacePoint::setNodeLineSurfNumbers(const CORE::GEO::pointType pType)
 {
   switch (pType)
   {
@@ -124,7 +125,7 @@ void GEO::InterfacePoint::setNodeLineSurfNumbers(const GEO::pointType pType)
 /*----------------------------------------------------------------------*
  |  set point type the interface point                       u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setPointType(const GEO::pointType pType)
+void CORE::GEO::InterfacePoint::setPointType(const CORE::GEO::pointType pType)
 {
   pType_ = pType;
   setNodeLineSurfNumbers(pType);
@@ -134,7 +135,7 @@ void GEO::InterfacePoint::setPointType(const GEO::pointType pType)
 /*----------------------------------------------------------------------*
  |  set xfem node ids the interface point is lying on        u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setNodeId(const int nodeId)
+void CORE::GEO::InterfacePoint::setNodeId(const int nodeId)
 {
   if (nnode_ != 1) dserror("point type is not correct (nodeId)");
 
@@ -145,7 +146,7 @@ void GEO::InterfacePoint::setNodeId(const int nodeId)
 /*----------------------------------------------------------------------*
  |  set xfem line ids the interface point is lying on        u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setLineId(const std::vector<int>& lineId)
+void CORE::GEO::InterfacePoint::setLineId(const std::vector<int>& lineId)
 {
   if (nline_ != (int)lineId.size()) dserror("point type is not correct (lineId)");
 
@@ -158,7 +159,7 @@ void GEO::InterfacePoint::setLineId(const std::vector<int>& lineId)
 /*----------------------------------------------------------------------*
  |  set xfem surface ids the interface point is lying on     u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setSurfaceId(const std::vector<int>& surfId)
+void CORE::GEO::InterfacePoint::setSurfaceId(const std::vector<int>& surfId)
 {
   if (nsurf_ != (int)surfId.size()) dserror("point type is not correct (surfId)");
 
@@ -171,7 +172,7 @@ void GEO::InterfacePoint::setSurfaceId(const std::vector<int>& surfId)
 /*----------------------------------------------------------------------*
  |  set coordinates of the interface point                   u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setCoord(const LINALG::Matrix<3, 1>& coordinates)
+void CORE::GEO::InterfacePoint::setCoord(const LINALG::Matrix<3, 1>& coordinates)
 {
   if (!coordinates.IsInitialized()) dserror("dimension of coordinates is not correct");
 
@@ -183,7 +184,7 @@ void GEO::InterfacePoint::setCoord(const LINALG::Matrix<3, 1>& coordinates)
 /*----------------------------------------------------------------------*
  |  set X-coordinates of the interface point                 u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setCoordX(const double coordX)
+void CORE::GEO::InterfacePoint::setCoordX(const double coordX)
 {
   if (!coord_.IsInitialized()) dserror("coordinates not yet initialized");
 
@@ -195,7 +196,7 @@ void GEO::InterfacePoint::setCoordX(const double coordX)
 /*----------------------------------------------------------------------*
  |  set Y-coordinates of the interface point                 u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setCoordY(const double coordY)
+void CORE::GEO::InterfacePoint::setCoordY(const double coordY)
 {
   if (!coord_.IsInitialized()) dserror("coordinates not yet initialized");
 
@@ -207,7 +208,7 @@ void GEO::InterfacePoint::setCoordY(const double coordY)
 /*----------------------------------------------------------------------*
  |  set Z-coordinates of the interface point                 u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setCoordZ(const double coordZ)
+void CORE::GEO::InterfacePoint::setCoordZ(const double coordZ)
 {
   if (!coord_.IsInitialized()) dserror("coordinates not yet initialized");
 
@@ -218,7 +219,7 @@ void GEO::InterfacePoint::setCoordZ(const double coordZ)
 /*----------------------------------------------------------------------*
  |  set single coordinates of the interface point            u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::InterfacePoint::setSingleCoord(const int index, const double coord)
+void CORE::GEO::InterfacePoint::setSingleCoord(const int index, const double coord)
 {
   if (!coord_.IsInitialized()) dserror("coordinates not yet initialized");
   if (index > 2) dserror("index out of range");

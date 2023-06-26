@@ -63,7 +63,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if (DRT::NURBS::IsNurbs(distype))
@@ -946,7 +946,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
     dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  normal = GEO::computeCrossProduct(dist1, dist2);
+  normal = CORE::GEO::computeCrossProduct(dist1, dist2);
 
   const double length = normal.Norm2();
   if (length < 1.0e-10) dserror("Zero length for element normal");
@@ -994,8 +994,8 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
     parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
   }
 
-  auto normal_parent_ele = GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
-  normal = GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
+  auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
+  normal = CORE::GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
   // Otherwise, change the sign of the normal vector
@@ -2030,11 +2030,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
   // (boundary) element local node coordinates
   LINALG::Matrix<pnsd, bnen> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
   LINALG::Matrix<bnsd, 1> bxsi(true);
@@ -2710,11 +2710,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 
   // (boundary) element local node coordinates
   LINALG::Matrix<pnsd, bnen> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
   LINALG::Matrix<bnsd, 1> bxsi(true);

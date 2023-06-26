@@ -15,7 +15,7 @@ subsides
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
+CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
 {
   subsides_.reserve(4);
 
@@ -53,7 +53,7 @@ GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
+CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nodes)
 {
   subsides_.reserve(4);
 
@@ -71,7 +71,7 @@ GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vecto
   // create middle node
 
   LINALG::Matrix<4, 1> funct;
-  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, DRT::Element::quad4);
+  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad4);
 
   LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
@@ -106,7 +106,7 @@ GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::Quad8SideHandle::Quad8SideHandle(
+CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& nodes, bool iscutside)
 {
   if (iscutside)
@@ -168,7 +168,7 @@ GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     LINALG::Matrix<8, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, DRT::Element::quad8);
+    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad8);
 
     LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
@@ -208,7 +208,7 @@ GEO::CUT::Quad8SideHandle::Quad8SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::Quad9SideHandle::Quad9SideHandle(
+CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& nodes, bool iscutside)
 {
   if (iscutside)
@@ -298,7 +298,7 @@ GEO::CUT::Quad9SideHandle::Quad9SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Tri6SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
     const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
 {
   LINALG::Matrix<3, 6> xyze;
@@ -309,7 +309,7 @@ void GEO::CUT::Tri6SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, DRT::Element::tri6>(xyze, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -319,7 +319,7 @@ void GEO::CUT::Tri6SideHandle::LocalCoordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Quad4SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
     const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
 {
   LINALG::Matrix<3, 4> xyze;
@@ -330,7 +330,7 @@ void GEO::CUT::Quad4SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, DRT::Element::quad4>(xyze, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -340,7 +340,7 @@ void GEO::CUT::Quad4SideHandle::LocalCoordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Quad8SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
     const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
 {
   LINALG::Matrix<3, 8> xyze;
@@ -351,7 +351,7 @@ void GEO::CUT::Quad8SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, DRT::Element::quad8>(xyze, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -361,7 +361,7 @@ void GEO::CUT::Quad8SideHandle::LocalCoordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Quad9SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
     const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
 {
   LINALG::Matrix<3, 9> xyze;
@@ -372,7 +372,7 @@ void GEO::CUT::Quad9SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, DRT::Element::quad9>(xyze, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {

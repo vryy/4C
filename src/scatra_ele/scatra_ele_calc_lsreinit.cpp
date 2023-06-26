@@ -138,22 +138,22 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       // extract boundary integration cells for elliptic reinitialization
       // ----------------------------------------------------------------------
       // define empty list
-      GEO::BoundaryIntCellPtrs boundaryIntCells = GEO::BoundaryIntCellPtrs(0);
+      CORE::GEO::BoundaryIntCellPtrs boundaryIntCells = CORE::GEO::BoundaryIntCellPtrs(0);
 
       // check the type: ToDo change to dsassert
       if (not params.INVALID_TEMPLATE_QUALIFIER
-                  isType<Teuchos::RCP<const std::map<int, GEO::BoundaryIntCellPtrs>>>(
+                  isType<Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>>(
                       "boundary cells"))
         dserror("The given boundary cells have the wrong type!");
 
-      const Teuchos::RCP<const std::map<int, GEO::BoundaryIntCellPtrs>>& allcells =
-          params.get<Teuchos::RCP<const std::map<int, GEO::BoundaryIntCellPtrs>>>(
+      const Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>& allcells =
+          params.get<Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>>(
               "boundary cells", Teuchos::null);
 
       // ----------------------------------------------------------------------
       // check if the current element is a cut element
       // ----------------------------------------------------------------------
-      std::map<int, GEO::BoundaryIntCellPtrs>::const_iterator cit = allcells->find(my::eid_);
+      std::map<int, CORE::GEO::BoundaryIntCellPtrs>::const_iterator cit = allcells->find(my::eid_);
       if (cit != allcells->end()) boundaryIntCells = cit->second;
 
       LINALG::Matrix<nen_, 1> el2sysmat_diag_inv(false);
@@ -218,7 +218,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSystem(
     Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-    const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv, const GEO::BoundaryIntCellPtrs& bcell)
+    const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv, const CORE::GEO::BoundaryIntCellPtrs& bcell)
 {
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -376,17 +376,17 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
     {
       // extract boundary integration cells for elliptic reinitialization
       // define empty list
-      GEO::BoundaryIntCellPtrs boundaryIntCells = GEO::BoundaryIntCellPtrs(0);
+      CORE::GEO::BoundaryIntCellPtrs boundaryIntCells = CORE::GEO::BoundaryIntCellPtrs(0);
 
-      Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>> allcells =
-          params.get<Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>>>(
+      Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>> allcells =
+          params.get<Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>>>(
               "boundary cells", Teuchos::null);
 
-      std::map<int, GEO::BoundaryIntCells>::iterator cit_map = allcells->find(my::eid_);
+      std::map<int, CORE::GEO::BoundaryIntCells>::iterator cit_map = allcells->find(my::eid_);
       if (cit_map != allcells->end())
       {
         boundaryIntCells.reserve(cit_map->second.size());
-        GEO::BoundaryIntCells::iterator cit_vec;
+        CORE::GEO::BoundaryIntCells::iterator cit_vec;
         for (cit_vec = cit_map->second.begin(); cit_vec != cit_map->second.end(); ++cit_vec)
         {
           boundaryIntCells.push_back(Teuchos::rcp(&(*cit_vec), false));
@@ -778,9 +778,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
-    Epetra_SerialDenseMatrix& emat,        ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,        ///< element rhs to calculate
-    const GEO::BoundaryIntCellPtrs& bcell  ///< interface for penalty term
+    Epetra_SerialDenseMatrix& emat,              ///< element matrix to calculate
+    Epetra_SerialDenseVector& erhs,              ///< element rhs to calculate
+    const CORE::GEO::BoundaryIntCellPtrs& bcell  ///< interface for penalty term
 )
 {
   //----------------------------------------------------------------------
@@ -1130,20 +1130,21 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTerm(
-    Epetra_SerialDenseMatrix* emat,        //!< element matrix to calculate
-    Epetra_SerialDenseVector* erhs,        //!< element vector to calculate
-    const GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
+    Epetra_SerialDenseMatrix* emat,              //!< element matrix to calculate
+    Epetra_SerialDenseVector* erhs,              //!< element vector to calculate
+    const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
 )
 {
   //---------------------------------------------------------------------------
   // loop over boundary integration cells
   //---------------------------------------------------------------------------
-  for (GEO::BoundaryIntCellPtrs::const_iterator cell = bcell.begin(); cell != bcell.end(); ++cell)
+  for (CORE::GEO::BoundaryIntCellPtrs::const_iterator cell = bcell.begin(); cell != bcell.end();
+       ++cell)
   {
     // get shape of boundary cell
     DRT::Element::DiscretizationType celldistype = (*cell)->Shape();
 
-    GEO::BoundaryIntCell& actcell = **cell;
+    CORE::GEO::BoundaryIntCell& actcell = **cell;
 
     switch (celldistype)
     {
@@ -1177,7 +1178,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTe
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
     Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-    const GEO::BoundaryIntCell& cell)
+    const CORE::GEO::BoundaryIntCell& cell)
 {
   // get the cut position ( local parent element coordinates )
   const LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().A(), true);
@@ -1214,9 +1215,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 template <DRT::Element::DiscretizationType celldistype>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
-    Epetra_SerialDenseMatrix& emat,   //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,   //!< element vector to calculate
-    const GEO::BoundaryIntCell& cell  //!< interface cell
+    Epetra_SerialDenseMatrix& emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector& erhs,         //!< element vector to calculate
+    const CORE::GEO::BoundaryIntCell& cell  //!< interface cell
 )
 {
   // get number of vertices of cell
@@ -1271,7 +1272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     gpinXi3D.Clear();
 
     // coordinates of this integration point in element coordinates \xi^domain
-    GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
+    CORE::GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
     static LINALG::Matrix<nsd, nen_> deriv_xi3D;
     CORE::DRT::UTILS::shape_function_3D_deriv1(

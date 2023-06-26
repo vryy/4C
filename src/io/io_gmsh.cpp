@@ -642,7 +642,7 @@ void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::
     const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions, std::ostream& s)
 {
   IO::GMSH::cellWithScalarToStream(
-      ele->Shape(), scalar, GEO::getCurrentNodalPositions(ele, currentelepositions), s);
+      ele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(ele, currentelepositions), s);
 }
 
 
@@ -704,7 +704,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
   {
     const DRT::Element* actele = dis->lColElement(i);
     IO::GMSH::cellWithScalarToStream(
-        actele->Shape(), scalar, GEO::getCurrentNodalPositions(actele, currentpositions), s);
+        actele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(actele, currentpositions), s);
   };
   s << "};\n";
 }

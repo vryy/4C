@@ -12,7 +12,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   /*!
    * create a right-handed orthornormal basis from a unit vector based on
@@ -50,7 +50,7 @@ namespace GEO
 
     basisvec_2.CrossProduct(unitvec, basisvec_1);
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // DISCRETIZATION_GEOMETRY_COORDINATE_SYSTEM_UTILS_H

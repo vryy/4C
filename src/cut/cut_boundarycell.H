@@ -19,7 +19,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -48,7 +48,7 @@ namespace GEO
       \brief Returns the shape of the boundarycell
        */
 
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       /*! \brief Returns the cubature degree to generate quadrature rule for the cell
        *
@@ -99,7 +99,7 @@ namespace GEO
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void AssignOffset(int idx, double offset)
       {
         LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
@@ -165,7 +165,7 @@ namespace GEO
       Gauss point location (eta) corresponding to the shape of the boundarycell. Also computes the
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void Transform(const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
           LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
@@ -180,7 +180,7 @@ namespace GEO
 
         CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
-        if (celldistype != DRT::Element::tri3)
+        if (celldistype != ::DRT::Element::tri3)
         {
           CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
           CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
@@ -223,7 +223,7 @@ namespace GEO
       system setting shadow = true means the mapping is done w.r. to the parent quad element from
       which elem1 is derived
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void TransformLocalCoords(Element* elem1, const LINALG::Matrix<2, 1>& eta,
           LINALG::Matrix<3, 1>& x_gp_lin, LINALG::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
@@ -231,7 +231,7 @@ namespace GEO
      protected:
       virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
 
-      template <DRT::Element::DiscretizationType distype>
+      template <::DRT::Element::DiscretizationType distype>
       double MyArea()
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -261,7 +261,7 @@ namespace GEO
        *
        *  \author shahmiri
        *  \date 07/12 */
-      template <DRT::Element::DiscretizationType distype>
+      template <::DRT::Element::DiscretizationType distype>
       void MyElementCenter(LINALG::Matrix<3, 1>& center, LINALG::Matrix<3, 1>& midpoint)
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -292,7 +292,7 @@ namespace GEO
         /* intentionally left blank */
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::point1; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::point1; }
 
       virtual int CubatureDegree() const { return 0; }
 
@@ -329,7 +329,7 @@ namespace GEO
         /* intentionally left blank */
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::line2; }
 
       virtual int CubatureDegree() const { return 4; }
 
@@ -365,7 +365,7 @@ namespace GEO
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tri3; }
 
       virtual int CubatureDegree() const { return 20; }
 
@@ -405,14 +405,14 @@ namespace GEO
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::quad4; }
 
       virtual int CubatureDegree() const { return 20; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
       // Maybe shoelace theorem can be used here?
-      virtual double Area() { return MyArea<DRT::Element::quad4>(); }
+      virtual double Area() { return MyArea<::DRT::Element::quad4>(); }
 
       virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
 
@@ -444,7 +444,7 @@ namespace GEO
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::dis_none; }
 
       virtual int CubatureDegree() const { return 0; }
 
@@ -474,6 +474,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

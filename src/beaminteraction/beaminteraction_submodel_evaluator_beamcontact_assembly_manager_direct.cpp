@@ -37,7 +37,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::EvaluateForceStiff(
-    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<::DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
 {

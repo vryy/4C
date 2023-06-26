@@ -29,7 +29,7 @@
 /*-------------------------------------------------------------------------------------*
  * constructor                                                              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
+CORE::GEO::CUT::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
     : myrank_(myrank), mesh_(cut_mesh_handle.LinearMesh()), meshhandle_(cut_mesh_handle)
 {
   meshsizeparam_ = 1e200;
@@ -41,7 +41,7 @@ GEO::CUT::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
   }
 }
 
-void GEO::CUT::SelfCut::PerformSelfCut()
+void CORE::GEO::CUT::SelfCut::PerformSelfCut()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT");
   if (CollisionDetection())
@@ -56,7 +56,7 @@ void GEO::CUT::SelfCut::PerformSelfCut()
  * detects cutsides which cut each other by finding the respective cutpoints
  *                                                                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-bool GEO::CUT::SelfCut::CollisionDetection()
+bool CORE::GEO::CUT::SelfCut::CollisionDetection()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- CollisionDetection");
 
@@ -70,7 +70,7 @@ bool GEO::CUT::SelfCut::CollisionDetection()
 /*-------------------------------------------------------------------------------------*
  * replaces cutted sides by creating new nodes, edges and sides             wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::MeshIntersection()
+void CORE::GEO::CUT::SelfCut::MeshIntersection()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshIntersection");
 
@@ -86,7 +86,7 @@ void GEO::CUT::SelfCut::MeshIntersection()
  * erases nodes, edges and sides which lies inside a structure body by
  * locating there position                                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ElementSelection()
+void CORE::GEO::CUT::SelfCut::ElementSelection()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- ElementSelection");
 
@@ -100,7 +100,7 @@ void GEO::CUT::SelfCut::ElementSelection()
 /*-------------------------------------------------------------------------------------*
  * repair the mesh from potential islands                                   wirtz 07/16
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::MeshCorrection()
+void CORE::GEO::CUT::SelfCut::MeshCorrection()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshCorrection");
 
@@ -114,7 +114,7 @@ void GEO::CUT::SelfCut::MeshCorrection()
 /*-------------------------------------------------------------------------------------*
  * represents the result by using console or gmsh                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::StatusInspection()
+void CORE::GEO::CUT::SelfCut::StatusInspection()
 {
   CuttedSideStatusText();
   CutMeshStatusText();
@@ -128,11 +128,11 @@ void GEO::CUT::SelfCut::StatusInspection()
  * this bounding box. Hence possible self cut sides that we collect here may not
  * actually produce self-cut --> we check this in subsequent procedure
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::FindCuttingSides()
+void CORE::GEO::CUT::SelfCut::FindCuttingSides()
 {
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
   const std::map<int, LINALG::Matrix<3, 2>>& selfcutbvs = mesh_.SelfCutBvs();
-  const Teuchos::RCP<GEO::SearchTree>& selfcuttree = mesh_.SelfCutTree();
+  const Teuchos::RCP<CORE::GEO::SearchTree>& selfcuttree = mesh_.SelfCutTree();
   const std::map<int, Side*>& shadowsides = mesh_.ShadowSides();
 
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
@@ -217,7 +217,7 @@ void GEO::CUT::SelfCut::FindCuttingSides()
  *   Rememeber : Which one of the nodes is considered among the coinciding nodes is
  *   not reproducible (just like many operations in cut libraries)
  *-------------------------------------------------------------------------------------*/
-bool GEO::CUT::SelfCut::MergeCoincidingNodes(Side* keep, Side* replace)
+bool CORE::GEO::CUT::SelfCut::MergeCoincidingNodes(Side* keep, Side* replace)
 {
   bool merge = false;
 
@@ -280,7 +280,7 @@ bool GEO::CUT::SelfCut::MergeCoincidingNodes(Side* keep, Side* replace)
  * operations in our data structure such that only one node is available and
  * ensure connectivity between the corresponding elements
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::operationsForNodeMerging(
+void CORE::GEO::CUT::SelfCut::operationsForNodeMerging(
     std::vector<std::pair<const Node*, const Node*>> repl, bool initial)
 {
   // The following "edge" and "side" data structure has to be modified accodingly
@@ -332,7 +332,7 @@ void GEO::CUT::SelfCut::operationsForNodeMerging(
  *element is deleted
  *----------------------------------------------------------------------------------------------------*/
 template <typename A, typename B>
-void GEO::CUT::SelfCut::ModifyEdgeOrSideMap(std::map<A, B>& data, int nod, int replwith)
+void CORE::GEO::CUT::SelfCut::ModifyEdgeOrSideMap(std::map<A, B>& data, int nod, int replwith)
 {
   typedef typename std::map<A, B>::iterator ittype;
   typedef typename A::iterator A_ittype;
@@ -383,7 +383,7 @@ void GEO::CUT::SelfCut::ModifyEdgeOrSideMap(std::map<A, B>& data, int nod, int r
  * finds cutpoints by searching the intersection between the edges
  * of one side with the other side and vice versa                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::FindSelfCutPoints()
+void CORE::GEO::CUT::SelfCut::FindSelfCutPoints()
 {
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
@@ -425,7 +425,7 @@ void GEO::CUT::SelfCut::FindSelfCutPoints()
  * gets all cutted sides and their nodes and edges to store them as
  * private variables                                                         wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::GetSelfCutObjects()
+void CORE::GEO::CUT::SelfCut::GetSelfCutObjects()
 {
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
@@ -465,7 +465,7 @@ void GEO::CUT::SelfCut::GetSelfCutObjects()
  * creates a node at every selfcutpoint with respect to the
  * corresponding cutsides                                                   wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CreateSelfCutNodes()
+void CORE::GEO::CUT::SelfCut::CreateSelfCutNodes()
 {
   std::vector<Node*> cuttedsidesnodes;
   for (std::map<int, Teuchos::RCP<Node>>::iterator i = selfcut_nodes_.begin();
@@ -529,7 +529,7 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
  * creates a edge between two selfcutnodes with respect to the
  * corresponding cutsides                                                   wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CreateSelfCutEdges()
+void CORE::GEO::CUT::SelfCut::CreateSelfCutEdges()
 {
   // Find common nodes between a cut side and its self-cutting sides
   // create edges between these common nodes
@@ -570,7 +570,7 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
         else
         {
           Teuchos::RCP<Edge> selfcutedge =
-              GEO::CUT::Edge::Create(DRT::Element::line2, commonselfcutnodes);
+              CORE::GEO::CUT::Edge::Create(::DRT::Element::line2, commonselfcutnodes);
           selfcutedge->SelfCutPosition(Point::oncutsurface);
           mesh_.GetEdge(commonselfcutnodeids, selfcutedge);
           const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedgercp = mesh_.Edges();
@@ -591,7 +591,7 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
  * finds triangles with respect to the self cut by using
  * a pointgraph and a triangulation method                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::FindSelfCutTriangulation()
+void CORE::GEO::CUT::SelfCut::FindSelfCutTriangulation()
 {
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
@@ -714,7 +714,7 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
 /*-------------------------------------------------------------------------------------*
  * creates triangular sides out of the self cut triangles                   wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CreateSelfCutSides()
+void CORE::GEO::CUT::SelfCut::CreateSelfCutSides()
 {
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
@@ -725,7 +725,7 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
 
     // store all the nodes (self-cut nodes + side nodes)
     // this is used to check we really have a node at each point of triangle
-    for (std::vector<GEO::CUT::Node*>::const_iterator i = cutsidenodes.begin();
+    for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = cutsidenodes.begin();
          i != cutsidenodes.end(); ++i)
     {
       Node* cutsidenode = *i;
@@ -740,7 +740,7 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
       std::vector<Point*> selfcuttriangle = *i;
       std::vector<int> selfcutsidenodeids;
       plain_int_set selfcutsidenodeidsset;
-      for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+      for (std::vector<CORE::GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
            i != selfcuttriangle.end(); ++i)
       {
         Point* selfcuttrianglepoint = *i;
@@ -782,7 +782,7 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
         throw std::runtime_error(
             "SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
-      Side* selfcutside = mesh_.CreateSide(cutside->Id(), selfcutsidenodeids, DRT::Element::tri3);
+      Side* selfcutside = mesh_.CreateSide(cutside->Id(), selfcutsidenodeids, ::DRT::Element::tri3);
       meshhandle_.AddSubSide(selfcutside);
       const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsideedgercp = mesh_.Sides();
       std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator sideiterator =
@@ -799,7 +799,7 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
 /*-------------------------------------------------------------------------------------*
  * erases all cutsides which are cut by another side                        wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseCuttedSides()
+void CORE::GEO::CUT::SelfCut::EraseCuttedSides()
 {
   std::vector<plain_int_set> cutsideids;
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
@@ -818,7 +818,7 @@ void GEO::CUT::SelfCut::EraseCuttedSides()
 /*-------------------------------------------------------------------------------------*
  * erases all edges which are cut by a cutside                              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseCuttedEdges()
+void CORE::GEO::CUT::SelfCut::EraseCuttedEdges()
 {
   std::vector<plain_int_set> cutsideedgeids;
   for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
@@ -837,7 +837,7 @@ void GEO::CUT::SelfCut::EraseCuttedEdges()
   EraseEdge(cutsideedgeids);
 }
 
-bool GEO::CUT::SelfCut::ConnectedtoBackground(Edge* edge)
+bool CORE::GEO::CUT::SelfCut::ConnectedtoBackground(Edge* edge)
 {
   for (plain_side_set::const_iterator sit = edge->Sides().begin(); sit != edge->Sides().end();
        ++sit)
@@ -847,7 +847,7 @@ bool GEO::CUT::SelfCut::ConnectedtoBackground(Edge* edge)
   return false;
 }
 
-bool GEO::CUT::SelfCut::ConnectedtoBackground(Node* node)
+bool CORE::GEO::CUT::SelfCut::ConnectedtoBackground(Node* node)
 {
   for (plain_side_set::const_iterator sit = node->Sides().begin(); sit != node->Sides().end();
        ++sit)
@@ -861,7 +861,7 @@ bool GEO::CUT::SelfCut::ConnectedtoBackground(Node* node)
  * locates the position of nodes, edges and sides of
  * a structure body with respect to the other bodys                         wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::DetermineSelfCutPosition()
+void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
 {
   for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = selfcut_edges_.begin();
        i != selfcut_edges_.end(); ++i)
@@ -997,7 +997,7 @@ void GEO::CUT::SelfCut::DetermineSelfCutPosition()
  * creates triangular sides with respect to the corresponding
  * cutsides by using a pointgraph and a triangulation method                wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::PropagateSelfCutPosition()
+void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
 {
   plain_side_set undecidedsides;
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
@@ -1128,7 +1128,7 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
  * erases sides which lies inside a structure body by locating
  * their position                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseInsideSides()
+void CORE::GEO::CUT::SelfCut::EraseInsideSides()
 {
   // Get some information of the sides stored in the mesh_ in case that a cuttest fails
   int initial_cutsides = mesh_.Sides().size();
@@ -1159,7 +1159,7 @@ void GEO::CUT::SelfCut::EraseInsideSides()
  * erases edges which lies inside a structure body by locating
  * their position                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseInsideEdges()
+void CORE::GEO::CUT::SelfCut::EraseInsideEdges()
 {
   const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedges = mesh_.Edges();
   std::vector<plain_int_set> cutsideedgeids;
@@ -1183,7 +1183,7 @@ void GEO::CUT::SelfCut::EraseInsideEdges()
  * erases nodes which lies inside a structure body by locating
  * there position                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseInsideNodes()
+void CORE::GEO::CUT::SelfCut::EraseInsideNodes()
 {
   const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.Nodes();
   std::vector<int> cutsidenodeids;
@@ -1211,7 +1211,7 @@ void GEO::CUT::SelfCut::EraseInsideNodes()
  * construct the connectivity of the nodes to find potential islands in the cut mesh
  *                                                                          wirtz 07/16
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ConstructConnectivity()
+void CORE::GEO::CUT::SelfCut::ConstructConnectivity()
 {
   const std::map<int, Teuchos::RCP<Node>>& cutsidenodes = mesh_.Nodes();
   plain_node_set remainingnodes;
@@ -1237,7 +1237,7 @@ void GEO::CUT::SelfCut::ConstructConnectivity()
 /*-------------------------------------------------------------------------------------*
  * find the next node for the construction of the connectivity              wirtz 07/16
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::NextNode(Node* node, plain_node_set& remainingnodes, int count)
+void CORE::GEO::CUT::SelfCut::NextNode(Node* node, plain_node_set& remainingnodes, int count)
 {
   const plain_edge_set& nodeedges = node->Edges();
   for (plain_edge_set::const_iterator i = nodeedges.begin(); i != nodeedges.end(); ++i)
@@ -1262,7 +1262,7 @@ void GEO::CUT::SelfCut::NextNode(Node* node, plain_node_set& remainingnodes, int
 /*-------------------------------------------------------------------------------------*
  * identify the islands                                                     wirtz 07/16
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::FindIslands()
+void CORE::GEO::CUT::SelfCut::FindIslands()
 {
   plain_side_set selfcutsides;
 
@@ -1304,8 +1304,9 @@ void GEO::CUT::SelfCut::FindIslands()
  * finds the next sides in a recursive way
  *                                                                          wirtz 02/15
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::NextSides(Side* cutside, Teuchos::RCP<GEO::CUT::BoundingBox>& tmpbb,
-    plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland)
+void CORE::GEO::CUT::SelfCut::NextSides(Side* cutside,
+    Teuchos::RCP<CORE::GEO::CUT::BoundingBox>& tmpbb, plain_side_set& selfcutsides,
+    plain_side_set& islandsides, bool& IsIsland)
 {
   const std::vector<Edge*>& cutsideedges = cutside->Edges();
   for (std::vector<Edge*>::const_iterator i = cutsideedges.begin(); i != cutsideedges.end(); ++i)
@@ -1343,7 +1344,7 @@ void GEO::CUT::SelfCut::NextSides(Side* cutside, Teuchos::RCP<GEO::CUT::Bounding
 /*-------------------------------------------------------------------------------------*
  * Status of the cutted sides for text viewer                               wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CuttedSideStatusText()
+void CORE::GEO::CUT::SelfCut::CuttedSideStatusText()
 {
   int selfcutsidesize = selfcut_sides_.size();
   int j = 1;
@@ -1393,15 +1394,16 @@ void GEO::CUT::SelfCut::CuttedSideStatusText()
       EdgePlot(*selfcutedge);
     }
 
-    const std::vector<std::vector<GEO::CUT::Point*>>& selfcuttriangles =
+    const std::vector<std::vector<CORE::GEO::CUT::Point*>>& selfcuttriangles =
         cutside->SelfCutTriangles();
     std::cout << "\nSelfcuttriangles:\n";
-    for (std::vector<std::vector<GEO::CUT::Point*>>::const_iterator i = selfcuttriangles.begin();
+    for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::const_iterator i =
+             selfcuttriangles.begin();
          i != selfcuttriangles.end(); ++i)
     {
-      std::vector<GEO::CUT::Point*> selfcuttriangle = *i;
+      std::vector<CORE::GEO::CUT::Point*> selfcuttriangle = *i;
       PointPlotHead();
-      for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+      for (std::vector<CORE::GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
            i != selfcuttriangle.end(); ++i)
       {
         Point* selfcuttrianglepoint = *i;
@@ -1417,7 +1419,7 @@ void GEO::CUT::SelfCut::CuttedSideStatusText()
 /*-------------------------------------------------------------------------------------*
  * Status of the cutmesh for text viewer                                    wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CutMeshStatusText()
+void CORE::GEO::CUT::SelfCut::CutMeshStatusText()
 {
   PlotAcross();
   std::cout << "\n" << selfcut_nodes_.size() << " Nodes: \n";
@@ -1452,7 +1454,7 @@ void GEO::CUT::SelfCut::CutMeshStatusText()
 /*-------------------------------------------------------------------------------------*
  * Status of one problematic side for text viewer                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ErrorStatusText(Side& cutside)
+void CORE::GEO::CUT::SelfCut::ErrorStatusText(Side& cutside)
 {
   int selfcutsidesize = 1;
   int j = 1;
@@ -1500,14 +1502,16 @@ void GEO::CUT::SelfCut::ErrorStatusText(Side& cutside)
     EdgePlot(*selfcutedge);
   }
 
-  const std::vector<std::vector<GEO::CUT::Point*>>& selfcuttriangles = cutside.SelfCutTriangles();
+  const std::vector<std::vector<CORE::GEO::CUT::Point*>>& selfcuttriangles =
+      cutside.SelfCutTriangles();
   std::cout << "\nSelfcuttriangles:\n";
-  for (std::vector<std::vector<GEO::CUT::Point*>>::const_iterator i = selfcuttriangles.begin();
+  for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::const_iterator i =
+           selfcuttriangles.begin();
        i != selfcuttriangles.end(); ++i)
   {
-    std::vector<GEO::CUT::Point*> selfcuttriangle = *i;
+    std::vector<CORE::GEO::CUT::Point*> selfcuttriangle = *i;
     PointPlotHead();
-    for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+    for (std::vector<CORE::GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
          i != selfcuttriangle.end(); ++i)
     {
       Point* selfcuttrianglepoint = *i;
@@ -1522,7 +1526,7 @@ void GEO::CUT::SelfCut::ErrorStatusText(Side& cutside)
 /*-------------------------------------------------------------------------------------*
  * Status of the cutted sides for gmsh                                      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
+void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
 {
   std::ofstream file(name.c_str());
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
@@ -1641,7 +1645,7 @@ void GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
 /*-------------------------------------------------------------------------------------*
  * Status of the cutmesh in gmsh                                            wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::WallGmsh(const std::string& name)
+void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
 {
   std::stringstream str;
   str << name << "_" << myrank_ << ".pos";
@@ -2029,7 +2033,7 @@ void GEO::CUT::SelfCut::WallGmsh(const std::string& name)
 /*-------------------------------------------------------------------------------------*
  * Status of the selfcut objects in gmsh                                    wirtz 07/16
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
+void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
 {
   std::ofstream file(name.c_str());
 
@@ -2330,7 +2334,7 @@ void GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
 /*-------------------------------------------------------------------------------------*
  * Status of the cutmesh in gmsh for my CMGM (old)                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
+void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
 {
   std::ofstream file(name.c_str());
 
@@ -2714,7 +2718,7 @@ void GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
 /*-------------------------------------------------------------------------------------*
  * Status of all sides in separates files for gmsh                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::AllSingleGmsh(const std::string& location)
+void CORE::GEO::CUT::SelfCut::AllSingleGmsh(const std::string& location)
 {
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = selfcut_sides_.begin();
        i != selfcut_sides_.end(); ++i)
@@ -2737,7 +2741,7 @@ void GEO::CUT::SelfCut::AllSingleGmsh(const std::string& location)
 /*-------------------------------------------------------------------------------------*
  * Status of one problematic side for gmsh                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
+void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
 {
   std::ofstream file(name.c_str());
 
@@ -3124,7 +3128,8 @@ void GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
 /*-------------------------------------------------------------------------------------*
  * cuts the edges of the first cutside with the other cutside               wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::PerformSelfCut(Side& cutside, Side& otherside, PointSet& selfcutpoints)
+void CORE::GEO::CUT::SelfCut::PerformSelfCut(
+    Side& cutside, Side& otherside, PointSet& selfcutpoints)
 {
   const std::vector<Edge*>& cutsideedges = cutside.Edges();
   for (std::vector<Edge*>::const_iterator i = cutsideedges.begin(); i != cutsideedges.end(); ++i)
@@ -3145,7 +3150,7 @@ void GEO::CUT::SelfCut::PerformSelfCut(Side& cutside, Side& otherside, PointSet&
 /*-------------------------------------------------------------------------------------*
  * gets the edges of the new created sides                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::GetSelfCutEdges(Side& cutside)
+void CORE::GEO::CUT::SelfCut::GetSelfCutEdges(Side& cutside)
 {
   const std::vector<Edge*>& cutsideedges = cutside.Edges();
   for (std::vector<Edge*>::const_iterator i = cutsideedges.begin(); i != cutsideedges.end(); ++i)
@@ -3176,7 +3181,7 @@ void GEO::CUT::SelfCut::GetSelfCutEdges(Side& cutside)
 /*-------------------------------------------------------------------------------------*
  * checks if the direction of rotation of the cycle is correct              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-bool GEO::CUT::SelfCut::CheckNormal(std::vector<double> cutsideplane, Cycle& maincycle)
+bool CORE::GEO::CUT::SelfCut::CheckNormal(std::vector<double> cutsideplane, Cycle& maincycle)
 {
   std::vector<Point*> maincyclepoints = maincycle();
   std::vector<double> maincycleplane = KERNEL::EqnPlaneOfPolygon(maincyclepoints);
@@ -3201,7 +3206,7 @@ bool GEO::CUT::SelfCut::CheckNormal(std::vector<double> cutsideplane, Cycle& mai
 /*-------------------------------------------------------------------------------------*
  * deletes all pointers which are pointing to a soon to be erased side      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseSidePointer(Side& cutside, bool erase_nodepointers)
+void CORE::GEO::CUT::SelfCut::EraseSidePointer(Side& cutside, bool erase_nodepointers)
 {
   const std::vector<Edge*>& cutsideedges = cutside.Edges();
   for (std::vector<Edge*>::const_iterator i = cutsideedges.begin(); i != cutsideedges.end(); ++i)
@@ -3221,7 +3226,7 @@ void GEO::CUT::SelfCut::EraseSidePointer(Side& cutside, bool erase_nodepointers)
 /*-------------------------------------------------------------------------------------*
  * erases a side                                                            wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseSide(std::vector<plain_int_set>& cutsideids)
+void CORE::GEO::CUT::SelfCut::EraseSide(std::vector<plain_int_set>& cutsideids)
 {
   for (std::vector<plain_int_set>::iterator i = cutsideids.begin(); i != cutsideids.end(); ++i)
   {
@@ -3232,7 +3237,7 @@ void GEO::CUT::SelfCut::EraseSide(std::vector<plain_int_set>& cutsideids)
   }
 }
 
-void GEO::CUT::SelfCut::EraseInsideSide(std::vector<plain_int_set>& cutsideids)
+void CORE::GEO::CUT::SelfCut::EraseInsideSide(std::vector<plain_int_set>& cutsideids)
 {
   for (std::vector<plain_int_set>::iterator i = cutsideids.begin(); i != cutsideids.end(); ++i)
   {
@@ -3246,7 +3251,7 @@ void GEO::CUT::SelfCut::EraseInsideSide(std::vector<plain_int_set>& cutsideids)
 /*-------------------------------------------------------------------------------------*
  * deletes all pointers which are pointing to a soon to be erased edge      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseEdgePointer(Edge& cutsideedge)
+void CORE::GEO::CUT::SelfCut::EraseEdgePointer(Edge& cutsideedge)
 {
   const std::vector<Node*>& cutsideedgenodes = cutsideedge.Nodes();
   for (std::vector<Node*>::const_iterator i = cutsideedgenodes.begin(); i != cutsideedgenodes.end();
@@ -3268,7 +3273,7 @@ void GEO::CUT::SelfCut::EraseEdgePointer(Edge& cutsideedge)
 /*-------------------------------------------------------------------------------------*
  * erases an edge                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set>& cutsideedgeids)
+void CORE::GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set>& cutsideedgeids)
 {
   for (std::vector<plain_int_set>::iterator i = cutsideedgeids.begin(); i != cutsideedgeids.end();
        ++i)
@@ -3279,25 +3284,25 @@ void GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set>& cutsideedgeids)
   }
 }
 
-void GEO::CUT::SelfCut::PlotAcross()
+void CORE::GEO::CUT::SelfCut::PlotAcross()
 {
   std::cout << "\n================================================================================="
                "===================================\n";
 }
 
-void GEO::CUT::SelfCut::PointPlotHead()
+void CORE::GEO::CUT::SelfCut::PointPlotHead()
 {
   std::cout << "x\ty\tz\t# pid\n"
             << "-----------------------------\n";
 }
 
-void GEO::CUT::SelfCut::NodePlotHead()
+void CORE::GEO::CUT::SelfCut::NodePlotHead()
 {
   std::cout << "x\ty\tz\t# pid\t# nid\tSelfCutPosition\n"
             << "-------------------------------------------------------\n";
 }
 
-void GEO::CUT::SelfCut::EdgePlotHead()
+void CORE::GEO::CUT::SelfCut::EdgePlotHead()
 {
   for (int i = 1; i < 3; ++i)
   {
@@ -3307,7 +3312,7 @@ void GEO::CUT::SelfCut::EdgePlotHead()
             << "-------------------------------\n";
 }
 
-void GEO::CUT::SelfCut::SidePlotHead()
+void CORE::GEO::CUT::SelfCut::SidePlotHead()
 {
   for (int i = 1; i < 4; ++i)
   {
@@ -3317,7 +3322,7 @@ void GEO::CUT::SelfCut::SidePlotHead()
             << "-----------------------------------------------\n";
 }
 
-void GEO::CUT::SelfCut::PointPlot(Point& point)
+void CORE::GEO::CUT::SelfCut::PointPlot(Point& point)
 {
   LINALG::Matrix<3, 1> pointcoordinates;
   point.Coordinates(pointcoordinates.A());
@@ -3326,13 +3331,13 @@ void GEO::CUT::SelfCut::PointPlot(Point& point)
             << point.Id();
 }
 
-void GEO::CUT::SelfCut::NodePlot(Node& node)
+void CORE::GEO::CUT::SelfCut::NodePlot(Node& node)
 {
   PointPlot(*node.point());
   std::cout << "\t# " << node.Id() << "\t" << node.SelfCutPosition() << "\n";
 }
 
-void GEO::CUT::SelfCut::EdgePlot(Edge& edge)
+void CORE::GEO::CUT::SelfCut::EdgePlot(Edge& edge)
 {
   const std::vector<Node*>& edgenodes = edge.Nodes();
   for (unsigned int i = 0; i < edgenodes.size(); ++i)
@@ -3342,7 +3347,7 @@ void GEO::CUT::SelfCut::EdgePlot(Edge& edge)
   std::cout << edge.SelfCutPosition() << "\n";
 }
 
-void GEO::CUT::SelfCut::SidePlot(Side& side)
+void CORE::GEO::CUT::SelfCut::SidePlot(Side& side)
 {
   const std::vector<Node*>& sidenodes = side.Nodes();
   for (unsigned int i = 0; i < sidenodes.size(); ++i)
@@ -3352,7 +3357,7 @@ void GEO::CUT::SelfCut::SidePlot(Side& side)
   std::cout << "# " << side.Id() << "\t" << side.SelfCutPosition() << "\n";
 }
 
-void GEO::CUT::SelfCut::SideNodePlot(Side& side)
+void CORE::GEO::CUT::SelfCut::SideNodePlot(Side& side)
 {
   const std::vector<Node*>& sidenodes = side.Nodes();
   NodePlotHead();

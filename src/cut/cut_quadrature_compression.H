@@ -26,7 +26,7 @@ namespace Teuchos
 }  // namespace Teuchos
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -41,7 +41,7 @@ namespace GEO
       ~QuadratureCompression(){};
 
       bool PerformCompressionOfQuadrature(
-          CORE::DRT::UTILS::GaussPointsComposite& gin, GEO::CUT::VolumeCell* vc);
+          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
       // CORE::DRT::UTILS::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GetCompressedQuadrature() { return gout_; }
@@ -94,7 +94,7 @@ namespace GEO
       int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
 
       void WriteCompressedQuadratureGMSH(
-          CORE::DRT::UTILS::GaussPointsComposite& gin, GEO::CUT::VolumeCell* vc);
+          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
       void IntegratePredefinedPolynomials(CORE::DRT::UTILS::GaussPointsComposite& gin);
 
@@ -102,5 +102,5 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 #endif  // CUT_QUADRATURE_COMPRESSION_H

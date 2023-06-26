@@ -13,7 +13,7 @@
 
 #include "cut_coloredgraph.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -36,7 +36,7 @@ namespace GEO
     {
      public:
       /// create the FacetGraph object for the given element dimension
-      static Teuchos::RCP<GEO::CUT::FacetGraph> Create(
+      static Teuchos::RCP<CORE::GEO::CUT::FacetGraph> Create(
           const std::vector<Side*>& sides, const plain_facet_set& facets);
 
      public:
@@ -88,6 +88,6 @@ namespace GEO
     };  // class FacetGraph
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

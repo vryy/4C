@@ -849,7 +849,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
   // get coordinates of hex 8
   LINALG::Matrix<nsd_, nen_> xyze(true);
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
   dsassert(elevec1.M() == numsamppoints * numsamppoints * numsamppoints * 6,

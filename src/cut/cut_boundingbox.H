@@ -15,7 +15,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "cut_tolerance.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -169,6 +169,6 @@ namespace GEO
     };  // class ConcreteBoundingBox
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

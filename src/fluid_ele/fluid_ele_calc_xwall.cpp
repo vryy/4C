@@ -414,7 +414,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
   numgpnormow_ = params.get<int>("gpnormow");
   numgpplane_ = params.get<int>("gppar");
   // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
   PrepareGaussRule();
@@ -825,7 +825,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   if (ele->IsAle())
   {
@@ -1047,7 +1047,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK(DRT::ELEMENTS::Fl
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
@@ -1090,7 +1090,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);

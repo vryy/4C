@@ -40,7 +40,7 @@ namespace MAT
   class Material;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 
@@ -48,7 +48,7 @@ namespace GEO
   {
     class SideHandle;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace LINALG
 {
@@ -80,7 +80,7 @@ namespace XFEM
         DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
         Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
-        Teuchos::RCP<GEO::CutWizard> wizard,              ///< cut wizard
+        Teuchos::RCP<CORE::GEO::CutWizard> wizard,        ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
@@ -129,7 +129,8 @@ namespace XFEM
 
    private:
     //! get the cut side for face's element identified using the sorted node ids
-    GEO::CUT::SideHandle* GetFace(DRT::Element* faceele, Teuchos::RCP<GEO::CutWizard> wizard);
+    CORE::GEO::CUT::SideHandle* GetFace(
+        DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     // reset maps for output
     void Reset();

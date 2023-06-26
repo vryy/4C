@@ -491,8 +491,8 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
       }
     }
 
-    larea[AreaType::ref] += GEO::ElementArea(fele->Shape(), xyze_ref);
-    larea[AreaType::curr] += GEO::ElementArea(fele->Shape(), xyze_curr);
+    larea[AreaType::ref] += CORE::GEO::ElementArea(fele->Shape(), xyze_ref);
+    larea[AreaType::curr] += CORE::GEO::ElementArea(fele->Shape(), xyze_curr);
   }
 
   discret.Comm().SumAll(larea.data(), area, 2);

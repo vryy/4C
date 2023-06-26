@@ -31,7 +31,7 @@ fluid meshes
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)

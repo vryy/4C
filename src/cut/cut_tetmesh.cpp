@@ -20,7 +20,7 @@ extern "C"
 #include <qhull_a.h>
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -47,10 +47,10 @@ namespace GEO
       };
     }  // namespace
   }    // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
-GEO::CUT::TetMesh::TetMesh(
+CORE::GEO::CUT::TetMesh::TetMesh(
     const std::vector<Point*>& points, const plain_facet_set& facets, bool project)
     : points_(points), facets_(facets)
 {
@@ -119,7 +119,7 @@ GEO::CUT::TetMesh::TetMesh(
    triangulated point is added to the cut information. Might have to look into this....
 
 */
-bool GEO::CUT::TetMesh::FillFacetMesh()
+bool CORE::GEO::CUT::TetMesh::FillFacetMesh()
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -168,7 +168,7 @@ bool GEO::CUT::TetMesh::FillFacetMesh()
    tesselation for this element.
 
 */
-void GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
+void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
     const plain_volumecell_set& cells,
     const plain_side_set& cut_sides,  //<- cut_facets_ of parent ele.
     int count, bool tetcellsonly)
@@ -412,7 +412,7 @@ void GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 /* Initialize the data-structures needed for the TetMesh. The call to Qhull has to be performed
  * before.
  */
-void GEO::CUT::TetMesh::Init()
+void CORE::GEO::CUT::TetMesh::Init()
 {
   unsigned numtets = tets_.size();
 
@@ -449,7 +449,7 @@ void GEO::CUT::TetMesh::Init()
 
    One might want to take a look at the call to Qhull to improve it for non-local coordinate cuts.
 */
-void GEO::CUT::TetMesh::CallQHull(
+void CORE::GEO::CUT::TetMesh::CallQHull(
     const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project)
 {
   const int dim = 3;
@@ -686,7 +686,7 @@ void GEO::CUT::TetMesh::CallQHull(
  exact...
 
 */
-bool GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
+bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
 {
   plain_side_set sides;
   // Find if the points of the tet share a common side.
@@ -906,7 +906,7 @@ double GEO::CUT::TetMesh::CalcVolumeOfTet(const std::vector<Point*>& t)
 
 /* This function is unused....
  */
-void GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>& tets)
+void CORE::GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>& tets)
 {
   plain_int_set used_points;
   for (std::vector<std::vector<int>>::const_iterator i = tets.begin(); i != tets.end(); ++i)
@@ -923,7 +923,7 @@ void GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>& tets
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::TetMesh::FixBrokenTets()
+void CORE::GEO::CUT::TetMesh::FixBrokenTets()
 {
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
   int counter = 0;
@@ -1057,7 +1057,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
 /* Take the tri from the facet and test whether it belongs to more than one tet,
    if not add the tri as a side with an error check.
  */
-void GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
+void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
     std::vector<std::vector<int>>& sides, const PlainEntitySet<4>* members)
 {
   sides.reserve(tris.size());
@@ -1121,7 +1121,7 @@ void GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
 }
 
 /// Collects the coordinates for the tri3 sides of the facet if all its points are on cut surface
-void GEO::CUT::TetMesh::CollectCoordinates(
+void CORE::GEO::CUT::TetMesh::CollectCoordinates(
     const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords)
 {
   for (std::vector<std::vector<int>>::const_iterator i = sides.begin(); i != sides.end(); ++i)

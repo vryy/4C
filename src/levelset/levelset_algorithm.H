@@ -235,24 +235,26 @@ namespace SCATRA
     virtual void UpdateReinit() = 0;
 
     /// geometric reinitialization via computation of distance of node to interface
-    void ReinitGeo(const std::map<int, GEO::BoundaryIntCells>& interface);
+    void ReinitGeo(const std::map<int, CORE::GEO::BoundaryIntCells>& interface);
 
     /// compute normal vector of interface patch (helper function for ReinitGeo())
-    void ComputeNormalVectorToInterface(const GEO::BoundaryIntCell& patch,
+    void ComputeNormalVectorToInterface(const CORE::GEO::BoundaryIntCell& patch,
         const LINALG::SerialDenseMatrix& patchcoord, LINALG::Matrix<3, 1>& normal);
 
     /// compute distance to vertex of patch (helper function for ReinitGeo())
-    void ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
-        const LINALG::SerialDenseMatrix& patchcoord, double& vertexdist);
+    void ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+        double& vertexdist);
 
     /// compute distance to edge of patch (helper function for ReinitGeo())
-    void ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
-        const LINALG::SerialDenseMatrix& patchcoord, double& edgedist);
+    void ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+        double& edgedist);
 
     /// find a facing interface patch by projection of node into boundary cell space (helper
     /// function for ReinitGeo())
     void FindFacingPatchProjCellSpace(const LINALG::Matrix<3, 1>& node,
-        const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
         const LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
 
     /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper
@@ -268,15 +270,15 @@ namespace SCATRA
 
     /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
     template <DRT::Element::DiscretizationType DISTYPE>
-    bool ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
-        const LINALG::SerialDenseMatrix& patchcoord, const LINALG::Matrix<3, 1>& normal,
-        LINALG::Matrix<2, 1>& eta, double& alpha);
+    bool ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+        const LINALG::Matrix<3, 1>& normal, LINALG::Matrix<2, 1>& eta, double& alpha);
 
     /// correct the volume of the minus domain after reinitialization
     void CorrectVolume();
 
     /// elliptic reinitialization
-    void ReinitElliptic(std::map<int, GEO::BoundaryIntCells>& interface);
+    void ReinitElliptic(std::map<int, CORE::GEO::BoundaryIntCells>& interface);
 
     // -----------------------------------------------------------------
     // additional post-processing and evaluation methods
@@ -290,7 +292,7 @@ namespace SCATRA
 
     // reconstruction of interface and output of domains
     void CaptureInterface(
-        std::map<int, GEO::BoundaryIntCells>& interface, const bool writetofile = false);
+        std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile = false);
 
     // -----------------------------------------------------------------
     // members
@@ -344,7 +346,7 @@ namespace SCATRA
     bool reinitvolcorrection_;
 
     /// interface for elliptic reinitialization
-    Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>> interface_eleq_;
+    Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>> interface_eleq_;
 
     // --------------
     // members related to transport and velocity fields from Navier-Stokes

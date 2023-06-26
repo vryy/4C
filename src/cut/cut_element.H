@@ -17,7 +17,7 @@
 
 #include "inpar_cut.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -43,12 +43,12 @@ namespace GEO
     {
      public:
       /// \brief create an element with the given type
-      static Teuchos::RCP<GEO::CUT::Element> Create(
-          const DRT::Element::DiscretizationType& elementtype, const int& eid,
+      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(
+          const ::DRT::Element::DiscretizationType& elementtype, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       /// create an element with the given shards-key (coming from trilinos library)
-      static Teuchos::RCP<GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
+      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       //! constructor
@@ -62,7 +62,7 @@ namespace GEO
       int Id() const { return eid_; }
 
       /*! \brief Returns the shape of the element */
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       //! element dimension
       virtual unsigned Dim() const = 0;
@@ -378,7 +378,7 @@ namespace GEO
       /*!
       \brief Get total number of Gaussinan points generated over all the volumecells of this element
        */
-      int NumGaussPoints(DRT::Element::DiscretizationType shape);
+      int NumGaussPoints(::DRT::Element::DiscretizationType shape);
 
       void DebugDump();
 
@@ -408,7 +408,7 @@ namespace GEO
       If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
       shadow element is derived
        */
-      template <int probdim, DRT::Element::DiscretizationType distype>
+      template <int probdim, ::DRT::Element::DiscretizationType distype>
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
         const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -490,12 +490,12 @@ namespace GEO
       /*!
       \brief Set the discretization type of parent quad element
        */
-      void setQuadShape(DRT::Element::DiscretizationType dis) { quadshape_ = dis; }
+      void setQuadShape(::DRT::Element::DiscretizationType dis) { quadshape_ = dis; }
 
       /*!
       \brief Get shape of parent Quad element from which this shadow element is derived
        */
-      DRT::Element::DiscretizationType getQuadShape() { return quadshape_; }
+      ::DRT::Element::DiscretizationType getQuadShape() { return quadshape_; }
 
       /*!
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
@@ -622,7 +622,7 @@ namespace GEO
       bool isShadow_;
 
       /// Discretization shape of the parent quad element
-      DRT::Element::DiscretizationType quadshape_;
+      ::DRT::Element::DiscretizationType quadshape_;
 
       /// the bounding volume of the element
       Teuchos::RCP<BoundingBox> boundingvolume_;
@@ -636,7 +636,7 @@ namespace GEO
     /*! \brief Implementation of the concrete cut element
      *
      *  \author hiermeier */
-    template <unsigned probdim, DRT::Element::DiscretizationType elementtype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
@@ -654,7 +654,7 @@ namespace GEO
       virtual ~ConcreteElement(){};
 
       //! return element shape
-      virtual DRT::Element::DiscretizationType Shape() const { return elementtype; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return elementtype; }
 
       //! get problem dimension
       virtual unsigned ProbDim() const { return probdim; }
@@ -993,11 +993,11 @@ namespace GEO
       /// constructor
       ElementFactory(){};
 
-      Teuchos::RCP<Element> CreateElement(DRT::Element::DiscretizationType elementtype, int eid,
+      Teuchos::RCP<Element> CreateElement(::DRT::Element::DiscretizationType elementtype, int eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
      private:
-      template <DRT::Element::DiscretizationType elementtype>
+      template <::DRT::Element::DiscretizationType elementtype>
       Element* CreateConcreteElement(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
@@ -1027,6 +1027,6 @@ namespace GEO
     // inline int EntityId( const Element & e ) { return e.Id(); }
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -2045,7 +2045,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // compute local coordinates with respect to slave element
   LINALG::Matrix<nsd_, 1> nqxg(true);
 
-  bool inelement_n = GEO::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
+  bool inelement_n = CORE::GEO::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
 
   if (!inelement_n) dserror("point does not lie in element");
 
@@ -2054,7 +2054,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // compute local coordinates with respect to master element
 
   LINALG::Matrix<nsd_, 1> pqxg(true);
-  bool inelement_p = GEO::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
+  bool inelement_p = CORE::GEO::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
 
   if (!inelement_p) dserror("point does not lie in element");
 

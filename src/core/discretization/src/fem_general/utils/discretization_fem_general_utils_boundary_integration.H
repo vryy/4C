@@ -1673,7 +1673,7 @@ namespace CORE::DRT::UTILS
         ::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
-    GEO::fillInitialPositionArray<distype, nsd, LINALG::Matrix<nsd, bdrynen>>(ele, xyze);
+    CORE::GEO::fillInitialPositionArray<distype, nsd, LINALG::Matrix<nsd, bdrynen>>(ele, xyze);
 
     // Add displacements to reference coordinates, if an ALE description is used
     if (isale)

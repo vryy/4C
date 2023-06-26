@@ -235,8 +235,8 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;

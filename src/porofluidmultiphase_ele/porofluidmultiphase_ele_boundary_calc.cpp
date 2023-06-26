@@ -70,7 +70,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+      ele, xyze_);
 
   return 0;
 }

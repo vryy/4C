@@ -546,7 +546,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
     // get node coordinates
-    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
     // declaration of internal variables
     double intenergy = 0.0;
@@ -763,7 +763,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -803,7 +803,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -903,7 +903,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
     LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements
   LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -1115,7 +1115,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements and velocities
   LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -1974,7 +1974,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // --------------------------------------------------------- initialise
   // thermal material tangent
@@ -2069,7 +2069,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
 #ifdef THRASOUTPUT
   std::cout << "LinearDissipationCoupledTang evel\n" << evel << std::endl;
@@ -2225,7 +2225,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // update element geometry
   LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -2454,7 +2454,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
     LINALG::Matrix<nquad_, nsd_>* etempgrad  // temperature gradients at Gauss points
 )
 {
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -2676,7 +2676,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
   if (myneumcond.size() == 1)
   {
     // get node coordinates
-    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
     // update element geometry
     LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -2836,7 +2836,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
     const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
     LINALG::Matrix<nen_, nsd_>& xcurr, LINALG::Matrix<nen_, nsd_>& xcurrrate)
 {
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   for (int i = 0; i < nen_; ++i)
   {
     xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
@@ -2880,7 +2880,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
     Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -3203,7 +3203,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T

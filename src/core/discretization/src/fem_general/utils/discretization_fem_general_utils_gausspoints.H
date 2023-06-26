@@ -359,7 +359,7 @@ namespace CORE::DRT::UTILS
       {
         LINALG::Matrix<nsd, 1> glo(iquad.Point());
 
-        bool insideele = GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
+        bool insideele = CORE::GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)
         {
           dserror("Given Gauss points not inside the element?");

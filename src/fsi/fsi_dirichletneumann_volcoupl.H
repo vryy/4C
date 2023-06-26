@@ -18,7 +18,7 @@
 #include "coupling_adapter_volmortar.H"
 #include "coupling_adapter.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -153,7 +153,7 @@ namespace FSI
     int dim_;
 
     //! Searchtree for mortar evaluations
-    Teuchos::RCP<GEO::SearchTree> searchTree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
 
     //! Dop normals for search algorithm
     LINALG::Matrix<9, 3> dopnormals_;

@@ -13,7 +13,7 @@
 
 #include "cut_point.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -57,7 +57,7 @@ namespace GEO
           std::set<plain_volumecell_set, Cmp>& connected_volumecells, bool is_std_dofset);
 
       /// constructor for CompositeNodalDofSet
-      explicit NodalDofSet(bool is_std_dofset, GEO::CUT::Point::PointPosition pos);
+      explicit NodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos);
 
       virtual ~NodalDofSet(){};
 
@@ -75,10 +75,10 @@ namespace GEO
       bool Is_Standard_DofSet() const { return is_std_dofset_; }
 
       /// get the position of the nodal dofset which is the same for all its contained volumecells
-      GEO::CUT::Point::PointPosition Position() const { return position_; };
+      CORE::GEO::CUT::Point::PointPosition Position() const { return position_; };
 
       /// does the nodal dofset's composite of volumecells contain the point?
-      virtual bool Contains(GEO::CUT::Point* p);
+      virtual bool Contains(CORE::GEO::CUT::Point* p);
 
       virtual void Print();
 
@@ -92,7 +92,7 @@ namespace GEO
       /// is the dofset a standard physical dofset or a ghost dofset?
       bool is_std_dofset_;
 
-      GEO::CUT::Point::PointPosition position_;
+      CORE::GEO::CUT::Point::PointPosition position_;
     };
 
     /*----------------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ namespace GEO
     {
      public:
       /// constructor
-      CompositeNodalDofSet(bool is_std_dofset, GEO::CUT::Point::PointPosition pos)
+      CompositeNodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos)
           : NodalDofSet(is_std_dofset, pos)
       {
         nodal_dofsets_.clear();
@@ -131,7 +131,7 @@ namespace GEO
       }
 
       /// does one of the nodal dofset's contain the point?
-      bool Contains(GEO::CUT::Point* p)
+      bool Contains(CORE::GEO::CUT::Point* p)
       {
         for (unsigned int i = 0; i < nodal_dofsets_.size(); i++)
           if (nodal_dofsets_[i]->Contains(p)) return true;
@@ -318,7 +318,7 @@ namespace GEO
       //! @name private class variables
       /*========================================================================*/
 
-      int nid_;       ///< node's id (the same as in DRT::Discretization)
+      int nid_;       ///< node's id (the same as in  ::DRT::Discretization)
       Point* point_;  ///< pointer to the GEO::CUT::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 
@@ -356,6 +356,6 @@ namespace GEO
 
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -1705,7 +1705,7 @@ void XFEM::LevelSetCouplingTwoPhase::ExportGeometricQuantities()
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeTransportVelocity(
-    const Teuchos::RCP<GEO::CutWizard>& wizard,  ///< the cut wizard
+    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< the cut wizard
     const Teuchos::RCP<const Epetra_Vector>&
         convective_velocity  ///< the convective fluid velocity based on initial dofmap (just
                              ///< velocity)
@@ -1765,7 +1765,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     //------------------------
 
     // get the positioning of the node
-    GEO::CUT::Point::PointPosition pos = GEO::CUT::Point::undecided;
+    CORE::GEO::CUT::Point::PointPosition pos = CORE::GEO::CUT::Point::undecided;
 
     DRT::Node* bg_node = NULL;
 
@@ -1774,7 +1774,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
       const int bgnode_id = cutter_node->Id();  // this only holds for matching discretizations!!!
 
       // get the cut node and its position
-      GEO::CUT::Node* n = wizard->GetNode(bgnode_id);
+      CORE::GEO::CUT::Node* n = wizard->GetNode(bgnode_id);
 
       // get the points position!
       pos = n->Position();
@@ -1863,7 +1863,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingTwoPhase::ComputeRelativeTransportVelocity(
-    Epetra_SerialDenseVector& flvelrel, const GEO::CUT::Point::PointPosition& position,
+    Epetra_SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
     const Epetra_SerialDenseVector& nvec, const double& curv)
 {
   flvelrel.Scale(0.0);
@@ -1903,7 +1903,7 @@ bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(Epetra_SerialDenseVector& nor
 void XFEM::LevelSetCouplingTwoPhase::GetInterfaceSlaveMaterial(
     DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat)
 {
-  XFEM::UTILS::GetVolumeCellMaterial(actele, mat, GEO::CUT::Point::inside);
+  XFEM::UTILS::GetVolumeCellMaterial(actele, mat, CORE::GEO::CUT::Point::inside);
 }
 
 
@@ -2013,7 +2013,7 @@ void XFEM::LevelSetCouplingTwoPhase::GetViscositySlave(DRT::Element* coup_ele,  
     double& visc_s)  ///< viscosity slavesided
 {
   Teuchos::RCP<MAT::Material> mat_s;
-  XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, GEO::CUT::Point::inside);
+  XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, CORE::GEO::CUT::Point::inside);
   if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
   else
@@ -2329,13 +2329,13 @@ void XFEM::LevelSetCouplingCombustion::GetPhaseDensities(
   // density burnt (+,j) domain (j>i)
   Teuchos::RCP<MAT::Material> matptrplus, matptrminus = Teuchos::null;
 
-  XFEM::UTILS::GetVolumeCellMaterial(ele, matptrplus, GEO::CUT::Point::inside);
+  XFEM::UTILS::GetVolumeCellMaterial(ele, matptrplus, CORE::GEO::CUT::Point::inside);
   dsassert(matptrplus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
   const MAT::NewtonianFluid* matplus = static_cast<const MAT::NewtonianFluid*>(matptrplus.get());
   rhoplus = matplus->Density();
 
   // density unburnt (-,i) domain (j>i) domain
-  XFEM::UTILS::GetVolumeCellMaterial(ele, matptrminus, GEO::CUT::Point::outside);
+  XFEM::UTILS::GetVolumeCellMaterial(ele, matptrminus, CORE::GEO::CUT::Point::outside);
   dsassert(matptrminus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
   const MAT::NewtonianFluid* matminus = static_cast<const MAT::NewtonianFluid*>(matptrminus.get());
   rhominus = matminus->Density();
@@ -2344,7 +2344,7 @@ void XFEM::LevelSetCouplingCombustion::GetPhaseDensities(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingCombustion::ComputeRelativeTransportVelocity(
-    Epetra_SerialDenseVector& flvelrel, const GEO::CUT::Point::PointPosition& position,
+    Epetra_SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
     const Epetra_SerialDenseVector& nvec, const double& curv)
 {
   //------------------------
@@ -2371,13 +2371,13 @@ void XFEM::LevelSetCouplingCombustion::ComputeRelativeTransportVelocity(
 
   double speedfac = laminar_flamespeed_ * (1.0 - markstein_length_ * curv);
 
-  if (position == GEO::CUT::Point::inside)
+  if (position == CORE::GEO::CUT::Point::inside)
   {
     // interface or burnt domain -> burnt material
     // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
     speedfac *= rhominus / rhoplus;
   }
-  else if (position == GEO::CUT::Point::outside)
+  else if (position == CORE::GEO::CUT::Point::outside)
   {
     // unburnt domain -> unburnt material
     // flame speed factor = laminar flame speed

@@ -330,9 +330,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_n_);
 
   // get element location vector and ownerships
@@ -1819,7 +1819,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2056,7 +2056,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2287,7 +2287,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2520,7 +2520,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2872,7 +2872,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -3179,7 +3179,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -3544,7 +3544,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
@@ -4150,7 +4150,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4508,7 +4508,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements

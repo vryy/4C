@@ -20,16 +20,16 @@ header file
 
 
 // forward declarations
-namespace GEO
+namespace CORE::GEO
 {
   //! shortcut for a vector of BoundaryIntCells
-  typedef std::vector<GEO::BoundaryIntCell> BoundaryIntCells;
+  typedef std::vector<CORE::GEO::BoundaryIntCell> BoundaryIntCells;
 
   //! shortcut for a vector of BoundaryCell pointers
-  typedef std::vector<Teuchos::RCP<GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
+  typedef std::vector<Teuchos::RCP<CORE::GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
 
   //! shortcut for a vector of DomainIntCells
-  typedef std::vector<GEO::DomainIntCell> DomainIntCells;
+  typedef std::vector<CORE::GEO::DomainIntCell> DomainIntCells;
 
 
   //! based on this element property, one can speed up geometry algorithms
@@ -39,6 +39,6 @@ namespace GEO
     LINEAR,
     HIGHERORDER
   };
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif  // DISCRETIZATION_GEOMETRY_GEO_UTILS_H

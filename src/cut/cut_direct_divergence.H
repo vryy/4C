@@ -17,7 +17,7 @@
 // to Tesselation).
 #define OUTPUT_GLOBAL_DIVERGENCE_CELLS
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -33,8 +33,8 @@ namespace GEO
     class DirectDivergence
     {
      public:
-      DirectDivergence(
-          VolumeCell* volcell, Element* elem, const GEO::CUT::Point::PointPosition posi, Mesh& mesh)
+      DirectDivergence(VolumeCell* volcell, Element* elem,
+          const CORE::GEO::CUT::Point::PointPosition posi, Mesh& mesh)
           : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
       {
       }
@@ -78,7 +78,7 @@ namespace GEO
       Element* elem1_;
 
       //! position of this volumecell
-      const GEO::CUT::Point::PointPosition position_;
+      const CORE::GEO::CUT::Point::PointPosition position_;
 
       //! mesh that contains the background element
       Mesh& mesh_;
@@ -93,6 +93,6 @@ namespace GEO
       std::vector<Point*> refPtsGmsh_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -29,7 +29,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::MESHFREE::BoundingBox::BoundingBox()
+CORE::GEO::MESHFREE::BoundingBox::BoundingBox()
     : isinit_(false),
       issetup_(false),
       boxdiscret_(Teuchos::null),
@@ -51,7 +51,7 @@ GEO::MESHFREE::BoundingBox::BoundingBox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Init()
+void CORE::GEO::MESHFREE::BoundingBox::Init()
 {
   issetup_ = false;
 
@@ -59,7 +59,7 @@ void GEO::MESHFREE::BoundingBox::Init()
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
+      ::DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
@@ -79,7 +79,7 @@ void GEO::MESHFREE::BoundingBox::Init()
 
   // set up boundary conditions
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
+      ::DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -116,7 +116,7 @@ void GEO::MESHFREE::BoundingBox::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Init(
+void CORE::GEO::MESHFREE::BoundingBox::Init(
     LINALG::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff)
 {
   issetup_ = false;
@@ -141,7 +141,7 @@ void GEO::MESHFREE::BoundingBox::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Setup()
+void CORE::GEO::MESHFREE::BoundingBox::Setup()
 {
   ThrowIfNotInit();
 
@@ -155,7 +155,7 @@ void GEO::MESHFREE::BoundingBox::Setup()
   disn_col_ = LINALG::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
-  if (DRT::Problem::Instance()
+  if (::DRT::Problem::Instance()
           ->IOParams()
           .sublist("RUNTIME VTK OUTPUT")
           .get<int>("INTERVAL_STEPS") != -1)
@@ -167,11 +167,11 @@ void GEO::MESHFREE::BoundingBox::Setup()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
+void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
 {
-  if (DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+  if (::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
   {
-    boxdiscret_ = DRT::Problem::Instance()->GetDis("boundingbox");
+    boxdiscret_ = ::DRT::Problem::Instance()->GetDis("boundingbox");
 
     if (boxdiscret_->Filled() == false) boxdiscret_->FillComplete(true, false, false);
 
@@ -186,18 +186,18 @@ void GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
     boxdiscret_->FillComplete(true, false, false);
   }
 
-  if (not DRT::Problem::Instance()->DoesExistDis("boundingbox") or
+  if (not ::DRT::Problem::Instance()->DoesExistDis("boundingbox") or
       boxdiscret_->NumMyColElements() == 0)
   {
-    if (not DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+    if (not ::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
     {
       Teuchos::RCP<Epetra_Comm> com =
-          Teuchos::rcp(DRT::Problem::Instance()->GetDis("structure")->Comm().Clone());
-      boxdiscret_ = Teuchos::rcp(new DRT::Discretization("boundingbox", com));
+          Teuchos::rcp(::DRT::Problem::Instance()->GetDis("structure")->Comm().Clone());
+      boxdiscret_ = Teuchos::rcp(new ::DRT::Discretization("boundingbox", com));
     }
     else
     {
-      boxdiscret_ = DRT::Problem::Instance()->GetDis("boundingbox");
+      boxdiscret_ = ::DRT::Problem::Instance()->GetDis("boundingbox");
     }
 
     // create nodes
@@ -208,19 +208,19 @@ void GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
       UndeformedBoxCornerPointPosition(corner_i, cornerpos);
       node_ids[corner_i] = corner_i;
 
-      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(new DRT::Node(corner_i, cornerpos, 0));
+      Teuchos::RCP<::DRT::Node> newnode = Teuchos::rcp(new ::DRT::Node(corner_i, cornerpos, 0));
       boxdiscret_->AddNode(newnode);
     }
 
     // assign nodes to element
-    Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory("VELE3", "Polynomial", 0, 0);
+    Teuchos::RCP<::DRT::Element> newele = ::DRT::UTILS::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
     boxdiscret_->AddElement(newele);
   }
 
   // build independent dof set
-  Teuchos::RCP<DRT::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new DRT::IndependentDofSet(true));
+  Teuchos::RCP<::DRT::IndependentDofSet> independentdofset =
+      Teuchos::rcp(new ::DRT::IndependentDofSet(true));
   boxdiscret_->ReplaceDofSet(independentdofset);
   boxdiscret_->FillComplete();
 }
@@ -228,7 +228,7 @@ void GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Shift3D(
+bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
     LINALG::Matrix<3, 1>& d, LINALG::Matrix<3, 1> const X) const
 {
   ThrowIfNotInit();
@@ -261,7 +261,7 @@ bool GEO::MESHFREE::BoundingBox::Shift3D(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(
+void CORE::GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(
     LINALG::Matrix<3, 1> const& x1, LINALG::Matrix<3, 1> const& x2, LINALG::Matrix<3, 1>& xi) const
 {
   ThrowIfNotInit();
@@ -270,7 +270,7 @@ void GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(LINALG::Matrix<3, 1> const& x1,
+void CORE::GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(LINALG::Matrix<3, 1> const& x1,
     LINALG::Matrix<3, 1> const& x2, LINALG::Matrix<3, 1>& xi, LINALG::Matrix<3, 2> const& box) const
 {
   ThrowIfNotInit();
@@ -336,7 +336,7 @@ void GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(LINALG::Matrix<3, 1> cons
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::UnShift3D(
+void CORE::GEO::MESHFREE::BoundingBox::UnShift3D(
     LINALG::Matrix<3, 1>& d, LINALG::Matrix<3, 1> const& ref, LINALG::Matrix<3, 1> const X) const
 {
   ThrowIfNotInit();
@@ -364,7 +364,7 @@ void GEO::MESHFREE::BoundingBox::UnShift3D(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::CheckIfShiftBetweenPoints(LINALG::Matrix<3, 1>& d,
+bool CORE::GEO::MESHFREE::BoundingBox::CheckIfShiftBetweenPoints(LINALG::Matrix<3, 1>& d,
     LINALG::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
     LINALG::Matrix<3, 1> const X) const
 {
@@ -402,7 +402,7 @@ bool GEO::MESHFREE::BoundingBox::CheckIfShiftBetweenPoints(LINALG::Matrix<3, 1>&
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Shift1D(int dim, double& d, double const& X) const
+bool CORE::GEO::MESHFREE::BoundingBox::Shift1D(int dim, double& d, double const& X) const
 {
   ThrowIfNotInit();
 
@@ -429,7 +429,7 @@ bool GEO::MESHFREE::BoundingBox::Shift1D(int dim, double& d, double const& X) co
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::UnShift1D(
+bool CORE::GEO::MESHFREE::BoundingBox::UnShift1D(
     int dim, double& d, double const& ref, double const& X) const
 {
   ThrowIfNotInit();
@@ -456,21 +456,22 @@ bool GEO::MESHFREE::BoundingBox::UnShift1D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::InBetween(double smin, double smax, double omin, double omax) const
+bool CORE::GEO::MESHFREE::BoundingBox::InBetween(
+    double smin, double smax, double omin, double omax) const
 {
-  double tol = GEO::TOL7;
+  double tol = CORE::GEO::TOL7;
   return ((omax > smin - tol) and (smax > omin - tol));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::RandomPosWithin(LINALG::Matrix<3, 1>& randpos) const
+void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(LINALG::Matrix<3, 1>& randpos) const
 {
   ThrowIfNotInit();
 
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  ::DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
-  DRT::Problem::Instance()->Random()->Uni(randuni, 3);
+  ::DRT::Problem::Instance()->Random()->Uni(randuni, 3);
 
   LINALG::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
@@ -481,7 +482,7 @@ void GEO::MESHFREE::BoundingBox::RandomPosWithin(LINALG::Matrix<3, 1>& randpos) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
+void CORE::GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
 {
   dserror("Check before use.");
   if (empty_)
@@ -504,7 +505,7 @@ void GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
+bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 {
   dserror("Check before use.");
   if (empty_) return true;
@@ -515,7 +516,8 @@ bool GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within(const double* x, std::vector<bool>& within_in_dir) const
+bool CORE::GEO::MESHFREE::BoundingBox::Within(
+    const double* x, std::vector<bool>& within_in_dir) const
 {
   ThrowIfNotInit();
 
@@ -529,7 +531,7 @@ bool GEO::MESHFREE::BoundingBox::Within(const double* x, std::vector<bool>& with
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within(
+bool CORE::GEO::MESHFREE::BoundingBox::Within(
     LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   ThrowIfNotInit();
@@ -544,7 +546,7 @@ bool GEO::MESHFREE::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within(LINALG::Matrix<3, 2> const& box,
+bool CORE::GEO::MESHFREE::BoundingBox::Within(LINALG::Matrix<3, 2> const& box,
     LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   ThrowIfNotInit();
@@ -559,7 +561,7 @@ bool GEO::MESHFREE::BoundingBox::Within(LINALG::Matrix<3, 2> const& box,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within(const Epetra_SerialDenseMatrix& xyz) const
+bool CORE::GEO::MESHFREE::BoundingBox::Within(const Epetra_SerialDenseMatrix& xyz) const
 {
   dserror("Check before use.");
   BoundingBox bb;
@@ -573,7 +575,7 @@ bool GEO::MESHFREE::BoundingBox::Within(const Epetra_SerialDenseMatrix& xyz) con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Print()
+void CORE::GEO::MESHFREE::BoundingBox::Print()
 {
   if (empty_)
   {
@@ -588,7 +590,7 @@ void GEO::MESHFREE::BoundingBox::Print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
+void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
 {
   ThrowIfNotInitOrSetup();
 
@@ -607,7 +609,7 @@ void GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
+void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
   vtu_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter());
 
@@ -617,10 +619,10 @@ void GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 
   // initialize the writer object
   double time = -1.0;
-  if (DRT::Problem::Instance()->Restart())
+  if (::DRT::Problem::Instance()->Restart())
   {
     IO::DiscretizationReader ioreader(
-        DRT::Problem::Instance()->GetDis("structure"), DRT::Problem::Instance()->Restart());
+        ::DRT::Problem::Instance()->GetDis("structure"), ::DRT::Problem::Instance()->Restart());
     time = ioreader.ReadDouble("time");
   }
   else
@@ -633,7 +635,7 @@ void GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::RuntimeOutputStepState(double timen, int stepn) const
+void CORE::GEO::MESHFREE::BoundingBox::RuntimeOutputStepState(double timen, int stepn) const
 {
   ThrowIfNotInitOrSetup();
 
@@ -650,11 +652,11 @@ void GEO::MESHFREE::BoundingBox::RuntimeOutputStepState(double timen, int stepn)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::ReferencePosOfCornerPoint(int i) const
+LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::ReferencePosOfCornerPoint(int i) const
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  DRT::Node* node_i = boxdiscret_->lColNode(i);
+  ::DRT::Node* node_i = boxdiscret_->lColNode(i);
 
   LINALG::Matrix<3, 1> x(true);
   for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->X()[dim];
@@ -664,14 +666,14 @@ LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::ReferencePosOfCornerPoint(int i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::CurrentPositionOfCornerPoint(int i) const
+LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::CurrentPositionOfCornerPoint(int i) const
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
   LINALG::Matrix<3, 1> x(true);
   if (boxdiscret_ != Teuchos::null)
   {
-    DRT::Node* node_i = boxdiscret_->lColNode(i);
+    ::DRT::Node* node_i = boxdiscret_->lColNode(i);
     std::vector<int> dofnode = boxdiscret_->Dof(node_i);
 
     for (int dim = 0; dim < 3; ++dim)
@@ -687,7 +689,7 @@ LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::CurrentPositionOfCornerPoint(in
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double* x) const
+void CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double* x) const
 {
   // to get numbering according to baci convention of hex eles
   if (i == 2 or i == 6)
@@ -702,7 +704,7 @@ void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double*
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i) const
+LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i) const
 {
   // to get numbering according to baci convention of hex eles
   if (i == 2 or i == 6)
@@ -720,7 +722,7 @@ LINALG::Matrix<3, 1> GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPositio
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
+void CORE::GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
     LINALG::Matrix<3, 1> const& xi, LINALG::Matrix<3, 1>& x) const
 {
   ThrowIfNotInit();
@@ -753,12 +755,12 @@ void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGloba
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
+void CORE::GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
     double const* xi, double* x) const
 {
   ThrowIfNotInitOrSetup();
 
-  DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  ::DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable
@@ -782,7 +784,7 @@ void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGloba
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
+bool CORE::GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
     LINALG::Matrix<3, 1> const& x, LINALG::Matrix<3, 1>& xi) const
 {
   ThrowIfNotInit();
@@ -797,7 +799,7 @@ bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSyste
   // initialize variables
   int const numnode = 8;
   int const ndim = 3;
-  double tol = GEO::TOL12;
+  double tol = CORE::GEO::TOL12;
   bool converged = false;
   LINALG::Matrix<numnode, 1> funct;
   LINALG::Matrix<ndim, numnode> deriv;
@@ -881,7 +883,7 @@ bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSyste
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
+bool CORE::GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
     double const* x, double* xi) const
 {
   ThrowIfNotInit();
@@ -899,9 +901,10 @@ bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSyste
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
-    LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
-    double r, double s, double t) const
+void CORE::GEO::MESHFREE::BoundingBox::
+    LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
+        LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
+        double r, double s, double t) const
 {
   ThrowIfNotInit();
   // safety check
@@ -933,7 +936,7 @@ void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBo
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::
+void CORE::GEO::MESHFREE::BoundingBox::
     LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1(
         LINALG::Matrix<3, 8>& deriv1,  ///< to be filled with shape function derivative values
         double r, double s, double t) const

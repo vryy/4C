@@ -20,13 +20,13 @@ xfluid class and the cut-library
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
     class BoundaryCell;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace XFEM
 {
@@ -160,7 +160,7 @@ namespace XFEM
     void ReconnectParentPointers();
 
     /// Initialize Fluid State
-    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

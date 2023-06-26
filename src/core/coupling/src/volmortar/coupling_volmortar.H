@@ -32,7 +32,7 @@ namespace LINALG
   class SparseMatrix;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -283,7 +283,8 @@ namespace CORE::VOLMORTAR
      \brief Initialize search tree
 
      */
-    virtual Teuchos::RCP<GEO::SearchTree> InitSearch(Teuchos::RCP<::DRT::Discretization> searchdis);
+    virtual Teuchos::RCP<CORE::GEO::SearchTree> InitSearch(
+        Teuchos::RCP<::DRT::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
@@ -378,7 +379,8 @@ namespace CORE::VOLMORTAR
      \brief search algorithm
 
      */
-    virtual std::vector<int> Search(::DRT::Element& ele, Teuchos::RCP<GEO::SearchTree> SearchTree,
+    virtual std::vector<int> Search(::DRT::Element& ele,
+        Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
         std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
 
     // don't want = operator and cctor
@@ -447,7 +449,7 @@ namespace CORE::VOLMORTAR
     //@}
 
     // cut specific quantities
-    GEO::CUT::plain_volumecell_set
+    CORE::GEO::CUT::plain_volumecell_set
         volcell_;  /// set of volume cells for direct divergence integration
 
     // search algorithm

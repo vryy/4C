@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix. (derived)
      */
-    void EvaluateAndAssemble(const DRT::Discretization& discret,
+    void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
         LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
         LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -133,7 +133,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const DRT::Discretization& discret,
+    void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
@@ -142,7 +142,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
         LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
         LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -175,7 +175,7 @@ namespace BEAMINTERACTION
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */
-    void GetPairRotationalGIDs(const DRT::Discretization& discret, std::vector<int>& gid_surface,
+    void GetPairRotationalGIDs(const ::DRT::Discretization& discret, std::vector<int>& gid_surface,
         LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 

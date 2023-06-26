@@ -18,23 +18,23 @@
 #include "discretization_geometry_integrationcell.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   /////////////////////  Domain Integration Cell ////////////////////////////////
 
   //! map position from eta to xi space
-  inline void mapEtaToXi3D(const GEO::DomainIntCell& cell,
+  inline void mapEtaToXi3D(const CORE::GEO::DomainIntCell& cell,
       const LINALG::Matrix<3, 1>& pos_eta_domain, LINALG::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
-    GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_domain, pos_xsi_domain);
+    CORE::GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_domain, pos_xsi_domain);
     return;
   }
 
 
   //! compute determinant from eta to xi space
-  template <DRT::Element::DiscretizationType distype>
+  template <::DRT::Element::DiscretizationType distype>
   static inline double detEtaToXi3DT(
       const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
   {
@@ -59,28 +59,28 @@ namespace GEO
 
   //! get determinant between eta and xi space
   inline double detEtaToXi3D(
-      const GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
+      const CORE::GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
   {
     // get node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     switch (cell.Shape())
     {
-      case DRT::Element::tet4:
-        return detEtaToXi3DT<DRT::Element::tet4>(xyze_cell, pos_eta_domain);
-      case DRT::Element::tet10:
-        return detEtaToXi3DT<DRT::Element::tet10>(xyze_cell, pos_eta_domain);
-      case DRT::Element::hex8:
-        return detEtaToXi3DT<DRT::Element::hex8>(xyze_cell, pos_eta_domain);
-      case DRT::Element::hex20:
-        return detEtaToXi3DT<DRT::Element::hex20>(xyze_cell, pos_eta_domain);
-      case DRT::Element::hex27:
-        return detEtaToXi3DT<DRT::Element::hex27>(xyze_cell, pos_eta_domain);
-      case DRT::Element::wedge6:
-        return detEtaToXi3DT<DRT::Element::wedge6>(xyze_cell, pos_eta_domain);
-      case DRT::Element::wedge15:
-        return detEtaToXi3DT<DRT::Element::wedge15>(xyze_cell, pos_eta_domain);
-      case DRT::Element::pyramid5:
-        return detEtaToXi3DT<DRT::Element::pyramid5>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::tet4:
+        return detEtaToXi3DT<::DRT::Element::tet4>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::tet10:
+        return detEtaToXi3DT<::DRT::Element::tet10>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::hex8:
+        return detEtaToXi3DT<::DRT::Element::hex8>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::hex20:
+        return detEtaToXi3DT<::DRT::Element::hex20>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::hex27:
+        return detEtaToXi3DT<::DRT::Element::hex27>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::wedge6:
+        return detEtaToXi3DT<::DRT::Element::wedge6>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::wedge15:
+        return detEtaToXi3DT<::DRT::Element::wedge15>(xyze_cell, pos_eta_domain);
+      case ::DRT::Element::pyramid5:
+        return detEtaToXi3DT<::DRT::Element::pyramid5>(xyze_cell, pos_eta_domain);
       default:
         std::cout << DistypeToString(cell.Shape()) << std::endl;
         dserror("add your 3D distype to this switch!");
@@ -90,15 +90,15 @@ namespace GEO
 
   //! get determinant between eta and xi space
   inline double detXiD_over_EtaD(
-      const GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
+      const CORE::GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
   {
-    return GEO::detEtaToXi3D(cell, pos_eta_domain);
+    return CORE::GEO::detEtaToXi3D(cell, pos_eta_domain);
   }
 
   /////////////////////  Boundary Integration Cell ////////////////////////////////
 
   //! map position from eta^boundary to xi^boundary space
-  template <DRT::Element::DiscretizationType distype, class M>
+  template <::DRT::Element::DiscretizationType distype, class M>
   inline void mapEtaBToXiBT(const M& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary,
       LINALG::Matrix<2, 1>& pos_xsi_boundary)
   {
@@ -119,7 +119,7 @@ namespace GEO
 
 
   //! map position from eta^boundary to xi^boundary space
-  inline void mapEtaBToXiB(const GEO::BoundaryIntCell& cell,
+  inline void mapEtaBToXiB(const CORE::GEO::BoundaryIntCell& cell,
       const LINALG::Matrix<2, 1>& pos_eta_boundary, LINALG::Matrix<2, 1>& pos_xsi_boundary)
   {
     // get node coordinates
@@ -127,20 +127,20 @@ namespace GEO
         cell.CellNodalPosXiBoundary());  // TODO check was xi domain before
     switch (cell.Shape())
     {
-      case DRT::Element::tri3:
-        mapEtaBToXiBT<DRT::Element::tri3>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
+      case ::DRT::Element::tri3:
+        mapEtaBToXiBT<::DRT::Element::tri3>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
         break;
-      case DRT::Element::tri6:
-        mapEtaBToXiBT<DRT::Element::tri6>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
+      case ::DRT::Element::tri6:
+        mapEtaBToXiBT<::DRT::Element::tri6>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
         break;
-      case DRT::Element::quad4:
-        mapEtaBToXiBT<DRT::Element::quad4>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
+      case ::DRT::Element::quad4:
+        mapEtaBToXiBT<::DRT::Element::quad4>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
         break;
-      case DRT::Element::quad8:
-        mapEtaBToXiBT<DRT::Element::quad8>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
+      case ::DRT::Element::quad8:
+        mapEtaBToXiBT<::DRT::Element::quad8>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
         break;
-      case DRT::Element::quad9:
-        mapEtaBToXiBT<DRT::Element::quad9>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
+      case ::DRT::Element::quad9:
+        mapEtaBToXiBT<::DRT::Element::quad9>(xyze_cell, pos_eta_boundary, pos_xsi_boundary);
         break;
       default:
         std::cout << DistypeToString(cell.Shape()) << std::endl;
@@ -151,18 +151,19 @@ namespace GEO
 
 
   //! map position from eta^boundary to xi^domain space
-  inline void mapEtaBToXiD(const GEO::BoundaryIntCell& cell,
+  inline void mapEtaBToXiD(const CORE::GEO::BoundaryIntCell& cell,
       const LINALG::Matrix<2, 1>& pos_eta_boundary, LINALG::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates in xi_domain
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
-    GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
+    CORE::GEO::elementToCurrentCoordinates(
+        cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;
   }
 
 
   //! get determinant between eta^boundary and xi^boundary space
-  template <DRT::Element::DiscretizationType distype>
+  template <::DRT::Element::DiscretizationType distype>
   static inline double detEtaBToXiBT(
       const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
@@ -188,22 +189,22 @@ namespace GEO
 
   //! get determinant between eta^boundary and xi^boundary space
   inline double detEtaBToXiB(
-      const GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
+      const CORE::GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
     // get node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiBoundary());
     switch (cell.Shape())
     {
-      case DRT::Element::tri3:
-        return detEtaBToXiBT<DRT::Element::tri3>(xyze_cell, pos_eta_boundary);
-      case DRT::Element::tri6:
-        return detEtaBToXiBT<DRT::Element::tri6>(xyze_cell, pos_eta_boundary);
-      case DRT::Element::quad4:
-        return detEtaBToXiBT<DRT::Element::quad4>(xyze_cell, pos_eta_boundary);
-      case DRT::Element::quad8:
-        return detEtaBToXiBT<DRT::Element::quad8>(xyze_cell, pos_eta_boundary);
-      case DRT::Element::quad9:
-        return detEtaBToXiBT<DRT::Element::quad9>(xyze_cell, pos_eta_boundary);
+      case ::DRT::Element::tri3:
+        return detEtaBToXiBT<::DRT::Element::tri3>(xyze_cell, pos_eta_boundary);
+      case ::DRT::Element::tri6:
+        return detEtaBToXiBT<::DRT::Element::tri6>(xyze_cell, pos_eta_boundary);
+      case ::DRT::Element::quad4:
+        return detEtaBToXiBT<::DRT::Element::quad4>(xyze_cell, pos_eta_boundary);
+      case ::DRT::Element::quad8:
+        return detEtaBToXiBT<::DRT::Element::quad8>(xyze_cell, pos_eta_boundary);
+      case ::DRT::Element::quad9:
+        return detEtaBToXiBT<::DRT::Element::quad9>(xyze_cell, pos_eta_boundary);
       default:
         std::cout << DistypeToString(cell.Shape()) << std::endl;
         dserror("add your 2D distype to this switch!");
@@ -213,11 +214,11 @@ namespace GEO
 
   //! get determinant: det( xi^boundary / eta^boundary)
   inline double detXiB_over_EtaB(
-      const GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
+      const CORE::GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
     return detEtaBToXiB(cell, pos_eta_boundary);
   }
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -127,14 +127,14 @@ namespace DRT
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells, bool offdiag = false);
+          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false);
 
       /// evaluate the shape functions in the XFEM
       virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells);
+          const CORE::GEO::CUT::plain_volumecell_set& cells);
 
       /// error computation
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
@@ -152,11 +152,12 @@ namespace DRT
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
           Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
-              bintpoints,                               ///< boundary integration points
-          const GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-          Teuchos::ParameterList& params                ///< parameter list
+              bintpoints,                                     ///< boundary integration points
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+          Teuchos::ParameterList& params                      ///< parameter list
       );
 
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
@@ -167,7 +168,8 @@ namespace DRT
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::vector<CORE::DRT::UTILS::GaussIntegration>&
               intpoints,  ///< element gauss points
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
@@ -180,7 +182,7 @@ namespace DRT
           Epetra_SerialDenseVector&
               elevec1_epetra,               ///< local element vector of intersected element
           Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-          const GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
       );
 
       /// add Nitsche (NIT) interface condition to element matrix and rhs
@@ -188,16 +190,17 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,               ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat_master,      ///< material for the coupled side
-          Teuchos::RCP<MAT::Material>& mat_slave,       ///< material for the coupled side
-          Epetra_SerialDenseMatrix& elemat1_epetra,     ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,     ///< element vector
-          const GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                     ///< parameter list
+          Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
+          Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
+          Epetra_SerialDenseMatrix& elemat1_epetra,           ///< element matrix
+          Epetra_SerialDenseVector& elevec1_epetra,           ///< element vector
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
           std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
               side_coupling,                ///< side coupling matrices
           Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
@@ -329,7 +332,7 @@ namespace DRT
       //! build matrices from volume-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM-coupling \author kruse \date 06/14
       void HybridLM_Build_VolBased(const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells,
+          const CORE::GEO::CUT::plain_volumecell_set& cells,
           const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
           const LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
           LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix

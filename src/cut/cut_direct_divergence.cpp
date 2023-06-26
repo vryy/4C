@@ -25,7 +25,7 @@
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationRule(
+Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrationRule(
     std::vector<double>& RefPlaneEqn)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::VCIntegrationRule" );
@@ -79,7 +79,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegr
 
       std::string filename1("element_x_normal_equal_0_CUTFAIL_DD.pos");
       std::ofstream file1(filename1.c_str());
-      GEO::CUT::OUTPUT::GmshCompleteCutElement(file1, elem1_, false);
+      CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(file1, elem1_, false);
       file1.close();
 
       std::stringstream err_msg;
@@ -116,7 +116,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegr
 as possible, the reference facet is set on a cut side to reduce the no of Gauss pts Reference facet
 is selected so that all internal points are inside the volumecell
 *--------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::ListFacets(
+void CORE::GEO::CUT::DirectDivergence::ListFacets(
     std::vector<plain_facet_set::const_iterator>& facetIterator, std::vector<double>& RefPlaneEqn,
     plain_facet_set::const_iterator& IteratorRefFacet, bool& IsRefFacet)
 {
@@ -309,7 +309,8 @@ void GEO::CUT::DirectDivergence::ListFacets(
 /*--------------------------------------------------------------------------------------------------------------*
                    Geometry of volumecell and main Gauss pts for visualization sudhakar 04/12
 *---------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::DivengenceCellsGMSH(const CORE::DRT::UTILS::GaussIntegration& gpv,
+void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
+    const CORE::DRT::UTILS::GaussIntegration& gpv,
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gpmain)
 {
 #ifdef LOCAL
@@ -430,7 +431,7 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH(const CORE::DRT::UTILS::Gau
   str << "divergenceCells" << sideno << ".pos";
   std::ofstream file(str.str().c_str());
 
-  GEO::CUT::OUTPUT::GmshCompleteCutElement(file, elem1_);
+  CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(file, elem1_);
   volcell_->DumpGmsh(file);
 
   // Activate this if you doubt that something is wrong with the vc
@@ -512,7 +513,7 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH(const CORE::DRT::UTILS::Gau
      Compute the volume of the considered cell by integrating 1 using the Gauss rule obtained.
 sudhakar 04/12 Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::DebugVolume(
+void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     const CORE::DRT::UTILS::GaussIntegration& gpv, bool& isNeg)
 {
   int numint = 0;
@@ -536,28 +537,28 @@ void GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->Shape())
     {
-      case DRT::Element::hex8:
+      case ::DRT::Element::hex8:
       {
         volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, DRT::Element::hex8>(TotalInteg, "LocalToGlobal");
+            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex8>(TotalInteg, "LocalToGlobal");
         break;
       }
-      case DRT::Element::tet4:
+      case ::DRT::Element::tet4:
       {
         volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, DRT::Element::tet4>(TotalInteg, "LocalToGlobal");
+            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet4>(TotalInteg, "LocalToGlobal");
         break;
       }
-      case DRT::Element::wedge6:
+      case ::DRT::Element::wedge6:
       {
         volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, DRT::Element::wedge6>(TotalInteg, "LocalToGlobal");
+            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::wedge6>(TotalInteg, "LocalToGlobal");
         break;
       }
-      case DRT::Element::pyramid5:
+      case ::DRT::Element::pyramid5:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, DRT::Element::pyramid5>(TotalInteg, "LocalToGlobal");
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::pyramid5>(
+            TotalInteg, "LocalToGlobal");
         break;
       }
       default:
@@ -569,21 +570,21 @@ void GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->getQuadShape())
     {
-      case DRT::Element::hex20:
+      case ::DRT::Element::hex20:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, DRT::Element::hex20>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex20>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case DRT::Element::hex27:
+      case ::DRT::Element::hex27:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, DRT::Element::hex27>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex27>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case DRT::Element::tet10:
+      case ::DRT::Element::tet10:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, DRT::Element::tet10>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet10>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }

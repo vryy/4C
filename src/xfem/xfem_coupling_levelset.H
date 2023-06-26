@@ -20,7 +20,7 @@ bridge between the xfluid class and the cut-library
 
 #include "xfem_utils.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -919,7 +919,7 @@ namespace XFEM
 
 
     virtual const Teuchos::RCP<const Epetra_Vector> ComputeTransportVelocity(
-        const Teuchos::RCP<GEO::CutWizard>& wizard,  ///< the cut wizard
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< the cut wizard
         const Teuchos::RCP<const Epetra_Vector>&
             convective_velocity  ///< the convective fluid velocity based on initial dofmap (just
                                  ///< velocity)
@@ -1028,7 +1028,7 @@ namespace XFEM
     bool RescaleNormal(Epetra_SerialDenseVector& normal);
 
     virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
+        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
         const double& curv);
 
     virtual void Output(
@@ -1163,7 +1163,7 @@ namespace XFEM
     virtual void SetFlags_GeometricQuantities();
 
     virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
+        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
         const double& curv);
 
 

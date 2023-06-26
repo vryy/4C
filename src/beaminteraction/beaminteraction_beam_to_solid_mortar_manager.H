@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
      * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<const DRT::Discretization>& discret,
+    BeamToSolidMortarManager(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
@@ -257,7 +257,7 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_rotational_;
 
     //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<const DRT::Discretization> discret_;
+    Teuchos::RCP<const ::DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;

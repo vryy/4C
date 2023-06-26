@@ -38,13 +38,13 @@ namespace DRT
   class DiscretizationInterface;
   class Discretization;
 }  // namespace DRT
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }  // namespace MESHFREE
-}  // namespace GEO
+}  // namespace CORE::GEO
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -334,7 +334,7 @@ namespace STR
       /// @name Get model specific data container
       ///@{
       /// Returns periodic bounding box object (read access)
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
       {
         CheckInitSetup();
         return periodic_boundingbox_;
@@ -950,7 +950,7 @@ namespace STR
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
       ///@}
 
       ///@}

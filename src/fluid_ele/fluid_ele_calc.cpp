@@ -444,7 +444,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   // ---------------------------------------------------------------------
   // get initial node coordinates for element
   // ---------------------------------------------------------------------
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.

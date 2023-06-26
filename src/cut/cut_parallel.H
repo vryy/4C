@@ -22,7 +22,7 @@ namespace DRT
 }  // namespace DRT
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -46,8 +46,8 @@ namespace GEO
       /*!
       \brief Basic CUT parallel constructor
        */
-      explicit Parallel(const Teuchos::RCP<DRT::Discretization>& discret, GEO::CUT::Mesh& mesh,
-          GEO::CUT::ParentIntersection& parentintersection);
+      explicit Parallel(const Teuchos::RCP<::DRT::Discretization>& discret,
+          CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection);
 
       /*!
       \brief Destructor
@@ -111,7 +111,7 @@ namespace GEO
       \brief Pack the point coordinates
        */
       void packPoints(
-          DRT::PackBuffer& dataSend, std::vector<LINALG::Matrix<3, 1>>& points_coords) const;
+          ::DRT::PackBuffer& dataSend, std::vector<LINALG::Matrix<3, 1>>& points_coords) const;
 
       /*!
       \brief Unpack the point coordinates
@@ -124,10 +124,10 @@ namespace GEO
       /*!
       \brief Basic function sending data to destination and receiving data from source
        */
-      void sendData(DRT::PackBuffer& dataSend,  //!< pack buffer
-          int& dest,                            //!< destination proc
-          int& source,                          //!< source proc
-          std::vector<char>& dataRecv           //!< received data
+      void sendData(::DRT::PackBuffer& dataSend,  //!< pack buffer
+          int& dest,                              //!< destination proc
+          int& source,                            //!< source proc
+          std::vector<char>& dataRecv             //!< received data
       ) const;
 
       /*!
@@ -155,7 +155,7 @@ namespace GEO
       // data accessing
 
       //! discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<::DRT::Discretization> discret_;
 
       //! current processor id
       const int myrank_;
@@ -163,9 +163,9 @@ namespace GEO
       //! number of processors
       const int numproc_;
 
-      GEO::CUT::Mesh& mesh_;  // mesh that carries the cut information of the mesh
+      CORE::GEO::CUT::Mesh& mesh_;  // mesh that carries the cut information of the mesh
 
-      GEO::CUT::ParentIntersection& parentintersection_;
+      CORE::GEO::CUT::ParentIntersection& parentintersection_;
 
       //! map of node-Id and current node-Pos index
       std::map<int, int> curr_undecidedNodePos_;
@@ -176,12 +176,12 @@ namespace GEO
        */
       std::map<plain_int_set, int> curr_undecidedNodePos_shadow_;
 
-      std::vector<Teuchos::RCP<GEO::CUT::MeshIntersection::DofSetData>> dofSetData_;
+      std::vector<Teuchos::RCP<CORE::GEO::CUT::MeshIntersection::DofSetData>> dofSetData_;
 
 
     };  // class PARALLEL
   }     // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 

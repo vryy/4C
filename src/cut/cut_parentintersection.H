@@ -21,7 +21,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -181,11 +181,11 @@ namespace GEO
       /*========================================================================*/
 
       /// Create nodal dofset sets within the parallel cut framework
-      void CreateNodalDofSet(bool include_inner, const DRT::Discretization& dis);
+      void CreateNodalDofSet(bool include_inner, const ::DRT::Discretization& dis);
 
       /// fill parallel DofSetData with information that has to be communicated
       void FillParallelDofSetData(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
-          const DRT::Discretization& dis, bool include_inner);
+          const ::DRT::Discretization& dis, bool include_inner);
 
       /// create parallel DofSetData for a volumecell that has to be communicated
       void CreateParallelDofSetDataVC(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
@@ -203,7 +203,7 @@ namespace GEO
 
       /// connect sets of volumecells for neighboring elements around a node
       void ConnectNodalDOFSets(std::vector<Node*>& nodes, bool include_inner,
-          const DRT::Discretization& dis,
+          const ::DRT::Discretization& dis,
           const std::vector<plain_volumecell_set>& connected_vc_sets,
           std::vector<std::vector<int>>& nodaldofset_vc_sets,
           std::vector<std::map<int, int>>& vcsets_nid_dofsetnumber_map_toComm);
@@ -237,15 +237,15 @@ namespace GEO
 
       /// write gmsh debug output for nodal cell sets
       void DumpGmshNodalCellSet(std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-          const DRT::Discretization& dis);
+          const ::DRT::Discretization& dis);
 
       /// write gmsh debug output for CellSets
       void DumpGmshCellSets(
-          std::vector<plain_volumecell_set>& cell_sets, const DRT::Discretization& dis);
+          std::vector<plain_volumecell_set>& cell_sets, const ::DRT::Discretization& dis);
 
       /// write gmsh cut output for number of dofsets and the connected vc sets
       void DumpGmshNumDOFSets(
-          std::string filename, bool include_inner, const DRT::Discretization& dis);
+          std::string filename, bool include_inner, const ::DRT::Discretization& dis);
 
       /// write gmsh output for volumecells
       void DumpGmshVolumeCells(std::string name, bool include_inner);
@@ -286,6 +286,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

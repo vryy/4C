@@ -17,7 +17,7 @@
 
 #include "io_pstream.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -104,7 +104,7 @@ namespace GEO
 
       bool Equals(const std::vector<Point*>& facet_points) { return Equals(points_, facet_points); }
 
-      bool Equals(DRT::Element::DiscretizationType distype);
+      bool Equals(::DRT::Element::DiscretizationType distype);
 
       bool CornerEquals(const std::vector<Point*>& facet_points)
       {
@@ -433,8 +433,8 @@ namespace GEO
     }
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
-std::ostream& operator<<(std::ostream& stream, GEO::CUT::Facet& f);
+std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f);
 
 #endif

@@ -36,8 +36,9 @@ namespace XFEM
      */
     void GetVolumeCellMaterial(DRT::Element* actele,  // element for volume cell INPUT
         Teuchos::RCP<MAT::Material>& mat,             // material of volume cell OUTPUT
-        GEO::CUT::Point::PointPosition position =
-            GEO::CUT::Point::outside  // position of volume cell INPUT to determine position
+        CORE::GEO::CUT::Point::PointPosition position =
+            CORE::GEO::CUT::Point::outside  // position of volume cell INPUT to determine
+                                            // position
     );
 
 

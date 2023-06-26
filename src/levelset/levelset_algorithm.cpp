@@ -247,7 +247,7 @@ void SCATRA::LevelSetAlgorithm::GetInitialVolumeOfMinusDomain(
 {
   double volplus = 0.0;
   double surf = 0.0;
-  std::map<int, GEO::BoundaryIntCells> interface;
+  std::map<int, CORE::GEO::BoundaryIntCells> interface;
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   SCATRA::LEVELSET::Intersection intersect;
@@ -360,7 +360,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       // get volume distribution before reinitialization
       // initalize structure holding the interface
       // potentially required for reinitialization via signed distance to interface
-      std::map<int, GEO::BoundaryIntCells> zerolevelset;
+      std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
       zerolevelset.clear();
       CaptureInterface(zerolevelset);
 
@@ -451,7 +451,7 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
 void SCATRA::LevelSetAlgorithm::OutputOfLevelSetSpecificValues()
 {
   // capture interface, evalute mass conservation, write to file
-  std::map<int, GEO::BoundaryIntCells> zerolevelset;
+  std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
   zerolevelset.clear();
   CaptureInterface(zerolevelset, true);
 }
