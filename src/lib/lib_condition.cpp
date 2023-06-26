@@ -641,9 +641,7 @@ void DRT::Condition::Print(std::ostream& os) const
   {
     os << std::endl;
     os << "Elements of this condition:\n";
-    std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
-    for (curr = geometry_->begin(); curr != geometry_->end(); ++curr)
-      os << "      " << *(curr->second) << std::endl;
+    for (const auto& [ele_id, ele] : *geometry_) os << "      " << ele << std::endl;
   }
 }
 
@@ -704,10 +702,10 @@ void DRT::Condition::AdjustId(const int shift)
   std::map<int, Teuchos::RCP<DRT::Element>> geometry;
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter;
 
-  for (iter = geometry_->begin(); iter != geometry_->end(); ++iter)
+  for (const auto& [ele_id, ele] : *geometry_)
   {
-    iter->second->SetId(iter->first + shift);
-    geometry[iter->first + shift] = (*geometry_)[iter->first];
+    ele->SetId(ele_id + shift);
+    geometry[ele_id + shift] = (*geometry_)[ele_id];
   }
 
   swap(*geometry_, geometry);

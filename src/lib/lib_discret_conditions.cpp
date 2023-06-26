@@ -10,7 +10,6 @@
 /*---------------------------------------------------------------------*/
 
 #include "lib_discret.H"
-#include "lib_exporter.H"
 #include "utils_exceptions.H"
 
 #include "lib_globalproblem.H"
@@ -32,26 +31,24 @@ void DRT::Discretization::BoundaryConditionsGeometry()
 
   // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
-  std::multimap<std::string, Teuchos::RCP<DRT::Condition>>::iterator fool;
-  for (fool = condition_.begin(); fool != condition_.end(); ++fool)
+  for (auto& [name, condition] : condition_)
   {
-    fool->second->ClearGeometry();
-    fool->second->SetComm(comm_);
+    condition->ClearGeometry();
+    condition->SetComm(comm_);
   }
 
   // for all conditions, we set a ptr in the nodes to the condition
-  for (fool = condition_.begin(); fool != condition_.end(); ++fool)
+  for (auto& [name, condition] : condition_)
   {
-    const std::vector<int>* nodes = fool->second->Nodes();
+    const std::vector<int>* nodes = condition->Nodes();
     // There might be conditions that do not have a nodal cloud
     if (!nodes) continue;
-    int nnode = nodes->size();
-    for (int i = 0; i < nnode; ++i)
+    for (unsigned i = 0; i < nodes->size(); ++i)
     {
       if (!NodeColMap()->MyGID((*nodes)[i])) continue;
       DRT::Node* actnode = gNode((*nodes)[i]);
       if (!actnode) dserror("Cannot find global node");
-      actnode->SetCondition(fool->first, fool->second);
+      actnode->SetCondition(name, condition);
     }
   }
 
@@ -60,35 +57,35 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   std::map<std::string, int> numele;
 
   // Loop all conditions and build geometry description if desired
-  for (fool = condition_.begin(); fool != condition_.end(); ++fool)
+  for (auto& [name, condition] : condition_)
   {
     // flag whether new elements have been created for this condition
     bool havenewelements = false;
 
     // do not build geometry description for this condition
-    if (fool->second->GeometryDescription() == false) continue;
+    if (!condition->GeometryDescription()) continue;
     // do not build geometry description for this condition
-    else if (fool->second->GType() == DRT::Condition::NoGeom)
+    else if (condition->GType() == DRT::Condition::NoGeom)
       continue;
     // do not build anything for point wise conditions
-    else if (fool->second->GType() == DRT::Condition::Point)
+    else if (condition->GType() == DRT::Condition::Point)
       continue;
     // build element geometry description without creating new elements if the
     // condition is not a boundary condition; this would be:
     //  - line conditions in 1D
     //  - surface conditions in 2D
     //  - volume conditions in 3D
-    else if ((int)(fool->second->GType()) == DRT::Problem::Instance()->NDim())
-      havenewelements = BuildVolumesinCondition(fool->first, fool->second);
+    else if ((int)(condition->GType()) == DRT::Problem::Instance()->NDim())
+      havenewelements = BuildVolumesinCondition(name, condition);
     // dimension of condition must not larger than the one of the problem itself
-    else if ((int)(fool->second->GType()) > DRT::Problem::Instance()->NDim())
+    else if ((int)(condition->GType()) > DRT::Problem::Instance()->NDim())
       dserror("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
-    else if (fool->second->GType() == DRT::Condition::Line)
-      havenewelements = BuildLinesinCondition(fool->first, fool->second);
+    else if (condition->GType() == DRT::Condition::Line)
+      havenewelements = BuildLinesinCondition(name, condition);
     // build a surface element geometry description
-    else if (fool->second->GType() == DRT::Condition::Surface)
-      havenewelements = BuildSurfacesinCondition(fool->first, fool->second);
+    else if (condition->GType() == DRT::Condition::Surface)
+      havenewelements = BuildSurfacesinCondition(name, condition);
     // this should be it. if not: dserror.
     else
       dserror("Somehow the condition geometry does not fit to the problem dimension.");
@@ -98,12 +95,10 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       // determine the local number of created elements associated with
       // the active condition
       int localcount = 0;
-      for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter =
-               fool->second->Geometry().begin();
-           iter != fool->second->Geometry().end(); ++iter)
+      for (const auto& [ele_id, ele] : condition->Geometry())
       {
         // do not count ghosted elements
-        if (iter->second->Owner() == Comm().MyPID())
+        if (ele->Owner() == Comm().MyPID())
         {
           localcount += 1;
         }
@@ -114,21 +109,20 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       int count;
       Comm().SumAll(&localcount, &count, 1);
 
-      if (numele.find(fool->first) == numele.end())
+      if (numele.find(name) == numele.end())
       {
-        numele[fool->first] = 0;
+        numele[name] = 0;
       }
 
       // adjust the IDs of the elements associated with the active
       // condition in order to obtain unique IDs within one condition type
-      fool->second->AdjustId(numele[fool->first]);
+      condition->AdjustId(numele[name]);
 
       // adjust the number of elements associated with the current
       // condition type
-      numele[fool->first] += count;
+      numele[name] += count;
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -140,17 +134,16 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
   // pack elements on all processors
 
   int size = 0;
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>::const_iterator elemsiter;
-  for (elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter)
+  for (const auto& [nodes, ele] : elementmap)
   {
-    size += elemsiter->first.size() + 1;
+    size += nodes.size() + 1;
   }
   std::vector<int> sendblock;
   sendblock.reserve(size);
-  for (elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter)
+  for (const auto& [nodes, ele] : elementmap)
   {
-    sendblock.push_back(elemsiter->first.size());
-    std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
+    sendblock.push_back(nodes.size());
+    std::copy(nodes.begin(), nodes.end(), std::back_inserter(sendblock));
   }
 
   // communicate elements to processor 0
@@ -189,10 +182,10 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
     // pack again to distribute pack to all processors
 
     send.reserve(index);
-    for (std::set<std::vector<int>>::iterator i = elements.begin(); i != elements.end(); ++i)
+    for (const auto& ele : elements)
     {
-      send.push_back(i->size());
-      std::copy(i->begin(), i->end(), std::back_inserter(send));
+      send.push_back(ele.size());
+      std::copy(ele.begin(), ele.end(), std::back_inserter(send));
     }
     size = send.size();
   }
@@ -221,8 +214,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
     index += esize;
 
     // set gid to my elements
-    std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>::const_iterator iter =
-        elementmap.find(element);
+    auto iter = elementmap.find(element);
     if (iter != elementmap.end())
     {
       iter->second->SetId(gid);
@@ -239,7 +231,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
 bool DRT::Discretization::BuildLinesinCondition(
-    const std::string name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
 {
   /* First: Create the line objects that belong to the condition. */
 
@@ -247,17 +239,14 @@ bool DRT::Discretization::BuildLinesinCondition(
   const std::vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
-  // number of global nodes in this cloud
-  const int ngnode = nodeids->size();
-
   // ptrs to my row/column nodes of those
   std::map<int, DRT::Node*> colnodes;
 
-  for (int i = 0; i < ngnode; ++i)
+  for (const auto& nodeid : *nodeids)
   {
-    if (NodeColMap()->MyGID((*nodeids)[i]))
+    if (NodeColMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
+      DRT::Node* actnode = gNode(nodeid);
       if (!actnode) dserror("Cannot find global node");
       colnodes[actnode->Id()] = actnode;
     }
@@ -266,11 +255,8 @@ bool DRT::Discretization::BuildLinesinCondition(
   // map of lines in our cloud: (node_ids) -> line
   std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> linemap;
   // loop these nodes and build all lines attached to them
-  std::map<int, DRT::Node*>::iterator fool;
-  for (fool = colnodes.begin(); fool != colnodes.end(); ++fool)
+  for (const auto& [node_id, actnode] : colnodes)
   {
-    // currently looking at actnode
-    DRT::Node* actnode = fool->second;
     // loop all elements attached to actnode
     DRT::Element** elements = actnode->Elements();
     for (int i = 0; i < actnode->NumElement(); ++i)
@@ -288,6 +274,7 @@ bool DRT::Discretization::BuildLinesinCondition(
         DRT::Node** nodesperline = actline->Nodes();
         if (!nodesperline) dserror("Line returned no nodes");
         for (int k = 0; k < nnodeperline; ++k)
+        {
           if (nodesperline[k]->Id() == actnode->Id())
           {
             // line is attached to actnode
@@ -295,8 +282,7 @@ bool DRT::Discretization::BuildLinesinCondition(
             bool allin = true;
             for (int l = 0; l < nnodeperline; ++l)
             {
-              std::map<int, DRT::Node*>::iterator test = colnodes.find(nodesperline[l]->Id());
-              if (test == colnodes.end())
+              if (colnodes.find(nodesperline[l]->Id()) == colnodes.end())
               {
                 allin = false;
                 break;
@@ -320,14 +306,14 @@ bool DRT::Discretization::BuildLinesinCondition(
             }
             break;
           }  // if (nodesperline[k] == actnode)
-      }      // for (int j=0; j<numlines; ++j)
-    }        // for (int i=0; i<actnode->NumElement(); ++i)
-  }          // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
+        }
+      }  // for (int j=0; j<numlines; ++j)
+    }    // for (int i=0; i<actnode->NumElement(); ++i)
+  }      // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> finallines =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
+  auto finallines = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
 
   AssignGlobalIDs(Comm(), linemap, *finallines);
 
@@ -347,7 +333,7 @@ bool DRT::Discretization::BuildLinesinCondition(
  |  Build surface geometry in a condition (public)          rauch 10/16 |
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::BuildSurfacesinCondition(
-    const std::string name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
   // to be considered.
@@ -383,23 +369,20 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   const std::vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
-  // number of global nodes in this cloud
-  const int ngnode = nodeids->size();
-
   // ptrs to my row/column nodes of those
   std::map<int, DRT::Node*> myrownodes;
   std::map<int, DRT::Node*> mycolnodes;
-  for (int i = 0; i < ngnode; ++i)
+  for (const auto& nodeid : *nodeids)
   {
-    if (NodeColMap()->MyGID((*nodeids)[i]))
+    if (NodeColMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
+      DRT::Node* actnode = gNode(nodeid);
       if (!actnode) dserror("Cannot find global node");
       mycolnodes[actnode->Id()] = actnode;
     }
-    if (NodeRowMap()->MyGID((*nodeids)[i]))
+    if (NodeRowMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
+      DRT::Node* actnode = gNode(nodeid);
       if (!actnode) dserror("Cannot find global node");
       myrownodes[actnode->Id()] = actnode;
     }
@@ -418,11 +401,8 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   // miss a surface element. otherwise, we would miss the surface element
   // of the face which has now only ghosted nodes because we would only
   // look at row nodes but the considered face has no row node.
-  std::map<int, DRT::Node*>::iterator fool;
-  for (fool = mycolnodes.begin(); fool != mycolnodes.end(); ++fool)
+  for (const auto& [node_id, actnode] : mycolnodes)
   {
-    // currently looking at actnode
-    DRT::Node* actnode = fool->second;
     DRT::Element** elements = actnode->Elements();
 
     // loop all elements attached to actnode
@@ -455,8 +435,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
             bool is_conditioned_surface = true;
             for (int l = 0; l < nnodepersurf; ++l)
             {
-              std::map<int, DRT::Node*>::iterator test = mycolnodes.find(nodespersurf[l]->Id());
-              if (test == mycolnodes.end())
+              if (mycolnodes.find(nodespersurf[l]->Id()) == mycolnodes.end())
               {
                 is_conditioned_surface = false;
                 // continue with next element surface
@@ -508,12 +487,11 @@ bool DRT::Discretization::BuildSurfacesinCondition(
 
                   // get surfaces of all adjacent vol eles and check how often actsurf is included
                   // via comparison of node ids
-                  for (std::set<DRT::Element*>::const_iterator iter = adjacentvoleles.begin();
-                       iter != adjacentvoleles.end(); ++iter)
+                  for (const auto& adjacent_ele : adjacentvoleles)
                   {
                     std::vector<Teuchos::RCP<DRT::Element>> adjacentvolelesurfs =
-                        (*iter)->Surfaces();
-                    const int adjacentvolelenumsurfs = (*iter)->NumSurface();
+                        adjacent_ele->Surfaces();
+                    const int adjacentvolelenumsurfs = adjacent_ele->NumSurface();
                     for (int n = 0; n < adjacentvolelenumsurfs; ++n)
                     {
                       // current surf of adjacent vol ele
@@ -528,7 +506,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
                         if (std::equal(nodes.begin(), nodes.end(), nodesadj.begin()))
                         {
                           identical++;
-                          voleleowner = (*iter)->Owner();
+                          voleleowner = adjacent_ele->Owner();
                         }  // if node ids are identical
                       }    // if number of nodes matches
                     }      // loop over all element surfaces
@@ -604,7 +582,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::BuildVolumesinCondition(
-    const std::string name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->Nodes();
@@ -618,21 +596,18 @@ bool DRT::Discretization::BuildVolumesinCondition(
       std::not_fn(DRT::UTILS::MyGID(colmap)));
 
   // this is the map we want to construct
-  Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
+  auto geom = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
 
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator actele = element_.begin();
-       actele != element_.end(); ++actele)
+  for (const auto& [ele_id, actele] : element_)
   {
-    std::vector<int> myelenodes(
-        actele->second->NodeIds(), actele->second->NodeIds() + actele->second->NumNode());
+    std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->NumNode());
 
     // check whether all node ids of the element are nodes belonging
     // to the condition and stored on this proc
     bool allin = true;
-    for (std::vector<int>::iterator myid = myelenodes.begin(); myid != myelenodes.end(); ++myid)
+    for (const auto& myid : myelenodes)
     {
-      if (mynodes.find(*myid) == mynodes.end())
+      if (mynodes.find(myid) == mynodes.end())
       {
         // myid is not in the condition
         allin = false;
@@ -642,7 +617,7 @@ bool DRT::Discretization::BuildVolumesinCondition(
 
     if (allin)
     {
-      (*geom)[actele->first] = actele->second;
+      (*geom)[ele_id] = actele;
     }
   }
 
@@ -657,22 +632,20 @@ bool DRT::Discretization::BuildVolumesinCondition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::FindAssociatedEleIDs(
-    Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name)
+    Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name)
 {
   // determine constraint number
   int condID = cond->GetInt("coupling id");
 
-  std::vector<DRT::Condition*> volcond;
-  GetCondition(name, volcond);
+  std::vector<DRT::Condition*> volconds;
+  GetCondition(name, volconds);
 
-  for (unsigned int i = 0; i < volcond.size(); ++i)
+  for (auto& actvolcond : volconds)
   {
-    DRT::Condition& actvolcond = *(volcond[i]);
-
-    if (actvolcond.GetInt("coupling id") == condID)
+    if (actvolcond->GetInt("coupling id") == condID)
     {
       // get ptrs to all node ids that have this condition
-      const std::vector<int>* nodeids = actvolcond.Nodes();
+      const std::vector<int>* nodeids = actvolcond->Nodes();
       if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
       // extract colnodes on this proc from condition
@@ -682,18 +655,16 @@ void DRT::Discretization::FindAssociatedEleIDs(
       std::remove_copy_if(nodeids->begin(), nodeids->end(), std::inserter(mynodes, mynodes.begin()),
           std::not_fn(DRT::UTILS::MyGID(colmap)));
 
-      for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator actele = element_.begin();
-           actele != element_.end(); ++actele)
+      for (const auto& [ele_id, actele] : element_)
       {
-        std::vector<int> myelenodes(
-            actele->second->NodeIds(), actele->second->NodeIds() + actele->second->NumNode());
+        std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->NumNode());
 
         // check whether all node ids of the element are nodes belonging
         // to the condition and stored on this proc
         bool allin = true;
-        for (std::vector<int>::iterator myid = myelenodes.begin(); myid != myelenodes.end(); ++myid)
+        for (const auto& myid : myelenodes)
         {
-          if (mynodes.find(*myid) == mynodes.end())
+          if (mynodes.find(myid) == mynodes.end())
           {
             // myid is not in the condition
             allin = false;
@@ -703,7 +674,7 @@ void DRT::Discretization::FindAssociatedEleIDs(
 
         if (allin)
         {
-          VolEleIDs.insert(actele->second->Id());
+          VolEleIDs.insert(actele->Id());
         }
       }
     }

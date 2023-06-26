@@ -12,6 +12,7 @@
 #ifndef LIB_CONDITION_SELECTOR_H
 #define LIB_CONDITION_SELECTOR_H
 
+#include <utility>
 #include <vector>
 #include <set>
 #include <string>
@@ -70,7 +71,7 @@ namespace DRT
       );
 
       /// Destructor
-      virtual ~ConditionSelector() {}
+      virtual ~ConditionSelector() = default;
 
       /// select all matching dofs of the node and put them into conddofset
       virtual bool SelectDofs(DRT::Node* node, std::set<int>& conddofset);
@@ -114,13 +115,13 @@ namespace DRT
      public:
       NDimConditionSelector(
           const DRT::Discretization& dis, std::string condname, int startdim, int enddim)
-          : ConditionSelector(dis, condname), startdim_(startdim), enddim_(enddim)
+          : ConditionSelector(dis, std::move(condname)), startdim_(startdim), enddim_(enddim)
       {
       }
 
       /// Contain a dof number only if the dof nodal position is within the
       /// allowed range.
-      virtual bool ContainsDof(int dof, int pos) { return startdim_ <= pos and pos < enddim_; }
+      bool ContainsDof(int dof, int pos) override { return startdim_ <= pos and pos < enddim_; }
 
      private:
       int startdim_;
@@ -142,7 +143,7 @@ namespace DRT
         surface or volume conditions, even if the line condition selects no dofs
         at all. This way nodes can be freed explicitly by Dirichlet conditions.
        */
-      virtual bool SelectDofs(DRT::Node* node, std::set<int>& conddofset);
+      bool SelectDofs(DRT::Node* node, std::set<int>& conddofset) override;
     };
 
 
