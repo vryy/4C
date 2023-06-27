@@ -166,28 +166,27 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& sublist_manifold_params)
 {
-  auto* scatra_manifold_params = new Teuchos::ParameterList(scatraparams);
+  Teuchos::ParameterList scatra_manifold_params(scatraparams);
 
   switch (DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
       sublist_manifold_params, "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_zero_field:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "zero_field");
-      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "zero_field");
+      scatra_manifold_params.set<int>("INITFUNCNO", -1);
       break;
     }
     case INPAR::SCATRA::initfield_field_by_function:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_function");
-      scatra_manifold_params->set<int>(
-          "INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "field_by_function");
+      scatra_manifold_params.set<int>("INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
       break;
     }
     case INPAR::SCATRA::initfield_field_by_condition:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_condition");
-      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "field_by_condition");
+      scatra_manifold_params.set<int>("INITFUNCNO", -1);
       break;
     }
     default:
@@ -197,13 +196,13 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
-    scatra_manifold_params->set<bool>("output_file_name_discretization", true);
+    scatra_manifold_params.set<bool>("output_file_name_discretization", true);
 
-  scatra_manifold_params->set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
+  scatra_manifold_params.set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
 
-  scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+  scatra_manifold_params.set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
-  return *scatra_manifold_params;
+  return scatra_manifold_params;
 }
 
 /*----------------------------------------------------------------------*/
