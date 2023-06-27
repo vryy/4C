@@ -776,9 +776,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp, xcurr);
+      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydisp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
 
       // safety check before the actual evaluation starts
       const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -1030,7 +1030,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       // reference geometry (nodal positions)
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
+      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
 
       // deformation gradient = identity tensor (geometrically linear case!)
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
@@ -1191,9 +1191,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
           xdisp;  // current displacements of element nodes
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(mydispnp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp, xcurr);
+      UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydispnp, xdisp);
+      UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
 
       // shape functions and derivatives w.r.t. r,s,t
       CORE::LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
@@ -1330,9 +1330,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current coord. of element
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
 
-          UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
-          UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(mydisp, xdisp);
-          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp, xcurr);
+          UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+          UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydisp, xdisp);
+          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
 
           for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
           {
@@ -1590,7 +1590,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
   /* ================================================= Loop over Gauss Points */
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -1908,9 +1908,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
 
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp, xcurr);
+  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
 
   // safety check before the actual evaluation starts
   const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -2837,13 +2837,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
       xdisp_tmp;  // Tensor holding nodal displacements temporary
 
-  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp_tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp_tmp, xcurr);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp_tmp, xcurr);
 
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(dispo, xdisp_tmp);
-  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp_tmp, xcurro);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(dispo, xdisp_tmp);
+  UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp_tmp, xcurro);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -3321,7 +3321,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
 
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -3357,7 +3357,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
-  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp);
+  UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
 
   CORE::LINALG::Matrix<3, 3> invJhist;
   CORE::LINALG::Matrix<3, 3> invJ;
@@ -3405,9 +3405,9 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);
 
-    UTILS::EvaluateNodalCoordinates<DRT::Element::hex8>(Nodes(), xrefe);
-    UTILS::EvaluateNodalDisplacements<DRT::Element::hex8>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8>(xrefe, xdisp, xcurr);
+    UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
+    UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(disp, xdisp);
+    UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */

@@ -603,7 +603,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(const int inode)
 {
   // get parameter space coordinates of current node
-  CORE::LINALG::Matrix<3, 1> myXi = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
+  CORE::LINALG::Matrix<3, 1> myXi = CORE::DRT::UTILS::GetNodeCoordinates(inode, distype);
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = myXi(idim);
 
   det_ = EvalShapeFuncAndDerivsInParameterSpace();

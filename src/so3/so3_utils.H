@@ -91,65 +91,64 @@ namespace DRT
        * \brief Compute the deformation gradient in case of no prestressing
        *
        * \tparam distype Shape of the element
+       * \tparam probdim Dimension of the problem
        * \param defgrd [out] : Deformation gradient
        * \param xcurr[in] : Current nodal coordinates
        * \param derivs : Derivatives of the shape functions with respect to the reference
        * \param inverseJacobian [in] : Inverse jacobian at the point of evaluation
        */
-      template <DRT::Element::DiscretizationType distype>
-      void ComputeDeformationGradientStandard(
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
+      template <DRT::Element::DiscretizationType distype,
+          int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+      void ComputeDeformationGradientStandard(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xcurr,
+          const CORE::LINALG::Matrix<probdim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
-          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
+          const CORE::LINALG::Matrix<probdim, probdim>& inverseJacobian);
 
       /*!
        * \brief Evaluate the nodal coordinates of an element
        *
        * \tparam distype Shape of the element
+       * \tparam probdim Dimension of the problem
        * \param nodes [in] : List of nodes of the element
        * \param xrefe [out] : reference coordinates of the element
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <DRT::Element::DiscretizationType distype, int probdim = 3>
       void EvaluateNodalCoordinates(DRT::Node** nodes,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe);
+              probdim>& xrefe);
 
       /*!
        * \brief Evaluate the nodal displacement of the element
        *
        * \tparam distype  Shape of the element
+       * \tparam probdim Dimension of the problem
        * \param disp [in] : Local displacement vector
        * \param xdisp [out] : Nodal displacements
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <DRT::Element::DiscretizationType distype, int probdim = 3>
       void EvaluateNodalDisplacements(const std::vector<double>& disp,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp);
+              probdim>& xdisp);
 
       /*!
        * \brief Compute the current nodal coordinates of the element
        *
        * \tparam distype Shape of the element
+       * \tparam probdim Dimension of the problem
        * \param xrefe [in] : Reference coordinates of the element
        * \param xdisp [in] : Nodal displacements of the element
        * \param xcurr [out] : Current coordinates of the element
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <DRT::Element::DiscretizationType distype, int probdim = 3>
       void EvaluateCurrentNodalCoordinates(
           const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xrefe,
           const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xdisp,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr);
+              probdim>& xcurr);
 
       /*!
        * \brief Evaluates the inverse jacobian of the element

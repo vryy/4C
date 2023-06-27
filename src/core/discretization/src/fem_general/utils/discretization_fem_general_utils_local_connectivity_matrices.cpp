@@ -1431,14 +1431,12 @@ int CORE::DRT::UTILS::getNode(
 
 
 /*----------------------------------------------------------------------*
- |  Returns a vector with coordinates in the reference       u.may 08/07|
- |  system of the element                                               |
- |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
+template <int probdim>
+CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
     const int nodeId, const ::DRT::Element::DiscretizationType distype)
 {
-  CORE::LINALG::Matrix<3, 1> coord(true);
+  CORE::LINALG::Matrix<probdim, 1> coord(true);
 
   if (distype == ::DRT::Element::line2)
   {
@@ -1457,8 +1455,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(1) = 0.0;
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::line3)
   {
@@ -1482,8 +1478,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(1) = 0.0;
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::line4)
   {
@@ -1512,8 +1506,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(1) = 0.0;
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::quad4)
   {
@@ -1546,7 +1538,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::quad8)
   {
@@ -1603,7 +1594,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::quad9)
   {
@@ -1666,7 +1656,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::tri3)
   {
@@ -1693,7 +1682,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::tri6)
   {
@@ -1738,7 +1726,6 @@ CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
       default:
         dserror("node number not correct");
     }
-    coord(2) = 0.0;
   }
   else if (distype == ::DRT::Element::hex8)
   {
@@ -2273,10 +2260,7 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
       dserror(
           "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
   }
-
-  return;
 }
-
 
 ///*----------------------------------------------------------------------*
 // |  returns the dimension of the element parameter space     u.may 10/07|
@@ -2701,3 +2685,6 @@ bool CORE::DRT::UTILS::IsNurbsDisType(const ::DRT::Element::DiscretizationType d
       return false;
   }
 }
+
+template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::GetNodeCoordinates<3>(
+    const int nodeId, const ::DRT::Element::DiscretizationType distype);
