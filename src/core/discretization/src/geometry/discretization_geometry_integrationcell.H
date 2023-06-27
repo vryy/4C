@@ -10,14 +10,14 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_INTEGRATIONCELL_H
-#define GEOMETRY_INTEGRATIONCELL_H
+#ifndef DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_H
+#define DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_H
 
 
 #include "lib_element.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   /*----------------------------------------------------------------------------*/
   /*!
@@ -28,7 +28,7 @@ namespace GEO
    public:
     //! Standard Constructor
     explicit IntCell(
-        const DRT::Element::DiscretizationType& distype  ///< distype of the integration cell
+        const ::DRT::Element::DiscretizationType& distype  ///< distype of the integration cell
     );
 
     //! Copy Constructor
@@ -40,7 +40,7 @@ namespace GEO
     virtual IntCell& operator=(const IntCell& intcell);
 
     //! brief returns the shape of the integration cell
-    DRT::Element::DiscretizationType Shape() const { return distype_; };
+    ::DRT::Element::DiscretizationType Shape() const { return distype_; };
 
     //! brief returns number of nodes
     int NumNode() const;
@@ -57,14 +57,14 @@ namespace GEO
 
    protected:
     //! shape
-    DRT::Element::DiscretizationType distype_;
+    ::DRT::Element::DiscretizationType distype_;
 
     // boolean indicating that cell belongs to "+"-part of the domain
     bool indomainplus_;
 
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3, 1> ComputePhysicalCenterPosition(
-        const DRT::Element::DiscretizationType& distype,
+        const ::DRT::Element::DiscretizationType& distype,
         const LINALG::SerialDenseMatrix& xyze) const;
   };
 
@@ -77,7 +77,7 @@ namespace GEO
    public:
     //! Standard Constructor
     explicit DomainIntCell(
-        const DRT::Element::DiscretizationType& distype,  ///< distype of the integration cell
+        const ::DRT::Element::DiscretizationType& distype,  ///< distype of the integration cell
         const LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in xfem element coordinates
         const LINALG::SerialDenseMatrix&
@@ -86,7 +86,7 @@ namespace GEO
 
     //! constructor used for combustion problems
     explicit DomainIntCell(
-        const DRT::Element::DiscretizationType& distype,  ///< distype of the integration cell
+        const ::DRT::Element::DiscretizationType& distype,  ///< distype of the integration cell
         const LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in xfem element coordinates
         const LINALG::SerialDenseMatrix&
@@ -101,7 +101,7 @@ namespace GEO
             the user just gives the distype of the XFEM element and
             gets an integration cell with the same distype as the parent
      */
-    explicit DomainIntCell(const DRT::Element::DiscretizationType&
+    explicit DomainIntCell(const ::DRT::Element::DiscretizationType&
                                distype,           ///< distype of the parent elementintegration cell
         const LINALG::SerialDenseMatrix& xyz_ele  ///< coordinates in physical coordinates
     );
@@ -125,7 +125,7 @@ namespace GEO
     const LINALG::Matrix<3, 1>& GetPhysicalCenterPosition() const { return phys_center_; }
 
     //! compute volume of cell from local coordinates
-    double VolumeInXiDomain(const DRT::Element& ele) const;
+    double VolumeInXiDomain(const ::DRT::Element& ele) const;
 
     //! compute volume of cell from physical coordinates
     double VolumeInPhysicalDomain() const;
@@ -171,7 +171,7 @@ namespace GEO
      *  \param indomainplus             (in) : domain part of the integration cell
      *
      *  \author hiermeier \date 11/16 */
-    static BoundaryIntCell* Create(const DRT::Element::DiscretizationType& distype,
+    static BoundaryIntCell* Create(const ::DRT::Element::DiscretizationType& distype,
         const int& surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
         const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
         const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus);
@@ -179,7 +179,7 @@ namespace GEO
    public:
     //! Standard Constructor
     explicit BoundaryIntCell(
-        const DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
+        const ::DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
         const LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
@@ -191,7 +191,7 @@ namespace GEO
 
     //! constructor used for combustion problems
     explicit BoundaryIntCell(
-        const DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
+        const ::DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
         const LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
@@ -238,7 +238,7 @@ namespace GEO
 
    protected:
     //! constructor for derived class only.
-    BoundaryIntCell(DRT::Element::DiscretizationType distype,  ///< shape of the integration cell
+    BoundaryIntCell(::DRT::Element::DiscretizationType distype,  ///< shape of the integration cell
         const int& surface_ele_gid  ///< global id of the boundary element (cutter)
     );
 
@@ -274,7 +274,7 @@ namespace GEO
    *  class (due to round-off, tolerances and slightly different implementations).
    *
    *  \author hiermeier \date 11/16 */
-  template <unsigned probDim, DRT::Element::DiscretizationType cellType,
+  template <unsigned probDim, ::DRT::Element::DiscretizationType cellType,
       unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim,
       unsigned numNodePerEle =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<cellType>::numNodePerElement>
@@ -312,16 +312,16 @@ namespace GEO
   };  // class ConcreteBoundaryIntCell
 
   /*----------------------------------------------------------------------------*/
-  template <unsigned probDim, DRT::Element::DiscretizationType cellType>
+  template <unsigned probDim, ::DRT::Element::DiscretizationType cellType>
   void ComputePhysicalCenterPosition(
       const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<probDim, 1>& phys_center);
 
   template <>
-  void ComputePhysicalCenterPosition<2, DRT::Element::point1>(
+  void ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
       const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center);
 
   template <>
-  void ComputePhysicalCenterPosition<2, DRT::Element::line2>(
+  void ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
       const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center);
 
   /*----------------------------------------------------------------------------*/
@@ -332,12 +332,12 @@ namespace GEO
    *  you have to specify no template parameters.
    *
    *  \author hiermeier \date 11/16 */
-  template <DRT::Element::DiscretizationType cellType>
+  template <::DRT::Element::DiscretizationType cellType>
   BoundaryIntCell* CreateConcreteBoundaryIntCell(const int& surface_ele_gid,
       const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
       const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
       const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus,
       const unsigned& probDim);
-}  // namespace GEO
+}  // namespace CORE::GEO
 
-#endif  // GEOMETRY_INTEGRATIONCELL_H
+#endif  // DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_H

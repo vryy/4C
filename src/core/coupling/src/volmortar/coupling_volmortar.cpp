@@ -42,8 +42,8 @@
 #include "cut_cutwizard.H"
 
 // search
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include "utils_pairedvector.H"
 #include <Teuchos_Time.hpp>
@@ -306,7 +306,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::InitDopNormals()
 /*----------------------------------------------------------------------*
  |  Init search tree                                         farah 05/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
+Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
     Teuchos::RCP<::DRT::Discretization> searchdis)
 {
   // init current positions
@@ -331,11 +331,11 @@ Teuchos::RCP<GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
   }
 
   // init of 3D search tree
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
+  Teuchos::RCP<CORE::GEO::SearchTree> searchTree = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox = GEO::getXAABBofDis(*searchdis, currentpositions);
-  searchTree->initializeTree(rootBox, *searchdis, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofDis(*searchdis, currentpositions);
+  searchTree->initializeTree(rootBox, *searchdis, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   return searchTree;
 }
@@ -405,7 +405,8 @@ LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::CalcDop(::DRT::Element& el
  |  Perform searching procedure                              farah 05/14|
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(::DRT::Element& ele,
-    Teuchos::RCP<GEO::SearchTree> SearchTree, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
+    Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
+    std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
   std::vector<int> gids;
@@ -436,8 +437,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
     dserror("no discretization for assigning materials!");
 
   // init search trees
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
@@ -731,8 +732,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   /***********************************************************
    * create search tree and current dops                     *
    ***********************************************************/
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
@@ -786,8 +787,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
   }
 
   // init search trees
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
@@ -849,7 +850,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
 void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 {
   // create search tree and current dops
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+  Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
@@ -1178,8 +1179,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     if (myrank_ == 0) std::cout << "*****       step " << mi << std::endl;
 
     // init search trees
-    Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
-    Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+    Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+    Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
     // calculate DOPs for search algorithm
     std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
@@ -1604,7 +1605,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
   // Initialize the cut wizard
 
   // create new cut wizard
-  Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::rcp(new GEO::CutWizard(mauxdis));
+  Teuchos::RCP<CORE::GEO::CutWizard> wizard = Teuchos::rcp(new CORE::GEO::CutWizard(mauxdis));
 
   // *************************************
   // TESSELATION *************************
@@ -1628,9 +1629,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
     wizard->Prepare();
     wizard->Cut(true);  // include_inner
 
-    GEO::CUT::plain_volumecell_set mcells_out;
-    GEO::CUT::plain_volumecell_set mcells_in;
-    GEO::CUT::ElementHandle* em = wizard->GetElement(mele);
+    CORE::GEO::CUT::plain_volumecell_set mcells_out;
+    CORE::GEO::CUT::plain_volumecell_set mcells_in;
+    CORE::GEO::CUT::ElementHandle* em = wizard->GetElement(mele);
 
     // is mele in cut involved?
     if (em != NULL)
@@ -1639,16 +1640,16 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
       int count = 0;
 
-      for (GEO::CUT::plain_volumecell_set::iterator u = mcells_in.begin(); u != mcells_in.end();
-           u++)
+      for (CORE::GEO::CUT::plain_volumecell_set::iterator u = mcells_in.begin();
+           u != mcells_in.end(); u++)
       {
-        GEO::CUT::VolumeCell* vc = *u;
-        const GEO::CUT::plain_integrationcell_set& intcells = vc->IntegrationCells();
+        CORE::GEO::CUT::VolumeCell* vc = *u;
+        const CORE::GEO::CUT::plain_integrationcell_set& intcells = vc->IntegrationCells();
 
-        for (GEO::CUT::plain_integrationcell_set::const_iterator z = intcells.begin();
+        for (CORE::GEO::CUT::plain_integrationcell_set::const_iterator z = intcells.begin();
              z != intcells.end(); z++)
         {
-          GEO::CUT::IntegrationCell* ic = *z;
+          CORE::GEO::CUT::IntegrationCell* ic = *z;
 
           IntCells.push_back(
               Teuchos::rcp(new CORE::VOLMORTAR::Cell(count, 4, ic->Coordinates(), ic->Shape())));
@@ -1690,9 +1691,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
     wizard->Cut(true);  // include_inner
 
-    GEO::CUT::plain_volumecell_set mcells_out;
-    GEO::CUT::plain_volumecell_set mcells_in;
-    GEO::CUT::ElementHandle* em = wizard->GetElement(mele);
+    CORE::GEO::CUT::plain_volumecell_set mcells_out;
+    CORE::GEO::CUT::plain_volumecell_set mcells_in;
+    CORE::GEO::CUT::ElementHandle* em = wizard->GetElement(mele);
 
     // for safety
     volcell_.clear();
@@ -3008,11 +3009,12 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
     std::cout << "****************************   CELL SIZE > 1 ***************************"
               << std::endl;
 
-  for (GEO::CUT::plain_volumecell_set::iterator i = volcell_.begin(); i != volcell_.end(); i++)
+  for (CORE::GEO::CUT::plain_volumecell_set::iterator i = volcell_.begin(); i != volcell_.end();
+       i++)
   {
     if (*i == NULL) continue;
 
-    GEO::CUT::VolumeCell* vc = *i;
+    CORE::GEO::CUT::VolumeCell* vc = *i;
 
     if (vc->IsNegligiblySmall()) continue;
 

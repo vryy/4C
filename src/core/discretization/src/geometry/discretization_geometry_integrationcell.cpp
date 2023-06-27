@@ -10,9 +10,9 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_integrationcell.H"
-#include "geometry_element_coordtrafo.H"
-#include "geometry_element_volume.H"
+#include "discretization_geometry_integrationcell.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_volume.H"
 #include "io_gmsh.H"
 
 #include "lib_globalproblem.H"
@@ -21,14 +21,14 @@
 /*----------------------------------------------------------------------*
  * get center in physical coordinates
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::IntCell::ComputePhysicalCenterPosition(
-    const DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze) const
+LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
+    const ::DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
   const LINALG::Matrix<3, 1> localcenterpos(CORE::DRT::UTILS::getLocalCenterPosition<3>(distype));
   // center in physical coordinates
   static LINALG::Matrix<3, 1> pyhsicalcenterpos;
-  GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
+  CORE::GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
   return pyhsicalcenterpos;
 }
 
@@ -38,7 +38,7 @@ LINALG::Matrix<3, 1> GEO::IntCell::ComputePhysicalCenterPosition(
 /*----------------------------------------------------------------------*
  * constructor int cell                                                 *
  *----------------------------------------------------------------------*/
-GEO::IntCell::IntCell(const DRT::Element::DiscretizationType& distype)
+CORE::GEO::IntCell::IntCell(const ::DRT::Element::DiscretizationType& distype)
     : distype_(distype), indomainplus_(false)
 {
 }
@@ -48,7 +48,8 @@ GEO::IntCell::IntCell(const DRT::Element::DiscretizationType& distype)
 /*----------------------------------------------------------------------*
  * copy constructor                                                     *
  *----------------------------------------------------------------------*/
-GEO::IntCell::IntCell(const IntCell& old) : distype_(old.distype_), indomainplus_(old.indomainplus_)
+CORE::GEO::IntCell::IntCell(const IntCell& old)
+    : distype_(old.distype_), indomainplus_(old.indomainplus_)
 {
 }
 
@@ -57,7 +58,7 @@ GEO::IntCell::IntCell(const IntCell& old) : distype_(old.distype_), indomainplus
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
-GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
+CORE::GEO::IntCell& CORE::GEO::IntCell::operator=(const IntCell& intcell)
 {
   distype_ = intcell.distype_;
   return *this;
@@ -68,16 +69,19 @@ GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
-GEO::IntCell::~IntCell() {}
+CORE::GEO::IntCell::~IntCell() {}
 
 
-int GEO::IntCell::NumNode() const { return CORE::DRT::UTILS::getNumberOfElementNodes(Shape()); }
+int CORE::GEO::IntCell::NumNode() const
+{
+  return CORE::DRT::UTILS::getNumberOfElementNodes(Shape());
+}
 
 
 /*----------------------------------------------------------------------*
  * to std::string                                                            *
  *----------------------------------------------------------------------*/
-std::string GEO::IntCell::toString() const { return ""; }
+std::string CORE::GEO::IntCell::toString() const { return ""; }
 
 
 
@@ -86,7 +90,7 @@ std::string GEO::IntCell::toString() const { return ""; }
 /*----------------------------------------------------------------------*
  * Constructor Domain integration cell                                  *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell::DomainIntCell(const DRT::Element::DiscretizationType& distype,
+CORE::GEO::DomainIntCell::DomainIntCell(const ::DRT::Element::DiscretizationType& distype,
     const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates)
     : IntCell(distype),
@@ -102,7 +106,7 @@ GEO::DomainIntCell::DomainIntCell(const DRT::Element::DiscretizationType& distyp
 /*----------------------------------------------------------------------*
  * Constructor Domain integration cell                  rasthofer 07/09 *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell::DomainIntCell(const DRT::Element::DiscretizationType& distype,
+CORE::GEO::DomainIntCell::DomainIntCell(const ::DRT::Element::DiscretizationType& distype,
     const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool indomainplus)
     : IntCell(distype),
@@ -119,8 +123,8 @@ GEO::DomainIntCell::DomainIntCell(const DRT::Element::DiscretizationType& distyp
  * Constructor                                                          *
  * Domain integration cell == xfem element if not intersected           *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell::DomainIntCell(
-    const DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze_ele)
+CORE::GEO::DomainIntCell::DomainIntCell(
+    const ::DRT::Element::DiscretizationType& distype, const LINALG::SerialDenseMatrix& xyze_ele)
     : IntCell(distype),
       nodalpos_xi_domain_(CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
       nodalpos_xyz_domain_(xyze_ele),
@@ -134,7 +138,7 @@ GEO::DomainIntCell::DomainIntCell(
 /*----------------------------------------------------------------------*
  * Copy Constructor Domain integration cell                             *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell::DomainIntCell(const DomainIntCell& old)
+CORE::GEO::DomainIntCell::DomainIntCell(const DomainIntCell& old)
     : IntCell(old),
       nodalpos_xi_domain_(old.nodalpos_xi_domain_),
       nodalpos_xyz_domain_(old.nodalpos_xyz_domain_),
@@ -147,9 +151,10 @@ GEO::DomainIntCell::DomainIntCell(const DomainIntCell& old)
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell& GEO::DomainIntCell::operator=(const GEO::DomainIntCell& domainintcell)
+CORE::GEO::DomainIntCell& CORE::GEO::DomainIntCell::operator=(
+    const CORE::GEO::DomainIntCell& domainintcell)
 {
-  this->GEO::IntCell::operator=(domainintcell);
+  this->CORE::GEO::IntCell::operator=(domainintcell);
   nodalpos_xi_domain_ = domainintcell.nodalpos_xi_domain_;
   nodalpos_xyz_domain_ = domainintcell.nodalpos_xyz_domain_;
   phys_center_ = domainintcell.phys_center_;
@@ -162,7 +167,7 @@ GEO::DomainIntCell& GEO::DomainIntCell::operator=(const GEO::DomainIntCell& doma
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell::~DomainIntCell() {}
+CORE::GEO::DomainIntCell::~DomainIntCell() {}
 
 /*----------------------------------------------------------------------*
  * output                                                           *
@@ -179,7 +184,7 @@ static std::string PosToString(double x, double y, double z)
 /*----------------------------------------------------------------------*
  *  to std::string                                                           *
  *----------------------------------------------------------------------*/
-std::string GEO::DomainIntCell::toString() const
+std::string CORE::GEO::DomainIntCell::toString() const
 {
   std::ostringstream s;
   int numpoints = nodalpos_xi_domain_.N();
@@ -209,7 +214,7 @@ std::string GEO::DomainIntCell::toString() const
 /*----------------------------------------------------------------------*
  * write Gmsh file with cell data in local coordinates                  *
  *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
+void CORE::GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
 {
   const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXiDomain();
 
@@ -227,7 +232,7 @@ void GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
 /*----------------------------------------------------------------------*
  * write Gmsh file with cell data in global coordinates                 *
  *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::xToGmsh(const std::string& filename) const
+void CORE::GEO::DomainIntCell::xToGmsh(const std::string& filename) const
 {
   const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXYZ();
 
@@ -245,9 +250,9 @@ void GEO::DomainIntCell::xToGmsh(const std::string& filename) const
 /*----------------------------------------------------------------------*
  * compute volume in XiDomain coordinates
  *----------------------------------------------------------------------*/
-double GEO::DomainIntCell::VolumeInXiDomain(const DRT::Element& ele) const
+double CORE::GEO::DomainIntCell::VolumeInXiDomain(const ::DRT::Element& ele) const
 {
-  const double volume_cell = GEO::ElementVolume(this->Shape(), nodalpos_xi_domain_);
+  const double volume_cell = CORE::GEO::ElementVolume(this->Shape(), nodalpos_xi_domain_);
   if (volume_cell <= 0.0)
   {
     std::cout << this->toString() << std::endl;
@@ -263,9 +268,9 @@ double GEO::DomainIntCell::VolumeInXiDomain(const DRT::Element& ele) const
 /*----------------------------------------------------------------------*
  * compute volume in physical domain
  *----------------------------------------------------------------------*/
-double GEO::DomainIntCell::VolumeInPhysicalDomain() const
+double CORE::GEO::DomainIntCell::VolumeInPhysicalDomain() const
 {
-  double vol = GEO::ElementVolume(this->Shape(), nodalpos_xyz_domain_);
+  double vol = CORE::GEO::ElementVolume(this->Shape(), nodalpos_xyz_domain_);
 
   if (vol < 0.0) dserror("cell with negative volume");
 
@@ -276,12 +281,13 @@ double GEO::DomainIntCell::VolumeInPhysicalDomain() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell* GEO::BoundaryIntCell::Create(const DRT::Element::DiscretizationType& distype,
-    const int& surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
+CORE::GEO::BoundaryIntCell* CORE::GEO::BoundaryIntCell::Create(
+    const ::DRT::Element::DiscretizationType& distype, const int& surface_ele_gid,
+    const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus)
 {
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = ::DRT::Problem::Instance()->NDim();
   if (probdim == 3)
   {
     return new BoundaryIntCell(distype, surface_ele_gid, xfemEleDomainCoordinates,
@@ -291,16 +297,16 @@ GEO::BoundaryIntCell* GEO::BoundaryIntCell::Create(const DRT::Element::Discretiz
   // do this only, if it is no 3-dimensional problem
   switch (distype)
   {
-    case DRT::Element::point1:
-      return GEO::CreateConcreteBoundaryIntCell<DRT::Element::point1>(surface_ele_gid,
+    case ::DRT::Element::point1:
+      return CORE::GEO::CreateConcreteBoundaryIntCell<::DRT::Element::point1>(surface_ele_gid,
           xfemEleDomainCoordinates, eleBoundaryCoordinates, physDomainCoordinates, indomainplus,
           probdim);
-    case DRT::Element::line2:
-      return GEO::CreateConcreteBoundaryIntCell<DRT::Element::line2>(surface_ele_gid,
+    case ::DRT::Element::line2:
+      return CORE::GEO::CreateConcreteBoundaryIntCell<::DRT::Element::line2>(surface_ele_gid,
           xfemEleDomainCoordinates, eleBoundaryCoordinates, physDomainCoordinates, indomainplus,
           probdim);
     default:
-      dserror("Unsupported cell type = %s", DRT::DistypeToString(distype).c_str());
+      dserror("Unsupported cell type = %s", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
   // you should never reach this point
@@ -310,7 +316,7 @@ GEO::BoundaryIntCell* GEO::BoundaryIntCell::Create(const DRT::Element::Discretiz
 /*----------------------------------------------------------------------*
  * constructor Boundary integration cells                               *
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell::BoundaryIntCell(const DRT::Element::DiscretizationType& distype,
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(const ::DRT::Element::DiscretizationType& distype,
     const int surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates)
@@ -327,7 +333,7 @@ GEO::BoundaryIntCell::BoundaryIntCell(const DRT::Element::DiscretizationType& di
 /*----------------------------------------------------------------------*
  * constructor Boundary integration cells                               *
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell::BoundaryIntCell(const DRT::Element::DiscretizationType& distype,
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(const ::DRT::Element::DiscretizationType& distype,
     const int surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool indomainplus)
@@ -345,7 +351,7 @@ GEO::BoundaryIntCell::BoundaryIntCell(const DRT::Element::DiscretizationType& di
 /*----------------------------------------------------------------------*
  * copy constructor Boundary integration cells                          *
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
     : IntCell(old),
       surface_ele_gid_(old.surface_ele_gid_),
       nodalpos_xi_domain_(old.nodalpos_xi_domain_),
@@ -360,14 +366,15 @@ GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell::~BoundaryIntCell() {}
+CORE::GEO::BoundaryIntCell::~BoundaryIntCell() {}
 
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell& boundaryintcell)
+CORE::GEO::BoundaryIntCell& CORE::GEO::BoundaryIntCell::operator=(
+    const CORE::GEO::BoundaryIntCell& boundaryintcell)
 {
-  this->GEO::IntCell::operator=(boundaryintcell);
+  this->CORE::GEO::IntCell::operator=(boundaryintcell);
   surface_ele_gid_ = boundaryintcell.surface_ele_gid_;
   nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
   nodalpos_xi_boundary_ = boundaryintcell.nodalpos_xi_boundary_;
@@ -379,7 +386,7 @@ GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell
 /*----------------------------------------------------------------------*
  * to std::string                                                            *
  *----------------------------------------------------------------------*/
-std::string GEO::BoundaryIntCell::toString() const
+std::string CORE::GEO::BoundaryIntCell::toString() const
 {
   std::ostringstream s;
   s << "BoundaryIntCell" << std::endl;
@@ -389,15 +396,15 @@ std::string GEO::BoundaryIntCell::toString() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::BoundaryIntCell::Print(std::ostream& stream) const
+void CORE::GEO::BoundaryIntCell::Print(std::ostream& stream) const
 {
   stream << toString() << "\n" << std::flush;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::BoundaryIntCell::BoundaryIntCell(
-    DRT::Element::DiscretizationType distype, const int& surface_ele_gid)
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(
+    ::DRT::Element::DiscretizationType distype, const int& surface_ele_gid)
     : IntCell(distype), surface_ele_gid_(surface_ele_gid), phys_center_(true)
 {
   /* intentionally left blank */
@@ -407,8 +414,8 @@ GEO::BoundaryIntCell::BoundaryIntCell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType cellType>
-GEO::BoundaryIntCell* GEO::CreateConcreteBoundaryIntCell(const int& surface_ele_gid,
+template <::DRT::Element::DiscretizationType cellType>
+CORE::GEO::BoundaryIntCell* CORE::GEO::CreateConcreteBoundaryIntCell(const int& surface_ele_gid,
     const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus,
@@ -417,7 +424,7 @@ GEO::BoundaryIntCell* GEO::CreateConcreteBoundaryIntCell(const int& surface_ele_
   switch (probDim)
   {
     case 2:
-      return new GEO::ConcreteBoundaryIntCell<2, cellType>(surface_ele_gid,
+      return new CORE::GEO::ConcreteBoundaryIntCell<2, cellType>(surface_ele_gid,
           xfemEleDomainCoordinates, eleBoundaryCoordinates, physDomainCoordinates, indomainplus);
     default:
       dserror("Unsupported problem dimension! (probDim == %d", probDim);
@@ -429,29 +436,30 @@ GEO::BoundaryIntCell* GEO::CreateConcreteBoundaryIntCell(const int& surface_ele_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probDim, DRT::Element::DiscretizationType cellType, unsigned dim,
+template <unsigned probDim, ::DRT::Element::DiscretizationType cellType, unsigned dim,
     unsigned numNodePerEle>
-GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::ConcreteBoundaryIntCell(
+CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::ConcreteBoundaryIntCell(
     const int& surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus)
-    : GEO::BoundaryIntCell(cellType, surface_ele_gid), xyz_center_(this->phys_center_.A(), true)
+    : CORE::GEO::BoundaryIntCell(cellType, surface_ele_gid),
+      xyz_center_(this->phys_center_.A(), true)
 {
   nodalpos_xi_domain_ = xfemEleDomainCoordinates;
   nodalpos_xi_boundary_ =
       (eleBoundaryCoordinates != NULL ? *eleBoundaryCoordinates : LINALG::SerialDenseMatrix());
   nodalpos_xyz_domain_ = physDomainCoordinates;
   indomainplus_ = indomainplus;
-  GEO::ComputePhysicalCenterPosition<probDim, cellType>(physDomainCoordinates, xyz_center_);
+  CORE::GEO::ComputePhysicalCenterPosition<probDim, cellType>(physDomainCoordinates, xyz_center_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <unsigned probDim, DRT::Element::DiscretizationType cellType, unsigned dim,
+template <unsigned probDim, ::DRT::Element::DiscretizationType cellType, unsigned dim,
     unsigned numNodePerEle>
-GEO::BoundaryIntCell&
-GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
-    const GEO::BoundaryIntCell& boundaryintcell)
+CORE::GEO::BoundaryIntCell&
+CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
+    const CORE::GEO::BoundaryIntCell& boundaryintcell)
 {
   return operator=(
       dynamic_cast<const ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>&>(
@@ -460,13 +468,14 @@ GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <unsigned probDim, DRT::Element::DiscretizationType cellType, unsigned dim,
+template <unsigned probDim, ::DRT::Element::DiscretizationType cellType, unsigned dim,
     unsigned numNodePerEle>
-GEO::BoundaryIntCell&
-GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
-    const GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>& boundaryintcell)
+CORE::GEO::BoundaryIntCell&
+CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
+    const CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>&
+        boundaryintcell)
 {
-  this->GEO::BoundaryIntCell::operator=(boundaryintcell);
+  this->CORE::GEO::BoundaryIntCell::operator=(boundaryintcell);
   // here we set a view to the base class member
   this->xyz_center_ = LINALG::Matrix<probDim, 1>(this->phys_center_.A(), true);
 
@@ -476,39 +485,41 @@ GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::operator=(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <> /* function specialization */
-void GEO::ComputePhysicalCenterPosition<2, DRT::Element::line2>(
+void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
     const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center)
 {
-  const DRT::Element::DiscretizationType cellType = DRT::Element::line2;
+  const ::DRT::Element::DiscretizationType cellType = ::DRT::Element::line2;
   const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim;
   LINALG::Matrix<dim, 1> localcenterpos = CORE::DRT::UTILS::getLocalCenterPosition<1>(cellType);
-  GEO::elementToCurrentCoordinates(cellType, xyze, localcenterpos, phys_center);
+  CORE::GEO::elementToCurrentCoordinates(cellType, xyze, localcenterpos, phys_center);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <> /* function specialization */
-void GEO::ComputePhysicalCenterPosition<2, DRT::Element::point1>(
+void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
     const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center)
 {
   phys_center.SetCopy(xyze.A());
 }
 
-template class GEO::ConcreteBoundaryIntCell<2, DRT::Element::point1>;
-template class GEO::ConcreteBoundaryIntCell<2, DRT::Element::line2>;
+template class CORE::GEO::ConcreteBoundaryIntCell<2, ::DRT::Element::point1>;
+template class CORE::GEO::ConcreteBoundaryIntCell<2, ::DRT::Element::line2>;
 
-template void GEO::ComputePhysicalCenterPosition<2, DRT::Element::point1>(
+template void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
     const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center);
-template void GEO::ComputePhysicalCenterPosition<2, DRT::Element::line2>(
+template void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
     const Epetra_SerialDenseMatrix& xyze, LINALG::Matrix<2, 1>& phys_center);
 
-template GEO::BoundaryIntCell* GEO::CreateConcreteBoundaryIntCell<DRT::Element::point1>(
-    const int& surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
+template CORE::GEO::BoundaryIntCell*
+CORE::GEO::CreateConcreteBoundaryIntCell<::DRT::Element::point1>(const int& surface_ele_gid,
+    const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus,
     const unsigned& probDim);
-template GEO::BoundaryIntCell* GEO::CreateConcreteBoundaryIntCell<DRT::Element::line2>(
-    const int& surface_ele_gid, const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
+template CORE::GEO::BoundaryIntCell*
+CORE::GEO::CreateConcreteBoundaryIntCell<::DRT::Element::line2>(const int& surface_ele_gid,
+    const LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
     const LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus,
     const unsigned& probDim);

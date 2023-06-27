@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
     LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
     LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

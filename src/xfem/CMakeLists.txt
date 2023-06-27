@@ -7,7 +7,6 @@ set(_xfem_dependencies
     core
     cut
     fluid_ele
-    geometry
     inpar
     io
     lib

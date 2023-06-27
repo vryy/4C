@@ -28,7 +28,7 @@ namespace DRT
   class Exporter;
 }  // namespace DRT
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -110,7 +110,7 @@ namespace XFEM
     double searchradius_fac_;
 
     //! 3D seach tree for embedded discretization
-    Teuchos::RCP<GEO::SearchTree> searchTree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
 
     //! min. radius needed for the search tree
     double searchradius_;

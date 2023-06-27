@@ -24,13 +24,13 @@
 #include <Epetra_MultiVector.h>
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 // forward declaration
 namespace BROWNIANDYN
 {
@@ -234,7 +234,8 @@ namespace BROWNIANDYN
     virtual std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile() const = 0;
 
     //! get vector holding periodic bounding box object
-    virtual Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const = 0;
+    virtual Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
+        const = 0;
 
     //! get the current step length
     virtual const Teuchos::RCP<Epetra_MultiVector>& GetRandomForces() const = 0;

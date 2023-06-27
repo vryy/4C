@@ -15,7 +15,7 @@
 
 #include "cut_facetgraph.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -53,7 +53,7 @@ namespace GEO
 
     };  // class  SimpleFacetGraph_2D
   }     // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // CUT_FACETGRAPH_SIMPLE_H

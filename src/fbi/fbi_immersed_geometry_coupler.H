@@ -31,7 +31,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -168,7 +168,7 @@ namespace FBI
     Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> beampositions_;
 
     /// 3D search tree for embedded discretization
-    Teuchos::RCP<GEO::SearchTree> searchtree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;
 
     /** \brief The search radius is used for the pair search and describes the maximum distance of a
      * beam node and a respective fluid node in order for the respective element pair to be found

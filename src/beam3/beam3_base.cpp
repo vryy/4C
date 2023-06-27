@@ -324,7 +324,7 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
-    std::vector<double>& disp, GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
+    std::vector<double>& disp, CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
@@ -361,7 +361,8 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
-    GEO::MESHFREE::BoundingBox const& periodic_boundingbox, std::vector<bool>& shift_in_dim) const
+    CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
+    std::vector<bool>& shift_in_dim) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
@@ -401,7 +402,7 @@ void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
  *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3, 1>& pos,
     std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
-    GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
+    CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
 {
   const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position

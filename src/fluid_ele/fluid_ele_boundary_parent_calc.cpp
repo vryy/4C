@@ -17,7 +17,7 @@
 #include "discretization_fem_general_utils_boundary_integration.H"
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "nurbs_discret_nurbs_utils.H"
 // TODO: remove after Nurbs functions are changed
@@ -619,7 +619,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
     // get local node coordinates
     LINALG::Matrix<nsd, piel> pxyze(true);
-    GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+    CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
     // get Gaussian integration points
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
@@ -639,7 +639,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
     // get local node coordinates
     LINALG::Matrix<nsd, biel> bxyze(true);
-    GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+    CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
     // get Gaussian integration points
     const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
@@ -1275,7 +1275,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
   // get local node coordinates
   LINALG::Matrix<nsd, piel> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
@@ -1295,7 +1295,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
   // get local node coordinates
   LINALG::Matrix<nsd, biel> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
@@ -1603,7 +1603,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 
   // get local node coordinates
   LINALG::Matrix<nsd, piel> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 
   // get local node coordinates
   LINALG::Matrix<nsd, biel> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
@@ -1938,7 +1938,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
   // get local node coordinates
   LINALG::Matrix<nsd, piel> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
@@ -1958,7 +1958,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
   // get local node coordinates
   LINALG::Matrix<nsd, biel> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
@@ -3778,7 +3778,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
 
   // get local node coordinates
   LINALG::Matrix<nsd, piel> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd> pintpoints(
@@ -3804,7 +3804,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
 
   // get local node coordinates
   LINALG::Matrix<nsd, biel> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
   // get Gaussian integration points
   const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
@@ -4533,7 +4533,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
     // get local node coordinates
     LINALG::Matrix<nsd, piel> pxyze(true);
-    GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+    CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
     //--------------------------------------------------
     // Gaussian integration points
@@ -4788,11 +4788,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
       // get local node coordinates
       LINALG::Matrix<nsd, biel> bxyze(true);
-      GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+      CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
       // get local node coordinates
       LINALG::Matrix<nsd, piel> pxyze(true);
-      GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+      CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
       //--------------------------------------------------
       // Gaussian integration points
@@ -5084,11 +5084,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
     // get local node coordinates
     LINALG::Matrix<nsd, biel> bxyze(true);
-    GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
+    CORE::GEO::fillInitialPositionArray<bdistype, nsd, LINALG::Matrix<nsd, biel>>(surfele, bxyze);
 
     // get local node coordinates
     LINALG::Matrix<nsd, piel> pxyze(true);
-    GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
+    CORE::GEO::fillInitialPositionArray<pdistype, nsd, LINALG::Matrix<nsd, piel>>(parent, pxyze);
 
     //--------------------------------------------------
     // Gaussian integration points

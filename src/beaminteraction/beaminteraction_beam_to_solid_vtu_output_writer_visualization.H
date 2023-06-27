@@ -140,7 +140,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Pointer to the discretization.
      */
     void AddDiscretizationNodalReferencePosition(
-        const Teuchos::RCP<const DRT::Discretization>& discret);
+        const Teuchos::RCP<const ::DRT::Discretization>& discret);
 
     /**
      * \brief Add global DOF based data to the writer.
@@ -168,7 +168,7 @@ namespace BEAMINTERACTION
     const std::string writer_full_name_;
 
     //! Discretization based on which global dof data can be written.
-    Teuchos::RCP<const DRT::Discretization> discret_;
+    Teuchos::RCP<const ::DRT::Discretization> discret_;
 
     //! Map for nodal GID of discretization.
     Teuchos::RCP<Epetra_Map> node_gid_map_;

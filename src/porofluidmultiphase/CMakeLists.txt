@@ -4,7 +4,6 @@ set(_porofluidmultiphase_dependencies
     # cmake-format: sortable
     adapter
     art_net
-    geometry
     inpar
     io
     lib

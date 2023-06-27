@@ -23,7 +23,7 @@
 #include "cut_utils.H"
 #include "cut_tolerance.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -492,10 +492,10 @@ namespace GEO
       PointFactory(){};
 
       // non-member function to create a concrete point of desired dimension
-      Teuchos::RCP<GEO::CUT::Point> CreatePoint(unsigned pid, const double* x, Edge* cut_edge,
+      Teuchos::RCP<CORE::GEO::CUT::Point> CreatePoint(unsigned pid, const double* x, Edge* cut_edge,
           Side* cut_side, double tolerance, int probdim) const
       {
-        Teuchos::RCP<GEO::CUT::Point> point = Teuchos::null;
+        Teuchos::RCP<CORE::GEO::CUT::Point> point = Teuchos::null;
 
         switch (probdim)
         {
@@ -514,7 +514,7 @@ namespace GEO
     };  // class PointFactory
 
     // non-member function to create a concrete point of desired dimension
-    Teuchos::RCP<GEO::CUT::Point> CreatePoint(
+    Teuchos::RCP<CORE::GEO::CUT::Point> CreatePoint(
         unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
     inline int EntityId(const Point& p) { return p.Pid(); }
@@ -687,11 +687,11 @@ namespace GEO
     double DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 1>& coord_b);
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
-std::ostream& operator<<(std::ostream& stream, GEO::CUT::Point& point);
+std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point& point);
 
-std::ostream& operator<<(std::ostream& stream, GEO::CUT::Point* point);
+std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point* point);
 
 #endif

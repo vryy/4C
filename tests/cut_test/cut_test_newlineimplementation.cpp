@@ -28,7 +28,7 @@
 //(to sides with 3 common cut points - because of tolerances!)
 void test_christoph_1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -475,12 +475,12 @@ void test_christoph_1()
 
   std::vector<double> dirDivVol;
 
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  CORE::GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     std::cout << "Volume of Volumecell: " << vc->Volume() << std::endl;
   }
 }

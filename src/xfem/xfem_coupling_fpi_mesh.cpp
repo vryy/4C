@@ -769,7 +769,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       if (fluid_ele->Shape() == DRT::Element::hex8)
       {
         LINALG::Matrix<3, 8> xyze(true);
-        GEO::fillInitialPositionArray(fluid_ele, xyze);
+        CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
         double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
@@ -1061,7 +1061,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)

@@ -23,7 +23,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -34,7 +34,7 @@ namespace XFEM
   {
    public:
     /// constructor
-    XFEMDofSet(GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
+    XFEMDofSet(CORE::GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
         : FixedSizeDofSet(numMyReservedDofsperNode,
               dis.NodeRowMap()->MaxAllGID() - dis.NodeRowMap()->MinAllGID() + 1),
           wizard_(wizard),
@@ -86,7 +86,7 @@ namespace XFEM
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node
-    GEO::CutWizard& wizard_;
+    CORE::GEO::CutWizard& wizard_;
 
     /// background discretization
     DRT::Discretization&

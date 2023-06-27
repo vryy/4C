@@ -28,13 +28,13 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshFacetsOnly(
+void CORE::GEO::CUT::OUTPUT::GmshFacetsOnly(
     const plain_facet_set& facets, Element* ele, const std::string& file_affix)
 {
   // write details of volume cells
   std::stringstream str;
   str << ".facets" << (not file_affix.empty() ? "_" + file_affix : "") << "_CUTFAIL.pos";
-  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
 
   std::cout << "\nFacets of element " << ele->Id() << " are written to " << filename << "\n";
 
@@ -53,12 +53,12 @@ void GEO::CUT::OUTPUT::GmshFacetsOnly(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshEdgesOnly(const plain_edge_set& edges)
+void CORE::GEO::CUT::OUTPUT::GmshEdgesOnly(const plain_edge_set& edges)
 {
   std::stringstream str;
   str << ".edges"
       << "_CUTFAIL.pos";
-  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
   std::ofstream file(filename.c_str());
   IO::cout << "\nEdges are written to " << filename << "\n";
 
@@ -77,7 +77,7 @@ void GEO::CUT::OUTPUT::GmshEdgesOnly(const plain_edge_set& edges)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vcells)
+void CORE::GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vcells)
 {
   // write details of volume cells
   IO::cout << "\nVolumeCells are written to [...].volumecells_CUTFAIL.pos\n";
@@ -85,7 +85,7 @@ void GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vcells)
   std::stringstream str;
   str << ".volumecells"
       << "_CUTFAIL.pos";
-  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
   std::ofstream file(filename.c_str());
   int count = 0;
   for (plain_volumecell_set::const_iterator its = vcells.begin(); its != vcells.end(); ++its)
@@ -101,49 +101,49 @@ void GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vcells)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-char GEO::CUT::OUTPUT::GmshElementType(DRT::Element::DiscretizationType shape)
+char CORE::GEO::CUT::OUTPUT::GmshElementType(::DRT::Element::DiscretizationType shape)
 {
   switch (shape)
   {
-    case DRT::Element::point1:
+    case ::DRT::Element::point1:
     {
       return 'P';
     }
-    case DRT::Element::line2:
+    case ::DRT::Element::line2:
     {
       return 'L';
     }
-    case DRT::Element::tri3:
+    case ::DRT::Element::tri3:
     {
       return 'T';
     }
-    case DRT::Element::quad4:
+    case ::DRT::Element::quad4:
     {
       return 'Q';
     }
-    case DRT::Element::hex8:
+    case ::DRT::Element::hex8:
     {
       return 'H';
     }
-    case DRT::Element::tet4:
+    case ::DRT::Element::tet4:
     {
       return 'S';
     }
-    case DRT::Element::wedge6:
+    case ::DRT::Element::wedge6:
     {
       return 'I';
     }
-    case DRT::Element::pyramid5:
+    case ::DRT::Element::pyramid5:
     {
       return 'P';
     }
-    case DRT::Element::dis_none:
+    case ::DRT::Element::dis_none:
     {
       // arbitrary cells are not yet supported
       return ' ';
     }
     default:
-      dserror("Unsupported cell shape! ( shape = %s )", DRT::DistypeToString(shape).c_str());
+      dserror("Unsupported cell shape! ( shape = %s )", ::DRT::DistypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // impossible to reach this point
@@ -153,7 +153,7 @@ char GEO::CUT::OUTPUT::GmshElementType(DRT::Element::DiscretizationType shape)
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given element                                           sudhakar 03/14
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file, Element* ele, bool to_local)
+void CORE::GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file, Element* ele, bool to_local)
 {
   const std::vector<Node*>& nodes = ele->Nodes();
   char elementtype = GmshElementType(ele->Shape());
@@ -163,20 +163,20 @@ void GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file, Element* ele, bool t
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given element                                           sudhakar 03/14
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
-    const std::vector<GEO::CUT::Node*>& nodes, char elementtype, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
+    const std::vector<CORE::GEO::CUT::Node*>& nodes, char elementtype, bool to_local, Element* ele)
 {
   file << "S" << elementtype << "(";
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
     if (i != nodes.begin()) file << ",";
     GmshWriteCoords(file, *i, to_local, ele);
   }
   file << "){";
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    GEO::CUT::Node* n = *i;
-    GEO::CUT::Point* p = n->point();
+    CORE::GEO::CUT::Node* n = *i;
+    CORE::GEO::CUT::Point* p = n->point();
     if (i != nodes.begin()) file << ",";
 #if CUT_DEVELOP
     file << p->Id();
@@ -191,8 +191,9 @@ void GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file, DRT::Element::DiscretizationType shape,
-    const Epetra_SerialDenseMatrix& xyze, const Point::PointPosition* position, const int* value)
+void CORE::GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file,
+    ::DRT::Element::DiscretizationType shape, const Epetra_SerialDenseMatrix& xyze,
+    const Point::PointPosition* position, const int* value)
 {
   char elementtype = GmshElementType(shape);
 
@@ -222,7 +223,7 @@ void GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file, DRT::Element::Discretiz
   file << "};\n";
 }
 
-void GEO::CUT::OUTPUT::GmshSideDump(
+void CORE::GEO::CUT::OUTPUT::GmshSideDump(
     std::ofstream& file, const Side* s, const std::string& sname, bool to_local, Element* ele)
 {
   GmshNewSection(file, sname, false);
@@ -233,7 +234,8 @@ void GEO::CUT::OUTPUT::GmshSideDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given side                                       sudhakar 03/14
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshSideDump(std::ofstream& file, const Side* s, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshSideDump(
+    std::ofstream& file, const Side* s, bool to_local, Element* ele)
 {
   const std::vector<Node*>& nodes = s->Nodes();
   char elementtype;
@@ -262,7 +264,7 @@ void GEO::CUT::OUTPUT::GmshSideDump(std::ofstream& file, const Side* s, bool to_
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given side                                                ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshTriSideDump(
+void CORE::GEO::CUT::OUTPUT::GmshTriSideDump(
     std::ofstream& file, std::vector<Point*> points, bool to_local, Element* ele)
 {
   char elementtype;
@@ -292,7 +294,7 @@ void GEO::CUT::OUTPUT::GmshTriSideDump(
   file << "){";
   for (uint i = 0; i < points.size(); ++i)
   {
-    GEO::CUT::Point* p = points[i];
+    CORE::GEO::CUT::Point* p = points[i];
     if (i != 0) file << ",";
     file << p->Position();
   }
@@ -302,7 +304,7 @@ void GEO::CUT::OUTPUT::GmshTriSideDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given facet                                                ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
+void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
     const std::string& visualizationtype, bool print_all, bool to_local, Element* ele)
 {
   if (to_local)
@@ -328,20 +330,20 @@ void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
     {
       for (unsigned j = 0; j < facet->Triangulation().size(); ++j)
       {
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->Triangulation()[j], to_local, ele);
+        CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->Triangulation()[j], to_local, ele);
       }
     }
     else if (facet->IsFacetSplit())
     {
       for (unsigned j = 0; j < facet->GetSplitCells().size(); ++j)
       {
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->GetSplitCells()[j], to_local, ele);
+        CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->GetSplitCells()[j], to_local, ele);
       }
     }
     else if (facet->BelongsToLevelSetSide() || facet->CornerPoints().size() == 3 ||
              facet->CornerPoints().size() == 4)
     {
-      GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->CornerPoints(), to_local, ele);
+      CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->CornerPoints(), to_local, ele);
     }
     else if (facet->CornerPoints().size() > 2 &&
              print_all)  // do mitpoint triangulation just for visualization reasons! (not usedfull
@@ -364,7 +366,7 @@ void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
         tri.push_back(facet->CornerPoints()[i]);
         tri.push_back(facet->CornerPoints()[(i + 1) % facet->CornerPoints().size()]);
         tri.push_back(&midpoint);
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, tri, to_local, ele);
+        CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, tri, to_local, ele);
       }
     }
   }
@@ -372,14 +374,15 @@ void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
   {
     for (uint pidx = 0; pidx < facet->Points().size(); ++pidx)
     {
-      GEO::CUT::OUTPUT::GmshLineDump(file, facet->Points()[pidx],
+      CORE::GEO::CUT::OUTPUT::GmshLineDump(file, facet->Points()[pidx],
           facet->Points()[(pidx + 1) % facet->Points().size()], to_local, ele);
     }
   }
   else if (visualizationtype == "points")
   {
     for (uint pidx = 0; pidx < facet->Points().size(); ++pidx)
-      GEO::CUT::OUTPUT::GmshPointDump(file, facet->Points()[pidx], facet->SideId(), to_local, ele);
+      CORE::GEO::CUT::OUTPUT::GmshPointDump(
+          file, facet->Points()[pidx], facet->SideId(), to_local, ele);
   }
   else
     dserror("GmshFacetDump: unknown visualizationtype!");
@@ -388,7 +391,7 @@ void GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given volumecell                                       ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
+void CORE::GEO::CUT::OUTPUT::GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
     const std::string& visualizationtype, bool print_all, bool to_local, Element* ele)
 {
   for (plain_facet_set::const_iterator j = VC->Facets().begin(); j != VC->Facets().end(); j++)
@@ -398,7 +401,7 @@ void GEO::CUT::OUTPUT::GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given cycle                                                ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshCycleDump(std::ofstream& file, Cycle* cycle,
+void CORE::GEO::CUT::OUTPUT::GmshCycleDump(std::ofstream& file, Cycle* cycle,
     const std::string& visualizationtype, bool to_local, Element* ele)
 {
   if (visualizationtype == "points")
@@ -418,7 +421,8 @@ void GEO::CUT::OUTPUT::GmshCycleDump(std::ofstream& file, Cycle* cycle,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of element along with all its cut sides                sudhakar 03/14
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshCompleteCutElement(std::ofstream& file, Element* ele, bool to_local)
+void CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(
+    std::ofstream& file, Element* ele, bool to_local)
 {
   // write details of background element
   GmshNewSection(file, "Element");
@@ -482,8 +486,8 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement(std::ofstream& file, Element* ele,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given line                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLineDump(
-    std::ofstream& file, GEO::CUT::Line* line, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshLineDump(
+    std::ofstream& file, CORE::GEO::CUT::Line* line, bool to_local, Element* ele)
 {
   GmshLineDump(file, line->BeginPoint(), line->EndPoint(), to_local, ele);
 }
@@ -491,8 +495,8 @@ void GEO::CUT::OUTPUT::GmshLineDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given line                                           ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2,
-    int idx1, int idx2, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshLineDump(std::ofstream& file, CORE::GEO::CUT::Point* p1,
+    CORE::GEO::CUT::Point* p2, int idx1, int idx2, bool to_local, Element* ele)
 {
   file << "SL (";
   GmshWriteCoords(file, p1, to_local, ele);
@@ -505,24 +509,24 @@ void GEO::CUT::OUTPUT::GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GE
 }
 
 
-void GEO::CUT::OUTPUT::GmshCutPairDump(
+void CORE::GEO::CUT::OUTPUT::GmshCutPairDump(
     std::ofstream& file, Side* side, Edge* edge, int id, const std::string& suffix)
 {
   std::stringstream side_section_name;
   side_section_name << "Side" << suffix << id;
-  GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
-  GEO::CUT::OUTPUT::GmshSideDump(file, side, false, NULL);
-  GEO::CUT::OUTPUT::GmshEndSection(file, false);
+  CORE::GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, side, false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 
   std::stringstream edge_section_name;
   edge_section_name << "Edge" << suffix << id;
-  GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
-  GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, false, NULL);
-  GEO::CUT::OUTPUT::GmshEndSection(file, false);
+  CORE::GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
+  CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 }
 
 
-void GEO::CUT::OUTPUT::GmshCutPairDump(
+void CORE::GEO::CUT::OUTPUT::GmshCutPairDump(
     std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id, const std::string& suffix)
 {
   GmshCutPairDump(file, pair.first, pair.second, id, suffix);
@@ -531,8 +535,8 @@ void GEO::CUT::OUTPUT::GmshCutPairDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given edge                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshEdgeDump(
-    std::ofstream& file, GEO::CUT::Edge* edge, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshEdgeDump(
+    std::ofstream& file, CORE::GEO::CUT::Edge* edge, bool to_local, Element* ele)
 {
 #if CUT_DEVELOP
   GmshLineDump(file, edge->BeginNode()->point(), edge->EndNode()->point(),
@@ -543,7 +547,7 @@ void GEO::CUT::OUTPUT::GmshEdgeDump(
 #endif
 }
 
-void GEO::CUT::OUTPUT::GmshEdgeDump(std::ofstream& file, GEO::CUT::Edge* edge,
+void CORE::GEO::CUT::OUTPUT::GmshEdgeDump(std::ofstream& file, CORE::GEO::CUT::Edge* edge,
     const std::string& ename, bool to_local, Element* ele)
 {
   GmshNewSection(file, ename, false);
@@ -555,8 +559,8 @@ void GEO::CUT::OUTPUT::GmshEdgeDump(std::ofstream& file, GEO::CUT::Edge* edge,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given node                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshNodeDump(
-    std::ofstream& file, GEO::CUT::Node* node, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshNodeDump(
+    std::ofstream& file, CORE::GEO::CUT::Node* node, bool to_local, Element* ele)
 {
   GmshPointDump(file, node->point(), node->Id(), to_local, ele);
 }
@@ -564,8 +568,8 @@ void GEO::CUT::OUTPUT::GmshNodeDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given point                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshPointDump(
-    std::ofstream& file, GEO::CUT::Point* point, int idx, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshPointDump(
+    std::ofstream& file, CORE::GEO::CUT::Point* point, int idx, bool to_local, Element* ele)
 {
   file << "SP (";
   GmshWriteCoords(file, point, to_local, ele);
@@ -576,8 +580,8 @@ void GEO::CUT::OUTPUT::GmshPointDump(
 
 
 
-void GEO::CUT::OUTPUT::GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
-    const std::string& pname, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshPointDump(std::ofstream& file, CORE::GEO::CUT::Point* point,
+    int idx, const std::string& pname, bool to_local, Element* ele)
 {
   GmshNewSection(file, pname, false);
   GmshPointDump(file, point, idx, to_local, ele);
@@ -588,8 +592,8 @@ void GEO::CUT::OUTPUT::GmshPointDump(std::ofstream& file, GEO::CUT::Point* point
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given point                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshPointDump(
-    std::ofstream& file, GEO::CUT::Point* point, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshPointDump(
+    std::ofstream& file, CORE::GEO::CUT::Point* point, bool to_local, Element* ele)
 {
   GmshPointDump(file, point, point->Position(), to_local, ele);
 }
@@ -601,7 +605,8 @@ void GEO::CUT::OUTPUT::GmshPointDump(
  * also in the midpoint of the triangles.
  *                                                                           winter 07/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLevelSetGradientDump(std::ofstream& file, Element* ele, bool to_local)
+void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
+    std::ofstream& file, Element* ele, bool to_local)
 {
   const plain_facet_set facets = ele->Facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
@@ -682,7 +687,7 @@ void GEO::CUT::OUTPUT::GmshLevelSetGradientDump(std::ofstream& file, Element* el
  * Values at the nodes are also written.
  *                                                                           winter 07/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLevelSetValueDump(
+void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
     std::ofstream& file, Element* ele, bool dumpnodevalues, bool to_local)
 {
   const plain_facet_set facets = ele->Facets();
@@ -754,7 +759,7 @@ void GEO::CUT::OUTPUT::GmshLevelSetValueDump(
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given coord as point                                   ager 02/17
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshCoordDump(
+void CORE::GEO::CUT::OUTPUT::GmshCoordDump(
     std::ofstream& file, LINALG::Matrix<3, 1> coord, double idx, bool to_local, Element* ele)
 {
   file << "SP (";
@@ -772,7 +777,7 @@ void GEO::CUT::OUTPUT::GmshCoordDump(
  * Values at the nodes are also written.
  *                                                                           winter 07/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
+void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
     std::ofstream& file, Element* ele, bool to_local)
 {
   std::vector<double> lsv_value(8);
@@ -839,14 +844,15 @@ void GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
  * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
  *                                                                           winter 07/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(std::ofstream& file, Element* ele, bool to_local)
+void CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(
+    std::ofstream& file, Element* ele, bool to_local)
 {
   const plain_volumecell_set volcells = ele->VolumeCells();
   for (plain_volumecell_set::const_iterator i = volcells.begin(); i != volcells.end(); i++)
   {
     VolumeCell* volcell = *i;
 
-    if (volcell->Position() == GEO::CUT::Point::inside) continue;
+    if (volcell->Position() == CORE::GEO::CUT::Point::inside) continue;
 
     //    const plain_facet_set facets = volcells->Facets();
 
@@ -891,7 +897,7 @@ void GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(std::ofstream& file, Element*
 /*!
 \brief Write Eqn of plane normal for facet (used for DirectDivergence).
  */
-void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
+void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
     std::ofstream& file, Element* ele, bool normalize, bool to_local)
 {
   const plain_facet_set facets = ele->Facets();
@@ -905,7 +911,7 @@ void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
 /*!
 \brief Write Eqn of plane normal for all facets (used for DirectDivergence).
  */
-void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
+void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
     std::ofstream& file, Facet* facet, bool normalize, bool to_local, Element* ele)
 {
   LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
@@ -956,8 +962,8 @@ void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coord, double scalar,
-    bool to_local, Element* ele)  // use gmshpoint?
+void CORE::GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coord,
+    double scalar, bool to_local, Element* ele)  // use gmshpoint?
 {
   file << "SP(";
   GmshWriteCoords(file, coord, to_local, ele);
@@ -969,7 +975,7 @@ void GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coord,
+void CORE::GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coord,
     std::vector<double> vector, bool normalize, bool to_local, Element* ele)
 {
   file << "VP(";
@@ -998,7 +1004,7 @@ void GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshWriteCoords(
+void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
     std::ofstream& file, std::vector<double> coord, bool to_local, Element* ele)
 {
   LINALG::Matrix<3, 1> xyz(true);
@@ -1024,7 +1030,7 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshWriteCoords(
+void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
     std::ofstream& file, LINALG::Matrix<3, 1> coord, bool to_local, Element* ele)
 {
   if (to_local)
@@ -1040,7 +1046,8 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream& file, Node* node, bool to_local, Element* ele)
+void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
+    std::ofstream& file, Node* node, bool to_local, Element* ele)
 {
   GmshWriteCoords(file, node->point(), to_local, ele);
 }
@@ -1048,7 +1055,7 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream& file, Node* node, bool to_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshWriteCoords(
+void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
     std::ofstream& file, Point* point, bool to_local, Element* ele)
 {
   LINALG::Matrix<3, 1> coord;
@@ -1060,9 +1067,9 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)
+std::string CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)
 {
-  //  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  //  std::string filename = ::DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::string filename("xxx");
   filename.append(filename_tail);
   return filename;
@@ -1071,7 +1078,7 @@ std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& file
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshNewSection(
+void CORE::GEO::CUT::OUTPUT::GmshNewSection(
     std::ofstream& file, const std::string& section, bool first_endsection)
 {
   if (first_endsection) file << "};\n";
@@ -1081,7 +1088,7 @@ void GEO::CUT::OUTPUT::GmshNewSection(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshEndSection(std::ofstream& file, bool close_file)
+void CORE::GEO::CUT::OUTPUT::GmshEndSection(std::ofstream& file, bool close_file)
 {
   file << "};\n";
   if (close_file) file.close();
@@ -1090,7 +1097,7 @@ void GEO::CUT::OUTPUT::GmshEndSection(std::ofstream& file, bool close_file)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
+std::vector<double> CORE::GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
 {
   int mm = 0;
 
@@ -1118,8 +1125,8 @@ std::vector<double> GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
 /*-------------------------------------------------------------------------------*
  * Write cuttest for this element!                                     ager 04/15
  *-------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementCutTest(
-    std::ofstream& file, GEO::CUT::Element* ele, bool haslevelsetside)
+void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
+    std::ofstream& file, CORE::GEO::CUT::Element* ele, bool haslevelsetside)
 {
   std::cout << "Write Cut Test for Element " << ele->Id() << " ... " << std::flush;
 
@@ -1232,7 +1239,7 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
         file << "    nids.push_back( " << n->Id() << " );"
              << "\n";
       }
-      file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );"
+      file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, ::DRT::Element::tri3 );"
            << "\n";
       file << "  }"
            << "\n";
@@ -1278,11 +1285,11 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     if (not haslevelsetside)
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, DRT::Element::hex8);"
+           << ", nids, hex8_xyze, ::DRT::Element::hex8);"
            << "\n";
     else
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, DRT::Element::hex8, &lsvs[0], false );"
+           << ", nids, hex8_xyze, ::DRT::Element::hex8, &lsvs[0], false );"
            << "\n";
     file << "  }"
          << "\n";
@@ -1409,20 +1416,21 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
 
 // Debug related functions
 
-void GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
+void CORE::GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
     Side* first, Side* second, Edge* e, Point* p, const PointSet& cut)
 {
   std::ofstream file("three_points_on_the_edge.pos");
-  GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("FirstSide"));
-  GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("SecondSide"));
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("FirstSide"));
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("SecondSide"));
   file << "// Edge is " << e->BeginNode()->point() << "->" << e->EndNode()->point() << std::endl;
-  GEO::CUT::OUTPUT::GmshEdgeDump(file, e, std::string("NotTouchedEdge"));
-  GEO::CUT::OUTPUT::GmshPointDump(file, p, p->Id(), std::string("NotTouchedPoint"), false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, e, std::string("NotTouchedEdge"));
+  CORE::GEO::CUT::OUTPUT::GmshPointDump(
+      file, p, p->Id(), std::string("NotTouchedPoint"), false, NULL);
   for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
   {
     std::stringstream point_name;
     point_name << "CutPoint" << std::distance(cut.begin(), it);
-    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
     (*it)->DumpConnectivityInfo();
   }
 
@@ -1432,12 +1440,12 @@ void GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
   {
     std::stringstream point_name;
     point_name << "EdgeCutPoint" << std::distance(edge_cut_points.begin(), it);
-    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
   }
   file.close();
 }
 
-void GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
+void CORE::GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
     Edge* edge, Side* other, const std::vector<Point*>& point_stack)
 {
   std::ofstream file("multiple_intersection_points.pos");
@@ -1446,9 +1454,9 @@ void GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
   {
     std::stringstream section_name;
     section_name << "Point" << (*it)->Id();
-    GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), false, NULL);
-    GEO::CUT::OUTPUT::GmshEndSection(file, false);
+    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 #if CUT_CREATION_INFO
     const std::pair<Side*, Edge*>& cu_pair = std::make_pair(other, edge);
     const std::pair<Side*, Edge*>& or_pair = (*it)->AddedFrom(cu_pair);
@@ -1474,25 +1482,25 @@ void GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
       if (*it != *jt)
       {
         std::cout << "Diference between " << (*it)->Id() << " and " << (*jt)->Id() << " is "
-                  << GEO::CUT::DistanceBetweenPoints(*jt, *it) << std::endl;
+                  << CORE::GEO::CUT::DistanceBetweenPoints(*jt, *it) << std::endl;
       }
     }
   }
-  GEO::CUT::OUTPUT::GmshCutPairDump(file, other, edge, 0, std::string("common"));
+  CORE::GEO::CUT::OUTPUT::GmshCutPairDump(file, other, edge, 0, std::string("common"));
   file.close();
 }
 
-void GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Side* second,
+void CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Side* second,
     const PointSet& cut, const PointSet& collected_points, const point_line_set& new_lines)
 {
   std::ofstream file("special_case_multiple_cut_points.pos");
-  GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("ThisSide"));
-  GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("OtherSide"));
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("ThisSide"));
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("OtherSide"));
   for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
   {
     std::stringstream pname;
     pname << "CutPoint" << std::distance(cut.begin(), it);
-    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
     (*it)->DumpConnectivityInfo();
   }
   file.close();

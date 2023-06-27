@@ -31,7 +31,7 @@
 #include <vector>
 #endif
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -137,7 +137,7 @@ namespace GEO
      *
      *  \date 07/16
      *  \author hiermeier */
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -254,7 +254,7 @@ namespace GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -377,7 +377,7 @@ namespace GEO
      *  \param unit_normal (in) : scale the normal to unit length
      *
      *  \author hiermeier \date 12/16 */
-    template <unsigned probdim, DRT::Element::DiscretizationType distype, class T1, class T2,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, class T1, class T2,
         class T3,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
@@ -437,30 +437,30 @@ namespace GEO
      *
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, class T1, class T2, class T3>
-    void EvalNormalVectors(DRT::Element::DiscretizationType distype, const T1& xyze, const T2& rst,
-        T3& normalvec1, T3* normalvec2 = NULL, bool unit_normal = true)
+    void EvalNormalVectors(::DRT::Element::DiscretizationType distype, const T1& xyze,
+        const T2& rst, T3& normalvec1, T3* normalvec2 = NULL, bool unit_normal = true)
     {
       switch (distype)
       {
-        case DRT::Element::line2:
-          EvalNormalVectors<probdim, DRT::Element::line2>(
+        case ::DRT::Element::line2:
+          EvalNormalVectors<probdim, ::DRT::Element::line2>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case DRT::Element::tri3:
-          EvalNormalVectors<probdim, DRT::Element::tri3>(
+        case ::DRT::Element::tri3:
+          EvalNormalVectors<probdim, ::DRT::Element::tri3>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case DRT::Element::quad4:
-          EvalNormalVectors<probdim, DRT::Element::quad4>(
+        case ::DRT::Element::quad4:
+          EvalNormalVectors<probdim, ::DRT::Element::quad4>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:
           dserror("Currently unsupported discretization type: %s",
-              DRT::DistypeToString(distype).c_str());
+              ::DRT::DistypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
     }
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -26,7 +26,7 @@
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
 #include "discretization_fem_general_utils_gder2.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_condition_utils.H"
 
 #include "mat_list.H"

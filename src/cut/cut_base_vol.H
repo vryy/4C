@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -23,5 +23,5 @@ namespace GEO
     */
     double base_function(std::vector<double> coordi, int base_num);
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 #endif

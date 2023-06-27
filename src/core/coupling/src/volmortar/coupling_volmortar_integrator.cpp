@@ -1135,7 +1135,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
  *----------------------------------------------------------------------*/
 template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_DirectDiveregence(
-    ::DRT::Element& Aele, ::DRT::Element& Bele, GEO::CUT::VolumeCell& vc,
+    ::DRT::Element& Aele, ::DRT::Element& Bele, CORE::GEO::CUT::VolumeCell& vc,
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints, bool switched_conf,
     LINALG::SparseMatrix& dmatrix_A, LINALG::SparseMatrix& mmatrix_A,
     LINALG::SparseMatrix& dmatrix_B, LINALG::SparseMatrix& mmatrix_B,

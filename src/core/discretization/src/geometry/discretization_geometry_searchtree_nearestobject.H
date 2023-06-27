@@ -7,14 +7,14 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
-#define GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
+#ifndef DISCRETIZATION_GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
+#define DISCRETIZATION_GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
 
 
 #include "linalg_fixedsizematrix.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   //! possible positions of a point with respect to an element
   enum ObjectType
@@ -41,12 +41,12 @@ namespace GEO
     /*!
     \brief copy constructor
     */
-    NearestObject(const GEO::NearestObject& old);
+    NearestObject(const CORE::GEO::NearestObject& old);
 
     /*!
     \brief assignment operator
     */
-    GEO::NearestObject& operator=(const GEO::NearestObject& old);
+    CORE::GEO::NearestObject& operator=(const CORE::GEO::NearestObject& old);
 
 
     /*!
@@ -155,6 +155,6 @@ namespace GEO
     LINALG::Matrix<3, 1> physcoord_;
   };
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
-#endif  // GEOMETRY_SEARCHTREE_NEARESTOBJECT_H
+#endif  // DISCRETIZATION_GEOMETRY_SEARCHTREE_NEARESTOBJECT_H

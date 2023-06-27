@@ -18,7 +18,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -43,7 +43,7 @@ namespace XFEM
       \brief Standard Constructor
      */
     explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
-        bool parallel, Teuchos::RCP<GEO::CutWizard> wizard);
+        bool parallel, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     /*!
       \brief Destructor
@@ -55,7 +55,7 @@ namespace XFEM
 
 
    private:
-    Teuchos::RCP<GEO::CutWizard> wizard_;
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
   };
 }  // namespace XFEM
 

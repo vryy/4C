@@ -9,7 +9,7 @@ concentrations and with advanced reaction terms
 
 #include "scatra_ele_boundary_calc_refconc_reac.H"
 #include "scatra_ele_parameter_std.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_utils.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
 #include "utils_singleton_owner.H"
@@ -127,7 +127,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // get local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
   LINALG::Matrix<pnsd, pnen> pxyze0(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
   pxyze = pxyze0;
 
   if (my::scatraparams_->IsAle())

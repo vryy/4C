@@ -15,7 +15,7 @@
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_debugwriter.H"
 #include "fsi_utils.H"
-#include "geometry_searchtree.H"
+#include "discretization_geometry_searchtree.H"
 #include "mortar_interface.H"
 #include "inpar_fsi.H"
 #include "adapter_str_fsiwrapper.H"

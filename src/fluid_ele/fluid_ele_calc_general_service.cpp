@@ -211,7 +211,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -267,7 +267,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -472,7 +472,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -599,7 +599,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -1419,7 +1419,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
 
   // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -2743,7 +2743,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
@@ -3164,8 +3164,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   nodalrefcoords[7].push_back(1.0);
 
   // get immersed structure search tree
-  Teuchos::RCP<GEO::SearchTree> struct_searchtree =
-      params.get<Teuchos::RCP<GEO::SearchTree>>("structsearchtree_rcp");
+  Teuchos::RCP<CORE::GEO::SearchTree> struct_searchtree =
+      params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
   // search tree related stuff
   std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
@@ -3506,8 +3506,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     nodalrefcoords[7].push_back(1.0);
 
     // get structure search tree
-    Teuchos::RCP<GEO::SearchTree> struct_searchtree =
-        params.get<Teuchos::RCP<GEO::SearchTree>>("structsearchtree_rcp");
+    Teuchos::RCP<CORE::GEO::SearchTree> struct_searchtree =
+        params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
     // search tree related stuff
     std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
@@ -3625,7 +3625,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -3677,7 +3677,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -3863,7 +3863,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
   // get node coordinates of element
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
@@ -4430,7 +4430,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -4519,7 +4519,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle()) dserror("no ale for periodic hill");
@@ -4601,7 +4601,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
       distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   if (ele->IsAle())
   {

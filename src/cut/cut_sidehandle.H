@@ -15,7 +15,7 @@ subsides
 #include "cut_side.H"
 #include "cut_boundarycell.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -34,7 +34,7 @@ namespace GEO
       /*!
       \brief Get the shape of this sides
        */
-      virtual DRT::Element::DiscretizationType Shape() = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() = 0;
 
       /*!
       \brief Get the coordinates of the nodes of this side
@@ -61,19 +61,19 @@ namespace GEO
       /*!
       \brief Get the Gaussian rule projected on the side. Not used now
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <::DRT::Element::DiscretizationType distype>
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(BoundaryCell* bc)
       {
         const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
         LINALG::Matrix<2, nen> xie;
 
-        const std::vector<GEO::CUT::Point*>& cpoints = bc->Points();
+        const std::vector<CORE::GEO::CUT::Point*>& cpoints = bc->Points();
         if (cpoints.size() != nen) throw std::runtime_error("non-matching number of points");
 
         for (unsigned i = 0; i < nen; ++i)
         {
-          GEO::CUT::Point* p = cpoints[i];
+          CORE::GEO::CUT::Point* p = cpoints[i];
           const LINALG::Matrix<2, 1>& xi = LocalCoordinates(p);
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
@@ -152,7 +152,7 @@ namespace GEO
 
       explicit LinearSideHandle(Side* s) : side_(s) {}
 
-      virtual DRT::Element::DiscretizationType Shape() { return side_->Shape(); }
+      virtual ::DRT::Element::DiscretizationType Shape() { return side_->Shape(); }
 
       virtual void Coordinates(Epetra_SerialDenseMatrix& xyze)
       {
@@ -313,7 +313,7 @@ namespace GEO
      public:
       Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::tri6; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tri6; }
 
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
     };
@@ -327,7 +327,7 @@ namespace GEO
      public:
       Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::quad4; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad4; }
 
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
     };
@@ -338,7 +338,7 @@ namespace GEO
      public:
       Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::quad8; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad8; }
 
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
     };
@@ -349,12 +349,12 @@ namespace GEO
      public:
       Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::quad9; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad9; }
 
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

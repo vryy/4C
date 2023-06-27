@@ -19,8 +19,8 @@
 /*------------------------------------------------------------------------------------------------*
  * Create nodal dofset sets within the parallel cut framework
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::CreateNodalDofSet(
-    bool include_inner, const DRT::Discretization& dis)
+void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
+    bool include_inner, const ::DRT::Discretization& dis)
 {
   dis.Comm().Barrier();
 
@@ -63,17 +63,17 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get all adjacent elements to this node if this is a real (- not a shadow -) node
     if (n_gid >= 0)
     {
-      DRT::Node* node = dis.gNode(n_gid);
+      ::DRT::Node* node = dis.gNode(n_gid);
 
       // get adjacent elements for this node
-      const DRT::Element* const* adjelements = node->Elements();
+      const ::DRT::Element* const* adjelements = node->Elements();
 
       for (int iele = 0; iele < node->NumElement(); iele++)
       {
         int adj_eid = adjelements[iele]->Id();
 
         // get its elementhandle
-        GEO::CUT::ElementHandle* e = GetElement(adj_eid);
+        CORE::GEO::CUT::ElementHandle* e = GetElement(adj_eid);
 
         if (e != NULL)
         {
@@ -164,7 +164,7 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
 
     // get the nodes of this element
     // get the element via discret
-    DRT::Element* e = dis.gElement(eid);
+    ::DRT::Element* e = dis.gElement(eid);
 
     if (e == NULL) dserror(" element not found, this should not be! ");
 
@@ -213,8 +213,8 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet(
 /*--------------------------------------------------------------------------------------*
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::FillParallelDofSetData(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const DRT::Discretization& dis,
+void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
+    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const ::DRT::Discretization& dis,
     bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -225,9 +225,9 @@ void GEO::CUT::ParentIntersection::FillParallelDofSetData(
   // node in this element
   for (int k = 0; k < dis.NumMyColElements(); ++k)
   {
-    DRT::Element* ele = dis.lColElement(k);
+    ::DRT::Element* ele = dis.lColElement(k);
     int eid = ele->Id();
-    GEO::CUT::ElementHandle* e = GetElement(eid);
+    CORE::GEO::CUT::ElementHandle* e = GetElement(eid);
 
     if (e != NULL)
     {
@@ -303,7 +303,7 @@ void GEO::CUT::ParentIntersection::FillParallelDofSetData(
 /*--------------------------------------------------------------------------------------*
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
+void CORE::GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
     std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, int eid, int set_index, bool inside,
     VolumeCell* cell, std::map<int, int>& node_dofset_map)
 {
@@ -359,7 +359,7 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
 /*--------------------------------------------------------------------------------------*
  | find cell sets around each node (especially for quadratic elements)     schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, std::set<int>& eids,
+void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, std::set<int>& eids,
     std::vector<int>& sourrounding_elements,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_inside,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_outside,
@@ -423,8 +423,8 @@ void GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, std::se
 /*--------------------------------------------------------------------------------------*
  | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
-    bool include_inner, const DRT::Discretization& dis,
+void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
+    bool include_inner, const ::DRT::Discretization& dis,
     const std::vector<plain_volumecell_set>&
         connected_vc_sets,  // connections of volumecells within one element connected via
                             // subelements
@@ -462,7 +462,7 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes
 
         if (nid >= 0)
         {
-          DRT::Node* drt_node = dis.gNode(nid);
+          ::DRT::Node* drt_node = dis.gNode(nid);
 
           // decide if the information for this cell has to be ordered from row-node or not
           // REMARK:
@@ -502,7 +502,7 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes
  * standard Cut routine for parallel XFSI, XFLUIDFLUID and Level set cut where dofsets and        *
  * node positions have to be parallelized                                            schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
+void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
     INPAR::CUT::VCellGaussPts VCellgausstype, INPAR::CUT::BCellGaussPts BCellgausstype,
     bool tetcellsonly, bool screenoutput)
 {
@@ -581,12 +581,16 @@ void GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 /*--------------------------------------------------------------------------------------*
  * get the node based on node id
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::Node* GEO::CUT::ParentIntersection::GetNode(int nid) const { return mesh_.GetNode(nid); }
+CORE::GEO::CUT::Node* CORE::GEO::CUT::ParentIntersection::GetNode(int nid) const
+{
+  return mesh_.GetNode(nid);
+}
 
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on node ids and return the side
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::ParentIntersection::GetSide(std::vector<int>& nodeids) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::GetSide(
+    std::vector<int>& nodeids) const
 {
   return mesh_.GetSide(nodeids);
 }
@@ -594,7 +598,7 @@ GEO::CUT::SideHandle* GEO::CUT::ParentIntersection::GetSide(std::vector<int>& no
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on side id and return the sidehandle
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::ParentIntersection::GetSide(int sid) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::GetSide(int sid) const
 {
   return mesh_.GetSide(sid);
 }
@@ -602,7 +606,7 @@ GEO::CUT::SideHandle* GEO::CUT::ParentIntersection::GetSide(int sid) const
 /*--------------------------------------------------------------------------------------*
  * get the mesh's element based on element id
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::ElementHandle* GEO::CUT::ParentIntersection::GetElement(int eid) const
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::ParentIntersection::GetElement(int eid) const
 {
   return mesh_.GetElement(eid);
 }
@@ -610,16 +614,17 @@ GEO::CUT::ElementHandle* GEO::CUT::ParentIntersection::GetElement(int eid) const
 /*--------------------------------------------------------------------------------------*
  * print cell statistics
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::PrintCellStats() { NormalMesh().PrintCellStats(); }
+void CORE::GEO::CUT::ParentIntersection::PrintCellStats() { NormalMesh().PrintCellStats(); }
 
 /*--------------------------------------------------------------------------------------*
  * write gmsh debug output for nodal cell sets
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshNodalCellSet(
+void CORE::GEO::CUT::ParentIntersection::DumpGmshNodalCellSet(
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-    const DRT::Discretization& dis)
+    const ::DRT::Discretization& dis)
 {
-  std::string filename = "cut_test";  // DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename =
+      "cut_test";  // ::DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename << "CUT_NodalCellSet." << dis.Comm().MyPID() << ".pos";
 
@@ -692,10 +697,11 @@ void GEO::CUT::ParentIntersection::DumpGmshNodalCellSet(
 /*--------------------------------------------------------------------------------------*
  * write gmsh debug output for CellSets
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshCellSets(
-    std::vector<plain_volumecell_set>& cell_sets, const DRT::Discretization& dis)
+void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
+    std::vector<plain_volumecell_set>& cell_sets, const ::DRT::Discretization& dis)
 {
-  std::string filename = "cut_test";  // DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename =
+      "cut_test";  // ::DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename << "CUT_CellSets." << dis.Comm().MyPID() << ".pos";
 
@@ -741,8 +747,8 @@ void GEO::CUT::ParentIntersection::DumpGmshCellSets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh cut output for number of dofsets and the connected vc sets
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
-    std::string filename, bool include_inner, const DRT::Discretization& dis)
+void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
+    std::string filename, bool include_inner, const ::DRT::Discretization& dis)
 {
   std::stringstream str;
   str << filename << ".CUT_NumDOFSets." << dis.Comm().MyPID() << ".pos";
@@ -769,7 +775,7 @@ void GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
   for (int lid = 0; lid < num_row_ele;
        lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
-    DRT::Element* e = dis.lRowElement(lid);
+    ::DRT::Element* e = dis.lRowElement(lid);
     int eid = e->Id();
 
     ElementHandle* eh = GetElement(eid);
@@ -903,7 +909,7 @@ void GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name, bool include_inner)
+void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name, bool include_inner)
 {
   NormalMesh().DumpGmshVolumeCells(name, include_inner);
 }
@@ -911,7 +917,7 @@ void GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name, bool in
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshIntegrationCells(std::string name)
+void CORE::GEO::CUT::ParentIntersection::DumpGmshIntegrationCells(std::string name)
 {
   NormalMesh().DumpGmshIntegrationCells(name);
 }
@@ -919,7 +925,7 @@ void GEO::CUT::ParentIntersection::DumpGmshIntegrationCells(std::string name)
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
+void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
 {
   NormalMesh().DumpGmshVolumeCells(name);
 }
@@ -928,7 +934,7 @@ void GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
 /*--------------------------------------------------------------------------------------*
  * status
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
+void CORE::GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 {
 #ifdef DEBUG
   NormalMesh().Status();
@@ -951,7 +957,7 @@ void GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
  * If the cut is done by Tesselation then the volume of the volumecells,
  *   can be compared to DirectDivergence.
  */
-void GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
+void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
 {
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
   // ###########################################################
@@ -963,7 +969,7 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
   for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
@@ -982,7 +988,7 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
   for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     vc->DirectDivergenceGaussRule(vc->ParentElement(), m, true);
     dirDivVol.push_back(vc->Volume());
   }

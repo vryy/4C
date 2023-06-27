@@ -360,30 +360,30 @@ void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(const int sid, std::vec
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 {
-  //#ifdef DEBUG
-  //  // collect conditioned nodes and compare to the overall number of nodes in
-  //  // the surface discretization
-  //  std::vector<DRT::Condition*> cnd;
-  //  cond_dis_->GetCondition(cond_name_,cnd);
+  // #ifdef DEBUG
+  //   // collect conditioned nodes and compare to the overall number of nodes in
+  //   // the surface discretization
+  //   std::vector<DRT::Condition*> cnd;
+  //   cond_dis_->GetCondition(cond_name_,cnd);
   //
-  //  // get the set of ids of all xfem nodes
-  //  std::set<int> cond_nodeset;
-  //  {
-  //    for (size_t cond = 0; cond< cnd.size(); ++ cond)
-  //    {
-  //      // conditioned node ids
-  //      const std::vector<int>* nodeids_cnd = cnd[cond]->Nodes();
-  //      for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
-  //           c != nodeids_cnd->end(); ++c)
-  //        cond_nodeset.insert(*c);
-  //    }
-  //  }
+  //   // get the set of ids of all xfem nodes
+  //   std::set<int> cond_nodeset;
+  //   {
+  //     for (size_t cond = 0; cond< cnd.size(); ++ cond)
+  //     {
+  //       // conditioned node ids
+  //       const std::vector<int>* nodeids_cnd = cnd[cond]->Nodes();
+  //       for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
+  //            c != nodeids_cnd->end(); ++c)
+  //         cond_nodeset.insert(*c);
+  //     }
+  //   }
   //
-  //  if (cond_nodeset.size() != static_cast<size_t>(cutter_dis_->NumGlobalNodes()))
-  //    dserror("Got %d %s nodes but have % dnodes in the boundary discretization created from the
-  //    condition",
-  //        cond_nodeset.size(), cond_name_.c_str(), cutter_dis_->NumGlobalNodes());
-  //#endif
+  //   if (cond_nodeset.size() != static_cast<size_t>(cutter_dis_->NumGlobalNodes()))
+  //     dserror("Got %d %s nodes but have % dnodes in the boundary discretization created from the
+  //     condition",
+  //         cond_nodeset.size(), cond_name_.c_str(), cutter_dis_->NumGlobalNodes());
+  // #endif
 
   // get gids of elements (and associated notes), that contribute to the fluid-fluid interface
   std::set<int> adj_eles_row;
@@ -1844,7 +1844,7 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
       if (fluid_ele->Shape() == DRT::Element::hex8)
       {
         LINALG::Matrix<3, 8> xyze(true);
-        GEO::fillInitialPositionArray(fluid_ele, xyze);
+        CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
         double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
@@ -2451,7 +2451,7 @@ void XFEM::MeshCouplingFSI::RegisterSideProc(int sid)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFSI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFSI::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
@@ -2485,7 +2485,7 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 void XFEM::MeshCouplingFluidFluid::GetInterfaceSlaveMaterial(
     DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat)
 {
-  XFEM::UTILS::GetVolumeCellMaterial(actele, mat, GEO::CUT::Point::outside);
+  XFEM::UTILS::GetVolumeCellMaterial(actele, mat, CORE::GEO::CUT::Point::outside);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2592,7 +2592,7 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  //
     double& visc_s)  ///< viscosity slavesided
 {
   Teuchos::RCP<MAT::Material> mat_s;
-  XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, GEO::CUT::Point::outside);
+  XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, CORE::GEO::CUT::Point::outside);
   if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
   else

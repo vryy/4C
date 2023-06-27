@@ -48,7 +48,7 @@ void test_geometry_schleifend1()
   LINALG::Matrix<3, 1> xsi;
 
   // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3,true> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
       xsi);  // use cln
 
   if (ci(tri3, line))
@@ -88,7 +88,7 @@ void test_geometry_parallel1()
   LINALG::Matrix<3, 1> xsi;
 
   // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3,true> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
       xsi);  // use cln
 
 
@@ -115,10 +115,13 @@ void test_geometry_distance()
   LINALG::Matrix<3, 3> xyze(xyze_data);
   LINALG::Matrix<3, 1> xyz(xyz_data);
 
-  GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(INPAR::CUT::floattype_cln);    // use cln
-  GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(INPAR::CUT::floattype_double);  // use
-                                                                                        // double
-  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create(xyze, xyz, DRT::Element::tri3);
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+      INPAR::CUT::floattype_cln);  // use cln
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+      INPAR::CUT::floattype_double);  // use
+                                      // double
+  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::tri3);
   if (pos->Compute())
   {
   }
@@ -141,10 +144,13 @@ void test_geometry_distance2()
     }
   }
 
-  GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(INPAR::CUT::floattype_cln);    // use cln
-  GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(INPAR::CUT::floattype_double);  // use
-                                                                                        // double
-  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create(xyze, xyz, DRT::Element::quad4);
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+      INPAR::CUT::floattype_cln);  // use cln
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+      INPAR::CUT::floattype_double);  // use
+                                      // double
+  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::quad4);
   if (pos->Compute())
   {
   }
@@ -168,10 +174,13 @@ void test_geometry_distance3()
     }
   }
 
-  GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(INPAR::CUT::floattype_cln);    // use cln
-  GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(INPAR::CUT::floattype_double);  // use
-                                                                                        // double
-  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create(xyze, xyz, DRT::Element::quad4);
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+      INPAR::CUT::floattype_cln);  // use cln
+  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+      INPAR::CUT::floattype_double);  // use
+                                      // double
+  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::quad4);
   if (pos->Compute())
   {
   }

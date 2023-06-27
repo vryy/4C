@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar_rot>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
     LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
     LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -322,7 +322,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssemble(const DRT::Discretization& discret,
+    mortar_rot>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda,

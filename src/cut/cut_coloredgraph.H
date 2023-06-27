@@ -17,7 +17,7 @@
 
 #include "cut_utils.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -247,6 +247,6 @@ namespace GEO
 
     }  // namespace COLOREDGRAPH
   }    // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

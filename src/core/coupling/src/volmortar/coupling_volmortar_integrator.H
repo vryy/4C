@@ -92,7 +92,7 @@ namespace CORE::VOLMORTAR
 
     */
     void IntegrateCells3D_DirectDiveregence(::DRT::Element& Aele, ::DRT::Element& Bele,
-        GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints,
+        CORE::GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints,
         bool switched_conf, LINALG::SparseMatrix& dmatrix_A, LINALG::SparseMatrix& mmatrix_A,
         LINALG::SparseMatrix& dmatrix_B, LINALG::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const ::DRT::Discretization> Adis,

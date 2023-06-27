@@ -29,7 +29,7 @@ namespace DRT
   class DiscretizationXFEM;
 }  // namespace DRT
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -134,7 +134,8 @@ namespace FLD
      @param xfluiddofrowmap dof-rowmap of intersected fluid
      */
     explicit XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
+        const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap);
 
@@ -165,7 +166,7 @@ namespace FLD
     //@{
 
     /// access to the cut wizard
-    Teuchos::RCP<GEO::CutWizard> Wizard() const
+    Teuchos::RCP<CORE::GEO::CutWizard> Wizard() const
     {
       if (wizard_ == Teuchos::null) dserror("Cut wizard is uninitialized!");
       return wizard_;
@@ -295,7 +296,7 @@ namespace FLD
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
 
     /// cut wizard
-    Teuchos::RCP<GEO::CutWizard> wizard_;
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
 
     /// condition manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;

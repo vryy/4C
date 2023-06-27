@@ -14,7 +14,7 @@
 #include "cut_sidehandle.H"
 #include "cut_elementhandle.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -52,12 +52,12 @@ namespace GEO
       /// create a new side (sidehandle) of the cutter discretization and return the sidehandle,
       /// non-tri3 sides will be subdivided into tri3 subsides depending on the options
       SideHandle* CreateSide(int sid, const std::vector<int>& nids,
-          DRT::Element::DiscretizationType distype, GEO::CUT::Options& options);
+          ::DRT::Element::DiscretizationType distype, CORE::GEO::CUT::Options& options);
 
       /// create a new element (elementhandle) of the background discretization and return the
       /// elementhandle, quadratic elements will create linear shadow elements
       ElementHandle* CreateElement(
-          int eid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype);
+          int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
 
       /// create a new data structure for face oriented stabilization; the sides of the linear
       /// element are included into a sidehandle
@@ -66,7 +66,7 @@ namespace GEO
       /// create a new data structure for face oriented stabilization; the sides of the quadratic
       /// element are included into a sidehandle
       void CreateElementSides(
-          const std::vector<int>& nids, DRT::Element::DiscretizationType distype);
+          const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
 
       /*========================================================================*/
       //! @name Get-routines for nodes, cutter sides, elements and element sides
@@ -85,13 +85,13 @@ namespace GEO
       SideHandle* GetSide(std::vector<int>& nodeids) const;
 
       /// Remove this side from the Sidehandle (Used by the SelfCut)
-      void RemoveSubSide(GEO::CUT::Side* side);
+      void RemoveSubSide(CORE::GEO::CUT::Side* side);
 
       /// Add this side into the corresponding Sidehandle (Used by the SelfCut)
-      void AddSubSide(GEO::CUT::Side* side);
+      void AddSubSide(CORE::GEO::CUT::Side* side);
 
       /// Mark this side as unphysical (Used by SelfCut)
-      void MarkSubSideasUnphysical(GEO::CUT::Side* side);
+      void MarkSubSideasUnphysical(CORE::GEO::CUT::Side* side);
 
       /*========================================================================*/
       //! @name Get method for private variables
@@ -120,6 +120,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

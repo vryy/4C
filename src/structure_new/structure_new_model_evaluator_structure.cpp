@@ -1006,7 +1006,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
   LINALG::Export(*GState().GetDisN(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr =
+  Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> bounding_box_ptr =
       TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
 
   // initialize the writer object with current displacement state

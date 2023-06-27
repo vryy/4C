@@ -13,7 +13,7 @@
 #include "cut_point.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -138,7 +138,7 @@ namespace GEO
       void FindIslands();
 
       /// Get next Sides
-      void NextSides(Side* cutside, Teuchos::RCP<GEO::CUT::BoundingBox>& tmpbb,
+      void NextSides(Side* cutside, Teuchos::RCP<CORE::GEO::CUT::BoundingBox>& tmpbb,
           // plain_side_set allselfcutsides,
           plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland);
 
@@ -228,10 +228,10 @@ namespace GEO
       int myrank_;
 
       /// The Cut Mesh
-      GEO::CUT::Mesh& mesh_;
+      CORE::GEO::CUT::Mesh& mesh_;
 
       /// The Cut Meshhandle (Interface to the outer world)
-      GEO::CUT::MeshHandle& meshhandle_;
+      CORE::GEO::CUT::MeshHandle& meshhandle_;
 
       std::map<plain_int_set, Teuchos::RCP<Side>> selfcut_sides_;
 
@@ -246,6 +246,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

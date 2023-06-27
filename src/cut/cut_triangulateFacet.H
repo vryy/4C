@@ -14,7 +14,7 @@
 #include <list>
 #include <vector>
 #include "cut_side.H"
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -132,6 +132,6 @@ namespace GEO
       std::vector<std::vector<Point *>> split_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

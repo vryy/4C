@@ -22,13 +22,13 @@ builds the bridge between the xfluid class and the cut-library
 
 #include <Epetra_IntVector.h>
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
     class VolumeCell;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace DRT
 {
@@ -685,19 +685,19 @@ namespace XFEM
     );
 
     /// set material pointer for volume
-    void GetVolumeCellMaterial(
-        DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const GEO::CUT::VolumeCell* vc);
+    void GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
+        const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
-    void GetInterfaceMasterMaterial(
-        DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const GEO::CUT::VolumeCell* vc);
+    void GetInterfaceMasterMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
+        const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
     void GetInterfaceSlaveMaterial(
         DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, int coup_sid);
 
     /// Initialize Fluid Intersection/Cut State
-    bool InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

@@ -22,7 +22,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }

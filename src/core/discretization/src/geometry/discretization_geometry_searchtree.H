@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_SEARCHTREE_H
-#define GEOMETRY_SEARCHTREE_H
+#ifndef DISCRETIZATION_GEOMETRY_SEARCHTREE_H
+#define DISCRETIZATION_GEOMETRY_SEARCHTREE_H
 
 #include <set>
 
 #include <Teuchos_RCP.hpp>
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations
@@ -28,7 +28,7 @@ namespace LINALG
   class SerialDenseMatrix;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class InterfacePoint;
 
@@ -76,7 +76,7 @@ namespace GEO
       int label_;
 
       //! stores nearestObject
-      GEO::NearestObject nearestObject_;
+      CORE::GEO::NearestObject nearestObject_;
 
       //! axis aligned bounding box of this tree node
       const LINALG::Matrix<3, 2> nodeBox_;
@@ -160,7 +160,7 @@ namespace GEO
        \param currentpositions     current nodal positions in discretization
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const DRT::Element* element,
+      std::vector<int> classifyElement(const ::DRT::Element* element,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -170,7 +170,7 @@ namespace GEO
        \return vector of children ids
        */
       std::vector<int> classifyElement(
-          const DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element) const;
+          const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -178,7 +178,7 @@ namespace GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const Teuchos::RCP<DRT::Element> element,
+      std::vector<int> classifyElement(const Teuchos::RCP<::DRT::Element> element,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -192,7 +192,7 @@ namespace GEO
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void createChildren(const DRT::Discretization& dis,
+      void createChildren(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -200,7 +200,7 @@ namespace GEO
        \param masterelements      all given masterelements
        \param currentpositions    current nodal positions of masterelements
        */
-      void createChildren(std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
+      void createChildren(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -229,7 +229,7 @@ namespace GEO
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void setXFEMLabelOfEmptyChildren(const DRT::Discretization& dis,
+      void setXFEMLabelOfEmptyChildren(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -238,14 +238,14 @@ namespace GEO
        \param currentpositions     current nodal positions in discretization
        */
       void setXFEMLabelOfEmptyChildren(const std::vector<std::vector<int>>& triangleList,
-          const std::vector<GEO::InterfacePoint>& pointList);
+          const std::vector<CORE::GEO::InterfacePoint>& pointList);
 
       /*!
        \brief set XFEM label and nearest object of empty children
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void setXFEMLabelAndNearestObjectOfEmptyChildren(const DRT::Discretization& dis,
+      void setXFEMLabelAndNearestObjectOfEmptyChildren(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
      public:
@@ -295,7 +295,7 @@ namespace GEO
        \brief sets nearestObject  of a treenode
        \param nearestObject                 nearestObject
        */
-      void setNearestObject(const GEO::NearestObject& nearestObject);
+      void setNearestObject(const CORE::GEO::NearestObject& nearestObject);
 
       /*!
        \brief returns tree node type INNER_NODE or LEAF_NODE
@@ -320,7 +320,7 @@ namespace GEO
        \param index   child node index
        \return retruns pointer to child node
        */
-      const Teuchos::RCP<GEO::SearchTree::TreeNode> getChild(const int index) const;
+      const Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> getChild(const int index) const;
 
       /*!
        \brief return pointer to the parent node
@@ -373,10 +373,10 @@ namespace GEO
        \param nearestObject        nearestobject
        \return 0->fluid 1..n->Solid with XFEM-Coupling condition
        */
-      int queryFSINearestObject(const DRT::Discretization& dis,
+      int queryFSINearestObject(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
           const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-          const LINALG::Matrix<3, 1>& point, GEO::NearestObject& nearestobject);
+          const LINALG::Matrix<3, 1>& point, CORE::GEO::NearestObject& nearestobject);
 
       /*!
        \brief returns the label 0 -> fluid 1 -> n solid
@@ -385,7 +385,7 @@ namespace GEO
        \param point                point to be examined
        \return 0->fluid 1..n->Solid with XFEM-Coupling condition
        */
-      int queryXFEMFSIPointType(const DRT::Discretization& dis,
+      int queryXFEMFSIPointType(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
           const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
           const LINALG::Matrix<3, 1>& point);
@@ -401,7 +401,7 @@ namespace GEO
        \return 0->fluid 1..n->Solid with XFEM-Coupling condition
        */
       void moveContactNodes(const std::vector<std::vector<int>>& triangleList,
-          std::vector<GEO::InterfacePoint>& pointList,
+          std::vector<CORE::GEO::InterfacePoint>& pointList,
           const std::map<int, LINALG::Matrix<3, 2>>& triangleXAABBs,
           const LINALG::Matrix<3, 1>& querypoint, const int querypointId,
           const int querypointLabel);
@@ -415,7 +415,7 @@ namespace GEO
        \param label                label of structure the query point belongs to
        \return set of node gids
        */
-      std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
+      std::map<int, std::set<int>> searchElementsInRadius(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
           const LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -462,11 +462,11 @@ namespace GEO
        \param currentpositions     current nodal positions in discretization
        \return set of node gids
        */
-      void queryPotentialElements_Approx2(const DRT::Discretization& dis,
+      void queryPotentialElements_Approx2(const ::DRT::Discretization& dis,
           const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
           const LINALG::Matrix<3, 2>& eleXAABB,
           const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-          std::map<int, std::map<int, GEO::NearestObject>>& potentialObjectsAtGP,
+          std::map<int, std::map<int, CORE::GEO::NearestObject>>& potentialObjectsAtGP,
           const double cutoff, const int label, const int projectiontype);
 
       /*!
@@ -539,7 +539,7 @@ namespace GEO
     virtual ~SearchTree();
 
     //! returns tree root node
-    Teuchos::RCP<GEO::SearchTree::TreeNode> getRoot() const { return treeRoot_; };
+    Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> getRoot() const { return treeRoot_; };
 
     /*!
      \brief destroys the old tree if its exists and builds the root
@@ -560,7 +560,7 @@ namespace GEO
      \param dis                  discretization
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const LINALG::Matrix<3, 2>& nodeBox, const DRT::Discretization& dis,
+    void initializeTree(const LINALG::Matrix<3, 2>& nodeBox, const ::DRT::Discretization& dis,
         const TreeType treetype);
 
     void initializeTree(const LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype);
@@ -586,7 +586,7 @@ namespace GEO
      \param treetype             quadtree
      */
     void initializeTreeSlideALE(const LINALG::Matrix<3, 2>& nodeBox,
-        std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype);
+        std::map<int, Teuchos::RCP<::DRT::Element>>& elements, const TreeType treetype);
 
     void insertElement(const int eid);
 
@@ -597,7 +597,7 @@ namespace GEO
      \param currentpositions_old     old current nodal positions in discretization
      \param currentpositions_new     new current nodal positions in discretization
      */
-    void updateTree(const DRT::Discretization& dis,
+    void updateTree(const ::DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions_old,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions_new);
 
@@ -609,10 +609,10 @@ namespace GEO
      \param nearestObject        nearestobject
      \return 0->fluid 1..n->Solid with XFEM-Coupling condition
      */
-    int queryFSINearestObject(const DRT::Discretization& dis,
+    int queryFSINearestObject(const ::DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs, const LINALG::Matrix<3, 1>& point,
-        GEO::NearestObject& nearestobject);
+        CORE::GEO::NearestObject& nearestobject);
 
     /*!
      \brief returns the label 0 -> fluid 1 -> n solid
@@ -621,7 +621,7 @@ namespace GEO
      \param point                point to be examined
      \return 0->fluid 1..n->Solid with XFEM-Coupling condition
      */
-    int queryXFEMFSIPointType(const DRT::Discretization& dis,
+    int queryXFEMFSIPointType(const ::DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
         const LINALG::Matrix<3, 1>& point);
@@ -636,7 +636,7 @@ namespace GEO
      \param querypointId                   point id in triangle list
      */
     void moveContactNodes(const std::vector<std::vector<int>>& triangleList,
-        std::vector<GEO::InterfacePoint>& pointList,
+        std::vector<CORE::GEO::InterfacePoint>& pointList,
         const std::map<int, LINALG::Matrix<3, 2>>& triangleXAABBs,
         const LINALG::Matrix<3, 1>& querypoint, const int querypointId, const int querypointLabel);
 
@@ -649,7 +649,7 @@ namespace GEO
      \param label                label
      \return set of node gids
      */
-    std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
+    std::map<int, std::set<int>> searchElementsInRadius(const ::DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -694,11 +694,11 @@ namespace GEO
      \param currentpositions     current nodal positions in discretization
      \return set of node gids
      */
-    void queryPotentialElements_Approx2(const DRT::Discretization& dis,
+    void queryPotentialElements_Approx2(const ::DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const LINALG::Matrix<3, 2>& eleXAABB, const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-        std::map<int, std::map<int, GEO::NearestObject>>& potentialObjectsAtGP, const double cutoff,
-        const int label, const int projectiontype);
+        std::map<int, std::map<int, CORE::GEO::NearestObject>>& potentialObjectsAtGP,
+        const double cutoff, const int label, const int projectiontype);
 
     /*!
      \brief    build the static search tree for the collision detection
@@ -757,9 +757,9 @@ namespace GEO
     const int max_depth_;
 
     //! pointer to the root of the tree
-    Teuchos::RCP<GEO::SearchTree::TreeNode> treeRoot_;
+    Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> treeRoot_;
   };
   // class tree
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

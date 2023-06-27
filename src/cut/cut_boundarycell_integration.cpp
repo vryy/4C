@@ -19,7 +19,8 @@
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
   facet is projected into appropriate coordinate plane to obtain quadrature
 *---------------------------------------------------------------------------------------------*/
-Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
+Epetra_SerialDenseVector
+CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
 {
   std::vector<std::vector<double>> corners1;
   bcell_->CornerPointsLocal(elem1_, corners1);
@@ -144,9 +145,9 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
    the gauss points are generated in the coordinate plane - now it has only two coordinates
    value of third coordinate can be calculated from the equation of arbitrary plane
 *---------------------------------------------------------------------------------------------*/
-void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::vector<double> eqn,
-    std::vector<std::vector<double>> corners, std::vector<std::vector<double>>& bcGausspts,
-    int ptNos)
+void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
+    std::vector<double> eqn, std::vector<std::vector<double>> corners,
+    std::vector<std::vector<double>>& bcGausspts, int ptNos)
 {
   std::vector<double> co1(corners.size()), co2(corners.size());
 
@@ -357,7 +358,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
 /*--------------------------------------------------------------------------------------------*
                                    form the moment fitting matrix
 *---------------------------------------------------------------------------------------------*/
-void GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
+void CORE::GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
     std::vector<std::vector<double>>& mom, std::vector<std::vector<double>> gauspts)
 {
   for (int i = 0; i < num_func_; i++)
@@ -376,7 +377,7 @@ void GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
   The geometry of boundarycell and the location of Gaussian points are written in GMSH output
   file for visualization and for debugging
  *--------------------------------------------------------------------------------------------*/
-void GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(
+void CORE::GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(
     const std::vector<std::vector<double>> bcGausspts,
     const std::vector<std::vector<double>> corners)
 {

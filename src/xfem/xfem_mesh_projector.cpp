@@ -27,8 +27,8 @@
 #include "cut_boundingbox.H"
 #include "cut_position.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
@@ -182,11 +182,11 @@ void XFEM::MeshProjector::FindSearchRadius()
 void XFEM::MeshProjector::SetupSearchTree()
 {
   // init of 3D search tree
-  searchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+  searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of all elements of source discretization
-  const LINALG::Matrix<3, 2> sourceEleBox = GEO::getXAABBofPositions(src_nodepositions_n_);
-  searchTree_->initializeTree(sourceEleBox, *sourcedis_, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofPositions(src_nodepositions_n_);
+  searchTree_->initializeTree(sourceEleBox, *sourcedis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // TODO: find the bounding box of the nodes from the target discretization, that demand
   // projection, intersect the bounding boxes to obtain a smaller one
@@ -345,8 +345,8 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
   }
 
   // compute node position w.r.t. embedded element
-  Teuchos::RCP<GEO::CUT::Position> pos =
-      GEO::CUT::PositionFactory::BuildPosition<3, distype>(src_xyze, node_xyz);
+  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+      CORE::GEO::CUT::PositionFactory::BuildPosition<3, distype>(src_xyze, node_xyz);
   bool inside = pos->Compute();
 
   if (inside)

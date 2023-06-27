@@ -8,7 +8,7 @@
  *----------------------------------------------------------------------*/
 
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "nurbs_discret_nurbs_utils.H"
 
 #include "scatra_ele_parameter_std.H"

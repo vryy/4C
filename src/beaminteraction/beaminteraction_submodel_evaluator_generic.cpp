@@ -42,14 +42,14 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
-    Teuchos::RCP<DRT::Discretization> const& ia_discret,
-    Teuchos::RCP<DRT::Discretization> const& bindis,
+    Teuchos::RCP<::DRT::Discretization> const& ia_discret,
+    Teuchos::RCP<::DRT::Discretization> const& bindis,
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
 {
   issetup_ = false;
@@ -91,7 +91,7 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
 {
   CheckInit();
   return discret_ptr_;
@@ -99,7 +99,7 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<const ::DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
     const
 {
   CheckInit();
@@ -124,7 +124,7 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
+Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
 {
   CheckInit();
   return bindis_ptr_;
@@ -132,8 +132,8 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
-    const
+Teuchos::RCP<const ::DRT::Discretization>
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
 {
   CheckInit();
   return bindis_ptr_;
@@ -269,7 +269,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox()
+CORE::GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox()
 {
   CheckInit();
   return *periodic_boundingbox_;
@@ -277,7 +277,7 @@ GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Periodi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::MESHFREE::BoundingBox>&
+Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBoxPtr()
 {
   CheckInit();
@@ -286,8 +286,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBoxPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::MESHFREE::BoundingBox const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox()
-    const
+CORE::GEO::MESHFREE::BoundingBox const&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox() const
 {
   CheckInit();
   return *periodic_boundingbox_;

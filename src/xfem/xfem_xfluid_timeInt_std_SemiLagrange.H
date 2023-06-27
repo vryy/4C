@@ -143,8 +143,8 @@ namespace XFEM
     void getNodalDofSet(DRT::Element* ele,  ///< pointer to element
         LINALG::Matrix<3, 1>& x,            ///< global coordinates of point
         std::vector<int>& nds,  ///< determine the points dofset w.r.t old/new interface position
-        GEO::CUT::VolumeCell*& vc,  ///< valid fluid volumecell the point x lies in
-        bool step_np                ///< computation w.r.t old or new interface position?
+        CORE::GEO::CUT::VolumeCell*& vc,  ///< valid fluid volumecell the point x lies in
+        bool step_np                      ///< computation w.r.t old or new interface position?
     );
 
     //! compute the nodal gradient

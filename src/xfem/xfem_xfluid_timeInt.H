@@ -36,7 +36,7 @@ namespace DRT
   class Node;
 }  // namespace DRT
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 
@@ -44,7 +44,7 @@ namespace GEO
   {
     class SideHandle;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace LINALG
 {
@@ -74,8 +74,8 @@ namespace XFEM
                                                   /// step transfer?
         const Teuchos::RCP<DRT::Discretization>& dis,                   /// discretization
         const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
-        const Teuchos::RCP<GEO::CutWizard>& wizard_old,                 /// cut wizard at t^n
-        const Teuchos::RCP<GEO::CutWizard>& wizard_new,                 /// cut wizard at t^(n+1)
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard_old,           /// cut wizard at t^n
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
         const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_old,               /// XFEM dofset at t^n
         const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_new,               /// XFEM dofset at t^(n+1)
         const INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach,   /// xfluid_timintapproch
@@ -150,7 +150,7 @@ namespace XFEM
     std::string MapMethodEnumToString(const enum INPAR::XFEM::XFluidTimeInt term);
 
     /// all surrounding elements non-intersected?
-    bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizard> wizard);
+    bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     /// find all ghost dofsets around this node and its std-dofset
     void FindSurroundingGhostDofsets(
@@ -197,26 +197,26 @@ namespace XFEM
     );
 
     /// identify cellsets at time t^n with cellsets at time t^(n+1)
-    int IdentifyOldSets(const GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
-        const GEO::CUT::Node* n_new,                  /// node w.r.t to new wizard
-        const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet>>&
+    int IdentifyOldSets(const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
+        const CORE::GEO::CUT::Node* n_new,                  /// node w.r.t to new wizard
+        const std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>&
             dof_cellsets_old,  /// all dofcellsets at t^n
-        const GEO::CUT::NodalDofSet*
+        const CORE::GEO::CUT::NodalDofSet*
             cell_set_new  /// dofcellset at t^(n+1) which has to be identified
     );
 
     /// special check if the node slides along the cut surface
     bool SpecialCheck_SlidingOnSurface(bool& changed_side,
-        const GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
-        const GEO::CUT::Node* n_new   /// node w.r.t to new wizard
+        const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
+        const CORE::GEO::CUT::Node* n_new   /// node w.r.t to new wizard
     );
 
     /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if
     /// check was successful
     bool SpecialCheck_InterfaceTips(bool& changed_side,  /// did the node change the side ?
         std::vector<int>& identified_sides,              /// side Id of identified side
-        const GEO::CUT::Node* n_old,                     /// node w.r.t to old wizard
-        const GEO::CUT::Node* n_new                      /// node w.r.t to new wizard
+        const CORE::GEO::CUT::Node* n_old,               /// node w.r.t to old wizard
+        const CORE::GEO::CUT::Node* n_new                /// node w.r.t to new wizard
     );
 
     /// special check for level-set based interface tips, note: currently empty, can be filled if
@@ -267,8 +267,8 @@ namespace XFEM
 
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;  /// condition manager
 
-    Teuchos::RCP<GEO::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
-    Teuchos::RCP<GEO::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
 
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  /// old XFEM dofset w.r.t old interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  /// new XFEM dofset w.r.t new interface position

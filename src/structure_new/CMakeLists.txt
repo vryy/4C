@@ -13,7 +13,6 @@ set(_structure_new_dependencies
     contact
     contact_aug
     core
-    geometry
     inpar
     io
     lib

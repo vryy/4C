@@ -15,7 +15,7 @@
 
 #include "linalg_serialdensematrix.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -32,8 +32,8 @@ namespace GEO
       /*!
        \brief Constructor
        */
-      BoundarycellIntegration(
-          Element* elem, Facet* bcell, const GEO::CUT::Point::PointPosition posi, int num_func)
+      BoundarycellIntegration(Element* elem, Facet* bcell,
+          const CORE::GEO::CUT::Point::PointPosition posi, int num_func)
           : elem1_(elem), bcell_(bcell), position_(posi), num_func_(num_func)
       {
       }
@@ -58,7 +58,7 @@ namespace GEO
      private:
       Element* elem1_;
       Facet* bcell_;
-      const GEO::CUT::Point::PointPosition position_;
+      const CORE::GEO::CUT::Point::PointPosition position_;
       int num_func_;
       std::vector<std::vector<double>> BcellgausPts_;
 
@@ -83,6 +83,6 @@ namespace GEO
           const std::vector<std::vector<double>> corners);
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

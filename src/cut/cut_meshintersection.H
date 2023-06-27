@@ -17,7 +17,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -52,18 +52,18 @@ namespace GEO
 
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype,
+          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           const double* lsv = NULL);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          DRT::Element::DiscretizationType distype, int mi = 0);
+          ::DRT::Element::DiscretizationType distype, int mi = 0);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype,
+          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut
@@ -123,6 +123,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

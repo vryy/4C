@@ -19,7 +19,7 @@ created
 #include "cut_boundingbox.H"
 #include "cut_point.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -246,6 +246,6 @@ namespace GEO
       const unsigned probdim_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

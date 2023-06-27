@@ -57,24 +57,24 @@
 
 void test_quad4_line2(double x1, double y1, double x2, double y2)
 {
-  GEO::CUT::Options options;
+  CORE::GEO::CUT::Options options;
   options.Init_for_Cuttests();  // use cln
-  GEO::CUT::Mesh mesh(options);
+  CORE::GEO::CUT::Mesh mesh(options);
 
   std::vector<double> xyz(3);
 
   xyz[0] = x1;
   xyz[1] = y1;
   xyz[2] = 0;
-  GEO::CUT::Node* n1 = mesh.GetNode(1, &xyz[0]);
+  CORE::GEO::CUT::Node* n1 = mesh.GetNode(1, &xyz[0]);
 
   xyz[0] = x2;
   xyz[1] = y2;
-  GEO::CUT::Node* n2 = mesh.GetNode(2, &xyz[0]);
+  CORE::GEO::CUT::Node* n2 = mesh.GetNode(2, &xyz[0]);
 
-  GEO::CUT::Edge* edge = mesh.GetEdge(n1, n2);
+  CORE::GEO::CUT::Edge* edge = mesh.GetEdge(n1, n2);
 
-  std::vector<GEO::CUT::Node*> nodes;
+  std::vector<CORE::GEO::CUT::Node*> nodes;
   xyz[0] = 0;
   xyz[1] = 0;
   nodes.push_back(mesh.GetNode(3, &xyz[0]));
@@ -88,14 +88,14 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   xyz[1] = 1;
   nodes.push_back(mesh.GetNode(6, &xyz[0]));
 
-  GEO::CUT::Side* side =
+  CORE::GEO::CUT::Side* side =
       mesh.GetSide(1, nodes, shards::getCellTopologyData<shards::Quadrilateral<4>>());
 
-  Teuchos::RCP<GEO::CUT::IntersectionBase> intersection =
-      GEO::CUT::IntersectionBase::Create(DRT::Element::line2, DRT::Element::quad4);
+  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersection =
+      CORE::GEO::CUT::IntersectionBase::Create(DRT::Element::line2, DRT::Element::quad4);
   intersection->Init(&mesh, edge, side, false, false, false);
 
-  GEO::CUT::PointSet cuts;
+  CORE::GEO::CUT::PointSet cuts;
   intersection->Intersect(cuts);
 
   mesh.Status();
@@ -104,7 +104,7 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   {
     std::stringstream str;
     str << "two cuts expected but got " << cuts.size() << ": ";
-    std::copy(cuts.begin(), cuts.end(), std::ostream_iterator<GEO::CUT::Point*>(str, " "));
+    std::copy(cuts.begin(), cuts.end(), std::ostream_iterator<CORE::GEO::CUT::Point*>(str, " "));
     throw std::runtime_error(str.str());
   }
 }
@@ -120,7 +120,7 @@ void test_quad4_line2()
 
 void test_hex8_quad4_qhull1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -184,7 +184,7 @@ void test_hex8_quad4_qhull1()
 // restrictions of this method!
 void test_hex8_quad4_alex1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -252,7 +252,7 @@ void test_hex8_quad4_alex1()
 
 void test_hex8_quad4_alex2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -327,7 +327,7 @@ void test_hex8_quad4_alex2()
 
 void test_hex8_quad4_alex3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -415,7 +415,7 @@ void test_hex8_quad4_alex3()
 
 void test_hex8_quad4_alex4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -503,7 +503,7 @@ void test_hex8_quad4_alex4()
 
 void test_hex8_quad4_alex5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -577,7 +577,7 @@ void test_hex8_quad4_alex5()
 
 void test_hex8_quad4_alex6()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -651,7 +651,7 @@ void test_hex8_quad4_alex6()
 
 void test_hex8_quad4_alex7()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -725,7 +725,7 @@ void test_hex8_quad4_alex7()
 
 void test_hex8_quad4_alex8()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -799,7 +799,7 @@ void test_hex8_quad4_alex8()
 
 void test_tet4_quad4_alex9()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -812,28 +812,32 @@ void test_tet4_quad4_alex9()
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s1 = intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s1 =
+      intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.1372558011327500438, 0.43786377186006097961, 1.3891340300000000002e-19);
   nxyz2(1.1373961924222799613, 0.43783278790287999405, -0.015000075099999999467);
   nxyz3(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s2 = intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s2 =
+      intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz2(1.0862518404856800203, 0.54179921727229496398, 0.015000075099999999467);
   nxyz3(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s3 = intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s3 =
+      intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0862518404756100754, 0.54179921727284197086, -0.015000075099999999467);
   nxyz2(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s4 = intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s4 =
+      intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
   Epetra_SerialDenseMatrix tet4_xyze(3, 4);
 
@@ -853,9 +857,10 @@ void test_tet4_quad4_alex9()
   nids.clear();
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
-  GEO::CUT::ElementHandle* e = intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
+  CORE::GEO::CUT::ElementHandle* e =
+      intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
 
-  GEO::CUT::plain_side_set cut_sides;
+  CORE::GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides(cut_sides);
   s2->CollectSides(cut_sides);
   s3->CollectSides(cut_sides);
@@ -866,12 +871,12 @@ void test_tet4_quad4_alex9()
   tet.reserve(4);
   std::vector<int> accept_tets(1, true);
 
-  const std::vector<GEO::CUT::Node*>& nodes = e->Nodes();
-  std::vector<GEO::CUT::Point*> points;
+  const std::vector<CORE::GEO::CUT::Node*>& nodes = e->Nodes();
+  std::vector<CORE::GEO::CUT::Point*> points;
   points.reserve(4);
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    GEO::CUT::Node* n = *i;
+    CORE::GEO::CUT::Node* n = *i;
     tet.push_back(points.size());
     points.push_back(n->point());
   }
@@ -883,7 +888,7 @@ void test_tet4_quad4_alex9()
 
 void test_tet4_quad4_alex10()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
@@ -896,28 +901,32 @@ void test_tet4_quad4_alex10()
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s1 = intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s1 =
+      intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.1372558011327500438, 0.43786377186006097961, 1.3891340300000000002e-19);
   nxyz2(1.1373961924222799613, 0.43783278790287999405, -0.015000075099999999467);
   nxyz3(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s2 = intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s2 =
+      intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz2(1.0862518404856800203, 0.54179921727229496398, 0.015000075099999999467);
   nxyz3(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s3 = intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s3 =
+      intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0862518404756100754, 0.54179921727284197086, -0.015000075099999999467);
   nxyz2(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s4 = intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s4 =
+      intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
   Epetra_SerialDenseMatrix tet4_xyze(3, 4);
 
@@ -937,9 +946,10 @@ void test_tet4_quad4_alex10()
   nids.clear();
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
-  GEO::CUT::ElementHandle* e = intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
+  CORE::GEO::CUT::ElementHandle* e =
+      intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
 
-  GEO::CUT::plain_side_set cut_sides;
+  CORE::GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides(cut_sides);
   s2->CollectSides(cut_sides);
   s3->CollectSides(cut_sides);
@@ -950,12 +960,12 @@ void test_tet4_quad4_alex10()
   tet.reserve(4);
   std::vector<int> accept_tets(1, true);
 
-  const std::vector<GEO::CUT::Node*>& nodes = e->Nodes();
-  std::vector<GEO::CUT::Point*> points;
+  const std::vector<CORE::GEO::CUT::Node*>& nodes = e->Nodes();
+  std::vector<CORE::GEO::CUT::Point*> points;
   points.reserve(4);
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    GEO::CUT::Node* n = *i;
+    CORE::GEO::CUT::Node* n = *i;
     tet.push_back(points.size());
     points.push_back(n->point());
   }
@@ -967,7 +977,7 @@ void test_tet4_quad4_alex10()
 
 void test_tet4_quad4_alex11()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::map<std::string, int> nodeids;
@@ -1041,7 +1051,7 @@ void test_tet4_quad4_alex11()
 
 void test_hex8_quad4_alex12()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1137,7 +1147,7 @@ void test_hex8_quad4_alex12()
 
 void test_hex8_quad4_alex13()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1226,7 +1236,7 @@ void test_hex8_quad4_alex13()
 
 void test_hex8_quad4_alex14()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1315,7 +1325,7 @@ void test_hex8_quad4_alex14()
 
 void test_hex8_quad4_alex15()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1446,7 +1456,7 @@ void test_hex8_quad4_alex15()
 
 void test_tet4_quad4_alex16()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::map<std::string, int> nodeids;
@@ -1563,7 +1573,7 @@ void test_tet4_quad4_alex16()
 
 void test_hex8_quad4_alex17()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1666,7 +1676,7 @@ void test_hex8_quad4_alex17()
 
 void test_hex8_quad4_alex18()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1741,7 +1751,7 @@ void test_hex8_quad4_alex18()
 
 void test_hex8_quad4_alex19()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1816,7 +1826,7 @@ void test_hex8_quad4_alex19()
 
 void test_hex8_quad4_alex20()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1891,7 +1901,7 @@ void test_hex8_quad4_alex20()
 
 void test_hex8_quad4_alex21()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -1980,7 +1990,7 @@ void test_hex8_quad4_alex21()
 
 void test_hex8_quad4_alex22()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2055,7 +2065,7 @@ void test_hex8_quad4_alex22()
 
 void test_hex8_quad4_alex23()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2158,7 +2168,7 @@ void test_hex8_quad4_alex23()
 
 void test_hex8_quad4_alex24()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2233,7 +2243,7 @@ void test_hex8_quad4_alex24()
 
 void test_hex8_quad4_alex25()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2322,7 +2332,7 @@ void test_hex8_quad4_alex25()
 
 void test_hex8_quad4_alex26()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2411,7 +2421,7 @@ void test_hex8_quad4_alex26()
 
 void test_hex8_quad4_alex27()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2486,7 +2496,7 @@ void test_hex8_quad4_alex27()
 
 void test_hex8_quad4_alex28()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2575,7 +2585,7 @@ void test_hex8_quad4_alex28()
 
 void test_hex8_quad4_alex29()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2650,7 +2660,7 @@ void test_hex8_quad4_alex29()
 
 void test_hex8_quad4_alex30()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2726,7 +2736,7 @@ void test_hex8_quad4_alex30()
 
 void test_hex8_quad4_alex31()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2801,7 +2811,7 @@ void test_hex8_quad4_alex31()
 
 void test_hex8_quad4_alex32()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2876,7 +2886,7 @@ void test_hex8_quad4_alex32()
 
 void test_hex8_quad4_alex33()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -2951,7 +2961,7 @@ void test_hex8_quad4_alex33()
 
 void test_hex8_quad4_alex34()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3026,7 +3036,7 @@ void test_hex8_quad4_alex34()
 
 void test_hex8_quad4_alex35()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3101,7 +3111,7 @@ void test_hex8_quad4_alex35()
 
 void test_hex8_quad4_alex36()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3204,7 +3214,7 @@ void test_hex8_quad4_alex36()
 
 void test_hex8_quad4_alex37()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
@@ -3287,7 +3297,7 @@ void test_hex8_quad4_alex37()
 
 void test_hex8_quad4_alex38()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3376,7 +3386,7 @@ void test_hex8_quad4_alex38()
 
 void test_hex8_tri3_ursula1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
@@ -3447,7 +3457,7 @@ void test_hex8_tri3_ursula1()
 
 void test_hex8_quad4_axel7()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
@@ -3557,7 +3567,7 @@ void test_hex8_quad4_axel7()
 
 void test_hex8_quad4_axel6()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3632,7 +3642,7 @@ void test_hex8_quad4_axel6()
 
 void test_hex8_quad4_axel5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3707,7 +3717,7 @@ void test_hex8_quad4_axel5()
 
 void test_hex8_quad4_axel4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3782,7 +3792,7 @@ void test_hex8_quad4_axel4()
 
 void test_hex8_quad4_axel3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3857,7 +3867,7 @@ void test_hex8_quad4_axel3()
 
 void test_hex8_quad4_axel2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -3932,7 +3942,7 @@ void test_hex8_quad4_axel2()
 
 void test_hex8_quad4_axel1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4008,7 +4018,7 @@ void test_hex8_quad4_axel1()
 
 void test_hex8_quad4_shadan5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4112,7 +4122,7 @@ void test_hex8_quad4_shadan5()
 
 void test_hex8_quad4_shadan4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4237,7 +4247,7 @@ void test_hex8_quad4_shadan4()
 
 void test_hex8_quad4_shadan3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4340,7 +4350,7 @@ void test_hex8_quad4_shadan3()
 
 void test_hex8_quad4_shadan2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4429,7 +4439,7 @@ void test_hex8_quad4_shadan2()
 
 void test_hex8_quad4_shadan1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -4605,7 +4615,7 @@ void test_hex8_quad4_shadan1()
 // restrictions of this method!
 void test_hex8_quad4_mesh_many()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -4751,7 +4761,7 @@ void test_hex8_quad4_mesh_many()
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -4857,7 +4867,7 @@ void test_hex8_quad4_mesh_edgecut()
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -4921,7 +4931,7 @@ void test_hex8_quad4_mesh_edgecut2()
 
 void test_hex8_quad4_mesh_inner()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -4985,7 +4995,7 @@ void test_hex8_quad4_mesh_inner()
 
 void test_hex27_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -5034,7 +5044,7 @@ void test_hex27_quad9_simple()
 
 void test_hex20_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -5083,7 +5093,7 @@ void test_hex20_quad9_simple()
 
 void test_hex20_quad9_moved()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -5141,7 +5151,7 @@ void test_hex20_quad9_moved()
 
 void test_tet10_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -5191,7 +5201,7 @@ void test_tet10_quad9_simple()
 
 void test_tet10_quad9_moved()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
@@ -5249,7 +5259,7 @@ void test_tet10_quad9_moved()
 
 void test_tet4_quad4_double()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
@@ -5303,7 +5313,7 @@ void test_tet4_quad4_double()
 
 void test_tet4_tri3_double()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
@@ -5353,12 +5363,12 @@ void test_tet4_tri3_double()
   std::cout << __LINE__ << std::endl;
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  CORE::GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 

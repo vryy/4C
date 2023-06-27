@@ -7,22 +7,22 @@
 
  */
 
-#include "geometry_element_coordtrafo.H"
-#include "geometry_element_normals.H"
-#include "geometry_intersection_interfacepoint.H"
-#include "geometry_intersection_service_templates.H"
-#include "geometry_intersection_service.H"
-#include "geometry_position_array.H"
-#include "geometry_searchtree_service.H"
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_normals.H"
+#include "discretization_geometry_intersection_interfacepoint.H"
+#include "discretization_geometry_intersection_service_templates.H"
+#include "discretization_geometry_intersection_service.H"
+#include "discretization_geometry_position_array.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 #include "lib_discret.H"
 
 /*----------------------------------------------------------------------*
  | delivers a axis-aligned bounding box for a given          peder 07/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofDis(
-    const DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofDis(
+    const ::DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
 {
   LINALG::Matrix<3, 2> XAABB(true);
   if (dis.NumGlobalElements() == 0) return XAABB;
@@ -34,22 +34,22 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDis(
   const LINALG::Matrix<3, 1> pos = currentpositions.find(nodeid)->second;
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = pos(dim) - GEO::TOL7;
-    XAABB(dim, 1) = pos(dim) + GEO::TOL7;
+    XAABB(dim, 0) = pos(dim) - CORE::GEO::TOL7;
+    XAABB(dim, 1) = pos(dim) + CORE::GEO::TOL7;
   }
 
   // TODO make more efficient by cahcking nodes
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const DRT::Element* element = dis.lColElement(j);
+    const ::DRT::Element* element = dis.lColElement(j);
     const LINALG::SerialDenseMatrix xyze_element(
-        GEO::getCurrentNodalPositions(element, currentpositions));
-    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-    GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
+        CORE::GEO::getCurrentNodalPositions(element, currentpositions));
+    CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+    CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
 
     const LINALG::Matrix<3, 2> xaabbEle =
-        GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+        CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   return XAABB;
@@ -59,7 +59,8 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDis(
  | delivers a slightly enlarged axis-aligned bounding box for u.may09/09|
  | given elements with their current postions for sliding ALE           |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofEles(std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofEles(
+    std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
 {
   LINALG::Matrix<3, 2> XAABB(true);
@@ -70,20 +71,20 @@ LINALG::Matrix<3, 2> GEO::getXAABBofEles(std::map<int, Teuchos::RCP<DRT::Element
   const LINALG::Matrix<3, 1> pos = currentpositions.find(nodeid)->second;
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = pos(dim) - GEO::TOL7;
-    XAABB(dim, 1) = pos(dim) + GEO::TOL7;
+    XAABB(dim, 0) = pos(dim) - CORE::GEO::TOL7;
+    XAABB(dim, 1) = pos(dim) + CORE::GEO::TOL7;
   }
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<::DRT::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> currelement = elemiter->second;
+    Teuchos::RCP<::DRT::Element> currelement = elemiter->second;
     const LINALG::SerialDenseMatrix xyze_element(
-        GEO::getCurrentNodalPositions(currelement, currentpositions));
-    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-    GEO::checkRoughGeoType(currelement, xyze_element, eleGeoType);
+        CORE::GEO::getCurrentNodalPositions(currelement, currentpositions));
+    CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+    CORE::GEO::checkRoughGeoType(currelement, xyze_element, eleGeoType);
     const LINALG::Matrix<3, 2> xaabbEle =
-        GEO::computeFastXAABB(currelement->Shape(), xyze_element, eleGeoType);
+        CORE::GEO::computeFastXAABB(currelement->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
 
@@ -94,7 +95,7 @@ LINALG::Matrix<3, 2> GEO::getXAABBofEles(std::map<int, Teuchos::RCP<DRT::Element
  | delivers a axis-aligned bounding box for a given          u.may 12/09|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofDisPar(const DRT::Discretization& dis,
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofDisPar(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, double cutoff)
 {
   LINALG::Matrix<3, 2> XAABB(true);
@@ -112,21 +113,21 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDisPar(const DRT::Discretization& dis,
   const LINALG::Matrix<3, 1> pos = currentpositions.find(nodeid)->second;
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = pos(dim) - GEO::TOL7;
-    XAABB(dim, 1) = pos(dim) + GEO::TOL7;
+    XAABB(dim, 0) = pos(dim) - CORE::GEO::TOL7;
+    XAABB(dim, 1) = pos(dim) + CORE::GEO::TOL7;
   }
 
   // TODO make more efficient by cahcking nodes
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const DRT::Element* element = dis.lColElement(j);
+    const ::DRT::Element* element = dis.lColElement(j);
     const LINALG::SerialDenseMatrix xyze_element(
-        GEO::getCurrentNodalPositions(element, currentpositions));
-    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-    GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
+        CORE::GEO::getCurrentNodalPositions(element, currentpositions));
+    CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+    CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
     const LINALG::Matrix<3, 2> xaabbEle =
-        GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+        CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   // enlarge box by 5 times the cutoff-radius
@@ -142,13 +143,13 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDisPar(const DRT::Discretization& dis,
  | delivers a axis-aligned bounding box for a given                     |
  | discretization in reference configuration                            |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofDisPar(const DRT::Discretization& dis, double cutoff)
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofDisPar(const ::DRT::Discretization& dis, double cutoff)
 {
   std::map<int, LINALG::Matrix<3, 1>> currentpositions;
 
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lColNode(lid);
+    const ::DRT::Node* node = dis.lColNode(lid);
     LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -163,13 +164,13 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDisPar(const DRT::Discretization& dis, doubl
  | delivers a axis-aligned bounding box for a given          peder 07/08|
  | discretization in reference configuration                            |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofDis(const DRT::Discretization& dis)
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofDis(const ::DRT::Discretization& dis)
 {
   std::map<int, LINALG::Matrix<3, 1>> currentpositions;
 
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lColNode(lid);
+    const ::DRT::Node* node = dis.lColNode(lid);
     LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -184,25 +185,25 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDis(const DRT::Discretization& dis)
  | delivers a axis-aligned bounding box for the nodes in     ghamm 09/12|
  | a given discretization in reference configuration                    |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofNodes(const DRT::Discretization& dis)
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofNodes(const ::DRT::Discretization& dis)
 {
   LINALG::Matrix<3, 2> XAABB(true);
   if (dis.NumMyRowNodes() == 0) dserror("no row node found on this proc");  // return XAABB;
 
   {
     // initialize XAABB as rectangle around the first node of dis
-    const DRT::Node* node = dis.lRowNode(0);
+    const ::DRT::Node* node = dis.lRowNode(0);
     for (int dim = 0; dim < 3; ++dim)
     {
-      XAABB(dim, 0) = node->X()[dim] - GEO::TOL7;
-      XAABB(dim, 1) = node->X()[dim] + GEO::TOL7;
+      XAABB(dim, 0) = node->X()[dim] - CORE::GEO::TOL7;
+      XAABB(dim, 1) = node->X()[dim] + CORE::GEO::TOL7;
     }
   }
 
   // loop over remaining nodes and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int lid = 1; lid < dis.NumMyRowNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lRowNode(lid);
+    const ::DRT::Node* node = dis.lRowNode(lid);
 
     for (int dim = 0; dim < 3; dim++)
     {
@@ -216,7 +217,7 @@ LINALG::Matrix<3, 2> GEO::getXAABBofNodes(const DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  | delivers an axis-aligned bounding box for coords          ghamm 11/12|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::getXAABBofPositions(
+LINALG::Matrix<3, 2> CORE::GEO::getXAABBofPositions(
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
 {
   LINALG::Matrix<3, 2> XAABB(true);
@@ -227,8 +228,8 @@ LINALG::Matrix<3, 2> GEO::getXAABBofPositions(
   const LINALG::Matrix<3, 1> initcurrentpos = currentpositions.begin()->second;
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = initcurrentpos(dim) - GEO::TOL7;
-    XAABB(dim, 1) = initcurrentpos(dim) + GEO::TOL7;
+    XAABB(dim, 0) = initcurrentpos(dim) - CORE::GEO::TOL7;
+    XAABB(dim, 1) = initcurrentpos(dim) + CORE::GEO::TOL7;
   }
 
   // loop over remaining entries and merge XAABB with their eXtendedAxisAlignedBoundingBox
@@ -249,8 +250,8 @@ LINALG::Matrix<3, 2> GEO::getXAABBofPositions(
  | compute AABB s for all labeled strutcures in the          u.may 08/08|
  | element list                                                         |
  *----------------------------------------------------------------------*/
-std::vector<LINALG::Matrix<3, 2>> GEO::computeXAABBForLabeledStructures(
-    const DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+std::vector<LINALG::Matrix<3, 2>> CORE::GEO::computeXAABBForLabeledStructures(
+    const ::DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList)
 {
   std::vector<LINALG::Matrix<3, 2>> XAABBs;
@@ -265,20 +266,20 @@ std::vector<LINALG::Matrix<3, 2>> GEO::computeXAABBForLabeledStructures(
     const LINALG::Matrix<3, 1> pos = currentpositions.find(nodeId)->second;
     for (int dim = 0; dim < 3; ++dim)
     {
-      xaabb_label(dim, 0) = pos(dim) - GEO::TOL7;
-      xaabb_label(dim, 1) = pos(dim) + GEO::TOL7;
+      xaabb_label(dim, 0) = pos(dim) - CORE::GEO::TOL7;
+      xaabb_label(dim, 1) = pos(dim) + CORE::GEO::TOL7;
     }
     // run over set elements
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
     {
-      const DRT::Element* element = dis.gElement(*eleIter);
+      const ::DRT::Element* element = dis.gElement(*eleIter);
       const LINALG::SerialDenseMatrix xyze_element(
-          GEO::getCurrentNodalPositions(element, currentpositions));
-      GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-      GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
+          CORE::GEO::getCurrentNodalPositions(element, currentpositions));
+      CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+      CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
       LINALG::Matrix<3, 2> xaabbEle =
-          GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+          CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
       xaabb_label = mergeAABB(xaabb_label, xaabbEle);
     }
     XAABBs.push_back(xaabb_label);
@@ -290,13 +291,13 @@ std::vector<LINALG::Matrix<3, 2>> GEO::computeXAABBForLabeledStructures(
  | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
-int GEO::getXFEMLabel(const DRT::Discretization& dis,
+int CORE::GEO::getXFEMLabel(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const LINALG::Matrix<3, 1>& querypoint, const std::map<int, std::set<int>>& elementList)
 {
   LINALG::Matrix<3, 1> minDistanceVec(true);
 
-  GEO::NearestObject nearestObject;
+  CORE::GEO::NearestObject nearestObject;
 
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   // returns the label of the surface element structure the projection of the query point is lying
@@ -312,8 +313,8 @@ int GEO::getXFEMLabel(const DRT::Discretization& dis,
       minDistanceVec(0) * normal(0) + minDistanceVec(1) * normal(1) + minDistanceVec(2) * normal(2);
 
   // if fluid
-  if (scalarproduct > (-1) * GEO::TOL13) label = 0;
-  if (minDistanceVec.Norm2() < GEO::TOL7) label = 0;
+  if (scalarproduct > (-1) * CORE::GEO::TOL13) label = 0;
+  if (minDistanceVec.Norm2() < CORE::GEO::TOL7) label = 0;
 
   return label;
 }
@@ -322,9 +323,9 @@ int GEO::getXFEMLabel(const DRT::Discretization& dis,
  | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
-void GEO::moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleList,
-    std::vector<GEO::InterfacePoint>& pointList, const int querypointId,
-    const GEO::NearestObject& nearestObject, LINALG::Matrix<3, 1>& minDistanceVec)
+void CORE::GEO::moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleList,
+    std::vector<CORE::GEO::InterfacePoint>& pointList, const int querypointId,
+    const CORE::GEO::NearestObject& nearestObject, LINALG::Matrix<3, 1>& minDistanceVec)
 {
   LINALG::Matrix<3, 1> querypoint = pointList[querypointId].getCoord();
 
@@ -360,7 +361,7 @@ void GEO::moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleLi
     std::cout << "length =" << length << std::endl;
 
     std::cout << "scalarproduct =" << scalarproduct << std::endl;
-    minDistanceVec.Scale((1.0 + 2 * GEO::TOL7) * length);
+    minDistanceVec.Scale((1.0 + 2 * CORE::GEO::TOL7) * length);
     querypoint += minDistanceVec;
     pointList[querypointId].setCoord(querypoint);
     // check if point now inside or outside the box adjust facemarker ...
@@ -375,10 +376,10 @@ void GEO::moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleLi
  | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
-int GEO::getXFEMLabelAndNearestObject(const DRT::Discretization& dis,
+int CORE::GEO::getXFEMLabelAndNearestObject(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const LINALG::Matrix<3, 1>& querypoint, const std::map<int, std::set<int>>& elementList,
-    GEO::NearestObject& nearestObject)
+    CORE::GEO::NearestObject& nearestObject)
 {
   LINALG::Matrix<3, 1> minDistanceVec(true);
 
@@ -396,8 +397,8 @@ int GEO::getXFEMLabelAndNearestObject(const DRT::Discretization& dis,
       minDistanceVec(0) * normal(0) + minDistanceVec(1) * normal(1) + minDistanceVec(2) * normal(2);
 
   // if fluid
-  if (scalarproduct > (-1) * GEO::TOL13) label = 0;
-  if (minDistanceVec.Norm2() < GEO::TOL7) label = 0;
+  if (scalarproduct > (-1) * CORE::GEO::TOL13) label = 0;
+  if (minDistanceVec.Norm2() < CORE::GEO::TOL7) label = 0;
 
   return label;
 }
@@ -406,11 +407,11 @@ int GEO::getXFEMLabelAndNearestObject(const DRT::Discretization& dis,
  | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
-void GEO::getPotentialObjects(const DRT::Discretization& dis,
+void CORE::GEO::getPotentialObjects(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList,
     const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-    std::map<int, std::map<int, GEO::NearestObject>>& potObjects, const double cutoff_radius,
+    std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects, const double cutoff_radius,
     const int label, const int projectiontype)
 {
   // find nearest object for each structure
@@ -423,7 +424,7 @@ void GEO::getPotentialObjects(const DRT::Discretization& dis,
  | a set of nodes in a given radius                          u.may 07/08|
  | from a query point                                                   |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> GEO::getElementsInRadius(const DRT::Discretization& dis,
+std::map<int, std::set<int>> CORE::GEO::getElementsInRadius(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const LINALG::Matrix<3, 1>& querypoint, const double radius, const int label,
     std::map<int, std::set<int>>& elementList)
@@ -440,7 +441,7 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(const DRT::Discretization&
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
            eleIter != (labelIter->second).end(); eleIter++)
       {
-        DRT::Element* element = dis.gElement(*eleIter);
+        ::DRT::Element* element = dis.gElement(*eleIter);
         for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
           nodeList[labelIter->first].insert(element->NodeIds()[i]);
       }
@@ -452,11 +453,11 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(const DRT::Discretization&
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      double distance = GEO::LARGENUMBER;
-      const DRT::Node* node = dis.gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
+      double distance = CORE::GEO::LARGENUMBER;
+      const ::DRT::Node* node = dis.gNode(*nodeIter);
+      CORE::GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
 
-      if (distance < (radius + GEO::TOL7))
+      if (distance < (radius + CORE::GEO::TOL7))
       {
         for (int i = 0; i < dis.gNode(*nodeIter)->NumElement(); i++)
           elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
@@ -471,8 +472,8 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(const DRT::Discretization&
  | The radius is approximated by a box with edge                        |
  | length 2xRadius + box width                                          |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> GEO::getElementsInRadius(
-    const DRT::Discretization& dis,  // von potential::discretRCP_
+std::map<int, std::set<int>> CORE::GEO::getElementsInRadius(
+    const ::DRT::Discretization& dis,  // von potential::discretRCP_
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, LINALG::Matrix<3, 2>>& elemXAABBList, LINALG::Matrix<3, 2> elemXAABB,
     const int label, std::map<int, std::set<int>>& elementList)
@@ -489,7 +490,7 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
            eleIter != (labelIter->second).end(); eleIter++)
       {
-        DRT::Element* element = dis.gElement(*eleIter);
+        ::DRT::Element* element = dis.gElement(*eleIter);
         for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
           nodeList[labelIter->first].insert(element->NodeIds()[i]);
       }
@@ -501,10 +502,10 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis.gNode(*nodeIter);
+      const ::DRT::Node* node = dis.gNode(*nodeIter);
       const LINALG::Matrix<3, 1> x_node = currentpositions.find(node->Id())->second;
 
-      if (GEO::pointInTreeNode(x_node, elemXAABB))
+      if (CORE::GEO::pointInTreeNode(x_node, elemXAABB))
       {
         for (int i = 0; i < dis.gNode(*nodeIter)->NumElement(); i++)
           elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
@@ -521,7 +522,8 @@ std::map<int, std::set<int>> GEO::getElementsInRadius(
  | kind of ID may be used.                                                |
  |                                                             cyron 02/09|
  *------------------------------------------------------------------------*/
-std::vector<int> GEO::getPointsInRadius(const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+std::vector<int> CORE::GEO::getPointsInRadius(
+    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const LINALG::Matrix<3, 1>& querypoint, const double radius,
     std::map<int, std::set<int>>& elementList)
 {
@@ -551,7 +553,7 @@ std::vector<int> GEO::getPointsInRadius(const std::map<int, LINALG::Matrix<3, 1>
  | a vector of intersection elements                         u.may 02/09|
  | for a given query element (CONTACT)                                  | |
  *----------------------------------------------------------------------*/
-void GEO::searchCollisions(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs,
+void CORE::GEO::searchCollisions(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs,
     const LINALG::Matrix<3, 2>& queryBV, const int label,
     const std::map<int, std::set<int>>& elementList, std::set<int>& collisions)
 {
@@ -580,7 +582,7 @@ void GEO::searchCollisions(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs
  | a vector of intersection elements                         u.may 02/09|
  | for a given query element (CONTACT)                                  | |
  *----------------------------------------------------------------------*/
-void GEO::searchCollisions(const std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs,
+void CORE::GEO::searchCollisions(const std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs,
     const LINALG::Matrix<9, 2>& queryKDOP, const int label,
     const std::map<int, std::set<int>>& elementList, std::set<int>& contactEleIds)
 {
@@ -607,14 +609,14 @@ void GEO::searchCollisions(const std::map<int, LINALG::Matrix<9, 2>>& currentKDO
  | searches a nearest object in tree node                    u.may 07/08|
  | object is either a node, line or surface element                     |
  *----------------------------------------------------------------------*/
-int GEO::nearestObjectInNode(const DRT::Discretization& dis,
+int CORE::GEO::nearestObjectInNode(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
-    LINALG::Matrix<3, 1>& minDistanceVec, GEO::NearestObject& nearestObject)
+    LINALG::Matrix<3, 1>& minDistanceVec, CORE::GEO::NearestObject& nearestObject)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> normal(true);
   LINALG::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -626,8 +628,9 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
          eleIter != (labelIter->second).end(); eleIter++)
     {
       // not const because otherwise no lines can be obtained
-      DRT::Element* element = dis.gElement(*eleIter);
-      pointFound = GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
+      ::DRT::Element* element = dis.gElement(*eleIter);
+      pointFound =
+          CORE::GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -636,11 +639,11 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
       }
 
       // run over all line elements
-      const std::vector<Teuchos::RCP<DRT::Element>> eleLines = element->Lines();
+      const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = element->Lines();
       for (int i = 0; i < element->NumLine(); i++)
       {
-        pointFound =
-            GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
+        pointFound = CORE::GEO::getDistanceToLine(
+            eleLines[i].get(), currentpositions, point, x_surface, distance);
         if (pointFound && distance < min_distance)
         {
           pointFound = false;
@@ -659,8 +662,8 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis.gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, distance);
+      const ::DRT::Node* node = dis.gNode(*nodeIter);
+      CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
@@ -669,7 +672,8 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
       }
     }
 
-  if (nearestObject.getObjectType() == GEO::NOTYPE_OBJECT) dserror("no nearest object obtained");
+  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
 
   // compute distance vector pointing away from the surface element
   minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
@@ -681,16 +685,16 @@ int GEO::nearestObjectInNode(const DRT::Discretization& dis,
  | gives the coords of the nearest point on or in an object in  tk 01/10|
  | tree node; object is either a node or a line                         |
  *----------------------------------------------------------------------*/
-void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+void CORE::GEO::nearest2DObjectInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+    std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& minDistCoords)
 {
-  GEO::NearestObject nearestObject;
+  CORE::GEO::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> normal(true);
   LINALG::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -702,8 +706,9 @@ void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
          eleIter != (labelIter->second).end(); eleIter++)
     {
       // not const because otherwise no lines can be obtained
-      DRT::Element* element = elements[*eleIter].get();
-      pointFound = GEO::getDistanceToLine(element, currentpositions, point, x_surface, distance);
+      ::DRT::Element* element = elements[*eleIter].get();
+      pointFound =
+          CORE::GEO::getDistanceToLine(element, currentpositions, point, x_surface, distance);
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -722,8 +727,8 @@ void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis->gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, distance);
+      const ::DRT::Node* node = dis->gNode(*nodeIter);
+      CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
@@ -732,7 +737,8 @@ void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
       }
     }
 
-  if (nearestObject.getObjectType() == GEO::NOTYPE_OBJECT) dserror("no nearest object obtained");
+  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -746,16 +752,16 @@ void GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
  | also surface id of nearest object is returned, in case of a          |
  | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
-int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+int CORE::GEO::nearest3DObjectInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+    std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& minDistCoords)
 {
-  GEO::NearestObject nearestObject;
+  CORE::GEO::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> normal(true);
   LINALG::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -768,8 +774,9 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
          eleIter != (labelIter->second).end(); eleIter++)
     {
       // not const because otherwise no lines can be obtained
-      DRT::Element* element = elements[*eleIter].get();
-      pointFound = GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
+      ::DRT::Element* element = elements[*eleIter].get();
+      pointFound =
+          CORE::GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -779,11 +786,11 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
       }
 
       // run over all line elements
-      const std::vector<Teuchos::RCP<DRT::Element>> eleLines = element->Lines();
+      const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = element->Lines();
       for (int i = 0; i < element->NumLine(); i++)
       {
-        pointFound =
-            GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
+        pointFound = CORE::GEO::getDistanceToLine(
+            eleLines[i].get(), currentpositions, point, x_surface, distance);
         if (pointFound && distance < min_distance)
         {
           pointFound = false;
@@ -803,8 +810,8 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis->gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, distance);
+      const ::DRT::Node* node = dis->gNode(*nodeIter);
+      CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
@@ -814,7 +821,8 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
       }
     }
 
-  if (nearestObject.getObjectType() == GEO::NOTYPE_OBJECT) dserror("no nearest object obtained");
+  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -826,18 +834,18 @@ int GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
  | gives the coords of the nearest point on a surface        ghamm 09/13|
  | element and return type of nearest object                            |
  *----------------------------------------------------------------------*/
-GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
+CORE::GEO::ObjectType CORE::GEO::nearest3DObjectOnElement(::DRT::Element* surfaceelement,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& minDistCoords)
 {
-  GEO::NearestObject nearestObject;
+  CORE::GEO::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> x_surface(true);
 
   pointFound =
-      GEO::getDistanceToSurface(surfaceelement, currentpositions, point, x_surface, distance);
+      CORE::GEO::getDistanceToSurface(surfaceelement, currentpositions, point, x_surface, distance);
   if (pointFound && distance <= min_distance)
   {
     pointFound = false;
@@ -846,11 +854,11 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
   }
 
   // run over all line elements
-  const std::vector<Teuchos::RCP<DRT::Element>> eleLines = surfaceelement->Lines();
+  const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = surfaceelement->Lines();
   for (int i = 0; i < surfaceelement->NumLine(); i++)
   {
-    pointFound =
-        GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
+    pointFound = CORE::GEO::getDistanceToLine(
+        eleLines[i].get(), currentpositions, point, x_surface, distance);
     if (pointFound && distance <= min_distance)
     {
       pointFound = false;
@@ -877,7 +885,8 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
     }
   }
 
-  if (nearestObject.getObjectType() == GEO::NOTYPE_OBJECT) dserror("no nearest object obtained");
+  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -887,21 +896,21 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double GEO::nearestNodeInNode(const Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+double CORE::GEO::nearestNodeInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+    std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
-    DRT::Node& nearnode)
+    ::DRT::Node& nearnode)
 {
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   std::set<int> nodeList;
 
   // run over all surface elements to collect nodes
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleIter;
+  std::map<int, Teuchos::RCP<::DRT::Element>>::const_iterator eleIter;
   for (eleIter = elements.begin(); eleIter != elements.end(); eleIter++)
   {
     // not const because otherwise no lines can be obtained
-    DRT::Element* element = (eleIter->second).get();
+    ::DRT::Element* element = (eleIter->second).get();
 
     // collect nodes
     for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
@@ -912,8 +921,8 @@ double GEO::nearestNodeInNode(const Teuchos::RCP<DRT::Discretization> dis,
   for (std::set<int>::const_iterator nodeIter = nodeList.begin(); nodeIter != nodeList.end();
        nodeIter++)
   {
-    DRT::Node* node = dis->gNode(*nodeIter);
-    GEO::getDistanceToPoint(node, currentpositions, point, distance);
+    ::DRT::Node* node = dis->gNode(*nodeIter);
+    CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
     if (distance < min_distance)
     {
       min_distance = distance;
@@ -931,11 +940,11 @@ double GEO::nearestNodeInNode(const Teuchos::RCP<DRT::Discretization> dis,
  | searches a nearest object in tree node                    u.may 07/08|
  | object is either a node, line or surface element                     |
  *----------------------------------------------------------------------*/
-void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
+void CORE::GEO::fillPotObjectsInNode(const ::DRT::Discretization& dis,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList,
     const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-    std::map<int, std::map<int, GEO::NearestObject>>& potObjects, const double cutoff_radius,
+    std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects, const double cutoff_radius,
     const int label, const int projectiontype)
 {
   potObjects.clear();
@@ -943,7 +952,7 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
 
   for (unsigned int i_gp = 0; i_gp < gaussPoints.size(); i_gp++)
   {
-    std::map<int, GEO::NearestObject> potObjectsAtGaussPoint;
+    std::map<int, CORE::GEO::NearestObject> potObjectsAtGaussPoint;
 
     for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
          labelIter != elementList.end(); labelIter++)
@@ -951,19 +960,19 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
       if (labelIter->first != label)
       {
         bool pointFound = false;
-        double distance = GEO::LARGENUMBER;
-        double min_distance = GEO::LARGENUMBER;
+        double distance = CORE::GEO::LARGENUMBER;
+        double min_distance = CORE::GEO::LARGENUMBER;
         LINALG::Matrix<3, 1> normal(true);
         LINALG::Matrix<3, 1> x_surface(true);
         std::set<int> nodeList;
-        GEO::NearestObject nearestObject;
+        CORE::GEO::NearestObject nearestObject;
 
         for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
              eleIter != (labelIter->second).end(); eleIter++)
         {
           // not const because otherwise no lines can be obtained
-          DRT::Element* element = dis.gElement(*eleIter);
-          pointFound = GEO::getDistanceToSurface(
+          ::DRT::Element* element = dis.gElement(*eleIter);
+          pointFound = CORE::GEO::getDistanceToSurface(
               element, currentpositions, gaussPoints[i_gp], x_surface, distance);
           if (pointFound && distance < cutoff_radius && distance < min_distance)
           {
@@ -973,10 +982,10 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
           }
 
           // run over all line elements
-          const std::vector<Teuchos::RCP<DRT::Element>> eleLines = element->Lines();
+          const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = element->Lines();
           for (int i_lines = 0; i_lines < element->NumLine(); i_lines++)
           {
-            pointFound = GEO::getDistanceToLine(
+            pointFound = CORE::GEO::getDistanceToLine(
                 eleLines[i_lines].get(), currentpositions, gaussPoints[i_gp], x_surface, distance);
             if (pointFound && distance < cutoff_radius && distance < min_distance)
             {
@@ -995,8 +1004,8 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
         for (std::set<int>::const_iterator nodeIter = nodeList.begin(); nodeIter != nodeList.end();
              nodeIter++)
         {
-          const DRT::Node* node = dis.gNode(*nodeIter);
-          GEO::getDistanceToPoint(node, currentpositions, gaussPoints[i_gp], distance);
+          const ::DRT::Node* node = dis.gNode(*nodeIter);
+          CORE::GEO::getDistanceToPoint(node, currentpositions, gaussPoints[i_gp], distance);
           if (distance < cutoff_radius && distance < min_distance)
           {
             min_distance = distance;
@@ -1005,7 +1014,7 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
           }
         }
 
-        if (nearestObject.getObjectType() != GEO::NOTYPE_OBJECT)
+        if (nearestObject.getObjectType() != CORE::GEO::NOTYPE_OBJECT)
           potObjectsAtGaussPoint[labelIter->first] = nearestObject;
 
       }  // labelIter->first != label
@@ -1020,14 +1029,15 @@ void GEO::fillPotObjectsInNode(const DRT::Discretization& dis,
  | searches a nearest object in tree node                    u.may 02/09|
  | object is either a node, line or tri     element                     |
  *----------------------------------------------------------------------*/
-int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
-    const std::vector<GEO::InterfacePoint>& pointList,
+int CORE::GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
+    const std::vector<CORE::GEO::InterfacePoint>& pointList,
     const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
-    const int pointLabel, LINALG::Matrix<3, 1>& minDistanceVec, GEO::NearestObject& nearestObject)
+    const int pointLabel, LINALG::Matrix<3, 1>& minDistanceVec,
+    CORE::GEO::NearestObject& nearestObject)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
-  double distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
+  double distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> normal(true);
   LINALG::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -1049,7 +1059,7 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
            eleIter != (labelIter->second).end(); eleIter++)
       {
         // not const because otherwise no lines can be obtained
-        pointFound = GEO::getDistanceToSurface(
+        pointFound = CORE::GEO::getDistanceToSurface(
             triangleList[*eleIter], pointList, point, x_surface, distance);
         if (pointFound && distance < min_distance)
         {
@@ -1072,7 +1082,8 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
             linePoints[0] = triangleList[*eleIter][i];
             linePoints[1] = triangleList[*eleIter][0];
           }
-          pointFound = GEO::getDistanceToLine(linePoints, pointList, point, x_surface, distance);
+          pointFound =
+              CORE::GEO::getDistanceToLine(linePoints, pointList, point, x_surface, distance);
           if (pointFound && distance < min_distance)
           {
             pointFound = false;
@@ -1081,7 +1092,7 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
           }
         }
         // collect nodes
-        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::tri3);
+        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(::DRT::Element::tri3);
              i++)
           nodeList[labelIter->first].insert(triangleList[*eleIter][i]);
       }  // if(labelIter->first!=pointLabel)
@@ -1097,7 +1108,7 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
       for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
            nodeIter != (labelIter->second).end(); nodeIter++)
       {
-        GEO::getDistanceToPoint(*nodeIter, pointList, point, distance);
+        CORE::GEO::getDistanceToPoint(*nodeIter, pointList, point, distance);
         if (distance < min_distance)
         {
           min_distance = distance;
@@ -1108,7 +1119,8 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
     }
   }
 
-  if (nearestObject.getObjectType() == GEO::NOTYPE_OBJECT) dserror("no nearest object obtained");
+  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
 
   std::cout << "point = " << point << std::endl;
   std::cout << "nearestObject.getPhysCoord() = " << nearestObject.getPhysCoord() << std::endl;
@@ -1124,23 +1136,23 @@ int GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
  |  computes the normal distance from a point to a           u.may 07/08|
  |  surface element, if it exits                                        |
  *----------------------------------------------------------------------*/
-bool GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
+bool CORE::GEO::getDistanceToSurface(const ::DRT::Element* surfaceElement,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& x_surface_phys, double& distance)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> distance_vector(true);
   LINALG::Matrix<2, 1> elecoord(true);  // starting value at element center
 
   const LINALG::SerialDenseMatrix xyze_surfaceElement(
-      GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
-  GEO::CurrentToSurfaceElementCoordinates(
+      CORE::GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
+  CORE::GEO::CurrentToSurfaceElementCoordinates(
       surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
-  if (GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
+  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
   {
-    GEO::elementToCurrentCoordinates(
+    CORE::GEO::elementToCurrentCoordinates(
         surfaceElement->Shape(), xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
     distance_vector.Update(1.0, point, -1.0, x_surface_phys);
@@ -1150,11 +1162,11 @@ bool GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
   }
 
   // if the element is curved
-  GEO::EleGeoType eleGeoType = GEO::HIGHERORDER;
+  CORE::GEO::EleGeoType eleGeoType = CORE::GEO::HIGHERORDER;
   checkRoughGeoType(surfaceElement, xyze_surfaceElement, eleGeoType);
 
   // TODO fix check if deformed in the linear case
-  if (eleGeoType == GEO::HIGHERORDER)
+  if (eleGeoType == CORE::GEO::HIGHERORDER)
   {
     LINALG::SerialDenseMatrix eleCoordMatrix =
         CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
@@ -1163,13 +1175,13 @@ bool GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
       // use nodes as starting values
       for (int j = 0; j < 2; j++) elecoord(j) = eleCoordMatrix(j, i);
 
-      GEO::CurrentToSurfaceElementCoordinates(
+      CORE::GEO::CurrentToSurfaceElementCoordinates(
           surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
-      if (GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
+      if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
       {
         LINALG::Matrix<3, 1> physcoord(true);
-        GEO::elementToCurrentCoordinates(
+        CORE::GEO::elementToCurrentCoordinates(
             surfaceElement->Shape(), xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
         distance_vector.Update(1.0, point, -1.0, physcoord);
@@ -1190,8 +1202,8 @@ bool GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
  |  computes the normal distance from a point to a           u.may 02/09|
  |  linear triangular element, if it exits                              |
  *----------------------------------------------------------------------*/
-bool GEO::getDistanceToSurface(const std::vector<int>& triElement,
-    const std::vector<GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
+bool CORE::GEO::getDistanceToSurface(const std::vector<int>& triElement,
+    const std::vector<CORE::GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& x_surface_phys, double& distance)
 {
   bool pointFound = false;
@@ -1204,11 +1216,13 @@ bool GEO::getDistanceToSurface(const std::vector<int>& triElement,
     LINALG::Matrix<3, 1> node = pointList[triElement[i]].getCoord();
     for (int j = 0; j < 3; j++) xyze_triElement(i, j) = node(j);
   }
-  GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, point, elecoord);
+  CORE::GEO::CurrentToSurfaceElementCoordinates(
+      ::DRT::Element::tri3, xyze_triElement, point, elecoord);
 
-  if (GEO::checkPositionWithinElementParameterSpace(elecoord, DRT::Element::tri3))
+  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, ::DRT::Element::tri3))
   {
-    GEO::elementToCurrentCoordinates(DRT::Element::tri3, xyze_triElement, elecoord, x_surface_phys);
+    CORE::GEO::elementToCurrentCoordinates(
+        ::DRT::Element::tri3, xyze_triElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
     distance_vector.Update(1.0, point, -1.0, x_surface_phys);
     distance = distance_vector.Norm2();
@@ -1222,22 +1236,24 @@ bool GEO::getDistanceToSurface(const std::vector<int>& triElement,
  |  computes the normal distance from a point to a           u.may 07/08|
  |  line element, if it exits                                           |
  *----------------------------------------------------------------------*/
-bool GEO::getDistanceToLine(const DRT::Element* lineElement,
+bool CORE::GEO::getDistanceToLine(const ::DRT::Element* lineElement,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& x_line_phys, double& distance)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
+  double min_distance = CORE::GEO::LARGENUMBER;
   LINALG::Matrix<3, 1> distance_vector(true);
   LINALG::Matrix<1, 1> elecoord(true);  // starting value at element center
 
   const LINALG::SerialDenseMatrix xyze_lineElement(
-      GEO::getCurrentNodalPositions(lineElement, currentpositions));
-  GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
+      CORE::GEO::getCurrentNodalPositions(lineElement, currentpositions));
+  CORE::GEO::CurrentToLineElementCoordinates(
+      lineElement->Shape(), xyze_lineElement, point, elecoord);
 
-  if (GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
+  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
   {
-    GEO::elementToCurrentCoordinates(lineElement->Shape(), xyze_lineElement, elecoord, x_line_phys);
+    CORE::GEO::elementToCurrentCoordinates(
+        lineElement->Shape(), xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
     distance_vector.Update(1.0, point, -1.0, x_line_phys);
     distance = distance_vector.Norm2();
@@ -1246,10 +1262,10 @@ bool GEO::getDistanceToLine(const DRT::Element* lineElement,
   }
 
   // if the element is curved
-  GEO::EleGeoType eleGeoType = GEO::HIGHERORDER;
+  CORE::GEO::EleGeoType eleGeoType = CORE::GEO::HIGHERORDER;
   checkRoughGeoType(lineElement, xyze_lineElement, eleGeoType);
 
-  if (eleGeoType == GEO::HIGHERORDER)
+  if (eleGeoType == CORE::GEO::HIGHERORDER)
   {
     LINALG::SerialDenseMatrix eleCoordMatrix =
         CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape());
@@ -1259,12 +1275,13 @@ bool GEO::getDistanceToLine(const DRT::Element* lineElement,
       // use end nodes as starting values in addition
       elecoord(0) = eleCoordMatrix(0, i);
 
-      GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
+      CORE::GEO::CurrentToLineElementCoordinates(
+          lineElement->Shape(), xyze_lineElement, point, elecoord);
 
-      if (GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
+      if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
       {
         LINALG::Matrix<3, 1> physcoord(true);
-        GEO::elementToCurrentCoordinates(
+        CORE::GEO::elementToCurrentCoordinates(
             lineElement->Shape(), xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
         distance_vector.Update(1.0, point, -1.0, physcoord);
@@ -1285,8 +1302,8 @@ bool GEO::getDistanceToLine(const DRT::Element* lineElement,
  |  computes the normal distance from a point to a           u.may 07/08|
  |  line element, if it exits                                           |
  *----------------------------------------------------------------------*/
-bool GEO::getDistanceToLine(const std::vector<int>& lineElement,
-    const std::vector<GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
+bool CORE::GEO::getDistanceToLine(const std::vector<int>& lineElement,
+    const std::vector<CORE::GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
     LINALG::Matrix<3, 1>& x_line_phys, double& distance)
 {
   bool pointFound = false;
@@ -1299,11 +1316,13 @@ bool GEO::getDistanceToLine(const std::vector<int>& lineElement,
     LINALG::Matrix<3, 1> node = pointList[lineElement[i]].getCoord();
     for (int j = 0; j < 3; j++) xyze_lineElement(i, j) = node(j);
   }
-  GEO::CurrentToLineElementCoordinates(DRT::Element::line2, xyze_lineElement, point, elecoord);
+  CORE::GEO::CurrentToLineElementCoordinates(
+      ::DRT::Element::line2, xyze_lineElement, point, elecoord);
 
-  if (GEO::checkPositionWithinElementParameterSpace(elecoord, DRT::Element::line2))
+  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, ::DRT::Element::line2))
   {
-    GEO::elementToCurrentCoordinates(DRT::Element::line2, xyze_lineElement, elecoord, x_line_phys);
+    CORE::GEO::elementToCurrentCoordinates(
+        ::DRT::Element::line2, xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
     distance_vector.Update(1.0, point, -1.0, x_line_phys);
     distance = distance_vector.Norm2();
@@ -1317,8 +1336,9 @@ bool GEO::getDistanceToLine(const std::vector<int>& lineElement,
  |  computes the distance from a point to a node             u.may 07/08|
  |  of an element                                                       |
  *----------------------------------------------------------------------*/
-void GEO::getDistanceToPoint(const int nodeId, const std::vector<GEO::InterfacePoint>& pointList,
-    const LINALG::Matrix<3, 1>& point, double& distance)
+void CORE::GEO::getDistanceToPoint(const int nodeId,
+    const std::vector<CORE::GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
+    double& distance)
 {
   // node position in physical coordinates
   const LINALG::Matrix<3, 1> x_node = pointList[nodeId].getCoord();
@@ -1335,7 +1355,7 @@ void GEO::getDistanceToPoint(const int nodeId, const std::vector<GEO::InterfaceP
  |  computes the distance from a point to a node             u.may 07/08|
  |  of an element                                                       |
  *----------------------------------------------------------------------*/
-void GEO::getDistanceToPoint(const DRT::Node* node,
+void CORE::GEO::getDistanceToPoint(const ::DRT::Node* node,
     const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
     double& distance)
 {
@@ -1354,12 +1374,12 @@ void GEO::getDistanceToPoint(const DRT::Node* node,
  |  find adjacent elements                                   peder 07/08|
  |  for a line given by two end nodes                                   |
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::getAdjacentSurfaceElementsToLine(
-    const DRT::Node* node1, const DRT::Node* node2)
+std::vector<int> CORE::GEO::getAdjacentSurfaceElementsToLine(
+    const ::DRT::Node* node1, const ::DRT::Node* node2)
 {
   std::vector<int> adjacentElements;
-  const DRT::Element* const* eleSet_node1 = node1->Elements();
-  const DRT::Element* const* eleSet_node2 = node2->Elements();
+  const ::DRT::Element* const* eleSet_node1 = node1->Elements();
+  const ::DRT::Element* const* eleSet_node2 = node2->Elements();
 
   for (int i = 0; i < node1->NumElement(); i++)
     for (int j = 0; j < node2->NumElement(); j++)
@@ -1382,7 +1402,7 @@ std::vector<int> GEO::getAdjacentSurfaceElementsToLine(
  |  find adjacent elements                                   peder 07/08|
  |  for a line given by two end nodes                                   |
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::getAdjacentTriElementsToLine(
+std::vector<int> CORE::GEO::getAdjacentTriElementsToLine(
     const std::vector<std::vector<int>>& triangleList, const int triangleId, const int node1,
     const int node2)
 {
@@ -1417,7 +1437,7 @@ std::vector<int> GEO::getAdjacentTriElementsToLine(
  |  find adjacent elements                                   u.may 05/09|
  |  for a given node                                                    |
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::getAdjacentTriElementsToNode(
+std::vector<int> CORE::GEO::getAdjacentTriElementsToNode(
     const std::vector<std::vector<int>>& triangleList, const int node)
 {
   std::vector<int> adjacentElements;
@@ -1440,30 +1460,31 @@ std::vector<int> GEO::getAdjacentTriElementsToNode(
  |  surface element (or elements if point is a on node                  |
  |  or on the line )                                                    |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const DRT::Discretization& dis,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, GEO::NearestObject& nearestObject)
+LINALG::Matrix<3, 1> CORE::GEO::getNormalAtSurfacePoint(const ::DRT::Discretization& dis,
+    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+    CORE::GEO::NearestObject& nearestObject)
 {
   LINALG::Matrix<3, 1> normal(true);
 
   switch (nearestObject.getObjectType())
   {
-    case GEO::SURFACE_OBJECT:
+    case CORE::GEO::SURFACE_OBJECT:
     {
       LINALG::Matrix<2, 1> elecoord(true);
-      const DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
+      const ::DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
       const LINALG::SerialDenseMatrix xyze_surfaceElement =
-          GEO::getCurrentNodalPositions(surfaceElement, currentpositions);
-      GEO::CurrentToSurfaceElementCoordinates(
+          CORE::GEO::getCurrentNodalPositions(surfaceElement, currentpositions);
+      CORE::GEO::CurrentToSurfaceElementCoordinates(
           surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
-      GEO::computeNormalToSurfaceElement(
+      CORE::GEO::computeNormalToSurfaceElement(
           surfaceElement->Shape(), xyze_surfaceElement, elecoord, normal);
       break;
     }
-    case GEO::LINE_OBJECT:
+    case CORE::GEO::LINE_OBJECT:
     {
-      DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
-      const std::vector<Teuchos::RCP<DRT::Element>> eleLines = surfaceElement->Lines();
-      const DRT::Element* lineElement = eleLines[nearestObject.getLineId()].get();
+      ::DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
+      const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = surfaceElement->Lines();
+      const ::DRT::Element* lineElement = eleLines[nearestObject.getLineId()].get();
       std::vector<int> adjacentElements =
           getAdjacentSurfaceElementsToLine(lineElement->Nodes()[0], lineElement->Nodes()[1]);
 
@@ -1471,35 +1492,35 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const DRT::Discretization& dis
       for (std::vector<int>::const_iterator eleIter = adjacentElements.begin();
            eleIter != adjacentElements.end(); ++eleIter)
       {
-        const DRT::Element* surfaceElement = dis.gElement(*eleIter);
+        const ::DRT::Element* surfaceElement = dis.gElement(*eleIter);
         const LINALG::SerialDenseMatrix xyze_surfaceElement(
-            GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
+            CORE::GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
         LINALG::Matrix<2, 1> eleCoord(true);
         LINALG::Matrix<3, 1> surface_normal(true);
 
-        GEO::CurrentToSurfaceElementCoordinates(
+        CORE::GEO::CurrentToSurfaceElementCoordinates(
             surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), eleCoord);
-        GEO::computeNormalToSurfaceElement(
+        CORE::GEO::computeNormalToSurfaceElement(
             surfaceElement->Shape(), xyze_surfaceElement, eleCoord, surface_normal);
         normal += surface_normal;
       }
       normal.Scale(1.0 / ((double)adjacentElements.size()));
       break;
     }
-    case GEO::NODE_OBJECT:
+    case CORE::GEO::NODE_OBJECT:
     {
-      const DRT::Node* node = dis.gNode(nearestObject.getNodeId());
+      const ::DRT::Node* node = dis.gNode(nearestObject.getNodeId());
       // run over all elements adjacent ot a node
       for (int j = 0; j < node->NumElement(); j++)
       {
-        const DRT::Element* surfaceElement = node->Elements()[j];
+        const ::DRT::Element* surfaceElement = node->Elements()[j];
         const LINALG::SerialDenseMatrix xyze_surfaceElement(
-            GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
+            CORE::GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
         LINALG::Matrix<2, 1> elecoord(true);
         LINALG::Matrix<3, 1> surface_normal(true);
-        GEO::CurrentToSurfaceElementCoordinates(
+        CORE::GEO::CurrentToSurfaceElementCoordinates(
             surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
-        GEO::computeNormalToSurfaceElement(
+        CORE::GEO::computeNormalToSurfaceElement(
             surfaceElement->Shape(), xyze_surfaceElement, elecoord, surface_normal);
         normal += surface_normal;
       }
@@ -1517,14 +1538,16 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const DRT::Discretization& dis
  |  surface element (or elements if point is a on node                  |
  |  or on the line )                                                    |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const std::vector<std::vector<int>>& triangleList,
-    const std::vector<GEO::InterfacePoint>& pointList, const GEO::NearestObject& nearestObject)
+LINALG::Matrix<3, 1> CORE::GEO::getNormalAtSurfacePoint(
+    const std::vector<std::vector<int>>& triangleList,
+    const std::vector<CORE::GEO::InterfacePoint>& pointList,
+    const CORE::GEO::NearestObject& nearestObject)
 {
   LINALG::Matrix<3, 1> normal(true);
 
   switch (nearestObject.getObjectType())
   {
-    case GEO::SURFACE_OBJECT:
+    case CORE::GEO::SURFACE_OBJECT:
     {
       LINALG::Matrix<2, 1> elecoord(true);
       LINALG::SerialDenseMatrix xyze_triElement(3, 3);
@@ -1534,12 +1557,13 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const std::vector<std::vector<
             pointList[triangleList[nearestObject.getSurfaceId()][i]].getCoord();
         for (int j = 0; j < 3; j++) xyze_triElement(i, j) = node(j);
       }
-      GEO::CurrentToSurfaceElementCoordinates(
-          DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-      GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, normal);
+      CORE::GEO::CurrentToSurfaceElementCoordinates(
+          ::DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
+      CORE::GEO::computeNormalToSurfaceElement(
+          ::DRT::Element::tri3, xyze_triElement, elecoord, normal);
       break;
     }
-    case GEO::LINE_OBJECT:
+    case CORE::GEO::LINE_OBJECT:
     {
       int node1 = nearestObject.getLineId();
       int node2 = nearestObject.getLineId() + 1;
@@ -1559,17 +1583,17 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const std::vector<std::vector<
           LINALG::Matrix<3, 1> node = pointList[triangleList[*eleIter][i]].getCoord();
           for (int j = 0; j < 3; j++) xyze_triElement(i, j) = node(j);
         }
-        GEO::CurrentToSurfaceElementCoordinates(
-            DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-        GEO::computeNormalToSurfaceElement(
-            DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
+        CORE::GEO::CurrentToSurfaceElementCoordinates(
+            ::DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
+        CORE::GEO::computeNormalToSurfaceElement(
+            ::DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
 
         normal += tri_normal;
       }
       normal.Scale(1.0 / ((double)adjacentElements.size()));
       break;
     }
-    case GEO::NODE_OBJECT:
+    case CORE::GEO::NODE_OBJECT:
     {
       // run over all elements adjacent ot a node
       std::vector<int> adjacentElements =
@@ -1587,10 +1611,10 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const std::vector<std::vector<
           LINALG::Matrix<3, 1> node = pointList[triangleList[*eleIter][i]].getCoord();
           for (int j = 0; j < 3; j++) xyze_triElement(i, j) = node(j);
         }
-        GEO::CurrentToSurfaceElementCoordinates(
-            DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-        GEO::computeNormalToSurfaceElement(
-            DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
+        CORE::GEO::CurrentToSurfaceElementCoordinates(
+            ::DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
+        CORE::GEO::computeNormalToSurfaceElement(
+            ::DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
 
         normal += tri_normal;
       }
@@ -1607,11 +1631,12 @@ LINALG::Matrix<3, 1> GEO::getNormalAtSurfacePoint(const std::vector<std::vector<
  | check s if nearest point found on nearest object          u.may 09/08|
  | lies in a tree node specified by its box                             |
  *----------------------------------------------------------------------*/
-bool GEO::pointInTreeNode(const LINALG::Matrix<3, 1>& point, const LINALG::Matrix<3, 2>& nodeBox)
+bool CORE::GEO::pointInTreeNode(
+    const LINALG::Matrix<3, 1>& point, const LINALG::Matrix<3, 2>& nodeBox)
 {
   for (int dim = 0; dim < 3; dim++)
-    if ((point(dim) < (nodeBox(dim, 0) - GEO::TOL6)) ||
-        (point(dim) > (nodeBox(dim, 1) + GEO::TOL6)))
+    if ((point(dim) < (nodeBox(dim, 0) - CORE::GEO::TOL6)) ||
+        (point(dim) > (nodeBox(dim, 1) + CORE::GEO::TOL6)))
       return false;
 
   return true;
@@ -1621,11 +1646,11 @@ bool GEO::pointInTreeNode(const LINALG::Matrix<3, 1>& point, const LINALG::Matri
  | check s if nearest point found on nearest object          u.may 09/08|
  | lies in the minimum circle that fits inside the triangle             |
  *----------------------------------------------------------------------*/
-bool GEO::pointInMinCircleInTreeNode(const LINALG::Matrix<3, 1>& nearestpoint,
+bool CORE::GEO::pointInMinCircleInTreeNode(const LINALG::Matrix<3, 1>& nearestpoint,
     const LINALG::Matrix<3, 1>& querypoint, const LINALG::Matrix<3, 2>& nodeBox,
     const bool rootNode)
 {
-  double minRadius = GEO::LARGENUMBER;
+  double minRadius = CORE::GEO::LARGENUMBER;
 
   if (rootNode)
     return pointInTreeNode(nearestpoint, nodeBox);
@@ -1653,7 +1678,7 @@ bool GEO::pointInMinCircleInTreeNode(const LINALG::Matrix<3, 1>& nearestpoint,
 /*----------------------------------------------------------------------*
  | merge two AABB and deliver the resulting AABB's           peder 07/08|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::mergeAABB(
+LINALG::Matrix<3, 2> CORE::GEO::mergeAABB(
     const LINALG::Matrix<3, 2>& AABB1, const LINALG::Matrix<3, 2>& AABB2)
 {
   LINALG::Matrix<3, 2> mergedAABB;
@@ -1669,16 +1694,16 @@ LINALG::Matrix<3, 2> GEO::mergeAABB(
 /*----------------------------------------------------------------------*
  | check if two AABBs are in the same node box             u.may   08/08|
  *----------------------------------------------------------------------*/
-bool GEO::inSameNodeBox(const LINALG::Matrix<3, 2>& AABB_old, const LINALG::Matrix<3, 2>& AABB_new,
-    const LINALG::Matrix<3, 2>& nodeBox)
+bool CORE::GEO::inSameNodeBox(const LINALG::Matrix<3, 2>& AABB_old,
+    const LINALG::Matrix<3, 2>& AABB_new, const LINALG::Matrix<3, 2>& nodeBox)
 {
   bool inSameNode = true;
   for (int i = 0; i < 3; i++)
   {
-    if (AABB_old(i, 0) < (nodeBox(i, 0) - GEO::TOL7) ||
-        AABB_old(i, 1) > (nodeBox(i, 1) + GEO::TOL7) ||
-        AABB_new(i, 0) < (nodeBox(i, 0) - GEO::TOL7) ||
-        AABB_new(i, 1) > (nodeBox(i, 1) + GEO::TOL7))
+    if (AABB_old(i, 0) < (nodeBox(i, 0) - CORE::GEO::TOL7) ||
+        AABB_old(i, 1) > (nodeBox(i, 1) + CORE::GEO::TOL7) ||
+        AABB_new(i, 0) < (nodeBox(i, 0) - CORE::GEO::TOL7) ||
+        AABB_new(i, 1) > (nodeBox(i, 1) + CORE::GEO::TOL7))
     {
       inSameNode = false;
       break;
@@ -1692,16 +1717,16 @@ bool GEO::inSameNodeBox(const LINALG::Matrix<3, 2>& AABB_old, const LINALG::Matr
  | not for Cartesian elements cjecked because no improvements are       |
  | expected                                                             |
  *----------------------------------------------------------------------*/
-void GEO::checkRoughGeoType(const DRT::Element* element,
-    const LINALG::SerialDenseMatrix xyze_element, GEO::EleGeoType& eleGeoType)
+void CORE::GEO::checkRoughGeoType(const ::DRT::Element* element,
+    const LINALG::SerialDenseMatrix xyze_element, CORE::GEO::EleGeoType& eleGeoType)
 {
   const int order = CORE::DRT::UTILS::getOrder(element->Shape());
 
   if (order == 1)
-    eleGeoType = GEO::LINEAR;  // TODO check for bilinear elements in the tree they count as
-                               // higerorder fix it
+    eleGeoType = CORE::GEO::LINEAR;  // TODO check for bilinear elements in the tree they count
+                                     // as higerorder fix it
   else if (order == 2)
-    eleGeoType = GEO::HIGHERORDER;
+    eleGeoType = CORE::GEO::HIGHERORDER;
   else
     dserror("order of element is not correct");
 
@@ -1713,16 +1738,16 @@ void GEO::checkRoughGeoType(const DRT::Element* element,
  | determines the geometry type of an element                 u.may 09/09|
  |  -->needed for Teuchos::RCP on element                                |
  *----------------------------------------------------------------------*/
-void GEO::checkRoughGeoType(const Teuchos::RCP<DRT::Element> element,
-    const LINALG::SerialDenseMatrix xyze_element, GEO::EleGeoType& eleGeoType)
+void CORE::GEO::checkRoughGeoType(const Teuchos::RCP<::DRT::Element> element,
+    const LINALG::SerialDenseMatrix xyze_element, CORE::GEO::EleGeoType& eleGeoType)
 {
   const int order = CORE::DRT::UTILS::getOrder(element->Shape());
 
   if (order == 1)
-    eleGeoType = GEO::LINEAR;  // TODO check for bilinear elements in the tree they count as
-                               // higerorder fix it
+    eleGeoType = CORE::GEO::LINEAR;  // TODO check for bilinear elements in the tree they count
+                                     // as higerorder fix it
   else if (order == 2)
-    eleGeoType = GEO::HIGHERORDER;
+    eleGeoType = CORE::GEO::HIGHERORDER;
   else
     dserror("order of element is not correct");
 
@@ -1733,7 +1758,7 @@ void GEO::checkRoughGeoType(const Teuchos::RCP<DRT::Element> element,
 /*----------------------------------------------------------------------*
  | returns a set of intersection candidate ids             u.may   09/08|
  *----------------------------------------------------------------------*/
-void GEO::getIntersectionCandidates(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
+void CORE::GEO::getIntersectionCandidates(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
     const LINALG::Matrix<3, 2>& xfemXAABB, const std::map<int, std::set<int>>& elementList,
     std::set<int>& intersectionCandidateIds)
 {
@@ -1753,7 +1778,7 @@ void GEO::getIntersectionCandidates(const std::map<int, LINALG::Matrix<3, 2>>& c
 /*----------------------------------------------------------------------*
  | returns a set of potential elements                     u.may   10/09|
  *----------------------------------------------------------------------*/
-void GEO::getPotentialElements(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
+void CORE::GEO::getPotentialElements(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
     const LINALG::Matrix<3, 2>& xfemXAABB, const std::map<int, std::set<int>>& elementList,
     std::map<int, std::set<int>>& intersectionCandidateIds, const int label)
 {

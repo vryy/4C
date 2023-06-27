@@ -87,7 +87,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // setup variables
   // -------------------------------------------------------------------------
   // discretization pointer
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<::DRT::Discretization>(DiscretPtr(), true);
   // stiff
   stiff_beaminteraction_ =
       Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
@@ -143,7 +143,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<::DRT::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -378,7 +378,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   CheckInit();
 
   // store structure discretization in vector
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<::DRT::Discretization>> discret_vec(1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
@@ -1160,7 +1160,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
 {
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<::DRT::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
   double bin_size_lower_bound =

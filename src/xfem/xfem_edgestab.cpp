@@ -47,7 +47,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
     Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
-    Teuchos::RCP<GEO::CutWizard> wizard,              ///< cut wizard
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard,        ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
     bool gmsh_eos_out          ///< stabilization gmsh output
@@ -105,8 +105,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   DRT::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
 
   // get corresponding element handles if available
-  GEO::CUT::ElementHandle* p_master_handle = wizard->GetElement(p_master);
-  GEO::CUT::ElementHandle* p_slave_handle = wizard->GetElement(p_slave);
+  CORE::GEO::CUT::ElementHandle* p_master_handle = wizard->GetElement(p_master);
+  CORE::GEO::CUT::ElementHandle* p_slave_handle = wizard->GetElement(p_slave);
 
   size_t p_master_numnode = p_master->NumNode();
   size_t p_slave_numnode = p_slave->NumNode();
@@ -172,33 +172,34 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
         p_master->Shape() == DRT::Element::wedge6 or p_master->Shape() == DRT::Element::pyramid5)
     {
-      GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
+      CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
-      std::vector<GEO::CUT::Facet*> facets;
+      std::vector<CORE::GEO::CUT::Facet*> facets;
       side->Facets(facets);
 
       if (facets.size() == 0) dserror("there is no facet between two elements with elementhandle!");
 
       // each facet should have 2 volumecells
-      for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin(); f != facets.end(); f++)
+      for (std::vector<CORE::GEO::CUT::Facet*>::const_iterator f = facets.begin();
+           f != facets.end(); f++)
       {
-        if ((*f)->Position() == GEO::CUT::Point::outside or
-            ((*f)->Position() == GEO::CUT::Point::inside and
+        if ((*f)->Position() == CORE::GEO::CUT::Point::outside or
+            ((*f)->Position() == CORE::GEO::CUT::Point::inside and
                 (include_inner || include_inner_faces)))
         {
-          GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
+          CORE::GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
 
           // how many volumecells found?
           if (vcs.size() ==
               2)  // standard XFEM case (facet between two vcs of two neighbouring cut elements
           {
-            GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
+            CORE::GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
 
-            GEO::CUT::VolumeCell* vc1 = *(vc_it);
+            CORE::GEO::CUT::VolumeCell* vc1 = *(vc_it);
             vc_it++;
-            GEO::CUT::VolumeCell* vc2 = *(vc_it);
+            CORE::GEO::CUT::VolumeCell* vc2 = *(vc_it);
 
 
             // get the parent element
@@ -206,7 +207,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             int vc_ele2_id = vc2->ParentElement()->Id();
 
             bool all_dofs = (facets.size() == 1 && include_inner_faces);
-            if ((*f)->Position() == GEO::CUT::Point::outside || include_inner)
+            if ((*f)->Position() == CORE::GEO::CUT::Point::outside || include_inner)
             {
               //------------------------ create nodal dof sets
               TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
@@ -224,7 +225,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               else
                 dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
             }
-            else if ((*f)->Position() == GEO::CUT::Point::inside && all_dofs)
+            else if ((*f)->Position() == CORE::GEO::CUT::Point::inside && all_dofs)
             {
               for (uint n = 0; n < vc1->ParentElement()->Nodes().size(); ++n)
               {
@@ -262,7 +263,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               }
             }
 
-            if ((*f)->Position() == GEO::CUT::Point::inside && !include_inner && !all_dofs)
+            if ((*f)->Position() == CORE::GEO::CUT::Point::inside && !include_inner && !all_dofs)
               continue;
             //------------------------
 
@@ -294,11 +295,11 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
         }  // facet outside or (inside and include_inner)
-        else if ((*f)->Position() == GEO::CUT::Point::undecided)
+        else if ((*f)->Position() == CORE::GEO::CUT::Point::undecided)
         {
           dserror("the position of this facet is undecided, how to stabilize???");
         }
-        else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
+        else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
 #ifdef DEBUG
           std::cout << "the position of this facet of face " << faceele->Id()
@@ -321,22 +322,24 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     else if (p_master->Shape() == DRT::Element::hex20 or p_master->Shape() == DRT::Element::hex27 or
              p_master->Shape() == DRT::Element::tet10 or p_master->Shape() == DRT::Element::wedge15)
     {
-      GEO::CUT::SideHandle* side = GetFace(faceele, wizard);  // the side of the quadratic element
+      CORE::GEO::CUT::SideHandle* side =
+          GetFace(faceele, wizard);  // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
-      std::vector<GEO::CUT::Facet*> facets;
+      std::vector<CORE::GEO::CUT::Facet*> facets;
 
       side->Facets(facets);  // all facets of this quadratic element side
       if (facets.size() == 0) dserror("there is no facet between two elements with elementhandle!");
       // each facet should have 2 volumecells
       std::vector<std::vector<int>> all_used_nds_master;
       std::vector<std::vector<int>> all_used_nds_slave;
-      for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin(); f != facets.end(); f++)
+      for (std::vector<CORE::GEO::CUT::Facet*>::const_iterator f = facets.begin();
+           f != facets.end(); f++)
       {
-        if ((*f)->Position() == GEO::CUT::Point::outside or
-            ((*f)->Position() == GEO::CUT::Point::inside and include_inner))
+        if ((*f)->Position() == CORE::GEO::CUT::Point::outside or
+            ((*f)->Position() == CORE::GEO::CUT::Point::inside and include_inner))
         {
-          GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
+          CORE::GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
           // how many volumecells found?
           if (vcs.size() ==
               2)  // standard XFEM case (facet between two vcs of two neighbouring cut elements
@@ -345,11 +348,11 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             {
               TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
 
-              GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
+              CORE::GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
 
-              GEO::CUT::VolumeCell* vc1 = *(vc_it);
+              CORE::GEO::CUT::VolumeCell* vc1 = *(vc_it);
               vc_it++;
-              GEO::CUT::VolumeCell* vc2 = *(vc_it);
+              CORE::GEO::CUT::VolumeCell* vc2 = *(vc_it);
 
               // get the parent element
               int vc_ele1_id = vc1->ParentElement()->GetParentId();
@@ -429,11 +432,11 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
         }  // facet outside or (inside and include_inner)
-        else if ((*f)->Position() == GEO::CUT::Point::undecided)
+        else if ((*f)->Position() == CORE::GEO::CUT::Point::undecided)
         {
           dserror("the position of this facet is undecided, how to stabilize???");
         }
-        else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
+        else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
 #ifdef DEBUG
           std::cout << "the position of this facet of face " << faceele->Id()
@@ -468,10 +471,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         p_master->Shape() == DRT::Element::hex20 or p_master->Shape() == DRT::Element::hex27 or
         p_master->Shape() == DRT::Element::tet10 or p_master->Shape() == DRT::Element::wedge15)
     {
-      GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
+      CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
       // facet of current side
-      std::vector<GEO::CUT::Facet*> facets;
+      std::vector<CORE::GEO::CUT::Facet*> facets;
       side->Facets(facets);
 
       if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
@@ -481,11 +484,11 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       }
 
       // get the unique single facet
-      GEO::CUT::Facet* f = facets[0];
-      if (f->Position() == GEO::CUT::Point::outside or
-          (f->Position() == GEO::CUT::Point::inside and include_inner))
+      CORE::GEO::CUT::Facet* f = facets[0];
+      if (f->Position() == CORE::GEO::CUT::Point::outside or
+          (f->Position() == CORE::GEO::CUT::Point::inside and include_inner))
       {
-        GEO::CUT::plain_volumecell_set vcs = f->Cells();
+        CORE::GEO::CUT::plain_volumecell_set vcs = f->Cells();
 
         if (vcs.size() != 1)
           dserror("there has to be 1 volumecell equal to the side");
@@ -495,7 +498,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           {
             TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
 
-            GEO::CUT::VolumeCell* vc = *(vcs.begin());
+            CORE::GEO::CUT::VolumeCell* vc = *(vcs.begin());
 
             // get the parent element
             int vc_ele_id = vc->ParentElement()->Id();
@@ -625,8 +628,8 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty(
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
-    DRT::Element* faceele, Teuchos::RCP<GEO::CutWizard> wizard)
+CORE::GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
+    DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: GetFace");
 

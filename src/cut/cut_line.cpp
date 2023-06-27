@@ -12,7 +12,8 @@
 #include "cut_element.H"
 #include "cut_side.H"
 
-GEO::CUT::Line::Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
+CORE::GEO::CUT::Line::Line(
+    Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
     : p1_(p1), p2_(p2)
 {
   if (cut_side1) AddSide(cut_side1);
@@ -55,7 +56,7 @@ GEO::CUT::Line::Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Ele
   }
 }
 
-void GEO::CUT::Line::AddSide(Side* cut_side)
+void CORE::GEO::CUT::Line::AddSide(Side* cut_side)
 {
   p1_->AddSide(cut_side);
   p2_->AddSide(cut_side);
@@ -63,7 +64,7 @@ void GEO::CUT::Line::AddSide(Side* cut_side)
   cut_side->AddLine(this);
 }
 
-void GEO::CUT::Line::AddElement(Element* cut_element)
+void CORE::GEO::CUT::Line::AddElement(Element* cut_element)
 {
   if (cut_element != NULL)
   {
@@ -79,7 +80,7 @@ void GEO::CUT::Line::AddElement(Element* cut_element)
   }
 }
 
-bool GEO::CUT::Line::IsInternalCut(Side* side)
+bool CORE::GEO::CUT::Line::IsInternalCut(Side* side)
 {
   return cut_sides_.count(side) > 0 and not side->OnEdge(this);
 }

@@ -15,15 +15,17 @@
  * create a new side (sidehandle) of the cutter discretization and return the sidehandle
  * non-tri3 sides will be subdivided into tri3 subsides
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vector<int>& nids,
-    DRT::Element::DiscretizationType distype, GEO::CUT::Options& options)
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
+    const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype,
+    CORE::GEO::CUT::Options& options)
 {
 #ifdef CUT_DUMPCREATION
   std::cout << "CreateSide( " << sid << ", ";
   std::copy(nids.begin(), nids.end(), std::ostream_iterator<int>(std::cout, ", "));
   std::cout << distype << " );\n";
 #endif
-  if (distype == DRT::Element::tri3 || (distype == DRT::Element::quad4 && !options.SplitCutSides()))
+  if (distype == ::DRT::Element::tri3 ||
+      (distype == ::DRT::Element::quad4 && !options.SplitCutSides()))
   {
     std::map<int, LinearSideHandle>::iterator i = linearsides_.find(sid);
     if (i != linearsides_.end())
@@ -36,8 +38,8 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vecto
     lsh = LinearSideHandle(s);
     return &lsh;
   }
-  else if (distype == DRT::Element::quad4 || distype == DRT::Element::quad8 ||
-           distype == DRT::Element::quad9 || distype == DRT::Element::tri6)
+  else if (distype == ::DRT::Element::quad4 || distype == ::DRT::Element::quad8 ||
+           distype == ::DRT::Element::quad9 || distype == ::DRT::Element::tri6)
   {
     // each non-tri3 side will be subdivided into tri3-subsides carrying the same side id as the
     // parent side
@@ -50,28 +52,28 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vecto
     QuadraticSideHandle* qsh = NULL;
     switch (distype)
     {
-      case DRT::Element::quad4:
+      case ::DRT::Element::quad4:
       {
         qsh = new Quad4SideHandle(mesh_, sid, nids);
         break;
       }
-      case DRT::Element::quad8:
+      case ::DRT::Element::quad8:
       {
         qsh = new Quad8SideHandle(mesh_, sid, nids);
         break;
       }
-      case DRT::Element::quad9:
+      case ::DRT::Element::quad9:
       {
         qsh = new Quad9SideHandle(mesh_, sid, nids);
         break;
       }
-      case DRT::Element::tri6:
+      case ::DRT::Element::tri6:
       {
         qsh = new Tri6SideHandle(mesh_, sid, nids);
         break;
       }
       default:
-        dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+        dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
         exit(EXIT_FAILURE);
     }
     quadraticsides_[sid] = Teuchos::rcp(qsh);
@@ -79,7 +81,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vecto
   }
   else
   {
-    dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+    dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
     exit(EXIT_FAILURE);
   }
 }
@@ -88,7 +90,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vecto
  * create a new data structure for face oriented stabilization; the sides of
  * the linear element are included into a sidehandle                            wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshHandle::CreateElementSides(Element& element)
+void CORE::GEO::CUT::MeshHandle::CreateElementSides(Element& element)
 {
   std::vector<Side*> elementsides = element.Sides();
   for (std::vector<Side*>::iterator i = elementsides.begin(); i != elementsides.end(); ++i)
@@ -111,13 +113,13 @@ void GEO::CUT::MeshHandle::CreateElementSides(Element& element)
     {
       if (elementsidenodeids.size() == 3)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, DRT::Element::tri3);
+        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::tri3);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
       else if (elementsidenodeids.size() == 4)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, DRT::Element::quad4);
+        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::quad4);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
@@ -129,12 +131,12 @@ void GEO::CUT::MeshHandle::CreateElementSides(Element& element)
  * create a new data structure for face oriented stabilization; the sides of
  * the quadratic element are included into a sidehandle                         wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshHandle::CreateElementSides(
-    const std::vector<int>& nids, DRT::Element::DiscretizationType distype)
+void CORE::GEO::CUT::MeshHandle::CreateElementSides(
+    const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype)
 {
   switch (distype)
   {
-    case DRT::Element::wedge15:
+    case ::DRT::Element::wedge15:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -261,7 +263,7 @@ void GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case DRT::Element::hex20:
+    case ::DRT::Element::hex20:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -421,7 +423,7 @@ void GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case DRT::Element::hex27:
+    case ::DRT::Element::hex27:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -593,7 +595,7 @@ void GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case DRT::Element::tet10:
+    case ::DRT::Element::tet10:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -686,7 +688,7 @@ void GEO::CUT::MeshHandle::CreateElementSides(
       break;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -696,8 +698,8 @@ void GEO::CUT::MeshHandle::CreateElementSides(
  * create a new element (elementhandle) of the background discretization and return the
  *elementhandle, quadratic elements will create linear shadow elements
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
-    int eid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype)
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
+    int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype)
 {
 #ifdef CUT_DUMPCREATION
   std::cout << "CreateElement( " << eid << ", ";
@@ -706,13 +708,13 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
 #endif
   switch (distype)
   {
-    case DRT::Element::line2:
-    case DRT::Element::tri3:
-    case DRT::Element::quad4:
-    case DRT::Element::hex8:
-    case DRT::Element::tet4:
-    case DRT::Element::pyramid5:
-    case DRT::Element::wedge6:
+    case ::DRT::Element::line2:
+    case ::DRT::Element::tri3:
+    case ::DRT::Element::quad4:
+    case ::DRT::Element::hex8:
+    case ::DRT::Element::tet4:
+    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::wedge6:
     {
       std::map<int, LinearElementHandle>::iterator i = linearelements_.find(eid);
       if (i != linearelements_.end())
@@ -726,10 +728,10 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
       CreateElementSides(*e);
       return &leh;
     }
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::tet10:
-    case DRT::Element::wedge15:
+    case ::DRT::Element::hex20:
+    case ::DRT::Element::hex27:
+    case ::DRT::Element::tet10:
+    case ::DRT::Element::wedge15:
     {
       std::map<int, Teuchos::RCP<QuadraticElementHandle>>::iterator i =
           quadraticelements_.find(eid);
@@ -740,28 +742,28 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
       QuadraticElementHandle* qeh = NULL;
       switch (distype)
       {
-        case DRT::Element::hex20:
+        case ::DRT::Element::hex20:
         {
           qeh = new Hex20ElementHandle(mesh_, eid, nids);
           break;
         }
-        case DRT::Element::hex27:
+        case ::DRT::Element::hex27:
         {
           qeh = new Hex27ElementHandle(mesh_, eid, nids);
           break;
         }
-        case DRT::Element::tet10:
+        case ::DRT::Element::tet10:
         {
           qeh = new Tet10ElementHandle(mesh_, eid, nids);
           break;
         }
-        case DRT::Element::wedge15:
+        case ::DRT::Element::wedge15:
         {
           qeh = new Wedge15ElementHandle(mesh_, eid, nids);
           break;
         }
         default:
-          dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+          dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
       quadraticelements_[eid] = Teuchos::rcp(qeh);
@@ -769,7 +771,7 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
       return qeh;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -778,13 +780,16 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::CreateElement(
 /*-----------------------------------------------------------------------------------------*
  * get the node based on node id
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::Node* GEO::CUT::MeshHandle::GetNode(int nid) const { return mesh_.GetNode(nid); }
+CORE::GEO::CUT::Node* CORE::GEO::CUT::MeshHandle::GetNode(int nid) const
+{
+  return mesh_.GetNode(nid);
+}
 
 
 /*-----------------------------------------------------------------------------------------*
  * get the side (handle) based on side id of the cut mesh
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::MeshHandle::GetSide(int sid) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(int sid) const
 {
   // loop the linear sides
   std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find(sid);
@@ -807,7 +812,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::GetSide(int sid) const
 /*-----------------------------------------------------------------------------------------*
  * get the mesh's element based on element id
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::GetElement(int eid) const
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::GetElement(int eid) const
 {
   // loop the linear elements
   std::map<int, LinearElementHandle>::const_iterator i = linearelements_.find(eid);
@@ -831,7 +836,7 @@ GEO::CUT::ElementHandle* GEO::CUT::MeshHandle::GetElement(int eid) const
 /*-----------------------------------------------------------------------------------------*
  * get the element' side of the mesh's element based on node ids
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) const
 {
   plain_int_set nids;
   for (std::vector<int>::iterator i = nodeids.begin(); i != nodeids.end(); i++)
@@ -853,7 +858,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) c
   return NULL;
 }
 
-void GEO::CUT::MeshHandle::RemoveSubSide(GEO::CUT::Side* side)
+void CORE::GEO::CUT::MeshHandle::RemoveSubSide(CORE::GEO::CUT::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
   if (lit != linearsides_.end())
@@ -877,7 +882,7 @@ void GEO::CUT::MeshHandle::RemoveSubSide(GEO::CUT::Side* side)
   }
 }
 
-void GEO::CUT::MeshHandle::AddSubSide(GEO::CUT::Side* side)
+void CORE::GEO::CUT::MeshHandle::AddSubSide(CORE::GEO::CUT::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
   if (lit != linearsides_.end())
@@ -904,7 +909,7 @@ void GEO::CUT::MeshHandle::AddSubSide(GEO::CUT::Side* side)
   }
 }
 
-void GEO::CUT::MeshHandle::MarkSubSideasUnphysical(GEO::CUT::Side* side)
+void CORE::GEO::CUT::MeshHandle::MarkSubSideasUnphysical(CORE::GEO::CUT::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
   if (lit != linearsides_.end())

@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include "cut_tolerance.H"  // for info whether debug or not
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -388,6 +388,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

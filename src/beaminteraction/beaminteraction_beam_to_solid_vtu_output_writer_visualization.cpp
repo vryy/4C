@@ -203,7 +203,8 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddCellDataVector
  *
  */
 void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
-    AddDiscretizationNodalReferencePosition(const Teuchos::RCP<const DRT::Discretization>& discret)
+    AddDiscretizationNodalReferencePosition(
+        const Teuchos::RCP<const ::DRT::Discretization>& discret)
 {
   // Check that the discretization is not already set, and that all data in the writer is empty.
   if (discret_ != Teuchos::null)

@@ -13,7 +13,7 @@
 
 #include "cut_mesh.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -161,6 +161,6 @@ namespace GEO
       // std::map<Side*, Side*> side_child_to_parent_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

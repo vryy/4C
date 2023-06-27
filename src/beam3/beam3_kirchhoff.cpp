@@ -148,8 +148,8 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -1987,7 +1987,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
   LINALG::Matrix<3, 1> diff(true);
 
   LINALG::Matrix<ndim, 1, FAD> delta_r_ost(true);
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> pbb =
+  Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> pbb =
       BrownianDynParamsInterface().GetPeriodicBoundingBox();
 
   LINALG::Matrix<3, 1> unshiftedrconvmass_i(true), position_i_double(true);

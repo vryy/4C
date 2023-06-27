@@ -138,7 +138,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const DRT::Discretization& discret) const;
+    std::vector<int> GetPairGID(const ::DRT::Discretization& discret) const;
 
    private:
     /**

@@ -9,17 +9,17 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
-#define GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
+#ifndef DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
+#define DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
 
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 #include "lib_element.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "geometry_geo_utils.H"
+#include "discretization_geometry_geo_utils.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   //! checks if a given surface element lies in a plane
   template <class M>
@@ -44,7 +44,7 @@ namespace GEO
               elenorm(2) * (xyze(2, 0) - xyze(2, i))) /
           (-elenorm.Norm2());
 
-      if (fabs(distance) >= GEO::TOL7) return false;
+      if (fabs(distance) >= CORE::GEO::TOL7) return false;
     }
     return true;
   }
@@ -72,7 +72,7 @@ namespace GEO
                             elenorm(2) * (xyze(2, 0) - xyze_points(2, i))) /
                         (-elenorm.Norm2());
 
-      if (fabs(distance) >= GEO::TOL7) return false;
+      if (fabs(distance) >= CORE::GEO::TOL7) return false;
     }
     return true;
   }
@@ -105,7 +105,7 @@ namespace GEO
                                   elenorm(2) * (xyze_points(2, i) - xyze(2, 0))) /
                               elenorm.Norm2();
 
-      if (fabs(distance) >= GEO::TOL7)
+      if (fabs(distance) >= CORE::GEO::TOL7)
       {
         return false;
       }
@@ -134,7 +134,7 @@ namespace GEO
         for (int isd = 0; isd < 3; ++isd)  v13(isd,0) = xyze(isd,3)-xyze(isd,1);
     */
     // create 4 normal vectors to each tet surface plane
-    const LINALG::Matrix<3, 1> nplane012 = GEO::computeCrossProduct(v01, v02);
+    const LINALG::Matrix<3, 1> nplane012 = CORE::GEO::computeCrossProduct(v01, v02);
     /*    const LINALG::Matrix<3,1> nplane013 = GEO::computeCrossProduct(v01,v03);
         const LINALG::Matrix<3,1> nplane023 = GEO::computeCrossProduct(v02,v03);
         const LINALG::Matrix<3,1> nplane123 = GEO::computeCrossProduct(v12,v13);
@@ -156,13 +156,13 @@ namespace GEO
     double distance = 0.0;
     distance = (nplane012(0) * v03(0) + nplane012(1) * v03(1) + nplane012(2) * v03(2)) / norm012;
 
-    if (fabs(distance) < GEO::TOL7)
+    if (fabs(distance) < CORE::GEO::TOL7)
     {
       return true;
     }
 
     // tet numbering wrong exchange 1 with 3
-    if (distance <= (-1.0) * GEO::TOL7)
+    if (distance <= (-1.0) * CORE::GEO::TOL7)
     {
       for (int i = 0; i < 3; i++)
       {
@@ -182,9 +182,9 @@ namespace GEO
 
 
   //! template of extended aligned bounding boxes
-  template <int ndim, DRT::Element::DiscretizationType distype, class M>
+  template <int ndim, ::DRT::Element::DiscretizationType distype, class M>
   static inline LINALG::Matrix<3, 2> computeFastXAABBT(
-      const M& xyze, const GEO::EleGeoType eleGeoType)
+      const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
   {
     LINALG::Matrix<3, 2> XAABB;
 
@@ -243,37 +243,37 @@ namespace GEO
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   template <class M>
-  LINALG::Matrix<3, 2> computeFastXAABB(
-      DRT::Element::DiscretizationType distype, const M& xyze, const GEO::EleGeoType eleGeoType)
+  LINALG::Matrix<3, 2> computeFastXAABB(::DRT::Element::DiscretizationType distype, const M& xyze,
+      const CORE::GEO::EleGeoType eleGeoType)
   {
     switch (distype)
     {
-      case DRT::Element::hex8:
-        return computeFastXAABBT<3, DRT::Element::hex8>(xyze, eleGeoType);
-      case DRT::Element::quad4:
-        return computeFastXAABBT<3, DRT::Element::quad4>(xyze, eleGeoType);
-      case DRT::Element::hex20:
-        return computeFastXAABBT<3, DRT::Element::hex20>(xyze, eleGeoType);
-      case DRT::Element::hex27:
-        return computeFastXAABBT<3, DRT::Element::hex27>(xyze, eleGeoType);
-      case DRT::Element::tet4:
-        return computeFastXAABBT<3, DRT::Element::tet4>(xyze, eleGeoType);
-      case DRT::Element::tet10:
-        return computeFastXAABBT<3, DRT::Element::tet10>(xyze, eleGeoType);
-      case DRT::Element::line2:
-        return computeFastXAABBT<3, DRT::Element::line2>(xyze, eleGeoType);
-      case DRT::Element::line3:
-        return computeFastXAABBT<3, DRT::Element::line3>(xyze, eleGeoType);
-      case DRT::Element::tri3:
-        return computeFastXAABBT<3, DRT::Element::tri3>(xyze, eleGeoType);
-      case DRT::Element::tri6:
-        return computeFastXAABBT<3, DRT::Element::tri6>(xyze, eleGeoType);
-      case DRT::Element::quad8:
-        return computeFastXAABBT<3, DRT::Element::quad8>(xyze, eleGeoType);
-      case DRT::Element::quad9:
-        return computeFastXAABBT<3, DRT::Element::quad9>(xyze, eleGeoType);
-      case DRT::Element::pyramid5:
-        return computeFastXAABBT<3, DRT::Element::pyramid5>(xyze, eleGeoType);
+      case ::DRT::Element::hex8:
+        return computeFastXAABBT<3, ::DRT::Element::hex8>(xyze, eleGeoType);
+      case ::DRT::Element::quad4:
+        return computeFastXAABBT<3, ::DRT::Element::quad4>(xyze, eleGeoType);
+      case ::DRT::Element::hex20:
+        return computeFastXAABBT<3, ::DRT::Element::hex20>(xyze, eleGeoType);
+      case ::DRT::Element::hex27:
+        return computeFastXAABBT<3, ::DRT::Element::hex27>(xyze, eleGeoType);
+      case ::DRT::Element::tet4:
+        return computeFastXAABBT<3, ::DRT::Element::tet4>(xyze, eleGeoType);
+      case ::DRT::Element::tet10:
+        return computeFastXAABBT<3, ::DRT::Element::tet10>(xyze, eleGeoType);
+      case ::DRT::Element::line2:
+        return computeFastXAABBT<3, ::DRT::Element::line2>(xyze, eleGeoType);
+      case ::DRT::Element::line3:
+        return computeFastXAABBT<3, ::DRT::Element::line3>(xyze, eleGeoType);
+      case ::DRT::Element::tri3:
+        return computeFastXAABBT<3, ::DRT::Element::tri3>(xyze, eleGeoType);
+      case ::DRT::Element::tri6:
+        return computeFastXAABBT<3, ::DRT::Element::tri6>(xyze, eleGeoType);
+      case ::DRT::Element::quad8:
+        return computeFastXAABBT<3, ::DRT::Element::quad8>(xyze, eleGeoType);
+      case ::DRT::Element::quad9:
+        return computeFastXAABBT<3, ::DRT::Element::quad9>(xyze, eleGeoType);
+      case ::DRT::Element::pyramid5:
+        return computeFastXAABBT<3, ::DRT::Element::pyramid5>(xyze, eleGeoType);
       default:
         std::cout << DistypeToString(distype) << std::endl;
         dserror("add your distype to this switch!");
@@ -290,21 +290,21 @@ namespace GEO
     // check XAABB for intersection
     for (int i = 0; i < dim; i++)
     {
-      if (!(((cutterXAABB(i, 0) > (xfemXAABB(i, 0) - GEO::TOL7)) &&
-                (cutterXAABB(i, 0) < (xfemXAABB(i, 1) + GEO::TOL7))) ||
-              ((cutterXAABB(i, 1) > (xfemXAABB(i, 0) - GEO::TOL7)) &&
-                  (cutterXAABB(i, 1) < (xfemXAABB(i, 1) + GEO::TOL7))) ||
-              ((xfemXAABB(i, 0) > (cutterXAABB(i, 0) - GEO::TOL7)) &&
-                  (xfemXAABB(i, 0) < (cutterXAABB(i, 1) + GEO::TOL7))) ||
-              ((xfemXAABB(i, 1) > (cutterXAABB(i, 0) - GEO::TOL7)) &&
-                  (xfemXAABB(i, 1) < (cutterXAABB(i, 1) + GEO::TOL7)))))
+      if (!(((cutterXAABB(i, 0) > (xfemXAABB(i, 0) - CORE::GEO::TOL7)) &&
+                (cutterXAABB(i, 0) < (xfemXAABB(i, 1) + CORE::GEO::TOL7))) ||
+              ((cutterXAABB(i, 1) > (xfemXAABB(i, 0) - CORE::GEO::TOL7)) &&
+                  (cutterXAABB(i, 1) < (xfemXAABB(i, 1) + CORE::GEO::TOL7))) ||
+              ((xfemXAABB(i, 0) > (cutterXAABB(i, 0) - CORE::GEO::TOL7)) &&
+                  (xfemXAABB(i, 0) < (cutterXAABB(i, 1) + CORE::GEO::TOL7))) ||
+              ((xfemXAABB(i, 1) > (cutterXAABB(i, 0) - CORE::GEO::TOL7)) &&
+                  (xfemXAABB(i, 1) < (cutterXAABB(i, 1) + CORE::GEO::TOL7)))))
         return false;
     }
     return true;
   }
 
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
-#endif  // GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H
+#endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H

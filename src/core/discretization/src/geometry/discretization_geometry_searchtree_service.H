@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_SEARCHTREE_SERVICE_H
-#define GEOMETRY_SEARCHTREE_SERVICE_H
+#ifndef DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
+#define DISCRETIZATION_GEOMETRY_SEARCHTREE_SERVICE_H
 
 #include <Teuchos_RCP.hpp>
 #include "linalg_fixedsizematrix.H"
-#include "geometry_geo_utils.H"
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_geo_utils.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 
 // forward declarations
 namespace DRT
@@ -28,7 +28,7 @@ namespace LINALG
   class SerialDenseMatrix;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class InterfacePoint;
   class NearestObject;
@@ -40,8 +40,8 @@ namespace GEO
    \param currentpositions     current nodal positions in discretization
    \return  XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofDis(
-      const DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+  LINALG::Matrix<3, 2> getXAABBofDis(const ::DRT::Discretization& dis,
+      const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,
@@ -49,7 +49,7 @@ namespace GEO
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofDis(const DRT::Discretization& dis);
+  LINALG::Matrix<3, 2> getXAABBofDis(const ::DRT::Discretization& dis);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of the nodes in a
@@ -57,7 +57,7 @@ namespace GEO
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofNodes(const DRT::Discretization& dis);
+  LINALG::Matrix<3, 2> getXAABBofNodes(const ::DRT::Discretization& dis);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of coords
@@ -73,7 +73,7 @@ namespace GEO
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofDisPar(const DRT::Discretization& dis,
+  LINALG::Matrix<3, 2> getXAABBofDisPar(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, double cutoff);
 
   /*!
@@ -82,7 +82,7 @@ namespace GEO
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofDisPar(const DRT::Discretization& dis, double cutoff);
+  LINALG::Matrix<3, 2> getXAABBofDisPar(const ::DRT::Discretization& dis, double cutoff);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of given elements
@@ -90,7 +90,7 @@ namespace GEO
    slave nodes \param currentpositions     current nodal positions of elements \return
    XAxisAlignedBoundingBox
    */
-  LINALG::Matrix<3, 2> getXAABBofEles(std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+  LINALG::Matrix<3, 2> getXAABBofEles(std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -100,8 +100,8 @@ namespace GEO
    \param elementList          map of int = label and set of element ids
    \return  AxisAlignedBoundingBox as LINALG::Matrix<3,2>
    */
-  std::vector<LINALG::Matrix<3, 2>> computeXAABBForLabeledStructures(const DRT::Discretization& dis,
-      const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+  std::vector<LINALG::Matrix<3, 2>> computeXAABBForLabeledStructures(
+      const ::DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList);
 
   /*!
@@ -112,7 +112,7 @@ namespace GEO
    \param elementList          map of elements label gid
    \return                     label
    */
-  int getXFEMLabel(const DRT::Discretization& dis,
+  int getXFEMLabel(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& querypoint, const std::map<int, std::set<int>>& elementList);
 
@@ -125,8 +125,8 @@ namespace GEO
    \return                     label
    */
   void moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleList,
-      std::vector<GEO::InterfacePoint>& pointList, const int querypointId,
-      const GEO::NearestObject& nearestObject, LINALG::Matrix<3, 1>& minDistanceVec);
+      std::vector<CORE::GEO::InterfacePoint>& pointList, const int querypointId,
+      const CORE::GEO::NearestObject& nearestObject, LINALG::Matrix<3, 1>& minDistanceVec);
 
   /*!
    \brief Returns the label and the nearest object for a point and a given map of elements
@@ -137,24 +137,24 @@ namespace GEO
    \param nearestObject        nearestObject
    \return                     label
    */
-  int getXFEMLabelAndNearestObject(const DRT::Discretization& dis,
+  int getXFEMLabelAndNearestObject(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& querypoint, const std::map<int, std::set<int>>& elementList,
-      GEO::NearestObject& nearestObject);
+      CORE::GEO::NearestObject& nearestObject);
 
-  void getPotentialObjects(const DRT::Discretization& dis,
+  void getPotentialObjects(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList,
       const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-      std::map<int, std::map<int, GEO::NearestObject>>& potObjects, const double cutoff_radius,
-      const int label, const int projectiontype);
+      std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects,
+      const double cutoff_radius, const int label, const int projectiontype);
 
-  void fillPotObjectsInNode(const DRT::Discretization& dis,
+  void fillPotObjectsInNode(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList,
       const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
-      std::map<int, std::map<int, GEO::NearestObject>>& potObjects, const double cutoff_radius,
-      const int label, const int projectiontype);
+      std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects,
+      const double cutoff_radius, const int label, const int projectiontype);
 
   /*!
    \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
@@ -166,7 +166,7 @@ namespace GEO
    \param elementList          map of elements label gid
    \return                     label
    */
-  std::map<int, std::set<int>> getElementsInRadius(const DRT::Discretization& dis,
+  std::map<int, std::set<int>> getElementsInRadius(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& querypoint, const double radius, const int label,
       std::map<int, std::set<int>>& elementList);
@@ -182,7 +182,7 @@ namespace GEO
    \param elementList          map of elements label gid
    \return                     label
    */
-  std::map<int, std::set<int>> getElementsInRadius(const DRT::Discretization& dis,
+  std::map<int, std::set<int>> getElementsInRadius(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, LINALG::Matrix<3, 2>>& elemXAABBList, LINALG::Matrix<3, 2> elemXAABB,
       const int label, std::map<int, std::set<int>>& elementList);
@@ -232,10 +232,10 @@ namespace GEO
    \param nearestObject        info about nearest object
    \return label of nearest object
    */
-  int nearestObjectInNode(const DRT::Discretization& dis,
+  int nearestObjectInNode(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
-      LINALG::Matrix<3, 1>& minDistanceVec, GEO::NearestObject& nearestObject);
+      LINALG::Matrix<3, 1>& minDistanceVec, CORE::GEO::NearestObject& nearestObject);
 
   /*!
    \brief Returns the nearest object to a point
@@ -248,10 +248,10 @@ namespace GEO
    \return label of nearest object
    */
   int nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
-      const std::vector<GEO::InterfacePoint>& pointList,
+      const std::vector<CORE::GEO::InterfacePoint>& pointList,
       const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
       const int pointLabel, LINALG::Matrix<3, 1>& minDistanceVec,
-      GEO::NearestObject& nearestObject);
+      CORE::GEO::NearestObject& nearestObject);
 
   /*!
    \brief Searches for the nearest point to the query point in elementList
@@ -263,28 +263,28 @@ namespace GEO
    \param minDistCoords        Coords of the nearest point
    \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
-  int nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
-      std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+  int nearest3DObjectInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+      std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
       LINALG::Matrix<3, 1>& minDistCoords);
 
   /// returns the nearest coordinates on element and the corresponding object type
-  GEO::ObjectType nearest3DObjectOnElement(DRT::Element* surfaceelement,
+  CORE::GEO::ObjectType nearest3DObjectOnElement(::DRT::Element* surfaceelement,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& point, LINALG::Matrix<3, 1>& minDistCoords);
 
-  void nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis,
-      std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+  void nearest2DObjectInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+      std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const LINALG::Matrix<3, 1>& point,
       LINALG::Matrix<3, 1>& minDistCoords);
 
   /// returns the nearest node to the querypoint
-  double nearestNodeInNode(const Teuchos::RCP<DRT::Discretization> dis,
-      std::map<int, Teuchos::RCP<DRT::Element>>& elements,
+  double nearestNodeInNode(const Teuchos::RCP<::DRT::Discretization> dis,
+      std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-      const LINALG::Matrix<3, 1>& point, DRT::Node& minNode);
+      const LINALG::Matrix<3, 1>& point, ::DRT::Node& minNode);
 
   /*!
    \brief Searches for the nearest point to the query point in elementList
@@ -295,7 +295,7 @@ namespace GEO
    \param querypoint           point to be examined
    \param minDistCoords        Coords of the nearest point
    */
-  void nearestObjectInNode(std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
+  void nearestObjectInNode(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& closeeles, const LINALG::Matrix<3, 1>& querypoint,
       LINALG::Matrix<3, 1>& minDistCoords);
@@ -309,9 +309,9 @@ namespace GEO
    \param querypoint           point to be examined
    \param minDistCoords        Coords of the nearest point
    */
-  double nearestNodeInNode(std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
+  double nearestNodeInNode(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-      const LINALG::Matrix<3, 1>& querypoint, DRT::Node& nearnode);
+      const LINALG::Matrix<3, 1>& querypoint, ::DRT::Node& nearnode);
 
   /*!
    \brief Searches for the nearest surface element to a given point
@@ -322,7 +322,7 @@ namespace GEO
    \param distance             distance to nearest element
    \return true if nearest surface element found
    */
-  bool getDistanceToSurface(const DRT::Element* surfaceElement,
+  bool getDistanceToSurface(const ::DRT::Element* surfaceElement,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& point, LINALG::Matrix<3, 1>& x_surface_phys, double& distance);
 
@@ -336,7 +336,7 @@ namespace GEO
    \return true if nearest surface element found
    */
   bool getDistanceToSurface(const std::vector<int>& triElement,
-      const std::vector<GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
+      const std::vector<CORE::GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
       LINALG::Matrix<3, 1>& x_surface_phys, double& distance);
 
   /*!
@@ -348,7 +348,7 @@ namespace GEO
    \param distance             distance to nearest point
    \return true if nearest line element found
    */
-  bool getDistanceToLine(const DRT::Element* lineElement,
+  bool getDistanceToLine(const ::DRT::Element* lineElement,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& point, LINALG::Matrix<3, 1>& x_line_phys, double& distance);
 
@@ -362,7 +362,7 @@ namespace GEO
    \return true if nearest line element found
    */
   bool getDistanceToLine(const std::vector<int>& lineElement,
-      const std::vector<GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
+      const std::vector<CORE::GEO::InterfacePoint>& pointList, const LINALG::Matrix<3, 1>& point,
       LINALG::Matrix<3, 1>& x_line_phys, double& distance);
 
   /*!
@@ -372,7 +372,7 @@ namespace GEO
    \param point                point to be examined
    \param distance             distance to nearest point
    */
-  void getDistanceToPoint(const int nodeId, const std::vector<GEO::InterfacePoint>& pointList,
+  void getDistanceToPoint(const int nodeId, const std::vector<CORE::GEO::InterfacePoint>& pointList,
       const LINALG::Matrix<3, 1>& point, double& distance);
 
   /*!
@@ -382,7 +382,7 @@ namespace GEO
    \param point                point to be examined
    \param distance             distance to nearest point
    */
-  void getDistanceToPoint(const DRT::Node* node,
+  void getDistanceToPoint(const ::DRT::Node* node,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
       const LINALG::Matrix<3, 1>& point, double& distance);
 
@@ -394,9 +394,9 @@ namespace GEO
    \param nearestObject        info about nearest object
    \return normal vector in physical coordinates
    */
-  LINALG::Matrix<3, 1> getNormalAtSurfacePoint(const DRT::Discretization& dis,
+  LINALG::Matrix<3, 1> getNormalAtSurfacePoint(const ::DRT::Discretization& dis,
       const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-      GEO::NearestObject& nearestObject);
+      CORE::GEO::NearestObject& nearestObject);
 
   /*!
    \brief  Returns the normal to a surface element or a an average normal
@@ -407,7 +407,8 @@ namespace GEO
    \return normal vector in physical coordinates
    */
   LINALG::Matrix<3, 1> getNormalAtSurfacePoint(const std::vector<std::vector<int>>& triangleList,
-      const std::vector<GEO::InterfacePoint>& pointList, const GEO::NearestObject& nearestObject);
+      const std::vector<CORE::GEO::InterfacePoint>& pointList,
+      const CORE::GEO::NearestObject& nearestObject);
 
   /*!
    \brief  Finds all elements adjacent to a line described by two end points
@@ -415,7 +416,8 @@ namespace GEO
    \param node2         node 2
    \return list of common elements
    */
-  std::vector<int> getAdjacentSurfaceElementsToLine(const DRT::Node* node1, const DRT::Node* node2);
+  std::vector<int> getAdjacentSurfaceElementsToLine(
+      const ::DRT::Node* node1, const ::DRT::Node* node2);
 
   /*!
    \brief  Finds all elements adjacent to a line described by two end points
@@ -480,8 +482,8 @@ namespace GEO
    \param xyze_element         nodal coordinates
    \param eleGeoType           geometry type
    */
-  void checkRoughGeoType(const DRT::Element* element, const LINALG::SerialDenseMatrix xyze_element,
-      GEO::EleGeoType& eleGeoType);
+  void checkRoughGeoType(const ::DRT::Element* element,
+      const LINALG::SerialDenseMatrix xyze_element, CORE::GEO::EleGeoType& eleGeoType);
 
   /*!
    \brief Check the type of geometry of an element,
@@ -490,8 +492,8 @@ namespace GEO
    \param xyze_element         nodal coordinates
    \param eleGeoType           geometry type
    */
-  void checkRoughGeoType(Teuchos::RCP<DRT::Element> element, LINALG::SerialDenseMatrix xyze_element,
-      GEO::EleGeoType& eleGeoType);
+  void checkRoughGeoType(Teuchos::RCP<::DRT::Element> element,
+      LINALG::SerialDenseMatrix xyze_element, CORE::GEO::EleGeoType& eleGeoType);
 
   /*!
    \brief Returns a vector of intersection candidate ids
@@ -517,6 +519,6 @@ namespace GEO
       const LINALG::Matrix<3, 2>& xfemXAABB, const std::map<int, std::set<int>>& elementList,
       std::map<int, std::set<int>>& intersectionCandidateIds, const int label);
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

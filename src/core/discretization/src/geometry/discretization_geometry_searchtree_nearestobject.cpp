@@ -8,13 +8,13 @@
  */
 
 
-#include "geometry_searchtree_nearestobject.H"
+#include "discretization_geometry_searchtree_nearestobject.H"
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 08/08|
  *----------------------------------------------------------------------*/
-GEO::NearestObject::NearestObject()
+CORE::GEO::NearestObject::NearestObject()
     : objectType_(NOTYPE_OBJECT), nodeId_(-1), lineId_(-1), surfId_(-1), label_(-1)
 {
   physcoord_.PutScalar(0.0);
@@ -25,7 +25,7 @@ GEO::NearestObject::NearestObject()
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       u.may 08/08|
  *----------------------------------------------------------------------*/
-GEO::NearestObject::NearestObject(const GEO::NearestObject& old)
+CORE::GEO::NearestObject::NearestObject(const CORE::GEO::NearestObject& old)
     : objectType_(old.objectType_),
       nodeId_(old.nodeId_),
       lineId_(old.lineId_),
@@ -41,7 +41,7 @@ GEO::NearestObject::NearestObject(const GEO::NearestObject& old)
 /*----------------------------------------------------------------------*
  * assignment operator                                       u.may 08/08|
  *----------------------------------------------------------------------*/
-GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
+CORE::GEO::NearestObject& CORE::GEO::NearestObject::operator=(const CORE::GEO::NearestObject& old)
 {
   objectType_ = old.objectType_;
   nodeId_ = old.nodeId_;
@@ -56,7 +56,7 @@ GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
 /*----------------------------------------------------------------------*
  * clear nearest object                                      u.may 05/09|
  *----------------------------------------------------------------------*/
-void GEO::NearestObject::clear()
+void CORE::GEO::NearestObject::clear()
 {
   objectType_ = NOTYPE_OBJECT;
   nodeId_ = -1;
@@ -71,7 +71,7 @@ void GEO::NearestObject::clear()
 /*----------------------------------------------------------------------*
  |  set node object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
-void GEO::NearestObject::setNodeObjectType(
+void CORE::GEO::NearestObject::setNodeObjectType(
     const int nodeId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = NODE_OBJECT;
@@ -88,7 +88,7 @@ void GEO::NearestObject::setNodeObjectType(
 /*----------------------------------------------------------------------*
  |  set line object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
-void GEO::NearestObject::setLineObjectType(
+void CORE::GEO::NearestObject::setLineObjectType(
     const int lineId, const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = LINE_OBJECT;
@@ -105,7 +105,7 @@ void GEO::NearestObject::setLineObjectType(
 /*----------------------------------------------------------------------*
  |  set surface object type                                  u.may 08/08|
  *----------------------------------------------------------------------*/
-void GEO::NearestObject::setSurfaceObjectType(
+void CORE::GEO::NearestObject::setSurfaceObjectType(
     const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = SURFACE_OBJECT;

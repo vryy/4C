@@ -43,7 +43,7 @@ void BeamDiscretizationRuntimeVtuWriter::Initialize(
     Teuchos::RCP<DRT::Discretization> discretization,
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
     bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-    Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+    Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output)
 {
   discretization_ = discretization;

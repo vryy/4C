@@ -11,8 +11,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef GEOMETRY_INTERSECTION_MATH_H
-#define GEOMETRY_INTERSECTION_MATH_H
+#ifndef DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H
+#define DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H
 
 
 #include "linalg_fixedsizematrix.H"
@@ -20,7 +20,7 @@
 #include <Epetra_SerialDenseVector.h>
 
 
-namespace GEO
+namespace CORE::GEO
 {
   //! tolerance used for residuals in Newton-methods
   const double TOL14 = 1e-14;
@@ -166,7 +166,7 @@ namespace GEO
       LINALG::Matrix<3, 3>& V, int dim);
 
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
-#endif  // GEOMETRY_INTERSECTION_MATH_H
+#endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H

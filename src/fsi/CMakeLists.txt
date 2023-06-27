@@ -12,7 +12,6 @@ set(_fsi_dependencies
     fluid
     fluid_xfluid
     fsi_xfem
-    geometry
     inpar
     io
     lib

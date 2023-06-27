@@ -19,7 +19,7 @@
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 
@@ -151,7 +151,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+        ele, xyze_);
 
     // determine constant normal to this element
     GetConstNormal(normal_, xyze_);
@@ -187,7 +188,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   else if (action == THR::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
-    GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+        ele, xyze_);
 
     // set views, here we assemble on the boundary dofs only!
     LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.A(), true);  // view only!
@@ -400,7 +402,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       if (discretization.HasState(1, "displacement"))
       {
         // get node coordinates (nsd_+1: domain, nsd_: boundary)
-        GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+        CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
             ele, xyze_);
 
         // set views, here we assemble on the boundary dofs only!
@@ -580,7 +582,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
   PrepareNurbsEval(ele, discretization);
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+      ele, xyze_);
 
   // integration points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -1034,7 +1037,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
   double boundaryint = params.get<double>("boundaryint");
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+      ele, xyze_);
 
   // integrations points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);

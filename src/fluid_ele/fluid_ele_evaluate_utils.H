@@ -20,7 +20,7 @@
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "inpar_turbulence.H"
 
@@ -3116,7 +3116,7 @@ namespace FLD
     // get node coordinates
     // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
     // element!)
-    GEO::fillInitialPositionArray<DISTYPE, nsd, LINALG::Matrix<nsd, iel>>(ele, xyze);
+    CORE::GEO::fillInitialPositionArray<DISTYPE, nsd, LINALG::Matrix<nsd, iel>>(ele, xyze);
 
     /*
     // get node coordinates

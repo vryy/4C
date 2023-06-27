@@ -20,7 +20,7 @@
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 #include "nurbs_discret_nurbs_utils.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "fluid_rotsym_periodicbc.H"
 #include "utils_singleton_owner.H"
 

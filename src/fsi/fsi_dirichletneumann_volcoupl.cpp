@@ -37,8 +37,8 @@
 #include "lib_globalproblem.H"
 
 // search
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 #include "coupling_adapter.H"
 #include "coupling_adapter_volmortar.H"
 
@@ -464,13 +464,13 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   }
 
   // init of 3D search tree
-  searchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+  searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
   const LINALG::Matrix<3, 2> rootBox =
-      GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(), currentpositions);
+      CORE::GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(), currentpositions);
   searchTree_->initializeTree(
-      rootBox, *fluidale->FluidField()->Discretization(), GEO::TreeType(GEO::OCTTREE));
+      rootBox, *fluidale->FluidField()->Discretization(), CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
 
   std::map<int, LINALG::Matrix<9, 2>> CurrentDOPs =

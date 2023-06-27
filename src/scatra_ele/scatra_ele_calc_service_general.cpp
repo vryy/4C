@@ -2335,7 +2335,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
 
   // reference coordinates of element nodes
   LINALG::Matrix<nsd_, nen_> XYZ;
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
 
   // reference coordinates of elemental nodes in space dimension of element
   LINALG::Matrix<nsd_ele_, nen_> XYZe;

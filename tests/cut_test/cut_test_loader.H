@@ -38,7 +38,7 @@ class MeshLoader
  private:
   void Fill(std::map<int, std::vector<double>>& nodes, int nid, double* values);
 
-  GEO::CUT::MeshIntersection mesh_;
+  CORE::GEO::CUT::MeshIntersection mesh_;
   std::map<int, std::vector<double>> nodes_;
   std::map<int, std::vector<double>> cut_nodes_;
 };

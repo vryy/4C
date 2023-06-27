@@ -26,7 +26,7 @@
 
 #include "utils_exceptions.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_Direction_Generic.H>
@@ -523,7 +523,7 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
               1.0, *scalingDiagOpPtr_, epetraScaledRHS.getEpetraVector(), 0.0);
           normF = epetraScaledRHS.norm(normType_);
         }
-        if (normF > GEO::TOL12)
+        if (normF > CORE::GEO::TOL12)
           deltaInit_ = 1.0 / (normF * normF);
         else
           deltaInit_ = 1.0;

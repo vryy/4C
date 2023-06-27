@@ -16,7 +16,7 @@
 
 #include "inpar_cut.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -106,20 +106,21 @@ namespace GEO
       \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by
       momentfitting and boundarycells are by tessellation
        */
-      void GenerateBoundaryCells(Mesh& mesh, const GEO::CUT::Point::PointPosition posi,
+      void GenerateBoundaryCells(Mesh& mesh, const CORE::GEO::CUT::Point::PointPosition posi,
           Element* elem, int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
 
-      void GenerateBoundaryCellsLevelSetSide(Mesh& mesh, const GEO::CUT::Point::PointPosition posi,
-          Element* elem, Facet* facet, int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
+      void GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
+          const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, Facet* facet, int BaseNos,
+          INPAR::CUT::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Get the boundarycells generated from this volumecell
          get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary
       cells note that the boundary cells of subsides with the same side id are stored now in one key
        */
-      void GetBoundaryCells(std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells);
+      void GetBoundaryCells(std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
       void GetBoundaryCellsToBeIntegrated(
-          std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells);
+          std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
 
 
       /// collect cut sides
@@ -131,12 +132,12 @@ namespace GEO
       /*!
       \brief Return the position of volumecell whether they are in the fluid region in structure
        */
-      GEO::CUT::Point::PointPosition Position() const { return position_; }
+      CORE::GEO::CUT::Point::PointPosition Position() const { return position_; }
 
       /*!
       \brief Identify the position of volumecell whether they are in the fluid region in structure
        */
-      void Position(GEO::CUT::Point::PointPosition position);
+      void Position(CORE::GEO::CUT::Point::PointPosition position);
 
       inline void Print() const { Print(std::cout); };
       void Print(std::ostream& stream) const;
@@ -179,7 +180,7 @@ namespace GEO
       \brief Create integration cell of specified shape
        */
       void NewIntegrationCell(
-          Mesh& mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*>& x);
+          Mesh& mesh, ::DRT::Element::DiscretizationType shape, const std::vector<Point*>& x);
 
       /// create line2 volume cell
       void NewLine2Cell(Mesh& mesh, const std::vector<Point*>& points);
@@ -205,7 +206,7 @@ namespace GEO
       /*!
       \brief Create boundary cells of specified shape
       */
-      void NewBoundaryCell(Mesh& mesh, DRT::Element::DiscretizationType shape, Facet* f,
+      void NewBoundaryCell(Mesh& mesh, ::DRT::Element::DiscretizationType shape, Facet* f,
           const std::vector<Point*>& x);
 
       /*!
@@ -243,7 +244,7 @@ namespace GEO
       \brief Return the number of Gauss points generated over the volumecell when tessellation is
       used
        */
-      int NumGaussPoints(DRT::Element::DiscretizationType shape);
+      int NumGaussPoints(::DRT::Element::DiscretizationType shape);
 
       /*!
       \brief Write Geometry of volumecell together with gauss points produced from moment fitting
@@ -319,8 +320,9 @@ namespace GEO
        */
       void integrateSpecificFunctionsTessellation();
 
-      template <DRT::Element::DiscretizationType distype>
-      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(GEO::CUT::IntegrationCell* ic);
+      template <::DRT::Element::DiscretizationType distype>
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
+          CORE::GEO::CUT::IntegrationCell* ic);
 
       /*!
       \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
@@ -342,8 +344,8 @@ namespace GEO
       \brief Check whether the numbering of points need to be reversed. This is to ensure outward
       pointing normal for the boundarycells when triangulation is performed
        */
-      bool ToReverse(const GEO::CUT::Point::PointPosition posi, const std::vector<double>& parEqn,
-          const std::vector<double>& facetEqn);
+      bool ToReverse(const CORE::GEO::CUT::Point::PointPosition posi,
+          const std::vector<double>& parEqn, const std::vector<double>& facetEqn);
 
       /*!
       \brief return the Gauss points computed using moment fitting equations
@@ -361,7 +363,7 @@ namespace GEO
       Element* element_;
 
       /// position relative to cut surface
-      GEO::CUT::Point::PointPosition position_;
+      CORE::GEO::CUT::Point::PointPosition position_;
 
       /// defining facets
       plain_facet_set facets_;
@@ -407,6 +409,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

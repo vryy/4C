@@ -18,7 +18,7 @@
 #include "cut_element.H"
 #include "cut_tolerance.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -52,7 +52,7 @@ namespace GEO
       static Side* CreateLevelSetSide(const int& sid);
 
       /// Create a concrete side (using dis-type for identification)
-      static Side* Create(const DRT::Element::DiscretizationType& sidetype, const int& sid,
+      static Side* Create(const ::DRT::Element::DiscretizationType& sidetype, const int& sid,
           const std::vector<Node*>& nodes, const std::vector<Edge*>& edges);
 
       /// Create a concrete side (using shards-key for identification)
@@ -73,7 +73,7 @@ namespace GEO
       int Id() const { return sid_; }
 
       /// returns the geometric shape of this side
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       /// element dimension
       virtual unsigned Dim() const = 0;
@@ -99,8 +99,8 @@ namespace GEO
         if (markedsidemap_.size() > 0)
           dserror("Currently more than one mark on a side is NOT possible.");
 
-        markedsidemap_.insert(
-            std::pair<enum MarkedActions, int>(GEO::CUT::mark_and_create_boundarycells, markedid));
+        markedsidemap_.insert(std::pair<enum MarkedActions, int>(
+            CORE::GEO::CUT::mark_and_create_boundarycells, markedid));
       }
 
       std::map<enum MarkedActions, int>& GetMarkedsidemap() { return markedsidemap_; }
@@ -126,7 +126,7 @@ namespace GEO
        *
        *  Set is_closer and return TRUE if check was successful. */
       template <class T>
-      bool IsCloserSide(const T& startpoint_xyz, GEO::CUT::Side* other, bool& is_closer)
+      bool IsCloserSide(const T& startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
         if (startpoint_xyz.M() != ProbDim())
           dserror("The dimension of startpoint_xyz is wrong! (probdim = %d)", ProbDim());
@@ -474,7 +474,7 @@ namespace GEO
       void GetSelfCutEdge(Edge* selfcutedge) { self_cut_edges_.insert(selfcutedge); }
 
       /// Gets a selfcuttriangle of this cutside
-      void GetSelfCutTriangle(std::vector<GEO::CUT::Point*> selfcuttriangle)
+      void GetSelfCutTriangle(std::vector<CORE::GEO::CUT::Point*> selfcuttriangle)
       {
         self_cut_triangles_.push_back(selfcuttriangle);
       }
@@ -501,7 +501,7 @@ namespace GEO
       const plain_edge_set& SelfCutEdges() const { return self_cut_edges_; }
 
       /// Returns all selfcuttriangles of this cutside
-      const std::vector<std::vector<GEO::CUT::Point*>>& SelfCutTriangles() const
+      const std::vector<std::vector<CORE::GEO::CUT::Point*>>& SelfCutTriangles() const
       {
         return self_cut_triangles_;
       }
@@ -537,7 +537,7 @@ namespace GEO
        *
        *  Set is_closer and return TRUE if check was successful. */
       virtual bool IsCloserSide(
-          const double* startpoint_xyz, GEO::CUT::Side* other, bool& is_closer) = 0;
+          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) = 0;
 
       /*! \brief get all edges adjacent to given local coordinates */
       virtual void EdgeAt(const double* rs, std::vector<Edge*>& edges) = 0;
@@ -602,7 +602,7 @@ namespace GEO
       int sid_;
 
       // Marked side additions:
-      std::map<GEO::CUT::MarkedActions, int> markedsidemap_;
+      std::map<CORE::GEO::CUT::MarkedActions, int> markedsidemap_;
       // -----------------------
 
       std::vector<Node*> nodes_;
@@ -634,7 +634,7 @@ namespace GEO
       plain_edge_set self_cut_edges_;
 
       /// all selfcuttriangles of this cutside
-      std::vector<std::vector<GEO::CUT::Point*>> self_cut_triangles_;
+      std::vector<std::vector<CORE::GEO::CUT::Point*>> self_cut_triangles_;
 
       /// the selfcutposition of this cutside shows if it is inside or outside the other structure
       /// body
@@ -653,7 +653,7 @@ namespace GEO
      *                             the side dimension \c dim
      *
      *  \author hiermeier */
-    template <unsigned probdim, DRT::Element::DiscretizationType sidetype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype,
         unsigned numNodesSide =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim>
@@ -676,7 +676,7 @@ namespace GEO
       virtual ~ConcreteSide(){};
 
       /// Returns the geometrical shape of this side
-      virtual DRT::Element::DiscretizationType Shape() const { return sidetype; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return sidetype; }
 
       /// element dimension
       virtual unsigned Dim() const { return dim; }
@@ -691,18 +691,18 @@ namespace GEO
       {
         switch (sidetype)
         {
-          case DRT::Element::tri3:
+          case ::DRT::Element::tri3:
             return shards::getCellTopologyData<shards::Triangle<3>>();
             break;
-          case DRT::Element::quad4:
+          case ::DRT::Element::quad4:
             return shards::getCellTopologyData<shards::Quadrilateral<4>>();
             break;
-          case DRT::Element::line2:
+          case ::DRT::Element::line2:
             return shards::getCellTopologyData<shards::Line<2>>();
             break;
           default:
-            dserror(
-                "Unknown sidetype! (%d | %s)\n", sidetype, DRT::DistypeToString(sidetype).c_str());
+            dserror("Unknown sidetype! (%d | %s)\n", sidetype,
+                ::DRT::DistypeToString(sidetype).c_str());
             break;
         }
         exit(EXIT_FAILURE);
@@ -723,22 +723,22 @@ namespace GEO
        *
        *  check based on ray-tracing technique set is_closer and return
        *  \TRUE if check was successful */
-      bool IsCloserSide(
-          const LINALG::Matrix<probdim, 1>& startpoint_xyz, GEO::CUT::Side* other, bool& is_closer);
+      bool IsCloserSide(const LINALG::Matrix<probdim, 1>& startpoint_xyz,
+          CORE::GEO::CUT::Side* other, bool& is_closer);
 
       /// get all edges adjacent to given local coordinates
       void EdgeAt(const LINALG::Matrix<dim, 1>& rs, std::vector<Edge*>& edges)
       {
         switch (sidetype)
         {
-          case DRT::Element::tri3:
+          case ::DRT::Element::tri3:
           {
             if (fabs(rs(1)) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) + rs(1) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
             if (fabs(rs(0)) < REFERENCETOL) edges.push_back(Edges()[2]);
             break;
           }
-          case DRT::Element::quad4:
+          case ::DRT::Element::quad4:
           {
             if (fabs(rs(1) + 1) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
@@ -746,7 +746,7 @@ namespace GEO
             if (fabs(rs(0) + 1) < REFERENCETOL) edges.push_back(Edges()[3]);
             break;
           }
-          case DRT::Element::line2:
+          case ::DRT::Element::line2:
           {
             dserror("If we need this, the edges will degenerate to nodes!");
             break;
@@ -796,19 +796,19 @@ namespace GEO
       {
         switch (sidetype)
         {
-          case DRT::Element::tri3:
+          case ::DRT::Element::tri3:
           {
             const double rs[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
             std::copy(rs, rs + 6, rst_corners);
             break;
           }
-          case DRT::Element::quad4:
+          case ::DRT::Element::quad4:
           {
             const double rs[8] = {-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0};
             std::copy(rs, rs + 8, rst_corners);
             break;
           }
-          case DRT::Element::line2:
+          case ::DRT::Element::line2:
           {
             const double r[2] = {-1.0, 1.0};
             std::copy(r, r + 2, rst_corners);
@@ -945,7 +945,7 @@ namespace GEO
      protected:
       /// derived
       virtual bool IsCloserSide(
-          const double* startpoint_xyz, GEO::CUT::Side* other, bool& is_closer)
+          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
         const LINALG::Matrix<probdim, 1> startpoint_xyz_mat(startpoint_xyz, true);
         return IsCloserSide(startpoint_xyz_mat, other, is_closer);
@@ -1035,12 +1035,12 @@ namespace GEO
 
       virtual ~SideFactory(){};
 
-      Side* CreateSide(DRT::Element::DiscretizationType sidetype, int sid,
+      Side* CreateSide(::DRT::Element::DiscretizationType sidetype, int sid,
           const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const;
 
      private:
-      template <DRT::Element::DiscretizationType sidetype>
-      GEO::CUT::Side* CreateConcreteSide(int sid, const std::vector<Node*>& nodes,
+      template <::DRT::Element::DiscretizationType sidetype>
+      CORE::GEO::CUT::Side* CreateConcreteSide(int sid, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges, int probdim) const
       {
         Side* s = NULL;
@@ -1065,8 +1065,8 @@ namespace GEO
     };  // class SideFactory
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
-std::ostream& operator<<(std::ostream& stream, GEO::CUT::Side& s);
+std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Side& s);
 
 #endif

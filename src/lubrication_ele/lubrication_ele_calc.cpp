@@ -11,7 +11,7 @@
 
 #include "lubrication_ele_calc.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "lib_utils.H"
 #include "lib_discret.H"
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ReadElementCoordinates
     const DRT::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   return;
 }  // LubricationEleCalc::ReadElementCoordinates

@@ -14,12 +14,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 #include "linalg_serialdensematrix.H"
 
 
-void GEO::test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U, LINALG::Matrix<3, 1>& W,
-    LINALG::Matrix<3, 3>& V, int dim)
+void CORE::GEO::test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U,
+    LINALG::Matrix<3, 1>& W, LINALG::Matrix<3, 3>& V, int dim)
 {
   LINALG::Matrix<3, 3> H1;
   LINALG::Matrix<3, 3> H2;
@@ -101,7 +101,7 @@ void GEO::test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U, LINALG::
   printf("\n");
 }
 
-void GEO::svdcmpSerialDense(
+void CORE::GEO::svdcmpSerialDense(
     Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& W, Epetra_SerialDenseMatrix& V)
 {
   // Dimensionen der Matrix A herausfinden
@@ -261,7 +261,7 @@ void GEO::svdcmpSerialDense(
           rv1(i, 0) *= c;
           if ((double)(fabs(f) + anorm) == anorm) break;
           const double g = W(i, 0);
-          const double h = GEO::pythagoras(f, g);
+          const double h = CORE::GEO::pythagoras(f, g);
           W(i, 0) = h;
           const double h_inv = 1.0 / h;
           c = g * h_inv;
@@ -295,7 +295,7 @@ void GEO::svdcmpSerialDense(
       double g = rv1(km, 0);
       double h = rv1(k, 0);
       double f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
-      g = GEO::pythagoras(f, 1.0);
+      g = CORE::GEO::pythagoras(f, 1.0);
       f = ((x - z) * (x + z) + h * ((y / (f + XSIGN(g, f))) - h)) / x;
       // Next QR transformation:
       double c = 1.0;
@@ -307,7 +307,7 @@ void GEO::svdcmpSerialDense(
         double y = W(i, 0);
         double h = s * g;
         g = c * g;
-        double z = GEO::pythagoras(f, h);
+        double z = CORE::GEO::pythagoras(f, h);
         rv1(j, 0) = z;
         c = f / z;
         s = h / z;
@@ -322,7 +322,7 @@ void GEO::svdcmpSerialDense(
           V(jj, j) = x * c + z * s;
           V(jj, i) = z * c - x * s;
         }
-        z = GEO::pythagoras(f, h);
+        z = CORE::GEO::pythagoras(f, h);
         // Rotation can be arbitrary if z = 0.
         W(j, 0) = z;
         if (z)

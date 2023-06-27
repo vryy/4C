@@ -19,7 +19,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
+CORE::GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
     const std::vector<Side*>& sides, const plain_facet_set& facets)
     : FacetGraph() /* call empty base class constructor */
 {
@@ -38,7 +38,7 @@ GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
+void CORE::GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   if (all_facets_.size() < 1) return;
@@ -66,7 +66,7 @@ void GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::SimpleFacetGraph_1D::SortFacets(
+void CORE::GEO::CUT::SimpleFacetGraph_1D::SortFacets(
     const Element* element, std::map<double, Facet*>& sorted_facets) const
 {
   Edge* edge = element->Sides()[0]->Edges()[0];
@@ -75,7 +75,8 @@ void GEO::CUT::SimpleFacetGraph_1D::SortFacets(
        ++cit)
   {
     Facet* f = *cit;
-    if (not f->Equals(DRT::Element::point1)) dserror("The given facets are supposed to be points!");
+    if (not f->Equals(::DRT::Element::point1))
+      dserror("The given facets are supposed to be points!");
 
     Point* p = f->Points()[0];
     double t = p->t(edge);
@@ -86,7 +87,7 @@ void GEO::CUT::SimpleFacetGraph_1D::SortFacets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::SimpleFacetGraph_1D::CombineFacetsToLineVolumes(
+void CORE::GEO::CUT::SimpleFacetGraph_1D::CombineFacetsToLineVolumes(
     const std::map<double, Facet*>& sorted_facets, std::vector<plain_facet_set>& volumes) const
 {
   std::map<double, Facet*>::const_iterator end_cit = sorted_facets.end();
@@ -108,7 +109,7 @@ void GEO::CUT::SimpleFacetGraph_1D::CombineFacetsToLineVolumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
+CORE::GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
     const std::vector<Side*>& sides, const plain_facet_set& facets)
     : FacetGraph() /* call empty base class constructor */
 {
@@ -127,7 +128,7 @@ GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
+void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   std::vector<plain_facet_set> volumes;

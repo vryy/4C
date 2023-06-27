@@ -19,7 +19,7 @@
 
 class Epetra_SerialDenseMatrix;
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -42,15 +42,15 @@ namespace GEO
       void FindNodePositions();
 
       void AddElement(int eid, const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
-          DRT::Element::DiscretizationType distype, const double* lsv,
+          ::DRT::Element::DiscretizationType distype, const double* lsv,
           const bool lsv_only_plus_domain);
 
       void AddLevelSetSide(int levelset_sid);
 
       void AddMeshCuttingSide(int sid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype, int mi);
+          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype, int mi);
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 #endif

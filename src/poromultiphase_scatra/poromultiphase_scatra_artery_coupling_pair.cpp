@@ -19,7 +19,7 @@
 #include "mat_cnst_1d_art.H"
 #include "linalg_FAD_utils.H"
 #include "porofluidmultiphase_ele_parameter.H"
-#include "geometry_coordinate_system_utils.H"
+#include "discretization_geometry_coordinate_system_utils.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_integration.H"
@@ -536,7 +536,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (numdim_ != 3) dserror("surface-based formulation makes only sense in 3D");
   for (int idim = 0; idim < 3; idim++) tang(idim) = lambda0_(idim);
 
-  GEO::BuildOrthonormalBasisFromUnitVector(tang, unit_rad_1, unit_rad_2);
+  CORE::GEO::BuildOrthonormalBasisFromUnitVector(tang, unit_rad_1, unit_rad_2);
 
   // get radius
   const int artelematerial = coupltype_ == type_scatra ? 1 : 0;

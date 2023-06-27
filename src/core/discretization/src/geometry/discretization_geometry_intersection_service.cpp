@@ -8,12 +8,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "geometry_element_coordtrafo.H"
-#include "geometry_element_normals.H"
-#include "geometry_intersection_interfacepoint.H"
-#include "geometry_intersection_service.H"
-#include "geometry_intersection_service_templates.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_normals.H"
+#include "discretization_geometry_intersection_interfacepoint.H"
+#include "discretization_geometry_intersection_service.H"
+#include "discretization_geometry_intersection_service_templates.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_discret.H"
 #include "lib_element.H"
 
@@ -23,7 +23,7 @@
  |  ML:     computes the cross product                       u.may 08/07|
  |          of 2 vectors c = a x b                                      |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> GEO::computeCrossProduct(
+LINALG::Matrix<3, 1> CORE::GEO::computeCrossProduct(
     const LINALG::Matrix<3, 1>& a, const LINALG::Matrix<3, 1>& b)
 {
   LINALG::Matrix<3, 1> c;
@@ -40,13 +40,13 @@ LINALG::Matrix<3, 1> GEO::computeCrossProduct(
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void GEO::checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element,
-    EleGeoType& eleGeoType)
+void CORE::GEO::checkGeoType(const ::DRT::Element* element,
+    const LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
-  const DRT::Element::DiscretizationType distype = element->Shape();
+  const ::DRT::Element::DiscretizationType distype = element->Shape();
   const int eleDim = CORE::DRT::UTILS::getDimension(distype);
 
   if (CORE::DRT::UTILS::getOrder(distype) == 1)
@@ -61,12 +61,12 @@ void GEO::checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMat
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
         CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    std::vector<Teuchos::RCP<DRT::Element>> surfaces =
-        (const_cast<DRT::Element*>(element))->Surfaces();
+    std::vector<Teuchos::RCP<::DRT::Element>> surfaces =
+        (const_cast<::DRT::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;
-      const DRT::Element* surfaceP = surfaces[i].get();
+      const ::DRT::Element* surfaceP = surfaces[i].get();
 
       for (int k = 0; k < dimCoord; k++)
       {
@@ -120,20 +120,20 @@ void GEO::checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMat
  | delivers a axis-aligned bounding box for a given          u.may 12/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-const std::map<int, LINALG::Matrix<3, 2>> GEO::getCurrentXAABBs(
-    const DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
+const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
+    const ::DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
 {
   std::map<int, LINALG::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const DRT::Element* element = dis.lColElement(j);
+    const ::DRT::Element* element = dis.lColElement(j);
     const LINALG::SerialDenseMatrix xyze_element(
-        GEO::getCurrentNodalPositions(element, currentpositions));
-    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
-    GEO::checkGeoType(element, xyze_element, eleGeoType);
+        CORE::GEO::getCurrentNodalPositions(element, currentpositions));
+    CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
+    CORE::GEO::checkGeoType(element, xyze_element, eleGeoType);
     const LINALG::Matrix<3, 2> xaabbEle =
-        GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+        CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     currentXAABBs[element->Id()] = xaabbEle;
   }
   return currentXAABBs;
@@ -145,9 +145,9 @@ const std::map<int, LINALG::Matrix<3, 2>> GEO::getCurrentXAABBs(
  | delivers a axis-aligned bounding box for a given          u.may 02/09|
  | triangle list                                                        |
  *----------------------------------------------------------------------*/
-const std::map<int, LINALG::Matrix<3, 2>> GEO::getTriangleXAABBs(
+const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getTriangleXAABBs(
     const std::vector<std::vector<int>>& triangleList,
-    const std::vector<GEO::InterfacePoint>& pointList)
+    const std::vector<CORE::GEO::InterfacePoint>& pointList)
 {
   std::map<int, LINALG::Matrix<3, 2>> triangleXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
@@ -159,8 +159,8 @@ const std::map<int, LINALG::Matrix<3, 2>> GEO::getTriangleXAABBs(
       LINALG::Matrix<3, 1> node = pointList[triangleList[i][j]].getCoord();
       for (int k = 0; k < 3; k++) xyze_triElement(k, j) = node(k);
     }
-    LINALG::Matrix<3, 2> xaabbEle =
-        GEO::computeFastXAABB(DRT::Element::tri3, xyze_triElement, GEO::EleGeoType(LINEAR));
+    LINALG::Matrix<3, 2> xaabbEle = CORE::GEO::computeFastXAABB(
+        ::DRT::Element::tri3, xyze_triElement, CORE::GEO::EleGeoType(LINEAR));
     triangleXAABBs[i] = xaabbEle;
   }
   return triangleXAABBs;
@@ -172,16 +172,16 @@ const std::map<int, LINALG::Matrix<3, 2>> GEO::getTriangleXAABBs(
  |  ICS:    computes 18Dops                                  u.may 12/08|
  |          (only the slabs which are not present in an XAABB)          |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6, 2> GEO::computeContact18Dop(
-    const DRT::Element* element, const LINALG::SerialDenseMatrix& xyze)
+LINALG::Matrix<6, 2> CORE::GEO::computeContact18Dop(
+    const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze)
 {
   // consider only remaining slabs
   LINALG::Matrix<6, 2> slabs;
 
   for (int j = 0; j < 6; j++)
     slabs(j, 0) = slabs(j, 1) =
-        (GEO::Dop18Normals[j][0] * xyze(0, 0) + GEO::Dop18Normals[j][1] * xyze(1, 0) +
-            GEO::Dop18Normals[j][2] * xyze(2, 0)) /
+        (CORE::GEO::Dop18Normals[j][0] * xyze(0, 0) + CORE::GEO::Dop18Normals[j][1] * xyze(1, 0) +
+            CORE::GEO::Dop18Normals[j][2] * xyze(2, 0)) /
         sqrt(2.0);
 
   // remaining element nodes
@@ -190,8 +190,8 @@ LINALG::Matrix<6, 2> GEO::computeContact18Dop(
     {
       //= ax+by+cz=d/sqrt(aa+bb+cc)
       const double dcurrent =
-          (GEO::Dop18Normals[j][0] * xyze(0, k) + GEO::Dop18Normals[j][1] * xyze(1, k) +
-              GEO::Dop18Normals[j][2] * xyze(2, k)) /
+          (CORE::GEO::Dop18Normals[j][0] * xyze(0, k) + CORE::GEO::Dop18Normals[j][1] * xyze(1, k) +
+              CORE::GEO::Dop18Normals[j][2] * xyze(2, k)) /
           sqrt(2.0);
       if (dcurrent > slabs(j, 1)) slabs(j, 1) = dcurrent;
       if (dcurrent < slabs(j, 0)) slabs(j, 0) = dcurrent;
@@ -216,19 +216,19 @@ LINALG::Matrix<6, 2> GEO::computeContact18Dop(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if two 18DOPs intersect                   u.may 12/08| |
  *----------------------------------------------------------------------*/
-bool GEO::intersectionOfKDOPs(
+bool CORE::GEO::intersectionOfKDOPs(
     const LINALG::Matrix<9, 2>& cutterDOP, const LINALG::Matrix<9, 2>& xfemDOP)
 {
   // check intersection of 18 kdops
   for (int i = 0; i < 9; i++)
-    if (!(((cutterDOP(i, 0) > (xfemDOP(i, 0) - GEO::TOL7)) &&
-              (cutterDOP(i, 0) < (xfemDOP(i, 1) + GEO::TOL7))) ||
-            ((cutterDOP(i, 1) > (xfemDOP(i, 0) - GEO::TOL7)) &&
-                (cutterDOP(i, 1) < (xfemDOP(i, 1) + GEO::TOL7))) ||
-            ((xfemDOP(i, 0) > (cutterDOP(i, 0) - GEO::TOL7)) &&
-                (xfemDOP(i, 0) < (cutterDOP(i, 1) + GEO::TOL7))) ||
-            ((xfemDOP(i, 1) > (cutterDOP(i, 0) - GEO::TOL7)) &&
-                (xfemDOP(i, 1) < (cutterDOP(i, 1) + GEO::TOL7)))))
+    if (!(((cutterDOP(i, 0) > (xfemDOP(i, 0) - CORE::GEO::TOL7)) &&
+              (cutterDOP(i, 0) < (xfemDOP(i, 1) + CORE::GEO::TOL7))) ||
+            ((cutterDOP(i, 1) > (xfemDOP(i, 0) - CORE::GEO::TOL7)) &&
+                (cutterDOP(i, 1) < (xfemDOP(i, 1) + CORE::GEO::TOL7))) ||
+            ((xfemDOP(i, 0) > (cutterDOP(i, 0) - CORE::GEO::TOL7)) &&
+                (xfemDOP(i, 0) < (cutterDOP(i, 1) + CORE::GEO::TOL7))) ||
+            ((xfemDOP(i, 1) > (cutterDOP(i, 0) - CORE::GEO::TOL7)) &&
+                (xfemDOP(i, 1) < (cutterDOP(i, 1) + CORE::GEO::TOL7)))))
       return false;
 
   return true;
@@ -239,7 +239,7 @@ bool GEO::intersectionOfKDOPs(
  |  checks the intersection between two bounding volumes (AABB)         |
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
-bool GEO::intersectionOfBVs(
+bool CORE::GEO::intersectionOfBVs(
     const LINALG::Matrix<3, 2>& currentBV, const LINALG::Matrix<3, 2>& queryBV)
 {
   return (overlap(currentBV(0, 0), currentBV(0, 1), queryBV(0, 0), queryBV(0, 1)) and
@@ -254,17 +254,17 @@ bool GEO::intersectionOfBVs(
  |  checks the overlap of two intervals in one coordinate               |
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
-bool GEO::overlap(double smin, double smax, double omin, double omax)
+bool CORE::GEO::overlap(double smin, double smax, double omin, double omax)
 {
-  return ((omax > smin - GEO::TOL7 and omin < smax + GEO::TOL7) or
-          (smax > omin - GEO::TOL7 and smin < omax + GEO::TOL7));
+  return ((omax > smin - CORE::GEO::TOL7 and omin < smax + CORE::GEO::TOL7) or
+          (smax > omin - CORE::GEO::TOL7 and smin < omax + CORE::GEO::TOL7));
 }
 
 
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within a given element   u.may 06/07|
  *----------------------------------------------------------------------*/
-bool GEO::checkPositionWithinElement(const DRT::Element* element,
+bool CORE::GEO::checkPositionWithinElement(const ::DRT::Element* element,
     const LINALG::SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& x)
 {
   dsassert(CORE::DRT::UTILS::getDimension(element->Shape()) == 3,
@@ -285,7 +285,7 @@ bool GEO::checkPositionWithinElement(const DRT::Element* element,
  |  RQI:    searches the nearest point on a surface          u.may 02/08|
  |          element for a given point in physical coordinates           |
  *----------------------------------------------------------------------*/
-bool GEO::searchForNearestPointOnSurface(const DRT::Element* surfaceElement,
+bool CORE::GEO::searchForNearestPointOnSurface(const ::DRT::Element* surfaceElement,
     const LINALG::SerialDenseMatrix& xyze_surfaceElement, const LINALG::Matrix<3, 1>& physCoord,
     LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& normal, double& distance)
 {
@@ -309,7 +309,7 @@ bool GEO::searchForNearestPointOnSurface(const DRT::Element* surfaceElement,
   distance = normal.Norm2();
 
 
-  if (fabs(distance) > GEO::TOL7)
+  if (fabs(distance) > CORE::GEO::TOL7)
   {
     // compute distance with sign
     const double scalarproduct = eleNormalAtXsi(0) * normal(0) + eleNormalAtXsi(1) * normal(1) +

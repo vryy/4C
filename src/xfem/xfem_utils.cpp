@@ -49,13 +49,13 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::GetVolumeCellMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, GEO::CUT::Point::PointPosition position)
+void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
+    CORE::GEO::CUT::Point::PointPosition position)
 {
   int position_id = 0;
-  if (position == GEO::CUT::Point::inside)  // minus domain, Omega^i with i<j
+  if (position == CORE::GEO::CUT::Point::inside)  // minus domain, Omega^i with i<j
     position_id = 1;
-  else if (position != GEO::CUT::Point::outside)  // plus domain, \Omega^j with j>i
+  else if (position != CORE::GEO::CUT::Point::outside)  // plus domain, \Omega^j with j>i
     dserror("Volume cell is either undecided or on surface. That can't be good....");
 
   Teuchos::RCP<MAT::Material> material = actele->Material();

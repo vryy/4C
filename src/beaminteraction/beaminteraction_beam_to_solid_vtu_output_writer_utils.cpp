@@ -24,7 +24,7 @@
  */
 void BEAMINTERACTION::AddBeamInteractionNodalForces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>& visualization,
-    const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
+    const Teuchos::RCP<const ::DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
     const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
 {
@@ -141,7 +141,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
 /**
  *
  */
-void BEAMINTERACTION::GetGlobalCouplingForceResultants(const DRT::Discretization& discret,
+void BEAMINTERACTION::GetGlobalCouplingForceResultants(const ::DRT::Discretization& discret,
     const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
     LINALG::Matrix<3, 2, double>& beam_resultant, LINALG::Matrix<3, 2, double>& solid_resultant)
 {

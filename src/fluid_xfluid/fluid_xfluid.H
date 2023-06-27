@@ -58,7 +58,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
 }  // namespace LINALG
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 
@@ -68,7 +68,7 @@ namespace GEO
     class VolumeCell;
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace IO
 {
@@ -353,7 +353,7 @@ namespace FLD
     void Set_EvaluateCut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
 
     /// Get Cut Wizard
-    Teuchos::RCP<GEO::CutWizard> GetCutWizard()
+    Teuchos::RCP<CORE::GEO::CutWizard> GetCutWizard()
     {
       if (state_ != Teuchos::null)
         return state_->Wizard();
@@ -392,7 +392,8 @@ namespace FLD
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
     void AssembleMatAndRHS_FaceTerms(const Teuchos::RCP<LINALG::SparseMatrix>& sysmat,
-        const Teuchos::RCP<Epetra_Vector>& residual_col, const Teuchos::RCP<GEO::CutWizard>& wizard,
+        const Teuchos::RCP<Epetra_Vector>& residual_col,
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
         bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
@@ -835,11 +836,11 @@ namespace FLD
 
     //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for
     //! XFEM time-integration
-    Teuchos::RCP<Epetra_Vector> veln_Intn_;       //!< velocity solution from last time-step t^n
-    Teuchos::RCP<Epetra_Vector> accn_Intn_;       //!< acceleration from last time-step t^n
-    Teuchos::RCP<Epetra_Vector> velnm_Intn_;      //!< velocity at t^{n-1} for BDF2 scheme
-    Teuchos::RCP<GEO::CutWizard> wizard_Intn_;    //!< cut wizard from last time-step t^n
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intn_;  //!< dofset from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> veln_Intn_;           //!< velocity solution from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> accn_Intn_;           //!< acceleration from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> velnm_Intn_;          //!< velocity at t^{n-1} for BDF2 scheme
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_Intn_;  //!< cut wizard from last time-step t^n
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intn_;      //!< dofset from last time-step t^n
 
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
@@ -847,9 +848,10 @@ namespace FLD
 
     //! @name last iteration step state data from t^(n+1) used for pseudo XFEM time-integration
     //! during monolithic Newton or partitioned schemes
-    Teuchos::RCP<Epetra_Vector> velnp_Intnpi_;      //!< velocity solution from last iteration w.r.t
-                                                    //!< last dofset and interface position
-    Teuchos::RCP<GEO::CutWizard> wizard_Intnpi_;    //!< cut wizard from last iteration-step t^(n+1)
+    Teuchos::RCP<Epetra_Vector> velnp_Intnpi_;  //!< velocity solution from last iteration w.r.t
+                                                //!< last dofset and interface position
+    Teuchos::RCP<CORE::GEO::CutWizard>
+        wizard_Intnpi_;                             //!< cut wizard from last iteration-step t^(n+1)
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
 
     //! is a restart of the monolithic Newton necessary caused by changing dofsets?

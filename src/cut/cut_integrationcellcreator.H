@@ -13,7 +13,7 @@
 
 #include "cut_volumecell.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -30,7 +30,8 @@ namespace GEO
      public:
       static bool CreateCells(Mesh& mesh, Element* element, const plain_volumecell_set& cells);
 
-      static bool CreateCell(Mesh& mesh, DRT::Element::DiscretizationType shape, VolumeCell* cell);
+      static bool CreateCell(
+          Mesh& mesh, ::DRT::Element::DiscretizationType shape, VolumeCell* cell);
 
      private:
       /** \brief loop over all volume cells and initiate the volume and boundary integration cell
@@ -48,8 +49,8 @@ namespace GEO
       /** \brief fill the 2-D volume cells
        *
        *  \author hiermeier \date 01/17 */
-      template <DRT::Element::DiscretizationType celltype,
-          DRT::Element::DiscretizationType facetype =
+      template <::DRT::Element::DiscretizationType celltype,
+          ::DRT::Element::DiscretizationType facetype =
               CORE::DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
           unsigned numfaces = CORE::DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces>
       bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
@@ -72,8 +73,8 @@ namespace GEO
           const plain_facet_set& facets, int axis, double r);
 
       /// add the volume cell information during the Create<Shape>Cell calls
-      void Add(
-          VolumeCell* vc, DRT::Element::DiscretizationType shape, const std::vector<Point*>& points)
+      void Add(VolumeCell* vc, ::DRT::Element::DiscretizationType shape,
+          const std::vector<Point*>& points)
       {
         volume& v = cells_[vc];
         std::vector<ic>& cells = v.domain_;
@@ -89,10 +90,10 @@ namespace GEO
        *
        *  \author hiermeier \date 01/17   */
       void AddSide(INPAR::CUT::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
-          DRT::Element::DiscretizationType shape, const std::vector<Point*>& side);
+          ::DRT::Element::DiscretizationType shape, const std::vector<Point*>& side);
 
       /// add the side (boundary cell) information during the Create<Shape>Cell calls
-      void AddSide(VolumeCell* vc, Facet* facet, DRT::Element::DiscretizationType shape,
+      void AddSide(VolumeCell* vc, Facet* facet, ::DRT::Element::DiscretizationType shape,
           const std::vector<Point*>& side)
       {
         volume& cell = cells_[vc];
@@ -109,7 +110,7 @@ namespace GEO
       /// construction of a boundary integration cell
       struct bc
       {
-        DRT::Element::DiscretizationType shape_;
+        ::DRT::Element::DiscretizationType shape_;
         std::vector<Point*> side_;
         Facet* facet_;
 
@@ -124,7 +125,7 @@ namespace GEO
       /// construction of a volume integration cell
       struct ic
       {
-        DRT::Element::DiscretizationType shape_;
+        ::DRT::Element::DiscretizationType shape_;
         std::vector<Point*> points_;
 
         /// actual creation of the desired volume integration cell
@@ -161,6 +162,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

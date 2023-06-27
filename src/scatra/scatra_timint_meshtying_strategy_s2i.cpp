@@ -18,7 +18,7 @@
 #include "fluid_utils.H"
 #include "linalg_matrixtransform.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -4284,7 +4284,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 {
   // extract global coordinates of element nodes
   LINALG::Matrix<nsd_slave_ + 1, nen_slave_> coordinates_nodes;
-  GEO::fillInitialPositionArray<distypeS, nsd_slave_ + 1,
+  CORE::GEO::fillInitialPositionArray<distypeS, nsd_slave_ + 1,
       LINALG::Matrix<nsd_slave_ + 1, nen_slave_>>(&element, coordinates_nodes);
 
   // extract reference coordinates of integration point

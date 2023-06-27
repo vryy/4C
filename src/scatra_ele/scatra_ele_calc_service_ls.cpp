@@ -16,7 +16,7 @@
 
 #include "lib_utils.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_discret.H"
 
 

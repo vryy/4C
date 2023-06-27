@@ -7,16 +7,16 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef GEOMETRY_INTERSECTION_SERVICE_H
-#define GEOMETRY_INTERSECTION_SERVICE_H
+#ifndef DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H
+#define DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H
 
 
-#include "geometry_geo_utils.H"
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_geo_utils.H"
+#include "discretization_geometry_intersection_math.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   class InterfacePoint;
 
@@ -49,13 +49,13 @@ namespace GEO
   }
 
 
-  const std::map<int, LINALG::Matrix<3, 2>> getCurrentXAABBs(
-      const DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+  const std::map<int, LINALG::Matrix<3, 2>> getCurrentXAABBs(const ::DRT::Discretization& dis,
+      const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
 
 
   const std::map<int, LINALG::Matrix<3, 2>> getTriangleXAABBs(
       const std::vector<std::vector<int>>& triangleList,
-      const std::vector<GEO::InterfacePoint>& pointList);
+      const std::vector<CORE::GEO::InterfacePoint>& pointList);
 
 
   /*!
@@ -66,7 +66,7 @@ namespace GEO
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   LINALG::Matrix<6, 2> computeContact18Dop(
-      const DRT::Element* element, const LINALG::SerialDenseMatrix& xyze);
+      const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze);
 
 
   /*!
@@ -107,7 +107,7 @@ namespace GEO
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element,
+  void checkGeoType(const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element,
       EleGeoType& eleGeoType);
 
   /*!
@@ -118,8 +118,8 @@ namespace GEO
   \param xyze_element   (in)         : coordinates of the element
   \return eleGeoType    (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  template <DRT::Element::DiscretizationType DISTYPE, class M>
-  EleGeoType checkGeoTypeT(const DRT::Element* element, const M& xyze_element)
+  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  EleGeoType checkGeoTypeT(const ::DRT::Element* element, const M& xyze_element)
   {
     if (element->Shape() != DISTYPE) dserror("shape mismatch!");
 
@@ -141,12 +141,12 @@ namespace GEO
     {
       const std::vector<std::vector<int>> eleNodeNumbering =
           CORE::DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
-      const std::vector<Teuchos::RCP<DRT::Element>> surfaces =
-          (const_cast<DRT::Element*>(element))->Surfaces();
+      const std::vector<Teuchos::RCP<::DRT::Element>> surfaces =
+          (const_cast<::DRT::Element*>(element))->Surfaces();
       for (int i = 0; i < element->NumSurface(); i++)
       {
         CartesianCount = 0;
-        const Teuchos::RCP<DRT::Element>& surfaceP = surfaces[i];
+        const Teuchos::RCP<::DRT::Element>& surfaceP = surfaces[i];
 
         for (int k = 0; k < dimCoord; k++)
         {
@@ -203,7 +203,7 @@ namespace GEO
   \param xyze                 (in)        : element nodal positions (3,numnode)
   \param x                    (in)        : node in current coordinates
   */
-  bool checkPositionWithinElement(const DRT::Element* element,
+  bool checkPositionWithinElement(const ::DRT::Element* element,
       const LINALG::SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& x);
 
   /*!
@@ -220,11 +220,11 @@ namespace GEO
   \param normal                (out):   normal point from a given point to the surface point
   \param distance              (out):   length of the normal
   */
-  bool searchForNearestPointOnSurface(const DRT::Element* surfaceElement,
+  bool searchForNearestPointOnSurface(const ::DRT::Element* surfaceElement,
       const LINALG::SerialDenseMatrix& xyze_surfaceElement, const LINALG::Matrix<3, 1>& physCoord,
       LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& normal, double& distance);
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
-#endif  // GEOMETRY_INTERSECTION_SERVICE_H
+#endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H

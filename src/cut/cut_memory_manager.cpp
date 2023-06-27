@@ -39,7 +39,7 @@ static size_t gcd(size_t a, size_t b)
 static size_t lcm(size_t a, size_t b) { return (a * b) / gcd(a, b); }
 
 
-GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
+CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
     : size_(constSize), n_(n), free_size_(n), free_size_linear_(n), linear_(true)
 {
   const size_t alignment_of_char = std::alignment_of<char*>::value;
@@ -58,7 +58,7 @@ GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
     throw std::runtime_error("Allocation of ConstMemoryPool failed");
 }
 
-GEO::CUT::ConstMemoryPool::ConstMemoryPool(char* data, size_t constSize, int n)
+CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(char* data, size_t constSize, int n)
     : current_data_(data),
       data_end_(data + constSize * n),
       size_(constSize),
@@ -73,7 +73,7 @@ GEO::CUT::ConstMemoryPool::ConstMemoryPool(char* data, size_t constSize, int n)
   offset_ = adress % alignment_of_char;
 }
 
-void* GEO::CUT::ConstMemoryPool::Allocate()
+void* CORE::GEO::CUT::ConstMemoryPool::Allocate()
 {
   if (free_size_ != 0)
   {
@@ -108,7 +108,7 @@ void* GEO::CUT::ConstMemoryPool::Allocate()
   }
 }
 
-void GEO::CUT::ConstMemoryPool::Free(void* ptr)
+void CORE::GEO::CUT::ConstMemoryPool::Free(void* ptr)
 {
   // ptr is now on the top of linked list, it is already aligned
   char* freed_data_ptr = reinterpret_cast<char*>(freed_data_ptr_);
@@ -119,7 +119,7 @@ void GEO::CUT::ConstMemoryPool::Free(void* ptr)
   ++free_size_;
 }
 
-void GEO::CUT::ConstMemoryPool::ResetContainer()
+void CORE::GEO::CUT::ConstMemoryPool::ResetContainer()
 {
   // reset linked list to point to NULL
   freed_data_ptr_ = NULL;
@@ -130,12 +130,12 @@ void GEO::CUT::ConstMemoryPool::ResetContainer()
 }
 
 // NOTE: We need to explicitely call delete in order to delete the memory
-GEO::CUT::ConstMemoryPool::~ConstMemoryPool()
+CORE::GEO::CUT::ConstMemoryPool::~ConstMemoryPool()
 {
   //    free(container_start_);
 }
 
-void GEO::CUT::GenericMemoryPool::DeleteMissing()
+void CORE::GEO::CUT::GenericMemoryPool::DeleteMissing()
 {
   // need to create sorted by first element list of ConstMemoryPools
   std::vector<std::pair<std::pair<size_t, size_t>, ConstMemoryPool*>> sorted_mem_pools;
@@ -214,7 +214,7 @@ void GEO::CUT::GenericMemoryPool::DeleteMissing()
   free_pointers_.clear();
 }
 
-void GEO::CUT::GenericMemoryPool::SetCurrent(size_t size)
+void CORE::GEO::CUT::GenericMemoryPool::SetCurrent(size_t size)
 {
   auto it = const_memory_map_.find(size);
   if (it != const_memory_map_.end())
@@ -229,7 +229,7 @@ void GEO::CUT::GenericMemoryPool::SetCurrent(size_t size)
   }
 }
 
-bool GEO::CUT::GenericMemoryPool::CheckFree(bool debug)
+bool CORE::GEO::CUT::GenericMemoryPool::CheckFree(bool debug)
 {
   // check if all containers are now free. Should be done somewhere in the end of the simulations,
   // so no problems occur later on
@@ -251,7 +251,7 @@ bool GEO::CUT::GenericMemoryPool::CheckFree(bool debug)
   return result;
 }
 
-GEO::CUT::GenericMemoryPool::GenericMemoryPool(
+CORE::GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     const std::unordered_map<size_t, int>& mem_pattern, bool reusable, bool allocating_together)
     : is_reusable_(reusable), is_allocated_together_(allocating_together)
 {
@@ -305,7 +305,7 @@ GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     AllInOneAllocation(mem_pattern);
 }
 
-void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
+void CORE::GEO::CUT::GenericMemoryPool::AllInOneAllocation(
     const std::unordered_map<size_t, int>& mem_pattern)
 {
 #if EXTENDED_CUT_DEBUG_OUTPUT
@@ -402,7 +402,7 @@ void GEO::CUT::GenericMemoryPool::AllInOneAllocation(
   if (most_frequent_size != 0) current_ = const_memory_map_[most_frequent_size];
 }
 
-void* GEO::CUT::GenericMemoryPool::Allocate(size_t size)
+void* CORE::GEO::CUT::GenericMemoryPool::Allocate(size_t size)
 {
   if (current_->GetSize() == size)
   {
@@ -431,7 +431,7 @@ void* GEO::CUT::GenericMemoryPool::Allocate(size_t size)
   }
 }
 
-void GEO::CUT::GenericMemoryPool::Free(void* ptr)
+void CORE::GEO::CUT::GenericMemoryPool::Free(void* ptr)
 {
   if (current_ and current_->BelongsHere(ptr))
   {
@@ -444,7 +444,7 @@ void GEO::CUT::GenericMemoryPool::Free(void* ptr)
   }
 }
 
-void GEO::CUT::GenericMemoryPool::Finalize()
+void CORE::GEO::CUT::GenericMemoryPool::Finalize()
 {
   // if container is reusable assume all the elements can be reused
   // otherwise delete quequed pointers for real
@@ -471,7 +471,7 @@ void GEO::CUT::GenericMemoryPool::Finalize()
 }
 
 // Free all the memory for this and const memory containters
-void GEO::CUT::GenericMemoryPool::Delete()
+void CORE::GEO::CUT::GenericMemoryPool::Delete()
 {
   if (is_allocated_together_)
   {
@@ -490,21 +490,21 @@ void GEO::CUT::GenericMemoryPool::Delete()
 }
 
 
-GEO::CUT::GenericMemoryPool::~GenericMemoryPool()
+CORE::GEO::CUT::GenericMemoryPool::~GenericMemoryPool()
 {
   // free(main_ptr_);
 }
 
-void GEO::CUT::DebugCustomMemoryManager::StartRecord() { recording_ = true; }
+void CORE::GEO::CUT::DebugCustomMemoryManager::StartRecord() { recording_ = true; }
 
-void GEO::CUT::DebugCustomMemoryManager::StopRecord() { recording_ = false; }
+void CORE::GEO::CUT::DebugCustomMemoryManager::StopRecord() { recording_ = false; }
 
-std::string GEO::CUT::DebugCustomMemoryManager::State2String()
+std::string CORE::GEO::CUT::DebugCustomMemoryManager::State2String()
 {
   return std::string((state_ == normal) ? "Normal memory allocator" : "Memory pool allocation");
 }
 
-void GEO::CUT::DebugCustomMemoryManager::SetState(
+void CORE::GEO::CUT::DebugCustomMemoryManager::SetState(
     int newstate, std::unordered_map<size_t, int>& memory_allocations)
 {
   MemoryState prev_state = state_;
@@ -519,7 +519,7 @@ void GEO::CUT::DebugCustomMemoryManager::SetState(
   }
 }
 
-void GEO::CUT::DebugCustomMemoryManager::SwitchState()
+void CORE::GEO::CUT::DebugCustomMemoryManager::SwitchState()
 {
   MemoryState prev_state = state_;
   state_ = (prev_state == normal) ? pool : normal;
@@ -540,7 +540,7 @@ void GEO::CUT::DebugCustomMemoryManager::SwitchState()
   std::swap(mem_, prev_);
 }
 
-void GEO::CUT::DebugCustomMemoryManager::ReportAllocated()
+void CORE::GEO::CUT::DebugCustomMemoryManager::ReportAllocated()
 {
   for (auto& memory_allocation : memory_allocations_)
   {
@@ -549,7 +549,7 @@ void GEO::CUT::DebugCustomMemoryManager::ReportAllocated()
   }
 }
 
-void GEO::CUT::DebugCustomMemoryManager::ResetAllocated()
+void CORE::GEO::CUT::DebugCustomMemoryManager::ResetAllocated()
 {
   for (auto& memory_allocation : memory_allocations_)
   {
@@ -557,9 +557,9 @@ void GEO::CUT::DebugCustomMemoryManager::ResetAllocated()
   }
 }
 
-void GEO::CUT::DebugCustomMemoryManager::Finalize() { mem_->Finalize(); }
+void CORE::GEO::CUT::DebugCustomMemoryManager::Finalize() { mem_->Finalize(); }
 
-void GEO::CUT::DebugCustomMemoryManager::Delete()
+void CORE::GEO::CUT::DebugCustomMemoryManager::Delete()
 {
   // delete free memory from the memory pool
   if (prev_)
@@ -571,19 +571,19 @@ void GEO::CUT::DebugCustomMemoryManager::Delete()
   }
 }
 
-std::unordered_map<size_t, int>& GEO::CUT::DebugCustomMemoryManager::GetMemoryPattern()
+std::unordered_map<size_t, int>& CORE::GEO::CUT::DebugCustomMemoryManager::GetMemoryPattern()
 {
   return memory_allocations_;
 }
 
-GEO::CUT::DebugCustomMemoryManager::DebugCustomMemoryManager()
+CORE::GEO::CUT::DebugCustomMemoryManager::DebugCustomMemoryManager()
     : mem_(new NormalMemoryAllocator), state_(normal), prev_(NULL)
 {
   // start record right after creation
   StartRecord();
 }
 
-GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), prev_(NULL)
+CORE::GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), prev_(NULL)
 {
   // Here should be size in bytes and corresponding number of elements in the contaienr of that size
   static const int sizes[] = {64, 26, 48, 24, 56, 88, 40, 176, 72, 38, 80, 136, 32};
@@ -602,13 +602,13 @@ GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), prev_(NUL
 }
 
 
-void GEO::CUT::CustomMemoryManager::Finalize()
+void CORE::GEO::CUT::CustomMemoryManager::Finalize()
 {
   // the rest is handled by normal allocation
   mem_->Finalize();
 }
 
-void GEO::CUT::CustomMemoryManager::SwitchState()
+void CORE::GEO::CUT::CustomMemoryManager::SwitchState()
 {
   MemoryState prev_state = state_;
   // get next state
@@ -636,7 +636,7 @@ void GEO::CUT::CustomMemoryManager::SwitchState()
 }
 
 
-void GEO::CUT::CustomMemoryManager::Delete()
+void CORE::GEO::CUT::CustomMemoryManager::Delete()
 {
   // delete free memory from the memory pool
   if (prev_)

@@ -8,7 +8,7 @@
 
 #include "discretization_fem_general_utils_shapevalues_hdg.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "utils_singleton_owner.H"
 
 
@@ -77,7 +77,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     const ::DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -201,7 +201,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
 
   LINALG::Matrix<nsd_, nen_> xyzeElement;
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -492,7 +492,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 
     // LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
     LINALG::Matrix<nsd_, nen_> xyzeMasterElement;
-    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
         &ele, xyzeMasterElement);
 
     // Compute the reference system from the master side

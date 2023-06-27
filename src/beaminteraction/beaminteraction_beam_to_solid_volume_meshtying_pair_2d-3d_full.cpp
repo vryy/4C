@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::PreEv
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::EvaluateAndAssemble(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -280,7 +280,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::ResetRotationState(
-    const DRT::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
+    const ::DRT::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
 {
   GetBeamTriadInterpolationScheme(discret, ia_discolnp, this->Element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);

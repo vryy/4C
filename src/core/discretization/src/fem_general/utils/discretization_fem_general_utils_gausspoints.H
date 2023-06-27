@@ -11,7 +11,7 @@
 #define DISCRETIZATION_FEM_GENERAL_UTILS_GAUSSPOINTS_H
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "geometry_element_coordtrafo.H"
+#include "discretization_geometry_element_coordtrafo.H"
 
 namespace CORE::DRT::UTILS
 {
@@ -359,7 +359,7 @@ namespace CORE::DRT::UTILS
       {
         LINALG::Matrix<nsd, 1> glo(iquad.Point());
 
-        bool insideele = GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
+        bool insideele = CORE::GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)
         {
           dserror("Given Gauss points not inside the element?");

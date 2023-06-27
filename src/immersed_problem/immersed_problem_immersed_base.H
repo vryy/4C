@@ -23,8 +23,8 @@
 #include "lib_exporter.H"
 #include "cut_boundingbox.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include "inpar_fluid.H"
 
@@ -210,7 +210,7 @@ namespace IMMERSED
     */
     void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> dis,
         DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
 
@@ -224,7 +224,7 @@ namespace IMMERSED
     */
     void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
         Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action);
 
 
@@ -238,7 +238,7 @@ namespace IMMERSED
     void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
         const Teuchos::RCP<const DRT::Discretization> idis, DRT::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
         bool evaluateonlyboundary = false);
 
@@ -265,7 +265,7 @@ namespace IMMERSED
     */
     void SearchPotentiallyCoveredBackgrdElements(
         std::map<int, std::set<int>>* current_subset_tofill,
-        Teuchos::RCP<GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
+        Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -1030,8 +1030,8 @@ namespace IMMERSED
             DRT::UTILS::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<GEO::CUT::BoundingBox> bbside =
-                Teuchos::rcp(GEO::CUT::BoundingBox::Create());
+            Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
+                Teuchos::rcp(CORE::GEO::CUT::BoundingBox::Create());
             LINALG::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->NumNode()); ++i)
             {
