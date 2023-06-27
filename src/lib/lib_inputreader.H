@@ -103,9 +103,6 @@ namespace DRT
       /// convert a parameter section in extended format in a parameter list
       bool ReadSection(std::string name, Teuchos::ParameterList& list);
 
-      /// convert a parameter section in GiD format in a parameter list
-      bool ReadGidSection(std::string name, Teuchos::ParameterList& list);
-
       /// return the content of a section
       std::vector<const char*> Section(const std::string& name);
 
@@ -169,6 +166,20 @@ namespace DRT
       // a cache of the box-domain specifications
       std::map<std::string, std::vector<double>> cached_box_specifications_;
     };
+
+    /**
+     * Split the given @p line into a key-value pair. Key and value are normally separated by
+     * whitespace. In case there are multiple distinct whitespace groups in one line, the first of
+     * these is assumed to be the separator and all the other whitespace is assumed to be part of
+     * the value. Key and value may also be separated by an equals sign "=" and at least one
+     * whitespace character on both sides. In this case, key and value may contain spaces
+     * internally. Leading and trailing whitespace is trimmed from both key and value.
+     *
+     * @throws std::runtime_error If the @p line cannot be read.
+     *
+     * @return A pair of key and value.
+     */
+    std::pair<std::string, std::string> ReadKeyValue(const std::string& line);
 
 
   }  // namespace INPUT
