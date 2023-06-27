@@ -765,7 +765,7 @@ void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 /*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Complete()
+void LINALG::SparseMatrix::Complete(bool enforce_complete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete");
 
@@ -777,7 +777,7 @@ void LINALG::SparseMatrix::Complete()
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
   }
 
-  if (sysmat_->Filled()) return;
+  if (sysmat_->Filled() and not enforce_complete) return;
 
   int err = sysmat_->FillComplete(true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
@@ -793,7 +793,8 @@ void LINALG::SparseMatrix::Complete()
 /*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap)
+void LINALG::SparseMatrix::Complete(
+    const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete(domain,range)");
 
@@ -806,7 +807,7 @@ void LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_Ma
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
   }
 
-  if (sysmat_->Filled()) return;
+  if (sysmat_->Filled() and not enforce_complete) return;
 
   int err = sysmat_->FillComplete(domainmap, rangemap, true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
