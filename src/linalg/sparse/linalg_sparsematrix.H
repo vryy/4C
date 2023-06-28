@@ -257,15 +257,20 @@ namespace LINALG
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
+
+      @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
      */
-    void Complete();
+    void Complete(bool enforce_complete = false) override;
 
     /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
+
+      @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
      */
-    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
+        bool enforce_complete = false) override;
 
     void UnComplete();
 
