@@ -188,7 +188,7 @@ namespace MAT
      * @param[in] detjacobian  determinant of the deformation gradient
      * @return the derivative of current lithiation w.r.t. concentration
      */
-    static double ComputeIntercalationFractionDerivative(
+    static double ComputeIntercalationFractionConcDerivative(
         const double chi_max, const double c_max, const double detjacobian)
     {
       return chi_max * detjacobian / c_max;

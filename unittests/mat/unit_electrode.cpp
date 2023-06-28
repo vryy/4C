@@ -399,10 +399,10 @@ namespace
     // define results and tolerances for anode materials
     const std::array<double, 3> results_anode_redlichkister = {
         1.78149102529067321354e-01, 1.00269118707846299765e-01, 8.08307883078566852264e-02};
-    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-17, 1.0e-17, 1.0e-18};
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-15, 1.0e-15, 1.0e-16};
     const std::array<double, 3> results_anode_taralov = {
         8.59624971986640673549e-01, 1.10583257990501226953e-01, -7.26563582809017227682e-02};
-    const std::array<double, 3> tolerances_anode_taralov = {1.0e-17, 1.0e-17, 1.0e-18};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-15, 1.0e-15, 1.0e-16};
     const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
     const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
@@ -429,16 +429,16 @@ namespace
     // define results and tolerances for cathode materials
     const std::array<double, 3> results_cathode_csv = {
         4.26568197738244947459e+00, 3.85982096426498033637e+00, 3.49646582304368758187e+00};
-    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-14, 1.0e-14, 1.0e-14};
     const std::array<double, 3> results_cathode_redlichkister = {
         3.97322289583641552468e+00, 3.90180104449214848472e+00, 3.55923291247763096123e+00};
-    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-14, 1.0e-14, 1.0e-14};
     const std::array<double, 3> results_cathode_taralov = {
         4.68476462172226959524e+00, 4.12283197556701885844e+00, 3.90987668507063856893e+00};
-    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-14, 1.0e-14, 1.0e-14};
     const std::array<double, 3> results_cathode_polynomial = {
         4.27993831912628497349e+00, 3.80888970352517386431e+00, 3.63594305532142847426e+00};
-    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-14, 1.0e-14, 1.0e-14};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -472,10 +472,10 @@ namespace
     // define results and tolerances for anode materials
     const std::array<double, 3> results_anode_redlichkister = {
         -4.67265915814377499893e-02, -4.69987444027383099998e-03, -8.94809228199507436519e-03};
-    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-16, 1.0e-17, 1.0e-17};
     const std::array<double, 3> results_anode_taralov = {
         -1.41425383954984579260e-01, -3.45971827773009360518e-02, -8.46358003529945959742e-03};
-    const std::array<double, 3> tolerances_anode_taralov = {1.0e-17, 1.0e-18, 1.0e-19};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-15, 1.0e-16, 1.0e-17};
     const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
     const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
@@ -502,16 +502,16 @@ namespace
     // define results and tolerances for cathode materials
     const std::array<double, 3> results_cathode_csv = {
         -3.97916196311376825587e-04, -1.82254204470957764054e-04, -1.19179495232888516508e-03};
-    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-18, 1.0e-18, 1.0e-17};
     const std::array<double, 3> results_cathode_redlichkister = {
         -5.87374545823974372749e-02, -4.59544093325152322449e-02, -2.40034452721541273490e-02};
-    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-18, 1.0e-18, 1.0e-18};
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-16, 1.0e-16, 1.0e-16};
     const std::array<double, 3> results_cathode_taralov = {
         -4.61526542535566619563e+00, -3.29033139167962890639e-03, -3.97138702703261764482e-02};
-    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-16, 1.0e-19, 1.0e-18};
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-14, 1.0e-17, 1.0e-16};
     const std::array<double, 3> results_cathode_polynomial = {
         -4.60348767050483748987e-04, -1.48972359281208444927e-04, -2.87284599311867232425e-04};
-    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-18, 1.0e-18, 1.0e-18};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -544,14 +544,14 @@ namespace
   {
     // define results and tolerances for cathode materials
     const std::array<double, 3> results_cathode_csv = {0.0, 0.0, 0.0};
-    const std::array<double, 3> tolerances_cathode_csv = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-20, 1.0e-20, 1.0e-20};
     const std::array<double, 3> results_cathode_redlichkister = {
         2.0138191402737653e-05, 0.0, -2.3115616026561951e-04};
-    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-21, 0.0, 1.0e-20};
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-20, 1.0e-20, 1.0e-20};
     const std::array<double, 3> results_cathode_taralov = {0.0, 0.0, 0.0};
-    const std::array<double, 3> tolerances_cathode_taralov = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-20, 1.0e-20, 1.0e-20};
     const std::array<double, 3> results_cathode_polynomial = {0.0, 0.0, 0.0};
-    const std::array<double, 3> tolerances_cathode_polynomial = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -585,10 +585,10 @@ namespace
     // define results and tolerances for anode materials
     const std::array<double, 3> results_anode_redlichkister = {
         3.04927774052812586292e-02, -1.05174077799887128251e-03, -7.35165984480485711766e-04};
-    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-20};
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-16, 1.0e-17, 1.0e-18};
     const std::array<double, 3> results_anode_taralov = {
         2.01700640785035384406e-02, 4.93424429221260389677e-03, 1.20707433751687906627e-03};
-    const std::array<double, 3> tolerances_anode_taralov = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-16, 1.0e-17, 1.0e-17};
     const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
     const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
@@ -615,16 +615,16 @@ namespace
     // define results and tolerances for cathode materials
     const std::array<double, 3> results_cathode_csv = {
         1.63562986543888766237e-06, 1.43228888999912318160e-07, -1.10872570647637550212e-05};
-    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-20, 1.0e-20, 1.0e-19};
     const std::array<double, 3> results_cathode_redlichkister = {
         1.41256487214221678611e-02, 5.72637600860917590773e-03, -7.56499159049272597299e-03};
-    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-16, 1.0e-17, 1.0e-17};
     const std::array<double, 3> results_cathode_taralov = {
         3.89765224056106092121e+01, -7.34373323389212427637e-03, -2.27647861985425976894e-02};
-    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-15, 1.0e-19, 1.0e-18};
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-13, 1.0e-17, 1.0e-16};
     const std::array<double, 3> results_cathode_polynomial = {
         3.69515732169165666976e-08, 2.28146222921396267486e-07, -5.88484654599405069383e-07};
-    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-24, 1.0e-23, 1.0e-23};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)

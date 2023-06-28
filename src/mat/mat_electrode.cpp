@@ -296,7 +296,6 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-
 /*----------------------------------------------------------------------*
  | compute half cell open circuit potential                  fang 08/15 |
  *----------------------------------------------------------------------*/
@@ -428,10 +427,11 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
-  double ocpderiv(0.0);
+  double d_ocp_dX(0.0), d_ocp_dc(0.0);
 
   // intercalation fraction
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
+  const double d_X_dc = ComputeIntercalationFractionConcDerivative(ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)
@@ -452,7 +452,7 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
           if (X <= params_->X_[i + 1])
           {
             const double invdX = 1. / (params_->X_[i + 1] - params_->X_[i]);
-            ocpderiv = -3. * params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 2) +
+            d_ocp_dX = -3. * params_->m_[i] * invdX * std::pow(params_->X_[i + 1] - X, 2) +
                        3. * params_->m_[i + 1] * invdX * std::pow(X - params_->X_[i], 2) +
                        params_->a_[i];
             break;
@@ -471,24 +471,24 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
         // ocppara_[1,2,3,...] = Redlich-Kister coefficients
 
         // term not associated with any Redlich-Kister coefficient
-        ocpderiv = faraday / (2. * frt * X * (X - 1.));
+        d_ocp_dX = faraday / (2. * frt * X * (X - 1.));
 
         // terms associated with first, second, and third Redlich-Kister coefficients
         // these three terms are separated from the remaining sum and simplified thereafter to
         // remove singularities in the derivative of the expansion in case X == 0.5
-        ocpderiv += params_->ocppara_[1] + params_->ocppara_[2] * (6. * X - 3.) +
+        d_ocp_dX += params_->ocppara_[1] + params_->ocppara_[2] * (6. * X - 3.) +
                     params_->ocppara_[3] * (24. * X * X - 24. * X + 5.);
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 3; i < params_->ocpparanum_ - 1; ++i)
         {
-          ocpderiv += params_->ocppara_[i + 1] *
+          d_ocp_dX += params_->ocppara_[i + 1] *
                       ((2. * i + 1.) * std::pow(2. * X - 1., i) +
                           2. * X * i * (X - 1.) * (i - 1.) * std::pow(2. * X - 1., i - 2));
         }
 
         // intermediate scaling
-        ocpderiv *= 2. / faraday;
+        d_ocp_dX *= 2. / faraday;
 
         break;
       }
@@ -497,7 +497,7 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
       // Taralova, Popov, Iliev, Latz, and Zausch (2012)
       case MAT::PAR::ocp_taralov:
       {
-        ocpderiv = params_->ocppara_[1] * params_->ocppara_[2] /
+        d_ocp_dX = params_->ocppara_[1] * params_->ocppara_[2] /
                        std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) +
                    8. * params_->ocppara_[4] * params_->ocppara_[5] *
                        std::exp(params_->ocppara_[5] * std::pow(X, 8)) * std::pow(X, 7) +
@@ -513,7 +513,7 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
       case MAT::PAR::ocp_polynomial:
       {
         for (int i = 1; i < params_->ocpparanum_; ++i)
-          ocpderiv += i * params_->ocppara_[i] * std::pow(X, i - 1);
+          d_ocp_dX += i * params_->ocppara_[i] * std::pow(X, i - 1);
 
         break;
       }
@@ -526,14 +526,14 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
     }
 
     // final scaling
-    ocpderiv /= params_->cmax_;
+    d_ocp_dc = d_ocp_dX * d_X_dc;
   }
 
   // non-physical intercalation fraction
   else
-    ocpderiv = std::numeric_limits<double>::infinity();
+    d_ocp_dc = std::numeric_limits<double>::infinity();
 
-  return ocpderiv;
+  return d_ocp_dc;
 }
 
 
@@ -544,10 +544,11 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
 double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
-  double ocpderiv2(0.0);
+  double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
 
   // intercalation fraction
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
+  const double d_X_dc = ComputeIntercalationFractionConcDerivative(ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0. and X < 1.)
@@ -568,8 +569,8 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
           if (X <= params_->X_[i + 1])
           {
             const double invdX = 1. / (params_->X_[i + 1] - params_->X_[i]);
-            ocpderiv2 = 6. * params_->m_[i] * invdX * (params_->X_[i + 1] - X) +
-                        6. * params_->m_[i + 1] * invdX * (X - params_->X_[i]);
+            d2_ocp_dX2 = 6. * params_->m_[i] * invdX * (params_->X_[i + 1] - X) +
+                         6. * params_->m_[i + 1] * invdX * (X - params_->X_[i]);
             break;
           }
         }
@@ -586,26 +587,26 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
         // ocppara_[1,2,3,...] = Redlich-Kister coefficients
 
         // term not associated with any Redlich-Kister coefficient
-        ocpderiv2 = -faraday * (2. * X - 1.) / (4. * frt * X * X * (X - 1.) * (X - 1.));
+        d2_ocp_dX2 = -faraday * (2. * X - 1.) / (4. * frt * X * X * (X - 1.) * (X - 1.));
 
         // term associated with first Redlich-Kister coefficient vanishes
 
         // terms associated with second, third, and fourth Redlich-Kister coefficients
         // these three terms are separated from the remaining sum and simplified thereafter to
         // remove singularities in the second derivative of the expansion in case X == 0.5
-        ocpderiv2 += 3. * params_->ocppara_[2] + params_->ocppara_[3] * (24. * X - 12.) +
-                     params_->ocppara_[4] * (120. * X * X - 120. * X + 27.);
+        d2_ocp_dX2 += 3. * params_->ocppara_[2] + params_->ocppara_[3] * (24. * X - 12.) +
+                      params_->ocppara_[4] * (120. * X * X - 120. * X + 27.);
 
         // terms associated with remaining Redlich-Kister coefficients
         for (int i = 4; i < params_->ocpparanum_ - 1; ++i)
         {
-          ocpderiv2 += params_->ocppara_[i + 1] * (3. * i * i * std::pow(2. * X - 1., i - 1) +
-                                                      2. * i * (i - 1.) * (i - 2.) * X * (X - 1.) *
-                                                          std::pow(2. * X - 1., i - 3));
+          d2_ocp_dX2 += params_->ocppara_[i + 1] * (3. * i * i * std::pow(2. * X - 1., i - 1) +
+                                                       2. * i * (i - 1.) * (i - 2.) * X * (X - 1.) *
+                                                           std::pow(2. * X - 1., i - 3));
         }
 
         // intermediate scaling
-        ocpderiv2 *= 4. / faraday;
+        d2_ocp_dX2 *= 4. / faraday;
 
         break;
       }
@@ -614,16 +615,16 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
       // Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
       case MAT::PAR::ocp_taralov:
       {
-        ocpderiv2 = -2. * params_->ocppara_[1] * std::pow(params_->ocppara_[2], 2) /
-                        std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
-                        std::tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
-                    8. * params_->ocppara_[4] * params_->ocppara_[5] * std::pow(X, 6) *
-                        std::exp(params_->ocppara_[5] * std::pow(X, 8)) *
-                        (7. + 8. * params_->ocppara_[5] * std::pow(X, 8)) +
-                    params_->ocppara_[6] * params_->ocppara_[8] * (params_->ocppara_[8] + 1.) /
-                        std::pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 2.) +
-                    params_->ocppara_[10] * std::pow(params_->ocppara_[11], 2) *
-                        std::exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
+        d2_ocp_dX2 = -2. * params_->ocppara_[1] * std::pow(params_->ocppara_[2], 2) /
+                         std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
+                         std::tanh(params_->ocppara_[2] * X + params_->ocppara_[3]) +
+                     8. * params_->ocppara_[4] * params_->ocppara_[5] * std::pow(X, 6) *
+                         std::exp(params_->ocppara_[5] * std::pow(X, 8)) *
+                         (7. + 8. * params_->ocppara_[5] * std::pow(X, 8)) +
+                     params_->ocppara_[6] * params_->ocppara_[8] * (params_->ocppara_[8] + 1.) /
+                         std::pow(params_->ocppara_[7] - X, params_->ocppara_[8] + 2.) +
+                     params_->ocppara_[10] * std::pow(params_->ocppara_[11], 2) *
+                         std::exp(params_->ocppara_[11] * (X + params_->ocppara_[12]));
 
         break;
       }
@@ -632,7 +633,7 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
       case MAT::PAR::ocp_polynomial:
       {
         for (int i = 2; i < params_->ocpparanum_; ++i)
-          ocpderiv2 += i * (i - 1) * params_->ocppara_[i] * std::pow(X, i - 2);
+          d2_ocp_dX2 += i * (i - 1) * params_->ocppara_[i] * std::pow(X, i - 2);
 
         break;
       }
@@ -645,14 +646,14 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
     }
 
     // final scaling
-    ocpderiv2 /= params_->cmax_ * params_->cmax_;
+    d2_ocp_dc2 = d2_ocp_dX2 * d_X_dc * d_X_dc;
   }
 
   // non-physical intercalation fraction
   else
-    ocpderiv2 = std::numeric_limits<double>::infinity();
+    d2_ocp_dc2 = std::numeric_limits<double>::infinity();
 
-  return ocpderiv2;
+  return d2_ocp_dc2;
 }
 
 /*---------------------------------------------------------------------------------------------------------*
