@@ -359,22 +359,24 @@ endmacro(baci_test_Nested_Par_CopyDat)
 
 ###########
 # NESTED PARALLELISM WITH COPYDATFILE AND PRECURSOR SIMULATION
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat_prepost(<name_of_input_file_precursor> <name_of_input_file> <name_of_input_file_post> <num_proc> <num_groups> <restart_step> optional: <label>)"
+# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat_prepost_extended_timeout(<name_of_input_file_precursor> <name_of_input_file> <name_of_input_file_post> <num_proc> <num_groups> <restart_step> <timeout> optional: <label>)"
 # <name_of_input_file_precursor>: is the inputfile of a precursor simulation (must equal the name of a .dat file in Input; without ".dat")
 # <name_of_input_file>: is an inputfile relying on the output of arg1 (must equal the name of a .dat file in Input; without ".dat")
 # <name_of_input_file_post>: is the inputfile of a "postprocessing simulation" restarted from <name_of_input_file> (optional, must equal the name of a .dat file in Input; without ".dat")
 # <num_proc>: is the number of procs
 # <num_groups>: the number of groups
 # <restart_step>: number of restart step for <name_of_input_file_post>
+# <timeout>: set extended timeout
 # optional: <label>: add a label to the test
 macro(
-  baci_test_Nested_Par_CopyDat_prepost
+  baci_test_Nested_Par_CopyDat_prepost_extended_timeout
   name_of_input_file_precursor
   name_of_input_file
   name_of_input_file_post
   num_proc
   num_groups
   restart_step
+  timeout
   )
   set(test_directory framework_test_output/${name_of_input_file}_p${num_proc})
   set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
@@ -390,7 +392,7 @@ macro(
   require_fixture(${name_of_input_file}_precursor-p${num_proc} test_cleanup)
   set_processors(${name_of_input_file}_precursor-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}_precursor-p${num_proc} ${name_of_input_file}_precursor)
-  set_timeout(${name_of_input_file}_precursor-p${num_proc})
+  set_timeout(${name_of_input_file}_precursor-p${num_proc} ${timeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}_precursor-p${num_proc} ${ARGN})
@@ -407,7 +409,7 @@ macro(
   require_fixture(${name_of_input_file}-p${num_proc} "${name_of_input_file}_precursor;test_cleanup")
   set_processors(${name_of_input_file}-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}-p${num_proc} ${name_of_input_file})
-  set_timeout(${name_of_input_file}-p${num_proc})
+  set_timeout(${name_of_input_file}-p${num_proc} ${timeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}-p${num_proc} ${ARGN})
@@ -428,9 +430,9 @@ macro(
       )
 
     set_processors(${name_of_input_file}_postprocess-p${num_proc} ${num_proc})
-    set_timeout(${name_of_input_file}_postprocess-p${num_proc})
+    set_timeout(${name_of_input_file}_postprocess-p${num_proc} ${timeout})
   endif()
-endmacro(baci_test_Nested_Par_CopyDat_prepost)
+endmacro(baci_test_Nested_Par_CopyDat_prepost_extended_timeout)
 
 ###########
 # FRAMEWORK TESTS - testing the whole framework: pre_exodus, BACI, and post-filter
