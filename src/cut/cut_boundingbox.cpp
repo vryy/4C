@@ -21,16 +21,13 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
   static const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (probdim)
   {
-    case 1:
-      dserror("Unsupported problem dimension!");
-      exit(EXIT_FAILURE);
     case 2:
       return new ConcreteBoundingBox<2>();
     case 3:
       return new ConcreteBoundingBox<3>();
+    default:
+      dserror("Unsupported problem dimension!");
   }
-
-  return NULL;
 }
 
 

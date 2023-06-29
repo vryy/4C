@@ -68,7 +68,7 @@ extern "C" void cpp_dslatest(const char* file, const int line)
  | error function                                            mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
  *----------------------------------------------------------------------*/
-extern "C" void cpp_dserror_func(const char* text, ...)
+extern "C" [[noreturn]] void cpp_dserror_func(const char* text, ...)
 {
   int myrank, nprocs;
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
@@ -186,7 +186,7 @@ extern "C" void cpp_dserror_func(const char* text, ...)
  | error function                                            mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
  *----------------------------------------------------------------------*/
-void cpp_dserror_func(const std::string text, ...)
+[[noreturn]] void cpp_dserror_func(const std::string text, ...)
 {
   cpp_dserror_func(text.c_str());
 } /* end of dserror_func */
@@ -203,7 +203,8 @@ void run_time_error_latest(const std::string file, const std::string func, const
 
 namespace
 {
-  void run_time_error_func_internal(const std::string& errorMsg, const bool& is_catch = false)
+  [[noreturn]] void run_time_error_func_internal(
+      const std::string& errorMsg, const bool& is_catch = false)
   {
     if (not is_catch) err_count = 0;
 
@@ -226,17 +227,17 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void run_time_error_func(const std::string& errorMsg, const std::runtime_error& e)
+[[noreturn]] void run_time_error_func(const std::string& errorMsg, const std::runtime_error& e)
 {
   std::ostringstream msg;
   msg << errorMsg << "\n" << e.what();
 
   run_time_error_func_internal(msg.str(), true);
-};
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void run_time_error_func(const std::runtime_error& e)
+[[noreturn]] void run_time_error_func(const std::runtime_error& e)
 {
   run_time_error_func("Caught runtime_error:", e);
 }

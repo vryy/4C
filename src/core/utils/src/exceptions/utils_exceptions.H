@@ -21,8 +21,9 @@
 #include <stdexcept>
 
 
-extern "C" void cpp_dserror_func(const char* string, ...);  // avoid constructing string from char*
-void cpp_dserror_func(const std::string string, ...);
+extern "C" [[noreturn]] void cpp_dserror_func(
+    const char* string, ...);  // avoid constructing string from char*
+[[noreturn]] void cpp_dserror_func(const std::string string, ...);
 void cpp_dslatest(const std::string file, const int line);
 
 inline void cpp_dsassert_func(const char* file, const int line, const bool test, const char* string)
@@ -35,7 +36,6 @@ inline void cpp_dsassert_func(const char* file, const int line, const bool test,
     cpp_dserror_func(string);
   }
 #endif
-  return;
 } /* end of dsassert_func */
 
 /** @name simplified version of the dserror implementation
@@ -49,10 +49,10 @@ void run_time_error_latest(const std::string file, const std::string func, const
 
 /** throws a run time error during a catch block and forwards the existing
  *  extended error message */
-void run_time_error_func(const std::string& errorMsg, const std::runtime_error& e);
+[[noreturn]] void run_time_error_func(const std::string& errorMsg, const std::runtime_error& e);
 
 /// throws a run time error during a catch block and forwards the existing error message
-void run_time_error_func(const std::runtime_error& e);
+[[noreturn]] void run_time_error_func(const std::runtime_error& e);
 
 /// actual called macro definition
 #define run_time_error \

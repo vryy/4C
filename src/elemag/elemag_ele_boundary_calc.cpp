@@ -71,7 +71,6 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }
-  return NULL;
 }
 
 template <DRT::Element::DiscretizationType distype>
