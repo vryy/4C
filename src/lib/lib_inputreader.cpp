@@ -101,7 +101,7 @@ namespace DRT
     bool DatFileReader::ReadSection(std::string name, Teuchos::ParameterList& list)
     {
       if (name.length() < 3 or name[0] != '-' or name[1] != '-')
-        dserror("illegal section name '%s'", name.c_str());
+        dserror("Illegal section name '%s'", name.c_str());
 
       // The section name is desired from outside. Thus, we consider it as valid
       knownsections_[name] = true;
@@ -112,71 +112,17 @@ namespace DRT
 
       for (size_t pos = positions_[name] + 1; pos < lines_.size(); ++pos)
       {
-        std::string line = lines_[pos];
+        const std::string line = lines_[pos];
+
+        // If the line starts with dashes we found the beginning of the next section and terminate
+        // the read process of the current section.
         if (line[0] == '-' and line[1] == '-')
         {
           break;
         }
 
-        // we expect a line: key = value
-        // The first = in the line will be taken for the
-        // separator. Thus we cannot have a = in a key.
-        std::string::size_type delim = line.find('=');
-        if (delim == std::string::npos)
-          dserror("no key=value pair in line %d: %s", pos, line.c_str());
+        const auto& [key, value] = ReadKeyValue(line);
 
-        std::string key = line.substr(0, delim - 1);
-        std::string value = line.substr(delim + 2);
-
-        // Now parse the value. Find integers and doubles if there are
-        // any.
-        AddEntry(key, value, sublist);
-      }
-      return true;
-    }
-
-
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
-    bool DatFileReader::ReadGidSection(std::string name, Teuchos::ParameterList& list)
-    {
-      if (name.length() < 3 or name[0] != '-' or name[1] != '-')
-        dserror("illegal section name '%s'", name.c_str());
-
-      // The section name is desired from outside. Thus, we consider it as valid
-      knownsections_[name] = true;
-
-      Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
-
-      if (positions_.find(name) == positions_.end()) return false;
-
-      for (size_t pos = positions_[name] + 1; pos < lines_.size(); ++pos)
-      {
-        std::string line = lines_[pos];
-        if (line[0] == '-' and line[1] == '-')
-        {
-          break;
-        }
-
-        std::string key;
-        std::string value;
-
-        std::string::size_type loc = line.find(' ');
-        if (loc == std::string::npos)
-        {
-          // dserror("line '%s' with just one word in GiD parameter section", line.c_str());
-          key = line;
-        }
-        else
-        {
-          // if (line.find(" ", loc+1)!=std::string::npos)
-          //  dserror("more that two words on line '%s' in GiD parameter section", line.c_str());
-          key = line.substr(0, loc);
-          value = line.substr(loc + 1);
-        }
-
-        // Now parse the value. Find integers and doubles if there are
-        // any.
         AddEntry(key, value, sublist);
       }
 
@@ -903,6 +849,7 @@ namespace DRT
       if (list.isParameter(key))
         dserror("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
 
+      if (key.empty()) dserror("Internal error: missing key.", key.c_str());
       // safety check: Is the parameter without any specified value?
       if (value.empty())
         dserror("Missing value for parameter %s. Fix your input file!", key.c_str());
@@ -1279,5 +1226,30 @@ namespace DRT
       return printout;
     }
 
+    std::pair<std::string, std::string> ReadKeyValue(const std::string& line)
+    {
+      std::string::size_type separator_index = line.find('=');
+      // The equals sign is only treated as a separator when surrounded by whitespace.
+      if (separator_index != std::string::npos &&
+          !(std::isspace(line[separator_index - 1]) && std::isspace(line[separator_index + 1])))
+        separator_index = std::string::npos;
+
+      // In case we didn't find an "=" separator, look for a space instead
+      if (separator_index == std::string::npos)
+      {
+        separator_index = line.find(' ');
+
+        if (separator_index == std::string::npos)
+          dserror("Line '%s' with just one word in parameter section", line.c_str());
+      }
+
+      std::string key = UTILS::Trim(line.substr(0, separator_index));
+      std::string value = UTILS::Trim(line.substr(separator_index + 1));
+
+      if (key.empty()) dserror("Cannot get key from line '%s'", line.c_str());
+      if (value.empty()) dserror("Cannot get value from line '%s'", line.c_str());
+
+      return {std::move(key), std::move(value)};
+    }
   }  // namespace INPUT
 }  // namespace DRT

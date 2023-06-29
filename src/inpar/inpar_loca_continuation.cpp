@@ -27,12 +27,10 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
    * parameters for the LOCA continuation method
    *--------------------------------------------------------------------------*/
   Teuchos::ParameterList& loca = list->sublist("LOCA", false, "");
-  DRT::INPUT::SetPrintEqualSign(loca, true);
 
   // sub-list stepper
   Teuchos::ParameterList& stepper = loca.sublist("Stepper", false,
       "Sub-list used by LOCA::Stepper to set parameters relevant for continuation run.");
-  DRT::INPUT::SetPrintEqualSign(stepper, true);
 
   {
     Teuchos::Array<std::string> cm_str = Teuchos::tuple<std::string>("Natural", "Arc Length");
@@ -93,7 +91,6 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // sub-sub-list eigensolver
   Teuchos::ParameterList& eigensolver = stepper.sublist("Eigensolver", false,
       "Sub-list used by LOCA::Eigensolver::Factory to determine eigensolver strategies.");
-  DRT::INPUT::SetPrintEqualSign(eigensolver, true);
   {
     Teuchos::Array<std::string> method_str = Teuchos::tuple<std::string>("Default", "Anasazi");
     Teuchos::setStringToIntegralParameter<int>(
@@ -148,7 +145,6 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& bifurcation = loca.sublist("Bifurcation", false,
       "Sub-list used by LOCA::Bifurcation::Factory to determine what type of bifurcation "
       "calculation, if any to use.");
-  DRT::INPUT::SetPrintEqualSign(bifurcation, true);
 
   {
     Teuchos::Array<std::string> type_str =
@@ -189,7 +185,6 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Sub-list used by LOCA::MultiPredictor::Factory to determine what type of predictor to use "
       "for each "
       "continuation step.");
-  DRT::INPUT::SetPrintEqualSign(predictor, true);
 
   INPAR::LOCA::SetValidPredictorParams(predictor);
 
@@ -197,7 +192,6 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& fs_predictor = predictor.sublist("First Step Predictor", false,
       "Sub-Sub-list used by the secant predictor to determine which predictor to use for the first "
       "continuation step.");
-  DRT::INPUT::SetPrintEqualSign(fs_predictor, true);
 
   INPAR::LOCA::SetValidPredictorParams(fs_predictor);
 
@@ -205,14 +199,12 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& ls_predictor = predictor.sublist("Last Step Predictor", false,
       "Sub-Sub-list used for last step of arc-length continuation to hit target (max or min) value "
       "exactly (usually \"Constant\" or \"Random\").");
-  DRT::INPUT::SetPrintEqualSign(ls_predictor, true);
 
   INPAR::LOCA::SetValidPredictorParams(ls_predictor);
 
   // sub-list step size
   Teuchos::ParameterList& stepsize = loca.sublist("Step Size", false,
       "Sub-list used by LOCA::StepSize::Factory to determine step size control strategies.");
-  DRT::INPUT::SetPrintEqualSign(stepsize, true);
 
   {
     Teuchos::Array<std::string> method_str = Teuchos::tuple<std::string>("Constant", "Adaptive");
@@ -244,7 +236,6 @@ void INPAR::LOCA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // sub-list constraints
   Teuchos::ParameterList& constraints = loca.sublist(
       "Constraints", false, "Sub-list used to provide additional constraint equations.");
-  DRT::INPUT::SetPrintEqualSign(constraints, true);
 
   SetValidBorderedSolverMethod(constraints);
 
