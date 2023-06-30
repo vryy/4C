@@ -392,7 +392,9 @@ macro(
   require_fixture(${name_of_input_file}_precursor-p${num_proc} test_cleanup)
   set_processors(${name_of_input_file}_precursor-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}_precursor-p${num_proc} ${name_of_input_file}_precursor)
-  set_timeout(${name_of_input_file}_precursor-p${num_proc} ${timeout})
+
+  math(EXPR actualtesttimeout "${GLOBAL_TEST_TIMEOUT_SCALE} * ${timeout}")
+  set_timeout(${name_of_input_file}_precursor-p${num_proc} ${actualtesttimeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}_precursor-p${num_proc} ${ARGN})
@@ -409,7 +411,7 @@ macro(
   require_fixture(${name_of_input_file}-p${num_proc} "${name_of_input_file}_precursor;test_cleanup")
   set_processors(${name_of_input_file}-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}-p${num_proc} ${name_of_input_file})
-  set_timeout(${name_of_input_file}-p${num_proc} ${timeout})
+  set_timeout(${name_of_input_file}-p${num_proc} ${actualtesttimeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}-p${num_proc} ${ARGN})
@@ -430,7 +432,7 @@ macro(
       )
 
     set_processors(${name_of_input_file}_postprocess-p${num_proc} ${num_proc})
-    set_timeout(${name_of_input_file}_postprocess-p${num_proc} ${timeout})
+    set_timeout(${name_of_input_file}_postprocess-p${num_proc} ${actualtesttimeout})
   endif()
 endmacro(baci_test_Nested_Par_CopyDat_prepost_extended_timeout)
 
