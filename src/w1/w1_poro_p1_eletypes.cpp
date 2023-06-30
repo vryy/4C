@@ -13,7 +13,7 @@
 
 #include "lib_linedefinition.H"
 #include "lib_discret.H"
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                                      |
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -236,7 +236,7 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)

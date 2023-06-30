@@ -23,7 +23,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::So_hex27Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex27Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(

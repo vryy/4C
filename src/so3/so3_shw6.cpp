@@ -8,7 +8,7 @@
 
 #include "so3_shw6.H"
 #include "so3_weg6.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "lib_linedefinition.H"
 #include "so3_utils.H"
 #include "lib_globalproblem.H"
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
   ;
 }
 

@@ -23,7 +23,7 @@
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "discretization_fem_general_utils_gausspoints.H"
 
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 #include "scatra_ele_calc_utils.H"
 #include "scatra_ele.H"
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::TransportType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 void DRT::ELEMENTS::TransportType::SetupElementDefinition(

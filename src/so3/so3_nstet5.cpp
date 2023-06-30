@@ -16,7 +16,7 @@
 #include "lib_globalproblem.H"
 #include "lib_prestress_service.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 #include "so3_nstet5.H"
 #include "so3_surface.H"

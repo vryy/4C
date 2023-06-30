@@ -10,7 +10,7 @@
 
 #include "w1_nurbs.H"
 #include "lib_utils_factory.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "lib_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  return ComputeSolid2DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(

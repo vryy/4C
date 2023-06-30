@@ -11,7 +11,7 @@
 #include "so3_poro_p1.H"
 
 #include "lib_linedefinition.H"
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -162,5 +162,5 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }

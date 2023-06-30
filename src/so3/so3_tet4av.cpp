@@ -9,7 +9,7 @@
 #include "so3_line.H"
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "utils_exceptions.H"
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::So_tet4avType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 //------------------------------------------------------------------------

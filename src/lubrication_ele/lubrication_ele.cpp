@@ -16,7 +16,7 @@
 
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
@@ -60,7 +60,7 @@ void DRT::ELEMENTS::LubricationType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::LubricationType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 void DRT::ELEMENTS::LubricationType::SetupElementDefinition(

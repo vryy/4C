@@ -18,7 +18,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;

@@ -18,7 +18,7 @@
 #include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
 #include "discretization_fem_general_largerotations.H"
