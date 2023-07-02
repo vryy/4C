@@ -17,12 +17,36 @@
 
 #include "lib_condition_utils.H"
 #include "lib_condition_selector.H"
-#include "lib_discret_iterator.H"
 #include "lib_globalproblem.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "io_control.H"
+
+
+
+namespace
+{
+  template <typename Range>
+  Teuchos::RCP<Epetra_Map> FillConditionMap(
+      const DRT::Discretization& dis, const Range& nodeRange, const std::string& condname)
+  {
+    std::set<int> condnodeset;
+
+    DRT::UTILS::ConditionSelector conds(dis, condname);
+
+    for (const DRT::Node* node : nodeRange)
+    {
+      if (conds.ContainsNode(node->Id()))
+      {
+        condnodeset.insert(node->Id());
+      }
+    }
+
+    Teuchos::RCP<Epetra_Map> condnodemap = LINALG::CreateMap(condnodeset, dis.Comm());
+    return condnodemap;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -449,8 +473,7 @@ void DRT::UTILS::FindElementConditions(
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
-  RowNodeIterator iter(dis);
-  return ConditionMap(dis, iter, condname);
+  return FillConditionMap(dis, dis.MyRowNodeRange(), condname);
 }
 
 
@@ -459,32 +482,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
-  ColNodeIterator iter(dis);
-  return ConditionMap(dis, iter, condname);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionMap(const DRT::Discretization& dis,
-    const DiscretizationNodeIterator& iter, const std::string& condname)
-{
-  std::set<int> condnodeset;
-
-  ConditionSelector conds(dis, condname);
-
-  const int numnodes = iter.NumEntries();
-  for (int i = 0; i < numnodes; ++i)
-  {
-    const DRT::Node* node = iter.Entry(i);
-    if (conds.ContainsNode(node->Id()))
-    {
-      condnodeset.insert(node->Id());
-    }
-  }
-
-  Teuchos::RCP<Epetra_Map> condnodemap = LINALG::CreateMap(condnodeset, dis.Comm());
-  return condnodemap;
+  return FillConditionMap(dis, dis.MyColNodeRange(), condname);
 }
 
 
