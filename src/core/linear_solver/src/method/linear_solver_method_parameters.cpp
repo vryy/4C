@@ -9,9 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "lib_discret.H"
+#include "lib_discret_nullspace.h"
+#include "lib_elementtype.H"
+
 #include "utils_exceptions.H"
 
-#include "linalg_nullspace.H"
 
 #include "linear_solver_method_parameters.H"
 
@@ -84,22 +86,76 @@ void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
 
   // set nullspace information
   {
-    Teuchos::RCP<Epetra_MultiVector> nullspace = Teuchos::null;
     if (nullspaceMap == Teuchos::null)
     {
       // if no map is given, we calculate the nullspace on the map describing the
       // whole discretization
       nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.DofRowMap()));
-      nullspace = LINALG::NULLSPACE::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
     }
-    else
-    {
-      // if a map is given, we calculate the nullspace on that map
-      nullspace = LINALG::NULLSPACE::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
-    }
+
+    auto nullspace = ::DRT::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
 
     solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());
     solverlist.set<bool>("ML validate parameter list", false);
   }
+}
+
+void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epetra_Map& oldmap,
+    const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
+{
+  if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());
+
+  // there is no ML or MueLu list, do nothing
+  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
+      !solveparams.isSublist("MueLu (FSI) Parameters"))
+    return;
+
+  // find the ML or MueLu list
+  Teuchos::ParameterList* params_ptr = nullptr;
+  if (solveparams.isSublist("ML Parameters"))
+    params_ptr = &(solveparams.sublist("ML Parameters"));
+  else if (solveparams.isSublist("MueLu Parameters"))
+    params_ptr = &(solveparams.sublist("MueLu Parameters"));
+  else
+    params_ptr = &(solveparams);
+  Teuchos::ParameterList& params = *params_ptr;
+
+  const int ndim = params.get("null space: dimension", -1);
+  if (ndim == -1) dserror("List does not contain nullspace dimension");
+
+  Teuchos::RCP<Epetra_MultiVector> nullspace =
+      params.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+  if (nullspace == Teuchos::null) dserror("List does not contain nullspace");
+
+  const int nullspaceLength = nullspace->MyLength();
+  const int newmapLength = newmap.NumMyElements();
+
+  if (nullspaceLength == newmapLength) return;
+  if (nullspaceLength != oldmap.NumMyElements())
+    dserror("Nullspace map of length %d does not match old map length of %d", nullspaceLength,
+        oldmap.NumMyElements());
+  if (newmapLength > nullspaceLength)
+    dserror("New problem size larger than old - full rebuild of nullspace neccessary");
+
+  Teuchos::RCP<Epetra_MultiVector> nullspaceNew =
+      Teuchos::rcp(new Epetra_MultiVector(newmap, ndim, true));
+
+  for (int i = 0; i < ndim; i++)
+  {
+    Epetra_Vector* nullspaceData = (*nullspace)(i);
+    Epetra_Vector* nullspaceDataNew = (*nullspaceNew)(i);
+    const int myLength = nullspaceDataNew->MyLength();
+
+    for (int j = 0; j < myLength; j++)
+    {
+      int gid = newmap.GID(j);
+      int olid = oldmap.LID(gid);
+      if (olid == -1) continue;
+      (*nullspaceDataNew)[j] = (*nullspaceData)[olid];
+    }
+  }
+
+  params.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspaceNew);
+  params.set("null space: vectors", nullspaceNew->Values());
 }

@@ -11,6 +11,7 @@
 #define LINEAR_SOLVER_METHOD_PARAMETERS_H
 
 #include <Teuchos_ParameterListAcceptor.hpp>
+#include <Epetra_Map.h>
 
 namespace DRT
 {
@@ -31,6 +32,20 @@ namespace CORE::LINEAR_SOLVER
     */
     static void ComputeSolverParameters(
         ::DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
+
+    /*!
+     * \brief Fix the nullspace to match a new given map
+     *
+     * The nullspace is looked for in the parameter list. If found, it is assumed that
+     * it matches the oldmap. Then it is fixed to match the new map.
+     *
+     * \param field (in): field name (just used for output)
+     * \param oldmap (in): row map of nullspace
+     * \param newmap (in): row map of nullspace upon exit
+     * \param solveparams (in): parameterlist including nullspace vector
+     */
+    static void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
+        Teuchos::ParameterList& solveparams);
   };
 }  // namespace CORE::LINEAR_SOLVER
 

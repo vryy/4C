@@ -19,7 +19,6 @@
 
 #include "linalg_multiply.H"
 #include "linear_solver_method_linalg.H"
-#include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
 #include "io_control.H"
