@@ -26,8 +26,8 @@
 #include "linalg_equilibrate.H"
 #include "linalg_mapextractor.H"
 #include "linalg_multiply.H"
-#include "linalg_nullspace.H"
 #include "linear_solver_method_linalg.H"
+#include "linear_solver_method_parameters.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -1191,7 +1191,7 @@ void STI::Monolithic::BuildNullSpaces() const
   // reduce full null space to match degrees of freedom associated with thermo matrix block if
   // necessary
   if (condensationthermo_)
-    LINALG::NULLSPACE::FixNullSpace("Block " + iblockstr.str(),
+    CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Block " + iblockstr.str(),
         *ThermoField()->Discretization()->DofRowMap(), *maps_->Map(1), blocksmootherparams);
 }  // STI::Monolithic::BuildBlockNullSpaces
 

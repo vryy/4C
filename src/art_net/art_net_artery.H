@@ -19,7 +19,7 @@
 #include "lib_node.H"
 #include "discretization_fem_general_utils_integration.H"
 #include "inpar_bio.H"
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -58,7 +58,7 @@ namespace DRT
       virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+        return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
 
       virtual void SetupElementDefinition(

@@ -15,7 +15,7 @@
 #include "lib_globalproblem.H"
 #include "mat_so3_material.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 #include "so3_utils.H"
 

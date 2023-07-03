@@ -10,7 +10,7 @@
 
 #include "so3_pyramid5fbar.H"
 #include "lib_discret.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "so3_prestress.H"
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
   ;
 }
 

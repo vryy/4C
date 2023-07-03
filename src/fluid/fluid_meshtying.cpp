@@ -20,12 +20,12 @@
 #include "mortar_node.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_nullspace.H"
 #include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 #include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
+#include "linear_solver_method_parameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -178,7 +178,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
         std::string inv = "BMatMerged";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = *(mergedmap_);
-        LINALG::NULLSPACE::FixNullSpace(inv.data(), oldmap, newmap, solver_.Params());
+        CORE::LINEAR_SOLVER::Parameters::FixNullSpace(inv.data(), oldmap, newmap, solver_.Params());
         std::cout << std::endl;
       }
       else if (msht_ == INPAR::FLUID::condensed_bmat)
@@ -188,7 +188,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           std::string inv = "Inverse1";
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(0, 0).EpetraMatrix()->RowMap();
-          LINALG::NULLSPACE::FixNullSpace(
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
               inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse1"));
           std::cout << std::endl;
         }
@@ -197,7 +197,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           std::string inv = "Inverse2";
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(1, 1).EpetraMatrix()->RowMap();
-          LINALG::NULLSPACE::FixNullSpace(
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
               inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse2"));
           std::cout << std::endl;
         }

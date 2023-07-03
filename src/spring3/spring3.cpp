@@ -14,7 +14,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "discretization_fem_general_largerotations.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;
 
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::Spring3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Spring3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Spring3Type::SetupElementDefinition(

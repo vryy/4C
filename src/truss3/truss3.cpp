@@ -10,8 +10,11 @@
 
 #include "truss3.H"
 #include "lib_linedefinition.H"
+#include "lib_node.H"
+#include "lib_discret.H"
+
 #include "structure_new_elements_paramsinterface.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
@@ -55,7 +58,7 @@ void DRT::ELEMENTS::Truss3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(

@@ -14,7 +14,7 @@
 #include "utils_exceptions.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "lib_linedefinition.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Wall1Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
-  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  return ComputeSolid2DNullSpace(node, x0);
   ;
 }
 

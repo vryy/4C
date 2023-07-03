@@ -12,7 +12,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
@@ -55,7 +55,7 @@ void DRT::ELEMENTS::Torsion3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(

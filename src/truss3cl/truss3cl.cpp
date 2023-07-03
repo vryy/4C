@@ -15,7 +15,7 @@
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
 #include "linalg_fixedsizematrix.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "lib_linedefinition.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::Truss3CLType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Truss3CLType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Truss3CLType::SetupElementDefinition(

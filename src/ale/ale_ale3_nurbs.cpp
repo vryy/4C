@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include "ale_ale3_nurbs.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::NURBS::Ale3_NurbsType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::NURBS::Ale3_NurbsType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 /*----------------------------------------------------------------------------*/

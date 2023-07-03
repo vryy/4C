@@ -25,7 +25,6 @@
 #include "lib_discret.H"
 #include "lib_prestress_service.H"
 #include "linalg_blocksparsematrix.H"
-#include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -51,6 +50,7 @@
 #include "fsi_overlapprec_hybrid.H"
 
 #include "linear_solver_method_linalg.H"
+#include "linear_solver_method_parameters.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
@@ -1296,7 +1296,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
           StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse1"));
-          LINALG::NULLSPACE::FixNullSpace("Structure",
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure",
               *StructureField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse1"));
@@ -1307,7 +1307,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
           FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse2"));
-          LINALG::NULLSPACE::FixNullSpace("Fluid", *FluidField()->Discretization()->DofRowMap(),
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid",
+              *FluidField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse2"));
 
@@ -1318,7 +1319,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // have to cast the const on the ale discretization away!
           const_cast<DRT::Discretization&>(*(AleField()->Discretization()))
               .ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse3"));
-          LINALG::NULLSPACE::FixNullSpace("Ale", *AleField()->Discretization()->DofRowMap(),
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale",
+              *AleField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(2, 2).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse3"));
 

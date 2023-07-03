@@ -13,7 +13,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 
 namespace
