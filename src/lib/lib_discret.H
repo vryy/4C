@@ -698,9 +698,7 @@ namespace DRT
     */
     virtual inline DRT::Element* lRowElement(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowElement: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return elerowptr_[lid];
     }
 
@@ -715,9 +713,7 @@ namespace DRT
     */
     virtual inline DRT::Element* lColElement(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return elecolptr_[lid];
     }
 
@@ -732,9 +728,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyRowElementRange() const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(elerowptr_);
     }
 
@@ -743,9 +737,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyColElementRange() const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(elecolptr_);
     }
 
@@ -778,9 +770,7 @@ namespace DRT
     */
     virtual inline DRT::Node* lRowNode(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return noderowptr_[lid];
     }
 
@@ -795,18 +785,22 @@ namespace DRT
     */
     virtual inline DRT::Node* lColNode(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return nodecolptr_[lid];
     }
 
-    inline DRT::Node* const* lColNodes() const
+
+    [[nodiscard]] auto MyRowNodeRange() const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
-      return nodecolptr_.data();
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(noderowptr_);
+    }
+
+
+    [[nodiscard]] auto MyColNodeRange() const
+    {
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(nodecolptr_);
     }
 
     //@}
@@ -1428,13 +1422,11 @@ namespace DRT
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return Teuchos::null;
-      std::map<std::string, Teuchos::RCP<const Epetra_Vector>>::const_iterator fool =
-          state_[nds].find(name);
-      if (fool == state_[nds].end())
+
+      if (auto state_iterator = state_[nds].find(name); state_iterator == state_[nds].end())
         dserror("Cannot find state %s", name.data());
       else
-        return fool->second;
-      return Teuchos::null;
+        return state_iterator->second;
     }
 
     /*!
@@ -1446,9 +1438,8 @@ namespace DRT
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return false;
-      std::map<std::string, Teuchos::RCP<const Epetra_Vector>>::const_iterator fool =
-          state_[nds].find(name);
-      return fool != state_[nds].end();
+
+      return state_[nds].count(name) == 1;
     }
 
     /*!
@@ -1463,7 +1454,6 @@ namespace DRT
       // clear states that belong to own dofset only
       else if (!state_.empty())
         state_[0].clear();
-      return;
     }
 
     void RedistributeState(unsigned nds, const std::string& name) override;

@@ -36,7 +36,6 @@ namespace DRT
   {
     // forward declaration
     class ConditionSelector;
-    class DiscretizationNodeIterator;
 
     /// std unary function version of Epetra_Map::MyGID()
     struct MyGID : public std::unary_function<int, bool>
@@ -203,10 +202,6 @@ namespace DRT
     /// col map with nodes from condition
     Teuchos::RCP<Epetra_Map> ConditionNodeColMap(
         const DRT::Discretization& dis, const std::string& condname);
-
-    /// generic condition node map creation
-    Teuchos::RCP<Epetra_Map> ConditionMap(const DRT::Discretization& dis,
-        const DiscretizationNodeIterator& iter, const std::string& condname);
 
     /// create the set of column element gids that have conditioned nodes
     /*!
