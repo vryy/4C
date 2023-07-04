@@ -473,7 +473,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(
       DRT::Node** nodes = immersedele->Nodes();
       for (int inode = 0; inode < (immersedele->NumNode()); inode++)
       {
-        if (static_cast<IMMERSED::ImmersedNode*>(nodes[inode])->IsMatched() and
+        if (static_cast<DRT::ImmersedNode*>(nodes[inode])->IsMatched() and
             nodes[inode]->Owner() == myrank_)
         {
           std::vector<int> dofs = dis->Dof(nodes[inode]);

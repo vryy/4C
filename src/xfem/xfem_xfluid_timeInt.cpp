@@ -39,7 +39,7 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_factory.H"
 
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 #include "xfem_condition_manager.H"
 #include "xfem_xfluid_timeInt.H"
 

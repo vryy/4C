@@ -74,6 +74,9 @@
 
 #include "discretization_geometry_position_array.H"
 #include "fluid_ele_intfaces_calc.H"
+#include "lib_utils_discret.H"
+#include "lib_discret_hdg.H"
+#include "fluid_DbcHDG.h"
 
 
 /*----------------------------------------------------------------------*
@@ -6534,7 +6537,14 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletBC(Teuchos::ParameterList& params,
   // Apply DBCs
   // --------------------------------------------------------------------------------
   discret_->ClearState();
-  if (recreatemap)
+  // If we have HDG discret
+  if (dynamic_cast<const DRT::DiscretizationHDG*>(&(*discret_)) != NULL)
+  {
+    auto dbc = Teuchos::rcp<const DRT::UTILS::Dbc>(new const FLD::UTILS::DbcHDG_Fluid());
+    (*dbc)(*discret_, params, systemvector, systemvectord, systemvectordd, Teuchos::null,
+        recreatemap ? dbcmaps_ : Teuchos::null);
+  }
+  else if (recreatemap)
   {
     discret_->EvaluateDirichlet(
         params, systemvector, systemvectord, systemvectordd, Teuchos::null, dbcmaps_);

@@ -12,7 +12,7 @@
 
 
 #include "fluid_ele_immersed_base.H"
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 #include "mortar_element.H"
 #include "mortar_calc_utils.H"
 #include "lib_globalproblem.H"

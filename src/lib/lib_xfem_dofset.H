@@ -11,8 +11,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 /*----------------------------------------------------------------------*/
 
 
-#ifndef XFEM_DOFSET_H
-#define XFEM_DOFSET_H
+#ifndef LIB_XFEM_DOFSET_H
+#define LIB_XFEM_DOFSET_H
 
 
 #include "lib_dofset_fixed_size.H"

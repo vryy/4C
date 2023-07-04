@@ -34,7 +34,7 @@
 #include "io_gmsh.H"
 #include "io_control.H"
 
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 
 #include "xfem_xfluid_timeInt_base.H"
 

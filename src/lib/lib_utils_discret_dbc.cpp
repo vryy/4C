@@ -9,14 +9,11 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "lib_utils_discret.H"
-
 #include "lib_discret_hdg.H"
-#include "nurbs_discret.H"
-
 #include "lib_globalproblem.H"
-
+#include "lib_utils_discret.H"
 #include "linalg_mapextractor.H"
+#include "nurbs_discret.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

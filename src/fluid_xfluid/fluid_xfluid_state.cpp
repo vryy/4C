@@ -16,7 +16,7 @@
 #include "cut_cutwizard.H"
 
 #include "xfem_condition_manager.H"
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 
 #include "io.H"
 #include "io_control.H"

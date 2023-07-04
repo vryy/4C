@@ -57,8 +57,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(const DRT::Discretizatio
         if (!buildimmersednode)
           targetdis.AddNode(Teuchos::rcp(new DRT::Node(gid, node_to_create->X(), myrank)));
         else
-          targetdis.AddNode(
-              Teuchos::rcp(new IMMERSED::ImmersedNode(gid, node_to_create->X(), myrank)));
+          targetdis.AddNode(Teuchos::rcp(new DRT::ImmersedNode(gid, node_to_create->X(), myrank)));
       }
     }
   }

@@ -3242,7 +3242,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       backgrdxi[1] = nodalrefcoords[node][1];
       backgrdxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -3265,7 +3265,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       if (match)
       {
         matchnum++;
-        static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         immersedele->SetHasProjectedDirichlet(1);
 
         for (int i = 0; i < nsd_; ++i)
@@ -3291,7 +3291,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
 
     // loop over nodes of this ele and set IsBoundaryImmersed
     for (int node = 0; node < nen_; node++)
-      static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
+      static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
 
     if (isfluidinteraction)
     {
@@ -3545,7 +3545,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
       backgrdfluidxi[1] = nodalrefcoords[node][1];
       backgrdfluidxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -3572,7 +3572,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
       {
         // if closest point to node lying in this element is found, node is set matched to indicate
         // that now has an dirichlet value
-        static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         // this is done before anyway, but doesn't hurt here
         immersedele->SetHasProjectedDirichlet(1);
 
@@ -4578,8 +4578,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
   DRT::Node** nodes = immersedele->Nodes();
   for (int i = 0; i < immersedele->NumNode(); ++i)
   {
-    static_cast<IMMERSED::ImmersedNode*>(nodes[i])->SetIsMatched(0);
-    static_cast<IMMERSED::ImmersedNode*>(nodes[i])->SetIsBoundaryImmersed(0);
+    static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsMatched(0);
+    static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsBoundaryImmersed(0);
   }
 
   // reset element int point information
