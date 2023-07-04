@@ -50,7 +50,7 @@ interface
 #include "inpar_parameterlist_utils.H"
 
 #include "xfem_condition_manager.H"
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 #include "xfem_edgestab.H"
 #include "xfem_neumann.H"
 

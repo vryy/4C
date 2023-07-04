@@ -19,7 +19,7 @@
 
 #include "inpar_xfem.H"
 
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 
 #include "xfem_xfluid_timeInt_std_SemiLagrange.H"
 

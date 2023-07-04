@@ -14,7 +14,6 @@ set(_lib_dependencies
     fluid
     fluid_ele
     fluid_xfluid
-    immersed_problem
     inpar
     io
     linalg
@@ -25,6 +24,5 @@ set(_lib_dependencies
     rebalance
     scatra_ele
     structure_new
-    xfem
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lib_dependencies})

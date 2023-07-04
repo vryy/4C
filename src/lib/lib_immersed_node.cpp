@@ -7,19 +7,19 @@
 
 *----------------------------------------------------------------------*/
 
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 
 
-IMMERSED::ImmersedNodeType IMMERSED::ImmersedNodeType::instance_;
+DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
 
 
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* IMMERSED::ImmersedNodeType::Create(const std::vector<char>& data)
+DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 {
   double dummycoord[6] = {999., 999., 999., 999., 999., 999.};
-  DRT::Node* object = new IMMERSED::ImmersedNode(-1, dummycoord, -1);
+  DRT::Node* object = new DRT::ImmersedNode(-1, dummycoord, -1);
   object->Unpack(data);
   return object;
 }
@@ -28,7 +28,7 @@ DRT::ParObject* IMMERSED::ImmersedNodeType::Create(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           rauch 11/14 |
  *----------------------------------------------------------------------*/
-IMMERSED::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner)
+DRT::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner)
     : DRT::Node(id, coords, owner),
       ismatched_(false),
       IsBoundaryImmersed_(false),
@@ -39,7 +39,7 @@ IMMERSED::ImmersedNode::ImmersedNode(int id, const double* coords, const int own
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      rauch 11/14 |
  *----------------------------------------------------------------------*/
-IMMERSED::ImmersedNode::ImmersedNode(const IMMERSED::ImmersedNode& old)
+DRT::ImmersedNode::ImmersedNode(const DRT::ImmersedNode& old)
     : DRT::Node(old),
       ismatched_(old.ismatched_),
       IsBoundaryImmersed_(old.IsBoundaryImmersed_),
@@ -52,23 +52,23 @@ IMMERSED::ImmersedNode::ImmersedNode(const IMMERSED::ImmersedNode& old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           rauch 11/14 |
  *----------------------------------------------------------------------*/
-IMMERSED::ImmersedNode::~ImmersedNode() { return; }
+DRT::ImmersedNode::~ImmersedNode() { return; }
 
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-IMMERSED::ImmersedNode* IMMERSED::ImmersedNode::Clone() const
+DRT::ImmersedNode* DRT::ImmersedNode::Clone() const
 {
-  IMMERSED::ImmersedNode* newnode = new IMMERSED::ImmersedNode(*this);
+  DRT::ImmersedNode* newnode = new DRT::ImmersedNode(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  |  << operator                                             rauch 11/14 |
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const IMMERSED::ImmersedNode& immersednode)
+std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode)
 {
   immersednode.Print(os);
   return os;
@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, const IMMERSED::ImmersedNode& immerse
 /*----------------------------------------------------------------------*
  |  print this element (public)                             rauch 11/14 |
  *----------------------------------------------------------------------*/
-void IMMERSED::ImmersedNode::Print(std::ostream& os) const
+void DRT::ImmersedNode::Print(std::ostream& os) const
 {
   os << "Immersed ";
   DRT::Node::Print(os);
@@ -100,7 +100,7 @@ void IMMERSED::ImmersedNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void IMMERSED::ImmersedNode::Pack(DRT::PackBuffer& data) const
+void DRT::ImmersedNode::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -125,7 +125,7 @@ void IMMERSED::ImmersedNode::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void IMMERSED::ImmersedNode::Unpack(const std::vector<char>& data)
+void DRT::ImmersedNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -155,7 +155,7 @@ void IMMERSED::ImmersedNode::Unpack(const std::vector<char>& data)
  |  Visualization Data                                         (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-void IMMERSED::ImmersedNode::VisNames(std::map<std::string, int>& names)
+void DRT::ImmersedNode::VisNames(std::map<std::string, int>& names)
 {
   names.insert(std::pair<std::string, int>("IsBoundaryImmersedNode", 1));
   return;
@@ -166,7 +166,7 @@ void IMMERSED::ImmersedNode::VisNames(std::map<std::string, int>& names)
  |  Query data to be visualized by BINIO                       (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-bool IMMERSED::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "IsBoundaryImmersedNode")
   {

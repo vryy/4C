@@ -1494,6 +1494,7 @@ namespace DRT
       lface_slave_ = lface_slave;
     }
 
+
    protected:
     /*!
     \brief Set the slave element this face element is connected to

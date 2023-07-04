@@ -15,6 +15,7 @@
 
 #include "fluid_ele.H"
 #include "discretization_fem_general_utils_polynomial.H"
+#include "lib_dg_element.h"
 
 namespace DRT
 {
@@ -58,7 +59,7 @@ namespace DRT
     /*!
     \brief HDG weakly compressible fluid element
     */
-    class FluidHDGWeakComp : public Fluid
+    class FluidHDGWeakComp : public Fluid, public DG_Element
     {
      public:
       //! @name constructors and destructors and related methods

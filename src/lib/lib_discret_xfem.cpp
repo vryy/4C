@@ -12,7 +12,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "lib_discret_xfem.H"
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

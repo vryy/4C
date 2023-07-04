@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef IMMERSED_PROBLEM_IMMERSED_NODE_H
-#define IMMERSED_PROBLEM_IMMERSED_NODE_H
+#ifndef LIB_IMMERSED_NODE_H
+#define LIB_IMMERSED_NODE_H
 
 
 #include "lib_node.H"
@@ -16,11 +16,7 @@
 namespace DRT
 {
   class Node;
-}
 
-
-namespace IMMERSED
-{
   class ImmersedNodeType : public DRT::ParObjectType
   {
    public:
@@ -68,13 +64,13 @@ namespace IMMERSED
     Makes a deep copy of a Node
 
     */
-    ImmersedNode(const IMMERSED::ImmersedNode& old);
+    ImmersedNode(const DRT::ImmersedNode& old);
 
     /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual IMMERSED::ImmersedNode* Clone() const;
+    virtual DRT::ImmersedNode* Clone() const;
 
     /*!
     \brief Destructor
@@ -165,10 +161,10 @@ namespace IMMERSED
     //@}
 
   };  // class ImmersedNode
-}  // namespace IMMERSED
+}  // namespace DRT
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const IMMERSED::ImmersedNode& immersednode);
+std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode);
 
 
 

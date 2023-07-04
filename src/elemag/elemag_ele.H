@@ -662,6 +662,18 @@ namespace DRT
       virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const;
 
+      int degree_;
+
+      /*!
+     \brief Allows to set the element degree
+     */
+      void SetDegree(int degree)
+      {
+        degree_ = degree;
+        return;
+      }
+
+
      private:
       // don't want = operator
       ElemagBoundary& operator=(const ElemagBoundary& old);
@@ -854,6 +866,9 @@ namespace DRT
        */
       virtual int Degree() const { return degree_; }
 
+      /*!
+      \brief Allows to set the element degree
+      */
       void SetDegree(int degree)
       {
         degree_ = degree;
