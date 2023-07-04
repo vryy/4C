@@ -95,16 +95,15 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1);
 
 
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints);
+      int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
 
-      virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1,
+      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells)
+          const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
         dserror("Implemented in derived xfem class!");
         return 1;
@@ -115,11 +114,11 @@ namespace DRT
       /*!
         Interface function for supporting methods of the element
        */
-      virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       /*! \brief Calculate a integrated divergence operator in vector form
        *
@@ -264,10 +263,10 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseVector& elevec);
 
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints2);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints2) override;
 
       /*!
        \brief Evaluates the analytic solution in the given point
@@ -281,22 +280,22 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -308,20 +307,20 @@ namespace DRT
               bintpoints,                                     ///< boundary integration points
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                      ///< parameter list
-      )
+          ) override
       {
         dserror("Implemented in derived xfem class!");
         return 1;
       };
 
       /// Evaluate the XFEM cut element
-      virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false)
+          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
         dserror("Implemented in derived xfem class!");
         return 1;
@@ -351,7 +350,7 @@ namespace DRT
           const double& Cs_delta_sq, const double& l_tau);
 
 
-      virtual void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -372,14 +371,14 @@ namespace DRT
               elevec1_epetra,               ///< local element vector of intersected element
           Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
-      )
+          ) override
       {
         dserror("Implemented in derived xfem class!");
         return;
       }
 
 
-      virtual void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -398,22 +397,22 @@ namespace DRT
               side_coupling,                ///< side coupling matrices
           Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
-      )
+          ) override
       {
         dserror("Implemented in derived xfem class!");
         return;
       }
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints)
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override
       {
         dserror("Implemented in derived xfem class!");
         return;
       }
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra)
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra) override
       {
         dserror("Implemented in derived xfem class!");
         return;
