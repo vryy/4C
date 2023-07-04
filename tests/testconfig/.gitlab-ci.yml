@@ -25,12 +25,8 @@ variables:
 
 
   # Variables for docker
-  BACI_DOCKER_BUILD_IMAGES:
-    description: Build the docker images and push them to the CI registry
-    value: 'False'
-    options:
-    - 'True'
-    - 'False'
+  # Whether to build the docker images and push them to the CI registry
+  BACI_DOCKER_BUILD_IMAGES: 'False'
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
 
 #-------------------------------------------------------------------------------
@@ -547,6 +543,7 @@ build-base-dependencies:
   - docker push $FULL_IMAGE_PATH
   rules:
   - if: $BACI_DOCKER_BUILD_IMAGES == "True"
+    when: manual
 
 buildtest_full_release:
   extends: .buildtest_full
