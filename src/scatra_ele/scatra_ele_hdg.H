@@ -271,16 +271,16 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1)
+          Epetra_SerialDenseMatrix* elemat1) override
       {
         dserror("Volume Neumann not implemented");
         return 0;
@@ -550,7 +550,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -568,9 +568,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       //@}
 
@@ -604,8 +604,8 @@ namespace DRT
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
       /*!
       \brief Return the location vector of this element
@@ -634,7 +634,7 @@ namespace DRT
 
       */
       void LocationVector(const Discretization& dis, std::vector<int>& lm,
-          std::vector<int>& lmowner, std::vector<int>& lmstride) const;
+          std::vector<int>& lmowner, std::vector<int>& lmstride) const override;
 
      private:
       // don't want = operator
@@ -885,7 +885,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -903,9 +903,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       /*!
       \brief return the master parent ScaTraHDG element

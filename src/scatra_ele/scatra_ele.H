@@ -340,7 +340,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate an element (multiple dofset version)
@@ -371,7 +371,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -387,9 +387,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
 
       //@}
@@ -645,7 +645,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate an element (multiple dofset version)
@@ -676,7 +676,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -696,9 +696,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       //@}
 
@@ -732,8 +732,8 @@ namespace DRT
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
       // don't want = operator

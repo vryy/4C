@@ -67,11 +67,11 @@ namespace DRT
       void InitializeShapes(const DRT::Element* ele, const std::string& disname);
 
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
       virtual int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
