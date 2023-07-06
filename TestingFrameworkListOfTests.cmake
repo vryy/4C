@@ -166,6 +166,8 @@ baci_test(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_rotational_cou
 baci_test(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_rotational_coupling_circ 2 "")
 baci_test(beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d 3 "")
 baci_test(beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting 2 "")
+baci_test(beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting 1 "")
+vtk_test(beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting-vtk-beam-to-beam beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting 1 xxx-beam-contact.pvd ref/beam3r_herm2line3_static_contact_penalty_linpen_twobeamstwisting-vtk/beam-contact.pvd 1e-08 1e-08 5.0)
 baci_test(beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 "")
 
 if (BACI_WITH_ARBORX)
