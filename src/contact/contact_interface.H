@@ -615,6 +615,12 @@ namespace CONTACT
     virtual void AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele);
 
     //! @name Parallel distribution and ghosting
+    /* References
+    ==========
+
+    - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
+    Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
+    */
     //! @{
 
     /*!
@@ -670,6 +676,12 @@ namespace CONTACT
     meshtying. Second, if NO slave element of the interface has any
     "close" neighbors, we do not need to redistribute at all. This
     is indicated by returning with a boolean return value FALSE.
+
+    References
+    ==========
+
+    - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
+    Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
     void Redistribute() final;
 
@@ -1569,6 +1581,13 @@ namespace CONTACT
     master-sided interface ghosting via binning.
 
     @param meanVelocity Mean velocity of this interface
+
+    References
+    ==========
+
+    - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
+    Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
+
     */
     void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0) final;
 
