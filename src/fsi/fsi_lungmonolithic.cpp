@@ -609,7 +609,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSystem(
               Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
-      dserror("unsupported linear block solver strategy: fsiamg");
+      dserror("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 
