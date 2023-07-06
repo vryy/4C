@@ -103,7 +103,7 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
 
           for (int n = 0; n < ele->ParentSlaveElement()->NumNode(); ++n)
           {
-            for (uint dim = 0; dim < 3; ++dim)
+            for (unsigned dim = 0; dim < 3; ++dim)
             {
               vel.push_back(myval[n * 4 + dim]);
             }

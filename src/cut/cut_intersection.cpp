@@ -1314,7 +1314,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   int max_steps = pow(pow_fac, maxstep - 1);
   double dmax_steps = 1.0 / max_steps;
   int act_steps = 0;
-  uint act_boxidx = 0;
+  std::size_t act_boxidx = 0;
   std::vector<std::vector<int>> overlappingidx;
   std::vector<std::vector<int>> newoverlappingidx;
   std::vector<int> tmpoverlappingidx;

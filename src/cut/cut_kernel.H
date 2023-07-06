@@ -2070,14 +2070,14 @@ namespace CORE::GEO
                << "\" {\n";
           {
             file << "S" << elementType << "(";
-            for (uint i = 0; i < numNodesSide; ++i)
+            for (unsigned i = 0; i < numNodesSide; ++i)
             {
               if (i != 0) file << ",";
               file << (*xyze_side_)(0, i) << "," << (*xyze_side_)(1, i) << ","
                    << (*xyze_side_)(2, i);
             }
             file << "){";
-            for (uint i = 0; i < numNodesSide; ++i)
+            for (unsigned i = 0; i < numNodesSide; ++i)
             {
               if (i != 0) file << ",";
               file << "1";
@@ -3665,14 +3665,14 @@ namespace CORE::GEO
                << "\" {\n";
           {
             file << "S" << elementType << "(";
-            for (uint i = 0; i < numNodesSide; ++i)
+            for (unsigned i = 0; i < numNodesSide; ++i)
             {
               if (i != 0) file << ",";
               file << (*xyze_side_)(0, i) << "," << (*xyze_side_)(1, i) << ","
                    << (*xyze_side_)(2, i);
             }
             file << "){";
-            for (uint i = 0; i < numNodesSide; ++i)
+            for (unsigned i = 0; i < numNodesSide; ++i)
             {
               if (i != 0) file << ",";
               file << "1";

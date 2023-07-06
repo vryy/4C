@@ -428,7 +428,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
           static const int offset_idx = 0;
           // static double offset;
           static double offset = 0;
-          for (uint cidx = 0; cidx < conds.size(); ++cidx)
+          for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)
           {
             if (conds[cidx]->ContainsNode(node.Id()))
             {
@@ -494,7 +494,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
       static const int offset_idx = 0;
       // static double offset;
       static double offset = 0;
-      for (uint cidx = 0; cidx < conds.size(); ++cidx)
+      for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)
       {
         if (conds[cidx]->ContainsNode(element->Nodes()[0]->Id()))
         {
@@ -979,7 +979,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
         {
           CORE::GEO::CUT::BoundaryCell* bc = *bit;
 
-          for (uint bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
+          for (std::size_t bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
           {
             // get local coord on sidehandle
             LINALG::Matrix<2, 1> xsi = sh->LocalCoordinates(bc->Points()[bcpoint]);
@@ -1034,7 +1034,7 @@ void CORE::GEO::CutWizard::Post_UpdateBC_Offset()
 
         static const int offset_idx = 0;
         static double offset = 0;
-        for (uint cidx = 0; cidx < conds.size(); ++cidx)  // loop offset conditions
+        for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)  // loop offset conditions
         {
           if (conds[cidx]->ContainsNode(nodes[0]->Id()))
           {
@@ -1045,7 +1045,7 @@ void CORE::GEO::CutWizard::Post_UpdateBC_Offset()
             if (!sh) dserror("Couldn't get sidehandle!");
             CORE::GEO::CUT::plain_side_set subsides;
             sh->CollectSides(subsides);
-            for (uint ssidx = 0; ssidx < subsides.size(); ++ssidx)  // loop subsides
+            for (std::size_t ssidx = 0; ssidx < subsides.size(); ++ssidx)  // loop subsides
             {
               CORE::GEO::CUT::Side* side = subsides[ssidx];
               for (std::vector<CORE::GEO::CUT::Facet*>::const_iterator fit = side->Facets().begin();

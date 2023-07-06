@@ -91,10 +91,10 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
       for (plain_facet_set::const_iterator fit = volcell_->Facets().begin();
            fit != volcell_->Facets().end(); ++fit)
       {
-        for (uint p = 0; p < (*fit)->Points().size(); ++p)
+        for (std::size_t p = 0; p < (*fit)->Points().size(); ++p)
         {
           bool insert = true;
-          for (uint ap = 0; ap < points.size(); ++ap)
+          for (std::size_t ap = 0; ap < points.size(); ++ap)
             if (points[ap]->Id() == (*fit)->Points()[p]->Id())
             {
               insert = false;
@@ -144,7 +144,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
                                      // tri_diags_[24][3]
   {
     diag.clear();
-    for (uint plid = 0; plid < 3; ++plid) diag.push_back(ptslist[tri_diags_[i][plid]]);
+    for (unsigned plid = 0; plid < 3; ++plid) diag.push_back(ptslist[tri_diags_[i][plid]]);
     diagonals.push_back(diag);
   }
 
@@ -219,9 +219,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
 
   double xnormal = 0.0;
   bool found_refplane = false;
-  for (std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>>::iterator it =
-           facet_data.begin();
-       it != facet_data.end(); it++)
+  for (auto it = facet_data.begin(); it != facet_data.end(); it++)
   {
     std::vector<double> RefPlaneTemp = it->second.first;
 
@@ -287,7 +285,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
     const std::vector<Node*> nds = s->Nodes();
 
 
-    for (uint split_quadidx = 0; split_quadidx < 3 * nds.size() - 8; ++split_quadidx)
+    for (std::size_t split_quadidx = 0; split_quadidx < 3 * nds.size() - 8; ++split_quadidx)
     {
       std::vector<Point*> ptside;
       if (nds.size() == 4)

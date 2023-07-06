@@ -531,7 +531,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(LINALG::Matrix<6, 1>& itraction
 
   EvaluateFunction(final_values, x.A(), cond, time);
 
-  for (uint i = 0; i < 6; ++i) itraction(i, 0) = final_values[i];
+  for (unsigned i = 0; i < 6; ++i) itraction(i, 0) = final_values[i];
 }
 
 void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, const double* x,

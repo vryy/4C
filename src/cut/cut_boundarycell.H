@@ -104,7 +104,7 @@ namespace CORE::GEO
       {
         LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
             xyz_mat(xyz_, true);
-        for (uint n = 0;
+        for (unsigned int n = 0;
              n < CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement; ++n)
           xyz_mat(idx, n) += offset;
       }
@@ -194,7 +194,7 @@ namespace CORE::GEO
           static LINALG::Matrix<3, 1> p0(true);
           static LINALG::Matrix<3, 1> p1(true);
           static LINALG::Matrix<3, 1> p2(true);
-          for (uint dim = 0; dim < 3; ++dim)
+          for (unsigned dim = 0; dim < 3; ++dim)
           {
             p0(dim) = xyze(dim, 0);
             p1(dim) = xyze(dim, 1);

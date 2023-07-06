@@ -1081,7 +1081,7 @@ void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
   if (!cutterele_conds_.size()) dserror("cutterele_conds_.size = 0!");
   DRT::Condition* cond = (cutterele_conds_[0]).second;
   const int inflow_stab = cond->GetInt("InflowStab") + 1;
-  for (uint i = 0; i < cutterele_conds_.size(); ++i)
+  for (std::size_t i = 0; i < cutterele_conds_.size(); ++i)
   {
     DRT::Condition* cond = (cutterele_conds_[i]).second;
     if (inflow_stab != cond->GetInt("InflowStab") + 1)

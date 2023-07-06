@@ -286,13 +286,13 @@ void CORE::GEO::CUT::OUTPUT::GmshTriSideDump(
   }
 
   file << "S" << elementtype << "(";
-  for (uint i = 0; i < points.size(); ++i)
+  for (std::size_t i = 0; i < points.size(); ++i)
   {
     if (i != 0) file << ",";
     GmshWriteCoords(file, points[i], to_local, ele);
   }
   file << "){";
-  for (uint i = 0; i < points.size(); ++i)
+  for (std::size_t i = 0; i < points.size(); ++i)
   {
     CORE::GEO::CUT::Point* p = points[i];
     if (i != 0) file << ",";
@@ -372,7 +372,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
   }
   else if (visualizationtype == "lines")
   {
-    for (uint pidx = 0; pidx < facet->Points().size(); ++pidx)
+    for (std::size_t pidx = 0; pidx < facet->Points().size(); ++pidx)
     {
       CORE::GEO::CUT::OUTPUT::GmshLineDump(file, facet->Points()[pidx],
           facet->Points()[(pidx + 1) % facet->Points().size()], to_local, ele);
@@ -380,7 +380,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
   }
   else if (visualizationtype == "points")
   {
-    for (uint pidx = 0; pidx < facet->Points().size(); ++pidx)
+    for (std::size_t pidx = 0; pidx < facet->Points().size(); ++pidx)
       CORE::GEO::CUT::OUTPUT::GmshPointDump(
           file, facet->Points()[pidx], facet->SideId(), to_local, ele);
   }
@@ -1249,7 +1249,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
   {
     file << "  ci.AddLevelSetSide(1);"
          << "\n";
-    for (uint i = 0; i < ele->Nodes().size(); ++i)
+    for (std::size_t i = 0; i < ele->Nodes().size(); ++i)
     {
       file << "  lsvs[" << i << "] = " << ele->Nodes()[i]->LSV() << ";"
            << "\n";
@@ -1270,9 +1270,9 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << "    nids.clear();"
          << "\n";
-    for (uint i = 0; i < aele->Nodes().size(); ++i)
+    for (std::size_t i = 0; i < aele->Nodes().size(); ++i)
     {
-      for (uint dim = 0; dim < 3; ++dim)
+      for (unsigned dim = 0; dim < 3; ++dim)
       {
         file << "  hex8_xyze(" << dim << "," << i << ") = " << aele->Nodes()[i]->point()->X()[dim]
              << ";"

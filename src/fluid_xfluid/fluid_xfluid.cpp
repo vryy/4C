@@ -1007,7 +1007,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
           const std::vector<std::pair<int, int>> cloning_information =
               condition_manager_->GetBCCloneInformation(coup_sid, actele->Id(), coup_idx);
-          for (uint clone_id = 0; clone_id < cloning_information.size(); ++clone_id)
+          for (std::size_t clone_id = 0; clone_id < cloning_information.size(); ++clone_id)
           {
             //            std::cout << "XFluid - Cloning News: " << coup_idx << " --> " <<
             //            cloning_information.first << ", " <<

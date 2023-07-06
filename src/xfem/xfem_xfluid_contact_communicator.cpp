@@ -108,7 +108,7 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
   else
     dserror("Didn't find any mesh coupling object!");
 
-  for (uint mc = 0; mc < mc_.size(); ++mc)
+  for (std::size_t mc = 0; mc < mc_.size(); ++mc)
   {
     if (mc_[mc]->GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided &&
         mass_conservation_scaling_ != INPAR::XFEM::MassConservationScaling_only_visc)
@@ -317,7 +317,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     if (!ffluidele) dserror("Cast to Fluidelement failed");
     if (ffluidele->IsAle())
     {
-      for (uint n = 0; n < fluid_nds.size(); ++n)
+      for (std::size_t n = 0; n < fluid_nds.size(); ++n)
         for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
       Teuchos::RCP<const Epetra_Vector> matrix_state_disp = fluiddis_->GetState("dispnp");
       DRT::UTILS::ExtractMyValues(*matrix_state_disp, disp, lmdisp);
@@ -578,7 +578,7 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
       condition_manager_->GetCouplingIndex(mc_[0]->GetName()));
   min_surf_id_ = mc_[0]->GetCutterDis()->ElementColMap()->MinAllGID() + startgid;
   int max_surf_gid = mc_[0]->GetCutterDis()->ElementColMap()->MaxAllGID() + startgid;
-  for (uint mc = 1; mc < mc_.size(); ++mc)
+  for (std::size_t mc = 1; mc < mc_.size(); ++mc)
   {
     int startgid = condition_manager_->GetMeshCouplingStartGID(
         condition_manager_->GetCouplingIndex(mc_[mc]->GetName()));
@@ -611,7 +611,7 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
     const int c_parent_id = cele->ParentElementId();
     const int c_parent_surf = cele->FaceParentNumber();
 
-    for (uint mc = 0; mc < mc_.size(); ++mc)
+    for (std::size_t mc = 0; mc < mc_.size(); ++mc)
     {
       for (int j = 0; j < mc_[mc]->GetCutterDis()->NumMyColElements(); ++j)
       {
@@ -694,7 +694,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   int found_side = -1;
   static LINALG::Matrix<3, 1> tmpxsi(true);
   static LINALG::Matrix<3, 1> tmpxsi_tmp(true);
-  for (uint ss = 0; ss < subsides.size(); ++ss)
+  for (std::size_t ss = 0; ss < subsides.size(); ++ss)
   {
     CORE::GEO::CUT::Side* s = subsides[ss];
     if (s->LocalCoordinates(x, tmpxsi_tmp, true, 1e-10))
@@ -710,7 +710,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   }
   if (found_side == -1)  // do the same thing with reduced tolerance
   {
-    for (uint ss = 0; ss < subsides.size(); ++ss)
+    for (std::size_t ss = 0; ss < subsides.size(); ++ss)
     {
       CORE::GEO::CUT::Side* s = subsides[ss];
       if (s->LocalCoordinates(x, tmpxsi_tmp, true, 1e-6))
@@ -772,7 +772,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
         }
         else
         {
-          for (uint checkcell = 0; checkcell < (*fit)->Cells().size(); ++checkcell)
+          for (std::size_t checkcell = 0; checkcell < (*fit)->Cells().size(); ++checkcell)
           {
             if (facets[0]->Cells()[checkcell] != (*fit)->Cells()[checkcell])
             {
@@ -814,7 +814,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
                       << std::endl;
           }
 
-          for (uint tri = 0; tri < triangulation.size(); ++tri)
+          for (std::size_t tri = 0; tri < triangulation.size(); ++tri)
           {
             if (triangulation[tri].size() != 3)
               dserror("Triangulation with another number of points than 3 (%d)?",
@@ -854,7 +854,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
           CORE::GEO::CUT::OUTPUT::GmshSideDump(file, subsides[found_side]);
           CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
           CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "All facets", facets);
-          for (uint f = 0; f < facets.size(); ++f)
+          for (std::size_t f = 0; f < facets.size(); ++f)
           {
             std::stringstream strf;
             strf << "Facet (" << f << ")";
@@ -889,7 +889,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   // 3 // Get Volumecells
   if (!volumecell)
   {
-    for (uint vc = 0; vc < facet->Cells().size(); ++vc)
+    for (std::size_t vc = 0; vc < facet->Cells().size(); ++vc)
     {
       if (facet->Cells()[vc]->Position() == CORE::GEO::CUT::Point::outside)
       {
@@ -1053,7 +1053,7 @@ void XFEM::XFluid_Contact_Comm::Update_physical_sides(CORE::GEO::CUT::Side* side
     std::set<CORE::GEO::CUT::Side*>& physical_sides)
 {
   std::vector<CORE::GEO::CUT::Side*> neibs = GetNewNeighboringSides(side, performed_sides);
-  for (uint sid = 0; sid < neibs.size(); ++sid)
+  for (std::size_t sid = 0; sid < neibs.size(); ++sid)
   {
     performed_sides.insert(neibs[sid]);
     CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(neibs[sid]->Id());
@@ -1095,7 +1095,7 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
       else  // do the contact elements share a common edge?
       {
         int common_nodes = 0;
-        for (uint neighbor = 0; neighbor < neighbors.size(); ++neighbor)
+        for (std::size_t neighbor = 0; neighbor < neighbors.size(); ++neighbor)
         {
           if (neighbors[neighbor]->Id() == s->Id())
           {
@@ -1111,8 +1111,8 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
         CORE::GEO::CUT::SideHandle* sh1 = cutwizard_->GetCutSide(side->Id());
         CORE::GEO::CUT::SideHandle* sh2 = cutwizard_->GetCutSide(s->Id());
 
-        for (uint nidx1 = 0; nidx1 < sh1->GetNodes().size(); ++nidx1)
-          for (uint nidx2 = 0; nidx2 < sh2->GetNodes().size(); ++nidx2)
+        for (std::size_t nidx1 = 0; nidx1 < sh1->GetNodes().size(); ++nidx1)
+          for (std::size_t nidx2 = 0; nidx2 < sh2->GetNodes().size(); ++nidx2)
           {
             if (sh1->GetNodes()[nidx1]->Id() == sh2->GetNodes()[nidx2]->Id())
             {
@@ -1141,9 +1141,9 @@ CORE::GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(CORE::GEO::CU
   CORE::GEO::CUT::Element* newele = NULL;
   if (lastid == -1 && ele != NULL)
   {
-    for (uint s = 0; s < ele->Sides().size(); ++s)
+    for (std::size_t s = 0; s < ele->Sides().size(); ++s)
     {
-      for (uint e = 0; e < ele->Sides()[s]->Elements().size(); ++e)
+      for (std::size_t e = 0; e < ele->Sides()[s]->Elements().size(); ++e)
       {
         CORE::GEO::CUT::Element* element = ele->Sides()[s]->Elements()[e];
         if (element == ele)
@@ -1231,7 +1231,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       CORE::GEO::CUT::Facet* facet = *fit;
       if (facet->IsTriangulated())
       {
-        for (uint triangle = 0; triangle < facet->Triangulation().size(); ++triangle)
+        for (std::size_t triangle = 0; triangle < facet->Triangulation().size(); ++triangle)
         {
           double* coord = tcoords.A();
           for (std::vector<CORE::GEO::CUT::Point*>::const_iterator tp =
@@ -1350,7 +1350,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   LINALG::Matrix<2, 1> rst(true);  // local coordinates w.r.t side
   double drs = 0;
   double drs_sh = 0;
-  for (uint bc = 0; bc < bcs.size(); ++bc)
+  for (std::size_t bc = 0; bc < bcs.size(); ++bc)
   {
     CORE::DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
@@ -1394,7 +1394,7 @@ void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
     dserror("XFluid_Contact_Comm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
-  for (uint i = 0; i < mortarId_to_sosid_.size(); ++i)
+  for (std::size_t i = 0; i < mortarId_to_sosid_.size(); ++i)
   {
     if (mortarId_to_sosid_[i] == -1) continue;  // this entry is not set!
     CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(mortarId_to_sosid_[i]);
@@ -1470,10 +1470,10 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
     std::stringstream str;
     str << "FSCI_" << counter << "_" << fluiddis_->Comm().MyPID() << ".pos";
     std::ofstream file(str.str().c_str());
-    for (uint section = 0; section < sections.size(); ++section)
+    for (std::size_t section = 0; section < sections.size(); ++section)
     {
       GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
-      for (uint entry = 0; entry < (plot_data_[section]).size(); ++entry)
+      for (std::size_t entry = 0; entry < (plot_data_[section]).size(); ++entry)
       {
         GEO::CUT::OUTPUT::GmshCoordDump(
             file, (plot_data_[section])[entry].first, (plot_data_[section])[entry].second);

@@ -227,7 +227,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             else if ((*f)->Position() == CORE::GEO::CUT::Point::inside && all_dofs)
             {
-              for (uint n = 0; n < vc1->ParentElement()->Nodes().size(); ++n)
+              for (std::size_t n = 0; n < vc1->ParentElement()->Nodes().size(); ++n)
               {
                 if (!vc1->ParentElement()->Nodes()[n]->NodalDofSets().size())
                 {
@@ -236,7 +236,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
                 }
               }
               if (all_dofs)
-                for (uint n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                for (std::size_t n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
                 {
                   if (!vc2->ParentElement()->Nodes()[n]->NodalDofSets().size())
                   {
@@ -252,7 +252,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
                 {
                   //------------------------ create nodal dof sets
                   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
-                  for (uint n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                  for (std::size_t n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
                   {
                     nds_master.push_back(0);
                     nds_slave.push_back(0);
