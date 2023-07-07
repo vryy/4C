@@ -97,10 +97,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
   //--------------------------------------------------------------------------------
   if (SetupCalc(ele, params, discretization) == -1) return 0;
 
-  //--------------------------------------------------------------------------------
-  // extract element based or nodal values
-  //--------------------------------------------------------------------------------
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  ExtractDisplacementValues(ele, discretization, la);
 
   // check for the action parameter
 
@@ -115,8 +112,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractElementAndNodeValues(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
+    DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
@@ -126,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractElementAndNo
     const int ndsdisp = scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    dsassert(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;

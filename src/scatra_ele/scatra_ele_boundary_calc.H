@@ -129,11 +129,15 @@ namespace DRT
       int SetupCalc(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization);
 
-      //! extract element based or nodal values
-      //!  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::FaceElement* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la);
+      /*!
+       * @brief This method extracts the displacement values if ALE is activated
+       *
+       * @param[in] ele             currently evaluated face element
+       * @param[in] discretization  discretization
+       * @param[in] la              location array
+       */
+      void ExtractDisplacementValues(DRT::FaceElement* ele,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! Evaluate the element (using location array)
       int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
