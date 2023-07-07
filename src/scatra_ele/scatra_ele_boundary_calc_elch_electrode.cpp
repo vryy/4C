@@ -20,7 +20,6 @@
 #include "utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>*
@@ -39,10 +38,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Instance(
       CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
-
-
 /*----------------------------------------------------------------------*
- | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
@@ -52,9 +48,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 {
 }
 
-/*-------------------------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 04/15 |
- *-------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -140,10 +135,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   }  // loop over integration points
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICoupling
 
-
-/*---------------------------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition at integration point   fang 05/16 |
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
@@ -345,7 +338,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         default:
         {
           dserror("something went wrong");
-          break;
         }
       }
       break;
@@ -467,13 +459,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     default:
     {
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-      break;
     }
   }  // switch(kineticmodel)
 }
 
-/*-------------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
@@ -534,8 +525,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   }
 }
 
-/*---------------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::
@@ -603,13 +594,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::
       dserror(
           "Kinetic model for capacitance of scatra-scatra interface coupling is not yet "
           "implemented!");
-      break;
     }
   }  // switch(kineticmodel)
 }
 
-/*---------------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICouplingOD(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -667,9 +657,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
 
     // evaluate shape derivatives
-    static LINALG::Matrix<nsd_, nen_> shapederivatives;
+    static LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
-      my::EvalShapeDerivatives(shapederivatives);
+      my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
 
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
@@ -732,9 +722,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         {
           case SCATRA::DifferentiationType::disp:
           {
-            double dj_dd_slave_timefacwgt(0.0);
+            double dj_dsqrtdetg_timefacwgt(0.0);
             myelectrodeutils::CalculateButlerVolmerDispLinearizations(
-                kineticmodel, alphaa, alphac, frt, j0, eta, timefacwgt, dj_dd_slave_timefacwgt);
+                kineticmodel, alphaa, alphac, frt, j0, eta, timefacwgt, dj_dsqrtdetg_timefacwgt);
 
             // loop over matrix columns
             for (int ui = 0; ui < nen_; ++ui)
@@ -746,16 +736,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
               {
                 const int row_conc = vi * my::numdofpernode_;
                 const int row_pot = row_conc + 1;
-                const double vi_dj_dd_slave =
-                    my::funct_(vi) * pseudo_contact_fac * dj_dd_slave_timefacwgt;
+                const double vi_dj_dsqrtdetg =
+                    my::funct_(vi) * pseudo_contact_fac * dj_dsqrtdetg_timefacwgt;
 
                 // loop over spatial dimensions
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // compute linearizations w.r.t. slave-side structural displacements
-                  eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  eslavematrix(row_conc, fui + dim) += vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                   eslavematrix(row_pot, fui + dim) +=
-                      numelectrons * vi_dj_dd_slave * shapederivatives(dim, ui);
+                      numelectrons * vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                 }
               }
             }
@@ -764,7 +754,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
           default:
           {
             dserror("Unknown differentiation type");
-            break;
           }
         }
         break;
@@ -780,9 +769,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
             // calculate linearizations
             const double inv_massfluxresistance =
                 1.0 / (my::scatraparamsboundary_->Resistance() * myelch::elchparams_->Faraday());
-            const double dj_dd_slave_timefacwgt = pseudo_contact_fac * timefacwgt *
-                                                  (eslavepotint - emasterpotint) *
-                                                  inv_massfluxresistance;
+            const double dj_dsqrtdetg_timefacwgt = pseudo_contact_fac * timefacwgt *
+                                                   (eslavepotint - emasterpotint) *
+                                                   inv_massfluxresistance;
 
             // loop over matrix columns
             for (int ui = 0; ui < nen_; ++ui)
@@ -794,7 +783,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
               {
                 const int row_conc = vi * my::numdofpernode_;
                 const int row_pot = vi * my::numdofpernode_ + 1;
-                const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+                const double vi_dj_dsqrtdetg = my::funct_(vi) * dj_dsqrtdetg_timefacwgt;
 
                 // loop over spatial dimensions
                 for (int dim = 0; dim < 3; ++dim)
@@ -802,12 +791,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
                   // finalize linearizations w.r.t. slave-side structural displacements
                   if ((*onoff)[0] == 1)
                   {
-                    eslavematrix(row_conc, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                    eslavematrix(row_conc, fui + dim) += vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                   }
                   if ((*onoff)[1] == 1)
                   {
                     eslavematrix(row_pot, fui + dim) += my::scatraparamsboundary_->NumElectrons() *
-                                                        vi_dj_dd_slave * shapederivatives(dim, ui);
+                                                        vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                   }
                 }
               }
@@ -817,7 +806,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
           default:
           {
             dserror("Unknown primary quantity to calculate derivative");
-            break;
           }
         }
 
@@ -831,14 +819,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
       default:
       {
         dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-        break;
       }
     }  // switch(kineticmodel)
   }    // loop over integration points
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICouplingOD
 
-/*---------------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
@@ -894,9 +881,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
 
     // evaluate shape derivatives
-    static LINALG::Matrix<nsd_, nen_> shapederivatives;
+    static LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
-      my::EvalShapeDerivatives(shapederivatives);
+      my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
 
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
@@ -923,7 +910,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         {
           case SCATRA::DifferentiationType::disp:
           {
-            const double djC_dd_timefacwgt = jC * timefacwgt;
+            const double djC_dsqrtdetg_timefacwgt = jC * timefacwgt;
 
             // loop over matrix columns
             for (int ui = 0; ui < nen_; ++ui)
@@ -935,19 +922,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
               {
                 const int row_conc = vi * my::numdofpernode_;
                 const int row_pot = row_conc + 1;
-                const double vi_djC_dd_slave =
-                    my::funct_(vi) * pseudo_contact_fac * djC_dd_timefacwgt;
+                const double vi_djC_dsqrtdetg =
+                    my::funct_(vi) * pseudo_contact_fac * djC_dsqrtdetg_timefacwgt;
 
                 // loop over spatial dimensions
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // compute linearizations w.r.t. slave-side structural displacements
                   eslavematrix(row_pot, fui + dim) +=
-                      numelectrons * vi_djC_dd_slave * shapederivatives(dim, ui);
+                      numelectrons * vi_djC_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                   // compute linearizations w.r.t. master-side structural displacements
-                  emastermatrix(row_conc, fui + dim) -= vi_djC_dd_slave * shapederivatives(dim, ui);
+                  emastermatrix(row_conc, fui + dim) -= vi_djC_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                   emastermatrix(row_pot, fui + dim) -=
-                      numelectrons * vi_djC_dd_slave * shapederivatives(dim, ui);
+                      numelectrons * vi_djC_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                 }
               }
             }
@@ -957,7 +944,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           default:
           {
             dserror("Unknown differentiation type");
-            break;
           }
         }
         break;
@@ -968,28 +954,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         dserror(
             "Kinetic model for scatra-scatra interface coupling with capacitance is not yet "
             "implemented!");
-        break;
       }
     }
   }
 }
 
-/*-------------------------------------------------------------------------------------*
- | extract valence of species k from element material                       fang 02/15 |
- *-------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetValence(
     const Teuchos::RCP<const MAT::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
   dserror("Valence cannot be computed for electrode material!");
-
-  return 0.0;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate factor F/RT                                      fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetFRT() const
@@ -998,9 +978,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetF
   return myelch::elchparams_->FRT();
 }
 
-/*------------------------------------------------------------------------------------*
- | calculate RHS and global system                                      civaner 09/19 |
- *------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
@@ -1239,7 +1218,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
       default:
       {
         dserror("kinetic model not implemented.");
-        break;
       }
     }
   }

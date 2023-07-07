@@ -84,19 +84,20 @@ namespace DRT
 
       /*!
        *
-       * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
+       * @param[in] kineticmodel  kinetic model of scatra-scatra interface condition
        * @param [in] alphaa       symmetry coefficient of anodic intercalation reaction
        * @param [in] alphac       symmetry coefficient of cathodic intercalation reaction
        * @param [in] frt          Faraday/(gasconstant * temperature)
        * @param [in] j0           exchange mass flux density
        * @param [in] eta          electrode-electrolyte overpotential
        * @param [in] timefacwgt   time-integration factor times Gauss point weight
-       * @param [out] dj_dd_slave_timefacwgt [out] linearization of Butler-Volmer mass flux density
-       *                                            w.r.t. slave side displacements times timefacwgt
+       * @param [out] dj_dsqrtdetg_timefacwgt  linearization of Butler-Volmer mass flux density
+       *                                       w.r.t. square root of the determinant of the metric
+       *                                       tensor times timefacwgt
        */
       static void CalculateButlerVolmerDispLinearizations(int kineticmodel, double alphaa,
           double alphac, double frt, double j0, double eta, double timefacwgt,
-          double& dj_dd_slave_timefacwgt);
+          double& dj_dsqrtdetg_timefacwgt);
 
       /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method

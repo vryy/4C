@@ -42,7 +42,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
       ephinp_(numdofpernode_, LINALG::Matrix<nen_, 1>(true)),
       edispnp_(true),
       diffus_(numscal_, 0),
-      // valence_(numscal_,0),
       shcacp_(0.0),
       xsi_(true),
       funct_(true),
@@ -98,10 +97,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
   //--------------------------------------------------------------------------------
   if (SetupCalc(ele, params, discretization) == -1) return 0;
 
-  //--------------------------------------------------------------------------------
-  // extract element based or nodal values
-  //--------------------------------------------------------------------------------
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  ExtractDisplacementValues(ele, discretization, la);
 
   // check for the action parameter
 
@@ -116,8 +112,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractElementAndNodeValues(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
+    DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
@@ -127,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractElementAndNo
     const int ndsdisp = scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    dsassert(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -334,8 +330,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
       // for the moment we ignore the return values of this method
       CalcConvectiveFlux(ele, ephinp, econvel, elevec1_epetra);
-      // vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
-      // std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 
       break;
     }
@@ -822,13 +816,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeDerivatives(
-    LINALG::Matrix<nsd_, nen_>& shapederivatives  //!< shape derivatives to be computed
-)
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
+    EvaluateSpatialDerivativeOfAreaIntegrationFactor(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
+        LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd)
 {
   // safety check
   if (nsd_ele_ != 2)
     dserror("Computation of shape derivatives only implemented for 2D interfaces!");
+
+  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
   // compute derivatives of spatial coordinates w.r.t. reference coordinates
   static LINALG::Matrix<nsd_ele_, nsd_> dxyz_drs;
@@ -838,9 +835,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeDerivative
   const double xr(dxyz_drs(0, 0)), xs(dxyz_drs(1, 0)), yr(dxyz_drs(0, 1)), ys(dxyz_drs(1, 1)),
       zr(dxyz_drs(0, 2)), zs(dxyz_drs(1, 2));
   const double denominator_inv =
-      1. / sqrt(xr * xr * ys * ys + xr * xr * zs * zs - 2 * xr * xs * yr * ys -
-                2 * xr * xs * zr * zs + xs * xs * yr * yr + xs * xs * zr * zr + yr * yr * zs * zs -
-                2 * yr * ys * zr * zs + ys * ys * zr * zr);
+      1.0 / std::sqrt(xr * xr * ys * ys + xr * xr * zs * zs - 2.0 * xr * xs * yr * ys -
+                      2.0 * xr * xs * zr * zs + xs * xs * yr * yr + xs * xs * zr * zr +
+                      yr * yr * zs * zs - 2.0 * yr * ys * zr * zs + ys * ys * zr * zr);
   const double numerator_xr = xr * ys * ys + xr * zs * zs - xs * yr * ys - xs * zr * zs;
   const double numerator_xs = -(xr * yr * ys + xr * zr * zs - xs * yr * yr - xs * zr * zr);
   const double numerator_yr = -(xr * xs * ys - xs * xs * yr - yr * zs * zs + ys * zr * zs);
@@ -851,11 +848,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeDerivative
   // compute shape derivatives
   for (int ui = 0; ui < nen_; ++ui)
   {
-    shapederivatives(0, ui) =
+    dsqrtdetg_dd(0, ui) =
         denominator_inv * (numerator_xr * deriv_(0, ui) + numerator_xs * deriv_(1, ui));
-    shapederivatives(1, ui) =
+    dsqrtdetg_dd(1, ui) =
         denominator_inv * (numerator_yr * deriv_(0, ui) + numerator_ys * deriv_(1, ui));
-    shapederivatives(2, ui) =
+    dsqrtdetg_dd(2, ui) =
         denominator_inv * (numerator_zr * deriv_(0, ui) + numerator_zs * deriv_(1, ui));
   }
 }
@@ -1272,9 +1269,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
         CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
     // evaluate shape derivatives
-    static LINALG::Matrix<nsd_, nen_> shapederivatives;
+    static LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
-      EvalShapeDerivatives(shapederivatives);
+      EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
 
     // evaluate overall integration factor
     const double timefacwgt = scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
@@ -1309,9 +1306,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
                 dserror("Number of permeabilities does not match number of scalars!");
 
               // core linearization
-              const double dN_dd_slave_timefacwgt = pseudo_contact_fac * timefacwgt *
-                                                    (*permeabilities)[k] *
-                                                    (slavephiint - masterphiint);
+              const double dN_dsqrtdetg_timefacwgt = pseudo_contact_fac * timefacwgt *
+                                                     (*permeabilities)[k] *
+                                                     (slavephiint - masterphiint);
 
               // loop over matrix columns
               for (int ui = 0; ui < nen_; ++ui)
@@ -1322,12 +1319,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
                 for (int vi = 0; vi < nen_; ++vi)
                 {
                   const int fvi = vi * numscal_ + k;
-                  const double vi_dN_dd_slave = funct_(vi) * dN_dd_slave_timefacwgt;
+                  const double vi_dN_dsqrtdetg = funct_(vi) * dN_dsqrtdetg_timefacwgt;
 
                   // loop over spatial dimensions
                   for (int dim = 0; dim < 3; ++dim)
                     // compute linearizations w.r.t. slave-side structural displacements
-                    eslavematrix(fvi, fui + dim) += vi_dN_dd_slave * shapederivatives(dim, ui);
+                    eslavematrix(fvi, fui + dim) += vi_dN_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                 }
               }
               break;

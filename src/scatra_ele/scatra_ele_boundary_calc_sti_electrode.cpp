@@ -324,7 +324,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
     default:
     {
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-      break;
     }
   }
 }
@@ -397,14 +396,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
 
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
 
-    static LINALG::Matrix<nsd_, nen_> shapederivatives;
+    static LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
-      my::EvalShapeDerivatives(shapederivatives);
+      my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
 
     EvaluateS2ICouplingODAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, pseudo_contact_fac, my::funct_, my::funct_,
-        my::scatraparamsboundary_, timefacfac, timefacwgt, detF, differentiationtype,
-        shapederivatives, eslavematrix, emastermatrix);
+        my::scatraparamsboundary_, timefacfac, timefacwgt, detF, differentiationtype, dsqrtdetg_dd,
+        eslavematrix, emastermatrix);
   }
 }
 
@@ -430,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
     const double timefacfac, const double timefacwgt, const double detF,
     const SCATRA::DifferentiationType differentiationtype,
-    const LINALG::Matrix<nsd_, nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
+    const LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd, Epetra_SerialDenseMatrix& k_ss,
     Epetra_SerialDenseMatrix& k_sm)
 {
   // get condition specific parameters
@@ -449,7 +448,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
   const double eslavetempint = funct_slave.Dot(eslavetempnp);
-  if (eslavetempint <= 0.) dserror("Temperature is non-positive!");
+  if (eslavetempint <= 0.0) dserror("Temperature is non-positive!");
   const double emastertempint = funct_master.Dot(emastertempnp);
   const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
   const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
@@ -558,7 +557,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
         default:
         {
           dserror("Unknown primary quantity to calculate derivative");
-          break;
         }
       }
       break;
@@ -601,13 +599,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
             if (std::abs(expterm) > 1.0e5)
             {
               dserror(
-                  "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-                  "%lf",
+                  "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
                   expterm);
             }
 
             // core linearization associated with Butler-Volmer mass flux density
-            const double dj_dd_slave_timefacwgt =
+            const double dj_dsqrtdetg_timefacwgt =
                 pseudo_contact_fac * timefacwgt * j0 * expterm * molar_heat_capacity * etempint;
 
             // loop over matrix columns
@@ -618,19 +615,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
               // loop over matrix rows
               for (int vi = 0; vi < nen_; ++vi)
               {
-                const double vi_dj_dd_slave = funct_slave(vi) * dj_dd_slave_timefacwgt;
+                const double vi_dj_dsqrtdetg = funct_slave(vi) * dj_dsqrtdetg_timefacwgt;
 
                 // loop over spatial dimensions
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // compute linearizations w.r.t. slave-side structural displacements
-                  k_ss(vi, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                  k_ss(vi, fui + dim) += vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
                 }
               }
             }
           }
           // Part 2
-          const double dj_dd_slave_timefacwgt =
+          const double dj_dsqrtdetg_timefacwgt =
               pseudo_contact_fac * timefacwgt * (eslavetempint - emastertempint) * thermoperm;
 
           // loop over matrix columns
@@ -641,13 +638,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
             // loop over matrix rows
             for (int vi = 0; vi < nen_; ++vi)
             {
-              const double vi_dj_dd_slave = funct_slave(vi) * dj_dd_slave_timefacwgt;
+              const double vi_dj_dsqrtdetg = funct_slave(vi) * dj_dsqrtdetg_timefacwgt;
 
               // loop over spatial dimensions
               for (int dim = 0; dim < 3; ++dim)
               {
                 // finalize linearizations w.r.t. slave-side structural displacements
-                k_ss(vi, fui + dim) += vi_dj_dd_slave * shapederivatives(dim, ui);
+                k_ss(vi, fui + dim) += vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
               }
             }
           }
@@ -722,7 +719,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
         default:
         {
           dserror("Unknown type of primary variable");
-          break;
         }
       }
       break;
@@ -738,7 +734,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
     default:
     {
       dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-      break;
     }
   }
 }
