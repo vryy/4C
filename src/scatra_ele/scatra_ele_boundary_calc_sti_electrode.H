@@ -106,10 +106,9 @@ namespace DRT
        * @param[in] timefacfac      time-integration factor times domain-integration factor
        * @param[in] timefacwgt      time-integration factor times Gauss point weight
        * @param[in] detF            determinant of Jacobian from deformation at Gauss point
-       * @param[in] differentiationtype
-       *                          type of variable for linearization
-       * @param[i] shapederivatives
-       *                          derivative of shape functions
+       * @param[in] differentiationtype        type of variable for linearization
+       * @param[in] dsqrtdetg_dd               derivatives of the square root of the determinant of
+       *                                       the metric tensor w.r.t. the displacement dofs
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
@@ -131,7 +130,7 @@ namespace DRT
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           SCATRA::DifferentiationType differentiationtype,
-          const LINALG::Matrix<nsd_, nen_>& shapederivatives, Epetra_SerialDenseMatrix& k_ss,
+          const LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm);
 
      private:

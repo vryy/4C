@@ -113,7 +113,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
     default:
     {
       dserror("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
-      break;
     }
   }  // switch(kineticmodel)
 }
@@ -155,11 +154,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
     CalculateButlerVolmerDispLinearizations(const int kineticmodel, const double alphaa,
         const double alphac, const double frt, const double j0, const double eta,
-        const double timefacwgt, double& dj_dd_slave_timefacwgt)
+        const double timefacwgt, double& dj_dsqrtdetg_timefacwgt)
 {
   if (IsButlerVolmerLinearized(kineticmodel))
   {
-    dj_dd_slave_timefacwgt = timefacwgt * j0 * frt * eta;
+    dj_dsqrtdetg_timefacwgt = timefacwgt * j0 * frt * eta;
   }
   else
   {
@@ -175,8 +174,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
           expterm);
     }
 
-    // core linearization associated with Butler-Volmer mass flux density
-    dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+    dj_dsqrtdetg_timefacwgt = timefacwgt * j0 * expterm;
   }
 }
 

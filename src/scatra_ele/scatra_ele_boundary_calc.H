@@ -234,12 +234,6 @@ namespace DRT
       //! calculate normal vectors
       void CalcNormalVectors(Teuchos::ParameterList& params, DRT::FaceElement* ele);
 
-      //! compute shape derivatives, i.e., derivatives of square root of determinant of metric
-      //! tensor w.r.t. spatial coordinates
-      void EvalShapeDerivatives(
-          LINALG::Matrix<nsd_, nen_>& shapederivatives  //!< shape derivatives to be computed
-      );
-
       /*!
        * @brief evaluate shape functions, derivatives and domain integration factor at integration
        * point
@@ -261,6 +255,19 @@ namespace DRT
        */
       void EvaluateShapeFuncAndDerivativeAtIntPoint(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
+
+      /*!
+       * @brief Calculate the derivative of the square root of the determinant of the metric tensor
+       * w.r.t. spatial coordinates
+       *
+       * @param[in] intpoints  integration points
+       * @param[in] iquad      id of current Gauss point
+       * @param[out] dsqrtdetg_dd  derivative of the square root of the determinant of the metric
+       *                           tensor w.r.t. spatial coordinates
+       */
+      void EvaluateSpatialDerivativeOfAreaIntegrationFactor(
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, int iquad,
+          LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd);
 
       /*!
        * @brief Evaluate the square root of the metric tensor determinant
