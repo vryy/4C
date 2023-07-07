@@ -113,7 +113,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->FEAssemble(FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
             pair_gid[i_dof], pair_gid[j_dof]);
 }
 
@@ -216,7 +216,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
     {
-      const double val = FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
+      const double val = CORE::FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
       global_G_B.FEAssemble(val, lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
       global_FB_L.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
@@ -226,14 +226,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
     {
       const double val =
-          FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
+          CORE::FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
       global_G_S.FEAssemble(val, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
       global_FS_L.FEAssemble(val, patch_gid[i_patch], lambda_gid_pos[i_lambda]);
     }
 
   // Assemble into global coupling vector.
   LINALG::Matrix<mortar::n_dof_, 1, double> constraint_vector_double =
-      FADUTILS::CastToDouble(constraint_vector);
+      CORE::FADUTILS::CastToDouble(constraint_vector);
   global_constraint.SumIntoGlobalValues(
       lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.A());
 
@@ -270,7 +270,7 @@ void GetSurfaceBasis(const LINALG::Matrix<3, 1, double>& xi,
   // Calculate normal on the basis vectors.
   LINALG::Matrix<3, 1, scalar_type_basis> element_surface_normal;
   element_surface_normal.CrossProduct(dr_surf_0, dr_surf_1);
-  element_surface_normal.Scale(1.0 / FADUTILS::VectorNorm(element_surface_normal));
+  element_surface_normal.Scale(1.0 / CORE::FADUTILS::VectorNorm(element_surface_normal));
 
   // Put the new basis vectors in a matrix.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
@@ -351,7 +351,8 @@ void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, dou
   }
   LINALG::Matrix<3, 1, double> surface_material_director_ref;
   surface_material_director_ref.CrossProduct(surface_normal_ref, beam_cross_section_normal_ref);
-  surface_material_director_ref.Scale(1.0 / FADUTILS::VectorNorm(surface_material_director_ref));
+  surface_material_director_ref.Scale(
+      1.0 / CORE::FADUTILS::VectorNorm(surface_material_director_ref));
 
   // Get the reference triad of the surface.
   LINALG::Matrix<3, 1, double> surface_material_director_perpendicular_ref;
@@ -387,7 +388,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, dou
   LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_current;
   surface_material_director_current.Multiply(surface_F, surface_material_director_ref_fad);
   surface_material_director_current.Scale(
-      1.0 / FADUTILS::VectorNorm(surface_material_director_current));
+      1.0 / CORE::FADUTILS::VectorNorm(surface_material_director_current));
 
   // Get the current triad of the surface.
   LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_normal_current;
@@ -485,9 +486,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // order derivatives.
   LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot_2nd> q_surface(true);
   for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-    q_surface(i_surface) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
+    q_surface(i_surface) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
         3 + surface::n_dof_, 3 + i_surface,
-        FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)));
+        CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)));
 
   // Get the rotational Lagrange multipliers for this pair.
   std::vector<int> lambda_gid_rot;
@@ -583,7 +584,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             quaternion_beam_double, projected_gauss_point.GetEta());
         CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-          psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+          psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
               3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
         CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
         quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
@@ -605,7 +606,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Calculate the transformation matrices.
         T_rel = CORE::LARGEROTATIONS::Tmatrix(psi_rel);
-        T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+        T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
         T_surface = CORE::LARGEROTATIONS::Tmatrix(psi_surface_val);
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
@@ -742,9 +743,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // order derivatives.
   LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot_1st> q_surface(true);
   for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-    q_surface(i_surface) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+    q_surface(i_surface) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
         3 + surface::n_dof_, 3 + i_surface,
-        FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)));
+        CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)));
 
   // Initialize local matrices.
   LINALG::Matrix<mortar::n_dof_, 1, double> local_g(true);
@@ -825,7 +826,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             quaternion_beam_double, projected_gauss_point.GetEta());
         CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-          psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+          psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
               3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
         CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
         quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
@@ -844,9 +845,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
         // Calculate the transformation matrices.
-        T_rel = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
-        T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-        T_surface = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_surface));
+        T_rel = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_rel));
+        T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
+        T_surface = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_surface));
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
 
@@ -910,7 +911,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             d_g_d_q_surface(i_lambda, i_surface) = g_gp(i_lambda).dx(3 + i_surface);
 
         // Add to output matrices and vector.
-        local_g += FADUTILS::CastToDouble(g_gp);
+        local_g += CORE::FADUTILS::CastToDouble(g_gp);
         local_GB += d_g_d_psi_beam_times_T_beam_I;
         local_GS += d_g_d_q_surface;
         local_FB += d_fb_d_lambda_gp;

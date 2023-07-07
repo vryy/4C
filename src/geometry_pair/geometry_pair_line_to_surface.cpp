@@ -87,8 +87,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
+      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         if (ValidParameterSurface(xi, surface_size, beam_radius))
           projection_result = ProjectionResult::projection_found_valid;
@@ -98,7 +98,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
+      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Solve the linearized system.
       if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
@@ -280,8 +280,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
+      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
@@ -292,7 +292,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
+      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -383,7 +383,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
 
       diff = corner_nodes(j_node);
       diff -= corner_nodes(i_node);
-      distance = FADUTILS::VectorNorm(diff);
+      distance = CORE::FADUTILS::VectorNorm(diff);
       if (distance > max_distance) max_distance = distance;
     }
   }
@@ -431,8 +431,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   // Call PreEvaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
   LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
-  geometry_pair_double_->PreEvaluate(FADUTILS::CastToDouble(q_line),
-      FADUTILS::CastToDouble(q_surface), segments_double,
+  geometry_pair_double_->PreEvaluate(CORE::FADUTILS::CastToDouble(q_line),
+      CORE::FADUTILS::CastToDouble(q_surface), segments_double,
       VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
 
   // Convert the created double segments to a segment of scalar type.
@@ -466,8 +466,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
   // Call Evaluate on the double pair.
   LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
-  geometry_pair_double_->Evaluate(FADUTILS::CastToDouble(q_line), FADUTILS::CastToDouble(q_surface),
-      segments_double, VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
+  geometry_pair_double_->Evaluate(CORE::FADUTILS::CastToDouble(q_line),
+      CORE::FADUTILS::CastToDouble(q_surface), segments_double,
+      VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
 
   // Get the face parameters.
   unsigned int n_faces;

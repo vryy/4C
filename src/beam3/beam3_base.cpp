@@ -24,7 +24,7 @@
 #include "lib_globalproblem.H"
 #include "lib_globalproblem.H"
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*

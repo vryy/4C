@@ -69,20 +69,20 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
     this->ele1poscur_(i) = beam_centerline_dofvec[i];
-    this->ele1vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1vel_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
   }
 
   // Fluid element.
   for (unsigned int i = 0; i < fluid::n_dof_; i++)
   {
-    this->ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele2pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
     this->ele2poscur_(i) = fluid_nodal_dofvec[i];
-    this->ele2vel_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele2vel_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
   }
 }
@@ -203,8 +203,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
         }
       }
     }
@@ -238,8 +238,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
         }
       }
     }

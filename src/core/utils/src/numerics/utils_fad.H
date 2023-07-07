@@ -10,13 +10,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef LINALG_FAD_UTILS_H
-#define LINALG_FAD_UTILS_H
+#ifndef UTILS_FAD_H
+#define UTILS_FAD_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
 
-namespace FADUTILS
+namespace CORE::FADUTILS
 {
   /**
    * \brief Cast of FAD to double.
@@ -73,7 +73,7 @@ namespace FADUTILS
   /*!
   \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown when calling
   this function, check if the template argument is explicitly stated in the function call, i.e.
-  FADUTILS::sqrt<my_AD_type>(...)
+  CORE::FADUTILS::sqrt<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type sqrt(scalar_type a)
@@ -98,12 +98,12 @@ namespace FADUTILS
   /*!
   \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown when calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
-  FADUTILS::Norm<my_AD_type>(...)
+  CORE::FADUTILS::Norm<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type Norm(scalar_type a)
   {
-    return FADUTILS::sqrt<scalar_type>(a * a);
+    return CORE::FADUTILS::sqrt<scalar_type>(a * a);
   }
 
   /*!
@@ -118,7 +118,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt<scalar_type>(norm_squared);
+    return CORE::FADUTILS::sqrt<scalar_type>(norm_squared);
   }
 
   /*!
@@ -141,7 +141,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt(norm_squared);
+    return CORE::FADUTILS::sqrt(norm_squared);
   }
 
   /*!
@@ -261,6 +261,6 @@ namespace FADUTILS
     static double apply(const int n, const int i, const double x) { return x; }
   };
 
-}  // namespace FADUTILS
+}  // namespace CORE::FADUTILS
 
 #endif

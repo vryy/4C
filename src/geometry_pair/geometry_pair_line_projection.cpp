@@ -440,8 +440,9 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           if (last_segment_active)
           {
             // Create a segment with double as the scalar type.
-            LineSegment<double> new_segment_double(FADUTILS::CastToDouble(segment_start.GetEta()),
-                FADUTILS::CastToDouble(start_point.GetEta()));
+            LineSegment<double> new_segment_double(
+                CORE::FADUTILS::CastToDouble(segment_start.GetEta()),
+                CORE::FADUTILS::CastToDouble(start_point.GetEta()));
 
             // Check if the segment already exists for this line.
             if (segment_tracker.find(new_segment_double) == segment_tracker.end())

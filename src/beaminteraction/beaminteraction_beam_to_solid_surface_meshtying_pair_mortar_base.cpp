@@ -137,9 +137,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
           }
 
           if (write_unique_ids)
@@ -203,9 +203,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
           }
         }
 
@@ -275,7 +275,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
 
           // Get the position at this Gauss point.
           GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(),
-              FADUTILS::CastToDouble(this->ele1pos_), r_gauss_point, this->Element1());
+              CORE::FADUTILS::CastToDouble(this->ele1pos_), r_gauss_point, this->Element1());
 
           // Calculate moment around origin.
           temp_moment.CrossProduct(r_gauss_point, lambda_gauss_point);

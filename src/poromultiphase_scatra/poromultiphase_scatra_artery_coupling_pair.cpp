@@ -17,7 +17,7 @@
 #include "lib_globalproblem.H"
 #include "lib_get_functionofanything.H"
 #include "mat_cnst_1d_art.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include "porofluidmultiphase_ele_parameter.H"
 #include "discretization_geometry_coordinate_system_utils.H"
 
@@ -2184,7 +2184,7 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
     // dx/dX = x * N_XYZ^T
     defGrad.MultiplyNT(ele2pos, N2_XYZ);
     Ft0.Multiply(defGrad, t0);
-    const FAD Ft0Norm = FADUTILS::VectorNorm(Ft0);
+    const FAD Ft0Norm = CORE::FADUTILS::VectorNorm(Ft0);
     // finally get the length
     length += Ft0Norm * w_gp * jacobi;
   }
@@ -3330,14 +3330,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     f.Clear();
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
-    residual = FADUTILS::VectorNorm(f);
-    if (iter == 0) first_residual = std::max(first_residual, FADUTILS::CastToDouble(residual));
+    residual = CORE::FADUTILS::VectorNorm(f);
+    if (iter == 0)
+      first_residual = std::max(first_residual, CORE::FADUTILS::CastToDouble(residual));
 
     // Reset matrices
     for (unsigned int i = 0; i < numdim_; i++)
       for (unsigned int j = 0; j < numdim_; j++) J(i, j) = x2_xi(i, j);
 
-    const double jacdet = FADUTILS::CastToDouble<T, numdim_, numdim_>(J).Determinant();
+    const double jacdet = CORE::FADUTILS::CastToDouble<T, numdim_, numdim_>(J).Determinant();
 
     // If det_J = 0 we assume, that the artery element and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be

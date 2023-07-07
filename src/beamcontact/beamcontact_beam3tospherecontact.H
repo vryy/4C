@@ -24,7 +24,7 @@
 #include "discretization_fem_general_utils_integration.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 namespace CONTACT
 {
@@ -203,12 +203,12 @@ namespace CONTACT
     /*!
     \brief Get gap of this contact pair
     */
-    double GetGap() { return FADUTILS::CastToDouble(gap_); };
+    double GetGap() { return CORE::FADUTILS::CastToDouble(gap_); };
 
     /*!
     \brief Get closest point of this contact pair
     */
-    double GetClosestPoint() const { return FADUTILS::CastToDouble(xicontact_); };
+    double GetClosestPoint() const { return CORE::FADUTILS::CastToDouble(xicontact_); };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -225,7 +225,7 @@ namespace CONTACT
     {
       Epetra_SerialDenseVector r1;
       r1.Resize(3);
-      for (int i = 0; i < 3; i++) r1(i) = FADUTILS::CastToDouble(x1_(i));
+      for (int i = 0; i < 3; i++) r1(i) = CORE::FADUTILS::CastToDouble(x1_(i));
 
       return r1;
     };
@@ -234,7 +234,7 @@ namespace CONTACT
     {
       Epetra_SerialDenseVector r2;
       r2.Resize(3);
-      for (int i = 0; i < 3; i++) r2(i) = FADUTILS::CastToDouble(x2_(i));
+      for (int i = 0; i < 3; i++) r2(i) = CORE::FADUTILS::CastToDouble(x2_(i));
 
       return r2;
     };

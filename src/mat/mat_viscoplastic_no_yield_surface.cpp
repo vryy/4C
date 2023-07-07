@@ -16,7 +16,7 @@
 
 #include "so3_hex8.H"
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include "linalg_utils_densematrix_eigen.H"
 
@@ -592,7 +592,7 @@ LINALG::Matrix<2, 1>& MAT::ViscoPlasticNoYieldSurface::CalculateResidual(
 
   const double temp_abs_pow = std::pow(std::abs(terms.flow_res_sat_deviation), a);
   const double flow_resistance_deriv_np = terms.flow_res_const * temp_abs_pow *
-                                          FADUTILS::Signum(terms.flow_res_sat_deviation) *
+                                          CORE::FADUTILS::Signum(terms.flow_res_sat_deviation) *
                                           std::pow(terms.equ_tens_stress_flow_res_ratio, (1.0 / m));
 
   residual(1) = flow_resistance_np - flow_resistance_n - flow_resistance_deriv_np;
@@ -622,7 +622,7 @@ LINALG::Matrix<2, 2>& MAT::ViscoPlasticNoYieldSurface::CalculateLinearization(
 
   J(1, 0) = -terms.flow_res_const / (m * equ_tens_stress_np) *
                 std::pow(std::abs(terms.flow_res_sat_deviation), a) *
-                FADUTILS::Signum(terms.flow_res_sat_deviation) *
+                CORE::FADUTILS::Signum(terms.flow_res_sat_deviation) *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, 1.0 / m) -
             terms.flow_res_const * b / (m * flow_res_sat_fac) * a *
                 std::abs(terms.flow_res_sat_deviation) *
@@ -632,7 +632,7 @@ LINALG::Matrix<2, 2>& MAT::ViscoPlasticNoYieldSurface::CalculateLinearization(
   J(1, 1) = 1.0 +
             terms.flow_res_const / (m * flow_resistance_np) *
                 std::pow(std::abs(terms.flow_res_sat_deviation), a) *
-                FADUTILS::Signum(terms.flow_res_sat_deviation) *
+                CORE::FADUTILS::Signum(terms.flow_res_sat_deviation) *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, 1.0 / m) +
             terms.flow_res_const / flow_res_sat_fac *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, (1.0 - b) / m) * a *

@@ -1464,8 +1464,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       ortho_normal(0) = rx_fad(1, 0);
       ortho_normal(1) = -rx_fad(0, 0);
       ortho_normal(2) = 0.0;
-      if (FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(ortho_normal)) > 1.0e-12)
-        ortho_normal.Scale(1.0 / (FADUTILS::VectorNorm<3>(ortho_normal)));
+      if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(ortho_normal)) > 1.0e-12)
+        ortho_normal.Scale(1.0 / (CORE::FADUTILS::VectorNorm<3>(ortho_normal)));
 
       Res_orthopressure.Clear();
       R_orthopressure.Clear();

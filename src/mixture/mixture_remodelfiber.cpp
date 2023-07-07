@@ -14,7 +14,7 @@
 #include "lib_parobject.H"
 #include <Sacado.hpp>
 #include <type_traits>
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 // anonymous namespace for helper functions and classes
 namespace
@@ -264,12 +264,12 @@ LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<nums
   std::tie(K, b) = EvaluateLocalNewtonLinearSystem();
 
   unsigned iteration = 0;
-  while (FADUTILS::VectorNorm(b) > 1e-10)
+  while (CORE::FADUTILS::VectorNorm(b) > 1e-10)
   {
     if (iteration >= 500)
     {
       dserror("The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
-          FADUTILS::VectorNorm(b), 1e-10);
+          CORE::FADUTILS::VectorNorm(b), 1e-10);
     }
     K.Invert();
     x_np.MultiplyNN(-1, K, b, 1.0);

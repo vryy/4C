@@ -12,7 +12,7 @@
 #define GEOMETRY_PAIR_ELEMENT_FUNCTIONS_H
 
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include "geometry_pair_element.H"
 #include "geometry_pair_utility_functions.H"
 
@@ -188,13 +188,14 @@ namespace GEOMETRYPAIR
         dr_1(i_dir) = dr(i_dir, 1);
       }
       normal.CrossProduct(dr_0, dr_1);
-      normal.Scale(SurfaceNormalFactor<surface>::GetFactor(element) / FADUTILS::VectorNorm(normal));
+      normal.Scale(
+          SurfaceNormalFactor<surface>::GetFactor(element) / CORE::FADUTILS::VectorNorm(normal));
     }
     else
     {
       // Calculate the normal as a interpolation of nodal normals.
       GEOMETRYPAIR::EvaluatePosition<surface>(xi, *nodal_normals, normal, element);
-      normal.Scale(1.0 / FADUTILS::VectorNorm(normal));
+      normal.Scale(1.0 / CORE::FADUTILS::VectorNorm(normal));
     }
   }
 
@@ -256,12 +257,12 @@ namespace GEOMETRYPAIR
       dserror(
           "EvaluateTriadAtPlaneCurve: The tangent vector can not have a component in z direction! "
           "The component is %f!",
-          FADUTILS::CastToDouble(tangent(2)));
+          CORE::FADUTILS::CastToDouble(tangent(2)));
 
     // Create the director vectors in the cross section.
     // Director 2 is the one in the y-axis (reference configuration).
     // Director 3 is the one in the z-axis (reference configuration).
-    tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
+    tangent.Scale(1. / CORE::FADUTILS::VectorNorm(tangent));
     cross_section_director_2.Clear();
     cross_section_director_2(0) = -tangent(1);
     cross_section_director_2(1) = tangent(0);

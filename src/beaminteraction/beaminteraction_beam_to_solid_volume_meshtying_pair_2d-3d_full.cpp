@@ -83,8 +83,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   auto set_q_fad = [](const auto& q_original, auto& q_fad, unsigned int fad_offset = 0)
   {
     for (unsigned int i_dof = 0; i_dof < q_original.Rows(); i_dof++)
-      q_fad(i_dof) = FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
-          n_dof_fad_, fad_offset + i_dof, FADUTILS::CastToDouble(q_original(i_dof)));
+      q_fad(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
+          n_dof_fad_, fad_offset + i_dof, CORE::FADUTILS::CastToDouble(q_original(i_dof)));
   };
   LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> q_beam;
   LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> q_solid;
@@ -216,7 +216,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
     // Add to pair force contributions.
     force_pair_local.Scale(integration_factor);
-    force_pair += FADUTILS::CastToDouble(force_pair_local);
+    force_pair += CORE::FADUTILS::CastToDouble(force_pair_local);
 
     // The rotational stiffness contributions have to be handled separately due to the non-addidive
     // nature of the rotational DOFs.

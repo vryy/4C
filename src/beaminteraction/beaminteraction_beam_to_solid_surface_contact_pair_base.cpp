@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, solid
   // Set the current position of the beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 

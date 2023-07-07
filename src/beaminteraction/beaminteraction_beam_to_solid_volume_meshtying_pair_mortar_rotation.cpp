@@ -65,8 +65,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // order derivatives.
   LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> q_solid(true);
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-        3 + solid::n_dof_, 3 + i_solid, FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
 
   // Initialize local matrices.
   LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
@@ -221,7 +221,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+        psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
       CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
@@ -239,9 +239,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_rel = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_rel));
-      T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
-      T_solid = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_solid));
+      T_rel = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_rel));
+      T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
+      T_solid = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_solid));
       T_solid_inv = T_solid;
       LINALG::Inverse(T_solid_inv);
 
@@ -301,7 +301,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           d_g_d_q_solid(i_lambda, i_solid) = g_gp(i_lambda).dx(3 + i_solid);
 
       // Add to output matrices and vector.
-      local_g += FADUTILS::CastToDouble(g_gp);
+      local_g += CORE::FADUTILS::CastToDouble(g_gp);
       local_G_B += d_g_d_psi_beam_times_T_beam_I;
       local_G_S += d_g_d_q_solid;
       local_FB_L += d_fb_d_lambda_gp;
@@ -348,8 +348,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // order derivatives.
   LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
-        3 + solid::n_dof_, 3 + i_solid, FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
+        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
 
   // Get the rotational Lagrange multipliers for this pair.
   std::vector<int> lambda_gid_rot;
@@ -507,7 +507,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+        psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
       CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
@@ -528,7 +528,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Calculate the transformation matrices.
       T_rel = CORE::LARGEROTATIONS::Tmatrix(psi_rel);
-      T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+      T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
       T_solid = CORE::LARGEROTATIONS::Tmatrix(psi_solid_val);
       T_solid_inv = T_solid;
       LINALG::Inverse(T_solid_inv);

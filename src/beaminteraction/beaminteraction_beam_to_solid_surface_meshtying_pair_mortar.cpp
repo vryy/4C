@@ -173,20 +173,20 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
       for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-        beam_coupling_dof(i_beam) = FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+        beam_coupling_dof(i_beam) = CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam));
       for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
         surface_coupling_dof(i_surface) =
-            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface));
+            CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface));
       break;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
     {
       for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
         beam_coupling_dof(i_beam) =
-            FADUTILS::CastToDouble(this->ele1pos_(i_beam)) - this->ele1posref_(i_beam);
+            CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam)) - this->ele1posref_(i_beam);
       for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
         surface_coupling_dof(i_surface) =
-            FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)) -
+            CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)) -
             this->face_element_->GetFaceReferencePosition()(i_surface);
       break;
     }
@@ -197,10 +197,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
       local_constraint(i_lambda) +=
-          local_D(i_lambda, i_beam) * FADUTILS::CastToDouble(beam_coupling_dof(i_beam));
+          local_D(i_lambda, i_beam) * CORE::FADUTILS::CastToDouble(beam_coupling_dof(i_beam));
     for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-      local_constraint(i_lambda) -=
-          local_M(i_lambda, i_surface) * FADUTILS::CastToDouble(surface_coupling_dof(i_surface));
+      local_constraint(i_lambda) -= local_M(i_lambda, i_surface) *
+                                    CORE::FADUTILS::CastToDouble(surface_coupling_dof(i_surface));
   }
 }
 

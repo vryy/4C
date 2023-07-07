@@ -179,9 +179,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
           }
 
           if (write_unique_ids)
@@ -246,9 +246,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
           }
         }
 
@@ -373,10 +373,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
       local_constraint(i_lambda) +=
-          local_D(i_lambda, i_beam) * FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+          local_D(i_lambda, i_beam) * CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam));
     for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
       local_constraint(i_lambda) -=
-          local_M(i_lambda, i_solid) * FADUTILS::CastToDouble(this->ele2pos_(i_solid));
+          local_M(i_lambda, i_solid) * CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid));
   }
 }
 

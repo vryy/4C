@@ -136,10 +136,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        (*forcevec1)(i_dof) = FADUTILS::CastToDouble(force_element_1(i_dof));
+        (*forcevec1)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_1(i_dof));
       // $f_2$
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        (*forcevec2)(i_dof) = FADUTILS::CastToDouble(force_element_2(i_dof));
+        (*forcevec2)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_2(i_dof));
     }
 
     if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
@@ -149,7 +149,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) =
-              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
+              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
@@ -157,9 +157,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
           (*stiffmat12)(i_dof_1, i_dof_2) =
-              -FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
           (*stiffmat21)(i_dof_2, i_dof_1) =
-              -FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
+              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
@@ -167,7 +167,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
           (*stiffmat22)(i_dof_1, i_dof_2) =
-              -FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -214,8 +214,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Set the FAD variables for the solid DOFs.
   LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
-        3 + solid::n_dof_, 3 + i_solid, FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
+        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
 
 
   // Initialize local matrices.
@@ -259,8 +259,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
-        stiffness_matrix->FEAssemble(
-            FADUTILS::CastToDouble(local_stiff(i_dof, j_dof)), gid_pair(i_dof), gid_pair(j_dof));
+        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(local_stiff(i_dof, j_dof)),
+            gid_pair(i_dof), gid_pair(j_dof));
 }
 
 /**
@@ -343,7 +343,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        psi_beam(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+        psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
       CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
@@ -363,7 +363,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_beam = CORE::LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
+      T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
       T_solid = CORE::LARGEROTATIONS::Tmatrix(psi_solid_val);
 
       // Force terms.
@@ -376,7 +376,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
                                            projected_gauss_point.GetGaussWeight() *
                                            segment_jacobian;
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
-        local_force(i_dof) += FADUTILS::CastToDouble(fc_beam_gp(i_dof));
+        local_force(i_dof) += CORE::FADUTILS::CastToDouble(fc_beam_gp(i_dof));
 
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
@@ -387,7 +387,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       fc_solid_gp.MultiplyTN(d_psi_solid_d_q_solid, Tinv_solid_times_potential_variation);
       fc_solid_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        local_force(n_dof_rot_ + i_dof) += FADUTILS::CastToDouble(fc_solid_gp(i_dof));
+        local_force(n_dof_rot_ + i_dof) += CORE::FADUTILS::CastToDouble(fc_solid_gp(i_dof));
 
 
       // Stiffness terms.
@@ -406,7 +406,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
             I_beam_tilde_full(i_dim_0, i_node * 3 + i_dim_1) =
                 I_beam_tilde[i_node](i_dim_0, i_dim_1);
 
-      T_beam_times_I_beam_tilde_full.Multiply(FADUTILS::CastToDouble(T_beam), I_beam_tilde_full);
+      T_beam_times_I_beam_tilde_full.Multiply(
+          CORE::FADUTILS::CastToDouble(T_beam), I_beam_tilde_full);
       stiff_beam_beam_gp.Multiply(d_fc_beam_d_psi_beam, T_beam_times_I_beam_tilde_full);
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
         for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)

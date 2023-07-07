@@ -178,10 +178,10 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       {
         for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) +=
-              (*stiffmat11)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+              (*stiffmat11)(i_dof1, i_dof2) * CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) -=
-              (*stiffmat12)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
+              (*stiffmat12)(i_dof1, i_dof2) * CORE::FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
       }
     }
 
@@ -195,11 +195,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) +=
-                (*stiffmat22)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
+            (*forcevec2)(i_dof1) += (*stiffmat22)(i_dof1, i_dof2) *
+                                    CORE::FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -=
-                (*stiffmat21)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) *
+                                    CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         }
       }
       else
@@ -207,8 +207,8 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -=
-                (*stiffmat21)(i_dof1, i_dof2) * FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) *
+                                    CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
         }
     }
   }

@@ -30,7 +30,7 @@
 
 #include "beam3_base.H"
 #include "rigidsphere.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include "beaminteraction_beam3contact_defines.H"
@@ -174,12 +174,14 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   if (forcevec1 != NULL)
   {
     forcevec1->Size(dim1);
-    for (unsigned int i = 0; i < dim1; ++i) (*forcevec1)(i) = FADUTILS::CastToDouble(fpot1_(i));
+    for (unsigned int i = 0; i < dim1; ++i)
+      (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(fpot1_(i));
   }
   if (forcevec2 != NULL)
   {
     forcevec2->Size(dim2);
-    for (unsigned int i = 0; i < dim2; ++i) (*forcevec2)(i) = FADUTILS::CastToDouble(fpot2_(i));
+    for (unsigned int i = 0; i < dim2; ++i)
+      (*forcevec2)(i) = CORE::FADUTILS::CastToDouble(fpot2_(i));
   }
 
   if (stiffmat11 != NULL)
@@ -187,28 +189,28 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     stiffmat11->Shape(dim1, dim1);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat11)(irow, icol) = FADUTILS::CastToDouble(stiffpot1_(irow, icol));
+        (*stiffmat11)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, icol));
   }
   if (stiffmat12 != NULL)
   {
     stiffmat12->Shape(dim1, dim2);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat12)(irow, icol) = FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
+        (*stiffmat12)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
   }
   if (stiffmat21 != NULL)
   {
     stiffmat21->Shape(dim2, dim1);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat21)(irow, icol) = FADUTILS::CastToDouble(stiffpot2_(irow, icol));
+        (*stiffmat21)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, icol));
   }
   if (stiffmat22 != NULL)
   {
     stiffmat22->Shape(dim2, dim2);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat22)(irow, icol) = FADUTILS::CastToDouble(stiffpot2_(irow, dim1 + icol));
+        (*stiffmat22)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, dim1 + icol));
   }
 
   return (true);
@@ -300,12 +302,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   {
     ComputeCoords(r1, N1_i[gp1], ele1pos_);
 
-    dist = FADUTILS::DiffVector(r1, r2);
+    dist = CORE::FADUTILS::DiffVector(r1, r2);
 
-    norm_dist = FADUTILS::VectorNorm<3>(dist);
+    norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
 
     // check cutoff criterion: if specified, contributions are neglected at larger separation
-    if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
+    if (cutoff_radius != -1.0 and CORE::FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
 
 
     // temporary hacks for cell-ecm interaction
@@ -332,12 +334,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     //    if( norm_dist < sphere_element_->Radius() )
     //    {
     //      dist.Scale( sphere_element_->Radius() / norm_dist );
-    //      norm_dist = FADUTILS::VectorNorm<3>(dist);
+    //      norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
     //    }
     //
     //    if(norm_dist > 0.5)
     //      dist.Scale(10.0/norm_dist);
-    //    norm_dist = FADUTILS::VectorNorm<3>(dist);
+    //    norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
 
     // auxiliary variables to store pre-calculated common terms
     TYPE norm_dist_exp1 = 0.0;
@@ -466,7 +468,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
     // store for energy output
     interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
-                              std::pow(FADUTILS::CastToDouble(norm_dist), -m_);
+                              std::pow(CORE::FADUTILS::CastToDouble(norm_dist), -m_);
   }
 
 

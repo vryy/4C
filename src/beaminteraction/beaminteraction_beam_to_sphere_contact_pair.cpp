@@ -168,7 +168,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
 
   bool validclosestpointprojection = true;
 
-  if (std::abs(FADUTILS::CastToDouble(xicontact_)) <
+  if (std::abs(CORE::FADUTILS::CastToDouble(xicontact_)) <
       (1.0 + XIETATOL))  // ToDo when to reset nodalcontactflag_?
   {
     nodalcontactflag_[0] = false;
@@ -365,7 +365,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
     // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
     // linearized!
-    double norm_delta_x = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(delta_x));
+    double norm_delta_x = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_x));
 
     // the closer the beams get, the smaller is norm
     // norm is not allowed to be too small, else numerical problems occur
@@ -378,7 +378,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     EvaluateOrthogonalityCondition(f, delta_x, norm_delta_x, dx1);
 
     // compute the scalar residuum
-    residual = abs(FADUTILS::CastToDouble(f));
+    residual = abs(CORE::FADUTILS::CastToDouble(f));
 
     // check if Newton iteration has converged
     if (residual < BEAMCONTACTTOL) break;
@@ -535,9 +535,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   //**********************************************************************
   if (!DoNotAssemble)
   {
-    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += FADUTILS::CastToDouble(fc1_(i));
+    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += CORE::FADUTILS::CastToDouble(fc1_(i));
 
-    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += FADUTILS::CastToDouble(fc2_(i));
+    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += CORE::FADUTILS::CastToDouble(fc2_(i));
   }
 }
 
@@ -728,16 +728,16 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     for (unsigned int j = 0; j < dim1; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat11(i, j) += -FADUTILS::CastToDouble(stiffc1(i, j));
+        stiffmat11(i, j) += -CORE::FADUTILS::CastToDouble(stiffc1(i, j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat21(i, j) += -FADUTILS::CastToDouble(stiffc2(i, j));
+        stiffmat21(i, j) += -CORE::FADUTILS::CastToDouble(stiffc2(i, j));
     }
     for (unsigned int j = 0; j < dim2; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat12(i, j) += -FADUTILS::CastToDouble(stiffc1(i, dim1 + j));
+        stiffmat12(i, j) += -CORE::FADUTILS::CastToDouble(stiffc1(i, dim1 + j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat22(i, j) += -FADUTILS::CastToDouble(stiffc2(i, dim1 + j));
+        stiffmat22(i, j) += -CORE::FADUTILS::CastToDouble(stiffc2(i, dim1 + j));
     }
 #else
     dserror("check implementation of AUTOMATICDIFF for BeamToSphereContactPair before using it!");
@@ -746,10 +746,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     {
       for (unsigned int i = 0; i < dim1; i++)
         stiffc1_copy(i, j) =
-            -FADUTILS::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
+            -CORE::FADUTILS::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
       for (unsigned int i = 0; i < dim2; i++)
         stiffc2_copy(i, j) =
-            -FADUTILS::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
+            -CORE::FADUTILS::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
     }
 
 #ifdef FADCHECKS
@@ -817,7 +817,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
   for (unsigned int i = 0; i < 3; i++) normal(i) = x1(i) - x2(i);
 
   // compute length of normal
-  norm = FADUTILS::VectorNorm<3>(normal);
+  norm = CORE::FADUTILS::VectorNorm<3>(normal);
   if (norm < NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal and store it in class variable
@@ -1174,7 +1174,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
         << std::left << std::setprecision(2) << -1 << std::setw(9) << std::left
         << std::setprecision(3) << -1 << std::setw(12) << std::left << std::scientific << gap_
         << std::setw(12) << std::left << std::scientific
-        << FADUTILS::CastToDouble<TYPE, 3, 1>(fc2_).Norm2() << std::setprecision(6)
+        << CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(fc2_).Norm2() << std::setprecision(6)
         << std::resetiosflags(std::ios::scientific) << std::right;
 
     out << "\n";

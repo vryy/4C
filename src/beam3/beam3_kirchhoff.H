@@ -52,7 +52,7 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include "lib_node.H"
 #include "discretization_fem_general_largerotations.H"
 #include <Sacado.hpp>
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include "beam3_base.H"
 

@@ -17,7 +17,7 @@
 #include "linalg_sparsematrix.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include <Sacado.hpp>
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include "beamcontact_beam3contactinterface.H"
 #include "inpar_beamcontact.H"
 #include "inpar_contact.H"
@@ -142,17 +142,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        gaps[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetGap());
+        gaps[i] = CORE::FADUTILS::CastToDouble(cpvariables_[i]->GetGap());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        gaps[i] = FADUTILS::CastToDouble(gpvariables_[i - size1]->GetGap());
+        gaps[i] = CORE::FADUTILS::CastToDouble(gpvariables_[i - size1]->GetGap());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        gaps[i] = FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetGap());
+        gaps[i] = CORE::FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetGap());
       }
 
       return gaps;
@@ -170,18 +170,18 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        f[i] = FADUTILS::CastToDouble(cpvariables_[i]->Getfp() * cpvariables_[i]->GetPPfac());
+        f[i] = CORE::FADUTILS::CastToDouble(cpvariables_[i]->Getfp() * cpvariables_[i]->GetPPfac());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        f[i] = FADUTILS::CastToDouble(
+        f[i] = CORE::FADUTILS::CastToDouble(
             gpvariables_[i - size1]->Getfp() * gpvariables_[i - size1]->GetPPfac());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        f[i] = FADUTILS::CastToDouble(
+        f[i] = CORE::FADUTILS::CastToDouble(
             epvariables_[i - size1 - size2]->Getfp() * epvariables_[i - size1 - size2]->GetPPfac());
       }
 
@@ -200,17 +200,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        angles[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetAngle());
+        angles[i] = CORE::FADUTILS::CastToDouble(cpvariables_[i]->GetAngle());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        angles[i] = FADUTILS::CastToDouble(gpvariables_[i - size1]->GetAngle());
+        angles[i] = CORE::FADUTILS::CastToDouble(gpvariables_[i - size1]->GetAngle());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        angles[i] = FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetAngle());
+        angles[i] = CORE::FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetAngle());
       }
 
       return angles;
@@ -228,22 +228,22 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        double xi = FADUTILS::CastToDouble(cpvariables_[i]->GetCP().first);
-        double eta = FADUTILS::CastToDouble(cpvariables_[i]->GetCP().second);
+        double xi = CORE::FADUTILS::CastToDouble(cpvariables_[i]->GetCP().first);
+        double eta = CORE::FADUTILS::CastToDouble(cpvariables_[i]->GetCP().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        double xi = FADUTILS::CastToDouble(gpvariables_[i - size1]->GetCP().first);
-        double eta = FADUTILS::CastToDouble(gpvariables_[i - size1]->GetCP().second);
+        double xi = CORE::FADUTILS::CastToDouble(gpvariables_[i - size1]->GetCP().first);
+        double eta = CORE::FADUTILS::CastToDouble(gpvariables_[i - size1]->GetCP().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        double xi = FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetCP().first);
-        double eta = FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetCP().second);
+        double xi = CORE::FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetCP().first);
+        double eta = CORE::FADUTILS::CastToDouble(epvariables_[i - size1 - size2]->GetCP().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
@@ -305,19 +305,19 @@ namespace CONTACT
       for (int i = 0; i < size1; i++)
       {
         TYPE eta1 = cpvariables_[i]->GetCP().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = FADUTILS::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++) r1[i](j) = CORE::FADUTILS::CastToDouble(r(eta1, element1_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
         TYPE eta1 = gpvariables_[i - size1]->GetCP().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = FADUTILS::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++) r1[i](j) = CORE::FADUTILS::CastToDouble(r(eta1, element1_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
         TYPE eta1 = epvariables_[i - size1 - size2]->GetCP().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = FADUTILS::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++) r1[i](j) = CORE::FADUTILS::CastToDouble(r(eta1, element1_)(j));
       }
 
       return r1;
@@ -336,19 +336,19 @@ namespace CONTACT
       for (int i = 0; i < size1; i++)
       {
         TYPE eta2 = cpvariables_[i]->GetCP().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = FADUTILS::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++) r2[i](j) = CORE::FADUTILS::CastToDouble(r(eta2, element2_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
         TYPE eta2 = gpvariables_[i - size1]->GetCP().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = FADUTILS::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++) r2[i](j) = CORE::FADUTILS::CastToDouble(r(eta2, element2_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
         TYPE eta2 = epvariables_[i - size1 - size2]->GetCP().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = FADUTILS::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++) r2[i](j) = CORE::FADUTILS::CastToDouble(r(eta2, element2_)(j));
       }
 
       return r2;
@@ -402,21 +402,21 @@ namespace CONTACT
 
       for (int i = 0; i < (int)cpvariables_.size(); i++)
       {
-        double ppfac = FADUTILS::CastToDouble(cpvariables_[i]->GetPPfac());
+        double ppfac = CORE::FADUTILS::CastToDouble(cpvariables_[i]->GetPPfac());
         double e = -cpvariables_[i]->GetIntegratedEnergy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)gpvariables_.size(); i++)
       {
-        double ppfac = FADUTILS::CastToDouble(gpvariables_[i]->GetPPfac());
+        double ppfac = CORE::FADUTILS::CastToDouble(gpvariables_[i]->GetPPfac());
         double e = -gpvariables_[i]->GetIntegratedEnergy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)epvariables_.size(); i++)
       {
-        double ppfac = FADUTILS::CastToDouble(epvariables_[i]->GetPPfac());
+        double ppfac = CORE::FADUTILS::CastToDouble(epvariables_[i]->GetPPfac());
         double e = -epvariables_[i]->GetIntegratedEnergy();
         energy += ppfac * e;
       }

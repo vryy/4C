@@ -22,7 +22,7 @@
 #include "structure_timint_impl.H"
 #include "beam3_reissner.H"
 #include "beam3_euler_bernoulli.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include "beaminteraction_beam3contact_defines.H"
@@ -244,9 +244,9 @@ void CONTACT::Beam3tobeampotential<numnodes,
     {
       ComputeCoords(r2, N2_i[gp2], ele2pos_);
 
-      dist = FADUTILS::DiffVector(r1, r2);
+      dist = CORE::FADUTILS::DiffVector(r1, r2);
 
-      norm_dist = FADUTILS::VectorNorm<3>(dist);
+      norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
 
       // auxiliary variables to store pre-calculated common terms
       TYPE norm_dist_exp1 = 0.0;
@@ -456,10 +456,10 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::AssembleFpot(Epetr
   Epetra_SerialDenseVector fpot1_copy(dim1);
   Epetra_SerialDenseVector fpot2_copy(dim2);
   for (int i = 0; i < dim1; i++)
-    fpot1_copy[i] =
-        -FADUTILS::CastToDouble(fpot1_(i));  // ATTENTION: negative sign because forces are treated
-                                             // as EXTERNAL forces in beam3contact_manager
-  for (int i = 0; i < dim2; i++) fpot2_copy[i] = -FADUTILS::CastToDouble(fpot2_(i));
+    fpot1_copy[i] = -CORE::FADUTILS::CastToDouble(
+        fpot1_(i));  // ATTENTION: negative sign because forces are treated
+                     // as EXTERNAL forces in beam3contact_manager
+  for (int i = 0; i < dim2; i++) fpot2_copy[i] = -CORE::FADUTILS::CastToDouble(fpot2_(i));
 
   // assemble into global force vector
   LINALG::Assemble(fint, fpot1_copy, lm1, lmowner1);
@@ -555,14 +555,18 @@ void CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::AssembleStiffpot(
 #ifndef AUTOMATICDIFF
   for (int j = 0; j < dim1 + dim2; j++)
   {
-    for (int i = 0; i < dim1; i++) stiffpot1_copy(i, j) = FADUTILS::CastToDouble(stiffpot1_(i, j));
-    for (int i = 0; i < dim2; i++) stiffpot2_copy(i, j) = FADUTILS::CastToDouble(stiffpot2_(i, j));
+    for (int i = 0; i < dim1; i++)
+      stiffpot1_copy(i, j) = CORE::FADUTILS::CastToDouble(stiffpot1_(i, j));
+    for (int i = 0; i < dim2; i++)
+      stiffpot2_copy(i, j) = CORE::FADUTILS::CastToDouble(stiffpot2_(i, j));
   }
 #else  // automatic differentiation via FAD for debugging
   for (int j = 0; j < dim1 + dim2; j++)
   {
-    for (int i = 0; i < dim1; i++) stiffpot1_copy(i, j) = FADUTILS::CastToDouble(fpot1_(i).dx(j));
-    for (int i = 0; i < dim2; i++) stiffpot2_copy(i, j) = FADUTILS::CastToDouble(fpot2_(i).dx(j));
+    for (int i = 0; i < dim1; i++)
+      stiffpot1_copy(i, j) = CORE::FADUTILS::CastToDouble(fpot1_(i).dx(j));
+    for (int i = 0; i < dim2; i++)
+      stiffpot2_copy(i, j) = CORE::FADUTILS::CastToDouble(fpot2_(i).dx(j));
   }
 
 #ifdef FADCHECKS

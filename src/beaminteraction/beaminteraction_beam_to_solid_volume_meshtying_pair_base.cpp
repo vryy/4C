@@ -105,7 +105,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   // Solid element.
   for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele2pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
@@ -194,8 +194,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
         }
 
         if (write_unique_ids)
@@ -246,7 +246,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         u = r;
         u -= X;
         GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(),
-            FADUTILS::CastToDouble(this->ele2pos_), r_solid, this->Element2());
+            CORE::FADUTILS::CastToDouble(this->ele2pos_), r_solid, this->Element2());
         EvaluatePenaltyForceDouble(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {

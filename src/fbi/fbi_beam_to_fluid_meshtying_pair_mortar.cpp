@@ -214,9 +214,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
         // Add to output data.
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(FADUTILS::CastToDouble(current_beamposition(dim)));
-          displacement.push_back(FADUTILS::CastToDouble(beamdisplacement(dim)));
-          lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(current_beamposition(dim)));
+          displacement.push_back(CORE::FADUTILS::CastToDouble(beamdisplacement(dim)));
+          lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
         }
       }
     }
@@ -260,9 +260,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(FADUTILS::CastToDouble(current_beamposition(dim)));
-            displacement.push_back(FADUTILS::CastToDouble(beamdisplacement(dim)));
-            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(current_beamposition(dim)));
+            displacement.push_back(CORE::FADUTILS::CastToDouble(beamdisplacement(dim)));
+            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
           }
         }
 

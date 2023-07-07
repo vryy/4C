@@ -19,7 +19,7 @@
 #include "inpar_structure.H"
 
 #include <Sacado.hpp>
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -725,10 +725,10 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   //    // Compute terms at reference config.
   //    t10(0)=1.0;
   //    t20(1)=1.0;
-  //    FAD norm_t20 = pow(FADUTILS::ScalarProduct(t20,t20),0.5);
+  //    FAD norm_t20 = pow(CORE::FADUTILS::ScalarProduct(t20,t20),0.5);
   //    t20_unit.Update(1.0/norm_t20,t20,0.0);
   //
-  //    FAD norm_t10 = pow(FADUTILS::ScalarProduct(t10,t10),0.5);
+  //    FAD norm_t10 = pow(CORE::FADUTILS::ScalarProduct(t10,t10),0.5);
   //    t10_unit.Update(1.0/norm_t10,t10,0.0);
   //    double delta=1.0e-6;
   //
@@ -745,13 +745,13 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   //        t2(j).diff(j+3,6);
   //      }
   //
-  //      FAD norm_t2 = pow(FADUTILS::ScalarProduct(t2,t2),0.5);
+  //      FAD norm_t2 = pow(CORE::FADUTILS::ScalarProduct(t2,t2),0.5);
   //      t2_unit.Update(1.0/norm_t2,t2,0.0);
   //
-  //      FAD norm_t1 = pow(FADUTILS::ScalarProduct(t1,t1),0.5);
+  //      FAD norm_t1 = pow(CORE::FADUTILS::ScalarProduct(t1,t1),0.5);
   //      t1_unit.Update(1.0/norm_t1,t1,0.0);
   //
-  //      W=pow((FADUTILS::ScalarProduct(t1_unit,t2_unit)-FADUTILS::ScalarProduct(t10_unit,t20_unit)),2);
+  //      W=pow((CORE::FADUTILS::ScalarProduct(t1_unit,t2_unit)-CORE::FADUTILS::ScalarProduct(t10_unit,t20_unit)),2);
   //
   //      std::cout<<"Energy Potential FAD="<<W<<std::endl;
   //
@@ -799,11 +799,11 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   //        t1_r.Scale(1.0/t1_r.Norm2());
   //
   //        double W_m =
-  //        pow((FADUTILS::ScalarProduct(t1_m,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+  //        pow((CORE::FADUTILS::ScalarProduct(t1_m,t2_m)-CORE::FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
   //        double W_l =
-  //        pow((FADUTILS::ScalarProduct(t1_l,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+  //        pow((CORE::FADUTILS::ScalarProduct(t1_l,t2_m)-CORE::FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
   //        double W_r =
-  //        pow((FADUTILS::ScalarProduct(t1_r,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+  //        pow((CORE::FADUTILS::ScalarProduct(t1_r,t2_m)-CORE::FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
   //
   //        std::cout << "W_m: " << W_m << std::endl;
   //        std::cout << "W_l: " << W_l << std::endl;
@@ -1019,10 +1019,10 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   }
 
   // Norms of the tangential vectors and directional displacement vector
-  FAD norm_tref1 = pow(FADUTILS::ScalarProduct(tref1, tref1), 0.5);
-  FAD norm_tref2 = pow(FADUTILS::ScalarProduct(tref2, tref2), 0.5);
-  FAD norm_tcurr1 = pow(FADUTILS::ScalarProduct(tcurr1, tcurr1), 0.5);
-  FAD norm_tcurr2 = pow(FADUTILS::ScalarProduct(tcurr2, tcurr2), 0.5);
+  FAD norm_tref1 = pow(CORE::FADUTILS::ScalarProduct(tref1, tref1), 0.5);
+  FAD norm_tref2 = pow(CORE::FADUTILS::ScalarProduct(tref2, tref2), 0.5);
+  FAD norm_tcurr1 = pow(CORE::FADUTILS::ScalarProduct(tcurr1, tcurr1), 0.5);
+  FAD norm_tcurr2 = pow(CORE::FADUTILS::ScalarProduct(tcurr2, tcurr2), 0.5);
 
   // Recalculate unit vectors
   tref1_unit.Update(1.0 / norm_tref1, tref1, 0.0);
@@ -1038,8 +1038,8 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
 
   // computing energy potential (equation 3.3)
   FAD W = 0.5 * spring *
-          pow((FADUTILS::ScalarProduct(tcurr1_unit, tcurr2_unit) -
-                  FADUTILS::ScalarProduct(tref1_unit, tref2_unit)),
+          pow((CORE::FADUTILS::ScalarProduct(tcurr1_unit, tcurr2_unit) -
+                  CORE::FADUTILS::ScalarProduct(tref1_unit, tref2_unit)),
               2);
 
   // Compute linearization with FAD for checking
@@ -1053,8 +1053,8 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   LINALG::Matrix<3, 3, FAD> t2_aux(true);
 
   // Calculate dot product
-  FAD t1t2curr_unit = FADUTILS::ScalarProduct(tcurr1_unit, tcurr2_unit);
-  FAD t1t2ref_unit = FADUTILS::ScalarProduct(tref1_unit, tref2_unit);
+  FAD t1t2curr_unit = CORE::FADUTILS::ScalarProduct(tcurr1_unit, tcurr2_unit);
+  FAD t1t2ref_unit = CORE::FADUTILS::ScalarProduct(tref1_unit, tref2_unit);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
     {
