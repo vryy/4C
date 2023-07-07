@@ -96,42 +96,21 @@ namespace STR
       //! @}
 
       /*! \brief Update constant contributions of the current state for the new time step
-       * \f$t_{n+1}\f$
+       * \f$ t_{n+1} \f$ based on the one-step theta scheme:
        *
-       *  The constant contributions are stored in the const_vel_acc_update_ptr_ multi-vector
-       *  pointer. The 1st entry represents the velocity, and the 2nd the acceleration.
+       * \f[
+       *      V_{n+1} = - (1.0 - \theta)/\theta * V_{n} - 1.0/(\theta * dt) * D_{n}
+       *                + 1.0/(\theta * dt) * D_{n+1}
+       *      A_{n+1} = - (1.0 - \theta)/\theta * A_{n} - 1.0/(\theta^2 * dt) * V_{n}
+       *                - 1.0/(\theta * dt)^2 * D_{n} + 1.0/(\theta * dt)^2 * D_{n+1}
+       * \f]
        *
-       *  Calculate the consistent velocity update part:
-       *  \f[
-       *    V_{n+1}^{0} =   \frac{\beta-\gamma}{\beta} V_{n}
-       *                  + \frac{(2 \beta - \gamma) \Delta t}{2 \beta} A_{n}
-       *  \f]
+       * Only the constant contributions, i.e. all components that depend on the state n are stored
+       * in the const_vel_acc_update_ptr_ multi-vector pointer. The 1st entry represents the
+       * velocity, and the 2nd the acceleration.
        *
-       *  Calculate the consistent acceleration update part:
-       *  \f[
-       *    A_{n+1}^{0} = - \frac{1}{\beta (\Delta t)^{2}} V_{n}
-       *                  + \frac{2 \beta - 1}{2 \beta} A_{n}
-       *  \f]
-       *
-       *  Set the new DBC values at time \f$t=t_{n+1}\f$:
-       *  \f[
-       *    D_{n+1}^{0} \leftarrow DBC(D_{n+1}^{0}, t_{n+1}) \\
-       *    V_{n+1}^{0} \leftarrow DBC(V_{n+1}^{0}, t_{n+1}) \\
-       *    A_{n+1}^{0} \leftarrow DBC(A_{n+1}^{0}, t_{n+1})
-       *  \f]
-       *
-       *  Finally, add the constant displacement update part to the constant velocity and
-       *  acceleration vectors:
-       *  \f[
-       *    \tilde{V}_{n+1} = V_{n+1}^{0} - \frac{1}{\theta \Delta t} D_{n+1}^{0} \\
-       *    \tilde{A}_{n+1} = A_{n+1}^{0} - \frac{1}{theta^{2} (\Delta t)^{2}} D_{n+1}^{0}
-       *  \f]
-       *
-       *  See the SetState() routine for the iterative update of the current state.
-       *
-       *  \author vuong
-       *  \date 04/2016 */
-      void UpdateConstantStateContributions();
+       *  See the SetState() routine for the iterative update of the current state. */
+      void UpdateConstantStateContributions() override;
 
      protected:
       //! run directly after the setup routine has been finished

@@ -13,11 +13,11 @@
 
 #include "linalg_fixedsizematrix.H"
 #include "beaminteraction_link_pinjointed.H"
+#include "linalg_serialdensevector.H"
 
 // forward declarations
 namespace LINALG
 {
-  class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
 

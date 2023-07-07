@@ -16,7 +16,7 @@
 
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*
@@ -88,7 +88,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 /*----------------------------------------------------------------------*
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
 }
 
 
@@ -296,7 +296,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
 }
 
 
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::NumSurface() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 {
-  return DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
 
 
@@ -485,7 +485,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -536,7 +536,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -544,7 +544,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*

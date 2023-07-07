@@ -95,9 +95,9 @@ void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
-    Strategy* strat, const double delta, ::UTILS::SingletonAction action)
+    Strategy* strat, const double delta, CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FD_Debug> owner(
+  static CORE::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FD_Debug> owner(
       [=]()
       {
         std::unique_ptr<CONTACT::AUG::Strategy::FD_Debug> instance(new FD_Debug);

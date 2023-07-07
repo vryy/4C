@@ -9,7 +9,7 @@ import re
 module_root_maker_file_name = ".contains_modules"
 
 
-def find_all_module_roots(folder):
+def find_all_module_roots(folders):
     """
     Recursively step through all directories and return all paths that contain module root marker files.
     """
@@ -19,6 +19,7 @@ def find_all_module_roots(folder):
 
     return [
         base
+        for folder in folders
         for base, dirs, files in os.walk(os.path.abspath(folder))
         if is_module_root(files)
     ]
@@ -40,12 +41,9 @@ def has_valid_prefix(path, module_roots):
 
     my_module_root = most_specific_module_root(abs_path, module_roots)
 
+    # If the file is not in a module, we do not require a specific prefix and return true.
     if my_module_root is None:
-        raise RuntimeError(
-            "File '"
-            + path
-            + "' is not located under any module root and cannot be analyzed."
-        )
+        return True
 
     assert abs_path.startswith(os.path.abspath(my_module_root))
     # The module name is the first directory in the file that can be reached from the module_root.
@@ -156,7 +154,9 @@ def main():
     # build command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "path", help="The path in which to check source files for the correct prefix."
+        "paths",
+        nargs="+",
+        help="The paths in which to check source files for the correct prefix.",
     )
 
     parser.add_argument(
@@ -175,14 +175,16 @@ def main():
     # error file (None for sys.stderr)
     errfile = args.out
     if args.diff_only:
-        look_cmd = "git diff --name-only --cached --diff-filter=MRAC -- " + args.path
+        look_cmd = "git diff --name-only --cached --diff-filter=MRAC -- " + " ".join(
+            args.paths
+        )
     else:
-        look_cmd = "git ls-files " + args.path
+        look_cmd = "git ls-files " + " ".join(args.paths)
 
     # Get all the module roots and sort them in reverse.
     # This has the effect that longer paths come before shorter paths. If we match files to the module roots in this
     # sorted order, we can abort at the first match and be sure to have the most specific match.
-    module_roots = find_all_module_roots(args.path)
+    module_roots = find_all_module_roots(args.paths)
     module_roots.sort(reverse=True)
 
     allerrors = check_cpp_files_for_prefix(look_cmd, module_roots)

@@ -15,7 +15,6 @@ set(_poroelast_dependencies
     mat
     mortar
     so3
-    solver
     structure
     w1
     )

@@ -57,7 +57,7 @@ namespace cln
 void* mallocwrap(size_t size);
 void deallocwrap(size_t size);
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -330,7 +330,8 @@ namespace GEO
         cln::cl_inhibit_floating_point_underflow = true;
         static std::ios_base::Init StreamInitializer;
         // id in the cache containers
-        int prec_id = (GEO::CUT::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
+        int prec_id =
+            (CORE::GEO::CUT::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
         // we create special vector for zeroes, for faster lookup in the table, since they are
         // needed more often
         static std::vector<std::pair<cln::cl_F, bool>> zeros_cache(
@@ -343,7 +344,7 @@ namespace GEO
           {
             // convert from the string representation
             std::stringstream string_buffer;
-            int nsize = GEO::CUT::ClnWrapper::precision_;
+            int nsize = CORE::GEO::CUT::ClnWrapper::precision_;
             string_buffer << nsize;
             std::string clnumstr = "0e+1_" + string_buffer.str();
             zeros_cache[prec_id].first = clnumstr.c_str();
@@ -417,7 +418,7 @@ namespace GEO
       ////      // initial value of precision_
       ////      precision_ = CLN_START_PRECISION;
 
-      friend ::std::ostream& operator<<(std::ostream& stream, const GEO::CUT::ClnWrapper& a)
+      friend ::std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::ClnWrapper& a)
       {
         stream << a.Value();
         return stream;
@@ -523,30 +524,39 @@ namespace GEO
 
   }  // namespace CUT
 
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 // Additional functions in the cln namespace to callback from ClnWrapper
 namespace cln
 {
 #ifdef CLN_CALC
 
-  inline GEO::CUT::ClnWrapper fabs(const GEO::CUT::ClnWrapper& a) { return cln::abs(a.Value()); };
-  inline cln::float_format_t float_format(const GEO::CUT::ClnWrapper& a)
+  inline CORE::GEO::CUT::ClnWrapper fabs(const CORE::GEO::CUT::ClnWrapper& a)
+  {
+    return cln::abs(a.Value());
+  };
+  inline cln::float_format_t float_format(const CORE::GEO::CUT::ClnWrapper& a)
   {
     return cln::float_format(a.Value());
   }
-  inline GEO::CUT::ClnWrapper abs(const GEO::CUT::ClnWrapper& a) { return cln::abs(a.Value()); };
+  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
+  {
+    return cln::abs(a.Value());
+  };
 
-  inline GEO::CUT::ClnWrapper sqrt(const GEO::CUT::ClnWrapper& a) { return cln::sqrt(a.Value()); };
-  inline double double_approx(const GEO::CUT::ClnWrapper& a)
+  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
+  {
+    return cln::sqrt(a.Value());
+  };
+  inline double double_approx(const CORE::GEO::CUT::ClnWrapper& a)
   {
     return cln::double_approx(a.Value());
   };
-  inline cln::cl_F cl_float(const GEO::CUT::ClnWrapper& a, const cln::float_format_t& format)
+  inline cln::cl_F cl_float(const CORE::GEO::CUT::ClnWrapper& a, const cln::float_format_t& format)
   {
     return cln::cl_float(a.Value(), format);
   }
-  inline GEO::CUT::ClnWrapper pow(const GEO::CUT::ClnWrapper& base, int exponent)
+  inline CORE::GEO::CUT::ClnWrapper pow(const CORE::GEO::CUT::ClnWrapper& base, int exponent)
   {
     dserror("Not implemented!");
     return base;
@@ -626,7 +636,7 @@ namespace cln
 }  // namespace cln
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -668,7 +678,7 @@ namespace GEO
 #endif  // endif CLN_CALC
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 // providing overloads for the arithmetical functions
@@ -678,9 +688,15 @@ namespace std
 {
 #ifdef CLN_CALC
 
-  inline GEO::CUT::ClnWrapper abs(const GEO::CUT::ClnWrapper& a) { return cln::abs(a.Value()); };
+  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
+  {
+    return cln::abs(a.Value());
+  };
 
-  inline GEO::CUT::ClnWrapper sqrt(const GEO::CUT::ClnWrapper& a) { return cln::sqrt(a.Value()); };
+  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
+  {
+    return cln::sqrt(a.Value());
+  };
 
 //  inline GEO::CUT::ClnWrapper pow(const GEO::CUT::ClnWrapper& base, int exponent)
 //  {
@@ -718,9 +734,12 @@ namespace std
 }  // namespace std
 
 #ifdef CLN_CALC
-inline GEO::CUT::ClnWrapper fabs(const GEO::CUT::ClnWrapper& a) { return cln::abs(a.Value()); };
+inline CORE::GEO::CUT::ClnWrapper fabs(const CORE::GEO::CUT::ClnWrapper& a)
+{
+  return cln::abs(a.Value());
+};
 
-inline GEO::CUT::ClnWrapper pow(const GEO::CUT::ClnWrapper& base, int exponent)
+inline CORE::GEO::CUT::ClnWrapper pow(const CORE::GEO::CUT::ClnWrapper& base, int exponent)
 {
   dserror("Not implemented!");
   return base;

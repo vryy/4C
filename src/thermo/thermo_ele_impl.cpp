@@ -11,7 +11,7 @@
 #include "inpar_structure.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_condition_utils.H"
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
@@ -98,9 +98,9 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TemperImpl<distype>* DRT::ELEMENTS::TemperImpl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::TemperImpl<distype>>(
@@ -523,7 +523,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     Teuchos::RCP<MAT::TRAIT::Thermo> thermoMat =
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(material, true);
 
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+        THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
   }
 
@@ -545,7 +546,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
     // get node coordinates
-    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
     // declaration of internal variables
     double intenergy = 0.0;
@@ -553,7 +554,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // ----------------------------- integration loop for one element
 
     // integrations points and weights
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+        THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
     // --------------------------------------- loop over Gauss Points
@@ -761,12 +763,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -801,12 +803,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -901,7 +903,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
     LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements
   LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -959,7 +961,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1113,7 +1115,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements and velocities
   LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -1193,7 +1195,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1314,7 +1316,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1683,7 +1685,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -1972,7 +1974,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // --------------------------------------------------------- initialise
   // thermal material tangent
@@ -1996,7 +1998,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
@@ -2067,7 +2069,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
 #ifdef THRASOUTPUT
   std::cout << "LinearDissipationCoupledTang evel\n" << evel << std::endl;
@@ -2127,7 +2129,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -2223,7 +2225,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // update element geometry
   LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -2266,7 +2268,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
   // ----------------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // initialise the deformation gradient w.r.t. material configuration
@@ -2404,7 +2406,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
 
   // ----------------------------------------- integration loop for one element
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
@@ -2452,10 +2454,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
     LINALG::Matrix<nquad_, nsd_>* etempgrad  // temperature gradients at Gauss points
 )
 {
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -2510,7 +2512,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
   LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ----------------------------------- integration loop for one element
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -2674,7 +2676,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
   if (myneumcond.size() == 1)
   {
     // get node coordinates
-    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
     // update element geometry
     LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -2697,7 +2699,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
         if ((*funct)[dim] > 0) havefunct = true;
 
     // integrations points and weights
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+        THR::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
     radiation_.Clear();
@@ -2768,9 +2771,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, co
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
-    const int iquad,                                         // id of current Gauss point
-    const int eleid                                          // the element id
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
+    const int iquad,                                               // id of current Gauss point
+    const int eleid                                                // the element id
 )
 {
   // coordinates of the current (Gauss) integration point (xsi_)
@@ -2784,11 +2787,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   // N, N_{,xsi}
   if (myknots_.size() == 0)
   {
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
   }
   else
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+    CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+        funct_, deriv_, xsi_, myknots_, weights_, distype);
 
   // compute Jacobian matrix and determinant (as presented in FE lecture notes)
   // actually compute its transpose (compared to J in NiliFEM lecture notes)
@@ -2832,7 +2836,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
     const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
     LINALG::Matrix<nen_, nsd_>& xcurr, LINALG::Matrix<nen_, nsd_>& xcurrrate)
 {
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   for (int i = 0; i < nen_; ++i)
   {
     xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
@@ -2876,10 +2880,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
     Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
@@ -2922,7 +2926,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     dserror("Works only if number of gauss points and nodes match");
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // build matrix of shape functions at Gauss points
@@ -2934,7 +2938,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = gpcoord[idim];
 
     // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
 
     for (int inode = 0; inode < nen_; ++inode) shpfctatgps(iquad, inode) = funct_(inode);
   }
@@ -3199,7 +3203,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
@@ -3211,7 +3215,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   //  if (intpoints.IP().nquad != nquad_)
   //    dserror("Trouble with number of Gauss points");
 

@@ -14,7 +14,7 @@
 
 #include "discretization_fem_general_utils_boundary_integration.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include "lib_discret.H"
@@ -57,7 +57,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration&, bool offdiag)
+    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -160,9 +160,11 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       int sumindex = 0;
       for (int i = 0; i < face; ++i)
       {
-        DRT::UTILS::PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,
-            hdgele->Faces()[i]->Degree(), usescompletepoly_);
-        int nfdofs = DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
+        CORE::DRT::UTILS::PolynomialSpaceParams params(
+            CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, hdgele->Faces()[i]->Degree(),
+            usescompletepoly_);
+        int nfdofs =
+            CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
         sumindex += nfdofs;
       }
       ReadGlobalVectors(hdgele, discretization, lm);
@@ -306,19 +308,19 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
   if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->Degree()) ||
       shapes_->usescompletepoly_ != usescompletepoly_)
   {
-    shapes_ = Teuchos::rcp(
-        new DRT::UTILS::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
+    shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
+        ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
     // TODO: Check wheter 2 * (ele->Degree()+1) is required as exact integration degree
-    postproc_shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+    postproc_shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
         ele->Degree() + 1, usescompletepoly_, 2 * (ele->Degree() + 1)));
   }
 
   if (shapesface_ == Teuchos::null)
   {
-    DRT::UTILS::ShapeValuesFaceParams svfparams(
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
         ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-    shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+    shapesface_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValuesFace<distype>(svfparams));
   }
 
   if (localSolver_ == Teuchos::null || localSolver_->ndofs_ != shapes_->ndofs_)
@@ -682,11 +684,11 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   shapes_.Evaluate(*ele);
   postproc_shapes_.Evaluate(*ele);
 
-  DRT::UTILS::ShapeValues<distype> highshapes(
+  CORE::DRT::UTILS::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
   highshapes.Evaluate(*ele);
 
-  DRT::UTILS::ShapeValues<distype> highshapes_post(
+  CORE::DRT::UTILS::ShapeValues<distype> highshapes_post(
       ele->Degree() + 1, shapes_.usescompletepoly_, (ele->Degree() + 3) * 2);
   highshapes_post.Evaluate(*ele);
   // get function
@@ -844,7 +846,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   shapes_.Evaluate(ele);
   postproc_shapes_.Evaluate(ele);
 
-  DRT::UTILS::ShapeValues<distype> k2_shapes(ele.Degree() + 2, false, 2 * (ele.Degree() + 2));
+  CORE::DRT::UTILS::ShapeValues<distype> k2_shapes(ele.Degree() + 2, false, 2 * (ele.Degree() + 2));
   k2_shapes.Evaluate(ele);
 
   // Build matrix
@@ -1374,7 +1376,8 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix locations =
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -1431,21 +1434,21 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
 
   // Cycling the faces of the element
   Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     shapesface_->EvaluateFace(*ele, f);
 
@@ -1533,9 +1536,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagDiffEleCalc<distype>* DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::ElemagDiffEleCalc<distype>>(
@@ -1550,9 +1553,9 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>* DRT::ELEMENTS::ElemagDiffEleCalc<dist
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
-    const DRT::ELEMENTS::ElemagDiff* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
-    Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
-    INPAR::ELEMAG::DynamicType& dyna, DRT::UTILS::ShapeValues<distype>& postproc_shapeValues)
+    const DRT::ELEMENTS::ElemagDiff* ele, CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+    Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
+    INPAR::ELEMAG::DynamicType& dyna, CORE::DRT::UTILS::ShapeValues<distype>& postproc_shapeValues)
     : ndofs_(shapeValues.ndofs_),
       shapes_(shapeValues),
       shapesface_(shapeValuesFace),
@@ -2424,10 +2427,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices(
   {
     /* This part is to be used for efficiency reasons, at the beginning the
     //standard procedure is used
-    DRT::UTILS::ShapeValuesFaceParams svfparams(
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
         ele.Faces()[face]->Degree(),
         shapes_.usescompletepoly_, 2 * ele.Faces()[face]->Degree());
-    shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     */
 
     // Updating face data

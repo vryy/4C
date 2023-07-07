@@ -14,7 +14,7 @@
 #include "lib_discret.H"
 #include "io_control.H"
 #include "io.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "inpar_ssi.H"
 #include "inpar_ssti.H"
 #include "inpar_sti.H"

@@ -10,22 +10,18 @@
 /*---------------------------------------------------------------------*/
 
 #include "lib_discret_hdg.H"
-
-#include "lib_exporter.H"
 #include "lib_globalproblem.H"
-#include "fluid_ele_action.H"
-#include "fluid_ele_calc.H"
-#include "fluid_ele_hdg.H"
-#include "fluid_ele_hdg_weak_comp.H"
-#include "fluid_ele_calc_hdg.H"
-#include "scatra_ele_action.H"
-#include "elemag_ele.H"
-#include "elemag_ele_action.H"
-#include "lib_dofset_predefineddofnumber.H"
+#include "lib_exporter.H"
+#include "lib_element.H"
+#include "lib_elementtype.H"
+#include "lib_dg_element.h"
 #include "lib_utils_parameter_list.H"
-
+#include "lib_dofset_predefineddofnumber.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "mat_par_parameter.H"
+#include "lib_utils_discret.H"
+#include "elemag_ele_action.H"
+#include "scatra_ele_action.H"
+
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
@@ -93,7 +89,7 @@ int DRT::DiscretizationHDG::FillComplete(
     const int* nodeIds = f->second->NodeIds();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+        CORE::DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->NumNode(); ++i)
@@ -124,10 +120,10 @@ int DRT::DiscretizationHDG::FillComplete(
       // add nds 1
       if (this->NumDofSets() == 1)
       {
-        int ndof_ele = this->NumMyRowElements() > 0
-                           ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
-                                 ->NumDofPerElementAuxiliary()
-                           : 0;
+        int ndof_ele =
+            this->NumMyRowElements() > 0
+                ? dynamic_cast<DRT::DG_Element*>(this->lRowElement(0))->NumDofPerElementAuxiliary()
+                : 0;
         Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
             Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
@@ -137,10 +133,10 @@ int DRT::DiscretizationHDG::FillComplete(
       // add nds 2
       if (this->NumDofSets() == 2)
       {
-        int ndof_node = this->NumMyRowElements() > 0
-                            ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
-                                  ->NumDofPerNodeAuxiliary()
-                            : 0;
+        int ndof_node =
+            this->NumMyRowElements() > 0
+                ? dynamic_cast<DRT::DG_Element*>(this->lRowElement(0))->NumDofPerNodeAuxiliary()
+                : 0;
         Teuchos::RCP<DRT::DofSetInterface> dofset_node =
             Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
 
@@ -258,7 +254,6 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
   while (index < static_cast<int>(send.size()))
   {
     int esize = send[index];
-    int degree = send[index + 1];
     index += 2;
     std::vector<int> element;
     element.reserve(esize);
@@ -271,10 +266,6 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
     if (iter != elementmap.end())
     {
       iter->second->SetId(gid);
-      // TODO visc eles, fluid hdg eles
-      Teuchos::RCP<DRT::ELEMENTS::ElemagIntFace> elemagele =
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ElemagIntFace>(iter->second);
-      if (elemagele != Teuchos::null) elemagele->SetDegree(degree);
 
       finalelements[gid] = iter->second;
     }
@@ -392,7 +383,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 
   return os;
 }
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
@@ -572,13 +562,12 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     Teuchos::ParameterList initParams;
     if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag)
       initParams.set<int>("action", ELEMAG::project_dirich_field);
-    else if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
+
+    if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
       DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::project_dirich_field, initParams);
-    else
-      initParams.set<int>(
-          "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is
-                                                // valid for all problems
+    // TODO: Introduce a general action type that is
+    // valid for all problems
     if (funct != NULL)
     {
       Teuchos::Array<int> functarray(*funct);
@@ -617,61 +606,6 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
           if (systemvectors[1] != Teuchos::null) (*systemvectors[1])[lid] = 0.0;
           if (systemvectors[2] != Teuchos::null) (*systemvectors[2])[lid] = 0.0;
 
-          // --------------------------------------------------------------------------------------
-          // get parameters
-          Teuchos::ParameterList params = DRT::Problem::Instance()->FluidDynamicParams();
-
-          // check whether the imposition of the average pressure is requested
-          const int dopressavgbc =
-              DRT::INPUT::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
-
-          if (dopressavgbc == INPAR::FLUID::yes_pressure_average_bc)
-          {
-            double pressureavgBC = 0.0;
-
-            // get 1st element
-            DRT::Element* ele = discret.lRowElement(0);
-            DRT::ELEMENTS::Fluid* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(ele);
-
-            // get material
-            Teuchos::RCP<MAT::Material> mat = ele->Material();
-
-            // get discretization type
-            const DRT::Element::DiscretizationType distype = ele->Shape();
-
-            // evaluate pressure average     //TODO als make it valid for every discretization type
-            Epetra_SerialDenseVector elevec = Epetra_SerialDenseVector(1);
-            if (distype == DRT::Element::DiscretizationType::quad4)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad4>::Instance()
-                  ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::quad8)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad8>::Instance()
-                  ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::quad9)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad9>::Instance()
-                  ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::tri3)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri3>::Instance()
-                  ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else if (distype == DRT::Element::DiscretizationType::tri6)
-              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri6>::Instance()
-                  ->EvaluatePressureAverage(fluidele, params, mat, elevec);
-            else
-              dserror("Given distype currently not implemented.");
-            pressureavgBC = elevec[0];
-
-            (*systemvectors[0])[lid] = pressureavgBC;
-
-            std::cout << "\n-----------------------------------------------------------------------"
-                         "-------------------"
-                      << std::endl;
-            std::cout << "| Warning: Imposing the analytical average pressure in the first element "
-                         "as Dirichlet BC |"
-                      << std::endl;
-            std::cout << "-------------------------------------------------------------------------"
-                         "-----------------\n"
-                      << std::endl;
-          }
           // --------------------------------------------------------------------------------------
           pressureDone = true;
         }

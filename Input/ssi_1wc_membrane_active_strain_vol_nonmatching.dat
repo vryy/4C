@@ -5,13 +5,11 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 test membrane active strain material for gastric electromechanics
-
 at its core this is a one way coupled scatra to solid problem:
 depending on the oscillating scalar activation variable phi1,
 the 2 active fibers in the structural material create an
 active strain contribution to the deformation gradient.
 The formulation is fully incompressible due to membrane.
-
 - quadratic domain 5x5 dicretized by 10x10=100 quad4 elements
 - volume non-matching meshes (scatra and solid mesh from input)
 - solution of scalar reaction term is:
@@ -32,16 +30,15 @@ The formulation is fully incompressible due to membrane.
 - activation of active strain material based on phi1
 - DBC for structure field such that all displacements are restricted to the xy-plane
 - DBC for structure field such that (at the boundary) only displacements parallel to the four boundary lines is allowed (in the xy-plane)
-
 [2]: Brandstaeter, S. et al. (2018) 'Computational model of gastric motility with active-strain electromechanics', ZAMM. Wiley-Blackwell. doi: 10.1002/zamm.201800166.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
@@ -52,7 +49,7 @@ PREDICT                         ConstDis
 TOLDISP                         1.0e-6
 TOLRES                          1.0e-6
 TIMESTEP                        0.1
----------------------------------------------------------STRUCT NOX/Printing
+-----------------------------------------------STRUCT NOX/Printing
 Error = No
 Warning = No
 Outer Iteration = Yes
@@ -63,7 +60,7 @@ Outer Iteration StatusTest = No
 Linear Solver Details = No
 Test Details = No
 Debug = No
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
@@ -74,7 +71,7 @@ VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 DIFFTIMESTEPSIZE                yes
 RESULTSEVRY                     1
 RESTARTEVRY                     40
@@ -85,19 +82,19 @@ COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          5
 FIELDCOUPLING                   volume_nonmatching
 SCATRATIMINTTYPE                Standard
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 EXPLPREDICT                     yes
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Franca_Valentin
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
-----------------------------------------------------------VOLMORTAR COUPLING
+------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE                    consint
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_Membrane_ActiveStrain MATIDPASSIVE 2 SCALIDVOLTAGE 0 DENS 1.0 BETA1 10 BETA2 10 VOLTHRESH 0.25 ALPHA1 0.2 ALPHA2 0.2
 MAT 2 MAT_Membrane_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.1
 MAT 3 ELAST_IsoNeoHooke MUE 60.0
@@ -108,9 +105,9 @@ MAT 14 MAT_scatra DIFFUSIVITY 0.0
 MAT 110 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 0 REACCOEFF 1.0  COUPLING simple_multiplicative ROLE  0 1 0
 MAT 111 MAT_scatra_reaction NUMSCAL 3 STOICH 0 1 0 REACCOEFF 1.0  COUPLING simple_multiplicative ROLE 0 0 1
 MAT 112 MAT_scatra_reaction NUMSCAL 3 STOICH 0 0 1 REACCOEFF -12.0  COUPLING simple_multiplicative ROLE 0 1 0
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 11
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*(sin(x)*sin(y))
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
@@ -754,21 +751,21 @@ NODE       242 COORD  5.0000000000000000e+00  5.0000000000000000e+00  0.00000000
    198 TRANSP QUAD4  228 229 240 239    MAT 11 TYPE AdvReac
    199 TRANSP QUAD4  229 230 241 240    MAT 11 TYPE AdvReac
    200 TRANSP QUAD4  230 231 242 241    MAT 11 TYPE AdvReac
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA    DIS scatra    NODE 170 QUANTITY phi1  VALUE  2.95089735323807778e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE  1.66214978173845757e-01 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 49 QUANTITY dispy VALUE  1.66214978173846090e-01 TOLERANCE 1e-09
-SCATRA    DIS scatra    NODE 172 QUANTITY phi1  VALUE  1.13948137848004150e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE  7.74078978931210804e-02 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE  9.39637307481479972e-02 TOLERANCE 1e-09
-SCATRA    DIS scatra    NODE 192 QUANTITY phi1  VALUE  1.13948137848004505e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 71 QUANTITY dispx VALUE  9.39637307481475670e-02 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE  7.74078978931202755e-02 TOLERANCE 1e-09
-SCATRA    DIS scatra    NODE 194 QUANTITY phi1  VALUE  1.49970602020040644e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 73 QUANTITY dispx VALUE -1.15006212502656441e-02 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 73 QUANTITY dispy VALUE -1.15006212502658332e-02 TOLERANCE 1e-09
-SCATRA    DIS scatra    NODE 206 QUANTITY phi1  VALUE  6.64015764069758374e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 85 QUANTITY dispx VALUE -1.12267389291208233e-01 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 85 QUANTITY dispy VALUE -1.12267389291208233e-01 TOLERANCE 1e-09
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 170 QUANTITY phi1 VALUE  2.95089735323808222e-01 TOLERANCE 3.0e-09
+STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE  1.66214978173845757e-01 TOLERANCE 1.7e-09
+STRUCTURE DIS structure NODE 49 QUANTITY dispy VALUE  1.66214978173845868e-01 TOLERANCE 1.7e-09
+SCATRA DIS scatra NODE 172 QUANTITY phi1 VALUE  1.13948137848004483e+00 TOLERANCE 1.1e-08
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE  7.74078978931212330e-02 TOLERANCE 7.7e-10
+STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE  9.39637307481479417e-02 TOLERANCE 9.4e-10
+SCATRA DIS scatra NODE 192 QUANTITY phi1 VALUE  1.13948137848003728e+00 TOLERANCE 1.1e-08
+STRUCTURE DIS structure NODE 71 QUANTITY dispx VALUE  9.39637307481476780e-02 TOLERANCE 9.4e-10
+STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE  7.74078978931203171e-02 TOLERANCE 7.7e-10
+SCATRA DIS scatra NODE 194 QUANTITY phi1 VALUE  1.49970602020040866e+00 TOLERANCE 1.5e-08
+STRUCTURE DIS structure NODE 73 QUANTITY dispx VALUE -1.15006212502660170e-02 TOLERANCE 1.2e-10
+STRUCTURE DIS structure NODE 73 QUANTITY dispy VALUE -1.15006212502659563e-02 TOLERANCE 1.2e-10
+SCATRA DIS scatra NODE 206 QUANTITY phi1 VALUE  6.64015764069759817e-01 TOLERANCE 6.6e-09
+STRUCTURE DIS structure NODE 85 QUANTITY dispx VALUE -1.12267389291208497e-01 TOLERANCE 1.1e-09
+STRUCTURE DIS structure NODE 85 QUANTITY dispy VALUE -1.12267389291208372e-01 TOLERANCE 1.1e-09
 ---------------------------------------------------------------END
 // END

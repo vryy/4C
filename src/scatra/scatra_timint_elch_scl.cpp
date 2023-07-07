@@ -20,7 +20,7 @@
 
 #include "scatra_ele_action.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -758,7 +758,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
           &my_micro_permuted_node_gids[0], 0, comm));
 
   // setup coupling adapter between micro (slave) and macro (master) for all dof of the nodes
-  auto macro_micro_coupling_adapter_temp = Teuchos::rcp(new ADAPTER::Coupling());
+  auto macro_micro_coupling_adapter_temp = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   macro_micro_coupling_adapter_temp->SetupCoupling(*discret_, *microdis, *master_node_map,
       *slave_node_map, *perm_slave_node_map, NumDofPerNode());
 
@@ -812,7 +812,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
       -1, static_cast<int>(my_perm_master_dofs.size()), &my_perm_master_dofs[0], 0, comm));
 
 
-  macro_micro_coupling_adapter_ = Teuchos::rcp(new ADAPTER::Coupling());
+  macro_micro_coupling_adapter_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   macro_micro_coupling_adapter_->SetupCoupling(
       slave_dof_map, perm_slave_dof_map, master_dof_map, perm_master_dof_map);
 
@@ -938,7 +938,7 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
       sparse_systemmatrix->Add(*SystemMatrix(), false, 1.0, 1.0);
 
       auto micro_side_converter =
-          Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+          Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
       LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
@@ -969,7 +969,7 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
       block_systemmatrix->Matrix(0, 0).Add(*SystemMatrix(), false, 1.0, 1.0);
 
       auto micro_side_converter =
-          Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+          Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
       LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),

@@ -14,7 +14,7 @@
 #include "lib_utils_factory.H"
 #include "lib_linedefinition.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 #include <sstream>
 
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::Bele3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(
@@ -245,23 +245,23 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
+CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
 {
-  DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::undefined;
+  CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (Shape())
   {
     case DRT::Element::quad4:
-      rule = DRT::UTILS::GaussRule2D::quad_4point;
+      rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
     case DRT::Element::quad8:
     case DRT::Element::quad9:
-      rule = DRT::UTILS::GaussRule2D::quad_9point;
+      rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
     case DRT::Element::tri3:
-      rule = DRT::UTILS::GaussRule2D::tri_3point;
+      rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
     case DRT::Element::tri6:
-      rule = DRT::UTILS::GaussRule2D::tri_6point;
+      rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

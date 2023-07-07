@@ -18,7 +18,7 @@
 #include "io_pstream.H"
 #include "scatra_ele_action.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include <list>
 
 
@@ -527,7 +527,8 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
 /*----------------------------------------------------------------------*
  | geometric reinitialization via distance to interface rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCells>& interface)
+void SCATRA::LevelSetAlgorithm::ReinitGeo(
+    const std::map<int, CORE::GEO::BoundaryIntCells>& interface)
 {
   if (myrank_ == 0)
     std::cout << "---  reinitializing level-set field by computing distance to interface ..."
@@ -653,7 +654,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
   {
     // Here we simply take the eleids from the boundaryIntCells map, which leads to our list of cut
     // elements also there is no distribution necessary, as this map is already stored on every proc
-    for (std::map<int, GEO::BoundaryIntCells>::const_iterator elepatches = interface.begin();
+    for (std::map<int, CORE::GEO::BoundaryIntCells>::const_iterator elepatches = interface.begin();
          elepatches != interface.end(); ++elepatches)
       allcuteleids.push_back(elepatches->first);
 
@@ -784,14 +785,14 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
         double pbcmindist = 1.0e19;
 
         // get patches belonging to first entry
-        std::map<int, GEO::BoundaryIntCells>::const_iterator elepatches =
+        std::map<int, CORE::GEO::BoundaryIntCells>::const_iterator elepatches =
             interface.find(eledistance.front().first);
         if (elepatches == interface.end())
           dserror("Could not find the boundary integration cells belonging to Element %d.",
               eledistance.front().first);
 
         // number of flamefront patches for this element
-        const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
+        const std::vector<CORE::GEO::BoundaryIntCell> patches = elepatches->second;
         const int numpatch = patches.size();
 
         //--------------------------------------------------------------------
@@ -870,7 +871,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
           for (int ipatch = 0; ipatch < numpatch; ++ipatch)
           {
             // get a single patch from group of flamefront patches
-            const GEO::BoundaryIntCell patch = patches[ipatch];
+            const CORE::GEO::BoundaryIntCell patch = patches[ipatch];
 
             // only triangles and quadrangles are allowed as flame front patches (boundary cells)
             if (!(patch.Shape() == DRT::Element::tri3 or patch.Shape() == DRT::Element::quad4))
@@ -1001,7 +1002,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(const std::map<int, GEO::BoundaryIntCe
  |                                                                           henke 12/09 |
  *----------------------------------------------------------------------  -------------- */
 void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const LINALG::Matrix<3, 1>& node,
-    const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
     const LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist)
 {
   // indicator
@@ -1104,7 +1105,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const LINALG::Matri
  | compute distance to edge of patch                                         henke 08/09 |
  *-------------------------------------------------------------------------------------- */
 void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node,
-    const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
     double& edgedist)
 {
   // set temporary edgedist to large value
@@ -1176,7 +1177,7 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>
  | compute distance to vertex of patch                                       henke 08/09 |
  *-------------------------------------------------------------------------------------- */
 void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node,
-    const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
     double& vertexdist)
 {
   // set temporary vertexdist to large value
@@ -1213,8 +1214,9 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const LINALG::Matrix<3, 1
 /*-------------------------------------------------------------------------------------*
  | compute normal vector to interface patch                                henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(const GEO::BoundaryIntCell& patch,
-    const LINALG::SerialDenseMatrix& patchcoord, LINALG::Matrix<3, 1>& normal)
+void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
+    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    LINALG::Matrix<3, 1>& normal)
 {
   // first point of flame front patch
   LINALG::Matrix<3, 1> point1;
@@ -1265,7 +1267,7 @@ void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(const GEO::Bounda
  *------------------------------------------------- ---------------------------------- */
 template <DRT::Element::DiscretizationType DISTYPE>
 bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node,
-    const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
     const LINALG::Matrix<3, 1>& normal, LINALG::Matrix<2, 1>& eta, double& alpha)
 {
   // indicator for convergence of Newton-Raphson scheme
@@ -1273,7 +1275,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
   // number space dimensions for 3d combustion problems
   const size_t nsd = 3;
   // here, a triangular boundary integration cell is assumed (numvertices = 3)
-  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const size_t numvertices = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by
@@ -1315,11 +1317,11 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
     funct.Clear();
-    DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
+    CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
     deriv.Clear();
-    DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
@@ -1407,7 +1409,7 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
   double volminus = 0.0;
   double volplus = 0.0;
   double surface = 0.0;
-  std::map<int, GEO::BoundaryIntCells> interface;
+  std::map<int, CORE::GEO::BoundaryIntCells> interface;
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   SCATRA::LEVELSET::Intersection intersect;
@@ -1437,10 +1439,11 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitElliptic(std::map<int, GEO::BoundaryIntCells>& interface)
+void SCATRA::LevelSetAlgorithm::ReinitElliptic(
+    std::map<int, CORE::GEO::BoundaryIntCells>& interface)
 {
   // store interface
-  interface_eleq_ = Teuchos::rcp(new std::map<int, GEO::BoundaryIntCells>(interface));
+  interface_eleq_ = Teuchos::rcp(new std::map<int, CORE::GEO::BoundaryIntCells>(interface));
 
   // call the executing method
   ReinitializeWithEllipticEquation();

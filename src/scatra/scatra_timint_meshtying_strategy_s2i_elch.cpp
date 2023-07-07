@@ -30,7 +30,7 @@
 
 #include "linalg_mapextractor.H"
 #include "linalg_sparseoperator.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "utils_singleton_owner.H"
 
 #include "lib_utils_gid_vector.H"
@@ -555,7 +555,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -564,7 +564,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -615,7 +615,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   this->ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal temperature values
   LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
@@ -644,7 +645,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-        GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        GetFRT(), my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -698,8 +699,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
-      r_m);
+      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), my::numdofpernode_slave_,
+      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 
@@ -728,7 +729,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -737,7 +738,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -848,7 +849,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal master temperature values and shape derivatives
   LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
@@ -878,7 +880,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, dummy_shapederivatives, my::scatraparamsboundary_,
-        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF, k_ss, k_ms);
+        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF,
+        my::numdofpernode_slave_, k_ss, k_ms);
   }  // loop over integration points
 }
 
@@ -936,7 +939,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -945,7 +948,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -1067,7 +1070,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
   Epetra_SerialDenseMatrix dummy_ksm;
@@ -1142,7 +1146,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   ExtractNodeValues(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::tri_7point);
+  const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for shape derivatives
   LINALG::Matrix<3, nen_slave_> dummy_shape_deriv;
@@ -1242,7 +1247,7 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
   DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
   DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
-  icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }

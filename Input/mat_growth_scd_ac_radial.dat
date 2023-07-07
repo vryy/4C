@@ -5,20 +5,20 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -31,11 +31,11 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
--------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
@@ -62,14 +62,14 @@ RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX_IDS                   -1
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-10
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ITEMAX                          10
------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -78,7 +78,7 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -117,9 +117,9 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 //MATERIALTANGENT                 finitedifferences
------------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
---------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStaggAitken_SolidToScatra
 ITEMAX                          20
 MAXTIME                         100.0
@@ -128,12 +128,12 @@ RESTARTEVRY                     1
 TIMESTEP                        0.05
 RESULTSEVRY                     1
 SCATRATIMINTTYPE                Standard
---------------------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         5e-08
 STARTOMEGA                      0.9
 MAXOMEGA                        1.2
 MINOMEGA                        0.7
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -165,7 +165,7 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
 MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
@@ -177,30 +177,30 @@ MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 51 52 NUMREAC 1 REACIDS 53 
 MAT 51 MAT_scatra DIFFUSIVITY 0.1
 MAT 52 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 53 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME    0.0 //(2*y) //y+0.2
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME    0.0
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION ((1-cos(pi*t))*0.5) 1
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 4.39956401821199497e-04 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 212 QUANTITY dispy VALUE 1.29723409943776269e-03 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE -5.09644772008966792e-05 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 212 QUANTITY phi VALUE 5.44967379058160506e-02 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 212 QUANTITY phi2 VALUE 2.88672443313470369e-03 TOLERANCE 1e-7
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE  4.39946942367230615e-04 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispy VALUE  1.29723918173195603e-03 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE -5.09559633713216496e-05 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 212 QUANTITY phi VALUE  5.44967379058160506e-02 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 212 QUANTITY phi2 VALUE  2.88670176270418299e-03 TOLERANCE 1e-7
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          9
 NDSURF                          2
 NDVOL                           1
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DSURF                           0
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
 // E 1 - 1 1 1 1 0 0 0 10.0 1.0 1.0 0 0 0 Live Mid 0 0 0 0 0 0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // // front upper left
 // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -218,7 +218,7 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // back lower right
 // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 // // // right upper
 // // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
@@ -238,7 +238,7 @@ DLINE                           0
 // // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left right
 //E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // // left surface
 E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -250,7 +250,7 @@ E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // DPOINT                          0
 // -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 // DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 // // left surface
 // E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
@@ -259,7 +259,7 @@ E 2 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 2 0
 // --------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 // DVOL                            1
 // E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 10.0 CURVE 3 3 FUNCT 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2
 NODE 191 DNODE 3
@@ -268,7 +268,7 @@ NODE 212 DNODE 5
 NODE 62 DNODE 6
 NODE 216 DNODE 7
 NODE 71 DNODE 8
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 62 DLINE 1
 NODE 64 DLINE 1
 NODE 104 DLINE 1
@@ -323,7 +323,7 @@ NODE 35 DLINE 9
 NODE 47 DLINE 9
 NODE 59 DLINE 9
 NODE 71 DLINE 9
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 5 DSURFACE 1
@@ -396,7 +396,7 @@ NODE 213 DSURFACE 2
 NODE 214 DSURFACE 2
 NODE 215 DSURFACE 2
 NODE 216 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
 NODE 3 DVOL 1
@@ -613,7 +613,7 @@ NODE 213 DVOL 1
 NODE 214 DVOL 1
 NODE 215 DVOL 1
 NODE 216 DVOL 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 1.00000000e+00
 NODE 2 COORD 0.00000000e+00 0.00000000e+00 8.00000012e-01
 NODE 3 COORD 0.00000000e+00 2.00000003e-01 8.00000012e-01
@@ -830,7 +830,7 @@ NODE 213 COORD 1.00000000e+00 1.00000000e+00 6.00000024e-01
 NODE 214 COORD 1.00000000e+00 1.00000000e+00 4.00000006e-01
 NODE 215 COORD 1.00000000e+00 1.00000000e+00 2.00000003e-01
 NODE 216 COORD 1.00000000e+00 1.00000000e+00 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8SCATRA HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
 2 SOLIDH8SCATRA HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
 3 SOLIDH8SCATRA HEX8 9 13 14 10 11 15 16 12 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
@@ -956,5 +956,5 @@ NODE 216 COORD 1.00000000e+00 1.00000000e+00 0.00000000e+00
 123 SOLIDH8SCATRA HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
 124 SOLIDH8SCATRA HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
 125 SOLIDH8SCATRA HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear EAS none TYPE AdvReac RAD 1.0 1.0 0.0
--------------------------------------------------------------------------END
+---------------------------------------------------------------END
 //                              END

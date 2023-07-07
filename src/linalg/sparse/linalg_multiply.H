@@ -11,6 +11,7 @@
 #define LINALG_MULTIPLY_H
 
 #include <Epetra_CrsMatrix.h>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace LINALG
 {

@@ -16,6 +16,7 @@
 #include "inpar_beaminteraction.H"
 #include "linalg_mapextractor.H"
 #include "structure_new_enum_lists.H"
+#include "coupling_adapter.H"
 
 
 // forward declaration ...
@@ -238,7 +239,7 @@ namespace STR
 
      private:
       //! pointer to the problem discretization (cast of base class member)
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<::DRT::Discretization> discret_ptr_;
 
       //! data container holding all beaminteraction related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
@@ -259,7 +260,7 @@ namespace STR
       int myrank_;
 
       //! coupling adapter to transfer vectors and matrices between Discret() and intactids_
-      Teuchos::RCP<ADAPTER::Coupling> coupsia_;
+      Teuchos::RCP<CORE::ADAPTER::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
       Teuchos::RCP<LINALG::MatrixRowTransform> siatransform_;
@@ -270,7 +271,7 @@ namespace STR
       //! @{
       //! interaction discretization handling all interactions (e.g. crosslinker to beam,
       //! beam to beam, potential ...)
-      Teuchos::RCP<DRT::Discretization> ia_discret_;
+      Teuchos::RCP<::DRT::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
       Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
@@ -294,7 +295,7 @@ namespace STR
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
-      Teuchos::RCP<DRT::Discretization> bindis_;
+      Teuchos::RCP<::DRT::Discretization> bindis_;
 
       //! elerowmap of bindis
       Teuchos::RCP<Epetra_Map> rowbins_;

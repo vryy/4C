@@ -42,17 +42,17 @@ int DRT::ELEMENTS::Vele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Optimal Gauss rule (public)                              u.may 04/09|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
     const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

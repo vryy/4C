@@ -17,7 +17,7 @@
 // to Tesselation).
 #define OUTPUT_GLOBAL_DIVERGENCE_CELLS
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -33,8 +33,8 @@ namespace GEO
     class DirectDivergence
     {
      public:
-      DirectDivergence(
-          VolumeCell* volcell, Element* elem, const GEO::CUT::Point::PointPosition posi, Mesh& mesh)
+      DirectDivergence(VolumeCell* volcell, Element* elem,
+          const CORE::GEO::CUT::Point::PointPosition posi, Mesh& mesh)
           : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
       {
       }
@@ -44,20 +44,21 @@ namespace GEO
       /*!
       \brief Generate integration points on the facets of the volumecell
       */
-      Teuchos::RCP<DRT::UTILS::GaussPoints> VCIntegrationRule(std::vector<double>& RefPlaneEqn);
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> VCIntegrationRule(
+          std::vector<double>& RefPlaneEqn);
 
       /*!
       \brief Compute and set correspondingly the volume of the considered volumecell from the
       generated integration rule and compare it with full application of divergence theorem
        */
-      void DebugVolume(const DRT::UTILS::GaussIntegration& gpv, bool& isNeg);
+      void DebugVolume(const CORE::DRT::UTILS::GaussIntegration& gpv, bool& isNeg);
 
       /*!
       \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
       output.
        */
-      void DivengenceCellsGMSH(
-          const DRT::UTILS::GaussIntegration& gpv, Teuchos::RCP<DRT::UTILS::GaussPoints>& gpmain);
+      void DivengenceCellsGMSH(const CORE::DRT::UTILS::GaussIntegration& gpv,
+          Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gpmain);
 
      private:
       /*!
@@ -77,7 +78,7 @@ namespace GEO
       Element* elem1_;
 
       //! position of this volumecell
-      const GEO::CUT::Point::PointPosition position_;
+      const CORE::GEO::CUT::Point::PointPosition position_;
 
       //! mesh that contains the background element
       Mesh& mesh_;
@@ -92,6 +93,6 @@ namespace GEO
       std::vector<Point*> refPtsGmsh_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

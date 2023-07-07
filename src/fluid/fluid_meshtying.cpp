@@ -20,12 +20,12 @@
 #include "mortar_node.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "linalg_nullspace.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 #include "lib_globalproblem.H"
 #include "io.H"
 #include "io_control.H"
+#include "linear_solver_method_parameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -44,7 +44,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
       gmdofrowmap_(Teuchos::null),
       mergedmap_(Teuchos::null),
       valuesdc_(Teuchos::null),
-      adaptermeshtying_(Teuchos::rcp(new ADAPTER::CouplingMortar())),
+      adaptermeshtying_(Teuchos::rcp(new CORE::ADAPTER::CouplingMortar())),
       pcoupled_(true),
       dconmaster_(false),
       firstnonliniter_(false),
@@ -74,9 +74,6 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
       discret_, discret_, Teuchos::null, coupleddof, "Mortar", discret_->Comm(), true);
-
-  // OutputSetUp();
-  // AnalyzeMatrix(adaptermeshtying_->GetMortarTrafo());
 
   // 4 different systems to solve
   // a) Condensation with a block matrix (condensed_bmat)
@@ -181,7 +178,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
         std::string inv = "BMatMerged";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = *(mergedmap_);
-        LINALG::NULLSPACE::FixNullSpace(inv.data(), oldmap, newmap, solver_.Params());
+        CORE::LINEAR_SOLVER::Parameters::FixNullSpace(inv.data(), oldmap, newmap, solver_.Params());
         std::cout << std::endl;
       }
       else if (msht_ == INPAR::FLUID::condensed_bmat)
@@ -191,7 +188,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           std::string inv = "Inverse1";
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(0, 0).EpetraMatrix()->RowMap();
-          LINALG::NULLSPACE::FixNullSpace(
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
               inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse1"));
           std::cout << std::endl;
         }
@@ -200,7 +197,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
           std::string inv = "Inverse2";
           const Epetra_Map& oldmap = *(dofrowmap_);
           const Epetra_Map& newmap = matsolve->Matrix(1, 1).EpetraMatrix()->RowMap();
-          LINALG::NULLSPACE::FixNullSpace(
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
               inv.data(), oldmap, newmap, solver_.Params().sublist("Inverse2"));
           std::cout << std::endl;
         }
@@ -891,7 +888,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /**********************************************************************/
   /* Condensation operation for the sysmat                              */
@@ -1227,7 +1224,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm
@@ -1356,7 +1353,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ and firstnonliniter_) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   // define new incremental vector
   Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap, true);
@@ -1421,7 +1418,7 @@ void FLD::Meshtying::OutputSetUp()
     std::cout << *(adaptermeshtying_->SlaveDofRowMap())<< std::endl << std::endl;
    */
     std::cout << "Projection matrix:" << std::endl;
-    std::cout << *(adaptermeshtying_->GetMortarTrafo()) << std::endl << std::endl;
+    std::cout << *(adaptermeshtying_->GetMortarMatrixP()) << std::endl << std::endl;
   }
 
   /* {
@@ -1842,7 +1839,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm

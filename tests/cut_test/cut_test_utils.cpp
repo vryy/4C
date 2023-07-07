@@ -17,7 +17,7 @@
 int numnode;
 int numele;
 
-GEO::CUT::Element* create_hex8(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(8);
@@ -30,7 +30,7 @@ GEO::CUT::Element* create_hex8(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& x
   return mesh.CreateHex8(numele++, nids);
 }
 
-GEO::CUT::Element* create_tet4(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -43,7 +43,7 @@ GEO::CUT::Element* create_tet4(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& x
   return mesh.CreateTet4(numele++, nids);
 }
 
-GEO::CUT::Element* create_wedge6(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(6);
@@ -56,7 +56,7 @@ GEO::CUT::Element* create_wedge6(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix&
   return mesh.CreateWedge6(numele++, nids);
 }
 
-GEO::CUT::Element* create_pyramid5(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_pyramid5(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(5);
@@ -69,7 +69,7 @@ GEO::CUT::Element* create_pyramid5(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatri
   return mesh.CreatePyramid5(numele++, nids);
 }
 
-GEO::CUT::Side* create_quad4(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -124,14 +124,14 @@ void create_hex8(Epetra_SerialDenseMatrix& xyze, double dx, double dy, double dz
   }
 }
 
-GEO::CUT::Element* create_hex8(GEO::CUT::Mesh& mesh, double dx, double dy, double dz)
+CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, double dx, double dy, double dz)
 {
   Epetra_SerialDenseMatrix xyze(3, 8);
   create_hex8(xyze, dx, dy, dz);
   return create_hex8(mesh, xyze);
 }
 
-void create_hex8_mesh(GEO::CUT::Mesh& mesh, int rows, int cols, int depth)
+void create_hex8_mesh(CORE::GEO::CUT::Mesh& mesh, int rows, int cols, int depth)
 {
   for (int i = 0; i < rows + 1; ++i)
   {
@@ -178,7 +178,7 @@ void create_hex8_mesh(GEO::CUT::Mesh& mesh, int rows, int cols, int depth)
 }
 
 void create_quad4_mesh(
-    GEO::CUT::Mesh& mesh, int rows, int cols, std::vector<GEO::CUT::Side*>& sides)
+    CORE::GEO::CUT::Mesh& mesh, int rows, int cols, std::vector<CORE::GEO::CUT::Side*>& sides)
 {
   double sqrt2 = 1. / sqrt(2.);
 
@@ -219,7 +219,7 @@ void create_quad4_mesh(
 }
 
 void create_quad4_cylinder_mesh(
-    GEO::CUT::MeshIntersection& intersection, double x, double y, int rows, int cols)
+    CORE::GEO::CUT::MeshIntersection& intersection, double x, double y, int rows, int cols)
 {
   double r = 1.;
 
@@ -261,7 +261,7 @@ void create_quad4_cylinder_mesh(
   numnode += rownodes * colnodes;
 }
 
-void cutmesh(GEO::CUT::Mesh& mesh)
+void cutmesh(CORE::GEO::CUT::Mesh& mesh)
 {
   mesh.Status();
 
@@ -366,7 +366,7 @@ void cutmesh(GEO::CUT::Mesh& mesh)
 
 SimpleWrapper::SimpleWrapper() : side_count_(0)
 {
-  mesh_ = new GEO::CUT::MeshIntersection;
+  mesh_ = new CORE::GEO::CUT::MeshIntersection;
   mesh_->GetOptions().Init_for_Cuttests();  // use full cln
 }
 
@@ -553,7 +553,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
         CreateSide(DRT::Element::quad4, side_xyze);
@@ -567,7 +567,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
         CreateSide(DRT::Element::tri3, side_xyze);
@@ -582,7 +582,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
         CreateSide(DRT::Element::tri3, tri3_side_xyze);
@@ -591,7 +591,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
         CreateSide(DRT::Element::quad4, quad4_side_xyze);
@@ -606,7 +606,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 3; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
         CreateSide(DRT::Element::tri3, tri3_side_xyze);
@@ -615,7 +615,7 @@ void SimpleWrapper::CreateElementSides(
       {
         for (int j = 0; j < 4; ++j)
         {
-          int node = DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j];
+          int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
         CreateSide(DRT::Element::quad4, quad4_side_xyze);

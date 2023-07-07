@@ -126,7 +126,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();
@@ -135,7 +135,7 @@ namespace DRT
       ~FluidInternalSurfaceStab() { return; };
 
       /// number of space dimensions of the FluidIntFace element
-      static const int facensd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int facensd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       /// number of space dimensions of the parent element
       static const int nsd_ = facensd_ + 1;
@@ -144,19 +144,19 @@ namespace DRT
       static const int numdofpernode_ = nsd_ + 1;
 
       /// number of nodes
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       /// number of parentnodes
-      static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+      static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
       /// number of parentnodes of neighbor element
-      static const int niel = DRT::UTILS::DisTypeToNumNodePerEle<ndistype>::numNodePerElement;
+      static const int niel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<ndistype>::numNodePerElement;
 
       /// number of second order derivatives for master element
-      static const int numderiv2_p = DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
+      static const int numderiv2_p = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
       /// number of second order derivatives for slave element
-      static const int numderiv2_n = DRT::UTILS::DisTypeToNumDeriv2<ndistype>::numderiv2;
+      static const int numderiv2_n = CORE::DRT::UTILS::DisTypeToNumDeriv2<ndistype>::numderiv2;
 
 
 
@@ -254,10 +254,10 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          DRT::UTILS::GaussIntegration::iterator& iquad,  ///< actual integration point
-          int master_eid,                                 ///< master parent element
-          int slave_eid,                                  ///< slave parent element
-          bool use2ndderiv = false                        ///< flag to use 2nd order derivatives
+          CORE::DRT::UTILS::GaussIntegration::iterator& iquad,  ///< actual integration point
+          int master_eid,                                       ///< master parent element
+          int slave_eid,                                        ///< slave parent element
+          bool use2ndderiv = false  ///< flag to use 2nd order derivatives
       );
 
       //! evaluate velocity and pressure and derivatives at integr. point
@@ -1093,7 +1093,7 @@ namespace DRT
 
 
       //! face/edge integration points
-      Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints_;
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints_;
 
       //! number of Gaussian points
       unsigned int numgp_;

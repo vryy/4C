@@ -290,7 +290,7 @@ namespace DRT
       Vele3& operator=(const Vele3& old);
 
       //! set number of gauss points to element shape default
-      DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype) const;
+      CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype) const;
 
     };  // class Bele3
 
@@ -438,7 +438,7 @@ namespace DRT
       Vele3Surface& operator=(const Vele3Surface& old);
 
       //! set number of gauss points to element shape default
-      DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
+      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
 
     };  // class Vele3Surface
 
@@ -569,7 +569,7 @@ namespace DRT
       Vele3Line& operator=(const Vele3Line& old);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
     };  // class Vele3Line
 

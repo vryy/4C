@@ -19,7 +19,7 @@
 
 #include "linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 
-#include "solver_ifpackpreconditioner.H"
+#include "linear_solver_preconditioner_ifpack.H"
 
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
@@ -107,7 +107,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   }
 
   ifpackprec_ =
-      Teuchos::rcp(new LINALG::SOLVER::IFPACKPreconditioner(&outfile, ifpacklist, azlist));
+      Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(&outfile, ifpacklist, azlist));
 
   // get blocks of system matrix and save them in 2-dim array
   std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix>>> rows;

@@ -148,8 +148,8 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -470,8 +470,8 @@ void DRT::ELEMENTS::Beam3k::SetUpInitialRotations(const std::vector<double>& nod
     if (theta0_[i].Norm2() > M_PI)
     {
       LINALG::Matrix<4, 1> Q(true);
-      LARGEROTATIONS::angletoquaternion(theta0_[i], Q);
-      LARGEROTATIONS::quaterniontoangle(Q, theta0_[i]);
+      CORE::LARGEROTATIONS::angletoquaternion(theta0_[i], Q);
+      CORE::LARGEROTATIONS::quaterniontoangle(Q, theta0_[i]);
     }
   }
 }
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     for (int node = 0; node < BEAM3K_COLLOCATION_POINTS; node++)
     {
       Gref[node].Clear();
-      LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
+      CORE::LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
     Tref_.resize(2);
@@ -544,8 +544,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     }
 
     // Get integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+        CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
     // Vector holding angle theta of triads
     std::vector<LINALG::Matrix<3, 1>> theta_cp;
@@ -606,10 +606,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       // Get values of shape functions
       N_i_xi.Clear();
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
 
       // Determine storage position for the node colpt
-      ind = LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+      ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
       // current value of derivatives at GP (derivatives in xi!)
       r_xi.Clear();
@@ -629,15 +629,15 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       if (ind > 1)  // only for internal CPs
       {
         LINALG::Matrix<3, 3> G_aux(true);
-        LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
+        CORE::LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
-        LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
-        LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
       }
       else
       {
-        LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
       }
       Qrefnew_[ind] = Qrefconv_[ind];
     }
@@ -646,7 +646,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     for (int colpt = 0; colpt < BEAM3K_COLLOCATION_POINTS; colpt++)
     {
       theta_cp[colpt].Clear();
-      LARGEROTATIONS::triadtoangleright(theta_cp[colpt], Gref[REFERENCE_NODE], Gref[colpt]);
+      CORE::LARGEROTATIONS::triadtoangleright(theta_cp[colpt], Gref[REFERENCE_NODE], Gref[colpt]);
     }
 
     // Loop through all GPs and computation of all relevant values at each gp
@@ -660,10 +660,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       L_i_xi.Clear();
       N_i_xi.Clear();
       N_i.Clear();
-      DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+      CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -694,7 +694,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       computestrain(theta, theta_s, K0_[numgp]);
 
       LINALG::Matrix<3, 3> temp_triad(true);
-      LARGEROTATIONS::angletotriad(theta, temp_triad);
+      CORE::LARGEROTATIONS::angletotriad(theta, temp_triad);
       triad_mat.Multiply(Gref[REFERENCE_NODE], temp_triad);
       SetInitialDynamicClassVariables(numgp, triad_mat, r);
     }
@@ -740,7 +740,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     for (int node = 0; node < BEAM3K_COLLOCATION_POINTS; node++)
     {
       Gref[node].Clear();
-      LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
+      CORE::LARGEROTATIONS::angletotriad(theta0_[node], Gref[node]);
     }
 
     Tref_.resize(2);
@@ -755,8 +755,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     }
 
     // Get integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::MYGAUSSRULEBEAM3K);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+        CORE::DRT::UTILS::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
     // Vector holding angle theta of triads
     std::vector<double> phi_cp;
@@ -825,12 +825,12 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       L_i.Clear();
       N_i_xi.Clear();
       N_i_xixi.Clear();
-      DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
 
       // Determine storage position for the node colpt
-      ind = LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+      ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
       // current value of derivatives at GP (derivatives in xi!)
       r_xi.Clear();
@@ -855,15 +855,15 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       if (ind > 1)  // only for internal CPs
       {
         LINALG::Matrix<3, 3> G_aux(true);
-        LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
+        CORE::LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
-        LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
-        LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
       }
       else
       {
-        LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
       }
       Qrefnew_[ind] = Qrefconv_[ind];
     }  //(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
@@ -878,8 +878,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       {
         tangentref(i) = Gref[colpt](i, 0);
       }
-      LARGEROTATIONS::CalculateSRTriads<double>(tangentref, Gref[REFERENCE_NODE], Lambdabarref);
-      LARGEROTATIONS::triadtoangleleft(phivec, Lambdabarref, Gref[colpt]);
+      CORE::LARGEROTATIONS::CalculateSRTriads<double>(
+          tangentref, Gref[REFERENCE_NODE], Lambdabarref);
+      CORE::LARGEROTATIONS::triadtoangleleft(phivec, Lambdabarref, Gref[colpt]);
       phi_cp[colpt] = 0.0;
       for (int i = 0; i < 3; i++)
       {
@@ -900,11 +901,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       N_i_xi.Clear();
       N_i_xixi.Clear();
 
-      DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
-      DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+      CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -968,7 +969,7 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
   // Matrices to store the the Hermite shape function derivative values
   LINALG::Matrix<1, 2 * nnode> N_i_xi;
-  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
 
   // jacobi = ds/dxi = ||r'_0||
   LINALG::Matrix<3, 1> r_xi;
@@ -1127,7 +1128,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the variation of the centerline position
@@ -1192,7 +1193,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1200,14 +1201,14 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1230,7 +1231,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // *******************************************************************************
 
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
 
   v_theta_bar.Clear();
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
@@ -1282,7 +1283,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   LINALG::Matrix<ndim, 1, double> moment(&(force(3)));
 
   LINALG::Matrix<ndim, ndim, double> S_of_moment(true);
-  LARGEROTATIONS::computespin<double>(S_of_moment, moment);
+  CORE::LARGEROTATIONS::computespin<double>(S_of_moment, moment);
 
 
   // define and initialize variables
@@ -1339,7 +1340,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1347,14 +1348,14 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1381,7 +1382,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   // re-interpolation of quantities at xi based on CP values
   // *******************************************************************************
   L_i.Clear();
-  DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -1421,7 +1422,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the increment of the centerline position
@@ -1494,7 +1495,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1502,13 +1503,13 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi_cp, Shape());
 
     L.Clear();
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1529,7 +1530,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
 
     LINALG::Matrix<3, 3, double> triad_ref_conv_cp(true);
-    LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_ref_conv_cp);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_ref_conv_cp);
 
     g_1_cp_bar.Clear();
     for (unsigned int idim = 0; idim < ndim; ++idim) g_1_cp_bar(idim) = triad_ref_conv_cp(idim, 0);
@@ -1650,7 +1651,7 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
         theta(dim) = dofvec(dofperboundarynode * node + 3 + dim);
       }
       // transform to triad
-      LARGEROTATIONS::angletotriad(theta, triad);
+      CORE::LARGEROTATIONS::angletotriad(theta, triad);
 
       // direction of tangent is equivalent to first base vector of triad; length of tangent is 7th
       // nodal DOF
@@ -1727,11 +1728,11 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(
         disptheta(i) = FADUTILS::CastToDouble(dofvec(7 * node + 3 + i));
       }
 
-      LARGEROTATIONS::angletoquaternion(disptheta, deltaQ);
+      CORE::LARGEROTATIONS::angletoquaternion(disptheta, deltaQ);
 
       LINALG::Matrix<4, 1> Q0;
-      LARGEROTATIONS::angletoquaternion(Theta0()[node], Q0);
-      LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnew);
+      CORE::LARGEROTATIONS::angletoquaternion(Theta0()[node], Q0);
+      CORE::LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnew);
 
       // renormalize quaternion to keep its absolute value one even in case of long simulations
       // and intricate calculations
@@ -1739,7 +1740,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(
 
       // Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by
       // quaterniontoangle()
-      LARGEROTATIONS::quaterniontoangle(Qnew, thetanew);
+      CORE::LARGEROTATIONS::quaterniontoangle(Qnew, thetanew);
 
       // Finally set rotation values in disp_totlag
       for (unsigned int i = 0; i < 3; ++i)
@@ -1831,20 +1832,20 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
       triad_ref.Clear();
       triad_aux.Clear();
       triad_aux2.Clear();
-      LARGEROTATIONS::quaterniontotriad(Qrefconv_[node], triad_aux);
+      CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[node], triad_aux);
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 
-      LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
+      CORE::LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
 
       // Store nodal reference triad
       LINALG::Matrix<4, 1, T> Qref(true);
-      LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
+      CORE::LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
       for (unsigned int i = 0; i < 4; ++i) Qref_new[node](i) = FADUTILS::CastToDouble(Qref(i));
 
       // calculate material triad
       triad_mat_cp[node].Clear();
-      LARGEROTATIONS::RotateTriad(triad_ref, alpha, triad_mat_cp[node]);
+      CORE::LARGEROTATIONS::RotateTriad(triad_ref, alpha, triad_mat_cp[node]);
     }
   }
   else
@@ -1857,7 +1858,7 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
         theta(i) = disp_totlag(7 * node + 3 + i);
       }
       triad_mat_cp[node].Clear();
-      LARGEROTATIONS::angletotriad(theta, triad_mat_cp[node]);
+      CORE::LARGEROTATIONS::angletotriad(theta, triad_mat_cp[node]);
 
       // tangent
       for (unsigned int i = 0; i < 3; ++i)
@@ -1899,12 +1900,12 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     // node=0->xi=-1  node=1->xi=0 node=2->xi=1
     xi = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
     N_i_xi.Clear();
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
     L_i.Clear();
-    DRT::UTILS::shape_function_1D(L_i, xi, Shape());
+    CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
 
     // Determine storage position for the node node
-    ind = LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1919,20 +1920,20 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     triad_ref.Clear();
     triad_aux.Clear();
     triad_aux2.Clear();
-    LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_aux);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_aux);
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 
-    LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
+    CORE::LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
 
     // Store nodal reference triad
     LINALG::Matrix<4, 1, T> Qref(true);
-    LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
+    CORE::LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
     for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = FADUTILS::CastToDouble(Qref(i));
 
     // calculate material triad
     triad_mat_cp[ind].Clear();
-    LARGEROTATIONS::RotateTriad(triad_ref, alpha, triad_mat_cp[ind]);
+    CORE::LARGEROTATIONS::RotateTriad(triad_ref, alpha, triad_mat_cp[ind]);
   }
 }
 
@@ -1986,7 +1987,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
   LINALG::Matrix<3, 1> diff(true);
 
   LINALG::Matrix<ndim, 1, FAD> delta_r_ost(true);
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> pbb =
+  Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> pbb =
       BrownianDynParamsInterface().GetPeriodicBoundingBox();
 
   LINALG::Matrix<3, 1> unshiftedrconvmass_i(true), position_i_double(true);
@@ -2039,7 +2040,7 @@ void DRT::ELEMENTS::Beam3k::Calc_v_thetaperp(
   v_thetaperp.Clear();
 
   LINALG::Matrix<3, 3, T> S_of_r_s(true);
-  LARGEROTATIONS::computespin<T>(S_of_r_s, r_s);
+  CORE::LARGEROTATIONS::computespin<T>(S_of_r_s, r_s);
 
   v_thetaperp.MultiplyTN(N_s, S_of_r_s);
   v_thetaperp.Scale(-1.0 * std::pow(abs_r_s, -2.0));
@@ -2074,7 +2075,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_thetaperp(
   lin_thetaperp.Clear();
 
   LINALG::Matrix<3, 3, double> S_of_r_s(true);
-  LARGEROTATIONS::computespin<double>(S_of_r_s, r_s);
+  CORE::LARGEROTATIONS::computespin<double>(S_of_r_s, r_s);
 
   lin_thetaperp.Multiply(S_of_r_s, N_s);
   lin_thetaperp.Scale(std::pow(abs_r_s, -2.0));
@@ -2095,7 +2096,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_thetapar(
   lin_thetapar.Clear();
 
   LINALG::Matrix<3, 3, double> S_of_g_1(true);
-  LARGEROTATIONS::computespin<double>(S_of_g_1, g_1);
+  CORE::LARGEROTATIONS::computespin<double>(S_of_g_1, g_1);
 
 
   // Todo @grill: decide about alternatives, apparently no change in results
@@ -2353,7 +2354,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
   LINALG::Matrix<3, 3, double> auxmatrix(true);
 
   LINALG::Matrix<3, 3, double> spinmatrix(true);
-  LARGEROTATIONS::computespin(spinmatrix, angular_velocity_material);
+  CORE::LARGEROTATIONS::computespin(spinmatrix, angular_velocity_material);
 
   auxmatrix.Multiply(spinmatrix, C_rho);
 
@@ -2361,14 +2362,14 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
   C_rho_W.Multiply(C_rho, angular_velocity_material);
 
   spinmatrix.Clear();
-  LARGEROTATIONS::computespin(spinmatrix, C_rho_W);
+  CORE::LARGEROTATIONS::computespin(spinmatrix, C_rho_W);
   auxmatrix.Update(-1.0, spinmatrix, 1.0);
   auxmatrix.Scale(lin_prefactor_vel);
 
   auxmatrix.Update(lin_prefactor_acc, C_rho, 1.0);
 
 
-  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
+  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = CORE::LARGEROTATIONS::Tmatrix(deltatheta);
   LINALG::Matrix<3, 3, double> Lambda_conv_Tmat_of_deltatheta(true);
   Lambda_conv_Tmat_of_deltatheta.MultiplyTN(triad_mat_conv, Tmat_of_deltatheta);
 
@@ -2412,7 +2413,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous(
     for (unsigned int j = 0; j < 3; ++j)
       gamma_g1_g1_conv(i, j) = triad_mat(i, 0) * triad_mat_conv(j, 0) * gamma_polar / dt;
 
-  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
+  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = CORE::LARGEROTATIONS::Tmatrix(deltatheta);
 
   auxmatrix.Multiply(gamma_g1_g1_conv, Tmat_of_deltatheta);
 

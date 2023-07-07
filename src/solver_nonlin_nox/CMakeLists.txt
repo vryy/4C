@@ -6,12 +6,11 @@ set(_solver_nonlin_nox_dependencies
     constraint
     contact
     contact_aug
-    geometry
+    core
     inpar
     lib
     linalg
     scatra
-    solver
     structure_new
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_solver_nonlin_nox_dependencies})

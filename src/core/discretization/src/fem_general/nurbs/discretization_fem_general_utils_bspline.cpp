@@ -13,7 +13,7 @@
 //--------------------------------------------------
 // Constructor
 //--------------------------------------------------
-DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
+CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
     const int degree, const Epetra_SerialDenseVector local_knotvector)
     : myknotvector_(local_knotvector),
       bspline_(degree + 1),
@@ -26,7 +26,7 @@ DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
 //--------------------------------------------------
 // Copy constructor
 //--------------------------------------------------
-DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial& old)
+CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial& old)
     : degree_(old.degree_)
 {
   myknotvector_ = old.myknotvector_;
@@ -36,10 +36,10 @@ DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial&
 //--------------------------------------------------
 // Destructor
 //--------------------------------------------------
-DRT::NURBS::UTILS::BsplinePolynomial::~BsplinePolynomial() { return; }
+CORE::DRT::NURBS::UTILS::BsplinePolynomial::~BsplinePolynomial() { return; }
 
 
-void DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string errormessage)
+void CORE::DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string errormessage)
 {
   // give some information on bspline
   PrintBspline();

@@ -15,7 +15,7 @@
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
 #include "lib_globalproblem.H"
@@ -413,9 +413,9 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
  ----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 {
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get single field block matrices
   Teuchos::RCP<LINALG::SparseMatrix> s =
@@ -468,13 +468,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
   s->UnComplete();
 
   (*fggtransform_)(fgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale * timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, true,
-      true);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+      *s, true, true);
 
   Teuchos::RCP<LINALG::SparseMatrix> lfgi =
       Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
   (*fgitransform_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-      ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), *lfgi);
 
   lfgi->Complete(fgi.DomainMap(), s->RangeMap());
 
@@ -483,12 +483,12 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
   Teuchos::RCP<LINALG::SparseMatrix> lfig =
       Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(), 81, false));
   (*figtransform_)(f->FullRowMap(), f->FullColMap(), fig, timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), systemmatrix_->Matrix(1, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), systemmatrix_->Matrix(1, 0));
 
   systemmatrix_->Assign(1, 1, LINALG::View, fii);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-      ADAPTER::CouplingSlaveConverter(coupsa), systemmatrix_->Matrix(2, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(coupsa), systemmatrix_->Matrix(2, 0));
 
   systemmatrix_->Assign(2, 2, LINALG::View, aii);
 
@@ -506,24 +506,24 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 
     // reuse transform objects to add shape derivative matrices to structural blocks
     (*figtransform_)(f->FullRowMap(), f->FullColMap(), fmig, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsf), systemmatrix_->Matrix(1, 0), false, true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), systemmatrix_->Matrix(1, 0), false, true);
 
 
     (*fmggtransform_)(fmgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingSlaveConverter(coupsf), *s, false,
-        true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), *s, false, true);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), systemmatrix_->Matrix(1, 2), false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), systemmatrix_->Matrix(1, 2), false);
 
     {
       Teuchos::RCP<LINALG::SparseMatrix> lfmgi =
           Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(), 81, false));
       (*fmgitransform_)(fmgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-          ADAPTER::CouplingSlaveConverter(coupsf), ADAPTER::CouplingMasterConverter(coupfa), *lfmgi,
-          false, false);
+          CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+          CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
       lfmgi->Complete(aii.DomainMap(), s->RangeMap());
 

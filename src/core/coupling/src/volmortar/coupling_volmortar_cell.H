@@ -26,7 +26,7 @@ namespace LINALG
   class SerialDenseMatrix;
 }  // namespace LINALG
 
-namespace VOLMORTAR
+namespace CORE::VOLMORTAR
 {
   class Cell
   {
@@ -36,7 +36,7 @@ namespace VOLMORTAR
 
     */
     Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
-        const DRT::Element::DiscretizationType& shape);
+        const ::DRT::Element::DiscretizationType& shape);
 
     /*!
     \brief destructor
@@ -72,7 +72,7 @@ namespace VOLMORTAR
     \brief get shape
 
     */
-    virtual DRT::Element::DiscretizationType Shape() const { return shape_; }
+    virtual ::DRT::Element::DiscretizationType Shape() const { return shape_; }
 
     /*!
     \brief get cell volume
@@ -82,12 +82,12 @@ namespace VOLMORTAR
 
     //@}
    protected:
-    int id_;                                  // local ID of this cell
-    Epetra_SerialDenseMatrix coords_;         // coords of cell vertices (dim,vertices)
-    DRT::Element::DiscretizationType shape_;  // shape of this element (always tet4)
-    double vol_;                              // integration cell volume
+    int id_;                                    // local ID of this cell
+    Epetra_SerialDenseMatrix coords_;           // coords of cell vertices (dim,vertices)
+    ::DRT::Element::DiscretizationType shape_;  // shape of this element (always tet4)
+    double vol_;                                // integration cell volume
   };
 
-}  // namespace VOLMORTAR
+}  // namespace CORE::VOLMORTAR
 
 #endif  // COUPLING_VOLMORTAR_CELL_H

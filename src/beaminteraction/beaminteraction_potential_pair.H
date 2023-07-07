@@ -164,7 +164,7 @@ namespace BEAMINTERACTION
     void CheckInitSetup() const;
 
     //! get Gauss rule to be used
-    DRT::UTILS::GaussRule1D GetGaussRule() const;
+    CORE::DRT::UTILS::GaussRule1D GetGaussRule() const;
 
     /*!
     \brief Set first element

@@ -61,9 +61,9 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(::UTILS::SingletonAction action)
+DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static ::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
+  static CORE::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
       singleton_owner(
           []()
           {
@@ -414,7 +414,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
   numgpnormow_ = params.get<int>("gpnormow");
   numgpplane_ = params.get<int>("gppar");
   // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
   PrepareGaussRule();
@@ -495,12 +495,12 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   }
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(my::xsi_, funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(my::xsi_, deriv_);
+  CORE::DRT::UTILS::shape_function<distype>(my::xsi_, funct_);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(my::xsi_, deriv_);
   if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
   {
     // get the second derivatives of standard element at current GP
-    DRT::UTILS::shape_function_deriv2<distype>(my::xsi_, deriv2_);
+    CORE::DRT::UTILS::shape_function_deriv2<distype>(my::xsi_, deriv2_);
   }
   else
     deriv2_.Clear();
@@ -540,7 +540,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   //--------------------------------------------------------------
   if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
   {
-    DRT::UTILS::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    CORE::DRT::UTILS::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();
@@ -825,7 +825,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   if (ele->IsAle())
   {
@@ -847,7 +847,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
     // calculate only for the wall nodes
     if (ewdist_(inode) < 1e-4)
     {
-      LINALG::Matrix<3, 1> test = DRT::UTILS::getNodeCoordinates(inode, distype);
+      LINALG::Matrix<3, 1> test = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
@@ -928,15 +928,15 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
   if (my::is_higher_order_ele_ == false)
     dserror("It is essential that the second derivatives exist!");
 
-  DRT::UTILS::GaussIntegration intpoints(DRT::Element::hex8, 1);
+  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::hex8, 1);
   if (distype == DRT::Element::hex8)
   {
-    DRT::UTILS::GaussIntegration intpointstmp(cgp_);
+    CORE::DRT::UTILS::GaussIntegration intpointstmp(cgp_);
     intpoints = intpointstmp;
   }
   else if (distype == DRT::Element::tet4)
   {
-    DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::tet4, 2 * numgpnorm_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::tet4, 2 * numgpnorm_ - 1);
     intpoints = intpointsplane;
   }
 
@@ -951,8 +951,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -1047,7 +1047,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK(DRT::ELEMENTS::Fl
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
@@ -1090,17 +1090,17 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
 
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
-  //  DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
+  //  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = my::intpoints_.begin();
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = my::intpoints_.begin();
        iquad != my::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point

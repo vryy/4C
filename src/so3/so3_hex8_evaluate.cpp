@@ -616,7 +616,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       .MutableGaussPointDataOutputManagerPtr()
                       ->GetMutableElementCenterData()
                       .at(quantity_name);
-              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
+              CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
@@ -633,10 +633,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                        ->GetMutableNodalDataCount()
                        .at(quantity_name);
 
-              static auto gauss_integration = DRT::UTILS::IntegrationPoints3D(
-                  DRT::UTILS::NumGaussPointsToGaussRule<DRT::Element::DiscretizationType::hex8>(
-                      NUMGPT_SOH8));
-              DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
+              static auto gauss_integration =
+                  CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
+                      DRT::Element::DiscretizationType::hex8>(NUMGPT_SOH8));
+              CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
                   DRT::Element::DiscretizationType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
               DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
@@ -1200,8 +1200,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       xsi(1) = elevec2_epetra(1);
       xsi(2) = elevec2_epetra(2);
       // evaluate shape functions and derivatives at given point w.r.t r,s,t
-      DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi, shapefcts);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi, deriv1);
 
       LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> myvelocitynp;
       for (int node = 0; node < NUMNOD_SOH8; ++node)
@@ -3171,7 +3171,7 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_s
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
     const LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-    DRT::UTILS::shape_function<DRT::Element::hex8>(rst_gp, shapefcts[gp]);
+    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(rst_gp, shapefcts[gp]);
   }
 
   return shapefcts;
@@ -3199,7 +3199,7 @@ void DRT::ELEMENTS::So_hex8::soh8_derivs(
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, const int gp) const
 {
   const LINALG::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.Point(gp), true);
-  DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_gp, derivs);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_gp, derivs);
 }
 
 /*----------------------------------------------------------------------*
@@ -3832,7 +3832,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   static LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv(true);
   deriv.Clear();
-  DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
 
   static LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
   static LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ(true);
@@ -3905,18 +3905,19 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
   static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
-  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, NUMNOD_SOH8>
+  static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+      NUMNOD_SOH8>
       deriv2(true);
   d_F_dxi.Clear();
   deriv2.Clear();
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xXF(true);
     static LINALG::Matrix<NUMDIM_SOH8,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -3947,17 +3948,17 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->A(), true);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMNOD_SOH8>
         deriv2(true);
     deriv2.Clear();
-    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+    static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMDIM_SOH8>
         Xsec(true);
     static LINALG::Matrix<NUMNOD_SOH8,
-        DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);

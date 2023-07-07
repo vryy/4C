@@ -28,7 +28,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](int numdofpernode, int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>>(
@@ -37,7 +37,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Insta
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -88,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const double resistivity = my::scatraparamsboundary_->Resistivity();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -188,12 +188,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
   LINALG::Matrix<nsd_, nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -268,12 +268,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
       // transport
       for (int irow = 0; irow < nen_; ++irow)
       {
-        const int row_conc = irow * 2;
+        const int row_conc = irow * my::numdofpernode_;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
         for (int icol = 0; icol < nen_; ++icol)
         {
-          const int col_conc = icol * 2;
+          const int col_conc = icol * my::numdofpernode_;
           const int col_pot = col_conc + 1;
 
           eslavematrix(row_conc, col_conc) +=
@@ -295,12 +295,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   // electric potential
   for (int irow = 0; irow < nen_; ++irow)
   {
-    const int row_conc = irow * 2;
+    const int row_conc = irow * my::numdofpernode_;
     const int row_pot = row_conc + 1;
 
     for (int icol = 0; icol < nen_; ++icol)
     {
-      const int col_conc = icol * 2;
+      const int col_conc = icol * my::numdofpernode_;
       const int col_pot = col_conc + 1;
 
       eslavematrix(row_pot, col_conc) += numelectrons * eslavematrix(row_conc, col_conc);
@@ -413,12 +413,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const double cmax = matelectrode->CMax();
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
   LINALG::Matrix<nsd_, nen_> XYZe;
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -487,7 +487,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       // compute linearizations associated with equations for lithium transport
       for (int irow = 0; irow < nen_; ++irow)
       {
-        const int row_conc = irow * 2;
+        const int row_conc = irow * my::numdofpernode_;
         const double funct_irow_invF_timefacfac = my::funct_(irow) * invF * timefacfac;
 
         for (int icol = 0; icol < nen_; ++icol)
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // compute linearizations associated with closing equations for electric potential
   for (int irow = 0; irow < nen_; ++irow)
   {
-    const int row_conc = irow * 2;
+    const int row_conc = irow * my::numdofpernode_;
     const int row_pot = row_conc + 1;
 
     for (int icol = 0; icol < nen_; ++icol)
@@ -551,7 +551,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
         for (int icol = 0; icol < nen_; ++icol)
         {
-          const int col_conc = icol * 2;
+          const int col_conc = icol * my::numdofpernode_;
           const int col_pot = col_conc + 1;
 
           eslavematrix(irow, col_pot) +=
@@ -671,7 +671,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density() * faraday);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points

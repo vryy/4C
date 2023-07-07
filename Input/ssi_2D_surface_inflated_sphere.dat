@@ -9,15 +9,15 @@ Test case for instationary diffusion in moving, curved surface
 //ELEMENTS    600
 //NODES       602
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
@@ -28,11 +28,11 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
---------------------------------------------------------STRUCT NOX/Printing
+-----------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
 Outer Iteration                 = Yes
@@ -45,9 +45,9 @@ Test Details                    = No
 Debug                           = No
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = ssi_part_struct_solver.xml
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
@@ -67,11 +67,11 @@ CALCERRORNO                     2
 CONVFORM                        conservative
 SKIPINITDER                     yes
 OUTPUTSCALARS                   entire_domain
---------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-14
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         20
@@ -82,29 +82,29 @@ ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   volume_matching
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 1.00
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4*pi
-----------------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
-----------------------------------------------------------------------FUNCT4
+------------------------------------------------------------FUNCT4
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
-----------------------------------------------------------------------FUNCT5
+------------------------------------------------------------FUNCT5
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME z/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 222 QUANTITY phi VALUE 7.05138595689050462e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 230 QUANTITY phi VALUE 7.05138595689050574e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 246 QUANTITY phi VALUE 7.05138595689050574e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 7.05138595689050574e-01 TOLERANCE 1e-7
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 222 QUANTITY phi VALUE  7.05138595689050574e-01 TOLERANCE 7.1e-09
+SCATRA DIS scatra NODE 230 QUANTITY phi VALUE  7.05138595689050462e-01 TOLERANCE 7.1e-09
+SCATRA DIS scatra NODE 246 QUANTITY phi VALUE  7.05138595689050574e-01 TOLERANCE 7.1e-09
+SCATRA DIS scatra NODE 261 QUANTITY phi VALUE  7.05138595689050462e-01 TOLERANCE 7.1e-09
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

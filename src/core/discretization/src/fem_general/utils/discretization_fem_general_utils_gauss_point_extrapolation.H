@@ -12,7 +12,7 @@ shape functions
 
 #include "lib_element.H"
 
-namespace DRT::UTILS
+namespace CORE::DRT::UTILS
 {
   /*!
    * @brief Evaluates the linear operator that extrapolates quantities from the Gauss points to
@@ -42,7 +42,7 @@ namespace DRT::UTILS
    * @param integration (in) : Gauss integration points
    * @return LINALG::SerialDenseMatrix
    */
-  template <DRT::Element::DiscretizationType distype, class GaussIntegration>
+  template <::DRT::Element::DiscretizationType distype, class GaussIntegration>
   LINALG::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
       const GaussIntegration& integration);
 
@@ -59,10 +59,10 @@ namespace DRT::UTILS
    * quantity.
    * @param integration (in) : Container that holds the integration points
    */
-  template <DRT::Element::DiscretizationType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNodesAndAssemble(const DRT::Element& ele,
+  template <::DRT::Element::DiscretizationType distype, class GaussIntegration>
+  void ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
       const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
       const GaussIntegration& integration);
-}  // namespace DRT::UTILS
+}  // namespace CORE::DRT::UTILS
 
 #endif  // FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_H

@@ -13,14 +13,14 @@
 #ifndef DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 #define DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif
 
 #include "linalg_fixedsizematrix.H"
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 namespace ArborX::Details
 {
   /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
@@ -35,7 +35,7 @@ namespace ArborX::Details
   };
 }  // namespace ArborX::Details
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
   //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
@@ -46,10 +46,10 @@ namespace GEOMETRICSEARCH
   //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
   //! maximum of kdop_k faces
   constexpr int kdop_k = 2 * kdop_directions;
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH
 #endif
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   /*!
    * \brief Class representing a bounding volume of a set of points.
@@ -59,13 +59,13 @@ namespace GEOMETRICSEARCH
    */
   struct BoundingVolume
   {
-#ifndef HAVE_ARBORX
+#ifndef BACI_WITH_ARBORX
     /*! \brief This class can not be used without ArborX, add empy methods and a controlled error.
      */
     BoundingVolume()
     {
       dserror(
-          "The struct 'GEOMETRICSEARCH::BoundingVolume' can only be used with ArborX."
+          "The struct 'CORE::GEOMETRICSEARCH::BoundingVolume' can only be used with ArborX."
           "To use it, enable ArborX during the configure process.");
     }
     inline void ExtendBoundaries(const double offset) {}
@@ -109,6 +109,6 @@ namespace GEOMETRICSEARCH
     ArborX::Experimental::KDOP<kdop_k> bounding_volume_;
 #endif
   };
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH
 
 #endif

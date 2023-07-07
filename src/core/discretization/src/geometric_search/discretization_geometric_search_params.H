@@ -13,7 +13,7 @@
 
 #include "io_pstream.H"
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   //! Data container for geometric search parameters
   class GeometricSearchParams
@@ -42,6 +42,6 @@ namespace GEOMETRICSEARCH
     double beam_radius_extension_factor_;
     double sphere_radius_extension_factor_;
   };
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH
 
 #endif

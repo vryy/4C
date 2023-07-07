@@ -22,7 +22,7 @@
 #include "io_control.H"
 #include "io.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 #include "fluid_utils.H"
@@ -34,7 +34,7 @@
 #include "fluid_ele_factory.H"
 
 #include "xfem_edgestab.H"
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 #include "xfem_condition_manager.H"
 #include "xfem_mesh_projector.H"
 #include "xfem_xfluid_timeInt.H"

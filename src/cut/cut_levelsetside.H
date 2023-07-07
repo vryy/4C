@@ -17,7 +17,7 @@ levelset
 // Use derivatives of LevelSet field to determine the Cut configuration
 #define USE_PHIDERIV_FOR_CUT_DETERMINATION
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -39,7 +39,7 @@ namespace GEO
       virtual ~LevelSetSide(){};
 
       /// Returns the geometric shape of this side
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::dis_none; }
 
       /// element dimension
       virtual unsigned Dim() const
@@ -91,7 +91,7 @@ namespace GEO
      protected:
       /*! \brief is this side closer to the start-point as the other side? */
       virtual bool IsCloserSide(
-          const double* startpoint_xyz, GEO::CUT::Side* other, bool& is_closer)
+          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
         dserror("no IsCloserSide routine for level set cut side");
         exit(EXIT_FAILURE);
@@ -176,6 +176,6 @@ namespace GEO
     };  // class LevelSetSide
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

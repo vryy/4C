@@ -39,8 +39,6 @@ DRT::UTILS::ConditionSelector::ConditionSelector(
     : dis_(dis), conds_(conds)
 {
   std::sort(conds_.begin(), conds_.end(), DRT::ConditionLess());
-
-  return;
 }
 
 
@@ -71,9 +69,9 @@ bool DRT::UTILS::ConditionSelector::SelectDofs(DRT::Node* node, std::set<int>& c
 /*----------------------------------------------------------------------*/
 bool DRT::UTILS::ConditionSelector::ContainsNode(int ngid)
 {
-  for (unsigned j = 0; j < conds_.size(); ++j)
+  for (const auto& cond : conds_)
   {
-    if (conds_[j]->ContainsNode(ngid))
+    if (cond->ContainsNode(ngid))
     {
       return true;
     }
@@ -92,13 +90,11 @@ bool DRT::UTILS::DirichletSelector::SelectDofs(DRT::Node* node, std::set<int>& c
   // ranks are considered first. The first condition that covers a node gets
   // it.
 
-  const std::vector<DRT::Condition*>& conds = Conditions();
-  for (std::vector<DRT::Condition*>::const_iterator i = conds.begin(); i != conds.end(); ++i)
+  for (const auto& cond : Conditions())
   {
-    DRT::Condition& c = **i;
-    const std::vector<int>* onoff = c.Get<std::vector<int>>("onoff");
-    if (onoff == NULL) dserror("not a valid Dirichlet condition");
-    if (c.ContainsNode(ngid))
+    const auto* onoff = cond->Get<std::vector<int>>("onoff");
+    if (onoff == nullptr) dserror("not a valid Dirichlet condition");
+    if (cond->ContainsNode(ngid))
     {
       std::vector<int> dof = Discretization().Dof(node);
       for (unsigned k = 0; k < dof.size(); ++k)
@@ -119,13 +115,9 @@ bool DRT::UTILS::DirichletSelector::SelectDofs(DRT::Node* node, std::set<int>& c
   return found;
 }
 
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -139,14 +131,11 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(
   std::set<int> otherdofset(
       fullmap.MyGlobalElements(), fullmap.MyGlobalElements() + fullmap.NumMyElements());
 
-  for (unsigned j = 0; j < conddofset_.size(); ++j)
+  for (auto& conddofset : conddofset_)
   {
-    std::set<int>& conddofset = conddofset_[j];
-
-    std::set<int>::const_iterator conditer;
-    for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
+    for (const auto& dof : conddofset)
     {
-      otherdofset.erase(*conditer);
+      otherdofset.erase(dof);
     }
   }
 
@@ -156,11 +145,10 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
-  maps.push_back(LINALG::CreateMap(otherdofset, dis.Comm()));
-  for (unsigned j = 0; j < conddofset_.size(); ++j)
+  maps.emplace_back(LINALG::CreateMap(otherdofset, dis.Comm()));
+  for (auto& conddofset : conddofset_)
   {
-    std::set<int>& conddofset = conddofset_[j];
-    maps.push_back(LINALG::CreateMap(conddofset, dis.Comm()));
+    maps.emplace_back(LINALG::CreateMap(conddofset, dis.Comm()));
   }
 
   // MultiMapExtractor setup

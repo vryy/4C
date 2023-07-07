@@ -37,7 +37,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 
   const unsigned probdim = wrapper.Dim();
 
-  GEN::reset(msize, projInfo);
+  CORE::GEN::reset(msize, projInfo);
 
   std::vector<double> found_alpha(msize, 0.0);
   std::vector<LINALG::Matrix<2, 1>> found_mxi(msize, LINALG::Matrix<2, 1>(true));
@@ -364,8 +364,8 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
     Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv1stVecMap& d_avg_unit_normal = cnode.AugData().GetDeriv1st_N();
-  GEN::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
-  GEN::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
+  CORE::GEN::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
+  CORE::GEN::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
 
@@ -402,7 +402,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
   {
     case DRT::Element::line2:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -415,7 +415,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs2:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -428,7 +428,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs3:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -441,7 +441,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::quad4:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::quad4> slave_policy;
@@ -452,7 +452,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::tri3:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::tri3> slave_policy;
@@ -463,7 +463,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs4:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs4>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs4> slave_policy;
@@ -474,7 +474,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs9:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs9>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs9>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs9> slave_policy;
@@ -550,8 +550,9 @@ template <DRT::Element::DiscretizationType slavetype>
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
-  const unsigned slavenumnode = DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
-  const unsigned slavedim = DRT::UTILS::DisTypeToDim<slavetype>::dim;
+  const unsigned slavenumnode =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+  const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
   LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
@@ -579,10 +580,10 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
     const Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv2ndVecMap& dd_avg_unit_normal = cnode.AugData().GetDeriv2nd_N();
-  GEN::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
+  CORE::GEN::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
 
   Deriv2ndVecMap dd_nodal_avg_normal;
-  GEN::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
+  CORE::GEN::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
   Deriv1stVecMap d_unit_normal;
@@ -677,8 +678,9 @@ template <DRT::Element::DiscretizationType slavetype>
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
-  const unsigned slavenumnode = DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
-  const unsigned slavedim = DRT::UTILS::DisTypeToDim<slavetype>::dim;
+  const unsigned slavenumnode =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+  const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
   LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
@@ -706,7 +708,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
   {
     case DRT::Element::line2:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -719,7 +721,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs2:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -732,7 +734,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs3:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
       const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -745,7 +747,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::quad4:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::quad4> slave_policy;
@@ -756,7 +758,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::tri3:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::tri3> slave_policy;
@@ -767,7 +769,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs4:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs4>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs4> slave_policy;
@@ -778,7 +780,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
     }
     case DRT::Element::nurbs9:
     {
-      const unsigned eledim = DRT::UTILS::DisTypeToDim<DRT::Element::nurbs9>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs9>::dim;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs9> slave_policy;

@@ -2695,8 +2695,8 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
 
   // preparations
   int clipsize = (int)(Clip().size());
-  std::vector<std::vector<GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<GEN::pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
+  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
 
   // get integration type
   INPAR::MORTAR::Triangulation tri_type =
@@ -2736,7 +2736,7 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::DelaunayTriangulation(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex, double tol)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
@@ -3223,12 +3223,12 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::CenterTriangulation(
-    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex, double tol)
+    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
   int clipsize = (int)(Clip().size());
-  std::vector<GEN::pairedvector<int, double>> lincenter(
+  std::vector<CORE::GEN::pairedvector<int, double>> lincenter(
       3, (MasterElement().NumNode() + SlaveElement().NumNode()) * 3);
 
   //**********************************************************************

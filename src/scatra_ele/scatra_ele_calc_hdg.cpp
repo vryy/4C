@@ -17,7 +17,7 @@
 #include "lib_discret.H"
 #include "lib_globalproblem.H"
 #include "lib_elementtype.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "mat_scatra_mat.H"
 #include "mat_list.H"
@@ -103,20 +103,20 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
     usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
 
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * hdgele->Degree()));
     else if (shapes_->degree_ != unsigned(hdgele->Degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * hdgele->Degree()));
 
     int onfdofs = 0;
     for (unsigned int i = 0; i < nfaces_; ++i)
     {
-      DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
           ele->Faces()[i]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[i]->Degree());
 
-      shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+      shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
       onfdofs += shapesface_->nfdofs_;
     }
     hdgele->SetDofs(shapes_->ndofs_);
@@ -270,11 +270,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       int sumindex = 0;
       for (int i = 0; i < face; ++i)
       {
-        DRT::UTILS::PolynomialSpaceParams parameter(
-            DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, ele->Faces()[i]->Degree(),
+        CORE::DRT::UTILS::PolynomialSpaceParams parameter(
+            CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, ele->Faces()[i]->Degree(),
             shapes_->usescompletepoly_);
         int nfdofs =
-            DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(parameter)->Size();
+            CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(parameter)->Size();
         sumindex += nfdofs;
       }
       localSolver_->ComputeNeumannBC(ele, params, face, elevec1_epetra, sumindex);
@@ -312,7 +312,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
     DRT::Element* ele, DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1)
 {
   dsassert(elevec1.M() == (int)nen_ * (2 + nsd_), "Vector does not have correct size");
-  Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix locations =
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
   Epetra_SerialDenseVector values(shapes_->ndofs_);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
@@ -338,8 +339,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
   }
 
   // get trace solution values
-  locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
 
 
   Epetra_SerialDenseVector touchcount(nen_);
@@ -347,14 +348,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
   int sumindex = 0;
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
-    DRT::UTILS::ShapeValuesFaceParams svfparams(
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
         ele->Faces()[face]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[face]->Degree());
-    shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, face);
 
     fvalues.Resize(shapesface_->nfdofs_);
 
-    for (int i = 0; i < DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
     {
       // evaluate shape polynomials in node
       for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
@@ -391,10 +392,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
   Teuchos::Array<int>* func = params.getPtr<Teuchos::Array<int>>("funct");
 
   const int face = params.get<unsigned int>("faceconsider");
-  DRT::UTILS::ShapeValuesFaceParams svfparams(
+  CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
       ele->Faces()[face]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[face]->Degree());
 
-  shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+  shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
 
   shapesface_->EvaluateFace(*ele, face);
 
@@ -485,8 +486,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::LocalSolver(const DRT::Element* ele,
-    DRT::UTILS::ShapeValues<distype>& shapeValues,
-    DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
+    CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+    CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly,
     const std::string& disname,
     int numscal)
     :  // ndofs_ (shapeValues.ndofs_),
@@ -555,18 +556,18 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
 
   bool usescompletepoly = hdgele->UsesCompletePolynomialSpace();
 
-  shapes_ = Teuchos::rcp(
-      new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(), usescompletepoly, 2 * ele->Degree()));
+  shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
+      hdgele->Degree(), usescompletepoly, 2 * ele->Degree()));
   shapes_->Evaluate(*ele);
   ComputeInteriorMatrices(hdgele);
 
   int sumindex = 0;
   for (unsigned int nface = 0; nface < nfaces_; ++nface)
   {
-    DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[nface]->Degree(),
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[nface]->Degree(),
         shapes_->usescompletepoly_, 2 * ele->Faces()[nface]->Degree());
 
-    shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
 
     shapesface_->EvaluateFace(*ele, nface);
 
@@ -742,12 +743,13 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
 
   // polynomial space to get the value of the shape function at the material gauss points
-  DRT::UTILS::PolynomialSpaceParams params(distype, hdgele->Degree(), shapes_->usescompletepoly_);
-  Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim>> polySpace =
-      DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
+  CORE::DRT::UTILS::PolynomialSpaceParams params(
+      distype, hdgele->Degree(), shapes_->usescompletepoly_);
+  Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace =
+      CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(
-      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+      intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
 
   std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
   std::vector<Epetra_SerialDenseMatrix> massPartDW(
@@ -762,7 +764,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
     shape_gp[q].Size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
       gp_coord(idim) = intpoints.IP().qxg[q][idim];
     polySpace->Evaluate(gp_coord, shape_gp[q]);
   }
@@ -1298,10 +1300,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
   const std::vector<int>* func = condition->Get<std::vector<int>>("funct");
 
 
-  DRT::UTILS::ShapeValuesFaceParams svfparams(
+  CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
       ele->Faces()[face]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[face]->Degree());
 
-  shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+  shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
 
   shapesface_->EvaluateFace(*ele, face);
   shapes_->Evaluate(*ele);
@@ -1679,9 +1681,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
   int nfdofs = 0;
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
-    DRT::UTILS::ShapeValuesFaceParams svfparams(
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
         ele->Faces()[face]->Degree(), shapes_->usescompletepoly_, 2 * ele->Faces()[face]->Degree());
-    shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, face);
 
     Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
@@ -1847,17 +1849,18 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
   // set change of element degree to false
   hdgele->SetPadaptEle(false);
 
-  Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_old =
-      Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+  Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_old =
+      Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgele->DegreeOld(), usescompletepoly_, 2 * hdgele->DegreeOld()));
 
   dsassert(elevec2.M() == 0 || unsigned(elevec2.M()) == shapes_->ndofs_ * (nsd_ + 1),
       "Wrong size in project vector 2");
 
   // polynomial space to get the value of the shape function at the new points
-  DRT::UTILS::PolynomialSpaceParams params_old(distype, shapes_old->degree_, usescompletepoly_);
-  Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim>> polySpace_old =
-      DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params_old);
+  CORE::DRT::UTILS::PolynomialSpaceParams params_old(
+      distype, shapes_old->degree_, usescompletepoly_);
+  Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace_old =
+      CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params_old);
 
   Epetra_SerialDenseVector interiorPhi_old(shapes_old->ndofs_ * (nsd_ + 1));
 
@@ -1906,27 +1909,27 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
     for (unsigned int face = 0; face < nfaces_; face++)
     {
       // shape values of new element degree
-      DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
           ele->Faces()[face]->Degree(), usescompletepoly_, 2 * ele->Faces()[face]->Degree());
-      shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+      shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
       shapesface_->EvaluateFace(*ele, face);
 
 
       // shape values of old element degree
       DRT::ELEMENTS::ScaTraHDGIntFace* hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(
           const_cast<DRT::FaceElement*>(ele->Faces()[face].getRawPtr()));
-      DRT::UTILS::ShapeValuesFaceParams svfparams_old(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams_old(
           hdgeleface->DegreeOld(), usescompletepoly_, 2 * hdgeleface->DegreeOld());
 
-      Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_old =
-          DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams_old);
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_old =
+          CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams_old);
 
 
-      DRT::UTILS::PolynomialSpaceParams polyparams(
-          DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, hdgeleface->DegreeOld(),
+      CORE::DRT::UTILS::PolynomialSpaceParams polyparams(
+          CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, hdgeleface->DegreeOld(),
           usescompletepoly_);
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
-          DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
+      Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
+          CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
       Epetra_SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
 
@@ -1978,26 +1981,26 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
     for (unsigned int face = 0; face < nfaces_; face++)
     {
       // shape values of new element degree
-      DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
           ele->Faces()[face]->Degree(), usescompletepoly_, 2 * ele->Faces()[face]->Degree());
-      shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+      shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
       shapesface_->EvaluateFace(*ele, face);
 
       // shape values of old element degree
       DRT::ELEMENTS::ScaTraHDGIntFace* hdgeleface = dynamic_cast<DRT::ELEMENTS::ScaTraHDGIntFace*>(
           const_cast<DRT::FaceElement*>(ele->Faces()[face].getRawPtr()));
-      DRT::UTILS::ShapeValuesFaceParams svfparams_old(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams_old(
           hdgeleface->DegreeOld(), usescompletepoly_, 2 * hdgeleface->DegreeOld());
 
-      Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_old =
-          DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams_old);
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_old =
+          CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams_old);
 
 
-      DRT::UTILS::PolynomialSpaceParams polyparams(
-          DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, hdgeleface->DegreeOld(),
+      CORE::DRT::UTILS::PolynomialSpaceParams polyparams(
+          CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, hdgeleface->DegreeOld(),
           usescompletepoly_);
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
-          DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
+      Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
+          CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
       //      Epetra_SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
 
@@ -2035,10 +2038,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
   int sumindex = 0;
   for (unsigned int nface = 0; nface < nfaces_; ++nface)
   {
-    DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[nface]->Degree(),
+    CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[nface]->Degree(),
         shapes_->usescompletepoly_, 2 * ele->Faces()[nface]->Degree());
 
-    shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, nface);
 
     Epetra_SerialDenseMatrix QMat(shapesface_->nqpoints_, hdgele->ndofs_ * nsd_);
@@ -2117,7 +2120,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
   // For the calculation of the error we use a higher integration rule
-  DRT::UTILS::ShapeValues<distype> highshapes(
+  CORE::DRT::UTILS::ShapeValues<distype> highshapes(
       ele->Degree(), shapes_->usescompletepoly_, (ele->Degree() + 2) * 2);
   highshapes.Evaluate(*ele);
 

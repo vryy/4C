@@ -41,9 +41,8 @@
 #include "lib_locsys.H"
 #include "lib_globalproblem.H"
 #include "lib_condition_utils.H"
-#include "linalg_nullspace.H"
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 #include "linalg_mapextractor.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
@@ -58,6 +57,7 @@
 #include "discsh3.H"
 #include "mor_pod.H"
 #include "structure_timint_noxgroup.H"
+#include "lib_discret_nullspace.h"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -809,7 +809,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      LINALG::NULLSPACE::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+      ::DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_

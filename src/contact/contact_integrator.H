@@ -50,7 +50,7 @@ namespace CONTACT
      Note that this is \b not a collective call as overlaps are
      integrated in parallel by individual processes.<br>
      Note also that this constructor relies heavily on the
-     DRT::UTILS::IntegrationPoints structs to get Gauss points
+     CORE::DRT::UTILS::IntegrationPoints structs to get Gauss points
      and corresponding weights.
 
      */
@@ -206,8 +206,8 @@ namespace CONTACT
      */
     void DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
         MORTAR::MortarElement& mele, double& mxia, double& mxib,
-        std::vector<GEN::pairedvector<int, double>>& derivxi, bool& startslave, bool& endslave,
-        int& linsize);
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivxi, bool& startslave,
+        bool& endslave, int& linsize);
 
     /*!
      \brief Compute directional derivative of master Gauss point
@@ -215,8 +215,8 @@ namespace CONTACT
 
      */
     void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, double sxigp,
-        double mxigp, const GEN::pairedvector<int, double>& derivsxi,
-        GEN::pairedvector<int, double>& derivmxi, int& linsize);
+        double mxigp, const CORE::GEN::pairedvector<int, double>& derivsxi,
+        CORE::GEN::pairedvector<int, double>& derivmxi, int& linsize);
 
     /*!
      \brief Compute directional derivative of master Gauss point
@@ -224,8 +224,8 @@ namespace CONTACT
 
      */
     void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, const double* sxigp,
-        const double* mxigp, const std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi, double alpha);
+        const double* mxigp, const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi, double alpha);
 
     /*!
      \brief Compute directional derivative of slave / master Gauss point
@@ -234,9 +234,9 @@ namespace CONTACT
 
      */
     void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp, double* auxn,
-        std::vector<GEN::pairedvector<int, double>>& derivxi, double& alpha,
-        std::vector<GEN::pairedvector<int, double>>& derivauxn,
-        GEN::pairedvector<int, LINALG::Matrix<3, 1>>& derivgp);
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivxi, double& alpha,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivauxn,
+        CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>>& derivgp);
 
     /*!
      \brief Assemble g~ contribution of current overlap into slave nodes
@@ -319,12 +319,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-        GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi);
 
     /*!
      * @brief Perform integration at Gauss point for 2D problems.
@@ -356,12 +356,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-        GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi);
 
     /*!
      \brief evaluate D2-matrix entries at GP
@@ -397,10 +397,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
-        double& wgt, const GEN::pairedvector<int, double>& derivjac,
-        std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, const CORE::GEN::pairedvector<int, double>& derivjac,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin D/M-matrix entries at GP for bound case
@@ -411,10 +411,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv,
         LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin D/M-matrix entries at GP for elebased integration
@@ -424,9 +424,9 @@ namespace CONTACT
         MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& mderiv, double& dxdsxi, double& wgt,
-        const GEN::pairedvector<int, double>& dmxigp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        const CORE::GEN::pairedvector<int, double>& dmxigp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin D/M-matrix entries at GP
@@ -436,10 +436,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& wgt,
-        double& jac, std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        GEN::pairedvector<int, double>& jacintcellmap,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& jac, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin D/M-matrix entries at GP for bound case
@@ -449,10 +449,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& lmderiv, LINALG::SerialDenseMatrix& mderiv, double& jac,
-        double& wgt, const GEN::pairedvector<int, double>& derivjac,
-        std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, const CORE::GEN::pairedvector<int, double>& derivjac,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin D/M-matrix entries at GP for bound case (3D quad)
@@ -463,20 +463,20 @@ namespace CONTACT
         LINALG::SerialDenseVector& svalmod, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& wgt,
-        double& jac, const std::vector<GEN::pairedvector<int, double>>& dpsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dpmxigp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d);
+        double& jac, const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dpmxigp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d);
 
     void inline GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::MortarElement& sele,
         MORTAR::MortarElement& sintele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmintval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmintderiv, double& wgt,
-        double& jac, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dpsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dpmxigp,
-        const GEN::pairedvector<int, double>& jacintcellmap);
+        double& jac, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dpmxigp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap);
 
     /*!
      \brief evaluate weighted Gap entries at GP
@@ -499,9 +499,10 @@ namespace CONTACT
     void Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap,
-        double* gpn, std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        std::vector<GEN::pairedvector<int, double>>& dmxigp, GEN::pairedvector<int, double>& dgapgp,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit);
+        double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        CORE::GEN::pairedvector<int, double>& dgapgp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit);
 
 
     /*!
@@ -510,17 +511,19 @@ namespace CONTACT
     void Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap,
-        double* gpn, std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        std::vector<GEN::pairedvector<int, double>>& dmxigp, GEN::pairedvector<int, double>& dgapgp,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit);
+        double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        CORE::GEN::pairedvector<int, double>& dgapgp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit);
 
     void inline GP_2D_G_Lin(int& iter, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
-        GEN::pairedvector<int, double>& dgapgp, GEN::pairedvector<int, double>& jacintcellmap,
-        std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        CORE::GEN::pairedvector<int, double>& dgapgp,
+        CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief evaluate weighted Gap entries at GP (quad-pwlin)
@@ -532,10 +535,10 @@ namespace CONTACT
         LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap,
         double* gpn, double* lengthn, double& jac, double& wgt,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        GEN::pairedvector<int, double>& dgapgp,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        CORE::GEN::pairedvector<int, double>& dgapgp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit);
 
     /*!
      \brief evaluate weighted Gap entries at GP
@@ -545,9 +548,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
-        GEN::pairedvector<int, double>& dgapgp, GEN::pairedvector<int, double>& jacintcellmap,
-        std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        CORE::GEN::pairedvector<int, double>& dgapgp,
+        CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief evaluate weighted Gap entries at GP (quad)
@@ -558,10 +562,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& svalmod, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& gap,
         double* gpn, double& jac, double& wgt, bool& duallin,
-        const GEN::pairedvector<int, double>& dgapgp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int, double>>& dpsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d);
+        const CORE::GEN::pairedvector<int, double>& dgapgp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d);
 
     /*!
      \brief evaluate weighted Gap entries at GP (quad)
@@ -570,9 +574,9 @@ namespace CONTACT
     void inline GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntElement& sintele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmintval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmintderiv, double& gap,
-        double* gpn, double& jac, double& wgt, const GEN::pairedvector<int, double>& dgapgp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp);
+        double* gpn, double& jac, double& wgt, const CORE::GEN::pairedvector<int, double>& dgapgp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp);
 
     /*!
      \brief evaluate and lin slipincr at GP
@@ -582,9 +586,9 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        GEN::pairedvector<int, double>& dslipgp, int& linsize);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        CORE::GEN::pairedvector<int, double>& dslipgp, int& linsize);
 
     /*!
      \brief evaluate and lin slipincr at GP
@@ -594,9 +598,9 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        std::vector<GEN::pairedvector<int, double>>& dslipgp);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dslipgp);
 
     /*!
      \brief evaluate and lin slipincr at GP at node
@@ -605,18 +609,19 @@ namespace CONTACT
     void inline GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
-        double& wgt, double* jumpvalv, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, double>& dslipgp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, double* jumpvalv,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, double>& dslipgp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     void inline GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
-        double& wgt, double* jumpvalv, const GEN::pairedvector<int, double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int, double>>& dslipgp,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, double* jumpvalv, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dslipgp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
     /*!
      \brief evaluate  T and E matrix
 
@@ -640,10 +645,11 @@ namespace CONTACT
     void inline GP_2D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
-        double& wgt, double* jumpval, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const GEN::pairedvector<int, double>& dsliptmatrixgp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, double* jumpval,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief evaluate Lin T and E matrix
@@ -654,11 +660,13 @@ namespace CONTACT
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& dsxideta,
         double& dxdsxi, double& dxdsxidsxi, double& wgt, double* jumpval,
-        const GEN::pairedvector<int, double>& dsxigp, const GEN::pairedvector<int, double>& dmxigp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const GEN::pairedvector<int, double>& dsliptmatrixgp,
-        const std::vector<GEN::pairedvector<int, double>>& ximaps,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, const Epetra_Comm& comm);
+        const CORE::GEN::pairedvector<int, double>& dsxigp,
+        const CORE::GEN::pairedvector<int, double>& dmxigp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& ximaps,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
+        const Epetra_Comm& comm);
 
     /*!
      \brief evaluate Lin T and E matrix
@@ -667,10 +675,11 @@ namespace CONTACT
     void inline GP_3D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
-        double& wgt, double* jumpval, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const GEN::pairedvector<int, double>& dsliptmatrixgp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double& wgt, double* jumpval,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief evaluate Lin T and E matrix (Master)
@@ -682,12 +691,13 @@ namespace CONTACT
         LINALG::SerialDenseVector& lm2val, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
         LINALG::SerialDenseMatrix& lm2deriv, double& jac, double& wgt, double* jumpval,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const GEN::pairedvector<int, double>& dsliptmatrixgp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dual2map, const Epetra_Comm& comm);
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dual2map,
+        const Epetra_Comm& comm);
 
     /*!
      \brief evaluate wear + lin at GP
@@ -698,12 +708,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& lmderiv,
         Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
-        double* jumpval, double* wearval, GEN::pairedvector<int, double>& dsliptmatrixgp,
-        GEN::pairedvector<int, double>& dweargp,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dnmap_unit,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double* jumpval, double* wearval, CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        CORE::GEN::pairedvector<int, double>& dweargp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief evaluate wear + lin at GP
@@ -714,12 +724,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& lmderiv,
         Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
-        double* jumpval, double* wearval, GEN::pairedvector<int, double>& dsliptmatrixgp,
-        GEN::pairedvector<int, double>& dweargp,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dnmap_unit,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        double* jumpval, double* wearval, CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+        CORE::GEN::pairedvector<int, double>& dweargp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin weighted wear at GP
@@ -729,10 +739,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
         double* gpn, double& wgt, double& wearval, double* jumpval,
-        const GEN::pairedvector<int, double>& dweargp,
-        const GEN::pairedvector<int, double>& derivjac,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        const CORE::GEN::pairedvector<int, double>& dweargp,
+        const CORE::GEN::pairedvector<int, double>& derivjac,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
      \brief lin weighted wear at GP
@@ -742,10 +752,10 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac,
         double* gpn, double& wgt, double& wearval, double* jumpval,
-        const GEN::pairedvector<int, double>& dweargp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        const CORE::GEN::pairedvector<int, double>& dweargp,
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
 
     /*!
@@ -757,10 +767,12 @@ namespace CONTACT
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
         LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, double* ncoup, double* gpn, double& jac, double& wgt,
-        double* gpcoord, const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp, std::map<int, double>& dncoupgp,
-        std::map<int, double>& dvelncoupgp, std::map<int, double>& dpresncoupgp,
-        std::vector<GEN::pairedvector<int, double>>& dnmap_unit, bool quadratic, int nintrow = 0);
+        double* gpcoord, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        std::map<int, double>& dncoupgp, std::map<int, double>& dvelncoupgp,
+        std::map<int, double>& dpresncoupgp,
+        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, bool quadratic,
+        int nintrow = 0);
 
     /*!
     \brief evaluate weighted normal coupling entries at GP
@@ -772,10 +784,10 @@ namespace CONTACT
         LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
         const std::map<int, double>& dncoupgp, const std::map<int, double>& dvelncoupgp,
         const std::map<int, double>& dpresncoupgp,
-        const GEN::pairedvector<int, double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int, double>>& dsxigp,
-        const std::vector<GEN::pairedvector<int, double>>& dmxigp,
-        const GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
+        const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
+        const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap);
 
     /*!
     \brief Calculate Determinate of the Deformation Gradient at GP

@@ -26,7 +26,6 @@ set(_adapter_dependencies
     s8
     scatra
     so3
-    solver
     ssi
     struct_ale
     structure

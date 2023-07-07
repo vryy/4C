@@ -16,7 +16,7 @@
 #include <iostream>
 
 #include "linalg_utils_sparse_algebra_math.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_mapextractor.H"
 #include "linalg_multiply.H"
 

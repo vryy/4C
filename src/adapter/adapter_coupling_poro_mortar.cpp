@@ -38,6 +38,7 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 
 // header
 #include "adapter_coupling_poro_mortar.H"
+#include "coupling_adapter.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                      ager 10/15|
@@ -405,7 +406,7 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
     Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
     Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<DRT::Discretization> sdis,
     Teuchos::RCP<LINALG::SparseMatrix>& f, Teuchos::RCP<LINALG::SparseMatrix>& k_fs,
-    Teuchos::RCP<Epetra_Vector>& frhs, ADAPTER::Coupling& coupfs,
+    Teuchos::RCP<Epetra_Vector>& frhs, CORE::ADAPTER::Coupling& coupfs,
     Teuchos::RCP<const Epetra_Map> fdofrowmap)
 {
   // safety check

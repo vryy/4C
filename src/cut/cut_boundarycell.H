@@ -19,7 +19,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -48,7 +48,7 @@ namespace GEO
       \brief Returns the shape of the boundarycell
        */
 
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       /*! \brief Returns the cubature degree to generate quadrature rule for the cell
        *
@@ -99,13 +99,13 @@ namespace GEO
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void AssignOffset(int idx, double offset)
       {
-        LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
+        LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
             xyz_mat(xyz_, true);
-        for (uint n = 0; n < DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-             ++n)
+        for (uint n = 0;
+             n < CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement; ++n)
           xyz_mat(idx, n) += offset;
       }
 
@@ -138,12 +138,12 @@ namespace GEO
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) = 0;
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) = 0;
 
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual DRT::UTILS::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
 
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
@@ -165,11 +165,12 @@ namespace GEO
       Gauss point location (eta) corresponding to the shape of the boundarycell. Also computes the
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void Transform(const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
           LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
-        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+        const int numnodes =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
         LINALG::Matrix<3, numnodes> xyze(xyz_, true);
         if (referencepos) xyze = LINALG::Matrix<3, numnodes>(xyz_ref_, true);
 
@@ -177,12 +178,12 @@ namespace GEO
         LINALG::Matrix<2, numnodes> deriv(false);
         LINALG::Matrix<2, 2> metrictensor(false);
 
-        DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
+        CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
-        if (celldistype != DRT::Element::tri3)
+        if (celldistype != ::DRT::Element::tri3)
         {
-          DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
               xyze, deriv, metrictensor, drs, &normal);
         }
         else
@@ -222,34 +223,34 @@ namespace GEO
       system setting shadow = true means the mapping is done w.r. to the parent quad element from
       which elem1 is derived
        */
-      template <DRT::Element::DiscretizationType celldistype>
+      template <::DRT::Element::DiscretizationType celldistype>
       void TransformLocalCoords(Element* elem1, const LINALG::Matrix<2, 1>& eta,
           LINALG::Matrix<3, 1>& x_gp_lin, LINALG::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
 
-      template <DRT::Element::DiscretizationType distype>
+      template <::DRT::Element::DiscretizationType distype>
       double MyArea()
       {
-        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
         LINALG::Matrix<numnodes, 1> funct;
         LINALG::Matrix<2, numnodes> deriv;
         LINALG::Matrix<2, 2> metrictensor;
 
-        DRT::UTILS::GaussRule2D gaussrule = this->MySimpleGaussRule();
-        DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+        CORE::DRT::UTILS::GaussRule2D gaussrule = this->MySimpleGaussRule();
+        CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
         double area = 0;
         double drs;
         for (int i = 0; i < intpoints.nquad; ++i)
         {
           double* eta = intpoints.qxg[i];
-          DRT::UTILS::shape_function_2D(funct, eta[0], eta[1], distype);
-          DRT::UTILS::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+          CORE::DRT::UTILS::shape_function_2D(funct, eta[0], eta[1], distype);
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
+          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
               xyze, deriv, metrictensor, drs, NULL);
           if (not std::isnan(drs)) area += intpoints.qwgt[i] * drs;
         }
@@ -260,13 +261,13 @@ namespace GEO
        *
        *  \author shahmiri
        *  \date 07/12 */
-      template <DRT::Element::DiscretizationType distype>
+      template <::DRT::Element::DiscretizationType distype>
       void MyElementCenter(LINALG::Matrix<3, 1>& center, LINALG::Matrix<3, 1>& midpoint)
       {
-        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
         LINALG::Matrix<numnodes, 1> funct;
-        DRT::UTILS::shape_function<distype>(center, funct);
+        CORE::DRT::UTILS::shape_function<distype>(center, funct);
         midpoint.Multiply(xyze, funct);
       }
 
@@ -291,7 +292,7 @@ namespace GEO
         /* intentionally left blank */
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::point1; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::point1; }
 
       virtual int CubatureDegree() const { return 0; }
 
@@ -303,16 +304,16 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return true; };
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::GaussRule2D::undefined;
+        return CORE::DRT::UTILS::GaussRule2D::undefined;
       }
     };
 
@@ -328,7 +329,7 @@ namespace GEO
         /* intentionally left blank */
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::line2; }
 
       virtual int CubatureDegree() const { return 4; }
 
@@ -340,16 +341,16 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); };
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::GaussRule2D::undefined;
+        return CORE::DRT::UTILS::GaussRule2D::undefined;
       }
     };
 
@@ -364,7 +365,7 @@ namespace GEO
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tri3; }
 
       virtual int CubatureDegree() const { return 20; }
 
@@ -376,7 +377,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -387,9 +388,9 @@ namespace GEO
       virtual bool IsValidBoundaryCell();
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::GaussRule2D::tri_3point;
+        return CORE::DRT::UTILS::GaussRule2D::tri_3point;
       }
     };
 
@@ -404,20 +405,20 @@ namespace GEO
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::quad4; }
 
       virtual int CubatureDegree() const { return 20; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
       // Maybe shoelace theorem can be used here?
-      virtual double Area() { return MyArea<DRT::Element::quad4>(); }
+      virtual double Area() { return MyArea<::DRT::Element::quad4>(); }
 
       virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -425,9 +426,9 @@ namespace GEO
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::GaussRule2D::quad_4point;
+        return CORE::DRT::UTILS::GaussRule2D::quad_4point;
       }
     };
 
@@ -437,13 +438,13 @@ namespace GEO
     {
      public:
       ArbitraryBoundaryCell(const Epetra_SerialDenseMatrix& xyz, Facet* facet,
-          const std::vector<Point*>& points, const DRT::UTILS::GaussIntegration& gaussRule,
+          const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
           const LINALG::Matrix<3, 1>& normal)
           : BoundaryCell(xyz, facet, points), gaussRule_(gaussRule), normal_(normal)
       {
       }
 
-      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::dis_none; }
 
       virtual int CubatureDegree() const { return 0; }
 
@@ -455,24 +456,24 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      virtual DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
       {
-        return DRT::UTILS::GaussRule2D::quad_4point;
+        return CORE::DRT::UTILS::GaussRule2D::quad_4point;
       }
 
      private:
-      DRT::UTILS::GaussIntegration gaussRule_;
+      CORE::DRT::UTILS::GaussIntegration gaussRule_;
       LINALG::Matrix<3, 1> normal_;
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

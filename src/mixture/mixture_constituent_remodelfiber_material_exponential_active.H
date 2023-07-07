@@ -12,7 +12,6 @@ contribution
 #include <Teuchos_RCPDecl.hpp>
 #include <memory>
 #include "mixture_constituent_remodelfiber_material_exponential.H"
-#include "mixture_constituent_remodelfiber_material_active.H"
 
 // forward declarations
 namespace MAT::PAR
@@ -29,7 +28,7 @@ namespace MIXTURE
   namespace PAR
   {
     template <typename T>
-    class RemodelFiberMaterialExponentialActive : public RemodelFiberMaterialExponential<T>
+    class RemodelFiberMaterialExponentialActive : public RemodelFiberMaterial<T>
     {
       friend class MIXTURE::RemodelFiberMaterialExponentialActive<T>;
 
@@ -39,6 +38,8 @@ namespace MIXTURE
 
       [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>> CreateRemodelFiberMaterial()
           const override;
+
+      MIXTURE::PAR::ExponentialFiberParameters passive_params_;
 
       /// @name parameters of the exponential strain energy function
       /// @{
@@ -53,18 +54,17 @@ namespace MIXTURE
   }  // namespace PAR
 
   template <typename T>
-  class RemodelFiberMaterialExponentialActive : public RemodelFiberMaterialExponential<T>,
-                                                public RemodelFiberMaterialActive<T>
+  class RemodelFiberMaterialExponentialActive : public RemodelFiberMaterial<T>
   {
    public:
     RemodelFiberMaterialExponentialActive(
         const PAR::RemodelFiberMaterialExponentialActive<T>* matdata);
 
+    [[nodiscard]] T GetCauchyStress(T I4) const final;
 
-    [[nodiscard]] T GetPsi(T I4) const override;
+    [[nodiscard]] T GetDCauchyStressDI4(T I4) const final;
 
-
-    [[nodiscard]] T GetFirstDerivativeActive() const override;
+    [[nodiscard]] T GetDCauchyStressDI4DI4(T I4) const final;
 
    private:
     const PAR::RemodelFiberMaterialExponentialActive<T>* params_;

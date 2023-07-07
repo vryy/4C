@@ -180,7 +180,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(
   if (fieldcoupling_ == INPAR::SCATRA::coupling_volmortar)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_fluidscatra_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
+    volcoupl_fluidscatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // setup projection matrices (use default material strategy)
     volcoupl_fluidscatra_->Init(fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, true);

@@ -35,7 +35,7 @@
 
 #include "inpar_validparameters.H"
 
-#include "solver_linalg_precond.H"
+#include "linear_solver_preconditioner_linalg.H"
 #include "linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*/
@@ -55,7 +55,7 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
   if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
 
@@ -65,11 +65,11 @@ FSI::MonolithicBaseFS::~MonolithicBaseFS() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() { return *coupfa_; }
+CORE::ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const { return *coupfa_; }
+const CORE::ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -471,11 +471,11 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
 
   SetDefaultParameters(fsidyn, NOXParameterList());
 
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // fluid to ale at the free surface
 
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
@@ -663,7 +663,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   mat.Assign(0, 0, LINALG::View, *f);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(1, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(1, 0));
   mat.Assign(1, 1, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -681,13 +681,13 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
     mat.Matrix(0, 0).Add(fmgg, false, 1. / timescale, 1.0);
     mat.Matrix(0, 0).Add(fmig, false, 1. / timescale, 1.0);
 
-    const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+    const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, true);
   }
 
   // done. make sure all blocks are filled.

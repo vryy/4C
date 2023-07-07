@@ -73,7 +73,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   eval_contact_ptr_->Set(&Discret(), 0);
   strategy_ptr_ = factory.BuildStrategy(
       cparams, poroslave, poromaster, DofOffset(), interfaces, eval_contact_ptr_.get());
-  eval_contact_ptr_->ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
+  eval_contact_ptr_->ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 0);
 
   // build the search tree
   factory.BuildSearchTree(interfaces);
@@ -956,7 +956,7 @@ void STR::MODELEVALUATOR::Contact::RunPostApplyJacobianInverse(const Epetra_Vect
   Strategy().Evaluate(EvalData().Contact());
 
   // clear the set any data again
-  EvalContact().ClearAll(GEN::AnyDataContainer::DataType::any);
+  EvalContact().ClearAll(CORE::GEN::AnyDataContainer::DataType::any);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1043,7 +1043,7 @@ bool STR::MODELEVALUATOR::Contact::CorrectParameters(NOX::NLN::CorrectionType ty
 
   Strategy().Evaluate(EvalContact());
 
-  EvalContact().ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
+  EvalContact().ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 0);
 
   return true;
 }

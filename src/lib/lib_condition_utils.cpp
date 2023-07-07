@@ -17,18 +17,41 @@
 
 #include "lib_condition_utils.H"
 #include "lib_condition_selector.H"
-#include "lib_discret_iterator.H"
 #include "lib_globalproblem.H"
 
-#include "lib_utils_parallel.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
 #include "io_control.H"
 
+
+
+namespace
+{
+  template <typename Range>
+  Teuchos::RCP<Epetra_Map> FillConditionMap(
+      const DRT::Discretization& dis, const Range& nodeRange, const std::string& condname)
+  {
+    std::set<int> condnodeset;
+
+    DRT::UTILS::ConditionSelector conds(dis, condname);
+
+    for (const DRT::Node* node : nodeRange)
+    {
+      if (conds.ContainsNode(node->Id()))
+      {
+        condnodeset.insert(node->Id());
+      }
+    }
+
+    Teuchos::RCP<Epetra_Map> condnodemap = LINALG::CreateMap(condnodeset, dis.Comm());
+    return condnodemap;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(
-    const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
+    const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -39,7 +62,7 @@ void DRT::UTILS::FindConditionedNodes(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(
-    const DRT::Discretization& dis, std::string condname, std::set<int>& nodeset)
+    const DRT::Discretization& dis, const std::string& condname, std::set<int>& nodeset)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -50,7 +73,7 @@ void DRT::UTILS::FindConditionedNodes(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(
-    const DRT::Discretization& dis, std::string condname, std::map<int, DRT::Node*>& nodes)
+    const DRT::Discretization& dis, const std::string& condname, std::map<int, DRT::Node*>& nodes)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -64,12 +87,11 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 {
   std::set<int> nodeset;
   const int myrank = dis.Comm().MyPID();
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (const auto& cond : conds)
   {
-    const std::vector<int>* n = conds[i]->Nodes();
-    for (unsigned j = 0; j < n->size(); ++j)
+    for (const auto node : *cond->Nodes())
     {
-      const int gid = (*n)[j];
+      const int gid = node;
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
         nodeset.insert(gid);
@@ -88,12 +110,10 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
     const std::vector<DRT::Condition*>& conds, std::set<int>& nodeset)
 {
   const int myrank = dis.Comm().MyPID();
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto cond : conds)
   {
-    const std::vector<int>* n = conds[i]->Nodes();
-    for (unsigned j = 0; j < n->size(); ++j)
+    for (int gid : *cond->Nodes())
     {
-      const int gid = (*n)[j];
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
         nodeset.insert(gid);
@@ -109,12 +129,10 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
     const std::vector<DRT::Condition*>& conds, std::map<int, DRT::Node*>& nodes)
 {
   const int myrank = dis.Comm().MyPID();
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto cond : conds)
   {
-    const std::vector<int>* n = conds[i]->Nodes();
-    for (unsigned j = 0; j < n->size(); ++j)
+    for (int gid : *cond->Nodes())
     {
-      const int gid = (*n)[j];
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
         nodes[gid] = dis.gNode(gid);
@@ -131,13 +149,11 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 {
   std::map<int, std::set<int>> nodeset;
   const int myrank = dis.Comm().MyPID();
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (const auto& cond : conds)
   {
-    int id = use_coupling_id ? conds[i]->GetInt("coupling id") : 0;
-    const std::vector<int>* n = conds[i]->Nodes();
-    for (unsigned j = 0; j < n->size(); ++j)
+    int id = use_coupling_id ? cond->GetInt("coupling id") : 0;
+    for (int gid : *cond->Nodes())
     {
-      const int gid = (*n)[j];
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
         nodeset[id].insert(gid);
@@ -145,11 +161,10 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
     }
   }
 
-  std::map<int, std::set<int>>::iterator iter;
-  for (iter = nodeset.begin(); iter != nodeset.end(); ++iter)
+  for (const auto& [id, gids] : nodeset)
   {
-    nodes[iter->first] = Teuchos::rcp(new std::vector<int>((iter->second).size()));
-    nodes[iter->first]->assign((iter->second).begin(), (iter->second).end());
+    nodes[id] = Teuchos::rcp(new std::vector<int>(gids.size()));
+    nodes[id]->assign(gids.begin(), gids.end());
   }
 }
 
@@ -160,13 +175,11 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
     const std::vector<DRT::Condition*>& conds, std::map<int, std::map<int, DRT::Node*>>& nodes)
 {
   const int myrank = dis.Comm().MyPID();
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto* cond : conds)
   {
-    int id = conds[i]->GetInt("coupling id");
-    const std::vector<int>* n = conds[i]->Nodes();
-    for (unsigned j = 0; j < n->size(); ++j)
+    int id = cond->GetInt("coupling id");
+    for (int gid : *cond->Nodes())
     {
-      const int gid = (*n)[j];
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
         (nodes[id])[gid] = dis.gNode(gid);
@@ -187,10 +200,10 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
   FindConditionedNodes(dis, conds, nodes);
 
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -211,10 +224,10 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 {
   FindConditionedNodes(dis, conds, nodes);
 
-  for (size_t i = 0; i < conds.size(); ++i)
+  for (const auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -241,10 +254,10 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 void DRT::UTILS::FindConditionObjects(
     std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::vector<DRT::Condition*>& conds)
 {
-  for (size_t i = 0; i < conds.size(); ++i)
+  for (auto cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -267,10 +280,10 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
   FindConditionedNodes(dis, conds, nodes);
 
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (const auto& cond : conds)
   {
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -304,11 +317,11 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
   FindConditionedNodes(dis, conds, nodes);
 
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
-    int id = conds[i]->GetInt("coupling id");
+    int id = cond->GetInt("coupling id");
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements[id].begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -341,17 +354,17 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
   bool checklabel = (label >= 0);
 
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
     if (checklabel)
     {
-      const int condlabel = conds[i]->GetInt("label");
+      const int condlabel = cond->GetInt("label");
 
       if (condlabel != label) continue;  // do not consider conditions with wrong label
     }
 
     // get this condition's elements
-    std::map<int, Teuchos::RCP<DRT::Element>>& geo = conds[i]->Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
@@ -366,7 +379,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
-    const DRT::Discretization& dis, std::string condname, bool colmap)
+    const DRT::Discretization& dis, const std::string& condname, bool colmap)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -374,9 +387,9 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
 
   if (colmap)
   {
-    for (unsigned i = 0; i < conds.size(); ++i)
+    for (auto& cond : conds)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>& geometry = conds[i]->Geometry();
+      std::map<int, Teuchos::RCP<DRT::Element>>& geometry = cond->Geometry();
       std::transform(geometry.begin(), geometry.end(),
           std::inserter(elementset, elementset.begin()),
           LINALG::select1st<std::pair<int, Teuchos::RCP<DRT::Element>>>());
@@ -385,15 +398,13 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
   else
   {
     int myrank = dis.Comm().MyPID();
-    for (unsigned i = 0; i < conds.size(); ++i)
+    for (auto& cond : conds)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>& geometry = conds[i]->Geometry();
-      for (std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator iter = geometry.begin();
-           iter != geometry.end(); ++iter)
+      for (const auto& [ele_id, ele] : cond->Geometry())
       {
-        if (iter->second->Owner() == myrank)
+        if (ele->Owner() == myrank)
         {
-          elementset.insert(iter->first);
+          elementset.insert(ele_id);
         }
       }
     }
@@ -462,8 +473,7 @@ void DRT::UTILS::FindElementConditions(
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
-  RowNodeIterator iter(dis);
-  return ConditionMap(dis, iter, condname);
+  return FillConditionMap(dis, dis.MyRowNodeRange(), condname);
 }
 
 
@@ -472,32 +482,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
-  ColNodeIterator iter(dis);
-  return ConditionMap(dis, iter, condname);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionMap(const DRT::Discretization& dis,
-    const DiscretizationNodeIterator& iter, const std::string& condname)
-{
-  std::set<int> condnodeset;
-
-  ConditionSelector conds(dis, condname);
-
-  const int numnodes = iter.NumEntries();
-  for (int i = 0; i < numnodes; ++i)
-  {
-    const DRT::Node* node = iter.Entry(i);
-    if (conds.ContainsNode(node->Id()))
-    {
-      condnodeset.insert(node->Id());
-    }
-  }
-
-  Teuchos::RCP<Epetra_Map> condnodemap = LINALG::CreateMap(condnodeset, dis.Comm());
-  return condnodemap;
+  return FillConditionMap(dis, dis.MyColNodeRange(), condname);
 }
 
 
@@ -531,49 +516,6 @@ Teuchos::RCP<std::set<int>> DRT::UTILS::ConditionedElementMap(
   return condelementmap;
 }
 
-
-/*----------------------------------------------------------------------
- * collects elements by labels (have to be implemented in the           *
- * corresponding condition)                                             *
- *----------------------------------------------------------------------*/
-void DRT::UTILS::CollectElementsByConditionLabel(const DRT::Discretization& discret,
-    std::map<int, std::set<int>>& elementsByLabel, const std::string& name)
-{
-  // Reset
-  elementsByLabel.clear();
-  // get condition
-  std::vector<DRT::Condition*> conditions;
-  discret.GetCondition(name, conditions);
-
-  // collect elements by xfem coupling label
-  for (std::vector<DRT::Condition*>::const_iterator conditer = conditions.begin();
-       conditer != conditions.end(); ++conditer)
-  {
-    const DRT::Condition* condition = *conditer;
-    const int label = condition->GetInt("label");
-    for (int iele = 0; iele < discret.NumMyColElements(); ++iele)
-    {
-      // for each element, check, whether all nodes belong to same condition label
-      const DRT::Element* element = discret.lColElement(iele);
-      int nodecounter = 0;
-      for (int inode = 0; inode < element->NumNode(); ++inode)
-      {
-        const DRT::Node* node = element->Nodes()[inode];
-        if (condition->ContainsNode(node->Id())) nodecounter++;
-      }
-      // if all nodes belong to label, then this element gets a label entry
-      if (nodecounter == element->NumNode()) elementsByLabel[label].insert(element->Id());
-    }
-  }
-  int numOfCollectedIds = 0;
-  for (std::map<int, std::set<int>>::const_iterator entry = elementsByLabel.begin();
-       entry != elementsByLabel.end(); ++entry)
-  {
-    numOfCollectedIds += entry->second.size();
-  }
-
-  if (discret.NumMyColElements() != numOfCollectedIds) dserror("not all elements collected.");
-}
 
 /*-----------------------------------------------------------------------*
  * Writes boundary surfaces of a volumetrically coupled problem to file  *

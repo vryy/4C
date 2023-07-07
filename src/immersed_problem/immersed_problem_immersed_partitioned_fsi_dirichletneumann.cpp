@@ -24,8 +24,8 @@
 #include "linalg_utils_densematrix_communication.H"
 
 // search tree related
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 // time monitoring
 #include <Teuchos_TimeMonitor.hpp>
@@ -195,7 +195,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
       Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->FluidField()->DofRowMap()), true));
 
   // build 3D search tree for fluid domain
-  fluid_SearchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+  fluid_SearchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find positions of the background fluid discretization
   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
@@ -211,14 +211,14 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   }
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox = GEO::getXAABBofPositions(currpositions_fluid_);
-  fluid_SearchTree_->initializeTree(rootBox, *fluiddis_, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofPositions(currpositions_fluid_);
+  fluid_SearchTree_->initializeTree(rootBox, *fluiddis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   if (myrank_ == 0) std::cout << "\n Build Fluid SearchTree ... " << std::endl;
 
   // construct 3D search tree for structural domain
   // initialized in SetupStructuralDiscretization()
-  structure_SearchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+  structure_SearchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // Validation flag for velocity in artificial domain. After each structure solve the velocity
   // becomes invalid and needs to be projected again.
@@ -473,7 +473,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(
       DRT::Node** nodes = immersedele->Nodes();
       for (int inode = 0; inode < (immersedele->NumNode()); inode++)
       {
-        if (static_cast<IMMERSED::ImmersedNode*>(nodes[inode])->IsMatched() and
+        if (static_cast<DRT::ImmersedNode*>(nodes[inode])->IsMatched() and
             nodes[inode]->Owner() == myrank_)
         {
           std::vector<int> dofs = dis->Dof(nodes[inode]);
@@ -557,8 +557,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretiza
       my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), Comm());
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox2 = GEO::getXAABBofDis(*structdis_, currpositions_struct_);
-  structure_SearchTree_->initializeTree(rootBox2, *structdis_, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> rootBox2 =
+      CORE::GEO::getXAABBofDis(*structdis_, currpositions_struct_);
+  structure_SearchTree_->initializeTree(
+      rootBox2, *structdis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   if (myrank_ == 0) std::cout << "\n Build Structure SearchTree ... " << std::endl;
 
@@ -664,7 +666,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   if (multibodysimulation_ == false)
   {
     // get bounding box of current configuration of structural dis
-    const LINALG::Matrix<3, 2> structBox = GEO::getXAABBofDis(*structdis_, currpositions_struct_);
+    const LINALG::Matrix<3, 2> structBox =
+        CORE::GEO::getXAABBofDis(*structdis_, currpositions_struct_);
     double max_radius =
         sqrt(pow(structBox(0, 0) - structBox(0, 1), 2) + pow(structBox(1, 0) - structBox(1, 1), 2) +
              pow(structBox(2, 0) - structBox(2, 1), 2));
@@ -721,8 +724,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     }
 
     // get bounding boxes of the bodies
-    std::vector<LINALG::Matrix<3, 2>> structboxes =
-        GEO::computeXAABBForLabeledStructures(*structdis_, currpositions_struct_, elementList);
+    std::vector<LINALG::Matrix<3, 2>> structboxes = CORE::GEO::computeXAABBForLabeledStructures(
+        *structdis_, currpositions_struct_, elementList);
 
     double max_radius;
 

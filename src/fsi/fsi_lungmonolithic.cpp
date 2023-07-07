@@ -30,10 +30,10 @@ FSI::LungMonolithic::LungMonolithic(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams)
 {
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupsaout_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfsout_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfaout_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfsout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   //-----------------------------------------------------------------------------
   // additional fluid-structure volume constraints
@@ -207,9 +207,9 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // right now we use matching meshes at the interface
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   const int ndim = DRT::Problem::Instance()->NDim();
 

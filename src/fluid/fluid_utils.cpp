@@ -19,7 +19,7 @@
 #include "lib_dofset_interface.H"
 #include "io_control.H"
 #include "linalg_mapextractor.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "inpar_fluid.H"
 #include "fluid_ele_action.H"
 

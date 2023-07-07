@@ -6,23 +6,11 @@
 
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef MAT_MYOCARD_GENERAL_H
 #define MAT_MYOCARD_GENERAL_H
 
-/*----------------------------------------------------------------------*
- |  headers                                                  cbert 08/13 |
- *----------------------------------------------------------------------*/
-/*#include "mat_par_parameter.H"
-#include "mat_material.H"
-#include "lib_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-*/
-
-/// \date 08/13
+#include <string>
+#include "utils_exceptions.H"
 
 class Myocard_General
 

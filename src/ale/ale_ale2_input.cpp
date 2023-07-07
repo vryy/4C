@@ -25,8 +25,8 @@ bool DRT::ELEMENTS::Ale2::ReadElement(
   SetMaterial(material);
 
   // get gauss rule
-  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(Shape());
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(Shape());
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
   const int numgp = intpoints.nquad;
 
   // get material

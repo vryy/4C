@@ -20,7 +20,7 @@ namespace ADAPTER
   class FluidMovingBoundary;
 
 }  // namespace ADAPTER
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }

@@ -193,16 +193,17 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& 
  | Get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const DiscretizationType& distype)
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(
+    const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");

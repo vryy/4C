@@ -18,7 +18,7 @@
 
 #include "lib_globalproblem.H"
 
-#include "geometry_element_volume.H"
+#include "discretization_geometry_element_volume.H"
 
 #include "inpar_cut.H"
 
@@ -36,7 +36,7 @@
  *--------------------------------------------------------------------*/
 struct nextSideAlongRay
 {
-  nextSideAlongRay(GEO::CUT::Point* startpoint, GEO::CUT::Point* cutpoint)
+  nextSideAlongRay(CORE::GEO::CUT::Point* startpoint, CORE::GEO::CUT::Point* cutpoint)
       : startpoint_(startpoint), cutpoint_(cutpoint)
   {
     startpoint_->Coordinates(startpoint_xyz_.A());
@@ -46,7 +46,8 @@ struct nextSideAlongRay
   /*--------------------------------------------------------------------*
    * check if both sides have the same normal vector
    *--------------------------------------------------------------------*/
-  bool SameNormal(GEO::CUT::Side* s1, GEO::CUT::Side* s2, const LINALG::Matrix<3, 1>& cutpoint_xyz)
+  bool SameNormal(
+      CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2, const LINALG::Matrix<3, 1>& cutpoint_xyz)
   {
     LINALG::Matrix<3, 1> rst(true);
     LINALG::Matrix<2, 1> rs(true);
@@ -80,7 +81,7 @@ struct nextSideAlongRay
   /*--------------------------------------------------------------------*
    * comparator function to sort two sides, which side lies in front of the other along the ray
    *--------------------------------------------------------------------*/
-  bool operator()(GEO::CUT::Side* s1, GEO::CUT::Side* s2)
+  bool operator()(CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2)
   {
     // REMARK:
     // shoot a ray through the first side s1 starting from startpoint and find intersection with
@@ -125,8 +126,8 @@ struct nextSideAlongRay
     return false;
   }
 
-  GEO::CUT::Point* startpoint_;
-  GEO::CUT::Point* cutpoint_;
+  CORE::GEO::CUT::Point* startpoint_;
+  CORE::GEO::CUT::Point* cutpoint_;
 
   LINALG::Matrix<3, 1> startpoint_xyz_;
   LINALG::Matrix<3, 1> cutpoint_xyz_;
@@ -135,13 +136,13 @@ struct nextSideAlongRay
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::Element::Element(
+CORE::GEO::CUT::Element::Element(
     int eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active)
     : eid_(eid),
       active_(active),
       sides_(sides),
       nodes_(nodes),
-      quadshape_(DRT::Element::dis_none),
+      quadshape_(::DRT::Element::dis_none),
       eleinttype_(INPAR::CUT::EleIntType_Undecided)
 {
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
@@ -166,7 +167,7 @@ GEO::CUT::Element::Element(
 /*-----------------------------------------------------------------------------------*
  *  For this shadow element, set corner nodes of parent Quad element      sudhakar 11/13
  *-----------------------------------------------------------------------------------*/
-void GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
+void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
 {
   if (not isShadow_) dserror("You can't set Quad-corners for non-shadow element\n");
 
@@ -181,7 +182,7 @@ void GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodei
  *  Get corner nodes of parent Quad element from which this shadow element is derived       sudhakar
  *11/13
  *----------------------------------------------------------------------------------------------------*/
-std::vector<GEO::CUT::Node*> GEO::CUT::Element::getQuadCorners()
+std::vector<CORE::GEO::CUT::Node*> CORE::GEO::CUT::Element::getQuadCorners()
 {
   if ((not isShadow_) or quadCorners_.size() == 0)
     dserror("what?! you want Quadratic element corners for linear element?\n");
@@ -193,7 +194,7 @@ std::vector<GEO::CUT::Node*> GEO::CUT::Element::getQuadCorners()
  *            Called by Tetmeshintersection and LS!!!!!!
  *            but not for normal meshintersection!!!
  *--------------------------------------------------------------------*/
-bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
+bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -247,7 +248,7 @@ bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
 /*--------------------------------------------------------------------*
  * cut this element with its cut faces                    wirtz 08/14 *
  *--------------------------------------------------------------------*/
-void GEO::CUT::Element::FindCutPoints(Mesh& mesh)
+void CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       /* do not increment */)
@@ -271,7 +272,7 @@ void GEO::CUT::Element::FindCutPoints(Mesh& mesh)
 /*--------------------------------------------------------------------*
  * cut this element with given cut_side                   wirtz 08/14 *
  *--------------------------------------------------------------------*/
-bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
+bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -316,7 +317,7 @@ bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
  * After all cut points are found, create cut lines for this element by
  * connecting appropriate cut points
  *---------------------------------------------------------------------------*/
-void GEO::CUT::Element::MakeCutLines(Mesh& mesh)
+void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end(); ++i)
   {
@@ -336,7 +337,7 @@ void GEO::CUT::Element::MakeCutLines(Mesh& mesh)
  * Find cut points between a background element side and a cut side
  * Cut points are stored correspondingly
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints(ele)");
 
@@ -352,7 +353,7 @@ bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side
  *  Returns true if cut lines exist between the cut points produced by the two
  *  sides
  *----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool CORE::GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutLines");
 
@@ -362,7 +363,7 @@ bool GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
 /*----------------------------------------------------------------------------*
  * Create facets
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::MakeFacets(Mesh& mesh)
+void CORE::GEO::CUT::Element::MakeFacets(Mesh& mesh)
 {
   if (facets_.size() == 0)
   {
@@ -384,7 +385,7 @@ void GEO::CUT::Element::MakeFacets(Mesh& mesh)
 /*------------------------------------------------------------------------------------------*
  *     Determine the inside/outside/oncutsurface position for the element's nodes
  *------------------------------------------------------------------------------------------*/
-void GEO::CUT::Element::FindNodePositions()
+void CORE::GEO::CUT::Element::FindNodePositions()
 {
   // DEBUG flag for FindNodePositions
   // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety
@@ -543,7 +544,7 @@ void GEO::CUT::Element::FindNodePositions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* f, Side* s)
+bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* f, Side* s)
 {
   //---------------------------
   // find the element's volume-cell the cut-side and the line has to be adjacent to
@@ -635,7 +636,7 @@ bool GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* f, Sid
  *  determine the position of point p based on the angle between the line (p-c) and the
  *  side's normal vector, return if successful
  *------------------------------------------------------------------------------------------*/
-bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
+bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
 {
   LINALG::Matrix<3, 1> xyz(true);
   LINALG::Matrix<3, 1> cut_point_xyz(true);
@@ -661,7 +662,7 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   double l_norm = line_vec.Norm2();
   if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
-    double distance_between = GEO::CUT::DistanceBetweenPoints(p, cutpoint);
+    double distance_between = CORE::GEO::CUT::DistanceBetweenPoints(p, cutpoint);
     dserror(
         " the norm of line_vec or n_norm is smaller than %lf, should these "
         "points be one point in pointpool?, lnorm=%lf, nnorm=%lf, distance between them = %lf",
@@ -698,7 +699,7 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
 /*------------------------------------------------------------------------------------------*
  *  check if the side's normal vector is orthogonal to the line between p and the cutpoint
  *------------------------------------------------------------------------------------------*/
-bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
+bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
 {
   if (s->OnEdge(cutpoint))  // check if the point lies on at least one edge of the side, otherwise
                             // it cannot be orthogonal
@@ -724,7 +725,7 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
       dserror("the line has nearly zero length: %d", line_norm);
     }
 
-    if (s->Shape() != DRT::Element::tri3)
+    if (s->Shape() != ::DRT::Element::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
       //      throw std::runtime_error("expect only tri3 cutsides!");
@@ -733,13 +734,13 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
     // tri3/quad4 element center
     LINALG::Matrix<2, 1> rs(true);
 
-    if (s->Shape() == DRT::Element::tri3)
+    if (s->Shape() == ::DRT::Element::tri3)
     {
-      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::tri3);
     }
-    else if (s->Shape() == DRT::Element::quad4)
+    else if (s->Shape() == ::DRT::Element::quad4)
     {
-      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::quad4);
     }
     else
       throw std::runtime_error("unsupported side-shape");
@@ -756,7 +757,7 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::IsCut()
+bool CORE::GEO::CUT::Element::IsCut()
 {
   /* count the number cut-sides for which the intersection of the side with the
    * element finds cut points note that also elements which are just touched by
@@ -783,7 +784,7 @@ bool GEO::CUT::Element::IsCut()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool GEO::CUT::Element::OnSide(Facet* f)
+bool CORE::GEO::CUT::Element::OnSide(Facet* f)
 {
   if (not f->HasHoles())
   {
@@ -794,7 +795,7 @@ bool GEO::CUT::Element::OnSide(Facet* f)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
+bool CORE::GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
 {
   const std::vector<Node*>& nodes = Nodes();
   for (std::vector<Point*>::const_iterator i = facet_points.begin(); i != facet_points.end(); ++i)
@@ -823,7 +824,7 @@ bool GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cells)
+void CORE::GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cells)
 {
   dserror("be aware of using this function! Read comment!");
 
@@ -838,7 +839,7 @@ void GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cells)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
+void CORE::GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
 {
   dserror(
       "Be aware of using this function! \n\n"
@@ -868,7 +869,7 @@ void GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
  * (Remark: be aware of the fact, that you will just get cut_points, which lie on an edge of
  * this element!!!)
  *------------------------------------------------------------------------------------------*/
-void GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
+void CORE::GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
 {
   for (std::vector<Side*>::const_iterator i = Sides().begin(); i != Sides().end(); ++i)
   {
@@ -885,7 +886,7 @@ void GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool tetcellsonly)
+void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool tetcellsonly)
 {
   /* Is volume cell active? ( i.e. in recursive call, has this vc already
    * been removed in FixBrokenTets() ) */
@@ -978,7 +979,7 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool tetce
  */
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
+bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
 
@@ -1022,7 +1023,7 @@ bool GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::RemoveEmptyVolumeCells()
+void CORE::GEO::CUT::Element::RemoveEmptyVolumeCells()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();)
   {
@@ -1042,7 +1043,7 @@ void GEO::CUT::Element::RemoveEmptyVolumeCells()
 /*----------------------------------------------------------------------------*
  * Create volumecells
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
+void CORE::GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
 {
   Teuchos::RCP<FacetGraph> fg = FacetGraph::Create(sides_, facets_);
   fg->CreateVolumeCells(mesh, this, cells_);
@@ -1050,9 +1051,10 @@ void GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType elementtype, unsigned numNodesElement,
-    unsigned dim>
-bool GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(Point* p)
+template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
+    unsigned numNodesElement, unsigned dim>
+bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(
+    Point* p)
 {
   Teuchos::RCP<Position> pos = Position::Create(*this, *p);
   return pos->Compute();
@@ -1060,9 +1062,9 @@ bool GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::Poin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType elementtype, unsigned numNodesElement,
-    unsigned dim>
-bool GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
+template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
+    unsigned numNodesElement, unsigned dim>
+bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
     const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rst)
 {
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, elementtype>(*this, xyz);
@@ -1076,7 +1078,7 @@ bool GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::Loca
  * Find local coodinates of given point w.r. to the parent Quad element
  *                                                      sudhakar 11/13
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::LocalCoordinatesQuad(
+void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
     const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
 {
   if (not isShadow_) dserror("This is not a shadow elemenet\n");
@@ -1093,7 +1095,7 @@ void GEO::CUT::Element::LocalCoordinatesQuad(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int GEO::CUT::Element::NumGaussPoints(DRT::Element::DiscretizationType shape)
+int CORE::GEO::CUT::Element::NumGaussPoints(::DRT::Element::DiscretizationType shape)
 {
   int numgp = 0;
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
@@ -1106,9 +1108,9 @@ int GEO::CUT::Element::NumGaussPoints(DRT::Element::DiscretizationType shape)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::DebugDump()
+void CORE::GEO::CUT::Element::DebugDump()
 {
-  std::cout << "Problem in element " << Id() << " of shape " << DRT::DistypeToString(Shape())
+  std::cout << "Problem in element " << Id() << " of shape " << ::DRT::DistypeToString(Shape())
             << ":\n";
   bool haslevelsetside = false;
   const std::vector<Node*>& nodes = Nodes();
@@ -1141,7 +1143,7 @@ void GEO::CUT::Element::DebugDump()
     std::stringstream str;
     str << "cut_test_bacigenerated_" << Id() << ".cpp";
     std::ofstream file(str.str().c_str());
-    GEO::CUT::OUTPUT::GmshElementCutTest(file, this, haslevelsetside);
+    CORE::GEO::CUT::OUTPUT::GmshElementCutTest(file, this, haslevelsetside);
   }
 }
 
@@ -1149,20 +1151,20 @@ void GEO::CUT::Element::DebugDump()
  * When cut library is broken, write complete cut        sudhakar 06/14
  * configuration in to gmsh output file
  *----------------------------------------------------------------------*/
-void GEO::CUT::Element::GmshFailureElementDump()
+void CORE::GEO::CUT::Element::GmshFailureElementDump()
 {
   std::stringstream str;
   str << ".cut_element" << Id() << "_CUTFAIL.pos";
-  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
   std::ofstream file(filename.c_str());
 
-  GEO::CUT::OUTPUT::GmshCompleteCutElement(file, this);
+  CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(file, this);
   file.close();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::GnuplotDump()
+void CORE::GEO::CUT::Element::GnuplotDump()
 {
   std::stringstream str;
   str << "element" << Id() << ".plot";
@@ -1190,7 +1192,7 @@ void GEO::CUT::Element::GnuplotDump()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::DumpFacets()
+void CORE::GEO::CUT::Element::DumpFacets()
 {
   std::stringstream str;
   str << "facets" << Id() << ".plot";
@@ -1209,7 +1211,7 @@ void GEO::CUT::Element::DumpFacets()
 /*----------------------------------------------------------------------*
  * Calculate volume of all volumecells when Tessellation is used
  *----------------------------------------------------------------------*/
-void GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
+void CORE::GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
 {
   const plain_volumecell_set& volcells = VolumeCells();
   for (plain_volumecell_set::const_iterator i = volcells.begin(); i != volcells.end(); i++)
@@ -1232,7 +1234,7 @@ void GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
  * Integrate pre-defined functions over each volumecell created from this
  * element when using Tessellation
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::integrateSpecificFunctionsTessellation()
+void CORE::GEO::CUT::Element::integrateSpecificFunctionsTessellation()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
@@ -1246,7 +1248,7 @@ void GEO::CUT::Element::integrateSpecificFunctionsTessellation()
  * fitting for each volumecells. Unless specified moment fitting is performed
  * only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::MomentFitGaussWeights(
+void CORE::GEO::CUT::Element::MomentFitGaussWeights(
     Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
@@ -1287,7 +1289,7 @@ void GEO::CUT::Element::MomentFitGaussWeights(
  * facets and applying divergence theorem. Unless specified moment fitting is
  * performed only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Element::DirectDivergenceGaussRule(
+void CORE::GEO::CUT::Element::DirectDivergenceGaussRule(
     Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
@@ -1307,7 +1309,7 @@ void GEO::CUT::Element::DirectDivergenceGaussRule(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::HasLevelSetSide()
+bool CORE::GEO::CUT::Element::HasLevelSetSide()
 {
   const plain_facet_set facets = this->Facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
@@ -1323,46 +1325,46 @@ bool GEO::CUT::Element::HasLevelSetSide()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::Element> GEO::CUT::ElementFactory::CreateElement(
-    DRT::Element::DiscretizationType elementtype, int eid, const std::vector<Side*>& sides,
+Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElement(
+    ::DRT::Element::DiscretizationType elementtype, int eid, const std::vector<Side*>& sides,
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (elementtype)
   {
-    case DRT::Element::line2:
+    case ::DRT::Element::line2:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::line2>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::line2>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::tri3:
+    case ::DRT::Element::tri3:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::tri3>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::tri3>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::quad4:
+    case ::DRT::Element::quad4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::quad4>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::quad4>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::tet4:
+    case ::DRT::Element::tet4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::tet4>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::tet4>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::hex8:
+    case ::DRT::Element::hex8:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::hex8>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::hex8>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::pyramid5:
+    case ::DRT::Element::pyramid5:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::pyramid5>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::pyramid5>(eid, sides, nodes, active, probdim));
       break;
-    case DRT::Element::wedge6:
+    case ::DRT::Element::wedge6:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<DRT::Element::wedge6>(eid, sides, nodes, active, probdim));
+          CreateConcreteElement<::DRT::Element::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:
     {
       dserror("Unsupported element type! ( %d | %s )", elementtype,
-          DRT::DistypeToString(elementtype).c_str());
+          ::DRT::DistypeToString(elementtype).c_str());
       break;
     }
   }
@@ -1371,8 +1373,8 @@ Teuchos::RCP<GEO::CUT::Element> GEO::CUT::ElementFactory::CreateElement(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::Element> GEO::CUT::Element::Create(
-    const DRT::Element::DiscretizationType& elementtype, const int& eid,
+Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(
+    const ::DRT::Element::DiscretizationType& elementtype, const int& eid,
     const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active)
 {
   ElementFactory factory;
@@ -1381,18 +1383,19 @@ Teuchos::RCP<GEO::CUT::Element> GEO::CUT::Element::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::Element> GEO::CUT::Element::Create(const unsigned& shardskey, const int& eid,
-    const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active)
+Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsigned& shardskey,
+    const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
+    const bool& active)
 {
-  return Create(DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
-template class GEO::CUT::ConcreteElement<2, DRT::Element::line2>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::line2>;
-template class GEO::CUT::ConcreteElement<2, DRT::Element::tri3>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::tri3>;
-template class GEO::CUT::ConcreteElement<2, DRT::Element::quad4>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::quad4>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::hex8>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::pyramid5>;
-template class GEO::CUT::ConcreteElement<3, DRT::Element::wedge6>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::line2>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::line2>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::hex8>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::pyramid5>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::wedge6>;

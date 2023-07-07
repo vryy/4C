@@ -21,6 +21,7 @@
 #include "inpar_thermo.H"
 
 #include "utils_singleton_owner.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |
@@ -116,13 +117,13 @@ namespace DRT
 
       //! Singleton access method
       static TemperImpl<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of nodes
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
-      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! number of dof per node
       static const int numdofpernode_ = 1;
@@ -357,9 +358,9 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       virtual void EvalShapeFuncAndDerivsAtIntPoint(
-          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-          int iquad,                                               //!< id of current Gauss point
-          int eleid                                                //!< the element id
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          int iquad,  //!< id of current Gauss point
+          int eleid   //!< the element id
       );
 
       //! compute heatflux and temperature gradient in linear case

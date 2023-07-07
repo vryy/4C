@@ -191,7 +191,7 @@ namespace DRT
       StructuralLine& operator=(const StructuralLine& old);
 
       //! gaussian integration to be used
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! line integration
       void LineIntegration(

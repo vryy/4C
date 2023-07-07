@@ -91,7 +91,7 @@ namespace DRT
       explicit RedAirBloodScatraImpl();
 
       //! number of nodes
-      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
 
       /// Evaluate

@@ -237,7 +237,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   for (int gp = 0; gp < intpoints.nquad; gp++)
   {
     // set gausspoints from integration rule
@@ -248,12 +248,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     // get shape functions and derivatives in the plane of the element
     if (!nurbsele)
     {
-      DRT::UTILS::shape_function_2D(funct, e(0), e(1), Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e(0), e(1), Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), Shape());
     }
     else
     {
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, e, myknots, weights, nurbs9);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, e, myknots, weights, nurbs9);
     }
 
     // Stuff to get spatial Neumann
@@ -707,7 +707,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         /*----------------------------------------------------------------------*
           |               start loop over integration points                     |
           *----------------------------------------------------------------------*/
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         std::vector<double> edispincr(lm.size());
@@ -720,8 +720,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gp][1];
 
           // get shape functions and derivatives in the plane of the element
-          DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
           std::vector<double> normal(3);
           double detA;
@@ -771,15 +771,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         LINALG::SerialDenseMatrix deriv(2, numnode);
 
         // loop over integration points
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
         for (int gp = 0; gp < intpoints.nquad; gp++)
         {
           const double e0 = intpoints.qxg[gp][0];
           const double e1 = intpoints.qxg[gp][1];
 
           // get shape functions and derivatives in the plane of the element
-          DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
           std::vector<double> normal(3);
           double detA;
@@ -868,8 +868,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       {
         std::vector<double> normal(3);  // normal in element center
         // get shape functions and derivatives in the plane of the element
-        DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, Shape());
-        DRT::UTILS::shape_function_2D_deriv1(deriv, 0.0, 0.0, Shape());
+        CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, Shape());
+        CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, 0.0, 0.0, Shape());
 
         SurfaceIntegration(normal, xcn, deriv);
 
@@ -1021,7 +1021,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         /*----------------------------------------------------------------------*
              |               start loop over integration points                     |
          *----------------------------------------------------------------------*/
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
         for (int gp = 0; gp < intpoints.nquad; gp++)
         {
@@ -1029,8 +1029,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gp][1];
 
           // get shape functions and derivatives in the plane of the element
-          DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
           std::vector<double> normal(3);
           double detA;
@@ -1095,7 +1095,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disn, mydisn, lm);
       SpatialConfiguration(x, mydisn);
 
-      const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
       // set up matrices and parameters needed for the evaluation of current
       // interfacial area and its derivatives w.r.t. the displacements
@@ -1194,7 +1194,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         }
 
         double areaele = 0.0;
-        const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+        const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
         // allocate matrix for derivatives of shape functions
         LINALG::SerialDenseMatrix deriv(2, NumNode());
 
@@ -1205,7 +1205,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gp][1];
 
           // get shape functions and derivatives in the plane of the element
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
           std::vector<double> normal(3);
           double detA;
@@ -1277,13 +1277,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       MaterialConfiguration(x);
       // LINALG::SerialDenseVector  funct(numnode);
       LINALG::SerialDenseMatrix deriv(2, numnode);
-      const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
       double a = 0.0;
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         const double e0 = intpoints.qxg[gp][0];
         const double e1 = intpoints.qxg[gp][1];
-        DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+        CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
         std::vector<double> normal(3);
         double detA;
         SurfaceIntegration(detA, normal, x, deriv);
@@ -1331,8 +1331,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       LINALG::SerialDenseMatrix deriv(2, numnode);
 
       // get shape functions and derivatives in the plane of the element
-      DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       double detA;
       std::vector<double> normal(3);
@@ -1386,7 +1386,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       /////////////////////////////////////////////////////////////////////////////
 
       // get integration rule
-      const DRT::UTILS::IntPointsAndWeights<2> intpoints(
+      const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
 
       const Teuchos::RCP<DRT::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
@@ -1457,8 +1457,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad, globdim);
       Epetra_SerialDenseMatrix derivtrafo(3, 3);
 
-      DRT::UTILS::BoundaryGPToParentGP<3>(parent_xi, derivtrafo, intpoints, DRT::Element::hex8,
-          DRT::Element::quad4, this->FaceParentNumber());
+      CORE::DRT::UTILS::BoundaryGPToParentGP<3>(parent_xi, derivtrafo, intpoints,
+          DRT::Element::hex8, DRT::Element::quad4, this->FaceParentNumber());
 
       ////////////////////////////////////////////////////////////////////
       /////   gauss point loop
@@ -1488,12 +1488,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
 
         // get shape functions and derivatives in the plane of the element
-        DRT::UTILS::shape_function_2D(funct, bdryxi[0], bdryxi[1], Shape());
-        DRT::UTILS::shape_function_2D_deriv1(deriv, bdryxi[0], bdryxi[1], Shape());
+        CORE::DRT::UTILS::shape_function_2D(funct, bdryxi[0], bdryxi[1], Shape());
+        CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, bdryxi[0], bdryxi[1], Shape());
 
-        DRT::UTILS::shape_function_3D(parent_funct, parent_xi(gp, 0), parent_xi(gp, 1),
+        CORE::DRT::UTILS::shape_function_3D(parent_funct, parent_xi(gp, 0), parent_xi(gp, 1),
             parent_xi(gp, 2), this->ParentElement()->Shape());
-        DRT::UTILS::shape_function_3D_deriv1(parent_deriv_notrafo, parent_xi(gp, 0),
+        CORE::DRT::UTILS::shape_function_3D_deriv1(parent_deriv_notrafo, parent_xi(gp, 0),
             parent_xi(gp, 1), parent_xi(gp, 2), this->ParentElement()->Shape());
         // parent_deriv.Multiply(derivtrafo,parent_deriv_notrafo);
 
@@ -1843,7 +1843,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         // set gausspoints from integration rule
@@ -1854,12 +1854,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         // get shape functions and derivatives in the plane of the element
         if (!nurbsele)
         {
-          DRT::UTILS::shape_function_2D(funct, e(0), e(1), Shape());
-          DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), Shape());
+          CORE::DRT::UTILS::shape_function_2D(funct, e(0), e(1), Shape());
+          CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e(0), e(1), Shape());
         }
         else
         {
-          DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, e, myknots, weights, nurbs9);
+          CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+              funct, deriv, e, myknots, weights, nurbs9);
         }
 
         // check for correct input
@@ -2139,7 +2140,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -2156,8 +2157,8 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
 
       // get shape functions and derivatives of shape functions in the plane of
       // the element
-      DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th
@@ -2214,7 +2215,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+    const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -2231,8 +2232,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
 
       // get shape functions and derivatives of shape functions in the plane of
       // the element
-      DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+      CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);
@@ -2312,7 +2313,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 
   if (Adiff2 != Teuchos::null) Adiff2->Shape(ndof, ndof);
 
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   int ngp = intpoints.nquad;
 
@@ -2330,7 +2331,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     const double e1 = intpoints.qxg[gpid][1];
 
     // get derivatives of shape functions in the plane of the element
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
     std::vector<double> normal(3);
     double detA;
@@ -2454,7 +2455,7 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
   for (int i = 0; i < numnode; ++i)
   {
     LINALG::Matrix<3, 1> loc_coor;
-    loc_coor = DRT::UTILS::getNodeCoordinates(i, Shape());
+    loc_coor = CORE::DRT::UTILS::getNodeCoordinates(i, Shape());
 
     const double e0 = loc_coor(0);
     const double e1 = loc_coor(1);
@@ -2464,8 +2465,8 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
     LINALG::SerialDenseMatrix deriv(2, numnode);
 
     // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+    CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
+    CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, Shape());
 
     double detA;
     std::vector<double> normal(3);
@@ -2492,7 +2493,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   std::vector<int> lmstride;
   parentele->LocationVector(discretization, lmpar, lmowner, lmstride);
 
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
+  const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
   Teuchos::RCP<Epetra_SerialDenseVector> poro = Teuchos::rcp(new Epetra_SerialDenseVector(ngp));
   const int numdim = 3;
@@ -2540,7 +2541,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad, 3);
   Epetra_SerialDenseMatrix derivtrafo(3, 3);
 
-  DRT::UTILS::SurfaceGPToParentGP(
+  CORE::DRT::UTILS::SurfaceGPToParentGP(
       pqxg, derivtrafo, intpoints, parentele->Shape(), Shape(), LSurfNumber());
 
   Teuchos::RCP<MAT::StructPoro> structmat =
@@ -2551,12 +2552,13 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
     // get shape functions and derivatives in the plane of the element
     // LINALG::SerialDenseVector  funct(nenparent);
     LINALG::SerialDenseMatrix deriv(3, nenparent);
-    // DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
-    DRT::UTILS::shape_function_3D_deriv1(
+    // CORE::DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, pqxg(gp, 0), pqxg(gp, 1), pqxg(gp, 2), parentele->Shape());
 
     LINALG::SerialDenseVector funct2D(numnode);
-    DRT::UTILS::shape_function_2D(funct2D, intpoints.qxg[gp][0], intpoints.qxg[gp][1], Shape());
+    CORE::DRT::UTILS::shape_function_2D(
+        funct2D, intpoints.qxg[gp][0], intpoints.qxg[gp][1], Shape());
 
     // pressure at integration point
     double press = funct2D.Dot(mypres);

@@ -98,6 +98,10 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &elchcontrol);
   DoubleParameter(
       "CYCLING_TIMESTEP", -1., "modified time step size for CCCV cell cycling", &elchcontrol);
+  BoolParameter("ELECTRODE_INFO_EVERY_STEP", "No",
+      "the cell voltage, SOC, and C-Rate will be written to the csv file every step, even if "
+      "RESULTSEVRY is not 1",
+      &elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol

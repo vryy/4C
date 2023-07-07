@@ -18,6 +18,8 @@ Kloeppel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+#include "utils_exceptions.H"
+
 // forward declarations
 namespace IO
 {

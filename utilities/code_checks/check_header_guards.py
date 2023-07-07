@@ -12,11 +12,10 @@ def check_header_guards(look_cmd, allerrors):
             continue
 
         file_name = os.path.splitext(os.path.basename(file_path))[0]
+        define_name = file_name.replace("-", "_").replace(".", "_").upper() + "_H"
 
-        template_header_if = "#ifndef " + file_name.replace("-", "_").upper() + "_H\n"
-        template_header_define = (
-            "#define " + file_name.replace("-", "_").upper() + "_H\n"
-        )
+        template_header_if = "#ifndef " + define_name + "\n"
+        template_header_define = "#define " + define_name + "\n"
 
         def has_wrong_header_guards():
             all_lines = utils.file_contents(file_path)

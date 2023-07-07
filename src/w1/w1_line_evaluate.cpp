@@ -86,8 +86,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = Shape();
 
   // gaussian points
-  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   LINALG::SerialDenseVector shapefcts(numnod);
@@ -157,8 +157,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     // get shape functions and derivatives in the line
     if (distype == line2 || distype == line3)
     {
-      DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
-      DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+      CORE::DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
     }
     else if (distype == nurbs2 || distype == nurbs3)
     {
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         weights(inode) = cp->W();
       }
 
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
           shapefcts, deriv, e1, boundknots[0], weights, distype);
     }
     else
@@ -363,8 +363,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];
 
           // get shape functions and derivatives in the line
-          DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
-          DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+          CORE::DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
+          CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
           double ortho_value = (*val)[0];
 
           // outward normal vector (unit vector)
@@ -416,23 +416,23 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
     const DiscretizationType& distype)
 {
-  DRT::UTILS::GaussRule1D rule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
     case line2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case line3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     case nurbs2:
-      rule = DRT::UTILS::GaussRule1D::line_2point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
     case nurbs3:
-      rule = DRT::UTILS::GaussRule1D::line_3point;
+      rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
@@ -573,8 +573,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         const DiscretizationType distype = Shape();
 
         // gaussian points
-        const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-        const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);  //
+        const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+        const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);  //
 
         // allocate vector for shape functions and for derivatives
         LINALG::SerialDenseVector funct(numnod);
@@ -591,8 +591,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];  // coordinate of GP
 
           // get values of shape functions and derivatives in the line at specific GP
-          DRT::UTILS::shape_function_1D(funct, e1, distype);
-          DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+          CORE::DRT::UTILS::shape_function_1D(funct, e1, distype);
+          CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
 
           double dr = w1_substitution(xscurr, deriv, NULL, numnod);
 
@@ -696,9 +696,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       parentele->LocationVector(discretization, lmpar, lmowner, lmstride);
 
       // gaussian points
-      const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+      const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
       // get integration rule
-      const DRT::UTILS::IntPointsAndWeights<1> intpoints(gaussrule);
+      const CORE::DRT::UTILS::IntPointsAndWeights<1> intpoints(gaussrule);
 
       const int ngp = intpoints.IP().nquad;
       Teuchos::RCP<Epetra_SerialDenseVector> poro = Teuchos::rcp(new Epetra_SerialDenseVector(ngp));
@@ -745,7 +745,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       LINALG::SerialDenseMatrix pqxg;
       Epetra_SerialDenseMatrix derivtrafo;
 
-      DRT::UTILS::BoundaryGPToParentGP<2>(
+      CORE::DRT::UTILS::BoundaryGPToParentGP<2>(
           pqxg, derivtrafo, intpoints, parentele->Shape(), distype, FaceParentNumber());
 
       for (int gp = 0; gp < ngp; ++gp)
@@ -753,11 +753,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         // get shape functions and derivatives in the plane of the element
         LINALG::SerialDenseVector funct(nenparent);
         LINALG::SerialDenseMatrix deriv(2, nenparent);
-        DRT::UTILS::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
-        DRT::UTILS::shape_function_2D_deriv1(deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
+        CORE::DRT::UTILS::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
+        CORE::DRT::UTILS::shape_function_2D_deriv1(
+            deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
 
         LINALG::SerialDenseVector funct1D(numnode);
-        DRT::UTILS::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
+        CORE::DRT::UTILS::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
 
         // pressure at integration point
         double press = funct1D.Dot(mypres);

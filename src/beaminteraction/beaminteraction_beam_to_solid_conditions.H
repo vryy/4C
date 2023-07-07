@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      */
     Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> CreateIndirectAssemblyManager(
-        const Teuchos::RCP<const DRT::Discretization>& discret) override;
+        const Teuchos::RCP<const ::DRT::Discretization>& discret) override;
 
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
@@ -160,7 +160,7 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const ::DRT::Discretization>& discretization) override;
 
    protected:
     /**
@@ -207,7 +207,7 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const ::DRT::Discretization>& discretization) override;
 
     /**
      * \brief Here we get all face elements that are needed for the created pairs. This includes
@@ -215,12 +215,12 @@ namespace BEAMINTERACTION
      *
      * @param discret (in) Discretization.
      */
-    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret) override;
+    void Setup(const Teuchos::RCP<const ::DRT::Discretization>& discret) override;
 
     /**
      * \brief Set the displacement state (derived).
      */
-    void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void SetState(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state) override;
 

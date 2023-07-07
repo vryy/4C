@@ -20,7 +20,7 @@
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret.H"
 #include "nurbs_discret_nurbs_utils.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "fluid_rotsym_periodicbc.H"
 #include "utils_singleton_owner.H"
 
@@ -32,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype, probdim>>(
@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
@@ -185,7 +185,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
     const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   std::vector<double> integralflux(my::numscal_);

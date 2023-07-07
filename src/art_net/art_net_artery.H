@@ -19,7 +19,7 @@
 #include "lib_node.H"
 #include "discretization_fem_general_utils_integration.H"
 #include "inpar_bio.H"
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -58,7 +58,7 @@ namespace DRT
       virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+        return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
 
       virtual void SetupElementDefinition(
@@ -323,7 +323,7 @@ namespace DRT
 
       //! @name Other
 
-      DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
+      CORE::DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
 
 
       //@}
@@ -334,7 +334,7 @@ namespace DRT
       INPAR::ARTDYN::ImplType impltype_;
 
       //! Gaussrule
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! container containing all kind of Artery thisandthat
       DRT::Container data_;
@@ -347,7 +347,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are

@@ -27,11 +27,11 @@ namespace MORTAR
 {
   class MatrixRowColTransformer
   {
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef CORE::GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:

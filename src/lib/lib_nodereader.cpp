@@ -15,7 +15,7 @@
 #include "lib_utils_parallel.H"
 
 #include "nurbs_discret_control_point.H"
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 #include "fiber_node.H"
 
 #include <istream>
@@ -152,7 +152,7 @@ void DRT::INPUT::NodeReader::Read(
             {
               // create node and add to discretization
               Teuchos::RCP<DRT::Node> node =
-                  Teuchos::rcp(new IMMERSED::ImmersedNode(nodeid, coords.data(), myrank));
+                  Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords.data(), myrank));
               diss[i]->AddNode(node);
             }
           }

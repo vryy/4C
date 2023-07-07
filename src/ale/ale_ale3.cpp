@@ -16,7 +16,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::Ale3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Ale3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 /*----------------------------------------------------------------------------*/

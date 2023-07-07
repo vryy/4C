@@ -21,12 +21,12 @@
 #endif
 
 // FLAGS FOR EXTENDED OUTPUT
-//#define TETMESH_EXTENDED_DEBUG_OUTPUT
-//#define QHULL_EXTENDED_DEBUG_OUTPUT
+// #define TETMESH_EXTENDED_DEBUG_OUTPUT
+// #define QHULL_EXTENDED_DEBUG_OUTPUT
 
 // FLAGS FOR NEW IMPLEMENTATION TESTING
 // Probably don't want to use:
-//#define REMOVE_ALL_TETS_ON_CUTSIDE
+// #define REMOVE_ALL_TETS_ON_CUTSIDE
 
 // Probably want to use:
 #define DIFF_QHULL_CALL
@@ -37,7 +37,7 @@
 // hex8_quad4_alex38) #define TEST_EMPTY_VC_IS_COMPLETELY_ON_CUTSIDE
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -888,6 +888,6 @@ namespace GEO
 #endif
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

@@ -14,6 +14,8 @@
 #ifndef LIB_UTILS_MATRIX_VECTOR_ENUMS_H
 #define LIB_UTILS_MATRIX_VECTOR_ENUMS_H
 
+#include <string>
+
 namespace DRT
 {
   namespace UTILS

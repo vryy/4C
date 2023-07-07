@@ -47,7 +47,7 @@
 
 #include "linalg_sparsematrix.H"
 #include "linalg_blocksparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_multiply.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"

@@ -16,8 +16,9 @@
 
 #include "fsi_dirichletneumann_disp.H"
 #include "coupling_adapter_volmortar.H"
+#include "coupling_adapter.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -79,7 +80,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<ADAPTER::MortarVolCoupl> coupsa_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> coupsa_;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<InterfaceCorrector> icorrector_;
@@ -99,14 +100,14 @@ namespace FSI
     virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
     void SetInterfaceDisplacements(
-        Teuchos::RCP<Epetra_Vector>& idisp_struct, ADAPTER::Coupling& icoupfs);
+        Teuchos::RCP<Epetra_Vector>& idisp_struct, CORE::ADAPTER::Coupling& icoupfs);
 
     virtual void CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
     Teuchos::RCP<const Epetra_Vector> idisp_;
-    Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfs_;
 
     Teuchos::RCP<Epetra_Vector> deltadisp_;
     Teuchos::RCP<ADAPTER::FluidAle> fluidale_;
@@ -152,7 +153,7 @@ namespace FSI
     int dim_;
 
     //! Searchtree for mortar evaluations
-    Teuchos::RCP<GEO::SearchTree> searchTree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
 
     //! Dop normals for search algorithm
     LINALG::Matrix<9, 3> dopnormals_;

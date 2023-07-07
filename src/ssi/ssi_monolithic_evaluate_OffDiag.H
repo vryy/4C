@@ -35,7 +35,7 @@ namespace SSI
 {
   namespace UTILS
   {
-    class SSIStructureMeshTying;
+    class SSIMeshTying;
   }
 
   class ScatraStructureOffDiagCoupling
@@ -44,7 +44,7 @@ namespace SSI
     explicit ScatraStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
@@ -109,7 +109,7 @@ namespace SSI
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
   };
 
   class ScatraManifoldStructureOffDiagCoupling : public ScatraStructureOffDiagCoupling
@@ -118,7 +118,7 @@ namespace SSI
     explicit ScatraManifoldStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
@@ -145,7 +145,7 @@ namespace SSI
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);

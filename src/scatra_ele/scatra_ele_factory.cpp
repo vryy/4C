@@ -280,7 +280,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
-  if ((probdim - DRT::UTILS::DisTypeToDim<distype>::dim) == 1)
+  if ((probdim - CORE::DRT::UTILS::DisTypeToDim<distype>::dim) == 1)
   {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
@@ -433,7 +433,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
-  if (DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
+  if (CORE::DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
   {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain)

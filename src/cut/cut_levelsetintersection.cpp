@@ -14,7 +14,8 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool create_side)
+CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
+    const Epetra_Comm& comm, bool create_side)
     : ParentIntersection(comm.MyPID()), side_(Teuchos::null), comm_(&comm)
 {
   if (create_side) AddCutSide(1);
@@ -22,7 +23,7 @@ GEO::CUT::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
+CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
     : ParentIntersection(myrank), side_(Teuchos::null), comm_(NULL)
 {
   if (create_side) AddCutSide(1);
@@ -30,7 +31,7 @@ GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_sid
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
+void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 {
   if (!side_.is_null()) dserror("currently only one levelset-side is supported");
 
@@ -40,9 +41,9 @@ void GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::ElementHandle* GEO::CUT::LevelSetIntersection::AddElement(int eid,
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(int eid,
     const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
-    DRT::Element::DiscretizationType distype, const double* lsv, const bool lsv_only_plus_domain,
+    ::DRT::Element::DiscretizationType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
 {
   int numnode = nids.size();
@@ -83,7 +84,7 @@ GEO::CUT::ElementHandle* GEO::CUT::LevelSetIntersection::AddElement(int eid,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
+void CORE::GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 1/3 --- Cut");
 
@@ -158,20 +159,20 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::LevelSetIntersection::Cut(
+void CORE::GEO::CUT::LevelSetIntersection::Cut(
     bool include_inner, bool screenoutput, INPAR::CUT::VCellGaussPts VCellGP)
 {
-  //###########################################################################
-  // STEP 1/3 CUT THE MESH
-  //###########################################################################
+  // ###########################################################################
+  //  STEP 1/3 CUT THE MESH
+  // ###########################################################################
 
   // m.Status();
   Cut_Mesh(screenoutput);
 
 
-  //###########################################################################
-  // STEP 2/3 ASSIGN DOFS
-  //###########################################################################
+  // ###########################################################################
+  //  STEP 2/3 ASSIGN DOFS
+  // ###########################################################################
 
   Mesh& m = NormalMesh();
 
@@ -185,9 +186,9 @@ void GEO::CUT::LevelSetIntersection::Cut(
 
     //=====================================================================
   }
-  //#############################################################################
-  // STEP 3/3 FINALIZE, ASSIGN INTEGRATIONRULES
-  //#############################################################################
+  // #############################################################################
+  //  STEP 3/3 FINALIZE, ASSIGN INTEGRATIONRULES
+  // #############################################################################
 
   //  VCellGP=INPAR::CUT::VCellGaussPts_DirectDivergence;
   //  std::cout << "VCellGP: " << VCellGP << std::endl;
@@ -254,6 +255,6 @@ void GEO::CUT::LevelSetIntersection::Cut(
 #endif
 
 
-  //######################################################################################
+  // ######################################################################################
 
 }  // GEO::CUT::LevelSetIntersection::Cut

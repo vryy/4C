@@ -62,7 +62,7 @@ void immersed_problem_drt()
           {
             // check if INODE is defined in input file
             int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
-            IMMERSED::ImmersedNode* inode = dynamic_cast<IMMERSED::ImmersedNode*>(
+            DRT::ImmersedNode* inode = dynamic_cast<DRT::ImmersedNode*>(
                 (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
             if (inode == NULL)

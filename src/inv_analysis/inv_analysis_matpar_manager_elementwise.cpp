@@ -253,12 +253,12 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
     if (ele->NumSurface() > 1)  // 2D boundary element and 3D parent element
     {
       nele = ele->NumSurface();
-      faces = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+      faces = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
     }
     else if (ele->NumSurface() == 1)  // 1D boundary element and 2D parent element
     {
       nele = ele->NumLine();
-      faces = DRT::UTILS::getEleNodeNumberingLines(distype);
+      faces = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
     }
     else
       dserror("creating internal faces for 1D elements (would be points) not implemented yet");

@@ -14,6 +14,7 @@
 #include "adapter_algorithmbase.H"
 #include "scatra_algorithm.H"
 #include "poroelast_base.H"
+#include "coupling_adapter_volmortar.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -134,8 +135,8 @@ namespace POROELASTSCATRA
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
-    Teuchos::RCP<ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
     //@}
 
    private:

@@ -80,8 +80,8 @@ dserror(
 #endif
 
 #define MYGAUSSRULEBEAM3K \
-  GaussRule1D::line_4point  // define gauss rule; intrule_line_1point - intrule_line_10point
-                            // is implemented.
+  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                                // intrule_line_10point is implemented.
 // DEFAULT: intrule_line_4point
 
 #define BEAM3K_COLLOCATION_POINTS \
@@ -1085,7 +1085,7 @@ namespace DRT
       void computestrain(const LINALG::Matrix<3, 1, T>& theta,
           const LINALG::Matrix<3, 1, T>& theta_deriv, LINALG::Matrix<3, 1, T>& K) const
       {
-        LINALG::Matrix<3, 3, T> Tinv = LARGEROTATIONS::Tinvmatrix(theta);
+        LINALG::Matrix<3, 3, T> Tinv = CORE::LARGEROTATIONS::Tinvmatrix(theta);
 
         K.Clear();
         K.MultiplyTN(Tinv, theta_deriv);
@@ -1105,10 +1105,10 @@ namespace DRT
         LINALG::Matrix<3, 3, T> triad_bar(true);
 
         // Compute triad_bar via SR mapping from triad_ref onto r_s
-        LARGEROTATIONS::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
+        CORE::LARGEROTATIONS::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
 
         // Compute triad via relative rotation of triad_bar
-        LARGEROTATIONS::RotateTriad<T>(triad_bar, phi, triad);
+        CORE::LARGEROTATIONS::RotateTriad<T>(triad_bar, phi, triad);
       }
 
       template <typename T1, typename T2>
@@ -1204,7 +1204,7 @@ namespace DRT
       {
         // spinmatrix Sr' = r'x
         LINALG::Matrix<3, 3, T> Srs(true);
-        LARGEROTATIONS::computespin(Srs, r_s);
+        CORE::LARGEROTATIONS::computespin(Srs, r_s);
 
         // cross-product r'xr''
         LINALG::Matrix<3, 1, T> Srsrss(true);
@@ -1310,7 +1310,7 @@ namespace DRT
         rttmodconvmass_[num].Clear();
         rttmodnewmass_[num].Clear();
 
-        LARGEROTATIONS::triadtoquaternion(triad_mat, Qconvmass_[num]);
+        CORE::LARGEROTATIONS::triadtoquaternion(triad_mat, Qconvmass_[num]);
         Qnewmass_[num] = Qconvmass_[num];
         rconvmass_[num] = r;
         rnewmass_[num] = r;
@@ -1327,7 +1327,7 @@ namespace DRT
       {
         LINALG::Matrix<3, 3, FAD> auxmatrix1(true);
         LINALG::Matrix<3, 1, FAD> auxvec1(true);
-        LARGEROTATIONS::computespin(auxmatrix1, vec1);
+        CORE::LARGEROTATIONS::computespin(auxmatrix1, vec1);
         auxvec1.Multiply(auxmatrix1, vec2);
         vec_out.MultiplyTN(mat1, auxvec1);
 

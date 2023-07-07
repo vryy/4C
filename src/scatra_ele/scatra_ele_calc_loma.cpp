@@ -16,7 +16,7 @@
 
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "inpar_fluid.H"
 
@@ -42,7 +42,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcLoma<distype>* DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcLoma<distype>>(
@@ -50,7 +50,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>* DRT::ELEMENTS::ScaTraEleCalcLoma<dist
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

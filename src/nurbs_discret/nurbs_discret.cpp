@@ -14,7 +14,7 @@
 
 #include "lib_globalproblem.H"
 #include "io_control.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 #include "linalg_serialdensevector.H"
@@ -302,9 +302,9 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
 
       static const int probdim = DRT::Problem::Instance()->NDim();
       const DRT::Element::DiscretizationType distype = actele->Shape();
-      const int dim = DRT::UTILS::getDimension(distype);
+      const int dim = CORE::DRT::UTILS::getDimension(distype);
       const bool isboundary = (dim != probdim);
-      const int nen = DRT::UTILS::getNumberOfElementNodes(distype);
+      const int nen = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
       // access elements knot span
       std::vector<Epetra_SerialDenseVector> eleknots(dim);
@@ -512,12 +512,12 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
@@ -560,7 +560,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   LINALG::Matrix<dim + 1, 1> unitnormal;
 
   // gaussian points
-  const DRT::UTILS::IntPointsAndWeights<dim> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -569,7 +569,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
     double fac = 0.0;
     double drs = 0.0;
 
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(
+    CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(
         shpfunct, deriv, fac, unitnormal, drs, xsi, xyze, intpoints, iquad, knots, &weights, true);
 
     // get real physical coordinates of integration point
@@ -653,11 +653,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
@@ -700,7 +700,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   std::vector<Epetra_SerialDenseVector> value(deg + 1, dofblock);
 
   // gaussian points
-  const DRT::UTILS::IntPointsAndWeights<dim> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -711,7 +711,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
     }
 
     // evaluate shape function and derivatevs at integration point
-    DRT::NURBS::UTILS::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
+    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
 
     xjm.MultiplyNT(deriv, xyze);
     double det = xjm.Determinant();

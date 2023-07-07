@@ -16,7 +16,7 @@
 #include <vector>
 #include "lib_function.H"
 #include "utils_exceptions.H"
-#include "lib_demangle.H"
+#include "utils_demangle.H"
 #include <any>
 
 
@@ -103,7 +103,7 @@ T& DRT::UTILS::FunctionManager::FunctionById(int num)
         [&function_any]()
         {
           const std::string actual_type_name_with_rcp_prefix =
-              TryDemangle(function_any.type().name());
+              CORE::UTILS::TryDemangle(function_any.type().name());
 
           // find the outermost pair of angle brackets which should enclose the type inside an RCP
           const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
@@ -120,7 +120,7 @@ T& DRT::UTILS::FunctionManager::FunctionById(int num)
     dserror(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
-        input_id, TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
+        input_id, CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
   }
 
   return *queried_function;

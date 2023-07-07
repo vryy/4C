@@ -28,13 +28,13 @@
 #include "adapter_scatra_base_algorithm.H"
 #include "scatra_timint_implicit.H"
 #include "io_control.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
+#include "linear_solver_method_parameters.H"
 
 #include "scatra_timint_meshtying_strategy_artery.H"
 #include "adapter_art_net.H"
 
 #include "linalg_equilibrate.H"
-#include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 
@@ -1657,7 +1657,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   scatramsht_->ArtScatraField()->Discretization()->ComputeNullSpaceIfNecessary(
       blocksmootherparams5);
   // fix the null space if some DOFs are condensed out
-  LINALG::NULLSPACE::FixNullSpace("ArteryScatra",
+  CORE::LINEAR_SOLVER::Parameters::FixNullSpace("ArteryScatra",
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
 }

@@ -24,7 +24,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
@@ -57,7 +57,7 @@ namespace GEO
       bool HavePBC() const { return haveperiodicbc_; }
 
       /// get const bounding box discretization
-      DRT::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
+      ::DRT::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
 
       /// get corner points
       double operator()(int i, int j) const { return box_(i, j); }
@@ -261,7 +261,7 @@ namespace GEO
 
      private:
       /// discretization with one volume element representing the box ( used e.g. for output)
-      Teuchos::RCP<DRT::Discretization> boxdiscret_;
+      Teuchos::RCP<::DRT::Discretization> boxdiscret_;
       /// box displacement vector
       Teuchos::RCP<Epetra_Vector> disn_row_;
       Teuchos::RCP<Epetra_Vector> disn_col_;
@@ -283,6 +283,6 @@ namespace GEO
     };
 
   }  // namespace MESHFREE
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

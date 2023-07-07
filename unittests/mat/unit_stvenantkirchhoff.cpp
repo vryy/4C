@@ -6,12 +6,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "mat_par_material.H"
 #include "mat_stvenantkirchhoff.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

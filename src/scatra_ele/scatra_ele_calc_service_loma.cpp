@@ -7,7 +7,7 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "lib_discret.H"
 #include "lib_utils.H"
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
   my::BodyForce(ele);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

@@ -52,12 +52,11 @@ REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
-AZSOLVE                         BiCGSTAB
-AZSUB                           25
+AZSOLVE                         GMRES
 AZCONV                          AZ_r0
-AZTOL                           1e-04
+AZTOL                           1e-10
 AZPREC                          MueLu_fluid
-MUELU_XML_FILE                  f2_drivencavity20x20_muelu_blocked.xml
+MUELU_XML_FILE                  f2_monolithic_muelu.xml
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

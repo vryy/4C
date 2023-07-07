@@ -25,7 +25,7 @@
 #include "scatra_ele_action.H"
 
 #include "linalg_krylov_projector.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
@@ -64,6 +64,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       electrodeconc_(),
       electrodeeta_(),
       electrodecurr_(),
+      electrodevoltage_(),
       cellvoltage_(0.),
       cellvoltage_old_(-1.),
       cccv_condition_(Teuchos::null),
@@ -156,22 +157,64 @@ void SCATRA::ScaTraTimIntElch::Setup()
   }
 
   // initialize vectors for states of charge and C rates of resolved electrodes
-  std::vector<DRT::Condition*> electrodeSocConditions;
-  discret_->GetCondition("ElectrodeSOC", electrodeSocConditions);
-  for (const auto& electrodeSocCondition : electrodeSocConditions)
   {
-    auto conditioninitpair = std::make_pair(electrodeSocCondition->GetInt("ConditionID"), -1.0);
-    if (isale_) electrodeinitvols_.insert(conditioninitpair);
-    electrodesoc_.insert(conditioninitpair);
-    electrodecrates_.insert(conditioninitpair);
+    std::vector<DRT::Condition*> electrode_soc_conditions;
+    discret_->GetCondition("ElectrodeSOC", electrode_soc_conditions);
+    for (const auto& electrodeSocCondition : electrode_soc_conditions)
+    {
+      const int cond_id = electrodeSocCondition->GetInt("ConditionID");
+      auto conditioninitpair = std::make_pair(cond_id, -1.0);
+      if (isale_) electrodeinitvols_.insert(conditioninitpair);
+      electrodesoc_.insert(conditioninitpair);
+      electrodecrates_.insert(conditioninitpair);
+      runtime_csvwriter_soc_.insert(std::make_pair(cond_id, std::nullopt));
+      runtime_csvwriter_soc_[cond_id].emplace(myrank_, "electrode_soc_" + std::to_string(cond_id));
+      runtime_csvwriter_soc_[cond_id]->RegisterDataVector("SOC", 1, 16);
+      runtime_csvwriter_soc_[cond_id]->RegisterDataVector("CRate", 1, 16);
 
-    // safety checks
-    const double one_hour = electrodeSocCondition->GetDouble("one_hour");
-    if (one_hour <= 0.0) dserror("One hour must not be negative");
-    if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
-      dserror("This is not one hour in SI units");
-    if (electrodeSocConditions[0]->GetDouble("one_hour") != one_hour)
-      dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
+      // safety checks
+      const double one_hour = electrodeSocCondition->GetDouble("one_hour");
+      if (one_hour <= 0.0) dserror("One hour must not be negative");
+      if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
+        dserror("This is not one hour in SI units");
+      if (electrode_soc_conditions[0]->GetDouble("one_hour") != one_hour)
+        dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
+    }
+  }
+
+  // init map for electrode voltage
+  {
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("CellVoltage", conditions);
+    std::vector<DRT::Condition*> conditionspoint;
+    discret_->GetCondition("CellVoltagePoint", conditionspoint);
+    if (!conditions.empty() and !conditionspoint.empty())
+    {
+      dserror(
+          "Cannot have cell voltage line/surface conditions and cell voltage point conditions at "
+          "the same time!");
+    }
+    else if (!conditionspoint.empty())
+      conditions = conditionspoint;
+
+    // perform all following operations only if there is at least one condition for cell voltage
+    if (!conditions.empty())
+    {
+      // safety check
+      if (conditions.size() != 2)
+        dserror("Must have exactly two boundary conditions for cell voltage, one per electrode!");
+
+      // loop over both conditions for cell voltage
+      for (const auto& condition : conditions)
+      {
+        // extract condition ID
+        const int condid = condition->GetInt("ConditionID");
+        electrodevoltage_.insert({condid, 0.0});
+      }
+      // setup csv writer for cell voltage
+      runtime_csvwriter_cell_voltage_.emplace(myrank_, "cell_voltage");
+      runtime_csvwriter_cell_voltage_->RegisterDataVector("CellVoltage", 1, 16);
+    }
   }
 
   // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total
@@ -751,13 +794,20 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Output(const int num)
 {
+  // evaluate SOC, c-rate and cell voltage for output
+  EvaluateElectrodeInfoInterior();
+  EvaluateCellVoltage();
+
   // call base class routine
   ScaTraTimIntImpl::Output(num);
 
   // output electrode interior status information and cell voltage in every time step
-  // in the presence of constant-current constant-voltage (CCCV) cell cycling boundary condition
-  if (not DoOutput() and discret_->GetCondition("CCCVCycling"))
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or DoOutput())
   {
+    // print electrode domain and boundary status information to screen and files
+    OutputElectrodeInfoDomain();
+    OutputElectrodeInfoBoundary();
+
     // print electrode interior status information to screen and files
     OutputElectrodeInfoInterior();
 
@@ -770,16 +820,6 @@ void SCATRA::ScaTraTimIntElch::Output(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 {
-  // print electrode domain and boundary status information to screen and files
-  OutputElectrodeInfoDomain();
-  OutputElectrodeInfoBoundary();
-
-  // print electrode interior status information to screen and files
-  OutputElectrodeInfoInterior();
-
-  // print cell voltage to screen and file
-  OutputCellVoltage();
-
   // for elch problems with moving boundary
   if (isale_) output_->WriteVector("trueresidual", trueresidual_);
 }
@@ -1229,6 +1269,61 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
  *-------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 {
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("ElectrodeSOC", conditions);
+
+  if (!conditions.empty())
+  {
+    if (myrank_ == 0)
+    {
+      std::cout << std::endl << "Electrode state of charge and related:" << std::endl;
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+      std::cout << "| ID | state of charge |     C rate     | operation mode |" << std::endl;
+    }
+
+    for (const auto& condition : conditions)
+    {
+      const int cond_id = condition->GetInt("ConditionID");
+
+      const double soc = electrodesoc_[cond_id];
+      const double c_rate = electrodecrates_[cond_id];
+
+      // print results to screen and files
+      if (myrank_ == 0)
+      {
+        // determine operation mode based on c rate
+        std::string mode;
+        if (std::abs(c_rate) < 1.0e-16)
+          mode = " at rest ";
+        else if (c_rate < 0.0)
+          mode = "discharge";
+        else
+          mode = " charge  ";
+
+        // print results to screen
+        std::cout << "| " << std::setw(2) << cond_id << " |   " << std::setw(7)
+                  << std::setprecision(2) << std::fixed << soc * 100.0 << " %     |     "
+                  << std::setw(5) << std::abs(c_rate) << "      |   " << mode << "    |"
+                  << std::endl;
+      }
+
+      dsassert(runtime_csvwriter_soc_[cond_id].has_value(),
+          "internal error: runtime csv writer not created.");
+      runtime_csvwriter_soc_[cond_id]->AppendDataVector("SOC", {soc});
+      runtime_csvwriter_soc_[cond_id]->AppendDataVector("CRate", {c_rate});
+      runtime_csvwriter_soc_[cond_id]->ResetTimeAndTimeStep(Time(), Step());
+      runtime_csvwriter_soc_[cond_id]->WriteFile();
+    }
+
+    if (myrank_ == 0)
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+  }
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateElectrodeInfoInterior()
+{
   // extract conditions for electrode state of charge
   std::vector<DRT::Condition*> conditions;
   discret_->GetCondition("ElectrodeSOC", conditions);
@@ -1237,17 +1332,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
   // of charge
   if (!conditions.empty())
   {
-    // initialize variable for cell C rate
-    cellcrate_ = 0.;
-
-    // print header to screen
-    if (myrank_ == 0)
-    {
-      std::cout << std::endl << "Electrode state of charge and related:" << std::endl;
-      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
-      std::cout << "| ID | state of charge |     C rate     | operation mode |" << std::endl;
-    }
-
     // loop over conditions for electrode state of charge
     for (const auto& condition : conditions)
     {
@@ -1272,8 +1356,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // fourth component = integral of velocity divergence (ALE only)
       // fifth component  = integral of concentration times velocity divergence (ALE only)
       // sixth component  = integral of velocity times concentration gradient (ALE only)
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-          Teuchos::rcp(new Epetra_SerialDenseVector(isale_ ? 6 : 3));
+      auto scalars = Teuchos::rcp(new Epetra_SerialDenseVector(isale_ ? 6 : 3));
 
       // evaluate current condition for electrode state of charge
       discret_->EvaluateScalars(condparams, scalars, "ElectrodeSOC", condid);
@@ -1285,10 +1368,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       if (isale_ and step_ == 0) electrodeinitvols_[condid] = intdomain;
 
       // extract reference concentrations at 0% and 100% state of charge
-      const double volratio = isale_ ? electrodeinitvols_[condid] / intdomain : 1.;
+      const double volratio = isale_ ? electrodeinitvols_[condid] / intdomain : 1.0;
       const double c_0 = condition->GetDouble("c_0%") * volratio;
       const double c_100 = condition->GetDouble("c_100%") * volratio;
-      const double c_delta_inv = 1. / (c_100 - c_0);
+      const double c_delta_inv = 1.0 / (c_100 - c_0);
 
       // get one hour for c_rate
       const double one_hour = condition->GetDouble("one_hour");
@@ -1302,59 +1385,15 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
         c_rate += (*scalars)(4) + (*scalars)(5) - c_avg * (*scalars)(3);
       c_rate *= c_delta_inv * one_hour / intdomain;
 
-      // determine operation mode
-      std::string mode;
-      if (std::abs(c_rate) < 1.e-16)
-        mode.assign(" at rest ");
-      else if (c_rate < 0.)
-        mode.assign("discharge");
-      else
-        mode.assign(" charge  ");
-
       // update state of charge and C rate for current electrode
       electrodesoc_[condid] = soc;
       electrodecrates_[condid] = c_rate;
+    }
 
-      // update cell C rate
-      cellcrate_ = std::max(std::abs(c_rate), cellcrate_);
-
-      // print results to screen and files
-      if (myrank_ == 0)
-      {
-        // print results to screen
-        std::cout << "| " << std::setw(2) << condid << " |   " << std::setw(7)
-                  << std::setprecision(2) << std::fixed << soc * 100. << " %     |     "
-                  << std::setw(5) << std::abs(c_rate) << "      |   " << mode.c_str() << "    |"
-                  << std::endl;
-
-        // set file name
-        std::ostringstream id;
-        id << condid;
-        const std::string filename(
-            problem_->OutputControlFile()->FileName() + ".electrode_soc_" + id.str() + ".csv");
-
-        // open file in appropriate mode and write header at beginning
-        std::ofstream file;
-        if (Step() == 0)
-        {
-          file.open(filename.c_str(), std::fstream::trunc);
-          file << "Step,Time,SOC,CRate" << std::endl;
-        }
-        else
-          file.open(filename.c_str(), std::fstream::app);
-
-        // write results for current electrode to file
-        file << Step() << "," << Time() << "," << std::setprecision(9) << std::fixed << soc << ","
-             << c_rate << std::endl;
-
-        // close file
-        file.close();
-      }  // if(myrank_ == 0)
-    }    // loop over conditions
-
-    // print finish line to screen
-    if (myrank_ == 0)
-      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+    cellcrate_ = std::abs(std::max_element(electrodecrates_.begin(), electrodecrates_.end(),
+        [](const auto& a, const auto& b) {
+          return std::abs(a.second) < std::abs(b.second);
+        })->second);
   }
 }
 
@@ -1367,33 +1406,51 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
   discret_->GetCondition("CellVoltage", conditions);
   std::vector<DRT::Condition*> conditionspoint;
   discret_->GetCondition("CellVoltagePoint", conditionspoint);
-  if (!conditions.empty() and !conditionspoint.empty())
-  {
-    dserror(
-        "Cannot have cell voltage line/surface conditions and cell voltage point conditions at "
-        "the same time!");
-  }
-  else if (!conditionspoint.empty())
-    conditions = conditionspoint;
+  if (!conditionspoint.empty()) conditions = conditionspoint;
 
   // perform all following operations only if there is at least one condition for cell voltage
   if (!conditions.empty())
   {
-    // safety check
-    if (conditions.size() != 2)
-      dserror("Must have exactly two boundary conditions for cell voltage, one per electrode!");
-
-    // print header
     if (myrank_ == 0)
     {
       std::cout << std::endl << "Electrode potentials and cell voltage:" << std::endl;
       std::cout << "+----+-------------------------+" << std::endl;
       std::cout << "| ID | mean electric potential |" << std::endl;
+      for (const auto& condition : conditions)
+      {
+        const int cond_id = condition->GetInt("ConditionID");
+        std::cout << "| " << std::setw(2) << cond_id << " |         " << std::setw(6)
+                  << std::setprecision(3) << std::fixed << electrodevoltage_[cond_id]
+                  << "          |" << std::endl;
+      }
+
+      std::cout << "+----+-------------------------+" << std::endl;
+      std::cout << "| cell voltage: " << std::setw(6) << cellvoltage_ << "         |" << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl;
     }
 
-    // initialize vector for mean electric potentials of electrodes
-    std::vector<double> potentials(2, 0.);
+    dsassert(runtime_csvwriter_cell_voltage_.has_value(),
+        "internal error: runtime csv writer not created.");
+    runtime_csvwriter_cell_voltage_->AppendDataVector("CellVoltage", {cellvoltage_});
+    runtime_csvwriter_cell_voltage_->ResetTimeAndTimeStep(Time(), Step());
+    runtime_csvwriter_cell_voltage_->WriteFile();
+  }
+}
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
+{
+  // extract conditions for cell voltage
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("CellVoltage", conditions);
+  std::vector<DRT::Condition*> conditionspoint;
+  discret_->GetCondition("CellVoltagePoint", conditionspoint);
+  if (!conditionspoint.empty()) conditions = conditionspoint;
+
+  // perform all following operations only if there is at least one condition for cell voltage
+  if (!conditions.empty())
+  {
     // loop over both conditions for cell voltage
     for (const auto& condition : conditions)
     {
@@ -1426,14 +1483,14 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         double intdomain = (*scalars)(1);
 
         // compute mean electric potential of current electrode
-        potentials[condid] = intpotential / intdomain;
+        electrodevoltage_[condid] = intpotential / intdomain;
       }
 
       // process point conditions
       else
       {
         // initialize local variable for electric potential of current electrode
-        double potential(0.);
+        double potential(0.0);
 
         // extract nodal cloud
         const std::vector<int>* const nodeids = condition->Nodes();
@@ -1466,49 +1523,13 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         }
 
         // communicate electrode potential
-        discret_->Comm().SumAll(&potential, &potentials[condid], 1);
+        discret_->Comm().SumAll(&potential, &electrodevoltage_[condid], 1);
       }
 
-      // print mean electric potential of current electrode to screen
-      if (myrank_ == 0)
-      {
-        std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6)
-                  << std::setprecision(3) << std::fixed << potentials[condid] << "          |"
-                  << std::endl;
-      }
     }  // loop over conditions
 
     // compute cell voltage
-    cellvoltage_ = std::abs(potentials[0] - potentials[1]);
-
-    // print cell voltage to screen and file
-    if (myrank_ == 0)
-    {
-      // print cell voltage to screen
-      std::cout << "+----+-------------------------+" << std::endl;
-      std::cout << "| cell voltage: " << std::setw(6) << cellvoltage_ << "         |" << std::endl;
-      std::cout << "+----+-------------------------+" << std::endl;
-
-      // set file name
-      const std::string filename(problem_->OutputControlFile()->FileName() + ".cell_voltage.csv");
-
-      // open file in appropriate mode and write header at beginning
-      std::ofstream file;
-      if (Step() == 0)
-      {
-        file.open(filename.c_str(), std::fstream::trunc);
-        file << "Step,Time,CellVoltage" << std::endl;
-      }
-      else
-        file.open(filename.c_str(), std::fstream::app);
-
-      // write results for current electrode to file
-      file << Step() << "," << Time() << "," << std::setprecision(12) << std::fixed << cellvoltage_
-           << std::endl;
-
-      // close file
-      file.close();
-    }  // if(myrank_ == 0)
+    cellvoltage_ = std::abs(electrodevoltage_[0] - electrodevoltage_[1]);
   }
 }
 

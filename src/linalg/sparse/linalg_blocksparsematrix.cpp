@@ -134,13 +134,13 @@ void LINALG::BlockSparseMatrixBase::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Complete()
+void LINALG::BlockSparseMatrixBase::Complete(bool enforce_complete)
 {
   for (int r = 0; r < Rows(); ++r)
   {
     for (int c = 0; c < Cols(); ++c)
     {
-      Matrix(r, c).Complete(DomainMap(c), RangeMap(r));
+      Matrix(r, c).Complete(DomainMap(c), RangeMap(r), enforce_complete);
     }
   }
 
@@ -171,7 +171,7 @@ void LINALG::BlockSparseMatrixBase::Complete()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::BlockSparseMatrixBase::Complete(
-    const Epetra_Map& domainmap, const Epetra_Map& rangemap)
+    const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
 {
   dserror("Complete with arguments not supported for block matrices");
 }
@@ -576,11 +576,11 @@ LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrix
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::DefaultBlockMatrixStrategy::Complete()
+void LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::DefaultBlockMatrixStrategy::Complete");
 
-  if (mat_.Filled())
+  if (mat_.Filled() and not enforce_complete)
   {
     if (ghost_.size() != 0)
     {

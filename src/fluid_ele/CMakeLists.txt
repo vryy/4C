@@ -6,7 +6,6 @@ set(_fluid_ele_dependencies
     core
     cut
     fluid
-    geometry
     immersed_problem
     inpar
     io

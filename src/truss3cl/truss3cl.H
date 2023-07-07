@@ -385,7 +385,7 @@ namespace DRT
       KinematicType kintype_;
 
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      DRT::UTILS::GaussRule1D gaussrule_;
+      CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! Position of the two interpolated nodes relativ to real nodes
       std::vector<double> mybindingposition_;
@@ -394,7 +394,7 @@ namespace DRT
       //! @name Internal calculation methods
 
       //! determine Gauss rule from required type of integration
-      DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+      CORE::DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange and
       //! enginerring strains

@@ -49,7 +49,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_mass_matrix:
     {
       // integration points and weights
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over integration points
@@ -355,14 +355,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       if (turbparams_->AdaptCsgsPhi() and turbparams_->Nwl() and (not SCATRA::InflowElement(ele)))
       {
         // use one-point Gauss rule to do calculations at the element center
-        DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToStabGaussRule<distype>::rule);
         vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints, 0);
 
         // adopt integration points and weights for gauss point evaluation of B
         if (turbparams_->BD_Gp())
         {
-          const DRT::UTILS::IntPointsAndWeights<nsd_ele_> gauss_intpoints(
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> gauss_intpoints(
               SCATRA::DisTypeToOptGaussRule<distype>::rule);
           intpoints = gauss_intpoints;
         }
@@ -580,7 +580,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -604,7 +604,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(
             *discretization.GetState("phinp"), ephinp_, lm);
 
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -624,7 +624,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           }
           else
           {
-            const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+            const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
                 SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
             const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);
@@ -645,7 +645,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -661,7 +661,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -677,7 +677,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -693,7 +693,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
@@ -921,7 +921,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
     const INPAR::SCATRA::L2ProjectionSystemType& systemtype)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
@@ -997,7 +997,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
               "additional diffusive term!");
         }
 
-        VOLMORTAR::UTILS::dual_shape_function<distype>(
+        CORE::VOLMORTAR::UTILS::dual_shape_function<distype>(
             dual_funct_, xsi_.A(), *ele, INPAR::VOLMORTAR::dualquad_no_mod);
         break;
       }
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCurvatureAtNodes(const 
     const std::vector<LINALG::Matrix<nen_, nsd_>>& egradphinp)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
@@ -1290,7 +1290,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -1332,7 +1332,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
   }
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
     const Epetra_IntSerialDenseVector& dofids)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
@@ -1513,7 +1513,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(LINALG::Matri
   }
 
   // integration rule
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1594,7 +1594,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDomainIntegral(
   double domainintegral(0.);
 
   // get integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1620,7 +1620,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(const DRT:
     Epetra_SerialDenseVector& scalars, const bool inverting, const bool calc_grad_phi)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1680,7 +1680,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalarTimeDerivati
   DRT::UTILS::ExtractMyValues(*phidtnp, ephidtnp, lm);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1711,7 +1711,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateMomentumAndVolume(
     const DRT::Element* ele, Epetra_SerialDenseVector& momandvol, const double interface_thickness)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1778,7 +1778,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiffMatrix(
   // integration loop for one element
   /*----------------------------------------------------------------------*/
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1991,7 +1991,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const auto errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
@@ -2216,7 +2216,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHeteroReacMatAndRHS(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2323,19 +2323,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHeteroReacMatAndRHS(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
-    const DRT::Element* const& ele, const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,
-    const int iquad)
+    const DRT::Element* const& ele,
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // get determinant of derivative of spatial coordinate w.r.t. parameter coordinates
   const double det_dxds = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
   // get derivatives of element shape function w.r.t. parameter coordinates
   LINALG::Matrix<nsd_ele_, nen_> deriv_ele;
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_ele);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_ele);
 
   // reference coordinates of element nodes
   LINALG::Matrix<nsd_, nen_> XYZ;
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
 
   // reference coordinates of elemental nodes in space dimension of element
   LINALG::Matrix<nsd_ele_, nen_> XYZe;

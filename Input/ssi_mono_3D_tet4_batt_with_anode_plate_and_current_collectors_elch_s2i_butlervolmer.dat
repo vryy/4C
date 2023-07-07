@@ -35,7 +35,7 @@ STDOUTEVRY                      0
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -68,7 +68,7 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
-----------------------------------------------SSI CONTROL/ELCH
+--------------------------------------------------SSI CONTROL/ELCH
 INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

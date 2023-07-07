@@ -11,8 +11,8 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "adapter_str_fsiwrapper.H"
 #include "adapter_fld_fluid.H"
-#include "solver_linalg_precond.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_preconditioner_linalg.H"
+#include "linear_solver_method_linalg.H"
 
 #include "fsi_overlapprec_hybrid.H"
 

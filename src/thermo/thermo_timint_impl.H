@@ -15,6 +15,7 @@
  *----------------------------------------------------------------------*/
 #include "thermo_timint.H"
 #include "thermo_aux.H"
+#include "coupling_adapter_mortar.H"
 #include <Teuchos_Time.hpp>
 
 // forward declaration
@@ -387,7 +388,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
                                            //!< i.e. the incremental temperature
     Teuchos::Time timer_;                  //!< timer for solution technique
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
     //! @name Various global forces

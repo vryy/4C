@@ -15,7 +15,7 @@
 
 #include "cut_pointgraph.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -194,7 +194,7 @@ namespace GEO
 
     }  // namespace IMPL
   }    // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif  // CUT_POINTGRAPH_SIMPLE_H

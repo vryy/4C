@@ -14,18 +14,18 @@
 #include "cut_utils.H"
 
 // forward declaration for the operator
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
     class Cycle;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 // must be here, as it is supposed to be a friend of the Cycle-class
-std::ostream& operator<<(std::ostream& stream, const GEO::CUT::Cycle& cycle);
+std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::Cycle& cycle);
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -139,6 +139,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

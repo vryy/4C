@@ -15,7 +15,6 @@ set(_wear_dependencies
     mortar
     nurbs_discret
     so3
-    solver
     structure
     w1
     )

@@ -14,7 +14,7 @@
 #include "cut_point.H"
 #include "cut_boundarycell.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -28,7 +28,7 @@ namespace GEO
 
     namespace OUTPUT
     {
-      char GmshElementType(DRT::Element::DiscretizationType shape);
+      char GmshElementType(::DRT::Element::DiscretizationType shape);
 
       /** \brief Write a Gmsh output file, which contains only the given volume cells
        *
@@ -69,7 +69,7 @@ namespace GEO
        *                         it will overrule the position input.
        *
        *  \author hiermeier \date 01/17 */
-      void GmshCellDump(std::ofstream& file, DRT::Element::DiscretizationType shape,
+      void GmshCellDump(std::ofstream& file, ::DRT::Element::DiscretizationType shape,
           const Epetra_SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
           const int* value = NULL);
 
@@ -139,63 +139,64 @@ namespace GEO
       /*!
       \brief Write output of a line
        */
-      void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, int idx1,
-          int idx2, bool to_local = false, Element* ele = NULL);
+      void GmshLineDump(std::ofstream& file, CORE::GEO::CUT::Point* p1, CORE::GEO::CUT::Point* p2,
+          int idx1, int idx2, bool to_local = false, Element* ele = NULL);
 
-      inline void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2)
+      inline void GmshLineDump(
+          std::ofstream& file, CORE::GEO::CUT::Point* p1, CORE::GEO::CUT::Point* p2)
       {
         GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
       }
 
       inline void GmshLineDump(
-          std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, bool to_local)
+          std::ofstream& file, CORE::GEO::CUT::Point* p1, CORE::GEO::CUT::Point* p2, bool to_local)
       {
         GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, NULL);
       }
 
-      inline void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2,
-          bool to_local, Element* ele)
+      inline void GmshLineDump(std::ofstream& file, CORE::GEO::CUT::Point* p1,
+          CORE::GEO::CUT::Point* p2, bool to_local, Element* ele)
       {
         GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, ele);
       }
 
-      void GmshLineDump(
-          std::ofstream& file, GEO::CUT::Line* line, bool to_local = false, Element* ele = NULL);
+      void GmshLineDump(std::ofstream& file, CORE::GEO::CUT::Line* line, bool to_local = false,
+          Element* ele = NULL);
       /*!
       \brief Write output of a edge
        */
-      void GmshEdgeDump(
-          std::ofstream& file, GEO::CUT::Edge* edge, bool to_local = false, Element* ele = NULL);
+      void GmshEdgeDump(std::ofstream& file, CORE::GEO::CUT::Edge* edge, bool to_local = false,
+          Element* ele = NULL);
 
       /*!
       \brief Write output of a edge
        */
-      void GmshEdgeDump(std::ofstream& file, GEO::CUT::Edge* edge, const std::string& ename,
+      void GmshEdgeDump(std::ofstream& file, CORE::GEO::CUT::Edge* edge, const std::string& ename,
           bool to_local = false, Element* ele = NULL);
 
       /*!
       \brief Write output of a node
        */
-      void GmshNodeDump(
-          std::ofstream& file, GEO::CUT::Node* node, bool to_local = false, Element* ele = NULL);
+      void GmshNodeDump(std::ofstream& file, CORE::GEO::CUT::Node* node, bool to_local = false,
+          Element* ele = NULL);
 
       /*!
       \brief Write output of a point with special idx
        */
-      void GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
+      void GmshPointDump(std::ofstream& file, CORE::GEO::CUT::Point* point, int idx,
           bool to_local = false, Element* ele = NULL);
 
       /*!
       \brief Write output of a point with special idx and special name
        */
-      void GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
+      void GmshPointDump(std::ofstream& file, CORE::GEO::CUT::Point* point, int idx,
           const std::string& pname, bool to_local, Element* ele);
 
       /*!
       \brief Write output of a point with point position as idx
        */
-      void GmshPointDump(
-          std::ofstream& file, GEO::CUT::Point* point, bool to_local = false, Element* ele = NULL);
+      void GmshPointDump(std::ofstream& file, CORE::GEO::CUT::Point* point, bool to_local = false,
+          Element* ele = NULL);
 
       /*!
       \brief Write level set value on cut surface (information taken from facet).
@@ -243,7 +244,7 @@ namespace GEO
       \brief Write cuttest for this element!
       */
       void GmshElementCutTest(
-          std::ofstream& file, GEO::CUT::Element* ele, bool haslevelsetside = false);
+          std::ofstream& file, CORE::GEO::CUT::Element* ele, bool haslevelsetside = false);
 
       /*!
        \brief Generate filename for gmsh output with specific ending
@@ -492,5 +493,5 @@ namespace GEO
     }  // namespace OUTPUT
 
   } /* namespace CUT */
-} /* namespace GEO */
+}  // namespace CORE::GEO
 #endif  // CUT_OUTPUT_H

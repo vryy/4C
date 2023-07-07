@@ -31,7 +31,7 @@
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
     int start_value_lambda_gid)
     : is_setup_(false),

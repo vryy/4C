@@ -15,6 +15,7 @@
 
 #include "fluid_ele.H"
 #include "discretization_fem_general_utils_polynomial.H"
+#include "lib_dg_element.h"
 
 namespace DRT
 {
@@ -58,7 +59,7 @@ namespace DRT
     /*!
     \brief HDG weakly compressible fluid element
     */
-    class FluidHDGWeakComp : public Fluid
+    class FluidHDGWeakComp : public Fluid, public DG_Element
     {
      public:
       //! @name constructors and destructors and related methods
@@ -139,7 +140,7 @@ namespace DRT
        */
       int NumDofPerNodeAuxiliary() const
       {
-        return (DRT::UTILS::getDimension(distype_) + 0);
+        return (CORE::DRT::UTILS::getDimension(distype_) + 0);
         // maybe + 1 to mimic the standard fluid dofset with velocity + pressure
         // this is maybe needed for the fluid-ALE coupling
       }
@@ -150,7 +151,7 @@ namespace DRT
       */
       virtual int NumDofPerFace(const unsigned face) const
       {
-        return (1 + DRT::UTILS::getDimension(distype_)) * NumDofPerComponent(face);
+        return (1 + CORE::DRT::UTILS::getDimension(distype_)) * NumDofPerComponent(face);
       }
 
       /*!
@@ -158,8 +159,8 @@ namespace DRT
       */
       virtual int NumDofPerComponent(const unsigned face) const
       {
-        return DRT::UTILS::getBasisSize(
-            DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
+        return CORE::DRT::UTILS::getBasisSize(
+            CORE::DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
       }
 
       /*!
@@ -173,9 +174,10 @@ namespace DRT
        */
       int NumDofPerElementAuxiliary() const
       {
-        const int nsd_ = DRT::UTILS::getDimension(distype_);
+        const int nsd_ = CORE::DRT::UTILS::getDimension(distype_);
         const int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
-        return (msd_ + nsd_ + 1.0) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (msd_ + nsd_ + 1.0) *
+               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
       }
 
       /*!

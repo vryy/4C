@@ -159,7 +159,7 @@ namespace DRT
       //! Get number of dofs per component per face
       virtual int NumDofPerComponent(const unsigned face) const
       {
-        return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(this->distype_),
+        return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(this->distype_),
             (this->Faces()[face])->Degree(), completepol_);
       }
 
@@ -220,8 +220,8 @@ namespace DRT
       //! Returns the degree of the element for the interior DG space
       int NumDofPerElementAuxiliary() const
       {
-        return (DRT::UTILS::getDimension(distype_) + 1) *
-               DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+        return (CORE::DRT::UTILS::getDimension(distype_) + 1) *
+               CORE::DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
@@ -271,16 +271,16 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
           Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1)
+          Epetra_SerialDenseMatrix* elemat1) override
       {
         dserror("Volume Neumann not implemented");
         return 0;
@@ -442,12 +442,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -547,7 +550,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -565,9 +568,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       //@}
 
@@ -601,8 +604,8 @@ namespace DRT
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
       /*!
       \brief Return the location vector of this element
@@ -631,7 +634,7 @@ namespace DRT
 
       */
       void LocationVector(const Discretization& dis, std::vector<int>& lm,
-          std::vector<int>& lmowner, std::vector<int>& lmstride) const;
+          std::vector<int>& lmowner, std::vector<int>& lmstride) const override;
 
      private:
       // don't want = operator
@@ -722,12 +725,15 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
+      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
+      virtual int NumSurface() const
+      {
+        return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -879,7 +885,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -897,9 +903,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       /*!
       \brief return the master parent ScaTraHDG element

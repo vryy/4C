@@ -17,7 +17,8 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_facet_set &facets)
+CORE::GEO::CUT::FacetGraph::FacetGraph(
+    const std::vector<Side *> &sides, const plain_facet_set &facets)
     : graph_(facets.size())
 {
   std::map<std::pair<Point *, Point *>, plain_facet_set> lines;
@@ -209,7 +210,7 @@ GEO::CUT::FacetGraph::FacetGraph(const std::vector<Side *> &sides, const plain_f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::FacetGraph::CreateVolumeCells(
+void CORE::GEO::CUT::FacetGraph::CreateVolumeCells(
     Mesh &mesh, Element *element, plain_volumecell_set &cells)
 {
   std::vector<plain_facet_set> volumes;
@@ -257,7 +258,7 @@ void GEO::CUT::FacetGraph::CreateVolumeCells(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
+void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
     std::vector<plain_facet_set> &volumes, plain_volumecell_set &cells) const
 {
   for (std::vector<plain_facet_set>::iterator i = volumes.begin(); i != volumes.end(); ++i)
@@ -275,7 +276,7 @@ void GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
         OUTPUT::GmshFacetsOnly(*fs, element, fsc++);
 
       std::ofstream file_element("add_to_volume_cells_facetgraph_failed.pos");
-      GEO::CUT::OUTPUT::GmshElementDump(file_element, element, false);
+      CORE::GEO::CUT::OUTPUT::GmshElementDump(file_element, element, false);
       file_element.close();
 
       dserror(
@@ -295,7 +296,7 @@ void GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::FacetGraph::CollectVolumeLines(plain_facet_set &collected_facets,
+void CORE::GEO::CUT::FacetGraph::CollectVolumeLines(plain_facet_set &collected_facets,
     std::map<std::pair<Point *, Point *>, plain_facet_set> &volume_lines) const
 {
   for (plain_facet_set::iterator i = collected_facets.begin(); i != collected_facets.end(); ++i)
@@ -340,7 +341,7 @@ void GEO::CUT::FacetGraph::PrintAllCollected()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::FacetGraph> GEO::CUT::FacetGraph::Create(
+Teuchos::RCP<CORE::GEO::CUT::FacetGraph> CORE::GEO::CUT::FacetGraph::Create(
     const std::vector<Side *> &sides, const plain_facet_set &facets)
 {
   Teuchos::RCP<FacetGraph> fg = Teuchos::null;

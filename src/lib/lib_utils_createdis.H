@@ -17,7 +17,7 @@
 #include "lib_condition_utils.H"
 #include "lib_utils_factory.H"
 #include "nurbs_discret.H"
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 #include "mat_material.H"
 #include "mat_par_parameter.H"
 #include "io_pstream.H"
@@ -362,8 +362,8 @@ namespace DRT
         bool isnurbsdis(nurbsdis != NULL);
 
         // try to cast source node to immersed node
-        IMMERSED::ImmersedNode* inode = dynamic_cast<IMMERSED::ImmersedNode*>(
-            sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
+        DRT::ImmersedNode* inode =
+            dynamic_cast<DRT::ImmersedNode*>(sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
         bool buildimmersednode(inode != NULL);
 
         // check and analyze source discretization
@@ -455,8 +455,8 @@ namespace DRT
         bool isnurbsdis(nurbsdis_ptr != NULL);
 
         // try to cast source node to immersed node
-        IMMERSED::ImmersedNode* inode =
-            dynamic_cast<IMMERSED::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
+        DRT::ImmersedNode* inode =
+            dynamic_cast<DRT::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
         bool buildimmersednode(inode != NULL);
 
         AnalyzeConditionedSourceDis(

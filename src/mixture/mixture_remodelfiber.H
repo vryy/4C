@@ -10,8 +10,8 @@
 
 #include <memory>
 #include <vector>
-#include "mixture_growth_evolution.H"
 #include "linalg_fixedsizematrix.H"
+#include "mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 
 namespace DRT
 {
@@ -22,10 +22,7 @@ namespace MIXTURE
 {
   template <typename T>
   class RemodelFiberMaterial;
-  template <typename T>
-  class RemodelFiberMaterialActive;
-  template <typename T>
-  class GrowthEvolution;
+
 
   namespace IMPLEMENTATION
   {
@@ -45,7 +42,7 @@ namespace MIXTURE
 
    public:
     RemodelFiber(std::shared_ptr<const RemodelFiberMaterial<double>> material,
-        std::shared_ptr<const GrowthEvolution<double>> growth_evolution, double decay_time,
+        LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution,
         double lambda_pre);
 
     ~RemodelFiber();

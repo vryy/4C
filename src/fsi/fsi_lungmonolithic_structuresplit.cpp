@@ -316,7 +316,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
@@ -329,7 +329,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   // fluid linearization with respect to mesh motion block
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   if (mmm != Teuchos::null)
   {
@@ -353,24 +353,24 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
     mat.Matrix(1, 1).Add(fmGg, false, 1. / timescale, 1.0);
 
     fmiitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
     fmgitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
     fmGitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmGi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
 
     fmgGtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmgG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, false);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, false);
     fmiGtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmiG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
     fmGGtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmGG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
 
     mat.Matrix(1, 1).Add(addfmGg, false, 1. / timescale, 1.0);
 
     addfmGGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
         AddFluidShapeDerivMatrix_->FullColMap(), addfmGG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -385,7 +385,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   siitransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(0), 1.0,
       NULL, NULL, mat.Matrix(0, 0), true, false);
 
-  ADAPTER::CouplingMasterConverter converter(coupsf);
+  CORE::ADAPTER::CouplingMasterConverter converter(coupsf);
   sigtransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(1),
       1. / timescale, NULL, &converter, mat.Matrix(0, 1), true, false);
 
@@ -427,9 +427,9 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   LINALG::SparseMatrix& aiG = a->Matrix(0, 3);
 
   aiGtransform_(a->FullRowMap(), a->FullColMap(), aiG, 1.,
-      ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0));
   aigtransform_(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
   mat.Assign(2, 2, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -454,7 +454,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
   caiGtransform_(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
-      ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
+      CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

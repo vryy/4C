@@ -578,7 +578,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
 
   // declaration of variables in order to store shape functions
   // used for interpolation of triad field
@@ -609,11 +609,11 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     wgt = intpoints.qwgt[numgp];
 
     // evaluation of shape functions at Gauss points
-    DRT::UTILS::shape_function_1D(I_i, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype);
     if (centerline_hermite_)
-      DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, line2);
     else
-      DRT::UTILS::shape_function_1D(H_i, xi, distype);
+      CORE::DRT::UTILS::shape_function_1D(H_i, xi, distype);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
     std::vector<double> X_ref(3, 0.0);
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   // for these contributions, reduced integration is applied to avoid locking
 
   // get integration points for elasticity
-  DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_force.nquad);
@@ -954,7 +954,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
         Lambda, gausspoints_elast_force.qxg[numgp][0]);
 
     // compute spin matrix related to vector rprime for later use
-    LARGEROTATIONS::computespin<T>(r_s_hat, r_s);
+    CORE::LARGEROTATIONS::computespin<T>(r_s_hat, r_s);
 
     // compute material strains Gamma and Cur
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
@@ -1031,7 +1031,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   //***********************
 
   // get integration points for elasticity
-  DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_moment.nquad);
@@ -1204,7 +1204,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i;
 
   // get integration scheme for inertia forces and mass matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_mass.nquad);
   H_i.resize(gausspoints_mass.nquad);
@@ -1260,18 +1260,18 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     Lambdanewmass.Clear();
     Lambdaconvmass.Clear();
     // compute current and old triad at Gauss point
-    LARGEROTATIONS::quaterniontotriad<double>(QnewGPmass_[gp], Lambdanewmass);
-    LARGEROTATIONS::quaterniontotriad<double>(QconvGPmass_[gp], Lambdaconvmass);
+    CORE::LARGEROTATIONS::quaterniontotriad<double>(QnewGPmass_[gp], Lambdanewmass);
+    CORE::LARGEROTATIONS::quaterniontotriad<double>(QconvGPmass_[gp], Lambdaconvmass);
 
     // rotation between last converged position and current position expressed as a quaternion
     LINALG::Matrix<4, 1> deltaQ(true);
-    LARGEROTATIONS::quaternionproduct(
-        LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]), QnewGPmass_[gp], deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(
+        CORE::LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]), QnewGPmass_[gp], deltaQ);
 
     // spatial rotation between last converged position and current position expressed as a three
     // element rotation vector
     LINALG::Matrix<3, 1> deltatheta(true);
-    LARGEROTATIONS::quaterniontoangle<double>(deltaQ, deltatheta);
+    CORE::LARGEROTATIONS::quaterniontoangle<double>(deltaQ, deltatheta);
 
     // compute material counterparts of spatial vectors
     LINALG::Matrix<3, 1> deltaTHETA(true);
@@ -1368,7 +1368,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
 
     // spin matrix of the material angular velocity, i.e. S(W)
     LINALG::Matrix<3, 3> SWnewmass(true);
-    LARGEROTATIONS::computespin<double>(SWnewmass, Wnewmass);
+    CORE::LARGEROTATIONS::computespin<double>(SWnewmass, Wnewmass);
     LINALG::Matrix<3, 1> Jp_Wnewmass(true);
     LINALG::Matrix<3, 1> auxvector1(true);
     LINALG::Matrix<3, 1> Pi_t(true);
@@ -1387,7 +1387,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     r = rnewGPmass_[gp];
 
     LINALG::Matrix<3, 3> S_r(true);
-    LARGEROTATIONS::computespin<double>(S_r, r);
+    CORE::LARGEROTATIONS::computespin<double>(S_r, r);
     dL.Multiply(S_r, r_t);
     dL.Scale(mass_inertia_translational);
     LINALG::Matrix<3, 1> Lambdanewmass_Jp_Wnewmass(true);
@@ -1400,16 +1400,16 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     }
 
     LINALG::Matrix<3, 3> S_Pit(true);
-    LARGEROTATIONS::computespin<double>(S_Pit, Pi_t);
+    CORE::LARGEROTATIONS::computespin<double>(S_Pit, Pi_t);
     LINALG::Matrix<3, 3> SJpWnewmass(true);
-    LARGEROTATIONS::computespin<double>(SJpWnewmass, Jp_Wnewmass);
+    CORE::LARGEROTATIONS::computespin<double>(SJpWnewmass, Jp_Wnewmass);
     LINALG::Matrix<3, 3> SWnewmass_Jp(true);
     SWnewmass_Jp.Multiply(SWnewmass, Jp);
     Jp_bar.Update(diff_factor_vel, SWnewmass_Jp, 1.0);
     Jp_bar.Update(-diff_factor_vel, SJpWnewmass, 1.0);
 
     LINALG::Matrix<3, 3> Tmatrix(true);
-    Tmatrix = LARGEROTATIONS::Tmatrix(deltatheta);
+    Tmatrix = CORE::LARGEROTATIONS::Tmatrix(deltatheta);
 
     LINALG::Matrix<3, 3> Lambdanewmass_Jpbar(true);
     Lambdanewmass_Jpbar.Multiply(Lambdanewmass, Jp_bar);
@@ -1609,7 +1609,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i
       // instead of I^j
       auxmatrix2.Multiply(r_s_hat, cn);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix1 -= auxmatrix2;
       auxmatrix1.Scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1624,7 +1624,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
       // upper right block
       auxmatrix2.Multiply(cn, r_s_hat);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
       auxmatrix3.Multiply(auxmatrix2, Itilde[nodej]);
@@ -1657,7 +1657,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
     {
       // upper right block
       auxmatrix2.Multiply(cn, r_s_hat);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
       auxmatrix3.Multiply(auxmatrix2, Itilde[nodej]);
@@ -1697,7 +1697,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i
       // instead of I^j
       auxmatrix2.Multiply(r_s_hat, cn);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix1 -= auxmatrix2;
       auxmatrix1.Scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1715,7 +1715,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix2.Multiply(cn, r_s_hat);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
       auxmatrix1.Multiply(
@@ -1735,7 +1735,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
       auxmatrix2.Multiply(cn, r_s_hat);
-      LARGEROTATIONS::computespin(auxmatrix1, stressn);
+      CORE::LARGEROTATIONS::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
       auxmatrix1.Multiply(
@@ -1804,7 +1804,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
               auxmatrix1(i, j) * wgt;
 
       // second summand
-      LARGEROTATIONS::computespin(auxmatrix2, stressm);
+      CORE::LARGEROTATIONS::computespin(auxmatrix2, stressm);
       auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1825,7 +1825,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
               dofperclnode * nnodecl + dofpertriadnode * nodej + j) += auxmatrix1(i, j) * wgt;
 
       // second summand
-      LARGEROTATIONS::computespin(auxmatrix2, stressm);
+      CORE::LARGEROTATIONS::computespin(auxmatrix2, stressm);
       auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1850,7 +1850,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
               dofpercombinode * nodej + 3 + j) += auxmatrix1(i, j) * wgt;
 
       // second summand
-      LARGEROTATIONS::computespin(auxmatrix2, stressm);
+      CORE::LARGEROTATIONS::computespin(auxmatrix2, stressm);
       auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1870,7 +1870,7 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
               dofperclnode * nnodecl + dofpertriadnode * nodej + j) += auxmatrix1(i, j) * wgt;
 
       // second summand
-      LARGEROTATIONS::computespin(auxmatrix2, stressm);
+      CORE::LARGEROTATIONS::computespin(auxmatrix2, stressm);
       auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
@@ -1917,10 +1917,10 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
   for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
   {
     // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Qnode[jnode], theta_totlag_j);
+    CORE::LARGEROTATIONS::quaterniontoangle(Qnode[jnode], theta_totlag_j);
 
     // compute Tmatrix of theta_totlag_i
-    Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
+    Tmat = CORE::LARGEROTATIONS::Tmatrix(theta_totlag_j);
 
     for (unsigned int inode = 0; inode < nnodecl; inode++)
     {
@@ -1991,10 +1991,10 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
        jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
   {
     // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Qnode[jnode], theta_totlag_j);
+    CORE::LARGEROTATIONS::quaterniontoangle(Qnode[jnode], theta_totlag_j);
 
     // compute Tmatrix of theta_totlag_i
-    Tmat = LARGEROTATIONS::Tmatrix(theta_totlag_j);
+    Tmat = CORE::LARGEROTATIONS::Tmatrix(theta_totlag_j);
 
     for (unsigned int inode = 0; inode < nnodecl; inode++)
     {
@@ -2172,14 +2172,14 @@ void DRT::ELEMENTS::Beam3r::EvaluatePTC(
     // computing angle increment from current position in comparison with last converged position
     // for damping
     LINALG::Matrix<4, 1> deltaQ;
-    LARGEROTATIONS::quaternionproduct(
-        LARGEROTATIONS::inversequaternion(Qconvnode_[node]), Qnewnode_[node], deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(
+        CORE::LARGEROTATIONS::inversequaternion(Qconvnode_[node]), Qnewnode_[node], deltaQ);
     LINALG::Matrix<3, 1> deltatheta;
-    LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
+    CORE::LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
 
     // isotropic artificial stiffness
     LINALG::Matrix<3, 3> artstiff;
-    artstiff = LARGEROTATIONS::Tmatrix(deltatheta);
+    artstiff = CORE::LARGEROTATIONS::Tmatrix(deltatheta);
 
     // scale artificial damping with crotptc parameter for PTC method
     artstiff.Scale(params.get<double>("crotptc", 0.0));
@@ -2208,8 +2208,8 @@ void DRT::ELEMENTS::Beam3r::EvaluatePTC(
 int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed() const
 {
   // get Gauss rule for evaluation of stochastic force contributions
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom,
    * i.e. three random numbers for the translational degrees of freedom */
@@ -2245,8 +2245,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   GetDampingCoefficients(gamma);
 
   // get Gauss points and weights for evaluation of viscous damping contributions
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   //*************************** physical quantities evaluated at a certain GP
   //***************************
@@ -2296,15 +2296,15 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     QnewGPdampstoch_[gp] = QnewGP;
 
     // compute triad at Gauss point
-    LARGEROTATIONS::quaterniontotriad(QnewGP, LambdaGP);
+    CORE::LARGEROTATIONS::quaterniontotriad(QnewGP, LambdaGP);
 
 
     // rotation between last converged state and current state expressed as a quaternion
 
     // ******** alternative 1 *************** Todo @grill
     //    LINALG::Matrix<4,1> deltaQ;
-    //    LARGEROTATIONS::quaternionproduct(
-    //        LARGEROTATIONS::inversequaternion(QconvGPdampstoch_[gp]), QnewGP, deltaQ);
+    //    CORE::LARGEROTATIONS::quaternionproduct(
+    //        CORE::LARGEROTATIONS::inversequaternion(QconvGPdampstoch_[gp]), QnewGP, deltaQ);
 
     // ******** alternative 2 ***************
 
@@ -2313,20 +2313,20 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     LINALG::Matrix<4, 1, double> Qconv(true);
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (QconvGPdampstoch_[gp])(i);
 
-    LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
+    CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
 
     // compute quaternion of relative rotation from converged to current state
     LINALG::Matrix<3, 3, double> deltatriad(true);
     deltatriad.MultiplyNT(LambdaGP, triad_mat_conv);
 
     LINALG::Matrix<4, 1, double> deltaQ(true);
-    LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
+    CORE::LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
 
     // **************************************
 
     // extract rotation vector from quaternion
     LINALG::Matrix<3, 1> deltatheta;
-    LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
+    CORE::LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
 
     // angular velocity at this Gauss point according to backward Euler scheme
     LINALG::Matrix<3, 1> omega(true);
@@ -2376,11 +2376,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
 
       // compute matrix gamma(2) * g_1 \otimes g_1 * \omega * Tmat
       LINALG::Matrix<3, 3> g1g1oldgammaTmat;
-      g1g1oldgammaTmat.Multiply(g1g1oldgamma, LARGEROTATIONS::Tmatrix(deltatheta));
+      g1g1oldgammaTmat.Multiply(g1g1oldgamma, CORE::LARGEROTATIONS::Tmatrix(deltatheta));
 
       // compute spin matrix S(\omega)
       LINALG::Matrix<3, 3> Sofomega;
-      LARGEROTATIONS::computespin(Sofomega, omega);
+      CORE::LARGEROTATIONS::computespin(Sofomega, omega);
 
       // compute matrix gamma(2) * g_1 \otimes g_1 *S(\omega)
       LINALG::Matrix<3, 3> g1g1gammaSofomega;
@@ -2388,7 +2388,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
 
       // compute spin matrix S(gamma(2) * g_1 \otimes g_1 *\omega)
       LINALG::Matrix<3, 3> Sofg1g1gammaomega;
-      LARGEROTATIONS::computespin(Sofg1g1gammaomega, g1g1gammaomega);
+      CORE::LARGEROTATIONS::computespin(Sofg1g1gammaomega, g1g1gammaomega);
 
       // auxiliary matrices
       LINALG::Matrix<3, 3> sum(true);
@@ -2508,8 +2508,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
   LINALG::Matrix<ndim, ndim> damp_mat(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
@@ -2688,8 +2688,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   LINALG::Matrix<ndim, 1> f_stoch(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
-  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
+  CORE::DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  CORE::DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP

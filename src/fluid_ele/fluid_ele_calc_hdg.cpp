@@ -56,7 +56,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
     Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const DRT::UTILS::GaussIntegration&, bool offdiag)
+    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -72,18 +72,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
   {
     usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
     else if (shapes_->degree_ != unsigned(ele->Degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
     if (shapesface_ == Teuchos::null)
     {
-      DRT::UTILS::ShapeValuesFaceParams svfparams(
+      CORE::DRT::UTILS::ShapeValuesFaceParams svfparams(
           ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+      shapesface_ = Teuchos::rcp(new CORE::DRT::UTILS::ShapeValuesFace<distype>(svfparams));
     }
 
     if (localSolver_ == Teuchos::null)
@@ -666,7 +666,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix locations =
+      CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -737,14 +738,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-      DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+  locations = CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -766,7 +767,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
@@ -848,7 +849,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
   // get coordinates of hex 8
   LINALG::Matrix<nsd_, nen_> xyze(true);
 
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
   dsassert(elevec1.M() == numsamppoints * numsamppoints * numsamppoints * 6,
@@ -896,7 +897,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
 
     // also save coordinates
     LINALG::Matrix<nen_, 1> myfunct;
-    DRT::UTILS::shape_function<distype>(shapes_->xsi, myfunct);
+    CORE::DRT::UTILS::shape_function<distype>(shapes_->xsi, myfunct);
 
     LINALG::Matrix<nsd_, 1> mypoint(true);
     mypoint.MultiplyNN(xyze, myfunct);
@@ -936,7 +937,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
       }
 #endif
 
-  std::vector<DRT::UTILS::LagrangePolynomial> poly1d;
+  std::vector<CORE::DRT::UTILS::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -947,10 +948,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(CORE::DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
   }
 
-  DRT::UTILS::PolynomialSpaceTensor<nsd_, DRT::UTILS::LagrangePolynomial> poly(poly1d);
+  CORE::DRT::UTILS::PolynomialSpaceTensor<nsd_, CORE::DRT::UTILS::LagrangePolynomial> poly(poly1d);
 
 #ifdef DEBUG
   // check if we have the right number of polynomials
@@ -1051,7 +1052,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
       }
 #endif
 
-  std::vector<DRT::UTILS::LagrangePolynomial> poly1d;
+  std::vector<CORE::DRT::UTILS::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -1062,10 +1063,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(CORE::DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
   }
 
-  DRT::UTILS::PolynomialSpaceTensor<nsd_, DRT::UTILS::LagrangePolynomial> poly(poly1d);
+  CORE::DRT::UTILS::PolynomialSpaceTensor<nsd_, CORE::DRT::UTILS::LagrangePolynomial> poly(poly1d);
 
   InitializeShapes(ele);
   shapes_->Evaluate(*ele);
@@ -1144,8 +1145,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
 
     LINALG::Matrix<nsd_, nsd_> trafo;
     LINALG::SerialDenseMatrix faceQPoints;
-    DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
-        DRT::UTILS::getEleFaceShapeType(distype, face), face);
+    CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_,
+        distype, CORE::DRT::UTILS::getEleFaceShapeType(distype, face), face);
 
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
@@ -1302,9 +1303,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
@@ -1370,8 +1371,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELEMENTS::Fluid* ele,
-    const DRT::UTILS::ShapeValues<distype>& shapeValues,
-    DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
+    const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+    CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
     : ndofs_(shapeValues.ndofs_),
       stokes(false),
       weaklycompressible(false),

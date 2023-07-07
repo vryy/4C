@@ -31,13 +31,13 @@ namespace DRT
      public:
       /// nen_: number of element nodes (T. Hughes: The Finite Element Method).
       static const unsigned int nen_ =
-          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       /// Number of space dimensions.
-      static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       /// Number of faces on element.
-      static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -73,14 +73,14 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
 
       virtual ~ElemagEleCalc() {}
 
       /// Singleton access method.
       static ElemagEleCalc<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
       void PrintTrace(DRT::Element* ele);
@@ -99,8 +99,9 @@ namespace DRT
         static const unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
 
         /// Init function for the struct members
-        LocalSolver(const DRT::ELEMENTS::Elemag* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
-            Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
+        LocalSolver(const DRT::ELEMENTS::Elemag* ele,
+            CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
+            Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
             INPAR::ELEMAG::DynamicType& dyna);
 
         /// Compute the residual
@@ -168,9 +169,9 @@ namespace DRT
         const unsigned int ndofs_;
 
         /// evaluated shape values
-        DRT::UTILS::ShapeValues<distype>& shapes_;
+        CORE::DRT::UTILS::ShapeValues<distype>& shapes_;
         /// evaluated shape values
-        Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+        Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
         // System matrices
         /// magnetic evolution matrix
@@ -226,9 +227,9 @@ namespace DRT
       double EstimateError(DRT::ELEMENTS::Elemag& ele, Epetra_SerialDenseVector& p);
 
       /// Local data object for element.
-      Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
       /// Local data object for face element.
-      Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
+      Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
       /// Local solver object.
       Teuchos::RCP<LocalSolver> localSolver_;

@@ -63,7 +63,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if (DRT::NURBS::IsNurbs(distype))
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
     DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
@@ -477,20 +477,38 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
     Teuchos::ParameterList& params, DRT::FaceElement* ele)
 {
   // access the global vector
-  const Teuchos::RCP<Epetra_MultiVector> normals =
+  const auto normals =
       params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
   if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element
-  GetConstNormal(normal_, xyze_);
+  if constexpr (nsd_ == 3 and nsd_ele_ == 1)
+  {
+    // get first 3 nodes in parent element
+    auto* p_ele = ele->ParentElement();
+    dsassert(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
+    LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
-  // loop over the element nodes
+    for (int i_node = 0; i_node < 3; ++i_node)
+    {
+      const auto* coords = p_ele->Nodes()[i_node]->X();
+      for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
+    }
+
+    normal_ = GetConstNormal(xyze_, xyz_parent_ele);
+  }
+  else if constexpr (nsd_ - nsd_ele_ == 1)
+  {
+    normal_ = GetConstNormal(xyze_);
+  }
+  else
+    dserror("This combination of space dimension and element dimension makes no sense.");
+
   for (int j = 0; j < nen_; j++)
   {
     const int nodegid = (ele->Nodes()[j])->Id();
     if (normals->Map().MyGID(nodegid))
-    {  // OK, the node belongs to this processor
-
+    {
       // scaling to a unit vector is performed on the global level after
       // assembly of nodal contributions since we have no reliable information
       // about the number of boundary elements adjacent to a node
@@ -499,8 +517,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
         normals->SumIntoGlobalValue(nodegid, dim, normal_(dim));
       }
     }
-    // else: the node belongs to another processor; the ghosted
-    //      element will contribute the right value on that proc
   }
 }
 
@@ -563,7 +579,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -685,7 +701,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
     const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   std::vector<double> integralflux(numscal_);
@@ -733,7 +749,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
     Epetra_SerialDenseVector& erhs, const double heatranscoeff, const double surtemp)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -848,7 +864,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeDerivative
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
     LINALG::Matrix<nsd_, 1>* normalvec)
 {
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
@@ -856,7 +872,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndI
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
       xyze_, deriv_, metrictensor_, drs, true, normalvec);
 
   // for nurbs elements the normal vector must be scaled with a special orientation factor!!
@@ -874,7 +890,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndI
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateShapeFuncAndDerivativeAtIntPoint(
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -886,12 +902,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
   if (not DRT::NURBS::IsNurbs(distype))
   {
     // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_, funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+    CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+    CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
   }
   else  // nurbs elements are always somewhat special...
   {
-    DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+        funct_, deriv_, xsi_, myknots_, weights_, distype);
   }
 }
 
@@ -900,7 +917,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
-        const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
+        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
         const LINALG::Matrix<nsd_, nen_>& XYZe)
 {
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
@@ -908,7 +925,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
   double detg(0.0);
   LINALG::Matrix<nsd_, 1>* normalvec(nullptr);
   LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
       XYZe, deriv_, metrictensor, detg, normalvec);
 
   return intpoints.IP().qwgt[iquad] * detg;
@@ -917,53 +934,103 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
-    LINALG::Matrix<nsd_, 1>& normal, const LINALG::Matrix<nsd_, nen_>& xyze)
+LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<3, nen_>& xyze)
 {
-  // determine normal to this element
-  if (not DRT::NURBS::IsNurbs(distype))
-  {
-    switch (nsd_ele_)
-    {
-      case 2:
-      {
-        LINALG::Matrix<3, 1> dist1(true), dist2(true);
-        for (int i = 0; i < 3; i++)
-        {
-          dist1(i) = xyze(i, 1) - xyze(i, 0);
-          dist2(i) = xyze(i, 2) - xyze(i, 0);
-        }
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-        normal(0) = dist1(1) * dist2(2) - dist1(2) * dist2(1);
-        normal(1) = dist1(2) * dist2(0) - dist1(0) * dist2(2);
-        normal(2) = dist1(0) * dist2(1) - dist1(1) * dist2(0);
-      }
-      break;
-      case 1:
-      {
-        normal(0) = xyze(1, 1) - xyze(1, 0);
-        normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
-      }
-      break;
-      default:
-        dserror("Illegal number of space dimensions: %d", nsd_ele_);
-        break;
-    }  // switch(nsd)
-  }
-  else  // NURBS case
+  LINALG::Matrix<3, 1> normal(true), dist1(true), dist2(true);
+  for (int i = 0; i < 3; i++)
   {
-    // ToDo: this is only a temporary solution in order to have something here.
-    // Current handling of node-based normal vectors not applicable in NURBS case
-    normal(0) = 1.0;
+    dist1(i) = xyze(i, 1) - xyze(i, 0);
+    dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  // length of normal to this element
+  normal = CORE::GEO::computeCrossProduct(dist1, dist2);
+
   const double length = normal.Norm2();
-  // outward-pointing normal of length 1.0
-  if (length > 1e-10)
-    normal.Scale(1 / length);
-  else
-    dserror("Zero length for element normal");
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
+}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<2, nen_>& xyze)
+{
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+
+  LINALG::Matrix<2, 1> normal(true);
+
+  normal(0) = xyze(1, 1) - xyze(1, 0);
+  normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
+
+  const double length = normal.Norm2();
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
+}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const LINALG::Matrix<3, nen_>& xyze, const LINALG::Matrix<3, 3>& nodes_parent_ele)
+{
+  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+
+  LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true), parent_ele_v2(true);
+
+  for (int dim = 0; dim < 3; ++dim)
+  {
+    boundary_ele(dim, 0) = xyze(dim, 0) - xyze(dim, 1);
+    parent_ele_v1(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 1);
+    parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
+  }
+
+  auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
+  normal = CORE::GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
+
+  // compute inward vector and check if its scalar product with the normal vector is negative.
+  // Otherwise, change the sign of the normal vector
+  LINALG::Matrix<3, 1> distance(true), inward_vector(true);
+  // find node on parent element, that has non-zero distance to all boundary nodes
+  for (int i_parent_node = 0; i_parent_node < 3; ++i_parent_node)
+  {
+    bool is_boundary_node = false;
+    for (int i_boundary_node = 0; i_boundary_node < nen_; ++i_boundary_node)
+    {
+      for (int dim = 0; dim < 3; ++dim)
+        distance(dim, 0) = nodes_parent_ele(dim, i_parent_node) - xyze(dim, i_boundary_node);
+
+      // if the distance of the parent element to one boundary node is zero, it cannot be a
+      // non-boundary node
+      if (distance.Norm2() < 1.0e-10)
+      {
+        is_boundary_node = true;
+        break;
+      }
+    }
+    if (!is_boundary_node)
+    {
+      inward_vector.Update(1.0, distance, 0.0);
+      break;
+    }
+  }
+  if (inward_vector.Dot(normal) >= 0.0) normal.Scale(-1.0);
+
+  const double length = normal.Norm2();
+  if (length < 1.0e-10) dserror("Zero length for element normal");
+
+  normal.Scale(1.0 / length);
+
+  return normal;
 }  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
 
 /*----------------------------------------------------------------------*
@@ -985,7 +1052,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   Epetra_SerialDenseVector dummyvector;
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   LINALG::Matrix<nsd_, 1> normal;
@@ -1025,14 +1092,16 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingAtIntegrationPoint(
     const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-    const std::vector<
-        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+    const std::vector<LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
         emasterphinp,
     const double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
     const LINALG::Matrix<nen_, 1>& test_slave,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         test_master,
     const int numscal,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -1045,7 +1114,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   const std::vector<double>* permeabilities = scatra_parameter_boundary->Permeabilities();
 
   // number of nodes of master-side mortar element
-  const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
+  const int nen_master =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
 
   // loop over scalars
   for (int k = 0; k < numscal; ++k)
@@ -1189,7 +1259,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
       Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1335,7 +1405,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegra
   double boundaryintegral(0.);
 
   // get integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1362,7 +1432,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcMatMass(
     const DRT::FaceElement* const element, Epetra_SerialDenseMatrix& massmatrix)
 {
   // get integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1440,7 +1510,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   //////////////////////////////////////////////////////////////////////
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -1578,7 +1648,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   //////////////////////////////////////////////////////////////////////
   {
     // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
         SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
     // define vector for wss concentration values at nodes
@@ -1734,7 +1804,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   ///////////////////////////////////////////////////////////////////////////
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
@@ -1842,7 +1912,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunct
   double boundaryint = params.get<double>("area");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1900,16 +1970,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
 
   // number of (boundary) element nodes
-  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
 
   // number of parent element nodes
-  static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
   // parent element location array
   DRT::Element::LocationArray pla(discretization.NumDofSets());
@@ -1960,11 +2030,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
   // (boundary) element local node coordinates
   LINALG::Matrix<pnsd, bnen> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
   LINALG::Matrix<bnsd, 1> bxsi(true);
@@ -2040,7 +2110,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     dserror("unknown definition for gamma parameter: %s", (*consistency).c_str());
 
   // use one-point Gauss rule to do calculations at element center
-  const DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
 
   // element surface area (1D: element length)
@@ -2050,9 +2120,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   {
     bxsi(idim) = gpcoord[idim];
   }
-  DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
+  CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
   double drs = 0.0;
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
       bxyze, bderiv, bmetrictensor, drs, &bnormal);
   const double area = intpoints_tau.IP().qwgt[0] * drs;
 
@@ -2067,10 +2137,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // preliminary computations for integration loop
   //------------------------------------------------------------------------
   // integration points and weights for (boundary) element and parent element
-  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
       SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
 
-  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
       SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
 
   // transfer integration-point coordinates of (boundary) element to parent element
@@ -2089,11 +2159,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     }
     if (pnsd == 2)
     {
-      DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      CORE::DRT::UTILS::BoundaryGPToParentGP2(
+          pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
     }
     else if (pnsd == 3)
     {
-      DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      CORE::DRT::UTILS::BoundaryGPToParentGP3(
+          pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
     }
   }
 
@@ -2112,8 +2184,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       }
 
       // parent element shape functions and local derivatives
-      DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
+      CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // Jacobian matrix and determinant of parent element (including check)
       pxjm.MultiplyNT(pderiv, pxyze);
@@ -2238,8 +2310,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     }
 
     // (boundary) element shape functions
-    DRT::UTILS::shape_function<bdistype>(bxsi, bfunct);
-    DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
+    CORE::DRT::UTILS::shape_function<bdistype>(bxsi, bfunct);
+    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
 
     // global coordinates of current integration point from (boundary) element
     LINALG::Matrix<pnsd, 1> coordgp(true);
@@ -2258,8 +2330,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     }
 
     // parent element shape functions and local derivatives
-    DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
+    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // Jacobian matrix and determinant of parent element (including check)
     pxjm.MultiplyNT(pderiv, pxyze);
@@ -2269,7 +2341,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
@@ -2598,16 +2670,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
 
   // number of (boundary) element nodes
-  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
 
   // number of parent element nodes
-  static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
   // parent element lm vector
   std::vector<int> plm;
@@ -2638,11 +2710,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 
   // (boundary) element local node coordinates
   LINALG::Matrix<pnsd, bnen> bxyze(true);
-  GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
   LINALG::Matrix<bnsd, 1> bxsi(true);
@@ -2677,7 +2749,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 
 
   // use one-point Gauss rule to do calculations at element center
-  const DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
 
   // element surface area (1D: element length)
@@ -2687,19 +2759,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   {
     bxsi(idim) = gpcoord[idim];
   }
-  DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
+  CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
   double drs = 0.0;
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
       bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
   //------------------------------------------------------------------------
   // preliminary computations for integration loop
   //------------------------------------------------------------------------
   // integration points and weights for (boundary) element and parent element
-  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
       SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
 
-  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
       SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
 
   // transfer integration-point coordinates of (boundary) element to parent element
@@ -2718,11 +2790,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
     }
     if (pnsd == 2)
     {
-      DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      CORE::DRT::UTILS::BoundaryGPToParentGP2(
+          pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
     }
     else if (pnsd == 3)
     {
-      DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      CORE::DRT::UTILS::BoundaryGPToParentGP3(
+          pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
     }
   }
 
@@ -2746,8 +2820,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
     }
 
     // (boundary) element shape functions
-    DRT::UTILS::shape_function<bdistype>(bxsi, bfunct);
-    DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
+    CORE::DRT::UTILS::shape_function<bdistype>(bxsi, bfunct);
+    CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
 
     // global coordinates of current integration point from (boundary) element
     LINALG::Matrix<pnsd, 1> coordgp(true);
@@ -2766,8 +2840,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
     }
 
     // parent element shape functions and local derivatives
-    DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
-    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    CORE::DRT::UTILS::shape_function<pdistype>(pxsi, pfunct);
+    CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // Jacobian matrix and determinant of parent element (including check)
     pxjm.MultiplyNT(pderiv, pxyze);
@@ -2777,7 +2851,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
+    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
@@ -2870,7 +2944,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
     Epetra_SerialDenseVector& nodalsize)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -2895,13 +2969,13 @@ template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<
     DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
     const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
@@ -2909,13 +2983,13 @@ template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<
     DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
     const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
@@ -2923,13 +2997,13 @@ template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<
     DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
     const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
@@ -2937,13 +3011,13 @@ template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<
     DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
     const std::vector<LINALG::Matrix<
-        DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
     const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
-        1>&,
+    const LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);

@@ -11,7 +11,6 @@ set(_tsi_dependencies
     linalg
     mortar
     so3
-    solver
     structure_new
     thermo
     )

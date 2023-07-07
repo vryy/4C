@@ -13,7 +13,7 @@
 #include <cmath>
 
 // solve the rectangular system with linear least squares
-Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
+Epetra_SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
 {
   Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
   Epetra_SerialDenseVector rhs(matri_[0].size());
@@ -49,7 +49,8 @@ Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
 
 // premultiplying the matrix with its transpose to get the square matrix
 // the source terms also get multiplied
-Epetra_SerialDenseMatrix GEO::CUT::LeastSquares::get_square_matrix(Epetra_SerialDenseVector &rhs)
+Epetra_SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
+    Epetra_SerialDenseVector &rhs)
 {
   Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
 

@@ -16,7 +16,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::FluidType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::FluidType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 void DRT::ELEMENTS::FluidType::SetupElementDefinition(

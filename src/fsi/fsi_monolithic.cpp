@@ -25,7 +25,6 @@
 #include "lib_discret.H"
 #include "lib_prestress_service.H"
 #include "linalg_blocksparsematrix.H"
-#include "linalg_nullspace.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -50,7 +49,8 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_hybrid.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
+#include "linear_solver_method_parameters.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
@@ -77,10 +77,10 @@ FSI::MonolithicBase::MonolithicBase(
   CreateStructureTimeIntegrator(timeparams, structdis);
   CreateFluidAndALETimeIntegrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
 
 
@@ -376,10 +376,10 @@ void FSI::Monolithic::SetupSystem()
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   // structure to fluid
 
@@ -1294,7 +1294,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
           StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse1"));
-          LINALG::NULLSPACE::FixNullSpace("Structure",
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure",
               *StructureField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse1"));
@@ -1305,7 +1305,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
           FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse2"));
-          LINALG::NULLSPACE::FixNullSpace("Fluid", *FluidField()->Discretization()->DofRowMap(),
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid",
+              *FluidField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse2"));
 
@@ -1316,7 +1317,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
           // have to cast the const on the ale discretization away!
           const_cast<DRT::Discretization&>(*(AleField()->Discretization()))
               .ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse3"));
-          LINALG::NULLSPACE::FixNullSpace("Ale", *AleField()->Discretization()->DofRowMap(),
+          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale",
+              *AleField()->Discretization()->DofRowMap(),
               SystemMatrix()->Matrix(2, 2).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse3"));
 

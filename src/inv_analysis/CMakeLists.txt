@@ -9,7 +9,6 @@ set(_inv_analysis_dependencies
     lib
     linalg
     mat
-    solver
     timestepping
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_inv_analysis_dependencies})

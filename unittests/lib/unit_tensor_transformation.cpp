@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include "linalg_fixedsizematrix.H"
 #include "lib_tensor_transformation.H"
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

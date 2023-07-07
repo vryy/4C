@@ -19,7 +19,7 @@
 #include "io_control.H"
 #include "io_pstream.H"
 #include "inpar_structure.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_create.H"
 

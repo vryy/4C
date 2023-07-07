@@ -12,13 +12,15 @@ function(baci_get_git_revision_information)
 
   # enforces reconfigure upon new commit
   if(EXISTS ${PROJECT_SOURCE_DIR}/.git/HEAD)
-    configure_file(${PROJECT_SOURCE_DIR}/.git/HEAD ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD)
+    configure_file(
+      "${PROJECT_SOURCE_DIR}/.git/HEAD" "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/HEAD"
+      )
     file(STRINGS ${PROJECT_SOURCE_DIR}/.git/HEAD _head_ref LIMIT_COUNT 1)
     string(REPLACE "ref: " "" _head_ref ${_head_ref})
     if(EXISTS ${PROJECT_SOURCE_DIR}/.git/${_head_ref})
       configure_file(
-        ${PROJECT_SOURCE_DIR}/.git/${_head_ref}
-        ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/HEAD_REF
+        "${PROJECT_SOURCE_DIR}/.git/${_head_ref}"
+        "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/HEAD_REF"
         )
     endif()
   endif()
@@ -42,7 +44,6 @@ function(baci_get_git_revision_information)
         "${BaciGitHash}"
         PARENT_SCOPE
         )
-    #message(STATUS "found Baci git hash: ${BaciGitHash}")
   endif()
 
   # get Baci git hash (short)
@@ -64,7 +65,6 @@ function(baci_get_git_revision_information)
         "${BaciGitHashShort}"
         PARENT_SCOPE
         )
-    #message(STATUS "found Baci git hash (short): ${BaciGitHashShort}")
   endif()
 
   # get Baci git branch name
@@ -86,7 +86,6 @@ function(baci_get_git_revision_information)
         "${BaciGitBranch}"
         PARENT_SCOPE
         )
-    #message(STATUS "found Baci git branch: ${BaciGitBranch}")
   endif()
 
 endfunction()

@@ -255,7 +255,13 @@ namespace DRT
     {
      public:
       /// construct to read a given section
-      explicit Lines(std::string sectionname) : sectionname_(std::move(sectionname)) {}
+      explicit Lines(std::string sectionname, std::string descriptionstring = "")
+          : sectionname_(std::move(sectionname)), description_(std::move(descriptionstring))
+      {
+      }
+
+      /// return the section description
+      std::string Description() { return description_; }
 
       /// add a new LineDefinition
       void Add(const LineDefinition& ld) { definitions_.push_back(ld); }
@@ -273,6 +279,9 @@ namespace DRT
 
       /// name of the section we read
       std::string sectionname_;
+
+      /// description of the section
+      std::string description_;
 
       /// all possible LineDefinitions
       std::vector<LineDefinition> definitions_;

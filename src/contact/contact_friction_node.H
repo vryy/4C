@@ -92,7 +92,7 @@ namespace CONTACT
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline GEN::pairedvector<int, double>& GetDOld() { return drowsold_; }
+    virtual inline CORE::GEN::pairedvector<int, double>& GetDOld() { return drowsold_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
@@ -102,7 +102,7 @@ namespace CONTACT
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline GEN::pairedvector<int, double>& GetDOldLTL() { return drowsoldLTL_; }
+    virtual inline CORE::GEN::pairedvector<int, double>& GetDOldLTL() { return drowsoldLTL_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
@@ -194,13 +194,13 @@ namespace CONTACT
     bool slipold_;
 
     //! Nodal rows of old D matrix
-    GEN::pairedvector<int, double> drowsold_;
+    CORE::GEN::pairedvector<int, double> drowsold_;
 
     //! Nodal rows of old M matrix
     std::map<int, double> mrowsold_;
 
     //! Nodal rows of old D matrix for line-to-line contact
-    GEN::pairedvector<int, double> drowsoldLTL_;
+    CORE::GEN::pairedvector<int, double> drowsoldLTL_;
 
     //! Nodal rows of old M matrix for line-to-line contact
     std::map<int, double> mrowsoldLTL_;

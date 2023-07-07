@@ -15,7 +15,7 @@
 #include "matelast_coupanisoexpo.H"
 #include "lib_voigt_notation.H"
 #include "matelast_coupanisoexposhear.H"
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

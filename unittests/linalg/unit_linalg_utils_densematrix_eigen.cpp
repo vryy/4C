@@ -10,7 +10,7 @@
 
 #include "linalg_utils_densematrix_eigen.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>

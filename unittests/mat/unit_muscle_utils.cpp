@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "mat_muscle_utils.H"
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

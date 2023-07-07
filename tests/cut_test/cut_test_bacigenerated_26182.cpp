@@ -31,7 +31,7 @@
 
 void test_bacigenerated_26182()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -50,11 +50,11 @@ void test_bacigenerated_26182()
   tri3_xyze(1, 2) = -0.211531138629892;
   tri3_xyze(2, 2) = 0.2847992842204971;
   nids.push_back(3681);
-  GEO::CUT::SideHandle* sh = intersection.AddCutSide(0, nids, tri3_xyze, DRT::Element::tri3);
+  CORE::GEO::CUT::SideHandle* sh = intersection.AddCutSide(0, nids, tri3_xyze, DRT::Element::tri3);
 
-  std::vector<GEO::CUT::Point*> maincylcepoints;
-  std::vector<std::vector<GEO::CUT::Point*>> mainholecyclepoints;
-  mainholecyclepoints.push_back(std::vector<GEO::CUT::Point*>());
+  std::vector<CORE::GEO::CUT::Point*> maincylcepoints;
+  std::vector<std::vector<CORE::GEO::CUT::Point*>> mainholecyclepoints;
+  mainholecyclepoints.push_back(std::vector<CORE::GEO::CUT::Point*>());
   std::vector<double> coord(3);
   {  // 1
     coord.clear();
@@ -183,24 +183,25 @@ void test_bacigenerated_26182()
         intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
   }
 
-  GEO::CUT::Side* cutside;
-  GEO::CUT::plain_side_set sides;
+  CORE::GEO::CUT::Side* cutside;
+  CORE::GEO::CUT::plain_side_set sides;
   sh->CollectSides(sides);
   if (sides.size() != 1) dserror("More than one side!");
 
   cutside = sides[0];
 
-  GEO::CUT::TriangulateFacet triangulatefacet(maincylcepoints, mainholecyclepoints);
+  CORE::GEO::CUT::TriangulateFacet triangulatefacet(maincylcepoints, mainholecyclepoints);
   triangulatefacet.EarClippingWithHoles(cutside);
   // std::vector<int> ptConcavity;
   // triangulatefacet.EarClipping(ptConcavity, true, false);
 
-  std::vector<std::vector<GEO::CUT::Point*>> maincycletriangles = triangulatefacet.GetSplitCells();
-  for (std::vector<std::vector<GEO::CUT::Point*>>::iterator i = maincycletriangles.begin();
+  std::vector<std::vector<CORE::GEO::CUT::Point*>> maincycletriangles =
+      triangulatefacet.GetSplitCells();
+  for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::iterator i = maincycletriangles.begin();
        i != maincycletriangles.end(); ++i)
   {
-    std::vector<GEO::CUT::Point*> maincycletriangle = *i;
-    if (GEO::CUT::KERNEL::IsOnLine(
+    std::vector<CORE::GEO::CUT::Point*> maincycletriangle = *i;
+    if (CORE::GEO::CUT::KERNEL::IsOnLine(
             maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
     {
       dserror("maincycletriangle is on lines!");
@@ -208,7 +209,7 @@ void test_bacigenerated_26182()
   }
 
   std::cout << "==| The full triangulation: |==" << std::endl;
-  for (std::vector<std::vector<GEO::CUT::Point*>>::iterator ii = maincycletriangles.begin();
+  for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::iterator ii = maincycletriangles.begin();
        ii != maincycletriangles.end(); ++ii)
   {
     std::cout << "ST(" << (*ii)[0]->X()[0] << ", " << (*ii)[0]->X()[1] << ", " << (*ii)[0]->X()[2]

@@ -12,7 +12,7 @@
 
 
 #include "fluid_ele_immersed_base.H"
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 #include "mortar_element.H"
 #include "mortar_calc_utils.H"
 #include "lib_globalproblem.H"
@@ -23,8 +23,8 @@
 #include "lib_exporter.H"
 #include "cut_boundingbox.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 #include "inpar_fluid.H"
 
@@ -210,7 +210,7 @@ namespace IMMERSED
     */
     void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> dis,
         DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
 
@@ -224,7 +224,7 @@ namespace IMMERSED
     */
     void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
         Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action);
 
 
@@ -238,7 +238,7 @@ namespace IMMERSED
     void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
         const Teuchos::RCP<const DRT::Discretization> idis, DRT::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<GEO::SearchTree> structsearchtree,
+        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
         bool evaluateonlyboundary = false);
 
@@ -265,7 +265,7 @@ namespace IMMERSED
     */
     void SearchPotentiallyCoveredBackgrdElements(
         std::map<int, std::set<int>>* current_subset_tofill,
-        Teuchos::RCP<GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
+        Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
         const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
         const LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -411,8 +411,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-    static const int target_dim = DRT::UTILS::DisTypeToDim<targetdistype>::dim;
+    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int target_dim = CORE::DRT::UTILS::DisTypeToDim<targetdistype>::dim;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -931,7 +931,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1030,8 +1030,8 @@ namespace IMMERSED
             DRT::UTILS::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<GEO::CUT::BoundingBox> bbside =
-                Teuchos::rcp(GEO::CUT::BoundingBox::Create());
+            Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
+                Teuchos::rcp(CORE::GEO::CUT::BoundingBox::Create());
             LINALG::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->NumNode()); ++i)
             {
@@ -1256,11 +1256,12 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = DRT::UTILS::DisTypeToDim<structdistype>::dim;
-    static const int fluid_dim = DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
+    static const int struct_dim = CORE::DRT::UTILS::DisTypeToDim<structdistype>::dim;
+    static const int fluid_dim = CORE::DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
 
     // get integration rule of structural surface element
-    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::GaussRule2D::quad_36point);
+    const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
+        CORE::DRT::UTILS::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
     LINALG::Matrix<4, 1> shapefcts(true);
@@ -1459,7 +1460,7 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
+                    CORE::DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
                     LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)

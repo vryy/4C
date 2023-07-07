@@ -17,14 +17,20 @@
 #include <set>
 #include <memory>
 #include "io_runtime_csv_writer.H"
+#include "coupling_adapter.H"
+#include "ssi_utils.H"
 
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
   class CouplingSlaveConverter;
   class CouplingMasterConverter;
+}  // namespace CORE::ADAPTER
+
+namespace ADAPTER
+{
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}
 
 namespace DRT
 {
@@ -43,11 +49,6 @@ namespace LINALG
 
 namespace SSI
 {
-  namespace UTILS
-  {
-    class SSIStructureMeshTying;
-    class SSIMaps;
-  }  // namespace UTILS
 
   class SSIMono;
 
@@ -84,7 +85,7 @@ namespace SSI
     DRT::Condition* ConditionManifold() const { return condition_manifold_; }
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
+    Teuchos::RCP<CORE::ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
 
     //! inverse of thickness of manifold
     double InvThickness() const { return inv_thickness_; }
@@ -93,7 +94,7 @@ namespace SSI
     int ManifoldConditionID() const { return manifold_conditionID_; }
 
     //! from master to slave side
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> MasterConverter() const
+    Teuchos::RCP<CORE::ADAPTER::CouplingMasterConverter> MasterConverter() const
     {
       return master_converter_;
     }
@@ -118,7 +119,7 @@ namespace SSI
     DRT::Condition* condition_manifold_;
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupling_adapter_;
 
     //! inverse of thickness of manifold
     const double inv_thickness_;
@@ -133,7 +134,7 @@ namespace SSI
     Teuchos::RCP<LINALG::MapExtractor> manifold_map_extractor_;
 
     //! Master converter for scatra - manifold coupling
-    Teuchos::RCP<ADAPTER::CouplingMasterConverter> master_converter_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMasterConverter> master_converter_;
 
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> scatra_map_extractor_;
@@ -290,7 +291,7 @@ namespace SSI
     std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> scatra_manifold_couplings_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
 
     //! system matrices of scatra and manifold
     //@{
@@ -304,10 +305,10 @@ namespace SSI
   //! data types for mesh tying handlers for sparse case: coupling adapter and MultiMapExtractor
   //! splitting dofs into interior, master, and slave
   using meshtying_handler_type =
-      std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
+      std::pair<Teuchos::RCP<CORE::ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
   //! data types for mesh tying handlers for block case: standard mesh tying handler and
   //! MultiMapExtractor splitting slave dofs into blocks
-  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<ADAPTER::Coupling>>,
+  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<CORE::ADAPTER::Coupling>>,
       std::vector<Teuchos::RCP<const Epetra_Map>>>;
 
   //! Base class to handle mesh tying between manifold fields
@@ -341,8 +342,8 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix, bool do_uncomplete) = 0;
 
-    //! handles all coupling adapters and multimap extractors
-    std::vector<meshtying_handler_type> MeshTyingHandler() const { return meshtying_handler_; }
+    //! coupling adpaters, maps, and extractors for mesh tying
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSIMeshTying() const { return ssi_meshtying_; }
 
    protected:
     //! should meshtying between manifold fields be applied?
@@ -355,25 +356,8 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
    private:
-    //! construct coupling pairs between two node GIDs based on SSISurfaceManifold condition and
-    //! communicate to all procs
-    std::vector<std::pair<int, int>> ConstructCouplingPairs(
-        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
-
-    //! define which node is master and which node is slave from coupling_pairs based on master_gids
-    std::map<int, int> DefineMasterSlavePairing(
-        const std::vector<std::pair<int, int>>& coupling_pairs, std::set<int> master_gids);
-
-    //! find list of unique master nodes from all coupling_pairs
-    std::set<int> FindMasterNodeGIDS(std::vector<std::pair<int, int>> coupling_pairs);
-
-    //! setup coupling adapters and multimap extractors to handle mesh tying
-    void SetupMeshTyingHandler(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps);
-
-    //! handles all coupling adapters and multimap extractors: coupling adapter and
-    //! MultiMapExtractor (interior, master, slave)
-    std::vector<meshtying_handler_type> meshtying_handler_;
+    //! coupling adpaters, maps, and extractors for mesh tying
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_meshtying_;
   };
 
   class ManifoldMeshTyingStrategySparse : public ManifoldMeshTyingStrategyBase

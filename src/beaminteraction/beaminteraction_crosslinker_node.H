@@ -162,7 +162,7 @@ namespace CROSSLINKING
     /*!
      \brief The Discretization is a friend of MortarNode
      */
-    friend class DRT::Discretization;
+    friend class ::DRT::Discretization;
 
     //@}
 

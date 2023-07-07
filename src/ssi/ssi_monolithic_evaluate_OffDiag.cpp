@@ -37,7 +37,7 @@
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
@@ -55,7 +55,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
@@ -254,13 +254,13 @@ void SSI::ScatraStructureOffDiagCoupling::
       // assemble into auxiliary system matrix
       for (int iblock = 0; iblock < numberscatrablocks; ++iblock)
       {
-        for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+        for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
         {
           auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
           auto slave_side_converter_struct = meshtying->SlaveSideConverter();
 
           auto slave_side_converter_scatra =
-              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
+              CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
           LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
               *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
@@ -291,12 +291,12 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // copy slave side values to master side and scale with minus 1. Insert into
       // scatrastructureinterface_sparse
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto slave_side_converter_struct = meshtying->SlaveSideConverter();
         auto slave_side_converter_scatra =
-            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
+            CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
         LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
@@ -421,13 +421,14 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
 
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
@@ -452,7 +453,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
         auto slave_side_converter_struct = meshtying->SlaveSideConverter();
         auto slave_side_converter_scatra =
-            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
+            CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
         LINALG::MatrixLogicalSplitAndTransform()(
             *scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_sparse,
@@ -493,12 +494,13 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
@@ -533,7 +535,7 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
           auto slave_side_converter_struct = meshtying->SlaveSideConverter();
           auto slave_side_converter_scatra =
-              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
+              CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
           LINALG::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock,
@@ -636,12 +638,13 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
@@ -673,12 +676,13 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
-        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        auto slave_slave_converter =
+            CORE::ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
@@ -707,7 +711,7 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_scatra,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)

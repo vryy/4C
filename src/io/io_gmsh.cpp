@@ -17,8 +17,8 @@
 #include "lib_utils_parallel.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
 #include "linalg_serialdensevector.H"
-#include "geometry_intersection_service.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_intersection_service.H"
+#include "discretization_geometry_position_array.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -208,7 +208,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
     LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -273,7 +273,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
     LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -394,7 +394,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int nsd = DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
     LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -485,7 +485,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = ele->NumNode();
-    const int nsd = DRT::UTILS::getDimension(distype);
+    const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
     LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
@@ -642,7 +642,7 @@ void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::
     const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions, std::ostream& s)
 {
   IO::GMSH::cellWithScalarToStream(
-      ele->Shape(), scalar, GEO::getCurrentNodalPositions(ele, currentelepositions), s);
+      ele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(ele, currentelepositions), s);
 }
 
 
@@ -704,7 +704,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
   {
     const DRT::Element* actele = dis->lColElement(i);
     IO::GMSH::cellWithScalarToStream(
-        actele->Shape(), scalar, GEO::getCurrentNodalPositions(actele, currentpositions), s);
+        actele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(actele, currentpositions), s);
   };
   s << "};\n";
 }

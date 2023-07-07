@@ -34,9 +34,8 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void ProjectFibersToGaussPoints(DRT::Node** nodes,
-          const std::vector<
-              LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
-              shapefcts,
+          const std::vector<LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
           FIBER::NodalFiberHolder& gpFiberHolder);
 
       /*!
@@ -53,11 +52,10 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype, std::size_t dim>
       void ProjectQuantityWithShapeFunctions(
           const std::array<std::array<double, dim>,
-              DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
               quantity,
-          const std::vector<
-              LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
-              shapefcts,
+          const std::vector<LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
           std::vector<LINALG::Matrix<dim, 1>>& quantityProjected);
 
       /*!
@@ -71,11 +69,11 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void ProjectQuantityWithShapeFunctions(
-          const std::array<double, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+          const std::array<double,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
               quantity,
-          const std::vector<
-              LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
-              shapefcts,
+          const std::vector<LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
           std::vector<double>& quantityProjected);
 
       /*!

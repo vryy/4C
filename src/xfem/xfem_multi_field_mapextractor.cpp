@@ -24,6 +24,7 @@
 #include "lib_exporter.H"
 
 #include "linalg_matrixtransform.H"
+#include "coupling_adapter.H"
 
 #include "coupling_adapter_converter.H"
 
@@ -1118,19 +1119,19 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const LINALG::BlockSparseMatrixBase
   const LINALG::SparseMatrix& src_ni =
       partial_mat.Matrix(MULTIFIELD::block_non_interface, MULTIFIELD::block_interface);
   IMatColTransform(block)(partial_mat.FullRowMap(), partial_mat.FullColMap(), src_ni, scale,
-      ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);
+      CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);
 
   // (1) Add block interface/non_interface
   const LINALG::SparseMatrix& src_in =
       partial_mat.Matrix(MULTIFIELD::block_interface, MULTIFIELD::block_non_interface);
   IMatRowTransform(block)(
-      src_in, scale, ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, true);
+      src_in, scale, CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, true);
 
   // (2) Add block interface/interface
   const LINALG::SparseMatrix& src_ii =
       partial_mat.Matrix(MULTIFIELD::block_interface, MULTIFIELD::block_interface);
-  IMatRowColTransform(block)(src_ii, scale, ADAPTER::CouplingSlaveConverter(ICoupling(block)),
-      ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);
+  IMatRowColTransform(block)(src_ii, scale, CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)),
+      CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);
 
   return;
 }

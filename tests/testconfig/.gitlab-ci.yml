@@ -7,7 +7,7 @@ variables:
   GIT_STRATEGY: clone
   # If not called by a scheduler this variable has to be 0.
   # 1: daily full (release, debug)
-  # 3: weekly coverage
+  # 3: coverage
   # 4: weekly testing of Baci with a current Trilinos develop version
   GITLAB_SCHEDULER_TYPE: '0'
 
@@ -25,19 +25,9 @@ variables:
 
 
   # Variables for docker
-  BACI_DOCKER_BUILD_IMAGES:
-    description: Build the docker images and push them to the CI registry
-    value: 'False'
-    options:
-    - 'True'
-    - 'False'
+  # Whether to build the docker images and push them to the CI registry
+  BACI_DOCKER_BUILD_IMAGES: 'False'
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
-  BACI_DOCKER_RUN_TEST:
-    description: Run tests inside docker image
-    value: 'True'
-    options:
-    - 'True'
-    - 'False'
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -63,15 +53,15 @@ variables:
   ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
   # build
-- ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS}
+- time ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS}
   2>&1 | tee build.log
 
 .build-and-test: &build-and-test
 - *build-only
   # test
 - 'echo ctest selection: $CTEST_TEST_SELECTION'
-- ctest -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS | tee test.log | grep
-  -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
+- time ctest -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS | tee test.log |
+  grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
 .check-no-warnings: &check-no-warnings
@@ -116,8 +106,7 @@ variables:
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - build.log
-    - test.log
+    - '*.log'
     when: on_failure
     expire_in: 1 day
 
@@ -147,11 +136,11 @@ variables:
   - if: $CI_PIPELINE_SOURCE == "web"
 
 
-# This kind of job is started by a weekly scheduler, with the variable
+# This kind of job is started by a scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "3"
 # Full tests with coverage are performed
 # A coverage report is created
-.buildtest_coverage_weekly:
+.buildtest_coverage:
   stage: buildtest
   variables:
     BUILD_TARGETS: full
@@ -172,32 +161,26 @@ variables:
     -o baci_coverage_filtered.info > baci_coverage_filtered.log
     # generate the html version of the coverage report
   - genhtml baci_coverage_filtered.info --legend --demangle-cpp --output-directory
-    coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_weekly_coverage.log
+    coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_coverage.log
     # add repo link to the commit that the report is based on
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
     commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
   - *post-process-log-files
-      # update (push) the cache of the weekly coverage report:
+      # update (push) the cache of the coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
-    key: cache-weekly-coverage-report
+    key: cache-coverage-report
     paths:
     - coverage_report/
-      # the log is needed to print the weekly value of total line coverage in daily and minimal master pipelines
-    - genhtml_weekly_coverage.log
+      # the log is needed to print the value of total line coverage in daily and minimal master pipelines
+    - genhtml_coverage.log
     policy: push
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - baci_coverage_base.log
-    - baci_coverage_tests.log
-    - baci_coverage.log
-    - baci_coverage_filtered.log
-    - build.log
-    - test.log
-    - genhtml_weekly_coverage.log
+    - '*.log'
     when: always
     expire_in: 1 day
   rules:
@@ -255,9 +238,7 @@ variables:
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - build.log
-    - test.log
-    - buildtest_release_trilinos_develop.log
+    - '*.log'
     when: on_failure
     expire_in: 1 week
   rules:
@@ -293,8 +274,8 @@ variables:
     # Move the log file to the source folder, so it can be found by artifacts.
   - mv ../doxygen.log doxygen.log
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -315,6 +296,7 @@ stages:
 
 checkcode:
   stage: checkcode
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   script:
   - echo code check
   - cd ../baci
@@ -333,7 +315,7 @@ checkcode:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_PIPELINE_SOURCE == "schedule"
   tags:
-  - all
+  - checkcode
 
 # IMCS--------------------------------------------------------------------------
 
@@ -395,8 +377,9 @@ imcs-buildtest_release_trilinos_develop:
 
 # LNM---------------------------------------------------------------------------
 
-lnm-codeclimate:
+codeclimate:
   stage: checkcode
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   script:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
@@ -413,8 +396,8 @@ lnm-codeclimate:
     ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
   - cd ${CI_PROJECT_DIR}
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   artifacts:
     paths: [codeclimate.json]
     reports:
@@ -425,23 +408,23 @@ lnm-codeclimate:
   - if: $CI_PIPELINE_SOURCE == "schedule"
   allow_failure: true
   tags:
-  - lnm-codeclimate
-  - lnm-ubuntu
+  - codeclimate
 
-lnm-buildtest_minimal:
+buildtest_minimal_release:
   extends: .buildtest_minimal
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - lnm-release-minimal
-  - lnm-ubuntu
+  - buildtest-minimal
   needs: [checkcode]
 
-lnm-buildtest_coverage_weekly:
-  extends: .buildtest_coverage_weekly
+buildtest_coverage:
+  extends: .buildtest_coverage
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '30'
@@ -450,28 +433,28 @@ lnm-buildtest_coverage_weekly:
     # enable coverage option of ctest
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation_coverage
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - lnm-coverage-weekly
-  - lnm-ubuntu
+  - coverage
   needs: []
 
 pages: # job name needs to be pages
   stage: pages
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
     # stage operates exclusively on artifacts. No need for source code.
     GIT_STRATEGY: fetch
-    # Download Doxygen from previous lnm-doxygen stage
+    # Download Doxygen from previous doxygen stage
   dependencies:
-  - lnm-doxygen
+  - doxygen
   script:
-    # print the weekly measured coverage rate
-  - echo 'Weekly measured'
-  - grep "Overall coverage rate:" -A 2 genhtml_weekly_coverage.log
+    # print the measured coverage rate
+  - echo 'measured'
+  - grep "Overall coverage rate:" -A 2 genhtml_coverage.log
     # Create directory that will be published
   - mkdir -p public
-    # move weekly created coverage report to public folder (which is the path for GitLab Pages content)
+    # move created coverage report to public folder (which is the path for GitLab Pages content)
   - mv coverage_report public/coverage_report
     # Move most recent doxygen to public folder
   - mv doxygen public/doxygen
@@ -485,10 +468,10 @@ pages: # job name needs to be pages
   - anybadge -l website -v ok --color=green -f public/website.svg
   coverage: /lines\.*:\s+\d+\.\d+/
   cache:
-    key: cache-weekly-coverage-report
+    key: cache-coverage-report
     paths:
     - coverage_report/
-    - genhtml_weekly_coverage.log
+    - genhtml_coverage.log
     policy: pull
   artifacts:
     # store the public path in artifact
@@ -500,17 +483,16 @@ pages: # job name needs to be pages
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   tags: # must run on the same machine as the coverage report
-  - lnm-coverage-weekly
-  - lnm-ubuntu
+  - coverage
 
-lnm-doxygen-web:
+doxygen-web:
   extends: .doxygen
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - lnm-doxygen
-  - lnm-ubuntu
+  - doxygen
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -522,14 +504,14 @@ lnm-doxygen-web:
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
 
-lnm-doxygen:
+doxygen:
   extends: .doxygen
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: lnm_workstation
-    CMAKE_COMMAND: /lnm/programs64/cmake-3.25.1/bin/cmake
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - lnm-doxygen
-  - lnm-ubuntu
+  - doxygen
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -545,7 +527,7 @@ lnm-doxygen:
 build-base-dependencies:
   stage: build-docker-images
   tags:
-  - docker
+  - build-docker-image
   image: docker:20.10.16
   services:
   - docker:20.10.16-dind
@@ -561,8 +543,9 @@ build-base-dependencies:
   - docker push $FULL_IMAGE_PATH
   rules:
   - if: $BACI_DOCKER_BUILD_IMAGES == "True"
+    when: manual
 
-lnm-buildtest_full_docker:
+buildtest_full_release:
   extends: .buildtest_full
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
@@ -572,20 +555,17 @@ lnm-buildtest_full_docker:
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - docker
+  - buildtest
   needs:
   - checkcode
   - job: build-base-dependencies
     optional: true
-  # rules as .buildtest_full but never run when BACI_DOCKER_RUN_TEST == False
-  # Also make use of evaluation order to run test in nightly pipeline as well
+  # Make use of evaluation order to run test in nightly pipeline as well
   rules:
-  - if: $BACI_DOCKER_RUN_TEST == "False"
-    when: never
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
 
-lnm-buildtest_debug_full_docker:
+buildtest_full_debug:
   extends: .buildtest_daily_debug
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
@@ -594,13 +574,40 @@ lnm-buildtest_debug_full_docker:
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
-  - docker
+  - buildtest-debug
   needs:
   - checkcode
   - job: build-base-dependencies
     optional: true
-  # rules as .buildtest_daily_debug but never run when BACI_DOCKER_RUN_TEST == False
+
+build-verify-headers:
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    NUMBER_OF_BUILD_THREADS: '10'
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - verify-headers
+  needs:
+  - job: build-base-dependencies
+    optional: true
+  stage: checkcode
+  script:
+  - mkdir -p ${CI_PROJECT_DIR}/../baci-build
+    # configure
+  - |
+    cd ${CI_PROJECT_DIR}
+    ./create-baci-python-venv
+    cd ${CI_PROJECT_DIR}/../baci-build
+    # Configure verification of header sets.
+    ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
+    # verify headers
+  - time ${CMAKE_COMMAND} --build . --target all_verify_interface_header_sets -- -j
+    ${NUMBER_OF_BUILD_THREADS} 2>&1 | tee verify_headers.log
+  artifacts:
+    name: $CI_JOB_NAME-$CI_JOB_ID
+    paths:
+    - '*.log'
+    when: on_failure
+    expire_in: 1 day
   rules:
-  - if: $BACI_DOCKER_RUN_TEST == "False"
-    when: never
-  - !reference [.buildtest_daily_debug, rules]
+  - !reference [checkcode, rules]

@@ -21,10 +21,10 @@ namespace DRT
 {
   class DiscretizationInterface;
 }  // namespace DRT
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace XFEM
 {
@@ -44,7 +44,8 @@ namespace XFEM
      *
      *  An examples is the XFluidFluid problem. */
     void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
+        const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
         const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
         const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret);
 
@@ -65,7 +66,7 @@ namespace XFEM
     /// @name Accessors
     /// @{
     /// Get cut wizard
-    GEO::CutWizard& CutWizard()
+    CORE::GEO::CutWizard& CutWizard()
     {
       CheckInit();
       if (wizard_.is_null()) dserror("The CutWizard was not initialized! (Teuchos::null)");
@@ -91,7 +92,7 @@ namespace XFEM
 
    protected:
     /// Get cut wizard pointer
-    Teuchos::RCP<GEO::CutWizard>& CutWizardPtr() { return wizard_; }
+    Teuchos::RCP<CORE::GEO::CutWizard>& CutWizardPtr() { return wizard_; }
 
     /// Get condition manager pointer
     Teuchos::RCP<XFEM::ConditionManager>& ConditionManagerPtr() { return condition_manager_; }
@@ -146,7 +147,7 @@ namespace XFEM
 
    private:
     /// cut wizard
-    Teuchos::RCP<GEO::CutWizard> wizard_;
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
 
     /// condition manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;

@@ -1027,6 +1027,11 @@ namespace MORTAR
     "optimal" node/element maps of the interface discretization.
     Note that after Redistribute(), we must call FillComplete() again.
 
+    References
+    ==========
+
+    - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
+    Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
     virtual void Redistribute();
 
@@ -1538,6 +1543,12 @@ namespace MORTAR
     master-sided interface ghosting via binning.
 
     @param meanVelocity Mean velocity of this interface
+
+    References
+    ==========
+
+    - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
+    Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
     virtual void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
 

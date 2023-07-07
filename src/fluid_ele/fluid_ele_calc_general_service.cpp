@@ -200,7 +200,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, const DRT::UTILS::GaussIntegration& intpoints)
+    Epetra_SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // --------------------------------------------------
   // construct views
@@ -211,7 +211,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -240,8 +240,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -267,7 +267,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -282,8 +282,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
   }
 
   // integration loop
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -339,8 +339,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -411,8 +411,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -472,7 +472,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -510,7 +510,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
 
     // loop over Gauss points if div u needs to be evaluated at the Gauss points
     /*
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end();
+    for ( CORE::DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin();
+    iquad!=intpoints_.end();
     ++iquad )
     {
       // evaluate shape functions and derivatives at integration point
@@ -546,7 +547,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
-  const DRT::UTILS::GaussIntegration intpoints(distype, ele->Degree() * 2 + 3);
+  const CORE::DRT::UTILS::GaussIntegration intpoints(distype, ele->Degree() * 2 + 3);
   return ComputeError(ele, params, mat, discretization, lm, elevec1, intpoints);
 }
 
@@ -558,7 +559,7 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    const DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
   LINALG::Matrix<nsd_, 1> u(true);
@@ -598,7 +599,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -627,8 +628,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+       iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -1418,7 +1419,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
 
   // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -1617,8 +1618,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     //---------------------------------------------------------------
     // evaluate shape functions and derivatives at integration point
@@ -2742,7 +2743,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
@@ -2760,8 +2761,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // ---------------------------------------------------------------------------
   // Integration loop
   // ---------------------------------------------------------------------------
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -2834,7 +2835,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
     // ---------------------------------------------------------------------------
     // Integration loop
     // ---------------------------------------------------------------------------
-    for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+    for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
          iquad != intpoints_.end(); ++iquad)
     {
       // evaluate shape functions and derivatives at integration point
@@ -2931,9 +2932,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   for (int i = 0; i < nsd_; ++i) xi(i) = elevec2_epetra(i);
 
   // evaluate shapefunctions at given point in reference coordinates
-  DRT::UTILS::shape_function<distype>(xi, shapefunct);
+  CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
   // evaluate derivatives of element shape functions at given point in reference configuration
-  DRT::UTILS::shape_function_deriv1<distype>(xi, pderiv_loc);
+  CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, pderiv_loc);
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> state = discretization.GetState("velnp");
 
@@ -3163,8 +3164,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   nodalrefcoords[7].push_back(1.0);
 
   // get immersed structure search tree
-  Teuchos::RCP<GEO::SearchTree> struct_searchtree =
-      params.get<Teuchos::RCP<GEO::SearchTree>>("structsearchtree_rcp");
+  Teuchos::RCP<CORE::GEO::SearchTree> struct_searchtree =
+      params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
   // search tree related stuff
   std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
@@ -3241,7 +3242,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       backgrdxi[1] = nodalrefcoords[node][1];
       backgrdxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -3264,7 +3265,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       if (match)
       {
         matchnum++;
-        static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         immersedele->SetHasProjectedDirichlet(1);
 
         for (int i = 0; i < nsd_; ++i)
@@ -3290,7 +3291,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
 
     // loop over nodes of this ele and set IsBoundaryImmersed
     for (int node = 0; node < nen_; node++)
-      static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
+      static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
 
     if (isfluidinteraction)
     {
@@ -3326,13 +3327,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
     // only velocity divergence needs to be calculated and interpolated here
     vel_calculation = false;
     // get integration rule of fluid element
-    const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
+    const CORE::DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
 
     if (degree_gp_fluid_bound)
     {
       if (immersedele->IsBoundaryImmersed())
       {
-        for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints_fluid_bound.begin();
+        for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad =
+                 intpoints_fluid_bound.begin();
              iquad != intpoints_fluid_bound.end(); ++iquad)
         {
           std::vector<double> backgrdxi(nsd_);
@@ -3504,8 +3506,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     nodalrefcoords[7].push_back(1.0);
 
     // get structure search tree
-    Teuchos::RCP<GEO::SearchTree> struct_searchtree =
-        params.get<Teuchos::RCP<GEO::SearchTree>>("structsearchtree_rcp");
+    Teuchos::RCP<CORE::GEO::SearchTree> struct_searchtree =
+        params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
     // search tree related stuff
     std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
@@ -3543,7 +3545,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
       backgrdfluidxi[1] = nodalrefcoords[node][1];
       backgrdfluidxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -3570,7 +3572,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
       {
         // if closest point to node lying in this element is found, node is set matched to indicate
         // that now has an dirichlet value
-        static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         // this is done before anyway, but doesn't hurt here
         immersedele->SetHasProjectedDirichlet(1);
 
@@ -3584,7 +3586,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
         for (int i = 0; i < nsd_; ++i) xi(i) = closest_point_xi[i];
 
         // evaluate shape functions at closest point
-        DRT::UTILS::shape_function<distype>(xi, shapefunct);
+        CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
         weight = shapefunct(node, 0);
 
         // calculate new node velocities by weighting the influence of Navier Stokes solution and
@@ -3623,7 +3625,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -3675,7 +3677,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -3861,7 +3863,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
   // get node coordinates of element
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
@@ -4026,7 +4028,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     }
 
     // get the quad9 gaussrule for the in plane integration
-    DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+    CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
 
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
@@ -4067,7 +4069,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       }
 
       // start loop over integration points in layer
-      for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // get the other gauss point coordinates
@@ -4292,7 +4294,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       gp[1] = -1.0 + rr * 2.0 / ((double)numsublayers);
 
       // get the quad9 gaussrule for the in plane integration
-      DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+      CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
 
       // reset temporary values
       double area = 0;
@@ -4312,7 +4314,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
 
       // start loop over integration points in layer
-      for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // get the other gauss point coordinates
@@ -4428,7 +4430,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -4517,7 +4519,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle()) dserror("no ale for periodic hill");
@@ -4535,8 +4537,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // Integration loop
   // ---------------------------------------------------------------------------
   double massf = 0.0;
-  for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints_.begin();
+       iquad != intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -4576,8 +4578,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
   DRT::Node** nodes = immersedele->Nodes();
   for (int i = 0; i < immersedele->NumNode(); ++i)
   {
-    static_cast<IMMERSED::ImmersedNode*>(nodes[i])->SetIsMatched(0);
-    static_cast<IMMERSED::ImmersedNode*>(nodes[i])->SetIsBoundaryImmersed(0);
+    static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsMatched(0);
+    static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsBoundaryImmersed(0);
   }
 
   // reset element int point information
@@ -4599,7 +4601,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
       distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   if (ele->IsAle())
   {

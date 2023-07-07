@@ -27,8 +27,8 @@
 #include "cut_boundingbox.H"
 #include "cut_position.H"
 
-#include "geometry_searchtree.H"
-#include "geometry_searchtree_service.H"
+#include "discretization_geometry_searchtree.H"
+#include "discretization_geometry_searchtree_service.H"
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
@@ -96,7 +96,7 @@ void XFEM::MeshProjector::FindSearchRadius()
   const DRT::Node* const* nodes = actele->Nodes();
 
   // problem dimension
-  const unsigned int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+  const unsigned int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   // we are looking for the maximum diameter of the source element
   // as an estimate for the search radius
@@ -105,7 +105,8 @@ void XFEM::MeshProjector::FindSearchRadius()
   double max_diameter = 0.0;
 
   // build connectivity matrix for every surface of the embedded element
-  std::vector<std::vector<int>> connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  std::vector<std::vector<int>> connectivity =
+      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
 
   //-----------------------------------------------------------------------------------
   // We have hex elements & the faces are quads:
@@ -181,11 +182,11 @@ void XFEM::MeshProjector::FindSearchRadius()
 void XFEM::MeshProjector::SetupSearchTree()
 {
   // init of 3D search tree
-  searchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+  searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of all elements of source discretization
-  const LINALG::Matrix<3, 2> sourceEleBox = GEO::getXAABBofPositions(src_nodepositions_n_);
-  searchTree_->initializeTree(sourceEleBox, *sourcedis_, GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofPositions(src_nodepositions_n_);
+  searchTree_->initializeTree(sourceEleBox, *sourcedis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // TODO: find the bounding box of the nodes from the target discretization, that demand
   // projection, intersect the bounding boxes to obtain a smaller one
@@ -328,7 +329,8 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
     const LINALG::Matrix<3, 1>& node_xyz, LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
-  const unsigned int src_numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned int src_numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   // nodal coordinates
   LINALG::Matrix<3, src_numnodes> src_xyze(true);
 
@@ -343,8 +345,8 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
   }
 
   // compute node position w.r.t. embedded element
-  Teuchos::RCP<GEO::CUT::Position> pos =
-      GEO::CUT::PositionFactory::BuildPosition<3, distype>(src_xyze, node_xyz);
+  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+      CORE::GEO::CUT::PositionFactory::BuildPosition<3, distype>(src_xyze, node_xyz);
   bool inside = pos->Compute();
 
   if (inside)
@@ -355,7 +357,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
 
     // Evaluate elements shape function at this point and fill values
     LINALG::SerialDenseVector shp(src_numnodes);
-    DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
+    CORE::DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
     for (int in = 0; in < src_ele->NumNode(); ++in)

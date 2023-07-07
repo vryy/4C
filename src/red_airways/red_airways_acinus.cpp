@@ -15,7 +15,7 @@
 #include "utils_exceptions.H"
 #include "lib_linedefinition.H"
 
-using namespace DRT::UTILS;
+using namespace CORE::DRT::UTILS;
 
 DRT::ELEMENTS::RedAcinusType DRT::ELEMENTS::RedAcinusType::instance_;
 

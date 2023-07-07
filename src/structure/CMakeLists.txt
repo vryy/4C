@@ -19,7 +19,6 @@ set(_structure_dependencies
     mortar
     poroelast
     so3
-    solver
     stru_multi
     structure_new
     surfstress

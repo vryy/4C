@@ -87,7 +87,7 @@ namespace DRT
 
 
       /// number of stress-dof
-      static const int numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      static const int numstressdof_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! @name useful constants for DOF-index numbering
       //@{
@@ -118,56 +118,58 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// evaluate the XFEM cut element
-      virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells, bool offdiag = false);
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override;
 
       /// evaluate the shape functions in the XFEM
-      virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra,
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells);
+      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const CORE::GEO::CUT::plain_volumecell_set& cells) override;
 
       /// error computation
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& ele_dom_norms);
+          std::vector<int>& lm, Epetra_SerialDenseVector& ele_dom_norms) override;
 
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseVector& ele_dom_norms,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
-      virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
           Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
-              bintpoints,                               ///< boundary integration points
-          const GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-          Teuchos::ParameterList& params                ///< parameter list
-      );
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+              bintpoints,                                     ///< boundary integration points
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+          Teuchos::ParameterList& params                      ///< parameter list
+          ) override;
 
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
       /// rhs
-      virtual void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<DRT::UTILS::GaussIntegration>& intpoints,  ///< element gauss points
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+          const std::vector<CORE::DRT::UTILS::GaussIntegration>&
+              intpoints,  ///< element gauss points
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -179,44 +181,45 @@ namespace DRT
           Epetra_SerialDenseVector&
               elevec1_epetra,               ///< local element vector of intersected element
           Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-          const GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
-      );
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
+          ) override;
 
       /// add Nitsche (NIT) interface condition to element matrix and rhs
-      virtual void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-          const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+              bcells,  ///< boundary cells
+          const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,               ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat_master,      ///< material for the coupled side
-          Teuchos::RCP<MAT::Material>& mat_slave,       ///< material for the coupled side
-          Epetra_SerialDenseMatrix& elemat1_epetra,     ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,     ///< element vector
-          const GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                     ///< parameter list
+          Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
+          Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
+          Epetra_SerialDenseMatrix& elemat1_epetra,           ///< element matrix
+          Epetra_SerialDenseVector& elevec1_epetra,           ///< element vector
+          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
           std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
               side_coupling,                ///< side coupling matrices
           Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
-      );
+          ) override;
 
       ///
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                                    ///< discretization
-          const std::vector<int>& lm,                                  ///< local map
-          Epetra_SerialDenseVector& elevec1_epetra,                    ///< element vector
-          const DRT::UTILS::GaussIntegration& intpoints                ///< integration points
-      );
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+          DRT::Discretization& dis,                            ///< discretization
+          const std::vector<int>& lm,                          ///< local map
+          Epetra_SerialDenseVector& elevec1_epetra,            ///< element vector
+          const CORE::DRT::UTILS::GaussIntegration& intpoints  ///< integration points
+          ) override;
 
       ///
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                                    ///< discretization
-          const std::vector<int>& lm,                                  ///< local map
-          Epetra_SerialDenseVector& elevec1_epetra                     ///< element vector
-      );
+      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+          DRT::Discretization& dis,                            ///< discretization
+          const std::vector<int>& lm,                          ///< local map
+          Epetra_SerialDenseVector& elevec1_epetra             ///< element vector
+          ) override;
 
      private:
       //! evaluate analytical reference solution
@@ -327,8 +330,8 @@ namespace DRT
 
       //! build matrices from volume-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM-coupling \author kruse \date 06/14
-      void HybridLM_Build_VolBased(const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-          const GEO::CUT::plain_volumecell_set& cells,
+      void HybridLM_Build_VolBased(const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+          const CORE::GEO::CUT::plain_volumecell_set& cells,
           const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
           const LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
           LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix

@@ -8,6 +8,8 @@
 #ifndef MAT_TRAIT_THERMO_H
 #define MAT_TRAIT_THERMO_H
 
+#include "linalg_fixedsizematrix.H"
+
 namespace MAT
 {
   namespace TRAIT

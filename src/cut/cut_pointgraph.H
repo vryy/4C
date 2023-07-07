@@ -15,7 +15,7 @@
 #include "cut_find_cycles.H"
 
 // forward declarations
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -162,7 +162,7 @@ namespace GEO
         virtual inline const Teuchos::RCP<PointGraph::Graph> &GraphPtr() { return graph_; }
 
        private:
-        Teuchos::RCP<GEO::CUT::IMPL::PointGraph::Graph> CreateGraph(unsigned dim);
+        Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CreateGraph(unsigned dim);
 
         Teuchos::RCP<Graph> graph_;
       };  // class PointGraph
@@ -175,7 +175,7 @@ namespace GEO
           const PointGraph::Location &location, const PointGraph::Strategy &strategy);
     }  // namespace IMPL
   }    // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 
 #endif

@@ -34,13 +34,13 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 namespace STR
 {
   namespace ELEMENTS
@@ -375,11 +375,11 @@ namespace DRT
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
       //! conditions
       virtual void UnShiftNodePosition(std::vector<double>& disp,  //!< element disp vector
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
 
       //! get directions in which element might be cut by a periodic boundary
       virtual void GetDirectionsOfShifts(std::vector<double>& disp,
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
           std::vector<bool>& shift_in_dim) const;
 
       /** \brief extract values for those Dofs relevant for centerline-interpolation from total
@@ -463,7 +463,7 @@ namespace DRT
         if (HermiteCenterlineInterpolation())
         {
           const auto gausspoints =
-              DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::line_10point);
+              CORE::DRT::UTILS::IntegrationPoints1D(CORE::DRT::UTILS::GaussRule1D::line_10point);
           const auto distype = this->Shape();
 
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
@@ -607,7 +607,7 @@ namespace DRT
       //! coordinates \in [-1,1] from displacement state vector
       void GetPosOfBindingSpot(LINALG::Matrix<3, 1>& pos, std::vector<double>& disp,
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
-          GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
 
       //! get triad at binding spot with locn x stored in element parameter space coordinates \in
       //! [-1,1] from displacement state vector
@@ -691,9 +691,10 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
           const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-          const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const override;
+          const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params)
+          const override;
 
      private:
       //! position of binding spots on beam element in local coordinate system

@@ -81,7 +81,7 @@ namespace MAT
 
      private:
       //! convert string to model for half cell open circuit potential
-      OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
+      [[nodiscard]] OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
     };  // class MAT::PAR::Electrode
   }     // namespace PAR
 
@@ -90,7 +90,7 @@ namespace MAT
   class ElectrodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const override { return "ElectrodeType"; };
+    [[nodiscard]] std::string Name() const override { return "ElectrodeType"; };
 
     static ElectrodeType& Instance() { return instance_; };
 
@@ -119,7 +119,7 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    [[nodiscard]] int UniqueParObjectId() const override
     {
       return ElectrodeType::Instance().UniqueParObjectId();
     };
@@ -151,17 +151,23 @@ namespace MAT
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_electrode; };
+    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_electrode;
+    };
 
     //! clone electrode material
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Electrode(*this)); };
+    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new Electrode(*this));
+    };
 
     //! return lithiation value corresponding to saturation value of intercalated Lithium
     //! concentration
-    double ChiMax() const { return params_->chimax_; };
+    [[nodiscard]] double ChiMax() const { return params_->chimax_; };
 
     //! return saturation value of intercalated Lithium concentration
-    double CMax() const { return params_->cmax_; };
+    [[nodiscard]] double CMax() const { return params_->cmax_; };
 
     /*!
      * @brief compute the current lithiation
@@ -188,7 +194,7 @@ namespace MAT
      * @param[in] detjacobian  determinant of the deformation gradient
      * @return the derivative of current lithiation w.r.t. concentration
      */
-    static double ComputeIntercalationFractionDerivative(
+    static double ComputeIntercalationFractionConcDerivative(
         const double chi_max, const double c_max, const double detjacobian)
     {
       return chi_max * detjacobian / c_max;
@@ -203,7 +209,7 @@ namespace MAT
      * @param[in] detF           determinant of Jacobian from deformation at Gauss point
      * @return derivative of open circuit potential w.r.t. concentration
      */
-    double ComputeFirstDerivOpenCircuitPotentialConc(
+    [[nodiscard]] double ComputeFirstDerivOpenCircuitPotentialConc(
         double concentration, double faraday, double frt, double detF) const;
 
     /*!
@@ -214,7 +220,7 @@ namespace MAT
      * @param[in] gasconstant    General gas constant
      * @return derivative of open circuit potential w.r.t. temperature
      */
-    double ComputeFirstDerivOpenCircuitPotentialTemp(
+    [[nodiscard]] double ComputeFirstDerivOpenCircuitPotentialTemp(
         const double concentration, const double faraday, const double gasconstant) const;
 
     /*!
@@ -226,7 +232,7 @@ namespace MAT
      * @param[in] detF           determinant of jacobian at gauss point
      * @return open circuit potential
      */
-    double ComputeOpenCircuitPotential(
+    [[nodiscard]] double ComputeOpenCircuitPotential(
         double concentration, double faraday, double frt, double detF) const;
 
     /*!
@@ -238,12 +244,12 @@ namespace MAT
      * @param[in] detF           determinant of jacobian at gauss point
      * @return 2nd derivative of open circuit potential w.r.t. concentration
      */
-    double ComputeSecondDerivOpenCircuitPotentialConc(
+    [[nodiscard]] double ComputeSecondDerivOpenCircuitPotentialConc(
         double concentration, double faraday, double frt, double detF) const;
 
    protected:
     //! return material parameters
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters

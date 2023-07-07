@@ -25,7 +25,7 @@
 #define TETMESH_EXTENDED_DEBUG_OUTPUT  // for debuggin the triangulization where it fails
 void test_alex59()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 

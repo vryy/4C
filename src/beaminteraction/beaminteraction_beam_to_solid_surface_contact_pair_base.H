@@ -116,7 +116,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const DRT::Discretization& discret) const;
+    std::vector<int> GetPairGID(const ::DRT::Discretization& discret) const;
 
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the

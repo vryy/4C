@@ -49,9 +49,9 @@ double LineIntegration::integrate_line()
 
   // 8 is the order of Gauss integration used in the line integration
   // since we integrate 6th order polynomial in volume, 8th order must be used for line
-  DRT::UTILS::GaussIntegration gi(DRT::Element::line2, (DIRECTDIV_GAUSSRULE + 1));
+  CORE::DRT::UTILS::GaussIntegration gi(DRT::Element::line2, (DIRECTDIV_GAUSSRULE + 1));
 
-  for (DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+  for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
     const LINALG::Matrix<1, 1> eta(iquad.Point());
     double weight = iquad.Weight();
@@ -67,11 +67,11 @@ double LineIntegration::integrate_line()
     else  // integration over boundarycell
     {
       double linein = 0.0;
-      if (intType_ == GEO::CUT::proj_x)
+      if (intType_ == CORE::GEO::CUT::proj_x)
         linein = base_func_surfX(actCoord, inte_num_, alpha_);
-      else if (intType_ == GEO::CUT::proj_y)
+      else if (intType_ == CORE::GEO::CUT::proj_y)
         linein = base_func_surfY(actCoord, inte_num_, alpha_);
-      else if (intType_ == GEO::CUT::proj_z)
+      else if (intType_ == CORE::GEO::CUT::proj_z)
         linein = base_func_surfZ(actCoord, inte_num_, alpha_);
       else
         dserror("Integration type unspecified");
@@ -90,14 +90,15 @@ double LineIntegration::integrate_line()
 void LineIntegration::Transform(const LINALG::Matrix<2, 2> &xyze, const double &eta,
     LINALG::Matrix<2, 1> &x_gp_lin, LINALG::Matrix<2, 1> &normal, double &drs)
 {
-  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
+  const int numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
   LINALG::Matrix<numnodes, 1> funct;
   LINALG::Matrix<1, numnodes> deriv;
   LINALG::Matrix<1, 1> metrictensor;
 
-  DRT::UTILS::shape_function_1D(funct, eta, DRT::Element::line2);
-  DRT::UTILS::shape_function_1D_deriv1(deriv, eta, DRT::Element::line2);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::line2>(
+  CORE::DRT::UTILS::shape_function_1D(funct, eta, ::DRT::Element::line2);
+  CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta, ::DRT::Element::line2);
+  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<::DRT::Element::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);

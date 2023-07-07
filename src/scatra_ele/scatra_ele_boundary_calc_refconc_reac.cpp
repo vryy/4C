@@ -9,7 +9,7 @@ concentrations and with advanced reaction terms
 
 #include "scatra_ele_boundary_calc_refconc_reac.H"
 #include "scatra_ele_parameter_std.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_utils.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
 #include "utils_singleton_owner.H"
@@ -23,7 +23,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype, probdim>>(
@@ -32,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
@@ -110,24 +110,24 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // Since this does depend on ALL values of the involved element this is quite a hassle :(
 
   // number of parent spatial dimensions
-  const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
   // number of boundary spatial dimensions
-  const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
 
   if (pnsd != nsd_) dserror("dimension do not match!");
   if (bnsd != nsd_ele_) dserror("dimension do not match!");
 
   // number of parent element nodes
-  const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
   // number of (boundary) element nodes
-  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
 
   if (bnen != nen_) dserror("Number of element nodes do not match!");
 
   // get local node coordinates
   LINALG::Matrix<pnsd, pnen> pxyze(true);
   LINALG::Matrix<pnsd, pnen> pxyze0(true);
-  GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
   pxyze = pxyze0;
 
   if (my::scatraparams_->IsAle())
@@ -164,11 +164,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   }
 
   // get Gaussian integration points
-  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get Gaussian integration points
-  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
@@ -184,9 +184,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // distinguish 2- and 3-D case
   Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
   if (pnsd == 2)
-    DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    CORE::DRT::UTILS::BoundaryGPToParentGP2(
+        pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
   else if (pnsd == 3)
-    DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    CORE::DRT::UTILS::BoundaryGPToParentGP3(
+        pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
 
 
   LINALG::Matrix<pnsd, 1> pxsi(true);
@@ -199,7 +201,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   }
 
   // parent element shape functions and local derivatives
-  DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
+  CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
   // Jacobian matrix and determinant of parent element (including check)
   LINALG::Matrix<pnsd, pnsd> dxds(true);

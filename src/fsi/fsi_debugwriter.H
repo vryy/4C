@@ -9,6 +9,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include "coupling_adapter.H"
 
 namespace ADAPTER
 {
@@ -60,7 +61,7 @@ namespace FSI
       Teuchos::RCP<DRT::Discretization> dis_;
 
       /// coupling of field discretization and interface discretization
-      Teuchos::RCP<ADAPTER::Coupling> coup_;
+      Teuchos::RCP<CORE::ADAPTER::Coupling> coup_;
 
       /// current control file
       Teuchos::RCP<IO::OutputControl> control_;

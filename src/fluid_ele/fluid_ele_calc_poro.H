@@ -63,7 +63,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleCalcPoro<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /*!
         \brief calculate element matrix and rhs for porous flow
@@ -110,7 +110,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief Evaluate coupling terms (off diagonal terms) of the element at specified gauss points
@@ -134,7 +134,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
           Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
 
       //! Evaluate supporting methods of the element
@@ -191,7 +191,7 @@ namespace DRT
           const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
           const LINALG::Matrix<nen_, 1>* eporositynp, const LINALG::Matrix<nen_, 1>* eporositydot,
           const LINALG::Matrix<nen_, 1>* eporositydotn, Teuchos::RCP<MAT::Material> mat, bool isale,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
           \brief evaluate function for Fluid element for porous flow
@@ -233,7 +233,7 @@ namespace DRT
           const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
           const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nen_, 1>& echist,
           const LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat, bool isale,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief calculate element matrix and rhs for porous flow
@@ -279,7 +279,7 @@ namespace DRT
           const LINALG::Matrix<nen_, 1>* eporositydot, const LINALG::Matrix<nen_, 1>* eporositydotn,
           LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
           LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
-          bool isale, const DRT::UTILS::GaussIntegration& intpoints);
+          bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief calculate off diagonal element matrix and rhs for porous flow
@@ -320,7 +320,7 @@ namespace DRT
           const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
           LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
           LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
-          bool isale, const DRT::UTILS::GaussIntegration& intpoints);
+          bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief linearisation of momentum equation in the case of mesh motion 3-D for Poroelasticity
@@ -652,7 +652,7 @@ namespace DRT
           LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
           LINALG::Matrix<nen_, 1>& preforce, LINALG::Matrix<nsd_, nen_>& velforce,
           Teuchos::RCP<const MAT::Material> material,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief Gauss point loop for evaluation of off-diagonal terms
@@ -691,7 +691,7 @@ namespace DRT
           const LINALG::Matrix<nen_, 1>* eporositynp, LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
           LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
           LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p, Teuchos::RCP<const MAT::Material> material,
-          const DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
         \brief Evaluation of gauss point values (diagonal terms)
@@ -885,7 +885,7 @@ namespace DRT
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          const DRT::UTILS::GaussIntegration& intpoints2);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints2);
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
       std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP() const;

@@ -20,7 +20,7 @@ set(OBJS_POST_PROCESSOR_MAIN
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
 set_target_properties(post_processor PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 baci_add_dependency(post_processor post_ensight_lib post_vtk_lib post_common)
-baci_link_executable_with_all(post_processor)
+baci_target_requires_cyclic_legacy_linking(post_processor)
 
 # various post-processing tools
 include(scripts/baci_create_post_scripts.cmake)

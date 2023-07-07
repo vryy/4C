@@ -32,9 +32,9 @@
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXFEM<distype>>(
@@ -94,15 +94,15 @@ namespace DRT
         Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
         Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
         Epetra_SerialDenseVector& elevec3_epetra,
-        const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-        const GEO::CUT::plain_volumecell_set& cells, bool offdiag)
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag)
     {
       int err = 0;
 
-      for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const DRT::UTILS::GaussIntegration intpoints_cell = *i;
+        const CORE::DRT::UTILS::GaussIntegration intpoints_cell = *i;
         err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_cell, offdiag);
         if (err) return err;
@@ -117,15 +117,15 @@ namespace DRT
     int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
         Epetra_SerialDenseVector& elevec1_epetra,
-        const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-        const GEO::CUT::plain_volumecell_set& cells)
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const CORE::GEO::CUT::plain_volumecell_set& cells)
     {
       int err = 0;
 
-      for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const DRT::UTILS::GaussIntegration gint = *i;
+        const CORE::DRT::UTILS::GaussIntegration gint = *i;
         err = my::IntegrateShapeFunction(ele, discretization, lm, elevec1_epetra, gint);
         if (err) return err;
       }
@@ -144,7 +144,7 @@ namespace DRT
       // integrations points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
       // degree 5
-      const DRT::UTILS::GaussIntegration intpoints(distype, 8);
+      const CORE::DRT::UTILS::GaussIntegration intpoints(distype, 8);
       return ComputeError(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
     }
 
@@ -153,7 +153,7 @@ namespace DRT
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         Epetra_SerialDenseVector& ele_dom_norms,  // squared element domain norms
-        const DRT::UTILS::GaussIntegration& intpoints)
+        const CORE::DRT::UTILS::GaussIntegration& intpoints)
     {
       // analytical solution
       LINALG::Matrix<nsd_, 1> u_analyt(true);
@@ -189,7 +189,8 @@ namespace DRT
       //----------------------------------------------------------------------------
 
       // get node coordinates
-      GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+      CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+          ele, my::xyze_);
 
       //----------------------------------------------------------------
       // Now do the nurbs specific stuff (for isogeometric elements)
@@ -220,7 +221,7 @@ namespace DRT
       //                       INTEGRATION LOOP
       //------------------------------------------------------------------
 
-      for (DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
@@ -786,11 +787,12 @@ namespace DRT
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         Teuchos::RCP<MAT::Material>& mat,                          ///< material
         Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
-            bintpoints,                               ///< boundary integration points
-        const GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-        Teuchos::ParameterList& params                ///< parameter list
+        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+            bcells,  ///< boundary cells
+        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
+            bintpoints,                                     ///< boundary integration points
+        const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+        Teuchos::ParameterList& params                      ///< parameter list
     )
     {
 #ifdef DEBUG
@@ -811,7 +813,8 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+      CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+          ele, my::xyze_);
 
       // ---------------------------------------------------------------------
       // get additional state vectors for ALE case: grid displacement and vel.
@@ -898,7 +901,7 @@ namespace DRT
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -947,13 +950,13 @@ namespace DRT
         const XFEM::EleCoupCond& coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
         const INPAR::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
-        const std::vector<DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) dserror("missing boundary cell");
 
-        const std::vector<GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
 
 
@@ -981,7 +984,7 @@ namespace DRT
         {
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->GetSide(coup_sid);
-          GEO::InitialPositionArray(side_xyze, side);
+          CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
@@ -1005,7 +1008,7 @@ namespace DRT
             // force to get the embedded element, even if background-sided coupling is active
             coupl_ele = cond_manager->GetCondElement(coup_sid);
 
-            GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+            CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
 
             ci = DRT::ELEMENTS::XFLUID::SlaveElementInterface<
                 distype>::CreateSlaveElementRepresentation(coupl_ele, coupl_xyze);
@@ -1029,17 +1032,18 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
+                 cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const DRT::UTILS::GaussIntegration& gi = *i;
-          GEO::CUT::BoundaryCell* bc =
+          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
+          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
                ++iquad)
           {
             double drs =
@@ -1068,8 +1072,8 @@ namespace DRT
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<GEO::CUT::Position> pos =
-                GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+                CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->LocalCoordinates(rst);
 
@@ -1118,7 +1122,7 @@ namespace DRT
             }
             else
             {
-              DRT::UTILS::shape_function<distype>(rst, my::funct_);
+              CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -1268,13 +1272,14 @@ namespace DRT
      *--------------------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
-        DRT::ELEMENTS::Fluid* ele,                                   ///< fluid element
-        DRT::Discretization& dis,                                    ///< background discretization
-        const std::vector<int>& lm,                                  ///< element local map
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,    ///< XFEM condition manager
-        const std::vector<DRT::UTILS::GaussIntegration>& intpoints,  ///< element gauss points
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,  ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>&
+        DRT::ELEMENTS::Fluid* ele,                                 ///< fluid element
+        DRT::Discretization& dis,                                  ///< background discretization
+        const std::vector<int>& lm,                                ///< element local map
+        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,  ///< element gauss points
+        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+            bcells,  ///< boundary cells
+        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -1285,7 +1290,7 @@ namespace DRT
         Epetra_SerialDenseMatrix& elemat1_epetra,  ///< local system matrix of intersected element
         Epetra_SerialDenseVector& elevec1_epetra,  ///< local element vector of intersected element
         Epetra_SerialDenseMatrix& Cuiui,           ///< coupling matrix of a side with itself
-        const GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
+        const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
     )
     {
 #ifdef DEBUG
@@ -1336,7 +1341,8 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+      CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+          ele, my::xyze_);
 
       // ---------------------------------------------------------------------
       // get additional state vectors for ALE case: grid displacement and vel.
@@ -1467,7 +1473,8 @@ namespace DRT
       // auxiliary coupling implementation for terms
       // find all the intersecting elements of actele
       std::set<int> begids;
-      for (std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::const_iterator bc = bcells.begin();
+      for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator bc =
+               bcells.begin();
            bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
@@ -1529,7 +1536,7 @@ namespace DRT
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -1575,14 +1582,14 @@ namespace DRT
         const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
-        const std::vector<DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
 
         // get side's boundary cells
-        std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) dserror("missing boundary cell");
 
-        const std::vector<GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
 
         //---------------------------------------------------------------------------------
@@ -1617,7 +1624,7 @@ namespace DRT
 
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->GetSide(coup_sid);
-          GEO::InitialPositionArray(side_xyze, side);
+          CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
@@ -1653,7 +1660,7 @@ namespace DRT
             coupl_ele = cond_manager->GetSide(coup_sid);
           }
 
-          GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+          CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
@@ -1800,17 +1807,18 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
+                 cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const DRT::UTILS::GaussIntegration& gi = *i;
-          GEO::CUT::BoundaryCell* bc =
+          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
+          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
                ++iquad)
           {
             double drs =
@@ -1839,8 +1847,8 @@ namespace DRT
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<GEO::CUT::Position> pos =
-                GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+                CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->LocalCoordinates(rst);
 
@@ -1893,7 +1901,7 @@ namespace DRT
             }
             else
             {
-              DRT::UTILS::shape_function<distype>(rst, my::funct_);
+              CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -2611,8 +2619,8 @@ namespace DRT
      *-------------------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
-        const std::vector<DRT::UTILS::GaussIntegration>& intpoints,
-        const GEO::CUT::plain_volumecell_set& cells,
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
+        const CORE::GEO::CUT::plain_volumecell_set& cells,
         const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
         const LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
         LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
@@ -2633,7 +2641,7 @@ namespace DRT
       if (fldparaxfem_->HybridLM_L2Proj() == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
       {
         // get the standard set of gauss-points from the intersected element
-        for (DRT::UTILS::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
+        for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
              iquad != my::intpoints_.end(); ++iquad)
         {
           my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
@@ -2651,11 +2659,11 @@ namespace DRT
       }
       else
       {
-        for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
+        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i = intpoints.begin();
              i != intpoints.end(); ++i)
         {
-          const DRT::UTILS::GaussIntegration intcell = *i;
-          for (DRT::UTILS::GaussIntegration::iterator iquad = intcell.begin();
+          const CORE::DRT::UTILS::GaussIntegration intcell = *i;
+          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intcell.begin();
                iquad != intcell.end(); ++iquad)
           {
             // evaluate shape functions and derivatives at integration point
@@ -3157,15 +3165,15 @@ namespace DRT
     void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& bintpoints,
+        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
+        const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& bintpoints,
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         Teuchos::ParameterList& params,
         Teuchos::RCP<MAT::Material>& mat_master,  ///< material for the background
         Teuchos::RCP<MAT::Material>& mat_slave,   ///< material for the coupled side
         Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-        const GEO::CUT::plain_volumecell_set& vcSet,
+        const CORE::GEO::CUT::plain_volumecell_set& vcSet,
         std::map<int, std::vector<Epetra_SerialDenseMatrix>>& side_coupling,
         Epetra_SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
@@ -3183,7 +3191,8 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+      CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+          ele, my::xyze_);
 
       // ---------------------------------------------------------------------
       // get additional state vectors for ALE case: grid displacement and vel.
@@ -3240,7 +3249,8 @@ namespace DRT
       // Dirichlet problems...)
 
       // loop all the intersecting sides of actele
-      for (std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::const_iterator bc = bcells.begin();
+      for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator bc =
+               bcells.begin();
            bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
@@ -3307,7 +3317,7 @@ namespace DRT
       //      surface integral --- loop sides
       //-----------------------------------------------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<DRT::UTILS::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -3357,13 +3367,13 @@ namespace DRT
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
 
-        const std::vector<DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<CORE::DRT::UTILS::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) dserror("missing boundary cell");
 
-        const std::vector<GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
 
         //-----------------------------------------------------------------------------------
@@ -3424,7 +3434,7 @@ namespace DRT
 
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->GetSide(coup_sid);
-          GEO::InitialPositionArray(side_xyze, side);
+          CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
@@ -3454,7 +3464,7 @@ namespace DRT
           coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
           if (coupl_ele == NULL)
             dserror("Failed to obtain coupling element for global coup_sid %d", coup_sid);
-          GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+          CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
@@ -3571,18 +3581,19 @@ namespace DRT
         //---------------------------------------------------------------------------------
         // loop boundary cells w.r.t current cut side
         //---------------------------------------------------------------------------------
-        for (std::vector<DRT::UTILS::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<CORE::DRT::UTILS::GaussIntegration>::const_iterator i =
+                 cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const DRT::UTILS::GaussIntegration& gi = *i;
-          GEO::CUT::BoundaryCell* bc =
+          const CORE::DRT::UTILS::GaussIntegration& gi = *i;
+          CORE::GEO::CUT::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //-------------------------------------------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //-------------------------------------------------------------------------------
           //-------------------------------------------------------------------------------
-          for (DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
+          for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
                ++iquad)
           {
             double drs =
@@ -3624,16 +3635,17 @@ namespace DRT
                 }
 
                 // find element local position of gauss point
-                Teuchos::RCP<GEO::CUT::Position> pos =
-                    GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_ref);
+                Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+                    CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_ref);
                 pos->Compute();
                 pos->LocalCoordinates(rst_);
               }
               else  // compute the local coordiante based on the current position
               {
                 // find element local position of gauss point
-                Teuchos::RCP<GEO::CUT::Position> pos =
-                    GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin_);
+                Teuchos::RCP<CORE::GEO::CUT::Position> pos =
+                    CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(
+                        my::xyze_, x_gp_lin_);
                 pos->Compute();
                 pos->LocalCoordinates(rst_);
               }
@@ -4371,10 +4383,10 @@ namespace DRT
     void FluidEleCalcXFEM<distype>::EvalFuncAndDeriv(LINALG::Matrix<3, 1>& rst)
     {
       // evaluate shape functions
-      DRT::UTILS::shape_function<distype>(rst, my::funct_);
+      CORE::DRT::UTILS::shape_function<distype>(rst, my::funct_);
 
       // evaluate the derivatives of shape functions
-      DRT::UTILS::shape_function_deriv1<distype>(rst, my::deriv_);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(rst, my::deriv_);
       my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
       my::det_ = my::xji_.Invert(my::xjm_);
 
@@ -4485,11 +4497,11 @@ namespace DRT
      *--------------------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-        DRT::ELEMENTS::Fluid* ele,                     ///< fluid element
-        DRT::Discretization& dis,                      ///< discretization
-        const std::vector<int>& lm,                    ///< local map
-        Epetra_SerialDenseVector& elevec1_epetra,      ///< element vector
-        const DRT::UTILS::GaussIntegration& intpoints  ///< integration points
+        DRT::ELEMENTS::Fluid* ele,                           ///< fluid element
+        DRT::Discretization& dis,                            ///< discretization
+        const std::vector<int>& lm,                          ///< local map
+        Epetra_SerialDenseVector& elevec1_epetra,            ///< element vector
+        const CORE::DRT::UTILS::GaussIntegration& intpoints  ///< integration points
     )
     {
       LINALG::Matrix<numdofpernode_ * nen_, 1> elevec1(elevec1_epetra, true);
@@ -4497,12 +4509,13 @@ namespace DRT
       my::eid_ = ele->Id();
 
       // get node coordinates and number of elements per node
-      GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+      CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+          ele, my::xyze_);
 
       //------------------------------------------------------------------------
       //  start loop over integration points
       //------------------------------------------------------------------------
-      for (DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
+      for (CORE::DRT::UTILS::GaussIntegration::const_iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point

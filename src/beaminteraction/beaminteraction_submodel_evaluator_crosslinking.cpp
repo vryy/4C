@@ -35,7 +35,7 @@
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
 
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include "binstrategy_meshfree_multibin.H"
 
@@ -539,8 +539,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnambiguousDecisionsOnAll
 {
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> linker_init_box =
-      Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+  Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> linker_init_box =
+      Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
   linker_init_box->Init(
       crosslinking_params_ptr_->LinkerInitializationBox(), dummy);  // no Setup() call needed here
 
@@ -707,8 +707,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
 
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> linker_init_box =
-      Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+  Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> linker_init_box =
+      Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
   linker_init_box->Init(
       crosslinking_params_ptr_->LinkerInitializationBox(), dummy);  // no Setup() call needed here
 

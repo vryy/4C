@@ -1,6 +1,4 @@
 # Build system for baci and support tools.
-# Including nightly test definitions.
-#
 
 #
 ### General Setup
@@ -51,60 +49,18 @@ endforeach()
 ### Build in default values
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE
-      RelWithDebInfo
-      CACHE STRING
-            "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-            FORCE
-      )
-endif(NOT CMAKE_BUILD_TYPE)
+  message(FATAL_ERROR "Choose a build type. Options are Debug and Release.")
+endif()
 
 ###------------------------------------------------------------------- Default cmake settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-### compile time options
-
 if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-  add_definitions("-DDEBUG=ON")
+  set_property(GLOBAL APPEND PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS "DEBUG")
 endif()
 
-option(
-  DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF
-  )
-if(DEBUGCUTLIBRARY)
-  add_definitions("-DDEBUGCUTLIBRARY")
-endif(DEBUGCUTLIBRARY)
-
-option(
-  TRILINOS_DEVELOP
-  "Select Trilinos installation based on current develop branch (highly experimental!)"
-  OFF
-  )
-if(TRILINOS_DEVELOP)
-  message("II Trilinos installation: develop branch (highly experimental!)")
-  add_definitions("-DTRILINOS_DEVELOP")
-endif(TRILINOS_DEVELOP)
-
-option(ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
-if(ENABLE_STACKTR)
-  message("II Print stacktrace in dserror")
-  add_definitions("-DENABLE_STACKTR")
-endif(ENABLE_STACKTR)
-
-# ignore selected cut test
-option(IGNORE_UNSTABLE_CUTTEST "Ignore unstable cut test" OFF)
-
-# fancy stuff
-
-option(DSERROR_DUMP "dserror creates a core file" OFF)
-if(DSERROR_DUMP)
-  add_definitions("-DDSERROR_DUMP")
-endif(DSERROR_DUMP)
-
-option(TRAP_FE "crash baci if a nan of inf occurs" ON)
-if(TRAP_FE)
-  add_definitions("-DTRAP_FE")
-endif(TRAP_FE)
+### process global options
+include(cmake/setup_global_options.cmake)
 
 # Run some system checks
 file(GLOB _check_files CONFIGURE_DEPENDS "cmake/checks/*.cmake")
@@ -138,7 +94,10 @@ find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 
-###------------------------------------------------------------------ Binaries
+### end of configuration and feature detection
+
+# Get the global compile definitions which have been populated until here
+get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
@@ -168,10 +127,10 @@ set(FULL_TARGETS
 
 add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
+include(cmake/setup_tests.cmake)
+
 # Read in the source directory which defines all modules and executables
 add_subdirectory(src)
-# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
-get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
 
 # Process documentation
 add_subdirectory(doc EXCLUDE_FROM_ALL)
@@ -185,6 +144,18 @@ set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
 
 enable_testing()
 
+add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
-include(UnittestingFramework.cmake)
+
+# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
+get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
+
+## After we defined all targets, we can now resolve the legacy linking
+get_property(
+  BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING GLOBAL
+  PROPERTY BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING
+  )
+foreach(target ${BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING})
+  baci_link_executable_with_all(${target})
+endforeach()

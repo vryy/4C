@@ -2749,12 +2749,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_1D(N1_i, eta1, distype1);
-    DRT::UTILS::shape_function_1D(N2_i, eta2, distype2);
-    DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
-    DRT::UTILS::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
-    DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
-    DRT::UTILS::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D(N1_i, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D(N2_i, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
+    CORE::DRT::UTILS::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
   }
   else if (numnodalvalues == 2)
   {
@@ -2768,12 +2768,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
     double length2 = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->jacobi();
 
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
   }
   else
     dserror(

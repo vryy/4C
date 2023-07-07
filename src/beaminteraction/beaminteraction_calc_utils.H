@@ -34,13 +34,13 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace BEAMINTERACTION
 {
@@ -121,8 +121,8 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void PeriodicBoundaryConsistentDisVector(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& pbb,
-        Teuchos::RCP<const DRT::Discretization> const& discret);
+        Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<const ::DRT::Discretization> const& discret);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -145,31 +145,31 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void GetCurrentUnshiftedElementDis(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp, GEO::MESHFREE::BoundingBox const& pbb,
-        std::vector<double>& eledisp);
+        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+        CORE::GEO::MESHFREE::BoundingBox const& pbb, std::vector<double>& eledisp);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     template <typename T>
     void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<T> params);
+        Teuchos::RCP<::DRT::Discretization> discret, Teuchos::RCP<T> params);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ExtendGhostingForFilamentBspotSetup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<DRT::Discretization> discret);
+        std::set<int>& relevantfilaments, Teuchos::RCP<::DRT::Discretization> discret);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
         std::set<int>& relevantfilaments, std::set<int>& setofrequirednodes,
-        Teuchos::RCP<DRT::Discretization> discret);
+        Teuchos::RCP<::DRT::Discretization> discret);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ComputeFilamentLengthAndSortItsElements(std::vector<DRT::Element*>& sortedfilamenteles,
         std::vector<int> const* nodeids, double& filreflength,
-        Teuchos::RCP<DRT::Discretization> discret);
+        Teuchos::RCP<::DRT::Discretization> discret);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
@@ -180,7 +180,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void GetPosAndTriadOfBindingSpot(DRT::Element* ele,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
         LINALG::Matrix<3, 1>& bspotpos, LINALG::Matrix<3, 3>& bspottriad,
         std::vector<double>& eledisp);
@@ -189,7 +189,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void GetPosAndTriadOfBindingSpot(DRT::Discretization const& discret, DRT::Element* ele,
         Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
         LINALG::Matrix<3, 1>& bspotpos, LINALG::Matrix<3, 3>& bspottriad);
 
@@ -209,7 +209,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const DRT::Discretization& discret,
+    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const ::DRT::Discretization& discret,
         std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat);
@@ -282,7 +282,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void ApplyBindingSpotForceToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
         std::vector<LINALG::SerialDenseVector> const& bspotforce,
@@ -292,7 +292,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void ApplyBindingSpotStiffToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& bspotstiff,
@@ -302,7 +302,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void ApplyBindingSpotForceStiffToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
         std::vector<LINALG::SerialDenseVector> const& bspotforce,
@@ -312,12 +312,12 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void SetupEleTypeMapExtractor(Teuchos::RCP<const DRT::Discretization> const& discret,
+    void SetupEleTypeMapExtractor(Teuchos::RCP<const ::DRT::Discretization> const& discret,
         Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void UpdateDofMapOfVector(Teuchos::RCP<DRT::Discretization> discret,
+    void UpdateDofMapOfVector(Teuchos::RCP<::DRT::Discretization> discret,
         Teuchos::RCP<Epetra_Vector>& dofmapvec, Teuchos::RCP<Epetra_Vector> old = Teuchos::null);
 
     /*----------------------------------------------------------------------------*

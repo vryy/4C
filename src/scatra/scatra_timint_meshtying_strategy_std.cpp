@@ -15,7 +15,7 @@
 #include "lib_globalproblem.H"
 
 #include "linalg_sparsematrix.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

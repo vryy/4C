@@ -13,7 +13,6 @@ set(_structure_new_dependencies
     contact
     contact_aug
     core
-    geometry
     inpar
     io
     lib
@@ -21,7 +20,6 @@ set(_structure_new_dependencies
     loca_continuation
     mat
     so3
-    solver
     solver_nonlin_nox
     struct_ale
     timestepping

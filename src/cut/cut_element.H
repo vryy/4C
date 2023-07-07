@@ -17,7 +17,7 @@
 
 #include "inpar_cut.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -43,12 +43,12 @@ namespace GEO
     {
      public:
       /// \brief create an element with the given type
-      static Teuchos::RCP<GEO::CUT::Element> Create(
-          const DRT::Element::DiscretizationType& elementtype, const int& eid,
+      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(
+          const ::DRT::Element::DiscretizationType& elementtype, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       /// create an element with the given shards-key (coming from trilinos library)
-      static Teuchos::RCP<GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
+      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       //! constructor
@@ -62,7 +62,7 @@ namespace GEO
       int Id() const { return eid_; }
 
       /*! \brief Returns the shape of the element */
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       //! element dimension
       virtual unsigned Dim() const = 0;
@@ -378,7 +378,7 @@ namespace GEO
       /*!
       \brief Get total number of Gaussinan points generated over all the volumecells of this element
        */
-      int NumGaussPoints(DRT::Element::DiscretizationType shape);
+      int NumGaussPoints(::DRT::Element::DiscretizationType shape);
 
       void DebugDump();
 
@@ -408,11 +408,11 @@ namespace GEO
       If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
       shadow element is derived
        */
-      template <int probdim, DRT::Element::DiscretizationType distype>
+      template <int probdim, ::DRT::Element::DiscretizationType distype>
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
-        const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        const int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+        const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         LINALG::Matrix<probdim, nen> xyze;
         LINALG::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
@@ -426,7 +426,7 @@ namespace GEO
 
         LINALG::Matrix<dim, nen> deriv;
         LINALG::Matrix<probdim, probdim> xjm;
-        DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
+        CORE::DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
 
         double det = 0;
         if (dim == probdim)
@@ -439,7 +439,7 @@ namespace GEO
         {
           LINALG::Matrix<dim, dim> metrictensor;
           const double throw_error_if_negative_determinant(true);
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
+          CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
@@ -490,12 +490,12 @@ namespace GEO
       /*!
       \brief Set the discretization type of parent quad element
        */
-      void setQuadShape(DRT::Element::DiscretizationType dis) { quadshape_ = dis; }
+      void setQuadShape(::DRT::Element::DiscretizationType dis) { quadshape_ = dis; }
 
       /*!
       \brief Get shape of parent Quad element from which this shadow element is derived
        */
-      DRT::Element::DiscretizationType getQuadShape() { return quadshape_; }
+      ::DRT::Element::DiscretizationType getQuadShape() { return quadshape_; }
 
       /*!
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
@@ -622,7 +622,7 @@ namespace GEO
       bool isShadow_;
 
       /// Discretization shape of the parent quad element
-      DRT::Element::DiscretizationType quadshape_;
+      ::DRT::Element::DiscretizationType quadshape_;
 
       /// the bounding volume of the element
       Teuchos::RCP<BoundingBox> boundingvolume_;
@@ -636,10 +636,10 @@ namespace GEO
     /*! \brief Implementation of the concrete cut element
      *
      *  \author hiermeier */
-    template <unsigned probdim, DRT::Element::DiscretizationType elementtype,
+    template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
         unsigned numNodesElement =
-            DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<elementtype>::dim>
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
+        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
     class ConcreteElement : public Element
     {
      public:
@@ -654,7 +654,7 @@ namespace GEO
       virtual ~ConcreteElement(){};
 
       //! return element shape
-      virtual DRT::Element::DiscretizationType Shape() const { return elementtype; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return elementtype; }
 
       //! get problem dimension
       virtual unsigned ProbDim() const { return probdim; }
@@ -717,7 +717,7 @@ namespace GEO
       void GlobalCoordinates(const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, 1>& xyz)
       {
         LINALG::Matrix<numNodesElement, 1> funct;
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
 
@@ -742,7 +742,7 @@ namespace GEO
         LINALG::Matrix<probdim, numNodesElement> xyze(true);
         this->Coordinates(xyze);
 
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
         xyz.Multiply(xyze, funct);
       }
 
@@ -755,7 +755,8 @@ namespace GEO
       void ElementCenter(LINALG::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
-        LINALG::Matrix<dim, 1> center_rst(DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
+        LINALG::Matrix<dim, 1> center_rst(
+            CORE::DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
         PointAt(center_rst, midpoint);
       }
 
@@ -770,7 +771,7 @@ namespace GEO
       double Scalar(const std::vector<double>& ns, const LINALG::Matrix<dim, 1>& rst)
       {
         LINALG::Matrix<numNodesElement, 1> funct;
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
         LINALG::Matrix<1, 1> res;
@@ -797,7 +798,7 @@ namespace GEO
       {
         LINALG::Matrix<numNodesElement, 1> funct;
 
-        DRT::UTILS::shape_function<elementtype>(rst, funct);
+        CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
@@ -890,7 +891,7 @@ namespace GEO
       {
         LINALG::Matrix<dim, numNodesElement> deriv1;
 
-        DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
+        CORE::DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
@@ -992,17 +993,17 @@ namespace GEO
       /// constructor
       ElementFactory(){};
 
-      Teuchos::RCP<Element> CreateElement(DRT::Element::DiscretizationType elementtype, int eid,
+      Teuchos::RCP<Element> CreateElement(::DRT::Element::DiscretizationType elementtype, int eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
      private:
-      template <DRT::Element::DiscretizationType elementtype>
+      template <::DRT::Element::DiscretizationType elementtype>
       Element* CreateConcreteElement(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
         Element* e = NULL;
         // sanity check
-        if (probdim < DRT::UTILS::DisTypeToDim<elementtype>::dim)
+        if (probdim < CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim)
           dserror("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)
@@ -1026,6 +1027,6 @@ namespace GEO
     // inline int EntityId( const Element & e ) { return e.Id(); }
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

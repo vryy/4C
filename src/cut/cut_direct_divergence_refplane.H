@@ -13,7 +13,7 @@ coordinate system
 #include <vector>
 #include "cut_element.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -103,5 +103,5 @@ namespace GEO
     };
 
   } /* namespace CUT */
-} /* namespace GEO */
+}  // namespace CORE::GEO
 #endif  // CUT_DIRECT_DIVERGENCE_REFPLANE_H

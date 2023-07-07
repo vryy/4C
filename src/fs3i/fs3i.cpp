@@ -20,7 +20,7 @@
 #include "lib_condition_selector.H"
 #include "lib_condition_utils.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "fsi_utils.H"
 
 #include "lib_condition_selector.H"
@@ -71,7 +71,7 @@ void FS3I::FS3I_Base::Init()
 {
   SetIsSetup(false);
 
-  scatracoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  scatracoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   scatraglobalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
   sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
   sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
@@ -688,12 +688,13 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
     scatrasystemmatrix_->Assign(1, 1, LINALG::View, blockscatra2->Matrix(0, 0));
 
     (*sibtransform_)(blockscatra2->FullRowMap(), blockscatra2->FullColMap(),
-        blockscatra2->Matrix(0, 1), 1.0, ADAPTER::CouplingSlaveConverter(*scatracoup_),
+        blockscatra2->Matrix(0, 1), 1.0, CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_),
         scatrasystemmatrix_->Matrix(1, 0));
-    (*sbitransform_)(blockscatra2->Matrix(1, 0), 1.0, ADAPTER::CouplingSlaveConverter(*scatracoup_),
-        scatrasystemmatrix_->Matrix(0, 1));
-    (*sbbtransform_)(blockscatra2->Matrix(1, 1), 1.0, ADAPTER::CouplingSlaveConverter(*scatracoup_),
-        ADAPTER::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
+    (*sbitransform_)(blockscatra2->Matrix(1, 0), 1.0,
+        CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->Matrix(0, 1));
+    (*sbbtransform_)(blockscatra2->Matrix(1, 1), 1.0,
+        CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_),
+        CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
 
     // fluid scatra
     scatrasystemmatrix_->Assign(0, 0, LINALG::View, *scatra1);
@@ -718,15 +719,15 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
         coup1->Split<LINALG::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[0]), *(scatrafieldexvec_[0]));
     coupblock1->Complete();
-    (*fbitransform_)(coupblock1->Matrix(1, 1), -1.0, ADAPTER::CouplingMasterConverter(*scatracoup_),
-        scatrasystemmatrix_->Matrix(1, 0));
+    (*fbitransform_)(coupblock1->Matrix(1, 1), -1.0,
+        CORE::ADAPTER::CouplingMasterConverter(*scatracoup_), scatrasystemmatrix_->Matrix(1, 0));
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock2 =
         coup2->Split<LINALG::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     coupblock2->Complete();
-    (*sbitransform_)(coupblock2->Matrix(1, 1), -1.0, ADAPTER::CouplingSlaveConverter(*scatracoup_),
-        scatrasystemmatrix_->Matrix(0, 1));
+    (*sbitransform_)(coupblock2->Matrix(1, 1), -1.0,
+        CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->Matrix(0, 1));
   }
 
   scatrasystemmatrix_->Complete();

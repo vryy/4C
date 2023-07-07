@@ -63,9 +63,9 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(::UTILS::SingletonAction action)
+DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(

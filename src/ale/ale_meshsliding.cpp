@@ -15,7 +15,7 @@
 
 #include "lib_discret.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
@@ -90,9 +90,9 @@ void ALE::Meshsliding::DofRowMaps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshsliding::GetMortarTrafo()
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshsliding::GetMortarMatrixP()
 {
-  return adaptermeshsliding_->GetMortarTrafo();
+  return adaptermeshsliding_->GetMortarMatrixP();
 }
 
 /*-------------------------------------------------------*/
@@ -131,7 +131,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
   Teuchos::RCP<LINALG::SparseMatrix> N_m;
   Teuchos::RCP<LINALG::SparseMatrix> N_s;
   GetMortarMatrices(Aco_mm, Aco_ms, Aco_sm, Aco_ss, N_m, N_s);
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarMatrixP();
   Teuchos::RCP<LINALG::SparseMatrix> T = adaptermeshsliding_->TMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> H = adaptermeshsliding_->HMatrix();
   Teuchos::RCP<Epetra_Vector> gap = adaptermeshsliding_->Gap();
@@ -161,7 +161,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
   A_ss_ = Teuchos::rcp(new LINALG::SparseMatrix(sysmatnew->Matrix(2, 2)));
   A_sm_ = Teuchos::rcp(new LINALG::SparseMatrix(sysmatnew->Matrix(2, 1)));
   A_sn_ = Teuchos::rcp(new LINALG::SparseMatrix(sysmatnew->Matrix(2, 0)));
-  D_inv_ = adaptermeshsliding_->GetDinvMatrix();
+  D_inv_ = adaptermeshsliding_->GetMortarMatrixDinv();
   rs_ = Teuchos::rcp(new Epetra_Vector(*splitres[2]));
 
   /**********************************************************************/

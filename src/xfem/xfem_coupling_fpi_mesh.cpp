@@ -769,7 +769,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       if (fluid_ele->Shape() == DRT::Element::hex8)
       {
         LINALG::Matrix<3, 8> xyze(true);
-        GEO::fillInitialPositionArray(fluid_ele, xyze);
+        CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
         double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
@@ -960,15 +960,15 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
     const unsigned int SLAVE_NUMDOF = 3;
 
-    DRT::UTILS::CollectedGaussPoints intpoints =
-        DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    CORE::DRT::UTILS::CollectedGaussPoints intpoints =
+        CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     LINALG::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
     LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
-    DRT::UTILS::BoundaryGPToParentGP<SLAVE_NUMDOF>(
+    CORE::DRT::UTILS::BoundaryGPToParentGP<SLAVE_NUMDOF>(
         pqxg, derivtrafo, intpoints, coupl_ele->Shape(), fele->Shape(), fele->FaceParentNumber());
 
     LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
@@ -981,7 +981,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     if (coupl_ele->Shape() == DRT::Element::hex8)
     {
       const size_t PARENT_NEN =
-          DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
       LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
@@ -991,8 +991,8 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
       // evaluate derivatives of parent element shape functions at current integration point in
       // parent coordinate system
-      DRT::UTILS::shape_function<DRT::Element::hex8>(pxsi, pfunc_loc);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi, pderiv_loc);
+      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(pxsi, pfunc_loc);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi, pderiv_loc);
       //
       // get Jacobian matrix and determinant w.r.t. spatial configuration
       //
@@ -1061,7 +1061,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)

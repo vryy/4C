@@ -15,7 +15,7 @@
 #include "lib_linedefinition.H"
 #include "io_pstream.H"
 
-using namespace DRT::UTILS;
+using namespace CORE::DRT::UTILS;
 
 DRT::ELEMENTS::RedAirwayType DRT::ELEMENTS::RedAirwayType::instance_;
 

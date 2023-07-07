@@ -12,7 +12,6 @@ set(_fluid_xfluid_dependencies
     lib
     linalg
     mat
-    solver
     xfem
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_xfluid_dependencies})

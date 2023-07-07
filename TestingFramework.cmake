@@ -1,39 +1,5 @@
 ###------------------------------------------------------------------ Test definitions
 
-# Determine timeout for each test. Use default one, if it is not passed from the outside.
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT})
-  set(GLOBAL_TEST_TIMEOUT $ENV{GLOBAL_TEST_TIMEOUT})
-  message("Global test timeout is $ENV{GLOBAL_TEST_TIMEOUT} s (before scaling).")
-else()
-  # default test timeout, if not passed as an environment variable
-  set(GLOBAL_TEST_TIMEOUT 260) # Default timeout
-
-  message(
-    "Global test timeout is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT} s (before scaling)."
-    )
-endif()
-
-# Determine timeout scale factor. Use default one, if it is not passed from the outside
-if(DEFINED ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  set(GLOBAL_TEST_TIMEOUT_SCALE $ENV{GLOBAL_TEST_TIMEOUT_SCALE})
-  message("Global test timeout scale is $ENV{GLOBAL_TEST_TIMEOUT_SCALE}.")
-else()
-  # default test timeout scale, if not passed as an environment variable
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-    set(GLOBAL_TEST_TIMEOUT_SCALE 4) # Default timeout scale for debug configuration
-  else()
-    set(GLOBAL_TEST_TIMEOUT_SCALE 1) # Default timeout scale
-  endif()
-
-  message(
-    "Global test timeout scale is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT_SCALE} for this kind of build."
-    )
-endif()
-
-# Determine scaled global test timeout
-math(EXPR GLOBAL_TEST_TIMEOUT_SCALED "${GLOBAL_TEST_TIMEOUT}*${GLOBAL_TEST_TIMEOUT_SCALE}")
-message("The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
-
 ####################################################################
 ################        Definition of macros       #################
 ####################################################################
@@ -393,22 +359,24 @@ endmacro(baci_test_Nested_Par_CopyDat)
 
 ###########
 # NESTED PARALLELISM WITH COPYDATFILE AND PRECURSOR SIMULATION
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat_prepost(<name_of_input_file_precursor> <name_of_input_file> <name_of_input_file_post> <num_proc> <num_groups> <restart_step> optional: <label>)"
+# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat_prepost_extended_timeout(<name_of_input_file_precursor> <name_of_input_file> <name_of_input_file_post> <num_proc> <num_groups> <restart_step> <timeout> optional: <label>)"
 # <name_of_input_file_precursor>: is the inputfile of a precursor simulation (must equal the name of a .dat file in Input; without ".dat")
 # <name_of_input_file>: is an inputfile relying on the output of arg1 (must equal the name of a .dat file in Input; without ".dat")
 # <name_of_input_file_post>: is the inputfile of a "postprocessing simulation" restarted from <name_of_input_file> (optional, must equal the name of a .dat file in Input; without ".dat")
 # <num_proc>: is the number of procs
 # <num_groups>: the number of groups
 # <restart_step>: number of restart step for <name_of_input_file_post>
+# <timeout>: set extended timeout
 # optional: <label>: add a label to the test
 macro(
-  baci_test_Nested_Par_CopyDat_prepost
+  baci_test_Nested_Par_CopyDat_prepost_extended_timeout
   name_of_input_file_precursor
   name_of_input_file
   name_of_input_file_post
   num_proc
   num_groups
   restart_step
+  timeout
   )
   set(test_directory framework_test_output/${name_of_input_file}_p${num_proc})
   set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
@@ -424,7 +392,9 @@ macro(
   require_fixture(${name_of_input_file}_precursor-p${num_proc} test_cleanup)
   set_processors(${name_of_input_file}_precursor-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}_precursor-p${num_proc} ${name_of_input_file}_precursor)
-  set_timeout(${name_of_input_file}_precursor-p${num_proc})
+
+  math(EXPR actualtesttimeout "${GLOBAL_TEST_TIMEOUT_SCALE} * ${timeout}")
+  set_timeout(${name_of_input_file}_precursor-p${num_proc} ${actualtesttimeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}_precursor-p${num_proc} ${ARGN})
@@ -441,7 +411,7 @@ macro(
   require_fixture(${name_of_input_file}-p${num_proc} "${name_of_input_file}_precursor;test_cleanup")
   set_processors(${name_of_input_file}-p${num_proc} ${num_proc})
   define_setup_fixture(${name_of_input_file}-p${num_proc} ${name_of_input_file})
-  set_timeout(${name_of_input_file}-p${num_proc})
+  set_timeout(${name_of_input_file}-p${num_proc} ${actualtesttimeout})
 
   if(NOT "${ARGN}" STREQUAL "")
     set_label(${name_of_input_file}-p${num_proc} ${ARGN})
@@ -462,9 +432,9 @@ macro(
       )
 
     set_processors(${name_of_input_file}_postprocess-p${num_proc} ${num_proc})
-    set_timeout(${name_of_input_file}_postprocess-p${num_proc})
+    set_timeout(${name_of_input_file}_postprocess-p${num_proc} ${actualtesttimeout})
   endif()
-endmacro(baci_test_Nested_Par_CopyDat_prepost)
+endmacro(baci_test_Nested_Par_CopyDat_prepost_extended_timeout)
 
 ###########
 # FRAMEWORK TESTS - testing the whole framework: pre_exodus, BACI, and post-filter
@@ -603,7 +573,7 @@ macro(
     set(FIELD "")
   endif()
 
-  set(name_of_test ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp)
+  set(name_of_test "${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp")
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
       ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
@@ -614,16 +584,13 @@ macro(
 
   # specify test case
   add_test(
-    NAME ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
+    NAME "${name_of_test}"
     COMMAND
       sh -c
       " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
-  require_fixture(
-    ${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp
-    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
-    )
+  require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
   set_environment(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
@@ -758,7 +725,7 @@ macro(
 
   # add test to testing framework
   add_test(
-    NAME ${name_of_test}-p${num_proc_base_run}
+    NAME "${name_of_test}-p${num_proc_base_run}"
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}

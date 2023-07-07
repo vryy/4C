@@ -6,7 +6,6 @@ set(_io_dependencies
     config
     core
     fluid_ele
-    geometry
     inpar
     lib
     linalg

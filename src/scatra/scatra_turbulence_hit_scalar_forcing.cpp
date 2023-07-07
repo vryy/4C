@@ -12,7 +12,7 @@ passive-scalar transport
 
 #include <complex>
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
 
@@ -280,7 +280,7 @@ namespace SCATRA
    *--------------------------------------------------------------*/
   void HomIsoTurbScalarForcing::CalculateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     //-------------------------------------------------------------------------------
     // calculate Fourier transformation of velocity
     //-------------------------------------------------------------------------------
@@ -355,7 +355,7 @@ namespace SCATRA
     // note: this is not very efficient, since each
     // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
         (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
@@ -616,7 +616,7 @@ namespace SCATRA
    *--------------------------------------------------------------*/
   void HomIsoTurbScalarForcing::UpdateForcing(const int step)
   {
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
     // check if forcing is selected
     if (activate_)
     {
@@ -700,7 +700,7 @@ namespace SCATRA
       // note: this is not very efficient, since each
       // processor does the fft and there is no communication
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // set-up
       fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
           (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
@@ -741,7 +741,7 @@ namespace SCATRA
       // fast Fourier transformation using FFTW
       //----------------------------------------
 
-#ifdef HAVE_FFTW
+#ifdef BACI_WITH_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
           (reinterpret_cast<fftw_complex*>(fphi_hat->data())), fphi->data(), FFTW_ESTIMATE);

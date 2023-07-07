@@ -22,7 +22,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
@@ -106,9 +106,9 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
 }
 
 // initialization of static gauss point rule for the so_hex8 element
-const DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
-    DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8>(
-        static_cast<enum DRT::UTILS::GaussRule3D>(GP_RULE_SOH8::rule)));
+const CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
+    CORE::DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8>(
+        static_cast<enum CORE::DRT::UTILS::GaussRule3D>(GP_RULE_SOH8::rule)));
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -421,7 +421,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   LINALG::Matrix<1, NUMDIM_SOH8> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

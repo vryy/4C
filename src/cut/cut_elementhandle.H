@@ -17,7 +17,7 @@
 #include "discretization_fem_general_utils_gausspoints.H"
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -60,7 +60,7 @@ namespace GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() = 0;
 
       //! get the nodes of the element
       virtual const std::vector<Node*>& Nodes() = 0;
@@ -117,23 +117,23 @@ namespace GEO
        way that Gaussian rule for every volume-cell can be separated
         */
       void VolumeCellGaussPoints(
-          plain_volumecell_set& cells, std::vector<DRT::UTILS::GaussIntegration>& intpoints);
+          plain_volumecell_set& cells, std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints);
 
       void AppendVolumeCellGaussPoints_Tessellation(
-          Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
       void AppendVolumeCellGaussPoints_MomentFitting(
-          Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
       void AppendVolumeCellGaussPoints_DirectDivergence(
-          Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
 
       /*!
        \brief Collect the Gaussian points of all the volume-cells belonging to this element.
               The integration rules over all the volume-cells are connected.
        */
-      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GaussPointsConnected(
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPointsComposite> GaussPointsConnected(
           plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype);
 
 
@@ -154,8 +154,8 @@ namespace GEO
       This is the method used now in the new implementation
        */
       void BoundaryCellGaussPointsLin(
-          const std::map<int, std::vector<GEO::CUT::BoundaryCell*>>& bcells,
-          std::map<int, std::vector<DRT::UTILS::GaussIntegration>>& intpoints,
+          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
+          std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints,
           const int bc_cubaturedegree);
 
       //@}
@@ -167,7 +167,7 @@ namespace GEO
       //! get all the element' sets of volume-cells, nds-vectors and integration points
       virtual bool GetCellSets_DofSets_GaussPoints(std::vector<plain_volumecell_set>& cell_sets,
           std::vector<std::vector<int>>& nds_sets,
-          std::vector<std::vector<DRT::UTILS::GaussIntegration>>& intpoints_sets,
+          std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints_sets,
           bool include_inner);
 
 
@@ -178,13 +178,15 @@ namespace GEO
       void GetVolumeCellsDofSets(std::vector<plain_volumecell_set>& cellsets,
           std::vector<std::vector<int>>& nds_sets, bool include_inner);
 
-      void GetBoundaryCellSets(const std::vector<GEO::CUT::Point::PointPosition>& desired_positions,
+      void GetBoundaryCellSets(
+          const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_positions,
           std::vector<plain_boundarycell_set>& bcellsets);
 
-      void GetBoundaryCellSets(GEO::CUT::Point::PointPosition desired_position,
+      void GetBoundaryCellSets(CORE::GEO::CUT::Point::PointPosition desired_position,
           std::vector<plain_boundarycell_set>& bcellsets)
       {
-        const std::vector<GEO::CUT::Point::PointPosition> desired_positions(1, desired_position);
+        const std::vector<CORE::GEO::CUT::Point::PointPosition> desired_positions(
+            1, desired_position);
         GetBoundaryCellSets(desired_positions, bcellsets);
       }
 
@@ -235,10 +237,10 @@ namespace GEO
        \brief Project the integration rule available in the local coordinates of the
        integation-cells to the local coordinates of background element
        */
-      template <DRT::Element::DiscretizationType distype>
-      Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected(
-          const std::vector<GEO::CUT::Point*>& cpoints,
-          Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic);
+      template <::DRT::Element::DiscretizationType distype>
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
+          const std::vector<CORE::GEO::CUT::Point*>& cpoints,
+          Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic);
 
       std::map<Point*, LINALG::Matrix<3, 1>> local_coordinates_;
 
@@ -293,7 +295,7 @@ namespace GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() { return element_->Shape(); }
+      virtual ::DRT::Element::DiscretizationType Shape() { return element_->Shape(); }
 
       //! get the nodes of the element
       virtual const std::vector<Node*>& Nodes() { return element_->Nodes(); }
@@ -417,7 +419,8 @@ namespace GEO
           vc_sets_outside_;  ///< connected sets of volume-cells with outside position
 
 
-      GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>> bcell_sets_;
+      CORE::GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+          bcell_sets_;
     };
 
 
@@ -609,7 +612,7 @@ namespace GEO
       std::vector<plain_volumecell_set>
           connected_vc_sets_outside_;  ///< connected volume-cells with outside position
 
-      GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+      CORE::GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
           connected_bcell_sets_;
 
       std::vector<Element*> subelements_;  ///< the quadratic element's linear sub-elements
@@ -624,7 +627,7 @@ namespace GEO
       Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::hex20; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
@@ -638,7 +641,7 @@ namespace GEO
       Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::hex27; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
@@ -652,7 +655,7 @@ namespace GEO
       Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::tet10; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
@@ -666,13 +669,13 @@ namespace GEO
       Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::wedge15; }
+      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
       virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

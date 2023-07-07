@@ -40,7 +40,7 @@
 #include "linalg_mapextractor.H"
 #include "linalg_matrixtransform.H"
 #include "linalg_equilibrate.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
@@ -664,7 +664,7 @@ void SSI::SSIMono::PrepareTimeStep()
   // Newton step on the slave side in case of interface mesh tying
   if (SSIInterfaceMeshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
@@ -1016,14 +1016,15 @@ void SSI::SSIMono::UpdateIterScaTra()
     // reconstruct slave side solution from master side
     if (IsScaTraManifoldMeshtying())
     {
-      for (const auto& meshtying : strategy_manifold_meshtying_->MeshTyingHandler())
+      for (const auto& meshtying :
+          strategy_manifold_meshtying_->SSIMeshTying()->MeshTyingHandlers())
       {
-        auto coupling_adapter = meshtying.first;
-        auto multimap = meshtying.second;
+        auto coupling_adapter = meshtying->SlaveMasterCoupling();
+        auto multimap = meshtying->SlaveMasterExtractor();
 
-        auto master_dofs = multimap->ExtractVector(increment_manifold, 1);
+        auto master_dofs = multimap->ExtractVector(increment_manifold, 2);
         auto master_dofs_to_slave = coupling_adapter->MasterToSlave(master_dofs);
-        multimap->InsertVector(master_dofs_to_slave, 2, increment_manifold);
+        multimap->InsertVector(master_dofs_to_slave, 1, increment_manifold);
       }
     }
 
@@ -1043,7 +1044,7 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
@@ -1685,7 +1686,7 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
   {
     auto manifold_cond = coup->ManifoldMapExtractor()->ExtractCondVector(*phi);
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
-    coup->ScaTraMapExtractor()->AddCondVector(manifold_on_scatra_cond, manifold_on_scatra);
+    coup->ScaTraMapExtractor()->InsertCondVector(manifold_on_scatra_cond, manifold_on_scatra);
   }
   ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
 }

@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discret,
+void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {

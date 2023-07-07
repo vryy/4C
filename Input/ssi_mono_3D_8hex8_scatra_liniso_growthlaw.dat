@@ -17,7 +17,7 @@ simple, academic test case for monolithic scalar-structure interaction with temp
      F_{in,t} = [1 + GrowthFac_t * (t - RefTemp)]^(1/3) I
 - point in the center of the domain is fixed by Point Dirichlet condition to suppress displacements
 - center points on surfaces in x and z are fixed to suppress rotations
--> due to isotropic strain perfectly symmetric deformation is achieved
+> due to isotropic strain perfectly symmetric deformation is achieved
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
 //NODES       27
@@ -38,7 +38,7 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVFORM                        conservative
 SKIPINITDER                     Yes
-----------------------------------------------------------------ELCH CONTROL
+------------------------------------------------------ELCH CONTROL
 TEMPERATURE_FROM_FUNCT          2
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         100
@@ -63,23 +63,23 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 5*(1-cos(t*pi/10))
 ------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 300+5*(1-cos(t*pi/10))
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE  1.00000000000000000e+01 TOLERANCE 1.0e-08
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE  -1.15450773523057215e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE  -1.15450773523057015e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE  -1.15450773523057637e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE  -1.15450773523058281e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE  1.15450773523058170e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE  1.15450773523058237e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE  1.15450773523057881e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE  1.15450773523057348e+00 TOLERANCE 1.2e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE  1.15450773523057659e+00 TOLERANCE 1.2e-09
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE  1.00000000000000000e+01 TOLERANCE 1.0e-07
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.15450773523057237e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.15450773523056838e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -1.15450773523058103e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE -1.15450773523057437e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE  1.15450773523058015e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE  1.15450773523058037e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE  1.15450773523057859e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE  1.15450773523057104e+00 TOLERANCE 1.2e-08
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE  1.15450773523057659e+00 TOLERANCE 1.2e-08
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDVOL   1
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
--------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 3
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none

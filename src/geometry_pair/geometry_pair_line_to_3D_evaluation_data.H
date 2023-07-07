@@ -63,15 +63,15 @@ namespace GEOMETRYPAIR
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; };
+    inline CORE::DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; };
 
     /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline DRT::UTILS::IntegrationPoints1D GetGaussPoints() const
+    inline CORE::DRT::UTILS::IntegrationPoints1D GetGaussPoints() const
     {
-      return DRT::UTILS::IntegrationPoints1D(gauss_rule_);
+      return CORE::DRT::UTILS::IntegrationPoints1D(gauss_rule_);
     };
 
     /**
@@ -113,7 +113,7 @@ namespace GEOMETRYPAIR
     INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy_;
 
     //! Gauss rule for Gauss point projection method.
-    DRT::UTILS::GaussRule1D gauss_rule_;
+    CORE::DRT::UTILS::GaussRule1D gauss_rule_;
 
     //! Number of integration points in the circumferencial direction of the line cross section.
     unsigned int integration_points_circumference_;

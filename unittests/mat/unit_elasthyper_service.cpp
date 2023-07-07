@@ -6,7 +6,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "mat_elasthyper_service.H"
 #include "mat_service.H"
@@ -17,7 +17,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

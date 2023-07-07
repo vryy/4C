@@ -13,8 +13,9 @@
 
 #include <any>
 #include "utils_exceptions.H"
-#include "lib_demangle.H"
+#include "utils_demangle.H"
 #include <unordered_map>
+#include <vector>
 
 // forward declaration
 namespace CONTACT
@@ -26,7 +27,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
-namespace GEN
+namespace CORE::GEN
 {
   /** \brief Data container of any content
    *
@@ -79,7 +80,7 @@ namespace GEN
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
               "respective task.",
-              DRT::UTILS::TryDemangle(data_.type().name()).c_str());
+              CORE::UTILS::TryDemangle(data_.type().name()).c_str());
         }
         else
           data_ = data;
@@ -380,7 +381,7 @@ namespace GEN
     /// container for any data
     std::vector<AnyData> any_data_;
   };
-}  // namespace GEN
+}  // namespace CORE::GEN
 
 
 #endif

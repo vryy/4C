@@ -21,7 +21,7 @@
 #include "lib_resulttest.H"
 #include "io_control.H"
 #include "io.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|

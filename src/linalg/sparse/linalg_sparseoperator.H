@@ -183,10 +183,14 @@ namespace LINALG
     virtual bool Filled() const = 0;
 
     /// Call FillComplete on a matrix
-    virtual void Complete() = 0;
+    /*!
+     * @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
+     */
+    virtual void Complete(bool enforce_complete = false) = 0;
 
     /// Call FillComplete on a matrix (for rectangular and square matrices)
-    virtual void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap) = 0;
+    virtual void Complete(
+        const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete = false) = 0;
 
     /// Undo a previous Complete() call
     virtual void UnComplete() = 0;

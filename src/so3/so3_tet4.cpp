@@ -13,7 +13,7 @@
 #include "so3_line.H"
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "utils_exceptions.H"
 #include "mat_so3_material.H"
 #include "lib_linedefinition.H"
@@ -78,7 +78,7 @@ void DRT::ELEMENTS::So_tet4Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_tet4Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 //------------------------------------------------------------------------
@@ -326,7 +326,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
-  DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   LINALG::Matrix<1, NUMDIM_SOTET4> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

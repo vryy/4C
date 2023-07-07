@@ -12,8 +12,8 @@
 #define SCATRA_ELE_CALC_LSREINIT_H
 
 #include "scatra_ele_calc.H"
-#include "geometry_integrationcell.H"
-#include "geometry_geo_utils.H"
+#include "discretization_geometry_integrationcell.H"
+#include "discretization_geometry_geo_utils.H"
 
 namespace DRT
 {
@@ -74,7 +74,7 @@ namespace DRT
       //! calculate matrix and rhs. Here the whole thing is hidden. Ellipitic reinit.
       void SysmatElliptic(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
           Epetra_SerialDenseVector& erhs,                  //!< element rhs to calculate
-          const GEO::BoundaryIntCellPtrs& bcell            //!< interface for penalty term
+          const CORE::GEO::BoundaryIntCellPtrs& bcell      //!< interface for penalty term
       );
 
       /** \brief Evaluate the system matrix and right-hand-side for the ellipitic
@@ -88,7 +88,8 @@ namespace DRT
        *
        *  \author hiermeier \date 12/16 */
       void EllipticNewtonSystem(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-          const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv, const GEO::BoundaryIntCellPtrs& bcell);
+          const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
+          const CORE::GEO::BoundaryIntCellPtrs& bcell);
 
      private:
       /*========================================================================*/
@@ -173,14 +174,14 @@ namespace DRT
       //! calculation of interface penalty term for elliptic reinitialization
       void EvaluateInterfaceTerm(Epetra_SerialDenseMatrix* emat,  //!< element matrix to calculate
           Epetra_SerialDenseVector* erhs,                         //!< element vector to calculate
-          const GEO::BoundaryIntCellPtrs& boucell                 //!< interface for penalty term
+          const CORE::GEO::BoundaryIntCellPtrs& boucell           //!< interface for penalty term
       );
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
       template <DRT::Element::DiscretizationType celldistype>
       void CalcPenaltyTerm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
           Epetra_SerialDenseVector& erhs,                   //!< element vector to calculate
-          const GEO::BoundaryIntCell& cell                  //!< interface cell
+          const CORE::GEO::BoundaryIntCell& cell            //!< interface cell
       );
 
 
@@ -193,7 +194,7 @@ namespace DRT
        *
        *  \author hiermeier \date 11/16 */
       void CalcPenaltyTerm_0D(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-          const GEO::BoundaryIntCell& cell);
+          const CORE::GEO::BoundaryIntCell& cell);
 
       /*========================================================================*/
       //! @name additional service routines
@@ -458,12 +459,12 @@ namespace SCATRA
   template <>
   struct CellTypeToOptGaussRule<DRT::Element::quad4>
   {
-    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::quad_36point;
+    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_36point;
   };
   template <>
   struct CellTypeToOptGaussRule<DRT::Element::tri3>
   {
-    static const DRT::UTILS::GaussRule2D rule = DRT::UTILS::GaussRule2D::tri_37point;
+    static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
   };
 }  // namespace SCATRA
 

@@ -21,7 +21,7 @@
  * constructur for Combined Intersection class (Levelset and Mesh intersection in one class)
  *-----------------------------------------------------------------------------------------*/
 
-GEO::CUT::CombIntersection::CombIntersection(int myrank)
+CORE::GEO::CUT::CombIntersection::CombIntersection(int myrank)
     : ParentIntersection(myrank), LevelSetIntersection(myrank, false), MeshIntersection(1, myrank)
 {
   // call also the ParentIntersection-constructor first, otherwise according to the public virtual
@@ -30,7 +30,7 @@ GEO::CUT::CombIntersection::CombIntersection(int myrank)
 }
 
 
-void GEO::CUT::CombIntersection::Cut(bool screenoutput)
+void CORE::GEO::CUT::CombIntersection::Cut(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_Intersection");
 
@@ -84,7 +84,7 @@ void GEO::CUT::CombIntersection::Cut(bool screenoutput)
 }
 
 
-void GEO::CUT::CombIntersection::FindNodePositions()
+void CORE::GEO::CUT::CombIntersection::FindNodePositions()
 {
   // TODO: this function and the overall inside-outside position strategy still has to be adapted
   // for more complex cases
@@ -101,11 +101,11 @@ void GEO::CUT::CombIntersection::FindNodePositions()
 }
 
 
-void GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int>& nids,
-    const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype,
+void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int>& nids,
+    const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
     const double* lsv, const bool lsv_only_plus_domain)
 {
-  GEO::CUT::ElementHandle* e = NULL;
+  CORE::GEO::CUT::ElementHandle* e = NULL;
 
   // consider level-set values to decide whether the element has to be added or not
   if (lsv != NULL)
@@ -126,13 +126,13 @@ void GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int>& nid
   MeshIntersection::AddElement(eid, nids, xyz, distype, lsv);
 }
 
-void GEO::CUT::CombIntersection::AddLevelSetSide(int levelset_side)
+void CORE::GEO::CUT::CombIntersection::AddLevelSetSide(int levelset_side)
 {
   LevelSetIntersection::AddCutSide(levelset_side);
 }
 
-void GEO::CUT::CombIntersection::AddMeshCuttingSide(int sid, const std::vector<int>& nids,
-    const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype, int mi)
+void CORE::GEO::CUT::CombIntersection::AddMeshCuttingSide(int sid, const std::vector<int>& nids,
+    const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype, int mi)
 {
   MeshIntersection::AddCutSide(sid, nids, xyz, distype, mi);
 }

@@ -117,7 +117,7 @@ namespace FBI
      * \brief Returns the Gauss rule.
      * \returns gauss rule.
      */
-    inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
+    inline CORE::DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
      * \brief Returns a pointer to the vtk output parameters.
@@ -154,7 +154,7 @@ namespace FBI
     double penalty_parameter_;
 
     /// Gauss rule to be used.
-    DRT::UTILS::GaussRule1D gauss_rule_;
+    CORE::DRT::UTILS::GaussRule1D gauss_rule_;
 
     /**
      * \brief Flag to keep track if the RHS contribution for the weak Dirichlet enforcement of the

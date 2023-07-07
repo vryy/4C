@@ -25,7 +25,7 @@ STDOUTEVRY                      0
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -46,17 +46,17 @@ INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
--------------------------------------------------------SSTI CONTROL
+------------------------------------------------------SSTI CONTROL
 NUMSTEP                         1
 TIMESTEP                        1.0
 MAXTIME                         1.0
 COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
---------------------------------------------SSTI CONTROL/MONOLITHIC
+-------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
 ABSTOLRES                       0
---------------------------------------------SSTI CONTROL/THERMO
+-----------------------------------------------SSTI CONTROL/THERMO
 LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 INITTHERMOFUNCT                 3
@@ -88,9 +88,9 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0+x
 ------------------------------------------------------------FUNCT4
 SYMBOLIC_FUNCTION_OF_TIME 1.0e-2*t+2
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 48 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
 SCATRA DIS scatra NODE 7 QUANTITY phi1 VALUE  1.02913618231122239e+01 TOLERANCE 1.0e-07
 SCATRA DIS scatra NODE 7 QUANTITY phi2 VALUE  4.04932124913650959e+00 TOLERANCE 4.0e-08
 SCATRA DIS scatra NODE 30 QUANTITY phi1 VALUE  1.08409886146578653e+01 TOLERANCE 1.1e-07
@@ -103,7 +103,7 @@ SCATRA DIS thermo NODE 7 QUANTITY phi VALUE  1.69999999999999996e+00 TOLERANCE 1
 SCATRA DIS thermo NODE 30 QUANTITY phi VALUE  2.10000000000000009e+00 TOLERANCE 2.1e-08
 SCATRA DIS thermo NODE 75 QUANTITY phi VALUE  8.99999999999999911e-01 TOLERANCE 9.0e-09
 SCATRA DIS thermo NODE 93 QUANTITY phi VALUE  1.30000000000000027e+00 TOLERANCE 1.3e-08
-SSTI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 3.00000000000000000e+00 TOLERANCE 1.0e-16
+SSTI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE  3.00000000000000000e+00 TOLERANCE 1.0e-16
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

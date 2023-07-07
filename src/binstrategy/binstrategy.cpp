@@ -22,8 +22,8 @@
 #include "lib_dofset_independent.H"
 #include "comm_utils.H"
 
-#include "geometry_searchtree_service.H"
-#include "geometry_intersection_math.H"
+#include "discretization_geometry_searchtree_service.H"
+#include "discretization_geometry_intersection_math.H"
 
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_densematrix_communication.H"
@@ -1723,8 +1723,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
 
   for (int dim = 0; dim < 3; ++dim)
   {
-    domain_bounding_box_corner_positions_(dim, 0) = currpos[dim] - GEO::TOL7;
-    domain_bounding_box_corner_positions_(dim, 1) = currpos[dim] + GEO::TOL7;
+    domain_bounding_box_corner_positions_(dim, 0) = currpos[dim] - CORE::GEO::TOL7;
+    domain_bounding_box_corner_positions_(dim, 1) = currpos[dim] + CORE::GEO::TOL7;
   }
 
   // build XAABB_ from XAABB of all discrets and determine maximal element extension
@@ -1746,7 +1746,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
   }
 
   // enlarge lower bound for bin size a little bit for safety reasons
-  if (set_bin_size_lower_bound_) bin_size_lower_bound_ += GEO::TOL7;
+  if (set_bin_size_lower_bound_) bin_size_lower_bound_ += CORE::GEO::TOL7;
 }
 
 double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
@@ -1774,8 +1774,8 @@ double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthO
       BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], ele->Nodes()[0], disnp[ndis], currpos);
       for (int dim = 0; dim < 3; ++dim)
       {
-        eleXAABB(dim, 0) = currpos[dim] - GEO::TOL7;
-        eleXAABB(dim, 1) = currpos[dim] + GEO::TOL7;
+        eleXAABB(dim, 0) = currpos[dim] - CORE::GEO::TOL7;
+        eleXAABB(dim, 1) = currpos[dim] + CORE::GEO::TOL7;
       }
 
       // rigid sphere elements needs to consider its radius
@@ -1784,8 +1784,10 @@ double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthO
         double radius = dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(ele)->Radius();
         for (int dim = 0; dim < 3; ++dim)
         {
-          eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), eleXAABB(dim, 0) - radius - GEO::TOL7);
-          eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), eleXAABB(dim, 0) + radius + GEO::TOL7);
+          eleXAABB(dim, 0) =
+              std::min(eleXAABB(dim, 0), eleXAABB(dim, 0) - radius - CORE::GEO::TOL7);
+          eleXAABB(dim, 1) =
+              std::max(eleXAABB(dim, 1), eleXAABB(dim, 0) + radius + CORE::GEO::TOL7);
         }
       }
       else
@@ -1799,8 +1801,8 @@ double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthO
           //  merge eleXAABB of all nodes of this element
           for (int dim = 0; dim < 3; ++dim)
           {
-            eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - GEO::TOL7);
-            eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + GEO::TOL7);
+            eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - CORE::GEO::TOL7);
+            eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + CORE::GEO::TOL7);
           }
         }
       }
@@ -1883,8 +1885,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
   BINSTRATEGY::UTILS::GetCurrentNodePos(discret, discret->lRowNode(0), disnp, currpos);
   for (int dim = 0; dim < 3; ++dim)
   {
-    XAABB(dim, 0) = currpos[dim] - GEO::TOL7;
-    XAABB(dim, 1) = currpos[dim] + GEO::TOL7;
+    XAABB(dim, 0) = currpos[dim] - CORE::GEO::TOL7;
+    XAABB(dim, 1) = currpos[dim] + CORE::GEO::TOL7;
   }
 
   // loop over row elements of each proc
@@ -1899,8 +1901,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
     BINSTRATEGY::UTILS::GetCurrentNodePos(discret, ele->Nodes()[0], disnp, currpos);
     for (int dim = 0; dim < 3; ++dim)
     {
-      eleXAABB(dim, 0) = currpos[dim] - GEO::TOL7;
-      eleXAABB(dim, 1) = currpos[dim] + GEO::TOL7;
+      eleXAABB(dim, 0) = currpos[dim] - CORE::GEO::TOL7;
+      eleXAABB(dim, 1) = currpos[dim] + CORE::GEO::TOL7;
     }
 
     // loop over remaining nodes of current rowele
@@ -1912,8 +1914,8 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
       //  merge eleXAABB of all nodes of this element
       for (int dim = 0; dim < 3; dim++)
       {
-        eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - GEO::TOL7);
-        eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + GEO::TOL7);
+        eleXAABB(dim, 0) = std::min(eleXAABB(dim, 0), currpos[dim] - CORE::GEO::TOL7);
+        eleXAABB(dim, 1) = std::max(eleXAABB(dim, 1), currpos[dim] + CORE::GEO::TOL7);
       }
     }
 

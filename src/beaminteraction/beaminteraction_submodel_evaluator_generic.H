@@ -30,13 +30,13 @@ namespace DRT
 {
   class Discretization;
 }
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 namespace NOX
 {
   namespace Solver
@@ -85,14 +85,14 @@ namespace BEAMINTERACTION
       virtual ~Generic(){};
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<DRT::Discretization> const& ia_discret,
-          Teuchos::RCP<DRT::Discretization> const& bindis,
+      virtual void Init(Teuchos::RCP<::DRT::Discretization> const& ia_discret,
+          Teuchos::RCP<::DRT::Discretization> const& bindis,
           Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
-          Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+          Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
           Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
@@ -197,13 +197,13 @@ namespace BEAMINTERACTION
       //! @{
       //! Returns the (structural) discretization
       DRT::Discretization& Discret();
-      Teuchos::RCP<DRT::Discretization>& DiscretPtr();
-      Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
+      Teuchos::RCP<::DRT::Discretization>& DiscretPtr();
+      Teuchos::RCP<const ::DRT::Discretization> DiscretPtr() const;
       DRT::Discretization const& Discret() const;
 
       DRT::Discretization& BinDiscret();
-      Teuchos::RCP<DRT::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const DRT::Discretization> BinDiscretPtr() const;
+      Teuchos::RCP<::DRT::Discretization>& BinDiscretPtr();
+      Teuchos::RCP<const ::DRT::Discretization> BinDiscretPtr() const;
       DRT::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
@@ -228,9 +228,9 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
       BINSTRATEGY::BinningStrategy const& BinStrategy() const;
 
-      GEO::MESHFREE::BoundingBox& PeriodicBoundingBox();
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox>& PeriodicBoundingBoxPtr();
-      GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
+      CORE::GEO::MESHFREE::BoundingBox& PeriodicBoundingBox();
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>& PeriodicBoundingBoxPtr();
+      CORE::GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
 
       BEAMINTERACTION::UTILS::MapExtractor& EleTypeMapExtractor();
       Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& EleTypeMapExtractorPtr();
@@ -246,10 +246,10 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<::DRT::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<DRT::Discretization> bindis_ptr_;
+      Teuchos::RCP<::DRT::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
@@ -267,7 +267,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! periodic bounding box
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
 
       /// map extractor for split of different element types
       Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> eletypeextractor_;

@@ -45,7 +45,7 @@
 #include "fluid_timint_stat_hdg.H"
 #include "fluid_xfluid.H"
 #include "fluid_xfluid_fluid.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>

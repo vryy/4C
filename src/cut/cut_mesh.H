@@ -26,7 +26,7 @@ mesh
 #endif
 
 
-namespace GEO
+namespace CORE::GEO
 {
   // class BVTree;
   class SearchTree;
@@ -89,11 +89,11 @@ namespace GEO
 
       /// creates a new element, dependent on distype
       Element* CreateElement(
-          int eid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype);
+          int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
 
       /// creates a new side, dependent on distype
       Side* CreateSide(
-          int sid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype);
+          int sid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype);
 
       /*========================================================================*/
       //! @name Create-routines for elements
@@ -187,7 +187,7 @@ namespace GEO
 
       /// creates a new ??? boundary cell
       ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
-          const std::vector<Point*>& points, const DRT::UTILS::GaussIntegration& gaussRule,
+          const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
           const LINALG::Matrix<3, 1>& normal);
 
 
@@ -343,7 +343,7 @@ namespace GEO
       \brief Find the difference between the volume of background element and the sum of volume of
       all integration cells. There should be no difference between these two
        */
-      void TestElementVolume(DRT::Element::DiscretizationType shape, Element& e, bool fatal,
+      void TestElementVolume(::DRT::Element::DiscretizationType shape, Element& e, bool fatal,
           INPAR::CUT::VCellGaussPts VCellGP);
 
 
@@ -385,7 +385,7 @@ namespace GEO
       void DumpGmshVolumeCells(std::string name);
 
       /// DebugDump to call before runtime error!!!
-      void DebugDump(GEO::CUT::Element* ele, std::string file = "", int line = -1);
+      void DebugDump(CORE::GEO::CUT::Element* ele, std::string file = "", int line = -1);
 
 
       /*========================================================================*/
@@ -442,7 +442,7 @@ namespace GEO
       /*! \brief Create a new element 1D/2D/3D element with given nodes.
        *
        *  All details of the element are in cell topology data. */
-      GEO::CUT::Element* GetElement(
+      CORE::GEO::CUT::Element* GetElement(
           int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
       /*! \brief Create a new element with desired element dimension
@@ -521,7 +521,7 @@ namespace GEO
       const std::map<plain_int_set, Teuchos::RCP<Side>>& Sides() const { return sides_; }
 
       /// Returns of search tree all sides of the cutmesh
-      const Teuchos::RCP<GEO::SearchTree>& SelfCutTree() const { return selfcuttree_; }
+      const Teuchos::RCP<CORE::GEO::SearchTree>& SelfCutTree() const { return selfcuttree_; }
 
       /// Returns the bounding volumes of all sides of the cutmesh
       const std::map<int, LINALG::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
@@ -575,7 +575,7 @@ namespace GEO
           const std::vector<Edge*>& edges, const CellTopologyData& side_topology);
 
       /// Create new line between the two given cut points that are in given two cut sides
-      GEO::CUT::Line* NewLineInternal(
+      CORE::GEO::CUT::Line* NewLineInternal(
           Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);
 
 
@@ -601,13 +601,13 @@ namespace GEO
       bool cutmesh_;
 
       /// the spatial partitioning octree for a fast collision detection in the self cut
-      Teuchos::RCP<GEO::SearchTree> selfcuttree_;
+      Teuchos::RCP<CORE::GEO::SearchTree> selfcuttree_;
 
       /// the bounding volumes for a fast collision detection in the self cut
       std::map<int, LINALG::Matrix<3, 2>> selfcutbvs_;
 
       /// the spatial partitioning octree for a fast collision detection
-      Teuchos::RCP<GEO::SearchTree> searchtree_;
+      Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;
 
       /// the bounding volumes for a fast collision detection
       std::map<int, LINALG::Matrix<3, 2>> boundingvolumes_;
@@ -682,6 +682,6 @@ namespace GEO
 
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

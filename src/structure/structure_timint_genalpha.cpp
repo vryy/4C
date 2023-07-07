@@ -705,35 +705,24 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-/* incremental iteration update of state */
 void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
-  // auxiliary global vectors
-  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*DofRowMapView(), true);
-
-  // further auxiliary variables
-  const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
+  // step size \f$\Delta t_{n}\f$
+  const double dt = (*dt_)[0];
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
-  aux->Update((beta_ - gamma_) / beta_, (*vel_)[0], (2.0 * beta_ - gamma_) * dt / (2.0 * beta_),
+  veln_->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
+  veln_->Update((beta_ - gamma_) / beta_, (*vel_)[0], (2.0 * beta_ - gamma_) * dt / (2.0 * beta_),
       (*acc_)[0], gamma_ / (beta_ * dt));
-  // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
   // new end-point accelerations
-  aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
-  aux->Update(-1.0 / (beta_ * dt), (*vel_)[0], (2.0 * beta_ - 1.0) / (2.0 * beta_), (*acc_)[0],
+  accn_->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
+  accn_->Update(-1.0 / (beta_ * dt), (*vel_)[0], (2.0 * beta_ - 1.0) / (2.0 * beta_), (*acc_)[0],
       1.0 / (beta_ * dt * dt));
-  // put only to free/non-DBC DOFs
-  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), accn_);
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/

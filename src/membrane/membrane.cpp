@@ -38,36 +38,36 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
       cur_thickness_(0),
       data_(),
       planetype_(plane_stress),
-      intpoints_(DRT::UTILS::GaussRule2D::tri_3point)
+      intpoints_(CORE::DRT::UTILS::GaussRule2D::tri_3point)
 {
   switch (distype)
   {
     case tri3:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::tri_3point;
+      CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       // get gauss integration points
-      intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+      intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case tri6:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::tri_6point;
+      CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       // get gauss integration points
-      intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+      intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case quad4:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::quad_4point;
+      CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       // get gauss integration points
-      intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+      intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     case quad9:
     {
-      DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::GaussRule2D::quad_9point;
+      CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       // get gauss integration points
-      intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+      intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
     default:
@@ -123,7 +123,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Membrane<distype>::Shape() const
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Membrane<distype>::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(distype);
+  return CORE::DRT::UTILS::getNumberOfElementLines(distype);
 }
 
 /*----------------------------------------------------------------------*

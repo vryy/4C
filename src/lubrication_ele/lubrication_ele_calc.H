@@ -67,7 +67,7 @@ namespace DRT
     */
 
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class LubricationEleCalc : public LubricationEleInterface
     {
      protected:
@@ -124,13 +124,13 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
       static const int nsd_ = probdim;
 
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
-      static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
      protected:
       /*========================================================================*/
@@ -180,7 +180,7 @@ namespace DRT
 
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad  //!< id of current Gauss point
       );
 

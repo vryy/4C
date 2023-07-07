@@ -32,7 +32,7 @@
 #include "utils_exceptions.H"
 #endif
 
-namespace GEN
+namespace CORE::GEN
 {
   /// binary function
   template <typename T>
@@ -1044,10 +1044,10 @@ namespace GEN
     bool _isfilled;
     double _max_value;
   };
-}  // namespace GEN
+}  // namespace CORE::GEN
 
 template <typename Key, typename T>
-size_t GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
+size_t CORE::GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
 
 
 

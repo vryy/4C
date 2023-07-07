@@ -73,18 +73,18 @@ void CONTACT::CoIntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele
     MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
     LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
     LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
-    GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
+    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
 {
   // Here the consistent element normal is use to allow for a continous transition between FSI and
   // Contact
   double n[3];
   sele.ComputeUnitNormalAtXi(sxi, n);
-  std::vector<GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+  std::vector<CORE::GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::CoElement&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
   GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
@@ -97,12 +97,12 @@ template <int dim>
 void CONTACT::CoIntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
-    const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
-    const LINALG::SerialDenseMatrix& mderiv,
-    const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
-    const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-    std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
+    const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
+    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
+    const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
+    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
   if (gap > 10 * std::max(sele.MaxEdgeSize(), mele.MaxEdgeSize())) return;
@@ -172,7 +172,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
 
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
-    GEN::pairedvector<int, double> lin_fluid_traction(0);
+    CORE::GEN::pairedvector<int, double> lin_fluid_traction(0);
     IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
@@ -199,17 +199,17 @@ void CONTACT::CoIntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
   }
 
   double cauchy_nn_weighted_average = 0.;
-  GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv(
+  CORE::GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
 
   LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
-  GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
+  CORE::GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
       sele.MoData().ParentDof().size() + dnmap_unit[0].size() + dsxi[0].size(), -1,
       LINALG::SerialDenseVector(sele.MoData().ParentDof().size(), true));
 
   LINALG::SerialDenseVector normal_adjoint_test_master(mele.MoData().ParentDof().size());
-  GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_master(
+  CORE::GEN::pairedvector<int, LINALG::SerialDenseVector> deriv_normal_adjoint_test_master(
       mele.MoData().ParentDof().size() + dnmap_unit[0].size() + dmxi[0].size(), -1,
       LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
 
@@ -221,7 +221,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
       deriv_normal_adjoint_test_master);
 
   double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
-  GEN::pairedvector<int, double> d_snn_av_pen_gap(
+  CORE::GEN::pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv.size() + dgapgp.size());
   for (const auto& p : cauchy_nn_weighted_average_deriv) d_snn_av_pen_gap[p.first] += p.second;
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
@@ -297,16 +297,16 @@ template <DRT::Element::DiscretizationType parentdistype, int dim>
 void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtrafo)
 {
-  DRT::UTILS::CollectedGaussPoints intpoints =
-      DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+  CORE::DRT::UTILS::CollectedGaussPoints intpoints =
+      CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...
   intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   LINALG::SerialDenseMatrix pqxg(1, dim);
   derivtrafo.Clear();
 
-  DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
-      sele.Shape(), sele.FaceParentNumber());
+  CORE::DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
+      sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
 
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);

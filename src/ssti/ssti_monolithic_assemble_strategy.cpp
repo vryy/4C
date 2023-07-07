@@ -22,6 +22,7 @@
 
 #include "linalg_matrixtransform.H"
 #include "linalg_utils_sparse_algebra_create.H"
+#include "coupling_adapter.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -214,7 +215,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map, *master_dof_map, 1.0,
       nullptr, nullptr, systemmatrix_structure, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -239,7 +240,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureMeshtying(
     LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
         *cond_slave_dof_map, 1.0, &(*converter), &(*converter), systemmatrix_structure, true, true);
 
-    for (const auto& meshtying2 : SSTIStructureMeshtying()->MeshtyingHandlers())
+    for (const auto& meshtying2 : SSTIStructureMeshtying()->MeshTyingHandlers())
     {
       if (meshtying2 != meshtying)
       {
@@ -422,7 +423,7 @@ void SSTI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.RangeMap(),
       *master_dof_map, 1.0, nullptr, nullptr, systemmatrix_x_structure, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -511,7 +512,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
 
       // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures
       // into system matrix
-      ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+      CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
       LINALG::MatrixLogicalSplitAndTransform()(scatrathermointerface_subblock,
           scatrathermointerface_subblock.RangeMap(),
@@ -559,7 +560,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoInterface(
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures into
   // system matrix
-  ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+  CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
   LINALG::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
       scatrathermointerface_sparse->RangeMap(),
@@ -584,7 +585,7 @@ void SSTI::AssembleStrategySparse::AssembleScatraThermoInterface(
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures into
   // system matrix
-  ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+  CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
   LINALG::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
       scatrathermointerface_sparse->RangeMap(),
@@ -684,7 +685,7 @@ void SSTI::AssembleStrategyBase::AssembleStructureXXXMeshtying(
   LINALG::MatrixLogicalSplitAndTransform()(structures_x_matrix, *master_dof_map,
       structures_x_matrix.DomainMap(), 1.0, nullptr, nullptr, systemmatrix_structure_x, true, true);
 
-  for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+  for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
   {
     auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     auto converter = meshtying->SlaveSideConverter();
@@ -785,7 +786,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
 
       // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
       // into system matrix
-      ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+      CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
       LINALG::SparseMatrix slaveflux(*AllMaps()->BlockMapThermo()->FullMap(), 27, false, true);
 
@@ -843,7 +844,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatraInterface(
 
   // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
   // into system matrix
-  ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+  CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
   LINALG::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
       *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
@@ -868,7 +869,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoScatraInterface(
 
   // assemble linearizations of master side scatra fluxes w.r.t. slave and master side elch
   // into system matrix
-  ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
+  CORE::ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
   LINALG::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
       *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
@@ -1219,7 +1220,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     auto rhs_structure_master = LINALG::CreateVector(*StructureField()->DofRowMap(), true);
 
-    for (const auto& meshtying : SSTIStructureMeshtying()->MeshtyingHandlers())
+    for (const auto& meshtying : SSTIStructureMeshtying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
       auto coupling_map_extractor = meshtying->SlaveMasterExtractor();

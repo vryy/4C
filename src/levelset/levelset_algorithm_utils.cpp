@@ -21,7 +21,7 @@
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 
 /*----------------------------------------------------------------------*
@@ -96,7 +96,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
         discret_->AddMultiVectorToParameterList(params, "gradphi", nb_grad_val_);
 
       // add interface integration cells
-      params.set<Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>>>(
+      params.set<Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>>>(
           "boundary cells", interface_eleq_);
     }
   }
@@ -109,7 +109,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::CaptureInterface(
-    std::map<int, GEO::BoundaryIntCells>& interface, const bool writetofile)
+    std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile)
 {
   double volminus = 0.0;
   double volplus = 0.0;
@@ -363,9 +363,9 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
             // in case of further distypes, move the following block to a templated function
             {
               // get number of element nodes
-              const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+              const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
               // get number of space dimensions
-              const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+              const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
               // get nodal values of velocity field from secondary dofset
               DRT::Element::LocationArray la(discret_->NumDofSets());
@@ -389,7 +389,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
               // use one-point Gauss rule to do calculations at the element center
               // used here to get center coordinates
-              DRT::UTILS::IntPointsAndWeights<nsd> centercoord(
+              CORE::DRT::UTILS::IntPointsAndWeights<nsd> centercoord(
                   SCATRA::DisTypeToStabGaussRule<distype>::rule);
               LINALG::Matrix<nsd, 1> xsi(true);
               const double* gpcoord = (centercoord.IP().qxg)[0];
@@ -397,7 +397,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
               // compute shape functions at element center
               LINALG::Matrix<nen, 1> funct(true);
-              DRT::UTILS::shape_function<distype>(xsi, funct);
+              CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
 
               // get velocity at integration point
               LINALG::Matrix<nsd, 1> velint(true);

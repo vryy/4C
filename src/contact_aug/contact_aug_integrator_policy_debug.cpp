@@ -86,13 +86,13 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
 
     const Deriv1stMap& d_wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
 
     for (auto& d_wgap_sl_var : d_wgap_sl)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[d_wgap_sl_var.first] -= d_wgap_sl_var.second;
     }
   }
@@ -112,17 +112,17 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
-    GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
 
     const Deriv2ndMap& dd_wgap_sl = cnode.AugData().GetDeriv2nd_WGapSl();
     for (auto& dd_wgap_sl_var : dd_wgap_sl)
     {
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[dd_wgap_sl_var.first];
 
       for (auto& dd_wgap_sl_var_lin : dd_wgap_sl_var.second)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[dd_wgap_sl_var_lin.first] -= dd_wgap_sl_var_lin.second;
       }
     }
@@ -324,10 +324,10 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
 
-    //    GEN::copy( cnode.AugData().GetDeriv1st_Kappa(), d_debug );
+    //    CORE::GEN::copy( cnode.AugData().GetDeriv1st_Kappa(), d_debug );
     for (auto& djac_var : djac)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[djac_var.first] += wgt * lmval(i, 0) * djac_var.second;
     }
   }
@@ -374,14 +374,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     if (d_debug.size() < probdim)
     {
       d_debug.resize(probdim);
-      GEN::reset(1, d_debug);
+      CORE::GEN::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& d_gpn_var : d_gpn[d])
       {
-        GEN::increaseCapacity(d_debug[d]);
+        CORE::GEN::increaseCapacity(d_debug[d]);
         d_debug[d][d_gpn_var.first] += lmval(i, 0) * d_gpn_var.second;
       }
     }
@@ -445,7 +445,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   // --- standard slave gap part --------------------------------------------
   for (auto& d_gapn_sl_var : d_gapn_sl)
   {
-    GEN::increaseCapacity(d_gapn_sl_complete);
+    CORE::GEN::increaseCapacity(d_gapn_sl_complete);
     d_gapn_sl_complete[d_gapn_sl_var.first] += d_gapn_sl_var.second;
   }
 
@@ -466,7 +466,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     for (auto& d_n_unit_j_var : d_n_unit[j])
     {
-      GEN::increaseCapacity(d_gapn_sl_complete);
+      CORE::GEN::increaseCapacity(d_gapn_sl_complete);
       d_gapn_sl_complete[d_n_unit_j_var.first] += d_n_unit_j_var.second * xs_int(j, 0);
     }
   }
@@ -493,13 +493,13 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
     {
-      GEN::reset(1, d_debug);
+      CORE::GEN::reset(1, d_debug);
     }
 
     // --- slave gap part -----------------------------------------------------
     for (auto& d_gapn_sl_var : d_gapn_sl_complete)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[d_gapn_sl_var.first] += tmp * d_gapn_sl_var.second;
     }
 
@@ -508,7 +508,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
     for (auto& d_jac_var : d_jac)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[d_jac_var.first] += tmp_sl * d_jac_var.second;
     }
   }
@@ -536,7 +536,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      GEN::reset(1, dd_debug);
+      CORE::GEN::reset(1, dd_debug);
     }
 
     // --- linearized normal multiplied by the varied slave position ----------
@@ -549,12 +549,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
       // smooth normal
       for (unsigned d = 0; d < probdim; ++d)
       {
-        GEN::increaseCapacity(dd_debug);
+        CORE::GEN::increaseCapacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[sdof[d]];
 
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          GEN::increaseCapacity(dd_debug_var);
+          CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[d_n_unit_lin.first] += tmp * sval(k, 0) * d_n_unit_lin.second;
         }
       }
@@ -563,14 +563,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     // --- varied slave gap multiplied by linearized jacobian  ----------------
     for (auto& d_gapn_sl_var : d_gapn_sl_complete)
     {
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[d_gapn_sl_var.first];
 
       const double val = wgt * lmval(i, 0) * d_gapn_sl_var.second;
 
       for (auto& d_jac_lin : d_jac)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[d_jac_lin.first] += d_jac_lin.second * val;
       }
     }
@@ -581,12 +581,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
       const double val = wgt * lmval(i, 0) * d_jac_var.second;
 
       // linearized slave part of the normal gap
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[d_jac_var.first];
 
       for (auto& d_gapn_sl_lin : d_gapn_sl_complete)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[d_gapn_sl_lin.first] += d_gapn_sl_lin.second * val;
       }
     }
@@ -597,14 +597,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     {
       const int gid_var = dd_jac_var.first;
 
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[gid_var];
 
       for (auto& dd_jac_var_lin : dd_jac_var.second)
       {
         const int gid_lin = dd_jac_var_lin.first;
 
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[gid_lin] += tmp_sl * dd_jac_var_lin.second;
       }
     }
@@ -631,12 +631,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
       for (auto& dd_sun_var : dd_n_unit[j])
       {
-        GEN::increaseCapacity(dd_debug);
+        CORE::GEN::increaseCapacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[dd_sun_var.first];
 
         for (auto& dd_sun_var_lin : dd_sun_var.second)
         {
-          GEN::increaseCapacity(dd_debug_var);
+          CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[dd_sun_var_lin.first] += val * dd_sun_var_lin.second;
         }
       }
@@ -647,7 +647,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     {
       for (auto& d_sun_j_var : d_n_unit[j])
       {
-        GEN::increaseCapacity(dd_debug);
+        CORE::GEN::increaseCapacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[d_sun_j_var.first];
 
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
@@ -655,7 +655,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
           const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
           const int* sdof = snode.Dofs();
 
-          GEN::increaseCapacity(dd_debug_var);
+          CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[sdof[j]] += sval(k, 0) * d_sun_j_var.second * tmp;
         }
       }
@@ -677,13 +677,13 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
 
     const Deriv1stMap& d_wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
 
     for (auto& d_wgap_sl_var : d_wgap_sl)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[d_wgap_sl_var.first] -= d_wgap_sl_var.second;
     }
   }
@@ -703,17 +703,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
-    GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
 
     const Deriv2ndMap& dd_wgap_sl = cnode.AugData().GetDeriv2nd_WGapSl();
     for (auto& dd_wgap_sl_var : dd_wgap_sl)
     {
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[dd_wgap_sl_var.first];
 
       for (auto& dd_wgap_sl_var_lin : dd_wgap_sl_var.second)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[dd_wgap_sl_var_lin.first] -= dd_wgap_sl_var_lin.second;
       }
     }
@@ -764,14 +764,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     if (d_debug.size() < my::MASTERDIM)
     {
       d_debug.resize(my::MASTERDIM);
-      GEN::reset(1, d_debug);
+      CORE::GEN::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < my::MASTERDIM; ++d)
     {
       for (auto& dmxigp_var : dmxigp[d])
       {
-        GEN::increaseCapacity(d_debug[d]);
+        CORE::GEN::increaseCapacity(d_debug[d]);
         d_debug[d][dmxigp_var.first] += lmval(i, 0) * dmxigp_var.second;
       }
     }
@@ -796,19 +796,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     if (dd_debug.size() < my::MASTERDIM)
     {
       dd_debug.resize(my::MASTERDIM);
-      GEN::reset(1, dd_debug);
+      CORE::GEN::reset(1, dd_debug);
     }
 
     for (unsigned d = 0; d < my::MASTERDIM; ++d)
     {
       for (auto& ddmxigp_var : ddmxigp[d])
       {
-        GEN::increaseCapacity(dd_debug[d]);
+        CORE::GEN::increaseCapacity(dd_debug[d]);
         Deriv1stMap& dd_debug_var = dd_debug[d][ddmxigp_var.first];
 
         for (auto& ddmxigp_var_lin : ddmxigp_var.second)
         {
-          GEN::increaseCapacity(dd_debug_var);
+          CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[ddmxigp_var_lin.first] += ddmxigp_var_lin.second * lmval(i, 0);
         }
       }
@@ -830,7 +830,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
-    GEN::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
   }
 }
 
@@ -848,7 +848,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
-    GEN::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
+    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
   }
 }
 
@@ -869,12 +869,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
     {
-      GEN::reset(1, d_debug);
+      CORE::GEN::reset(1, d_debug);
     }
 
     for (auto& djac_var : djac)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[djac_var.first] += lmval(i, 0) * djac_var.second;
     }
   }
@@ -897,17 +897,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      GEN::reset(1, dd_debug);
+      CORE::GEN::reset(1, dd_debug);
     }
 
     for (auto& ddjac_var : ddjac)
     {
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[ddjac_var.first];
 
       for (auto& ddjac_var_lin : ddjac_var.second)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[ddjac_var_lin.first] += ddjac_var_lin.second * lmval(i, 0);
       }
     }
@@ -950,11 +950,11 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     CoNode& cnode = dynamic_cast<CoNode&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    if (d_debug.capacity() == 0) GEN::reset(1, d_debug);
+    if (d_debug.capacity() == 0) CORE::GEN::reset(1, d_debug);
 
     for (auto& deriv1st_jac_var : deriv1st_jac)
     {
-      GEN::increaseCapacity(d_debug);
+      CORE::GEN::increaseCapacity(d_debug);
       d_debug[deriv1st_jac_var.first] += lmval(i, 0) * deriv1st_jac_var.second;
     }
   }
@@ -996,16 +996,16 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      GEN::reset(1, dd_debug);
+      CORE::GEN::reset(1, dd_debug);
     }
 
     for (auto& deriv2nd_jac_var : deriv2nd_jac)
     {
-      GEN::increaseCapacity(dd_debug);
+      CORE::GEN::increaseCapacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[deriv2nd_jac_var.first];
       for (auto& deriv2nd_jac_var_lin : deriv2nd_jac_var.second)
       {
-        GEN::increaseCapacity(dd_debug_var);
+        CORE::GEN::increaseCapacity(dd_debug_var);
         dd_debug_var[deriv2nd_jac_var_lin.first] += lmval(i, 0) * deriv2nd_jac_var_lin.second;
       }
     }
@@ -1042,14 +1042,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     if (d_debug.size() < 3)
     {
       d_debug.resize(probdim);
-      GEN::reset(1, d_debug);
+      CORE::GEN::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& d_nun_var : d_non_unit_normal[d])
       {
-        GEN::increaseCapacity(d_debug[d]);
+        CORE::GEN::increaseCapacity(d_debug[d]);
         d_debug[d][d_nun_var.first] += lmval(i, 0) * d_nun_var.second;
       }
     }
@@ -1081,19 +1081,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     if (dd_debug.size() < 3)
     {
       dd_debug.resize(probdim);
-      GEN::reset(1, dd_debug);
+      CORE::GEN::reset(1, dd_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& dd_nun_var : dd_non_unit_normal[d])
       {
-        GEN::increaseCapacity(dd_debug[d]);
+        CORE::GEN::increaseCapacity(dd_debug[d]);
         Deriv1stMap& dd_debug_var = dd_debug[d][dd_nun_var.first];
 
         for (auto& dd_nun_var_lin : dd_nun_var.second)
         {
-          GEN::increaseCapacity(dd_debug_var);
+          CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[dd_nun_var_lin.first] += dd_nun_var_lin.second * lmval(i, 0);
         }
       }

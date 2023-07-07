@@ -35,13 +35,13 @@ namespace DRT
   class Element;
   class Node;
 }  // namespace DRT
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -250,7 +250,8 @@ namespace BINSTRATEGY
      *
      * \param[in] pbb dimension for binning domain
      */
-    inline void SetDeformingBinningDomainHandler(Teuchos::RCP<GEO::MESHFREE::BoundingBox> const pbb)
+    inline void SetDeformingBinningDomainHandler(
+        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const pbb)
     {
       deforming_simulation_domain_handler_ = pbb;
     };
@@ -800,7 +801,7 @@ namespace BINSTRATEGY
     /*!
      * \brief if simulation domain is deforming, e.g. under shear, this handler takes care of this
      */
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> deforming_simulation_domain_handler_;
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> deforming_simulation_domain_handler_;
 
     /*!
      * \brief type of bin visualization

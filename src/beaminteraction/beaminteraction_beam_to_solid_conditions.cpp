@@ -110,7 +110,7 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
 BEAMINTERACTION::BeamToSolidCondition::CreateIndirectAssemblyManager(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+    const Teuchos::RCP<const ::DRT::Discretization>& discret)
 {
   if (beam_to_solid_params_->GetContactDiscretization() ==
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
@@ -142,7 +142,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets(
-    const Teuchos::RCP<const DRT::Discretization>& discretization)
+    const Teuchos::RCP<const ::DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamToSolidCondition::BuildIdSets(discretization);
@@ -344,7 +344,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
-    const Teuchos::RCP<const DRT::Discretization>& discretization)
+    const Teuchos::RCP<const ::DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamToSolidCondition::BuildIdSets(discretization);
@@ -372,7 +372,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+    const Teuchos::RCP<const ::DRT::Discretization>& discret)
 {
   // Call the parent method.
   BeamToSolidCondition::Setup(discret);
@@ -480,7 +480,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
  *
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {

@@ -235,8 +235,8 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -439,8 +439,8 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
     DRT::Element::DiscretizationType distype = Shape();
 
     // Get integrationpoints for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints =
-        DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints =
+        CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
 
     Tref_.resize(gausspoints.nquad);
 
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
       // instead of Hermite polynomials used to calculate the reference geometry. Since the
       // reference geometry for this beam element must always be a straight line there is no
       // difference between theses to types of interpolation functions.
-      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
       Tref_[numgp].Clear();
 

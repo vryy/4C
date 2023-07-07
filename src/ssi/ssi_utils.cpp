@@ -166,28 +166,27 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& sublist_manifold_params)
 {
-  auto* scatra_manifold_params = new Teuchos::ParameterList(scatraparams);
+  Teuchos::ParameterList scatra_manifold_params(scatraparams);
 
   switch (DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
       sublist_manifold_params, "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_zero_field:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "zero_field");
-      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "zero_field");
+      scatra_manifold_params.set<int>("INITFUNCNO", -1);
       break;
     }
     case INPAR::SCATRA::initfield_field_by_function:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_function");
-      scatra_manifold_params->set<int>(
-          "INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "field_by_function");
+      scatra_manifold_params.set<int>("INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
       break;
     }
     case INPAR::SCATRA::initfield_field_by_condition:
     {
-      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_condition");
-      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      scatra_manifold_params.set<std::string>("INITIALFIELD", "field_by_condition");
+      scatra_manifold_params.set<int>("INITFUNCNO", -1);
       break;
     }
     default:
@@ -197,13 +196,13 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
-    scatra_manifold_params->set<bool>("output_file_name_discretization", true);
+    scatra_manifold_params.set<bool>("output_file_name_discretization", true);
 
-  scatra_manifold_params->set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
+  scatra_manifold_params.set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
 
-  scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+  scatra_manifold_params.set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
-  return *scatra_manifold_params;
+  return scatra_manifold_params;
 }
 
 /*----------------------------------------------------------------------*/
@@ -909,18 +908,20 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(
-    const std::string& conditionname_coupling, Teuchos::RCP<DRT::Discretization> struct_dis)
-    : comm_(struct_dis->Comm()),
-      do_print_(struct_dis->Comm().MyPID() == 0),
+SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling,
+    Teuchos::RCP<DRT::Discretization> dis, const bool build_slave_slave_transformation,
+    const bool check_over_constrained)
+    : comm_(dis->Comm()),
+      do_print_(dis->Comm().MyPID() == 0),
       full_master_side_map_(Teuchos::null),
       full_slave_side_map_(Teuchos::null),
       interior_map_(Teuchos::null),
       meshtying_handlers_(),
-      my_rank_(struct_dis->Comm().MyPID()),
-      num_proc_(struct_dis->Comm().NumProc())
+      my_rank_(dis->Comm().MyPID()),
+      num_proc_(dis->Comm().NumProc())
 {
-  SetupMeshTyingHandlers(struct_dis, conditionname_coupling);
+  SetupMeshTyingHandlers(
+      dis, conditionname_coupling, build_slave_slave_transformation, check_over_constrained);
 
   // construct full slave, master, and interior maps
   std::vector<Teuchos::RCP<const Epetra_Map>> slave_maps;
@@ -935,13 +936,14 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(
   full_slave_side_map_ = LINALG::MultiMapExtractor::MergeMaps(slave_maps);
   auto interface_map = LINALG::MergeMap(full_master_side_map_, full_slave_side_map_);
 
-  interior_map_ = LINALG::SplitMap(*struct_dis->DofRowMap(), *interface_map);
+  interior_map_ = LINALG::SplitMap(*dis->DofRowMap(), *interface_map);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
-    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition)
+void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> dis,
+    const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
+    const bool check_over_constrained)
 {
   auto timer = Teuchos::rcp(new Teuchos::Time("MeshtypingHandlers", true));
   const double t0 = timer->wallTime();
@@ -954,7 +956,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
 
   // find pairwise matching nodes
   std::vector<std::pair<int, int>> coupling_pairs;
-  FindMatchingNodePairs(struct_dis, name_meshtying_condition, coupling_pairs);
+  FindMatchingNodePairs(dis, name_meshtying_condition, coupling_pairs);
 
   // all nodes on one geometrical point: outer vector defines geometric position, and inner vector
   // all nodes there
@@ -966,7 +968,8 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
   // define master gids and pair them with the remaining (slave) nodes
   std::vector<int> master_gids;
   std::map<int, int> slave_master_pair;
-  DefineMasterSlavePairing(struct_dis, grouped_matching_nodes, master_gids, slave_master_pair);
+  DefineMasterSlavePairing(
+      dis, grouped_matching_nodes, master_gids, slave_master_pair, check_over_constrained);
 
   if (do_print_) std::cout << "| Finished: master-slave pairing |" << std::endl;
 
@@ -1000,8 +1003,8 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
             num_created_adapters == iadapter)
         {
           const int slave_gid = pair.first;
-          DRT::UTILS::AddOwnedNodeGID(*struct_dis, master_gid, inodegidvec_master);
-          DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, inodegidvec_slave);
+          DRT::UTILS::AddOwnedNodeGID(*dis, master_gid, inodegidvec_master);
+          DRT::UTILS::AddOwnedNodeGID(*dis, slave_gid, inodegidvec_slave);
 
           pair.second = -1;  // do not consider this pair in next iteration
           created_adapters[master_gid] = num_created_adapters + 1;
@@ -1010,15 +1013,18 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     }
 
     // setup coupling adapter
-    auto coupling_adapter = Teuchos::rcp(new ADAPTER::Coupling());
-    coupling_adapter->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_master, inodegidvec_slave,
-        DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+    auto coupling_adapter = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+    const int num_dofs =
+        static_cast<int>(static_cast<double>(dis->DofRowMap()->NumGlobalElements()) /
+                         static_cast<double>(dis->NodeRowMap()->NumGlobalElements()));
+    coupling_adapter->SetupCoupling(
+        *dis, *dis, inodegidvec_master, inodegidvec_slave, num_dofs, true, 1.0e-8);
 
     // setup multimap extractor for each coupling adapter
     auto slave_map = coupling_adapter->SlaveDofMap();
     auto master_map = coupling_adapter->MasterDofMap();
     auto interior_map =
-        LINALG::SplitMap(*struct_dis->DofRowMap(), *LINALG::MergeMap(slave_map, master_map));
+        LINALG::SplitMap(*dis->DofRowMap(), *LINALG::MergeMap(slave_map, master_map));
 
     std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
     maps.emplace_back(interior_map);
@@ -1026,25 +1032,28 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     maps.emplace_back(master_map);
 
     auto coupling_map_extractor =
-        Teuchos::rcp(new LINALG::MultiMapExtractor(*struct_dis->DofRowMap(), maps));
+        Teuchos::rcp(new LINALG::MultiMapExtractor(*dis->DofRowMap(), maps));
     coupling_map_extractor->CheckForValidMapExtractor();
 
-    // coupling adapter between new slave nodes (master) and old slave nodes from input file
-    // (slave). Needed, to map the lineariaztion dphi/du at the interface to the correct dofs
-    std::vector<int> all_coupled_original_slave_gids;
-    FindSlaveSlaveTransformationNodes(
-        struct_dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
+    auto slave_slave_transformation = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+    if (build_slave_slave_transformation)
+    {
+      // coupling adapter between new slave nodes (master) and old slave nodes from input file
+      // (slave). Needed, to map the lineariaztion dphi/du at the interface to the correct dofs
+      std::vector<int> all_coupled_original_slave_gids;
+      FindSlaveSlaveTransformationNodes(
+          dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
 
-    std::vector<int> my_coupled_original_slave_gids;
-    for (const int& slave_gid : all_coupled_original_slave_gids)
-      DRT::UTILS::AddOwnedNodeGID(*struct_dis, slave_gid, my_coupled_original_slave_gids);
+      std::vector<int> my_coupled_original_slave_gids;
+      for (const int& slave_gid : all_coupled_original_slave_gids)
+        DRT::UTILS::AddOwnedNodeGID(*dis, slave_gid, my_coupled_original_slave_gids);
 
-    auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
-    slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
-        my_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+      slave_slave_transformation->SetupCoupling(*dis, *dis, inodegidvec_slave,
+          my_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+    }
 
     // combine coupling adapters and multimap extractor to mesh tying object
-    meshtying_handlers_.emplace_back(Teuchos::rcp(new SSIStructureMeshTyingHandler(
+    meshtying_handlers_.emplace_back(Teuchos::rcp(new SSIMeshTyingHandler(
         coupling_adapter, coupling_map_extractor, slave_slave_transformation)));
   }
 
@@ -1061,7 +1070,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-int SSI::UTILS::SSIStructureMeshTying::HasGID(
+int SSI::UTILS::SSIMeshTying::HasGID(
     const int gid, const std::vector<std::vector<int>>& matching_nodes) const
 {
   const int size = static_cast<int>(matching_nodes.size());
@@ -1081,7 +1090,7 @@ int SSI::UTILS::SSIStructureMeshTying::HasGID(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-int SSI::UTILS::SSIStructureMeshTying::HasGIDPartial(const int gid, const int start, const int end,
+int SSI::UTILS::SSIMeshTying::HasGIDPartial(const int gid, const int start, const int end,
     const std::vector<std::vector<int>>& matching_nodes) const
 {
   for (int i = start; i < end; ++i)
@@ -1094,8 +1103,8 @@ int SSI::UTILS::SSIStructureMeshTying::HasGIDPartial(const int gid, const int st
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
-    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition,
+void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> dis,
+    const std::string& name_meshtying_condition,
     std::vector<std::pair<int, int>>& coupling_pairs) const
 {
   // coupled nodes on this proc from input
@@ -1103,7 +1112,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
   // get all mesh tying conditions
   std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
-  struct_dis->GetCondition(name_meshtying_condition, meshtying_conditons);
+  dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   // match nodes between all mesh tying conditons (named with "a" and "b")
   for (int a = 0; a < static_cast<int>(meshtying_conditons.size()); ++a)
@@ -1112,11 +1121,11 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDVector(*struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+    DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
-    tree.Init(*struct_dis, inodegidvec_a, 150, 1.0e-8);
+    tree.Init(*dis, inodegidvec_a, 150, 1.0e-8);
     tree.Setup();
 
     // find nodes from condition b that match nodes from condition a
@@ -1126,12 +1135,11 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          *struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+      DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
-      tree.FindMatch(*struct_dis, inodegidvec_b, coupled_gid_nodes);
+      tree.FindMatch(*dis, inodegidvec_b, coupled_gid_nodes);
 
       // loop over all nodal couplings and find coupled nodes
       for (const auto& pair : coupled_gid_nodes)
@@ -1158,7 +1166,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::GroupMatchingNodes(
+void SSI::UTILS::SSIMeshTying::GroupMatchingNodes(
     const std::vector<std::pair<int, int>>& coupling_pairs,
     std::vector<std::vector<int>>& grouped_matching_nodes) const
 {
@@ -1226,7 +1234,7 @@ void SSI::UTILS::SSIStructureMeshTying::GroupMatchingNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::GetNumAssignedSlaveToMasterNodes(
+void SSI::UTILS::SSIMeshTying::GetNumAssignedSlaveToMasterNodes(
     const std::map<int, int>& slave_master_pair,
     std::map<int, int>& num_assigned_slave_to_master_nodes, int& max_assigned_slave_nodes) const
 {
@@ -1259,14 +1267,13 @@ void SSI::UTILS::SSIStructureMeshTying::GetNumAssignedSlaveToMasterNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
-    Teuchos::RCP<DRT::Discretization> struct_dis,
+void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> dis,
     const std::vector<std::vector<int>>& grouped_matching_nodes, std::vector<int>& master_gids,
-    std::map<int, int>& slave_master_pair) const
+    std::map<int, int>& slave_master_pair, const bool check_over_constrained) const
 {
   // get Dirichlet nodes -> they define the master side
   std::vector<DRT::Condition*> dbc_conds;
-  struct_dis->GetCondition("Dirichlet", dbc_conds);
+  dis->GetCondition("Dirichlet", dbc_conds);
   std::set<int> dbc_nodes;
   for (auto* dbc_cond : dbc_conds)
     for (const int& dbc_node : *dbc_cond->Nodes()) dbc_nodes.insert(dbc_node);
@@ -1295,7 +1302,7 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
       {
         if (dbc_node == node)
         {
-          if (found_dbc_node)
+          if (found_dbc_node and check_over_constrained)
             dserror("Mesh tying and DBCs are over constrained.");
           else
           {
@@ -1333,30 +1340,29 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
-    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition,
+void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
+    Teuchos::RCP<DRT::Discretization> dis, const std::string& name_meshtying_condition,
     const std::vector<int>& inodegidvec_slave,
     std::vector<int>& all_coupled_original_slave_gids) const
 {
   // store nodes that are slave nodes from the input
   std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
-  struct_dis->GetCondition(name_meshtying_condition, meshtying_conditons);
+  dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   std::vector<int> original_slave_gids;
   for (auto* meshtying_conditon : meshtying_conditons)
   {
     if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          *struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_conditon->Nodes(), original_slave_gids);
     }
   }
 
   DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
-  tree.Init(*struct_dis, inodegidvec_slave, 150, 1.0e-8);
+  tree.Init(*dis, inodegidvec_slave, 150, 1.0e-8);
   tree.Setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;
-  tree.FindMatch(*struct_dis, original_slave_gids, coupled_gid_nodes);
+  tree.FindMatch(*dis, original_slave_gids, coupled_gid_nodes);
 
   // find matches if distance < 1.0e-16
   std::vector<int> my_coupled_original_slave_gids;
@@ -1374,7 +1380,7 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
+void SSI::UTILS::SSIMeshTying::CheckSlaveSideHasDirichletConditions(
     Teuchos::RCP<const Epetra_Map> struct_dbc_map) const
 {
   // check if slave side dofs are part of DBC maps
@@ -1390,15 +1396,15 @@ void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSI::UTILS::SSIStructureMeshTyingHandler::SSIStructureMeshTyingHandler(
-    Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling,
+SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
+    Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
     Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
-    Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation)
+    Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation)
     : slave_master_coupling_(std::move(slave_master_coupling)),
       slave_master_extractor_(std::move(slave_master_extractor)),
       slave_side_converter_(Teuchos::null),
       slave_slave_transformation_(std::move(slave_slave_transformation))
 {
   slave_side_converter_ =
-      Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
+      Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
 }

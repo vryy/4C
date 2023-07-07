@@ -43,7 +43,7 @@
 // LINALG includes
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_matrixtransform.H"
 
 // IO includes
@@ -288,15 +288,15 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   const int& aidx_fpsi = ALE::UTILS::MapExtractor::cond_fpsi;
 
   // FPSI Couplings
-  const ADAPTER::Coupling& coupsa_fpsi = FPSICoupl()->PoroStructureAleCoupling();
-  const ADAPTER::Coupling& coupsf_fpsi = FPSICoupl()->PoroStructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa_fpsi = FPSICoupl()->PoroStructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf_fpsi = FPSICoupl()->PoroStructureFluidCoupling();
 
   // General Couplings
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // FSI Couplings
-  const ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
-  const ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
+  const CORE::ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
+  const CORE::ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
 
   ///////////ADD THE COUPLING HERE////////////////
   p->Add(FPSICoupl()->C_pp(), false, 1.0, 1.0);
@@ -353,8 +353,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
   // create transformation object for the ale condensation
   (*aigtransform2_)(a->FullRowMap(), a->FullColMap(), ai_gfpsi, 1.,
-      ADAPTER::CouplingSlaveConverter(coupsa_fpsi), mat.Matrix(ale_i_block_, structure_block_),
-      true,
+      CORE::ADAPTER::CouplingSlaveConverter(coupsa_fpsi),
+      mat.Matrix(ale_i_block_, structure_block_), true,
       false);  // Add
 
   mat.Assign(ale_i_block_, ale_i_block_, LINALG::View, aii);
@@ -384,7 +384,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     //                         true); //not required anymore --> done at (1)
 
     (*fgitransform1_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        ADAPTER::CouplingSlaveConverter(coupsf_fsi), mat.Matrix(structure_block_, fluid_block_),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        mat.Matrix(structure_block_, fluid_block_),
         true);  // Assign
 
     // Insert ale: Aii, Aig and Ai_gFPSI--> g is on the FSI-Interface
@@ -392,7 +393,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     LINALG::SparseMatrix& aig = a->Matrix(aidx_other, aidx_fsi);
 
     (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsa_fsi), mat.Matrix(ale_i_block_, structure_block_),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsa_fsi),
+        mat.Matrix(ale_i_block_, structure_block_),
         true);  // as just fsi part is transfered
   }
 
@@ -420,7 +422,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
       // those two blocks are not condensed since they belong to the columns of the inner ale dofs
       (*couplingcoltransform_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
           FluidField()->BlockSystemMatrix()->FullColMap(), fluidalematrix_ii, 1.0,
-          ADAPTER::CouplingMasterConverter(
+          CORE::ADAPTER::CouplingMasterConverter(
               coupfa),  // row converter: important to use slave converter
           mat.Matrix(fluid_block_, ale_i_block_),
           false,  // bool exactmatch = true (default)
@@ -443,27 +445,29 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
         (*figtransform1_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
             FluidField()->BlockSystemMatrix()->FullColMap(), fluidalematrix_ig_fsi, 1.0,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi), mat.Matrix(fluid_block_, structure_block_),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            mat.Matrix(fluid_block_, structure_block_),
             false,  // bool exactmatch = true (default)
             true);
 
         (*figtransform2_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
             FluidField()->BlockSystemMatrix()->FullColMap(), fluidalematrix_gfpsigfsi, 1.0,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi), mat.Matrix(fluid_block_, structure_block_),
-            false, true);
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            mat.Matrix(fluid_block_, structure_block_), false, true);
 
         (*fggtransform_)(fluidalematrix_gg_fsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
             mat.Matrix(structure_block_, structure_block_), false, true);
 
         (*fggtransform2_)(fluidalematrix_gfsigfpsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-            ADAPTER::CouplingSlaveConverter(coupsf_fpsi),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fpsi),
             mat.Matrix(structure_block_, structure_block_), false, true);
 
         (*fmgitransform_)(fluidalematrix_gi_fsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi), ADAPTER::CouplingMasterConverter(coupfa),
+            CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            CORE::ADAPTER::CouplingMasterConverter(coupfa),
             mat.Matrix(structure_block_, ale_i_block_), false, true);
       }
     }
@@ -489,7 +493,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     // catch also FPSI-Coupling terms (for overlapping FSI/FPSI Interfaces)
     (*figtransform3_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
         FluidField()->BlockSystemMatrix()->FullColMap(), mat.Matrix(fluid_block_, fluid_block_),
-        timescale, ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        timescale, CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
         mat.Matrix(fluid_block_, structure_block_),  //--> goes into C_fp()
         false,  // no exactmatch! (just FSI Part should be extracted)
         true);  // Add
@@ -498,7 +502,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     FPSICoupl()->C_fa().Complete(*AleField()->Interface()->OtherMap(), *FluidField()->DofRowMap());
 
     (*Cfgtransform_)(FPSICoupl()->C_fa(), (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        ADAPTER::CouplingSlaveConverter(coupsf_fsi), mat.Matrix(structure_block_, ale_i_block_),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        mat.Matrix(structure_block_, ale_i_block_),
         true);  // Addmatrix
 
 
@@ -510,13 +515,15 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
     (*Cfptransform_)(FPSICoupl()->C_fp().Matrix(
                          0, 0),  //--> also the coupling terms from c_ff are inside here!!!
-        (1.0 - stiparam) / (1.0 - ftiparam) * scale, ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        (1.0 - stiparam) / (1.0 - ftiparam) * scale,
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
         mat.Matrix(structure_block_, structure_block_),
         true);  // Addmatrix
 
     (*Cfptransform2_)(FPSICoupl()->C_fp().Matrix(
                           0, 1),  //--> also the coupling terms from c_ff are inside here!!!
-        (1.0 - stiparam) / (1.0 - ftiparam) * scale, ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        (1.0 - stiparam) / (1.0 - ftiparam) * scale,
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
         mat.Matrix(structure_block_, porofluid_block_),
         true);  // Addmatrix
 

@@ -33,7 +33,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
     LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
     LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,

@@ -16,7 +16,7 @@
 #include "cut_cutwizard.H"
 
 #include "xfem_condition_manager.H"
-#include "xfem_dofset.H"
+#include "lib_xfem_dofset.H"
 
 #include "io.H"
 #include "io_control.H"
@@ -127,7 +127,7 @@ void FLD::XFluidState::CouplingState::Destroy(bool throw_exception)
  |  Constructor for XFluidState                             kruse 08/14 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap)
     : xfluiddofrowmap_(xfluiddofrowmap),

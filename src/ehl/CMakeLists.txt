@@ -13,6 +13,5 @@ set(_ehl_dependencies
     lubrication_ele
     mat
     mortar
-    solver
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_ehl_dependencies})

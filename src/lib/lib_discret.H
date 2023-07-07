@@ -24,6 +24,7 @@
 #include "lib_dofset_interface.H"
 #include "utils_exceptions.H"
 #include "lib_globalproblem_enums.H"
+#include "utils_std_cxx20_ranges.H"
 
 // forward declarations
 namespace COMM_UTILS
@@ -697,9 +698,7 @@ namespace DRT
     */
     virtual inline DRT::Element* lRowElement(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowElement: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return elerowptr_[lid];
     }
 
@@ -714,18 +713,32 @@ namespace DRT
     */
     virtual inline DRT::Element* lColElement(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return elecolptr_[lid];
     }
 
-    inline DRT::Element* const* lColElements() const
+    /**
+     * This function is useful for range based for-loops over all row elements.
+     *
+     * \code
+     *      for (Element* actele : MyRowElementRange()) {}
+     * \endcode
+     *
+     * \return A range of all local row elements.
+     */
+    [[nodiscard]] auto MyRowElementRange() const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
-#endif
-      return elecolptr_.data();
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(elerowptr_);
+    }
+
+    /**
+     * This function is equivalent to MyRowElementRange(), but applied to column elements
+     */
+    [[nodiscard]] auto MyColElementRange() const
+    {
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(elecolptr_);
     }
 
     /*!
@@ -757,9 +770,7 @@ namespace DRT
     */
     virtual inline DRT::Node* lRowNode(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return noderowptr_[lid];
     }
 
@@ -774,18 +785,22 @@ namespace DRT
     */
     virtual inline DRT::Node* lColNode(int lid) const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
+      dsassert(Filled(), "Discretization not Filled().");
       return nodecolptr_[lid];
     }
 
-    inline DRT::Node* const* lColNodes() const
+
+    [[nodiscard]] auto MyRowNodeRange() const
     {
-#ifdef DEBUG
-      if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
-#endif
-      return nodecolptr_.data();
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(noderowptr_);
+    }
+
+
+    [[nodiscard]] auto MyColNodeRange() const
+    {
+      dsassert(Filled(), "Discretization not Filled().");
+      return std_20::ranges::views::all(nodecolptr_);
     }
 
     //@}
@@ -1407,13 +1422,11 @@ namespace DRT
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return Teuchos::null;
-      std::map<std::string, Teuchos::RCP<const Epetra_Vector>>::const_iterator fool =
-          state_[nds].find(name);
-      if (fool == state_[nds].end())
+
+      if (auto state_iterator = state_[nds].find(name); state_iterator == state_[nds].end())
         dserror("Cannot find state %s", name.data());
       else
-        return fool->second;
-      return Teuchos::null;
+        return state_iterator->second;
     }
 
     /*!
@@ -1425,9 +1438,8 @@ namespace DRT
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return false;
-      std::map<std::string, Teuchos::RCP<const Epetra_Vector>>::const_iterator fool =
-          state_[nds].find(name);
-      return fool != state_[nds].end();
+
+      return state_[nds].count(name) == 1;
     }
 
     /*!
@@ -1442,7 +1454,6 @@ namespace DRT
       // clear states that belong to own dofset only
       else if (!state_.empty())
         state_[0].clear();
-      return;
     }
 
     void RedistributeState(unsigned nds, const std::string& name) override;
@@ -1759,7 +1770,7 @@ namespace DRT
 
     */
     void EvaluateInitialField(const std::string& fieldstring,
-        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int> locids);
+        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
     //@}
 
@@ -1929,14 +1940,14 @@ namespace DRT
     conditions also needs to be considered
     */
     void FindAssociatedEleIDs(
-        Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
+        Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
     /*!
     \brief Build the geometry of lines for a certain line condition
 
     */
-    virtual bool BuildLinesinCondition(const std::string name, Teuchos::RCP<DRT::Condition> cond);
+    virtual bool BuildLinesinCondition(const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Build the geometry of surfaces for a certain surface condition.
@@ -1950,13 +1961,14 @@ namespace DRT
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
     virtual bool BuildSurfacesinCondition(
-        const std::string name, Teuchos::RCP<DRT::Condition> cond);
+        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
-    virtual bool BuildVolumesinCondition(const std::string name, Teuchos::RCP<DRT::Condition> cond);
+    virtual bool BuildVolumesinCondition(
+        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
 
     /*!
     \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)

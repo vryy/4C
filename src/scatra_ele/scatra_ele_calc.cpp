@@ -486,7 +486,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -895,7 +895,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ReadElementCoordinates(const DRT::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
-  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 }
 
 /*----------------------------------------------------------------------*
@@ -904,7 +904,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule to do calculations at the element center
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
       SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
@@ -918,7 +918,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtE
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
+    const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -939,7 +939,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtI
   if (use2ndderiv_)
   {
     // get global second derivatives
-    DRT::UTILS::gder2<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    CORE::DRT::UTILS::gder2<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();
@@ -960,24 +960,25 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
     if (not DRT::NURBS::IsNurbs(distype))
     {
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function<distype>(xsi_, funct_);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
       if (use2ndderiv_)
       {
         // get the second derivatives of standard element at current GP
-        DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
+        CORE::DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
       }
     }
     else  // nurbs elements are always somewhat special...
     {
       if (use2ndderiv_)
       {
-        DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+        CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
             funct_, deriv_, deriv2_, xsi_, myknots_, weights_, distype);
       }
       else
       {
-        DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+        CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+            funct_, deriv_, xsi_, myknots_, weights_, distype);
       }
     }  // IsNurbs()
 
@@ -1009,24 +1010,24 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
     if (not DRT::NURBS::IsNurbs(distype))
     {
       // shape functions and their first derivatives
-      DRT::UTILS::shape_function<distype>(xsi_, funct_);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
+      CORE::DRT::UTILS::shape_function<distype>(xsi_, funct_);
+      CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
       if (use2ndderiv_)
       {
         // get the second derivatives of standard element at current GP
-        DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
+        CORE::DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
       }
     }
     else  // nurbs elements are always somewhat special...
     {
       if (use2ndderiv_)
       {
-        DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
+        CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
             funct_, deriv_red, deriv2_, xsi_, myknots_, weights_, distype);
       }
       else
       {
-        DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+        CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
             funct_, deriv_red, xsi_, myknots_, weights_, distype);
       }
     }  // IsNurbs()
@@ -1038,7 +1039,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
     // the metric tensor and the area of an infinitesimal surface/line element
     // optional: get unit normal at integration point as well
     const bool throw_error_if_negative_determinant(true);
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
+    CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
@@ -2013,7 +2014,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   double q_micro(0.0);
   std::vector<double> dq_dphi_micro(1, 0.0);
 
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);

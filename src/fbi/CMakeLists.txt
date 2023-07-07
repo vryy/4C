@@ -9,7 +9,6 @@ set(_fbi_dependencies
     core
     fluid
     fluid_ele
-    geometry
     geometry_pair
     inpar
     io

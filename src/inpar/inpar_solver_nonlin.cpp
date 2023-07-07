@@ -27,7 +27,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
    * parameters for NOX - non-linear solution
    *----------------------------------------------------------------------*/
   Teuchos::ParameterList& snox = list->sublist("STRUCT NOX", false, "");
-  SetPrintEqualSign(snox, true);
 
   {
     Teuchos::Array<std::string> st = Teuchos::tuple<std::string>("Line Search Based",
@@ -38,7 +37,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list direction
   Teuchos::ParameterList& direction = snox.sublist("Direction", false, "");
-  SetPrintEqualSign(direction, true);
 
   {
     Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
@@ -56,7 +54,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "Newton"
   Teuchos::ParameterList& newton = direction.sublist("Newton", false, "");
-  SetPrintEqualSign(newton, true);
 
   {
     Teuchos::Array<std::string> forcingtermmethod =
@@ -78,7 +75,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "Steepest Descent"
   Teuchos::ParameterList& steepestdescent = direction.sublist("Steepest Descent", false, "");
-  SetPrintEqualSign(steepestdescent, true);
 
   {
     Teuchos::Array<std::string> scalingtype =
@@ -90,7 +86,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-sub-list "Modified Newton"
   Teuchos::ParameterList& modnewton = newton.sublist("Modified", false, "");
-  SetPrintEqualSign(modnewton, true);
   {
     DoubleParameter("Initial Primal Diagonal Correction", 1.0e-4,
         "Initial correction factor for the diagonal of the primal block.", &modnewton);
@@ -128,7 +123,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Pseudo Transient"
   Teuchos::ParameterList& ptc = snox.sublist("Pseudo Transient", false, "");
-  SetPrintEqualSign(ptc, true);
 
   {
     DoubleParameter("deltaInit", -1.0,
@@ -168,7 +162,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Line Search"
   Teuchos::ParameterList& linesearch = snox.sublist("Line Search", false, "");
-  SetPrintEqualSign(linesearch, true);
 
   {
     Teuchos::Array<std::string> method = Teuchos::tuple<std::string>(
@@ -188,7 +181,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "Full Step"
   Teuchos::ParameterList& fullstep = linesearch.sublist("Full Step", false, "");
-  SetPrintEqualSign(fullstep, true);
 
   {
     DoubleParameter("Full Step", 1.0, "length of a full step", &fullstep);
@@ -196,7 +188,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "Backtrack"
   Teuchos::ParameterList& backtrack = linesearch.sublist("Backtrack", false, "");
-  SetPrintEqualSign(backtrack, true);
 
   {
     DoubleParameter("Default Step", 1.0, "starting step length", &backtrack);
@@ -218,7 +209,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "Polynomial"
   Teuchos::ParameterList& polynomial = linesearch.sublist("Polynomial", false, "");
-  SetPrintEqualSign(polynomial, true);
 
   {
     DoubleParameter("Default Step", 1.0, "Starting step length", &polynomial);
@@ -276,7 +266,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-list "More'-Thuente"
   Teuchos::ParameterList& morethuente = linesearch.sublist("More'-Thuente", false, "");
-  SetPrintEqualSign(morethuente, true);
 
   {
     DoubleParameter("Sufficient Decrease", 1.0e-4, "The ftol in the sufficient decrease condition",
@@ -317,7 +306,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Trust Region"
   Teuchos::ParameterList& trustregion = snox.sublist("Trust Region", false, "");
-  SetPrintEqualSign(trustregion, true);
 
   {
     DoubleParameter("Minimum Trust Region Radius", 1.0e-6, "Minimum allowable trust region radius",
@@ -342,7 +330,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Printing"
   Teuchos::ParameterList& printing = snox.sublist("Printing", false, "");
-  SetPrintEqualSign(printing, true);
 
   {
     BoolParameter("Error", "No", "", &printing);
@@ -364,7 +351,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Status Test"
   Teuchos::ParameterList& statusTest = snox.sublist("Status Test", false, "");
-  SetPrintEqualSign(statusTest, true);
 
   {
     StringParameter("XML File", "none",
@@ -375,7 +361,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-list "Solver Options"
   Teuchos::ParameterList& solverOptions = snox.sublist("Solver Options", false, "");
-  SetPrintEqualSign(solverOptions, true);
 
   {
     Teuchos::Array<std::string> meritFct =
@@ -394,7 +379,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // sub-sub-sub-list "Linear Solver"
   Teuchos::ParameterList& linearSolver = newton.sublist("Linear Solver", false, "");
-  SetPrintEqualSign(linearSolver, true);
 
   {
     // convergence criteria adaptivity

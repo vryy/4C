@@ -18,7 +18,7 @@
 #include "lib_linedefinition.H"
 #include "lib_globalproblem.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;
@@ -63,7 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(const int id, const
 void DRT::ELEMENTS::ElemagType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  nv = DRT::UTILS::getDimension(dwele->Shape()) - 1;
+  nv = CORE::DRT::UTILS::getDimension(dwele->Shape()) - 1;
   dimns = nv;
   numdf = dimns;
   return;
@@ -387,7 +387,7 @@ DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 
@@ -606,7 +606,7 @@ DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

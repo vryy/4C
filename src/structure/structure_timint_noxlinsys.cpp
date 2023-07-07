@@ -25,7 +25,7 @@
 
 #include "structure_timint_noxlinsys.H"
 #include "lib_globalproblem.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_blocksparsematrix.H"
 
 

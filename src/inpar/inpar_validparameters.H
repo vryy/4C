@@ -68,17 +68,12 @@ namespace DRT
     void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,
         std::string parentname = "", bool comment = true);
 
-    /// provide std::string to keep flag for printing equal signs
-    ///
-    /// This is needed for the NOX parameters whose key words
-    /// and value have white spaces and thus '=' are inserted
-    /// to distinguish them.
-    std::string PrintEqualSign();
-
-    /// set printing equal signs
-    void SetPrintEqualSign(Teuchos::ParameterList& list, const bool& pes);
-
-    /// Does the actual parameter list need to print equal signs?
+    /**
+     * Return true if the @p list contains any parameter that has whitespace in the key name.
+     *
+     * @note This is needed for the NOX parameters whose keywords and value have white spaces and
+     * thus '=' are inserted to distinguish them.
+     */
     bool NeedToPrintEqualSign(const Teuchos::ParameterList& list);
 
   }  // namespace INPUT

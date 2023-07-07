@@ -13,7 +13,7 @@
 
 #include "lib_linedefinition.H"
 
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
@@ -60,7 +60,7 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  return ComputeSolid2DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  return ComputeSolid2DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid2DNullSpace(node, x0);
+  return ComputeSolid2DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(

@@ -121,15 +121,16 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
     else if (gdofs_current.size() % gdofs_original.size() == 0)  // multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      GEO::CUT::Node* node = state->Wizard()->GetNode(xfemnode->Id());
+      CORE::GEO::CUT::Node* node = state->Wizard()->GetNode(xfemnode->Id());
 
-      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet>>& dofcellsets = node->NodalDofSets();
+      const std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>& dofcellsets =
+          node->NodalDofSets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for (std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet>>::const_iterator cellsets =
+      for (std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>::const_iterator cellsets =
                dofcellsets.begin();
            cellsets != dofcellsets.end(); cellsets++)
       {
@@ -401,10 +402,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     const std::string& prefix,         ///< data prefix
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<GEO::CutWizard>& wizard,  ///< cut wizard
-    Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc,       ///< vector holding acceleration
-    Teuchos::RCP<const Epetra_Vector> dispnp     ///< vector holding acceleration
+    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< cut wizard
+    Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> dispnp  ///< vector holding acceleration
 )
 {
   // Todo: should be private
@@ -532,11 +533,11 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   for (int i = 0; i < numrowele; ++i)
   {
     DRT::Element* actele = (discret_)->lRowElement(i);
-    GEO::CUT::ElementHandle* e = wizard->GetElement(actele);
+    CORE::GEO::CUT::ElementHandle* e = wizard->GetElement(actele);
 
     if (e != NULL)
     {
-      std::vector<GEO::CUT::plain_volumecell_set> cell_sets;
+      std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
 
       e->GetVolumeCellsDofSets(cell_sets, nds_sets, include_inner_);
@@ -546,23 +547,24 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
       {
         int set_counter = 0;
 
-        for (std::vector<GEO::CUT::plain_volumecell_set>::iterator s = cell_sets.begin();
+        for (std::vector<CORE::GEO::CUT::plain_volumecell_set>::iterator s = cell_sets.begin();
              s != cell_sets.end(); s++)
         {
-          GEO::CUT::plain_volumecell_set& cells = *s;
+          CORE::GEO::CUT::plain_volumecell_set& cells = *s;
 
           std::vector<int>& nds = nds_sets[set_counter];
 
 
-          for (GEO::CUT::plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
+          for (CORE::GEO::CUT::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
+               ++i)
           {
-            GEO::CUT::VolumeCell* vc = *i;
+            CORE::GEO::CUT::VolumeCell* vc = *i;
 
             if (e->IsCut())
             {
               GmshOutputVolumeCell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
-              if (vc->Position() == GEO::CUT::Point::outside)
+              if (vc->Position() == CORE::GEO::CUT::Point::outside)
               {
                 if (cond_manager_->HasMeshCoupling())
                   GmshOutputBoundaryCell(*discret_, gmshfilecontent_bound, vc, wizard);
@@ -761,8 +763,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
     std::ofstream& press_f,                    ///< output file stream for pressure
     std::ofstream& acc_f,                      ///< output file stream for acceleration
     DRT::Element* actele,                      ///< element
-    GEO::CUT::ElementHandle* e,                ///< elementhandle
-    GEO::CUT::VolumeCell* vc,                  ///< volumecell
+    CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
+    CORE::GEO::CUT::VolumeCell* vc,            ///< volumecell
     const std::vector<int>& nds,               ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> accvec   ///< vector holding acceleration
@@ -821,13 +823,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
   // integrationcells are not available because tessellation is not used
   if (VolumeCellGaussPointBy_ != INPAR::CUT::VCellGaussPts_Tessellation)
   {
-    const GEO::CUT::plain_facet_set& facete = vc->Facets();
-    for (GEO::CUT::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
+    const CORE::GEO::CUT::plain_facet_set& facete = vc->Facets();
+    for (CORE::GEO::CUT::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
     {
       // split facet into tri and quad cell
-      GEO::CUT::Facet* fe = *i;
-      std::vector<std::vector<GEO::CUT::Point*>> split;
-      std::vector<GEO::CUT::Point*> corners = fe->CornerPoints();
+      CORE::GEO::CUT::Facet* fe = *i;
+      std::vector<std::vector<CORE::GEO::CUT::Point*>> split;
+      std::vector<CORE::GEO::CUT::Point*> corners = fe->CornerPoints();
 
       if (corners.size() == 3)  // only Tri can be used directly. Quad may be concave
         split.push_back(corners);
@@ -837,10 +839,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
         split = fe->GetSplitCells();
       }
 
-      for (std::vector<std::vector<GEO::CUT::Point*>>::const_iterator j = split.begin();
+      for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::const_iterator j = split.begin();
            j != split.end(); j++)
       {
-        std::vector<GEO::CUT::Point*> cell = *j;
+        std::vector<CORE::GEO::CUT::Point*> cell = *j;
 
         switch (cell.size())
         {
@@ -884,7 +886,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           LINALG::Matrix<1, 1> p(true);
           LINALG::Matrix<3, 1> a(true);
 
-          GEO::CUT::Point* point = cell[k];
+          CORE::GEO::CUT::Point* point = cell[k];
           const LINALG::Matrix<3, 1>& rst = e->LocalCoordinates(point);
 
           switch (actele->Shape())
@@ -892,9 +894,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             case DRT::Element::hex8:
             {
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -908,9 +911,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             {
               // TODO: check the output for hex20
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -924,9 +928,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             {
               // TODO: check the output for hex27
               const int numnodes =
-                  DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+                  CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
               LINALG::Matrix<numnodes, 1> funct;
-              DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
+              CORE::DRT::UTILS::shape_function_3D(
+                  funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
               LINALG::Matrix<3, numnodes> velocity(vel, true);
               LINALG::Matrix<1, numnodes> pressure(press, true);
               LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -964,13 +969,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
   // integrationcells based output for tessellation
   else
   {
-    const GEO::CUT::plain_integrationcell_set& intcells = vc->IntegrationCells();
-    for (GEO::CUT::plain_integrationcell_set::const_iterator i = intcells.begin();
+    const CORE::GEO::CUT::plain_integrationcell_set& intcells = vc->IntegrationCells();
+    for (CORE::GEO::CUT::plain_integrationcell_set::const_iterator i = intcells.begin();
          i != intcells.end(); ++i)
     {
-      GEO::CUT::IntegrationCell* ic = *i;
+      CORE::GEO::CUT::IntegrationCell* ic = *i;
 
-      const std::vector<GEO::CUT::Point*>& points = ic->Points();
+      const std::vector<CORE::GEO::CUT::Point*>& points = ic->Points();
       //    Epetra_SerialDenseMatrix values( 4, points.size() );
 
       switch (ic->Shape())
@@ -1015,7 +1020,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
         LINALG::Matrix<1, 1> p(true);
         LINALG::Matrix<3, 1> a(true);
 
-        GEO::CUT::Point* point = points[i];
+        CORE::GEO::CUT::Point* point = points[i];
         const LINALG::Matrix<3, 1>& rst = e->LocalCoordinates(point);
 
         switch (actele->Shape())
@@ -1023,9 +1028,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::hex8:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex8);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1039,9 +1044,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             // TODO: check the output for hex20
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex20);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1055,9 +1060,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           {
             // TODO: check the output for hex27
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::hex27);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1070,9 +1075,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::wedge6:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::wedge6);
+            CORE::DRT::UTILS::shape_function_3D(
+                funct, rst(0), rst(1), rst(2), DRT::Element::wedge6);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1085,9 +1091,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::wedge15:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::wedge15);
+            CORE::DRT::UTILS::shape_function_3D(
+                funct, rst(0), rst(1), rst(2), DRT::Element::wedge15);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1100,9 +1107,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::tet4:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet4);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet4);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1115,9 +1122,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           case DRT::Element::tet10:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement;
             LINALG::Matrix<numnodes, 1> funct;
-            DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet10);
+            CORE::DRT::UTILS::shape_function_3D(funct, rst(0), rst(1), rst(2), DRT::Element::tet10);
             LINALG::Matrix<3, numnodes> velocity(vel, true);
             LINALG::Matrix<1, numnodes> pressure(press, true);
             LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1155,10 +1162,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 
 /// Gmsh output function for boundarycells
 void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
-    DRT::Discretization& discret,               ///< background fluid discretization
-    std::ofstream& bound_f,                     ///< output file stream for boundary mesh
-    GEO::CUT::VolumeCell* vc,                   ///< volumecell
-    const Teuchos::RCP<GEO::CutWizard>& wizard  ///< cut wizard
+    DRT::Discretization& discret,                     ///< background fluid discretization
+    std::ofstream& bound_f,                           ///< output file stream for boundary mesh
+    CORE::GEO::CUT::VolumeCell* vc,                   ///< volumecell
+    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard  ///< cut wizard
 )
 {
   bound_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -1168,19 +1175,19 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
   LINALG::Matrix<2, 2> metrictensor;
   double drs;
 
-  std::map<int, std::vector<GEO::CUT::BoundaryCell*>> bcells;
+  std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>> bcells;
   vc->GetBoundaryCells(bcells);
-  for (std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::iterator i = bcells.begin();
+  for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::iterator i = bcells.begin();
        i != bcells.end(); ++i)
   {
     int sid = i->first;
-    std::vector<GEO::CUT::BoundaryCell*>& bcs = i->second;
+    std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = i->second;
 
     if (!cond_manager_->IsMeshCoupling(sid)) continue;
 
     DRT::Element* side = cond_manager_->GetSide(sid);
 
-    GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
+    CORE::GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
 
     const int numnodes = side->NumNode();
     DRT::Node** nodes = side->Nodes();
@@ -1191,9 +1198,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
-    for (std::vector<GEO::CUT::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
+    for (std::vector<CORE::GEO::CUT::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
     {
-      GEO::CUT::BoundaryCell* bc = *i;
+      CORE::GEO::CUT::BoundaryCell* bc = *i;
 
       // Issue with boundary cell outputs for marked background sides
       if (bc->GetFacet()->OnMarkedBackgroundSide()) continue;
@@ -1211,10 +1218,11 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
           break;
       }
 
-      const std::vector<GEO::CUT::Point*>& points = bc->Points();
-      for (std::vector<GEO::CUT::Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
+      const std::vector<CORE::GEO::CUT::Point*>& points = bc->Points();
+      for (std::vector<CORE::GEO::CUT::Point*>::const_iterator i = points.begin();
+           i != points.end(); ++i)
       {
-        GEO::CUT::Point* p = *i;
+        CORE::GEO::CUT::Point* p = *i;
 
         if (i != points.begin()) bound_f << ",";
 
@@ -1224,9 +1232,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
 
       bound_f << "){";
 
-      for (std::vector<GEO::CUT::Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
+      for (std::vector<CORE::GEO::CUT::Point*>::const_iterator i = points.begin();
+           i != points.end(); ++i)
       {
-        GEO::CUT::Point* p = *i;
+        CORE::GEO::CUT::Point* p = *i;
 
         // the bc corner points will always lie on the respective side
         const LINALG::Matrix<2, 1>& eta = s->LocalCoordinates(p);
@@ -1236,44 +1245,44 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
           case DRT::Element::quad4:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad4);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad4);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::tri3:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::tri3);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::tri3);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::quad8:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad8);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad8);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           case DRT::Element::quad9:
           {
             const int numnodes =
-                DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
+                CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
             LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             LINALG::Matrix<2, numnodes> deriv;
-            DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad9);
-            DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>(
+            CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), DRT::Element::quad9);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }

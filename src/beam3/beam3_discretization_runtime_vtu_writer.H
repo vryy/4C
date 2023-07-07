@@ -21,13 +21,13 @@
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 class Epetra_Vector;
 class Epetra_MultiVector;
 
@@ -78,7 +78,7 @@ class BeamDiscretizationRuntimeVtuWriter
   void Initialize(Teuchos::RCP<DRT::Discretization> discretization,
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-      Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+      Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
       unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output);
 
 
@@ -256,7 +256,7 @@ class BeamDiscretizationRuntimeVtuWriter
    * @param gauss_point_values (in) Values at Gauss points
    * @param coefficients (out) Polynomial coefficients of the interpolated the Gauss point values.
    */
-  void CalcInterpolationPolynomialCoefficients(const DRT::UTILS::GaussRule1D& gauss_rule,
+  void CalcInterpolationPolynomialCoefficients(const CORE::DRT::UTILS::GaussRule1D& gauss_rule,
       const std::vector<double>& gauss_point_values,
       std::vector<double>& polynomial_coefficients) const;
 
@@ -294,7 +294,7 @@ class BeamDiscretizationRuntimeVtuWriter
   std::vector<unsigned int> local_row_indices_beam_elements_;
 
   //! periodic bounding box object
-  Teuchos::RCP<const GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+  Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
 
   //! number of points for each element ( in case of periodic boundary conditions
   //! not equal to 1)

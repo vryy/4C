@@ -18,6 +18,7 @@
 #include "adapter_fld_base_algorithm.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "inpar_scatra.H"
+#include "coupling_adapter_volmortar.H"
 
 namespace ADAPTER
 {
@@ -92,7 +93,7 @@ namespace ADAPTER
     INPAR::SCATRA::FieldCoupling fieldcoupling_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

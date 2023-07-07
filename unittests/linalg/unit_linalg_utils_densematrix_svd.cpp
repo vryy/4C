@@ -10,7 +10,7 @@
 
 #include "linalg_utils_densematrix_svd.H"
 
-#include "unittests_assertions.h"
+#include "unittest_utils_assertions.h"
 
 namespace
 {

@@ -16,7 +16,7 @@
 
 #include "lib_utils.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_discret.H"
 
 
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+  CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype =

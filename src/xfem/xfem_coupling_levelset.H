@@ -20,7 +20,7 @@ bridge between the xfluid class and the cut-library
 
 #include "xfem_utils.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -429,10 +429,10 @@ namespace XFEM
       //-------------------------------------------------------------------------
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* actele = cutter_dis_->gElement(eid);
@@ -613,10 +613,10 @@ namespace XFEM
 
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -648,10 +648,10 @@ namespace XFEM
       CheckForValidVectors();
 
       // number space dimensions for element
-      //    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      //    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -676,7 +676,7 @@ namespace XFEM
         const M4& esmoothedcurvature_T, const int numnode)
     {
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       double icurvature = 0.0;
 
@@ -774,7 +774,7 @@ namespace XFEM
       CheckForValidVectors();
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
@@ -919,7 +919,7 @@ namespace XFEM
 
 
     virtual const Teuchos::RCP<const Epetra_Vector> ComputeTransportVelocity(
-        const Teuchos::RCP<GEO::CutWizard>& wizard,  ///< the cut wizard
+        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< the cut wizard
         const Teuchos::RCP<const Epetra_Vector>&
             convective_velocity  ///< the convective fluid velocity based on initial dofmap (just
                                  ///< velocity)
@@ -982,10 +982,10 @@ namespace XFEM
         M1& gradphi, double& curvature, const DRT::Element* cutter_ele, const M2& funct)
     {
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
       Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
       Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
@@ -1028,7 +1028,7 @@ namespace XFEM
     bool RescaleNormal(Epetra_SerialDenseVector& normal);
 
     virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
+        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
         const double& curv);
 
     virtual void Output(
@@ -1107,7 +1107,7 @@ namespace XFEM
       const int cutter_eid = eid;
 
       // number space dimensions for element
-      const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       DRT::Element* cutter_ele = cutter_dis_->gElement(cutter_eid);
       if (cutter_ele == NULL) dserror("element not available");
@@ -1163,7 +1163,7 @@ namespace XFEM
     virtual void SetFlags_GeometricQuantities();
 
     virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
+        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
         const double& curv);
 
 

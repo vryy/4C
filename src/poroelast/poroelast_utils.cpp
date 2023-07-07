@@ -141,7 +141,7 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
-      dis->lColElements(), dis->lColElements() + dis->NumMyColElements(), IsPoroP1Element);
+      dis->MyColElementRange().begin(), dis->MyColElementRange().end(), IsPoroP1Element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
@@ -379,11 +379,13 @@ double POROELAST::UTILS::CalculateVectorNorm(
 }
 
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
-    const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1, const std::vector<int>& ids_2,
-    Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   // call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar, ele1, ids_2, dis1, dis2);
+  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+      volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
   DRT::Element* ele2 = nullptr;
@@ -424,11 +426,13 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
 }
 
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
-    const VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2, const std::vector<int>& ids_1,
-    Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2)
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   // call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(volmortar, ele2, ids_1, dis1, dis2);
+  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+      volmortar, ele2, ids_1, dis1, dis2);
 
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;

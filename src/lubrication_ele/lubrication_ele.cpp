@@ -16,7 +16,7 @@
 
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include "linalg_utils_nullspace.H"
+#include "fluid_ele_nullspace.H"
 
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
@@ -60,7 +60,7 @@ void DRT::ELEMENTS::LubricationType::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::LubricationType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
 void DRT::ELEMENTS::LubricationType::SetupElementDefinition(
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Lubrication::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
 }
 
 
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::Lubrication::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Lubrication::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
 }
 
 
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::Lubrication::NumSurface() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Lubrication::NumVolume() const
 {
-  return DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
 
 
@@ -359,7 +359,7 @@ DRT::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::LubricationBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::LubricationBoundary::NumLine() const
 {
-  return DRT::UTILS::getNumberOfElementLines(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -413,7 +413,7 @@ int DRT::ELEMENTS::LubricationBoundary::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
 {
-  return DRT::UTILS::getNumberOfElementSurfaces(Shape());
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*

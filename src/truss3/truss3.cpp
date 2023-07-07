@@ -10,8 +10,11 @@
 
 #include "truss3.H"
 #include "lib_linedefinition.H"
+#include "lib_node.H"
+#include "lib_discret.H"
+
 #include "structure_new_elements_paramsinterface.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
@@ -55,7 +58,7 @@ void DRT::ELEMENTS::Truss3Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
@@ -79,7 +82,7 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       crosssec_(0.0),
       eint_(0.0),
       lrefe_(0.0),
-      gaussrule_(DRT::UTILS::GaussRule1D::line_2point),
+      gaussrule_(CORE::DRT::UTILS::GaussRule1D::line_2point),
       data_(),
       diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
       interface_ptr_(Teuchos::null),
@@ -130,7 +133,7 @@ void DRT::ELEMENTS::Truss3::Print(std::ostream& os) const
 {
   os << "Truss3 ";
   Element::Print(os);
-  os << " gaussrule_: " << DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
+  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
 }
 
 /*----------------------------------------------------------------------*
@@ -215,10 +218,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Truss3::Lines()
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
     int nnode, IntegrationType integrationtype)
 {
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::GaussRule1D::undefined;
+  CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::undefined;
 
   switch (nnode)
   {
@@ -228,17 +231,17 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_1point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_1point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_lobatto2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_lobatto2point;
           break;
         }
         default:
@@ -252,17 +255,17 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_2point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_lobatto3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
           break;
         }
         default:
@@ -276,12 +279,12 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_4point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_4point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_3point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
           break;
         }
         default:
@@ -295,12 +298,12 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
       {
         case gaussexactintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_5point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = DRT::UTILS::GaussRule1D::line_4point;
+          gaussrule = CORE::DRT::UTILS::GaussRule1D::line_4point;
           break;
         }
         default:

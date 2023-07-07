@@ -14,7 +14,7 @@
 #include "lib_discret.H"
 #include "lib_utils.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "discretization_fem_general_utils_boundary_integration.H"
@@ -33,7 +33,7 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
     case DRT::Element::quad4:
     {
       return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::quad4>::Instance(
-          ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -44,9 +44,9 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(
@@ -109,6 +109,6 @@ inline void DRT::ELEMENTS::Ale3Surface_Impl<distype>::ElementNodeNormal(Ale3Surf
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
-  DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_, ele,
-      discretization, elevec1, mydispnp, false, true);
+  CORE::DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
+      ele, discretization, elevec1, mydispnp, false, true);
 }

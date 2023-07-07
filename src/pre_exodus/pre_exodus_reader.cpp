@@ -597,8 +597,8 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       case ElementBlock::pyramid5:
       {
         //      vector<std::vector<int> > test =
-        //      DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned int
-        //      j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
+        //      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
+        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
         actface = PyrSideNumberExoToBaci(actface);
         pyrc++;
         break;
@@ -606,8 +606,8 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       case ElementBlock::wedge6:
       {
         //      vector<std::vector<int> > test =
-        //      DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned int
-        //      j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
+        //      CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
+        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
         wedgc++;
         break;
       }
@@ -619,7 +619,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       }
     }
     std::vector<int> childmap =
-        DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     std::vector<int> child;
     for (unsigned int j = 0; j < childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
@@ -749,7 +749,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       }
     }
     std::vector<int> childmap =
-        DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        CORE::DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
 
     std::vector<int> child;
     if (checkoutside)
@@ -1458,7 +1458,8 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
        elem != eleconn->end(); ++elem)
   {
-    if (DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
+    if (CORE::DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) !=
+        (int)elem->second.size())
     {
       dserror("number of read nodes does not fit the distype");
     }

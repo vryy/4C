@@ -26,7 +26,7 @@
 #include "discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "nurbs_discret_nurbs_utils.H"
 #include "discretization_fem_general_utils_gder2.H"
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_condition_utils.H"
 
 #include "mat_list.H"
@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcAniso<distype, probdim>>(
@@ -49,7 +49,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*

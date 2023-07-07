@@ -12,6 +12,9 @@
 #ifndef LIB_UTILS_VECTOR_H
 #define LIB_UTILS_VECTOR_H
 
+#include <vector>
+#include <algorithm>
+
 namespace DRT
 {
   namespace UTILS

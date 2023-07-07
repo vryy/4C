@@ -13,7 +13,7 @@
 #include "mortar_manager_base.H"
 #include "mortar_strategy_base.H"
 #include "contact_meshtying_contact_bridge.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "io.H"
 

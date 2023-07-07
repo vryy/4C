@@ -20,7 +20,7 @@
 #include "mortar_node.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_sparse_algebra_create.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_krylov_projector.H"
 #include "lib_globalproblem.H"
 #include "io.H"
@@ -394,7 +394,7 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysma
 /*-------------------------------------------------------*/
 void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
@@ -436,9 +436,9 @@ void ALE::Meshtying::DofRowMaps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshtying::GetMortarTrafo()
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshtying::GetMortarMatrixP()
 {
-  return adaptermeshtying_->GetMortarTrafo();
+  return adaptermeshtying_->GetMortarMatrixP();
 }
 
 /*-------------------------------------------------------*/
@@ -504,7 +504,7 @@ void ALE::Meshtying::CondensationOperationBlockMatrix(Teuchos::RCP<LINALG::Spars
   }
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm
@@ -610,7 +610,7 @@ void ALE::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ == true and firstnonliniter_ == true) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarMatrixP();
 
   // define new incremental vector
   Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap, true);

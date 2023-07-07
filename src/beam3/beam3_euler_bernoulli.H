@@ -52,8 +52,9 @@
 // Default: 3
 
 #define mygaussruleeb \
-  GaussRule1D::line_4point  // define gauss rule; intrule_line_1point - intrule_line_10point
-                            // is implemented
+  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                                // intrule_line_10point
+                                                // is implemented
 // Default: 4
 
 // #define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?

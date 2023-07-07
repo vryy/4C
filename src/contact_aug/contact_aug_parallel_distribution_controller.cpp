@@ -42,8 +42,8 @@ void CONTACT::AUG::ParallelDistributionController::setup(CONTACT::ParamsInterfac
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterface& cparams)
 {
-  cparams.ClearEntry(GEN::AnyDataContainer::DataType::time_monitor, 0);
-  cparams.ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
+  cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::time_monitor, 0);
+  cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 0);
 
   global_timer_.write(IO::cout.os(IO::verbose));
 

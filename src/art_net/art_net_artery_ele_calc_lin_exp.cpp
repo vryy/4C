@@ -48,7 +48,7 @@ DRT::ELEMENTS::ArteryEleCalcLinExp<distype>* DRT::ELEMENTS::ArteryEleCalcLinExp<
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = ::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcLinExp<distype>>(
@@ -57,7 +57,7 @@ DRT::ELEMENTS::ArteryEleCalcLinExp<distype>* DRT::ELEMENTS::ArteryEleCalcLinExp<
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].Instance(CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -573,7 +573,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
 
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints(ele->GaussRule());
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(ele->GaussRule());
 
   // integration loop
 
@@ -584,8 +584,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
     const double wgt = intpoints.qwgt[iquad];
 
     // shape functions and their derivatives
-    DRT::UTILS::shape_function_1D(my::funct_, xi, distype);
-    DRT::UTILS::shape_function_1D_deriv1(my::deriv_, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D(my::funct_, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(my::deriv_, xi, distype);
 
     // get Jacobian matrix and determinant
     // actually compute its transpose....

@@ -13,7 +13,7 @@
 #include "so3_line.H"
 #include "lib_discret.H"
 #include "lib_utils_factory.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "utils_exceptions.H"
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "mat_so3_material.H"
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::So_weg6Type::NodalBlockInformation(
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_weg6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
@@ -281,7 +281,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
-  DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
+  CORE::DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
   LINALG::Matrix<1, NUMDIM_WEG6> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

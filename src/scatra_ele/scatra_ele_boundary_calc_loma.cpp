@@ -37,7 +37,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = ::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcLoma<distype, probdim>>(
@@ -45,7 +45,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      ::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   std::vector<double> mynormvel(lm.size());
 
   // determine constant outer normal to this element
-  my::GetConstNormal(my::normal_, my::xyze_);
+  my::normal_ = my::GetConstNormal(my::xyze_);
 
   // extract temperature flux vector for each node of the parent element
   LINALG::SerialDenseMatrix eflux(3, nenparent);
@@ -338,7 +338,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAnd
   double normvelint = params.get<double>("normal velocity integral");
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points

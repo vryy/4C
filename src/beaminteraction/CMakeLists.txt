@@ -6,7 +6,6 @@ set(_beaminteraction_dependencies
     beamcontact
     binstrategy
     core
-    geometry
     geometry_pair
     inpar
     io

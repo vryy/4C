@@ -15,10 +15,10 @@ equations
 #include "cut_mesh.H"
 #include "cut_enum.H"
 
-//#define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
-//#define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
+// #define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+// #define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -33,8 +33,8 @@ namespace GEO
     class FacetIntegration
     {
      public:
-      FacetIntegration(Facet *face1, Element *element1, const GEO::CUT::Point::PointPosition posi,
-          bool bcellInt, bool global)
+      FacetIntegration(Facet *face1, Element *element1,
+          const CORE::GEO::CUT::Point::PointPosition posi, bool bcellInt, bool global)
           : face1_(face1),            // facet under consideration
             elem1_(element1),         // the element for which the facet is a part of
             position_(posi),          // position
@@ -76,14 +76,14 @@ namespace GEO
       when DirectDivergence option is used for Gauss point generation
       */
       void DivergenceIntegrationRule(
-          Mesh &mesh, Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> &cgp);
+          Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp);
 
       /*!
       \brief Generate Gaussian points over the considered facet by triangulating it. This is used
       when DirectDivergence option is used for Gauss point generation
       */
       void DivergenceIntegrationRuleNew(
-          Mesh &mesh, Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> &cgp);
+          Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp);
 
      private:
       /*!
@@ -96,19 +96,19 @@ namespace GEO
       \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
       */
       std::vector<double> compute_alpha(
-          std::vector<double> &eqn_plane, GEO::CUT::ProjectionDirection intType);
+          std::vector<double> &eqn_plane, CORE::GEO::CUT::ProjectionDirection intType);
 
       /*!
       \brief Get normal of the considered facet in a particular coordinate direction defined by
       intType
       */
-      double getNormal(GEO::CUT::ProjectionDirection intType);
+      double getNormal(CORE::GEO::CUT::ProjectionDirection intType);
 
       /*!
       \brief Perform integration of base functions over boundarycells
       */
       void BoundaryFacetIntegration(const std::vector<std::vector<double>> &cornersLocal,
-          double &facet_integ, GEO::CUT::ProjectionDirection intType);
+          double &facet_integ, CORE::GEO::CUT::ProjectionDirection intType);
 
       /*!
       \brief Generate boundary cells for the considered facet. May need to perform triangulatio
@@ -149,7 +149,7 @@ namespace GEO
       Element *elem1_;
 
       //! position of the facet
-      const GEO::CUT::Point::PointPosition position_;
+      const CORE::GEO::CUT::Point::PointPosition position_;
 
       //! True for boundarycell integration
       bool bcellInt_;
@@ -172,6 +172,6 @@ namespace GEO
       std::list<Teuchos::RCP<BoundaryCell>> boundarycells_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

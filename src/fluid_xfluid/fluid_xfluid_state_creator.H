@@ -29,7 +29,7 @@ namespace DRT
   class DiscretizationXFEM;
 }  // namespace DRT
 
-namespace GEO
+namespace CORE::GEO
 {
   class CutWizard;
 }
@@ -115,7 +115,7 @@ namespace FLD
     /// create wizard, perform cut, create new dofset and update xfem discretization
     void CreateNewCutState(
         Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-        Teuchos::RCP<GEO::CutWizard>&
+        Teuchos::RCP<CORE::GEO::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state
         const Teuchos::RCP<DRT::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization

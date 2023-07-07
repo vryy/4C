@@ -269,9 +269,9 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   /*----------------------------------------------------------------------*/
 
@@ -309,15 +309,16 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   LINALG::SparseMatrix& fGG = blockf->Matrix(3, 3);
 
   // mat.Matrix(0,0).UnComplete();
-  (*fggtransform_)(fgg, scale * timescale, ADAPTER::CouplingSlaveConverter(coupsf),
-      ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
-  (*fgitransform_)(fgi, scale, ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1));
-  (*fgGtransform_)(fgG, scale, ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1), true);
+  (*fggtransform_)(fgg, scale * timescale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
+  (*fgitransform_)(fgi, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1));
+  (*fgGtransform_)(
+      fgG, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1), true);
 
   (*figtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fig, timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
   (*fGgtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fGg, timescale,
-      ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
+      CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
 
   mat.Matrix(1, 1).Add(fii, false, 1.0, 0.0);
   mat.Matrix(1, 1).Add(fiG, false, 1.0, 1.0);
@@ -344,37 +345,37 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
     (*fmGitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGi, 1.,
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
-    (*fmgitransform_)(fmgi, scale, ADAPTER::CouplingSlaveConverter(coupsf),
-        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 2), false, false);
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
+    (*fmgitransform_)(fmgi, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 2), false, false);
 
     (*fmigtransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmig, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
     (*fmGgtransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGg, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
 
-    (*fmggtransform_)(fmgg, scale, ADAPTER::CouplingSlaveConverter(coupsf),
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
+    (*fmggtransform_)(fmgg, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
 
     (*fmiGtransform_)(*coupfsout_->MasterDofMap(), fmiG.ColMap(), fmiG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
     (*fmGGtransform_)(*coupfsout_->MasterDofMap(), fmGG.ColMap(), fmGG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
-    (*fmgGtransform_)(fmgG, scale, ADAPTER::CouplingSlaveConverter(coupsf),
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(0, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+    (*fmgGtransform_)(fmgG, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(0, 0), true, true);
 
     LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
     LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3, 3);
 
     (*addfmGGtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
         AddFluidShapeDerivMatrix_->FullColMap(), addfmGG, 1.,
-        ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
 
     (*addfmGgtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
         AddFluidShapeDerivMatrix_->FullColMap(), addfmGg, 1.,
-        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
+        CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -407,7 +408,8 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // add interface part to structure block
 
   mat.Matrix(0, 3).UnComplete();
-  (*fcgitransform_)(fcgi, scale, ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 3), true);
+  (*fcgitransform_)(
+      fcgi, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 3), true);
 
   /*----------------------------------------------------------------------*/
   // ale part
@@ -425,10 +427,10 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   mat.Assign(2, 2, LINALG::View, aii);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
-      ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
+      CORE::ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
 
   (*aiGtransform_)(a->FullRowMap(), a->FullColMap(), aiG, 1.,
-      ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0), true, true);
+      CORE::ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
@@ -457,7 +459,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
   (*caiGtransform_)(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
-      ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
+      CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

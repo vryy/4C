@@ -238,6 +238,12 @@ namespace SCATRA
     //! temperature is computed based on function prescribed in input file
     double ComputeTemperatureFromFunction() const;
 
+    //! evaluate SOC and c-rate of electrode
+    void EvaluateElectrodeInfoInterior();
+
+    //! evaluate cell voltage of electrode
+    void EvaluateCellVoltage();
+
     //! extrapolate current state and adapt time step
     double ExtrapolateStateAdaptTimeStep(double dt);
 
@@ -377,6 +383,9 @@ namespace SCATRA
     //! total electric currents at electrode boundaries
     std::map<int, double> electrodecurr_;
 
+    //! voltage at both conditions
+    std::map<int, double> electrodevoltage_;
+
     //! cell voltage
     double cellvoltage_;
 
@@ -402,6 +411,10 @@ namespace SCATRA
 
     //! map extractor for macro scale in multi-scale simulations
     Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;
+
+    //! CSV writers for SOC, c-rate and cell voltage
+    std::map<int, std::optional<IO::RuntimeCsvWriter>> runtime_csvwriter_soc_;
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_cell_voltage_;
   };  // class ScaTraTimIntElch
 
 

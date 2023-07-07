@@ -27,11 +27,11 @@ namespace MAT
   class Material;
 }
 
-namespace GEOMETRICSEARCH
+namespace CORE::GEOMETRICSEARCH
 {
   class BoundingVolume;
   class GeometricSearchParams;
-}  // namespace GEOMETRICSEARCH
+}  // namespace CORE::GEOMETRICSEARCH
 
 namespace DRT
 {
@@ -1283,9 +1283,10 @@ namespace DRT
     /**
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
-    virtual GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
+    virtual CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(
+        const DRT::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-        const Teuchos::RCP<const GEOMETRICSEARCH::GeometricSearchParams>& params) const;
+        const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const;
     /// @}
 
    private:
@@ -1492,6 +1493,7 @@ namespace DRT
       parent_slave_ = slave;
       lface_slave_ = lface_slave;
     }
+
 
    protected:
     /*!

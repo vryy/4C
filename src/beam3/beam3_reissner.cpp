@@ -18,7 +18,7 @@
 #include "utils_exceptions.H"
 #include "lib_globalproblem.H"
 #include "inpar_validparameters.H"
-#include "linalg_utils_nullspace.H"
+#include "so3_nullspace.H"
 #include "linalg_fixedsizematrix.H"
 #include "linalg_serialdensematrix.H"
 #include "discretization_fem_general_largerotations.H"
@@ -210,8 +210,8 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -563,7 +563,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
+CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     const IntegrationPurpose intpurpose) const
 {
   const DRT::Element::DiscretizationType distype = this->Shape();
@@ -579,30 +579,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_lobatto3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
         default:
         {
@@ -623,30 +623,30 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_3point;
+            return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_4point;
+            return CORE::DRT::UTILS::GaussRule1D::line_4point;
           else
-            return DRT::UTILS::GaussRule1D::line_5point;
+            return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -664,19 +664,19 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
       {
         case line2:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_5point;
+          return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
         default:
         {
@@ -690,7 +690,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      return DRT::UTILS::GaussRule1D::line_4point;
+      return CORE::DRT::UTILS::GaussRule1D::line_4point;
     }
 
     /* 'full' integration of Neumann line loads
@@ -703,21 +703,21 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
         case line2:
         {
           if (!centerline_hermite_)
-            return DRT::UTILS::GaussRule1D::line_1point;
+            return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
-            return DRT::UTILS::GaussRule1D::line_2point;
+            return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line3:
         {
-          return DRT::UTILS::GaussRule1D::line_2point;
+          return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
         case line4:
         {
-          return DRT::UTILS::GaussRule1D::line_3point;
+          return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
         case line5:
         {
-          return DRT::UTILS::GaussRule1D::line_4point;
+          return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
         default:
         {
@@ -735,7 +735,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     }
   }
 
-  return DRT::UTILS::GaussRule1D::undefined;
+  return CORE::DRT::UTILS::GaussRule1D::undefined;
   ;
 }
 
@@ -837,7 +837,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     for (unsigned int node = 0; node < nnodetriad; node++)
     {
       LINALG::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
-      LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
+      CORE::LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
     }
 
     Qconvnode_ = Qnewnode_;
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
       Gref.Clear();
-      LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
+      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
       for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
@@ -892,7 +892,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
     jacobiGPelastf_.resize(gausspoints_elast_force.nquad);
     GammarefGP_.resize(gausspoints_elast_force.nquad);
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     //***************************
 
     // Get the applied integration scheme
-    DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
     jacobiGPelastm_.resize(gausspoints_elast_moment.nquad);
     KrefGP_.resize(gausspoints_elast_moment.nquad);
@@ -1028,8 +1028,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
-    DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
     jacobiGPmass_.resize(gausspoints_inertia.nquad);
@@ -1098,10 +1098,10 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // compute Jacobi determinant at GPs for integration of damping/stochastic forces
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
+    CORE::DRT::UTILS::GaussRule1D gaussrule_damp_stoch =
         MyGaussRule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
                                       // been applied above
-    DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
     // named 'dampstoch'
@@ -1138,8 +1138,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
-    DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
+    CORE::DRT::UTILS::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
+    CORE::DRT::UTILS::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
     jacobiGPneumannline_.resize(gausspoints_neumann.nquad);
@@ -1187,7 +1187,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    if (nodeids[this->nodeI_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeI_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //      for (int i=0; i<3; i++)
   //        Tcurrnode_[0](i)= DummyLambda(i,0);
@@ -1195,7 +1195,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
   //    else if (nodeids[this->nodeJ_]==NodeID)
   //    {
   //      LINALG::Matrix<3,3>DummyLambda(true);
-  //      LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
+  //      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[this->nodeJ_],DummyLambda);
   //      Tcurrnode_[0].Clear();
   //
   //      for (int i=0; i<3; i++)
@@ -1729,7 +1729,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // compute physical total angle theta_totlag
-    LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
+    CORE::LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
   }
 
   // set differentiation variables for FAD: rotational DOFs
@@ -1750,7 +1750,7 @@ void DRT::ELEMENTS::Beam3r::SetAutomaticDifferentiationVariables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     Q_i[node].PutScalar(0.0);
-    LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
   }
 }
 
@@ -1955,12 +1955,12 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // get initial nodal rotation vectors and transform to quaternions
-    LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
+    CORE::LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
 
     // rotate initial triads by relative rotation vector from displacement vector (via quaternion
     // product)
-    LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
-    LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
+    CORE::LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
+    CORE::LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations

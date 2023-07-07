@@ -17,7 +17,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   class Coupling;
 }
@@ -33,7 +33,7 @@ namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ADAPTER
+namespace CORE::ADAPTER
 {
   /*! \class CouplingConverter
    *  \brief Abstract converter base for master/slave conversion of data
@@ -110,6 +110,6 @@ namespace ADAPTER
     const Coupling& coup_;
   };
 
-}  // namespace ADAPTER
+}  // namespace CORE::ADAPTER
 
 #endif  // COUPLING_ADAPTER_CONVERTER_H

@@ -89,8 +89,11 @@ namespace LINALG
 
     void Zero();
     void Reset();
-    void Complete();
-    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+
+    void Complete(bool enforce_complete = false) override;
+
+    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
+        bool enforce_complete = false) override;
 
     void UnComplete();
 
@@ -324,7 +327,7 @@ namespace LINALG
      */
     void Assemble(double val, int rgid, int cgid) { Strategy::Assemble(val, rgid, cgid); }
 
-    void Complete();
+    void Complete(bool enforce_complete = false);
 
    private:
     /** \brief internal clone method which provides the possibility to clone only
@@ -377,7 +380,7 @@ namespace LINALG
     void Assemble(double val, int rgid, int cgid);
 
     /// assemble the remaining ghost entries
-    void Complete();
+    void Complete(bool enforce_complete = false);
 
    protected:
     /// assemble into the given block
@@ -544,10 +547,10 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-void LINALG::BlockSparseMatrix<Strategy>::Complete()
+void LINALG::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
 {
   Strategy::Complete();
-  BlockSparseMatrixBase::Complete();
+  BlockSparseMatrixBase::Complete(enforce_complete);
 }
 
 

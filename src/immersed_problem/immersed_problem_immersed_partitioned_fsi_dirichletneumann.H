@@ -20,7 +20,7 @@ namespace FLD
   class FluidImplicitTimeInt;
 }
 
-namespace GEO
+namespace CORE::GEO
 {
   class SearchTree;
 }
@@ -176,9 +176,10 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;  //!< bdry traction rhs on struct FSI surface
     Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;  //!< background velocity interpolated
                                                              //!< from immersed dis (current state)
-    Teuchos::RCP<Epetra_Map> dbcmap_immersed_;            //!< dirichlet bc map of immersed values
-    Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;      //!< search tree for fluid domain
-    Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;  //!< search tree for structure domain
+    Teuchos::RCP<Epetra_Map> dbcmap_immersed_;              //!< dirichlet bc map of immersed values
+    Teuchos::RCP<CORE::GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+    Teuchos::RCP<CORE::GEO::SearchTree>
+        structure_SearchTree_;  //!< search tree for structure domain
     std::map<int, std::set<int>>
         curr_subset_of_fluiddis_;  //!< fluid elements to evaluate the dirichlet interpolation
     std::map<int, LINALG::Matrix<3, 1>>

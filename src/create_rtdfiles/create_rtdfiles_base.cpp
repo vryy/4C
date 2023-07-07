@@ -8,9 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
+#
+#include <iostream>
+#include <cstring>
 #include "create_rtdfiles_wrapper.H"
 #include "config_compile_settings.H"
-#include "inpar_validcontactconstitutivelaw.H"
 
 
 int main(int argc, char *argv[])
@@ -37,10 +39,10 @@ int main(int argc, char *argv[])
     std::cout << "Writing materialreference.rst finished\n";
     DRT::RTD::WriteReadTheDocsCondition("conditionreference.rst");
     std::cout << "Writing conditionreference.rst finished\n";
+    DRT::RTD::WriteReadTheDocsVarious("furtherreference.rst");
+    std::cout << "Writing furtherreference.rst finished\n";
     const std::string contactconstitivedocumentationfilename = "contactconstitutivereference.rst";
     const std::string elementdocumentationfilename = "elementreference.rst";
-    const std::string functiondocumentationfilename = "functionreference.rst";
-    const std::string resultdescriptiondocumentationfilename = "resultdescriptionreference.rst";
     /*
      * TODO: Other files can be written as readthedocs Reference files (e.g. Element Reference)
      */

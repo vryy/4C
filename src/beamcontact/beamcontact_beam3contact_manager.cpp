@@ -3090,7 +3090,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               theta(1) = nodaltangents(1, j);
               theta(2) = nodaltangents(2, j);
               R.Clear();
-              LARGEROTATIONS::angletotriad(theta, R);
+              CORE::LARGEROTATIONS::angletotriad(theta, R);
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
               nodaltangents(0, j) = (1.0 + lt) * R(0, 0);
@@ -3228,7 +3228,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // for creating an unique filename if contact forces should be written in a text file
 
       // Get number of Gauss points used for one contact interval
-      const int numgp = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
+      const int numgp = CORE::DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
 
       // Get moment of inertia
       // double Iyy1 = 0.0;

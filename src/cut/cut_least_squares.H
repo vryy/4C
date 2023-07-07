@@ -16,7 +16,7 @@
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_serialdensematrix.H"
 #include "linalg_serialdensevector.H"
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -49,6 +49,6 @@ namespace GEO
       Epetra_SerialDenseVector unknown_;
     };
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

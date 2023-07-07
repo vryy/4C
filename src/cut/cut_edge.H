@@ -16,7 +16,7 @@
 #include "cut_node.H"
 #include "cut_tolerance.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -37,7 +37,7 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       static Teuchos::RCP<Edge> Create(
-          DRT::Element::DiscretizationType edgetype, const std::vector<Node*>& nodes);
+          ::DRT::Element::DiscretizationType edgetype, const std::vector<Node*>& nodes);
 
       /** \brief Create a new concrete edge object
        *
@@ -73,7 +73,7 @@ namespace GEO
 
       virtual unsigned NumNodes() const = 0;
 
-      virtual DRT::Element::DiscretizationType Shape() const = 0;
+      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
 
       /*! \brief Add the side to the list of sides cut by this edge */
       void Register(Side* side)
@@ -283,9 +283,10 @@ namespace GEO
     };  // class Edge
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probDim, DRT::Element::DiscretizationType edgeType,
-        unsigned dimEdge = DRT::UTILS::DisTypeToDim<edgeType>::dim,
-        unsigned numNodesEdge = DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
+    template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
+        unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
+        unsigned numNodesEdge =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
     class ConcreteEdge : public Edge
     {
      public:
@@ -305,7 +306,7 @@ namespace GEO
       virtual unsigned ProbDim() const { return probDim; }
 
       /// get the shape of this edge element
-      virtual DRT::Element::DiscretizationType Shape() const { return edgeType; }
+      virtual ::DRT::Element::DiscretizationType Shape() const { return edgeType; }
 
       /*! \brief Get the coordinates of the nodes of the side */
       virtual void Coordinates(double* xyze)
@@ -397,8 +398,8 @@ namespace GEO
       }
 
      private:
-      Teuchos::RCP<GEO::CUT::IntersectionBase> IntersectionPtr(
-          const DRT::Element::DiscretizationType& sidetype) const;
+      Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> IntersectionPtr(
+          const ::DRT::Element::DiscretizationType& sidetype) const;
 
     };  // class ConcreteEdge
 
@@ -413,11 +414,11 @@ namespace GEO
       virtual ~EdgeFactory(){};
 
       /// create the concrete edge object
-      Teuchos::RCP<Edge> CreateEdge(
-          const DRT::Element::DiscretizationType& edgetype, const std::vector<Node*>& nodes) const;
+      Teuchos::RCP<Edge> CreateEdge(const ::DRT::Element::DiscretizationType& edgetype,
+          const std::vector<Node*>& nodes) const;
 
      private:
-      template <DRT::Element::DiscretizationType edgetype>
+      template <::DRT::Element::DiscretizationType edgetype>
       Edge* CreateConcreteEdge(const std::vector<Node*>& nodes, int probdim) const
       {
         Edge* e = NULL;
@@ -437,6 +438,6 @@ namespace GEO
       }
     };  // class EdgeFactory
   }     // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif  // CUT_EDGE_H

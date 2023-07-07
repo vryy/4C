@@ -26,7 +26,7 @@ namespace Teuchos
 }  // namespace Teuchos
 
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -41,13 +41,13 @@ namespace GEO
       ~QuadratureCompression(){};
 
       bool PerformCompressionOfQuadrature(
-          DRT::UTILS::GaussPointsComposite& gin, GEO::CUT::VolumeCell* vc);
+          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      // DRT::UTILS::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
-      Teuchos::RCP<DRT::UTILS::GaussPoints> GetCompressedQuadrature() { return gout_; }
+      // CORE::DRT::UTILS::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> GetCompressedQuadrature() { return gout_; }
 
      private:
-      void FormMatrixSystem(DRT::UTILS::GaussPointsComposite& gin,
+      void FormMatrixSystem(CORE::DRT::UTILS::GaussPointsComposite& gin,
           Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs);
 
@@ -71,12 +71,12 @@ namespace GEO
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
 
-      bool Compress_Leja_points(DRT::UTILS::GaussPointsComposite& gin,
+      bool Compress_Leja_points(CORE::DRT::UTILS::GaussPointsComposite& gin,
           Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
 
-      void ComputeAndPrintError(DRT::UTILS::GaussPointsComposite& gin,
+      void ComputeAndPrintError(CORE::DRT::UTILS::GaussPointsComposite& gin,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work,
           int& na);
@@ -87,20 +87,20 @@ namespace GEO
       bool isThisValueAlreadyInDenseVector(
           int& input, std::vector<int>& vec, int upper_range, int& index);
 
-      Teuchos::RCP<DRT::UTILS::GaussPoints> FormNewQuadratureRule(
-          DRT::UTILS::GaussPointsComposite& gin,
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> FormNewQuadratureRule(
+          CORE::DRT::UTILS::GaussPointsComposite& gin,
           Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work,
           int& na);
       int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
 
       void WriteCompressedQuadratureGMSH(
-          DRT::UTILS::GaussPointsComposite& gin, GEO::CUT::VolumeCell* vc);
+          CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      void IntegratePredefinedPolynomials(DRT::UTILS::GaussPointsComposite& gin);
+      void IntegratePredefinedPolynomials(CORE::DRT::UTILS::GaussPointsComposite& gin);
 
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gout_;
+      Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gout_;
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 #endif  // CUT_QUADRATURE_COMPRESSION_H

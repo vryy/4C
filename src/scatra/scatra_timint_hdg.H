@@ -30,32 +30,32 @@ namespace SCATRA
     virtual ~TimIntHDG() {}
 
     //! setup
-    virtual void Setup();
+    void Setup() override;
 
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
     virtual void SetTheta();
 
     //! set states in the time integration schemes: additional vectors for HDG
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
     //! set the part of the right hand side belonging to the last time step
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     //! update the solution after convergence of the nonlinear iteration,
     //! current solution becomes old solution of next time step
-    virtual void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //  //! Initialization procedure before the first time step is done
     //  void PrepareFirstTimeStep ();
 
     //! update configuration and output to file/screen
-    virtual void OutputState();
+    void OutputState() override;
 
     //! write output for restart
-    virtual void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! read restart
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     //! set the initial scalar field phi
     void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field

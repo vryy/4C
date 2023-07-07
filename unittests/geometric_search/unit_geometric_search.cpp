@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
 
-#ifdef HAVE_ARBORX
+#ifdef BACI_WITH_ARBORX
 
 #include "discretization_geometric_search.H"
 #include "discretization_geometric_search_utils.H"
@@ -29,7 +29,7 @@ namespace
     }
 
    protected:
-    std::vector<std::pair<int, GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
+    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
     Epetra_SerialComm comm_;
     IO::verbositylevel verbosity_;
   };
@@ -42,7 +42,7 @@ namespace
   {
     Kokkos::ScopeGuard kokkos_guard;
 
-    GEOMETRICSEARCH::BoundingVolume boundingVolume1, boundingVolume2, boundingVolume3;
+    CORE::GEOMETRICSEARCH::BoundingVolume boundingVolume1, boundingVolume2, boundingVolume3;
 
     // setting up bounding volume 1
     {
@@ -117,8 +117,8 @@ namespace
     EXPECT_EQ(predicates_.size(), 1);
 
     const auto &[indices, offsets] =
-        GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
-    const auto pairs = GEOMETRICSEARCH::UTILS::GetPairs(indices, offsets);
+        CORE::GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+    const auto pairs = CORE::GEOMETRICSEARCH::GetPairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 1);
     EXPECT_EQ(pairs[0].first, 0);

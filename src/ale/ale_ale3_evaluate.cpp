@@ -30,43 +30,43 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
   {
     case DRT::Element::hex8:
     {
-      return Ale3_Impl<DRT::Element::hex8>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex20:
     {
-      return Ale3_Impl<DRT::Element::hex20>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex20>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::hex27:
     {
-      return Ale3_Impl<DRT::Element::hex27>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::hex27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet4:
     {
-      return Ale3_Impl<DRT::Element::tet4>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::tet4>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::tet10:
     {
-      return Ale3_Impl<DRT::Element::tet10>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::tet10>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::wedge6:
     {
-      return Ale3_Impl<DRT::Element::wedge6>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
     }
       /*  case DRT::Element::wedge15:
         {
-          return Ale3_Impl<DRT::Element::wedge15>::Instance(::UTILS::SingletonAction::create);
+          return Ale3_Impl<DRT::Element::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
         }*/
     case DRT::Element::pyramid5:
     {
-      return Ale3_Impl<DRT::Element::pyramid5>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::pyramid5>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs8:
     {
-      return Ale3_Impl<DRT::Element::nurbs8>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case DRT::Element::nurbs27:
     {
-      return Ale3_Impl<DRT::Element::nurbs27>::Instance(::UTILS::SingletonAction::create);
+      return Ale3_Impl<DRT::Element::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -77,9 +77,9 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::Ale3_Impl<distype>>(
@@ -286,8 +286,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   LINALG::Matrix<3, 3> xji;
 
   // gaussian points
-  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   // integration loops
   for (int iquad = 0; iquad < intpoints.nquad; iquad++)
@@ -297,8 +297,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
@@ -1407,8 +1407,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
   LINALG::Matrix<6, numdof> bop;
   LINALG::Matrix<6, 6> D(true);
   // gaussian points
-  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1422,8 +1422,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     if (distype != DRT::Element::nurbs8 && distype != DRT::Element::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1433,7 +1433,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
       gp(1) = e2;
       gp(2) = e3;
 
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+          funct, deriv, gp, myknots, weights, distype);
     }
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -1642,8 +1643,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   double vol = 0.;
 
   // gaussian points
-  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   // This whole method was copied from the ALE2 element and extended to 3D.
   // ToDo: proper computation and usage of min_detF. Is there any detailed literature
@@ -1661,8 +1662,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
     if (distype != DRT::Element::nurbs8 && distype != DRT::Element::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1672,7 +1673,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
       gp(1) = e2;
       gp(2) = e3;
 
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
+          funct, deriv, gp, myknots, weights, distype);
     }
 
     // determine jacobian matrix at point r,s,t
@@ -1721,29 +1723,29 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
+inline CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 {
   switch (distype)
   {
     case DRT::Element::hex8:
     case DRT::Element::nurbs8:
-      return DRT::UTILS::GaussRule3D::hex_8point;
+      return CORE::DRT::UTILS::GaussRule3D::hex_8point;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::nurbs27:
-      return DRT::UTILS::GaussRule3D::hex_27point;
+      return CORE::DRT::UTILS::GaussRule3D::hex_27point;
     case DRT::Element::tet4:
-      return DRT::UTILS::GaussRule3D::tet_4point;
+      return CORE::DRT::UTILS::GaussRule3D::tet_4point;
     case DRT::Element::tet10:
-      return DRT::UTILS::GaussRule3D::tet_5point;
+      return CORE::DRT::UTILS::GaussRule3D::tet_5point;
     case DRT::Element::wedge6:
-      return DRT::UTILS::GaussRule3D::wedge_6point;
+      return CORE::DRT::UTILS::GaussRule3D::wedge_6point;
     case DRT::Element::wedge15:
-      return DRT::UTILS::GaussRule3D::wedge_9point;
+      return CORE::DRT::UTILS::GaussRule3D::wedge_9point;
     case DRT::Element::pyramid5:
-      return DRT::UTILS::GaussRule3D::pyramid_8point;
+      return CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
-      return DRT::UTILS::GaussRule3D::undefined;
+      return CORE::DRT::UTILS::GaussRule3D::undefined;
   }
 }

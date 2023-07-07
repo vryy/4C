@@ -32,7 +32,7 @@
 #include "lib_globalproblem.H"
 
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_matrixtransform.H"
@@ -396,7 +396,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
       FluidField()->Interface()->ExtractFSICondVector(FluidField()->Dispnp());
   mortar_adapter_->IntegrateLinD(
       "displacement", disp_interface, StructureToFluidAtInterface(lambdanp_));
-  tmp_k_D = mortar_adapter_->GetDMatrix();
+  tmp_k_D = mortar_adapter_->GetMortarMatrixD();
 
   // fill off diagonal blocks
   {
@@ -534,9 +534,10 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   // Transform also colum map of D-Matrix
   (*k_D_transform_)(*FluidField()->Interface()->FSICondMap(),
       FluidField()->BlockSystemMatrix()->Matrix(1, 1).ColMap(), *tmp_k_D, 1.0,
-      ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_D_);
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_D_);
 
-  (*k_invD_transform_)(*invd, 1.0, ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_invD_, false);
+  (*k_invD_transform_)(
+      *invd, 1.0, CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_invD_, false);
 
   double stiparam = StructureField()->TimIntParam();
 
@@ -547,7 +548,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   (*k_DLin_transform_)(*FluidField()->Interface()->FSICondMap(),
       FluidField()->BlockSystemMatrix()->Matrix(1, 1).ColMap(), *tmp_k_DLin,
       1.0 - stiparam,  // *= b
-      ADAPTER::CouplingSlaveConverter(*icoupfs_),
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_),
       (Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(k_fs))->Matrix(1, 1), true, true);
 
   k_lambda_->Complete(

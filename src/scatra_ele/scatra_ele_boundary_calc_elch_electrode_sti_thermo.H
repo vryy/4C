@@ -21,7 +21,7 @@ namespace DRT
   {
     // class implementation
     template <DRT::Element::DiscretizationType distype,
-        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
@@ -64,6 +64,7 @@ namespace DRT
        * @param[in] timefacfac       time-integration factor times domain-integration factor
        * @param[in] timefacwgt       time-integration factor times Gauss point weight
        * @param[in] detF             determinant of jacobian at current integration point
+       * @param[in] num_dof_per_node number of dofs per node
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
        *
@@ -75,23 +76,24 @@ namespace DRT
           const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const LINALG::Matrix<nen_, 1>& eslavetempnp,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
           const std::vector<LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
-              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           LINALG::Matrix<nsd_, nen_> shapederivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
-          double detF, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
+          double detF, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_ms);
 
      private:
       //! private constructor for singletons

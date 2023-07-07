@@ -159,7 +159,7 @@
 #include "beaminteraction_link_beam3_reissner_line2_rigidjointed.H"
 #include "beaminteraction_link_truss.H"
 #include "mat_activefiber.H"
-#include "immersed_problem_immersed_node.H"
+#include "lib_immersed_node.H"
 #include "mat_maxwell_0d_acinus.H"
 #include "mat_maxwell_0d_acinus_NeoHookean.H"
 #include "mat_maxwell_0d_acinus_Exponential.H"
@@ -178,7 +178,7 @@ void DRT::ForceRegistrationOfParObjectTypes()
   s << DRT::ContainerType::Instance().Name() << " " << DRT::ConditionObjectType::Instance().Name()
     << " " << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
-    << IMMERSED::ImmersedNodeType::Instance().Name() << " "
+    << DRT::ImmersedNodeType::Instance().Name() << " "
     << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3rType::Instance().Name() << " "

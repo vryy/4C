@@ -38,7 +38,7 @@ namespace DRT
 
       /// Singleton access method
       static FluidEleCalcImmersed<distype>* Instance(
-          ::UTILS::SingletonAction action = ::UTILS::SingletonAction::create);
+          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
 
      protected:

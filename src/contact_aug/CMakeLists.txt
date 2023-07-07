@@ -9,7 +9,6 @@ set(_contact_aug_dependencies
     lib
     linalg
     mortar
-    solver
     solver_nonlin_nox
     structure_new
     )

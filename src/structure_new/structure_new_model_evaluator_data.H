@@ -29,13 +29,13 @@
 // forward declarations
 class Epetra_Comm;
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace MESHFREE
   {
     class BoundingBox;
   }
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace STR
 {
@@ -1378,7 +1378,7 @@ namespace STR
       };
 
       //! get vector holding periodic bounding box object
-      [[nodiscard]] Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
+      [[nodiscard]] Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
           const override
       {
         CheckInitSetup();

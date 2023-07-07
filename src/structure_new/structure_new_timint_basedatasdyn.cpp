@@ -19,7 +19,7 @@
 
 #include "lib_prestress_service.H"
 
-#include "solver_linalg_solver.H"
+#include "linear_solver_method_linalg.H"
 
 
 #include "beaminteraction_periodic_boundingbox.H"
@@ -313,7 +313,7 @@ void STR::TIMINT::BaseDataSDyn::Setup()
       case INPAR::STR::model_beam_interaction_old:
       case INPAR::STR::model_browniandyn:
       {
-        periodic_boundingbox_ = Teuchos::rcp(new GEO::MESHFREE::BoundingBox());
+        periodic_boundingbox_ = Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
         periodic_boundingbox_->Init();
         periodic_boundingbox_->Setup();
         break;

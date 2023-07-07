@@ -20,7 +20,8 @@
   | Operator () compare operator for plain_volumecell_sets
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::operator()(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
+bool CORE::GEO::CUT::Cmp::operator()(
+    const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets ---
   // GEO::CUT::Cmp::operator()" );
@@ -35,7 +36,7 @@ bool GEO::CUT::Cmp::operator()(const plain_volumecell_set& s1, const plain_volum
   | Compare() to compare two sets of plain_volumecell_set via comparing their first
  plain_volumecell_sets |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set1,
+bool CORE::GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set1,
     const std::set<plain_volumecell_set, Cmp>& set2) const
 {
   // compare two sets of plain_volumecell_set
@@ -54,7 +55,8 @@ bool GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set1,
   | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
+bool CORE::GEO::CUT::Cmp::Compare(
+    const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
 {
   // take the first vc in plain_volumecell_set. In case of linear elements
   // this is the only volumecell. For quadratic elements this is a set of vcs
@@ -75,7 +77,7 @@ bool GEO::CUT::Cmp::Compare(const plain_volumecell_set& s1, const plain_volumece
   | Operator () to compare two volume cells via the ids of their points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
+bool CORE::GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets ---
   // GEO::CUT::Cmp::Compare(vc,vc)" );
@@ -124,7 +126,7 @@ bool GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::NodalDofSet::NodalDofSet(
+CORE::GEO::CUT::NodalDofSet::NodalDofSet(
     std::set<plain_volumecell_set, Cmp>& connected_volumecells, bool is_std_dofset)
     : is_std_dofset_(is_std_dofset)
 {
@@ -140,7 +142,8 @@ GEO::CUT::NodalDofSet::NodalDofSet(
 }
 
 
-GEO::CUT::NodalDofSet::NodalDofSet(bool is_std_dofset, GEO::CUT::Point::PointPosition pos)
+CORE::GEO::CUT::NodalDofSet::NodalDofSet(
+    bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos)
     : is_std_dofset_(is_std_dofset), position_(pos)
 {
   volumecell_composite_.clear();
@@ -148,7 +151,7 @@ GEO::CUT::NodalDofSet::NodalDofSet(bool is_std_dofset, GEO::CUT::Point::PointPos
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-bool GEO::CUT::NodalDofSet::Contains(GEO::CUT::Point* p)
+bool CORE::GEO::CUT::NodalDofSet::Contains(CORE::GEO::CUT::Point* p)
 {
   // check if any volume-cell of the volumecell_composite contains this point
   for (std::set<plain_volumecell_set, Cmp>::iterator it = volumecell_composite_.begin();
@@ -167,7 +170,7 @@ bool GEO::CUT::NodalDofSet::Contains(GEO::CUT::Point* p)
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::NodalDofSet::CollectCutSides(GEO::CUT::plain_int_set& cutside_ids) const
+void CORE::GEO::CUT::NodalDofSet::CollectCutSides(CORE::GEO::CUT::plain_int_set& cutside_ids) const
 {
   // collect all cut sides
   for (std::set<plain_volumecell_set, Cmp>::iterator it = volumecell_composite_.begin();
@@ -184,7 +187,7 @@ void GEO::CUT::NodalDofSet::CollectCutSides(GEO::CUT::plain_int_set& cutside_ids
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::NodalDofSet::Print()
+void CORE::GEO::CUT::NodalDofSet::Print()
 {
   std::cout << "GEO::CUT::NodalDofSet:\n"
             << "STD dofset = " << (this->Is_Standard_DofSet() ? "TRUE\n" : "FALSE\n")
@@ -194,7 +197,7 @@ void GEO::CUT::NodalDofSet::Print()
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::CompositeNodalDofSet::Print()
+void CORE::GEO::CUT::CompositeNodalDofSet::Print()
 {
   std::cout << "GEO::CUT::CompositeNodalDofSet which contains " << nodal_dofsets_.size()
             << " combined GEO::CUT::NodalDofSet:\n "
@@ -206,7 +209,7 @@ void GEO::CUT::CompositeNodalDofSet::Print()
 /*-----------------------------------------------------------------------------------------*
  * register cuts
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::RegisterCuts()
+void CORE::GEO::CUT::Node::RegisterCuts()
 {
   if (Position() == Point::oncutsurface)
   {
@@ -222,7 +225,7 @@ void GEO::CUT::Node::RegisterCuts()
 /*-----------------------------------------------------------------------------------------*
  * Assign the vc_sets to the node if possible
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::AssignNodalCellSet(const std::vector<plain_volumecell_set>& ele_vc_sets,
+void CORE::GEO::CUT::Node::AssignNodalCellSet(const std::vector<plain_volumecell_set>& ele_vc_sets,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- AssignNodalCellSet");
@@ -264,7 +267,7 @@ void GEO::CUT::Node::AssignNodalCellSet(const std::vector<plain_volumecell_set>&
 /*-----------------------------------------------------------------------------------------*
  * Find the dofsets required at this node. (old unused version)
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::FindDOFSets(bool include_inner)
+void CORE::GEO::CUT::Node::FindDOFSets(bool include_inner)
 {
   const plain_element_set& elements = Elements();
 
@@ -352,7 +355,7 @@ void GEO::CUT::Node::FindDOFSets(bool include_inner)
 /*-----------------------------------------------------------------------------------------*
  * Find the dofsets required at this node.
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::FindDOFSetsNEW(
+void CORE::GEO::CUT::Node::FindDOFSetsNEW(
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
     std::vector<plain_volumecell_set>& cell_sets)
 {
@@ -399,7 +402,7 @@ void GEO::CUT::Node::FindDOFSetsNEW(
 /*-----------------------------------------------------------------------------------------*
  * get the dofset number of the Volumecell w.r.t this node (old unused version)
  *-----------------------------------------------------------------------------------------*/
-int GEO::CUT::Node::DofSetNumber(VolumeCell* cell)
+int CORE::GEO::CUT::Node::DofSetNumber(VolumeCell* cell)
 {
   int dofset = -1;
   for (unsigned i = 0; i < dofsets_.size(); ++i)
@@ -429,14 +432,14 @@ int GEO::CUT::Node::DofSetNumber(VolumeCell* cell)
 /*-----------------------------------------------------------------------------------------*
  * get number of dofsets
  *-----------------------------------------------------------------------------------------*/
-int GEO::CUT::Node::NumDofSets() const { return NodalDofSets().size(); }
+int CORE::GEO::CUT::Node::NumDofSets() const { return NodalDofSets().size(); }
 
 
 
 /*-----------------------------------------------------------------------------------------*
  * get the dofset number of the Volumecell w.r.t this node
  *-----------------------------------------------------------------------------------------*/
-int GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
+int CORE::GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
 {
   int dofset = -1;
 
@@ -448,10 +451,10 @@ int GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
 
   for (unsigned int i = 0; i < nodaldofsets_.size(); ++i)  // loop over sets
   {
-    const std::set<plain_volumecell_set, GEO::CUT::Cmp>& cellsets =
+    const std::set<plain_volumecell_set, CORE::GEO::CUT::Cmp>& cellsets =
         nodaldofsets_[i]->VolumeCellComposite();
 
-    for (std::set<plain_volumecell_set, GEO::CUT::Cmp>::const_iterator j = cellsets.begin();
+    for (std::set<plain_volumecell_set, CORE::GEO::CUT::Cmp>::const_iterator j = cellsets.begin();
          j != cellsets.end(); j++)
     {
       if (j->count(cell) > 0)
@@ -484,14 +487,15 @@ int GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
 /*-----------------------------------------------------------------------------------------*
  * sort all dofsets via xyz point coordinates (use compare functions in cut_node.H)
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::SortNodalDofSets()
+void CORE::GEO::CUT::Node::SortNodalDofSets()
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- SortNodalDofSets" );
 
 
   if (nodaldofsets_.size() > 1)
   {
-    std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet>>::iterator it_start = nodaldofsets_.begin();
+    std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>::iterator it_start =
+        nodaldofsets_.begin();
 
     if (nodaldofsets_[0]->Is_Standard_DofSet())
     {
@@ -515,7 +519,7 @@ void GEO::CUT::Node::SortNodalDofSets()
  * collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets
  *for a certain phase
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
+void CORE::GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CollectNodalDofSets"
   // );
@@ -532,7 +536,7 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
     Teuchos::RCP<NodalDofSet> nds = *it;
 
     bool is_std_dofset = nds->Is_Standard_DofSet();
-    GEO::CUT::Point::PointPosition pos = nds->Position();
+    CORE::GEO::CUT::Point::PointPosition pos = nds->Position();
 
     // already an appropriate composite of nodal dofsets found, the current nodal dofset can be
     // combined with?
@@ -540,14 +544,14 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
 
     if (is_std_dofset)  // do not combine standard dofsets as they are unique for each phase
     {
-      cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos));
+      cnds = Teuchos::rcp(new CORE::GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos));
       collected_nodaldofsets.push_back(cnds);
     }
     else  // ghost set -> create new collected set or append to an already existing one
     {
       if (collected_nodaldofsets.size() == 0)  // no composite added yet
       {
-        cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(
+        cnds = Teuchos::rcp(new CORE::GEO::CUT::CompositeNodalDofSet(
             is_std_dofset, pos));  // if first, then create a new composite
         collected_nodaldofsets.push_back(cnds);
       }
@@ -567,7 +571,7 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else  // different position, then create a new one!
           {
-            cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(
+            cnds = Teuchos::rcp(new CORE::GEO::CUT::CompositeNodalDofSet(
                 is_std_dofset, pos));  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
@@ -581,7 +585,7 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else
           {
-            cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(
+            cnds = Teuchos::rcp(new CORE::GEO::CUT::CompositeNodalDofSet(
                 is_std_dofset, pos));  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
@@ -604,9 +608,10 @@ void GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_nds)
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::BuildDOFCellSets(Point* p, const std::vector<plain_volumecell_set>& cell_sets,
-    const plain_volumecell_set& cells, const std::vector<plain_volumecell_set>& nodal_cell_sets,
-    plain_volumecell_set& done, bool isnodalcellset)
+void CORE::GEO::CUT::Node::BuildDOFCellSets(Point* p,
+    const std::vector<plain_volumecell_set>& cell_sets, const plain_volumecell_set& cells,
+    const std::vector<plain_volumecell_set>& nodal_cell_sets, plain_volumecell_set& done,
+    bool isnodalcellset)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- BuildDOFCellSets");
 
@@ -663,7 +668,7 @@ void GEO::CUT::Node::BuildDOFCellSets(Point* p, const std::vector<plain_volumece
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node (old unused version)
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,
+void CORE::GEO::CUT::Node::BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,
     const plain_volumecell_set& nodal_cells, plain_volumecell_set& done)
 {
   for (plain_volumecell_set::const_iterator i = nodal_cells.begin(); i != nodal_cells.end(); ++i)
@@ -690,11 +695,11 @@ void GEO::CUT::Node::BuildDOFCellSets(Point* p, const plain_volumecell_set& cell
 /*-----------------------------------------------------------------------------------------*
  *  Gives this node a selfcutposition and spreads the positional information    wirtz 05/13
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
+void CORE::GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
-    //#ifdef DEBUGCUTLIBRARY
+    // #ifdef DEBUGCUTLIBRARY
     if ((selfcutposition_ == Point::inside and pos == Point::outside) or
         (selfcutposition_ == Point::outside and pos == Point::inside))
     {
@@ -704,7 +709,7 @@ void GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
           "Are you sure that you want to change the selfcut-node-position from inside to outside "
           "or vice versa?");
     }
-    //#endif
+    // #endif
 
     // do not overwrite oncutsurface nodes
     if (selfcutposition_ == Point::oncutsurface) return;
@@ -730,7 +735,7 @@ void GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
  *  Changes the selfcutposition of this node and spreads the positional information
  *                                                                               wirtz 07/16
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::ChangeSelfCutPosition(Point::PointPosition pos)
+void CORE::GEO::CUT::Node::ChangeSelfCutPosition(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
@@ -746,7 +751,7 @@ void GEO::CUT::Node::ChangeSelfCutPosition(Point::PointPosition pos)
 /*-----------------------------------------------------------------------------------------*
  *  Returns true if the given node is exactly at the same position as this node     sudhakar 09/13
  *-----------------------------------------------------------------------------------------*/
-bool GEO::CUT::Node::isAtSameLocation(const Node* nod) const
+bool CORE::GEO::CUT::Node::isAtSameLocation(const Node* nod) const
 {
   LINALG::Matrix<3, 1> nx1, nx2;
 
@@ -763,7 +768,7 @@ bool GEO::CUT::Node::isAtSameLocation(const Node* nod) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Node::RemoveNonStandardNodalDofSets()
+void CORE::GEO::CUT::Node::RemoveNonStandardNodalDofSets()
 {
   std::vector<Teuchos::RCP<NodalDofSet>> std_nodaldofset;
   std_nodaldofset.reserve(1);
@@ -789,7 +794,7 @@ void GEO::CUT::Node::RemoveNonStandardNodalDofSets()
 /*-----------------------------------------------------------------------------------------*
  * get the unique standard NodalDofSet for a given nodal dofset position
  *-----------------------------------------------------------------------------------------*/
-int GEO::CUT::Node::GetStandardNodalDofSet(Point::PointPosition pos)
+int CORE::GEO::CUT::Node::GetStandardNodalDofSet(Point::PointPosition pos)
 {
   for (int i = 0; i < NumDofSets(); i++)
   {
@@ -806,7 +811,7 @@ int GEO::CUT::Node::GetStandardNodalDofSet(Point::PointPosition pos)
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-bool GEO::CUT::NodalDofSetCmp::operator()(
+bool CORE::GEO::CUT::NodalDofSetCmp::operator()(
     Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2)
 {
   //==============================================
@@ -843,21 +848,22 @@ bool GEO::CUT::NodalDofSetCmp::operator()(
   const std::set<plain_volumecell_set, Cmp>& composite1 = nodaldofset1->VolumeCellComposite();
   const std::set<plain_volumecell_set, Cmp>& composite2 = nodaldofset2->VolumeCellComposite();
 
-  GEO::CUT::Cmp comp;
+  CORE::GEO::CUT::Cmp comp;
 
   return comp.Compare(composite1, composite2);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::CUT::FindCommonElements(const std::vector<Node*>& nelement, plain_element_set& elements)
+void CORE::GEO::CUT::FindCommonElements(
+    const std::vector<Node*>& nelement, plain_element_set& elements)
 {
   // find the element defined by the given nodes
-  std::vector<GEO::CUT::Point*> pelement;
+  std::vector<CORE::GEO::CUT::Point*> pelement;
   pelement.reserve(nelement.size());
 
-  for (std::vector<GEO::CUT::Node*>::const_iterator cit = nelement.begin(); cit != nelement.end();
-       ++cit)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator cit = nelement.begin();
+       cit != nelement.end(); ++cit)
     pelement.push_back((*cit)->point());
 
   FindCommonElements(pelement, elements);

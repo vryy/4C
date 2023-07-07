@@ -57,7 +57,7 @@ namespace DRT
       {
        public:
         /// number of spatial dimensions
-        static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
@@ -261,7 +261,8 @@ namespace DRT
       {
        public:
         /// number of nodes per master element
-        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         /// number of spatial dimensions
         static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal DOF for master element (always a xfem-fluid element)
@@ -401,13 +402,15 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfluid) element
-        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ =
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         /// number of spatial dimensions of the master element (xfem-fluid)
         static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (coupling master is always a fluid element!)
         static const unsigned master_numdof_ = nsd_ + 1;
         /// number of independent stress-dof
-        static const unsigned numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+        static const unsigned numstressdof_ =
+            CORE::DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems

@@ -19,7 +19,7 @@
 #include "mortar_utils.H"
 #include "inpar_contact.H"
 #include "linalg_multiply.H"
-#include "solver_linalg_solver.H"  // mesh initialization :-(
+#include "linear_solver_method_linalg.H"  // mesh initialization :-(
 #include "linalg_utils_sparse_algebra_create.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 

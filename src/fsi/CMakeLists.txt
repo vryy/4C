@@ -12,7 +12,6 @@ set(_fsi_dependencies
     fluid
     fluid_xfluid
     fsi_xfem
-    geometry
     inpar
     io
     lib
@@ -22,7 +21,6 @@ set(_fsi_dependencies
     poroelast
     rebalance
     so3
-    solver
     solver_nonlin_nox
     structure
     structure_new

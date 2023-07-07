@@ -154,13 +154,13 @@ Teuchos::SerialDenseMatrix<int, double> CONTACT::B3TANGENTSMOOTHING::GetNodalDer
   Teuchos::SerialDenseMatrix<int, double> deriv1(1, nnode);
 
   if (node == nnode)
-    DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
   else
   {
     if (node == 1)
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
     else
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
+      CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
   }
 
   for (int i = 0; i < nnode; i++) deriv1(0, i) = 2.0 * deriv1(0, i) / length;

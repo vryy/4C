@@ -15,7 +15,7 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
-#include "geometry_position_array.H"
+#include "discretization_geometry_position_array.H"
 #include "lib_discret.H"  // for time curve in body force
 #include "lib_utils.H"
 #include "lib_globalproblem.H"  // consistency check of formulation and material
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // integration loop for one element
       //----------------------------------------------------------------------
       // integration points and weights
-      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -259,7 +259,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
     Epetra_SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+  const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

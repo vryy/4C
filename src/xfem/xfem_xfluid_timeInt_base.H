@@ -13,8 +13,15 @@
 #ifndef XFEM_XFLUID_TIMEINT_BASE_H
 #define XFEM_XFLUID_TIMEINT_BASE_H
 
+#include <Epetra_Map.h>
 
-namespace GEO
+#include "lib_node.H"
+#include "lib_element.H"
+#include "utils_exceptions.H"
+#include "inpar_xfem.H"
+#include "lib_utils.H"
+
+namespace CORE::GEO
 {
   class CutWizard;
 
@@ -23,7 +30,7 @@ namespace GEO
     class SideHandle;
     class VolumeCell;
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 namespace XFEM
 {
@@ -291,7 +298,7 @@ namespace XFEM
                             //! moves inside the structure, or changes the side
       int last_valid_ele_;  //! last valid element id (used, when iteration of Lagrangean origin
                             //! moves inside the structure, or changes the side
-      GEO::CUT::VolumeCell*
+      CORE::GEO::CUT::VolumeCell*
           last_valid_vc_;  //! last valid fluid volumecell (used, when iteration of Lagrangean
                            //! origin moves inside the structure, or changes the side
       bool changedside_;   //! changed side compared to initial point
@@ -340,8 +347,8 @@ namespace XFEM
     explicit XFLUID_TIMEINT_BASE(
         const Teuchos::RCP<DRT::Discretization> discret,      /// background discretization
         const Teuchos::RCP<DRT::Discretization> boundarydis,  /// cut discretization
-        Teuchos::RCP<GEO::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
-        Teuchos::RCP<GEO::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
+        Teuchos::RCP<CORE::GEO::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
+        Teuchos::RCP<CORE::GEO::CutWizard> wizard_new,  /// cut wizard w.r.t. new interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
         std::vector<Teuchos::RCP<Epetra_Vector>>
@@ -468,19 +475,19 @@ namespace XFEM
 
 
     //! check if edge between x1 and x2 cuts the side
-    bool callSideEdgeIntersection(GEO::CUT::SideHandle* sh,  /// side handle
-        int sid,                                             /// side id
-        LINALG::Matrix<3, 1>& x1,                            /// coordinates of edge's start point
-        LINALG::Matrix<3, 1>& x2                             /// coordinates of edge's end point
+    bool callSideEdgeIntersection(CORE::GEO::CUT::SideHandle* sh,  /// side handle
+        int sid,                                                   /// side id
+        LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
+        LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
     ) const;
 
 
     //! check if edge between x1 and x2 cuts the side
     template <DRT::Element::DiscretizationType sidetype>
-    bool callSideEdgeIntersectionT(GEO::CUT::SideHandle* sh,  /// side handle
-        int sid,                                              /// side id
-        LINALG::Matrix<3, 1>& x1,                             /// coordinates of edge's start point
-        LINALG::Matrix<3, 1>& x2                              /// coordinates of edge's end point
+    bool callSideEdgeIntersectionT(CORE::GEO::CUT::SideHandle* sh,  /// side handle
+        int sid,                                                    /// side id
+        LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
+        LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
     ) const;
 
 
@@ -560,8 +567,8 @@ namespace XFEM
     Teuchos::RCP<DRT::Discretization> discret_;      //! background discretization
     Teuchos::RCP<DRT::Discretization> boundarydis_;  //! cut discretization
 
-    Teuchos::RCP<GEO::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
-    Teuchos::RCP<GEO::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
 
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  //! XFEM dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  //! XFEM dofset w.r.t. new interface position
@@ -752,8 +759,8 @@ namespace XFEM
     //! find the nearest surface point, return if successful
     bool FindNearestSurfPoint(LINALG::Matrix<3, 1>& x,  ///< coords of point to be projected
         LINALG::Matrix<3, 1>& proj_x,                   ///< coords of projected point
-        GEO::CUT::VolumeCell* vc,  ///< volumcell on that's cut-surface we want to project
-        const std::string state    ///< state n or np?
+        CORE::GEO::CUT::VolumeCell* vc,  ///< volumcell on that's cut-surface we want to project
+        const std::string state          ///< state n or np?
     );
 
     //! call and prepare the projection of point to side

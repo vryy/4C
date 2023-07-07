@@ -13,7 +13,7 @@
 
 #include "cut_point.H"
 
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -114,6 +114,6 @@ namespace GEO
     };
 
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 #endif

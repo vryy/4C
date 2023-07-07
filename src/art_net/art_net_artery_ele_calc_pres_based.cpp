@@ -43,7 +43,7 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = ::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = CORE::UTILS::MakeSingletonMap<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
@@ -52,7 +52,7 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].Instance(CORE::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
   const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints(ele->GaussRule());
+  const CORE::DRT::UTILS::IntegrationPoints1D intpoints(ele->GaussRule());
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
     const double fac = prefac * wgt;
 
     // shape functions and their derivatives
-    DRT::UTILS::shape_function_1D_deriv1(my::deriv_, xi, distype);
+    CORE::DRT::UTILS::shape_function_1D_deriv1(my::deriv_, xi, distype);
 
     for (int inode = 0; inode < numnode; inode++)
       for (int jnode = 0; jnode < numnode; jnode++)

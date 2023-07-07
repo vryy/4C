@@ -30,7 +30,6 @@ add_subdirectory(fpsi)
 add_subdirectory(fs3i)
 add_subdirectory(fsi)
 add_subdirectory(fsi_xfem)
-add_subdirectory(geometry)
 add_subdirectory(geometry_pair)
 add_subdirectory(immersed_problem)
 add_subdirectory(inpar)
@@ -92,13 +91,7 @@ add_subdirectory(loca_continuation)
 add_subdirectory(post_ensight)
 add_subdirectory(post_vtk)
 add_subdirectory(rebalance)
-add_subdirectory(solver)
 add_subdirectory(solver_nonlin_nox)
-
-# query all targets that have been created and store them in a variable so linking works for the executables below
-get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
-
-# create executables at the end when we are sure to have configured all modules
 add_subdirectory(global_full)
 add_subdirectory(create_rtdfiles)
 add_subdirectory(post_common)

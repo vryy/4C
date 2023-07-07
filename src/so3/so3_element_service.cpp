@@ -51,10 +51,11 @@ template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
     const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
-  const int numNodesPerElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int numNodesPerElement =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
-  DRT::UTILS::shape_function<distype>(xi, shapefunct);
+  CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
 
   const int num_dof_per_node = static_cast<int>(nodal_quantity.size()) / numNodesPerElement;
   std::vector<double> projected_quantities(num_dof_per_node, 0.0);

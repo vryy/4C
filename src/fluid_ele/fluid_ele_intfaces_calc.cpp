@@ -68,9 +68,9 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distype>::Instance(
-    ::UTILS::SingletonAction action)
+    CORE::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = ::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<DRT::ELEMENTS::FluidIntFaceImpl<distype>>(
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   //--------------------------------------------------------
   /// number of space dimensions of the FluidIntFace element
-  static const int facensd = DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int facensd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   /// number of space dimensions of the parent element
   static const int nsd = facensd + 1;
